@@ -262,7 +262,22 @@
     }
   }
 
-  function init() { bindInputs(); render(); sticky(); gallery(); autofill(); }
+  /* Helio can lay its header over the first section (a transparent header). When it
+     does, push the hero down by the overlap so the stamp and headline never sit under
+     the logo or menu. Turning the overlay off in Helio's header settings also fixes it. */
+  function clearHeader() {
+    var hero = document.querySelector('[data-hs2-hero]');
+    var header = document.querySelector('.header-section, header.shopify-section');
+    if (!hero || !header || window.scrollY > 10) return;
+    var box = hero.closest('.shopify-section') || hero;
+    box.style.paddingTop = '';
+    var overlap = header.getBoundingClientRect().bottom - box.getBoundingClientRect().top;
+    if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 8) + 'px';
+  }
+
+  function init() { bindInputs(); render(); sticky(); gallery(); autofill(); clearHeader(); }
+  window.addEventListener('resize', clearHeader);
+  window.addEventListener('load', clearHeader);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', init);
 })();
