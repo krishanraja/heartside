@@ -276,7 +276,10 @@
     var bottom = header.getBoundingClientRect().bottom;
     header.querySelectorAll('*').forEach(function (el) {
       var r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0 && r.top < top + 200 && r.bottom > bottom && r.bottom < window.innerHeight / 2) bottom = r.bottom;
+      if (!r.width || !r.height || r.bottom <= bottom) return;
+      if (r.right <= 0 || r.left >= window.innerWidth || r.top > top + 200) return; // off-screen drawers
+      if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
+      bottom = r.bottom;
     });
     var overlap = bottom - top;
     if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
