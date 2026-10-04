@@ -807,6 +807,18 @@
      Every section is one screen tall (hs2.css). The script supplies what CSS can't
      know: where the hero starts under Helio's header, how far to scale the poster,
      how many FAQ tickets fit, and whether the memo needs to scroll as a ticker. */
+  function stickyHead() {
+    var h = 0;
+    document.querySelectorAll('#header-group > .shopify-section, .shopify-section-group-header-group').forEach(function (sec) {
+      if (sec.classList.contains('hs2-section')) return;
+      var cs = window.getComputedStyle(sec);
+      if (cs.display === 'none' || (cs.position !== 'sticky' && cs.position !== 'fixed')) return;
+      var inner = sec.querySelector('header-component, header, .header') || sec;
+      h = Math.max(h, Math.round(inner.getBoundingClientRect().height));
+    });
+    document.documentElement.style.setProperty('--hs2-head', h + 'px');
+    return h;
+  }
   function heroTop() {
     var hero = document.querySelector('[data-hs2-hero]');
     if (!hero) return;
@@ -872,7 +884,7 @@
     tickets.forEach(function (t) { t.classList.remove('is-folded'); });
     if (more) more.hidden = true;
     if (!sec || !more) return;
-    var room = window.innerHeight + 2, shown = tickets.length;
+    var room = window.innerHeight - (stickyHead.h || 0) + 2, shown = tickets.length;
     if (sec.offsetHeight <= room) return;
     more.hidden = false;
     while (sec.offsetHeight > room && shown > 2) {
@@ -1197,7 +1209,7 @@
     try { if (window.Shopify && window.Shopify.analytics && window.Shopify.analytics.publish) window.Shopify.analytics.publish('hs2_' + name, data || {}); } catch (e) { /* analytics off */ }
   }
 
-  function layout() { heroTop(); fitPoster(); ticker(); fitFaq(); }
+  function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();

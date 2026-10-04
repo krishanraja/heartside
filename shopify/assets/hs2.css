@@ -25,6 +25,7 @@
   --mono: "HS Courier Prime", "Courier Prime", "Courier New", monospace;
   --stars: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif;
   --screen: 100vh;
+  --fit: calc(var(--screen) - var(--hs2-head, 0px));
   --vh: 1vh;
   --pad-y: clamp(22px, 5vh, 72px);
   --sticky-room: 0px;
@@ -35,7 +36,7 @@
   background: var(--cream);
   -webkit-font-smoothing: antialiased;
 }
-@supports (height: 100svh) { .hs2 { --screen: 100svh; --vh: 1svh; --pad-y: clamp(22px, 5svh, 72px); } }
+@supports (height: 100svh) { .hs2 { --screen: 100svh; --fit: calc(100svh - var(--hs2-head, 0px)); --vh: 1svh; --pad-y: clamp(22px, 5svh, 72px); } }
 @media (max-width: 760px) { .hs2 { --sticky-room: 62px; } }
 .hs2 *, .hs2 *::before, .hs2 *::after { box-sizing: border-box; }
 .hs2 :where(h1, h2, h3, p, figure, ul, ol, li, dl, dd, fieldset, legend) { margin: 0; padding: 0; }
@@ -53,9 +54,10 @@
 
 .hs2-wrap { max-width: 1180px; margin: 0 auto; padding-left: 20px; padding-right: 20px; }
 
-/* one screen per section */
+/* one screen per section: Helio pins its header row while scrolling, so sections fit the room under it */
+#review, #benefits, #closure, #leak, #faq, #buy { scroll-margin-top: var(--hs2-head, 0px); }
 .hs2-fit, .hs2-review, .hs2-management, .hs2-benefits, .hs2-closure, .hs2-policy, .hs2-leak, .hs2-faq, .hs2-signoff {
-  min-height: var(--screen); display: flex; flex-direction: column; justify-content: center;
+  min-height: var(--fit); display: flex; flex-direction: column; justify-content: center;
 }
 
 /* buttons */
@@ -378,14 +380,14 @@ html.hs2-js .hs2-management__memo.is-in > .hs2-memo-p { animation-duration: 1s; 
 
 /* ----------------------------------------------------------------- benefits */
 .hs2-benefits { padding-top: var(--pad-y); padding-bottom: calc(var(--pad-y) + var(--sticky-room)); gap: clamp(16px, calc(3 * var(--vh)), 32px); scroll-margin-top: 0; }
-.hs2-benefits__head { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.hs2-benefits__head { display: flex; flex-direction: column; gap: 10px; }
 .hs2-eyebrow-stamp { font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--stamp); }
 .hs2-benefits h2 { font-weight: 650; font-size: clamp(30px, min(4.4vw, calc(6 * var(--vh))), 56px); line-height: 1; letter-spacing: -0.02em; }
 .hs2-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
 .hs2-card { background: var(--white); border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.25s var(--ease), box-shadow 0.25s ease; }
 .hs2-card:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(138, 74, 43, 0.16); }
 .hs2-card__media { position: relative; overflow: hidden; }
-.hs2-card__media img { width: 100%; height: clamp(140px, calc(25 * var(--vh)), 260px); object-fit: cover; transition: transform 0.6s var(--ease); }
+.hs2-card__media img { width: 100%; height: clamp(130px, calc(21 * var(--vh)), 250px); object-fit: cover; transition: transform 0.6s var(--ease); }
 .hs2-card:hover .hs2-card__media img { transform: scale(1.04); }
 .hs2-card__shot { position: absolute; left: 12px; top: 12px; background: var(--ink); color: var(--cream); font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 999px; }
 .hs2-card__code { position: absolute; right: 12px; bottom: 12px; background: var(--cream); font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 8px; }
@@ -500,7 +502,7 @@ html.hs2-js .hs2-policy__grid.is-in .hs2-policy__num { --r: -3deg; animation: hs
 .hs2-leak__head p { font-size: clamp(14px, calc(2.1 * var(--vh)), 18px); line-height: 1.55; max-width: 560px; }
 
 /* the phone the card sits in: sized by the screen's height */
-.hs2-phone { --pw: clamp(150px, min(30vw, calc((var(--screen) - 2 * var(--pad-y) - 40px) * 0.5)), 340px); width: var(--pw); margin: 0 auto; background: var(--ink); border-radius: calc(var(--pw) * 0.13); padding: calc(var(--pw) * 0.035); box-shadow: 0 40px 80px rgba(18, 16, 16, 0.35); transform: rotate(2deg); }
+.hs2-phone { --pw: clamp(150px, min(30vw, calc((var(--fit) - 2 * var(--pad-y) - 40px) * 0.5)), 340px); width: var(--pw); margin: 0 auto; background: var(--ink); border-radius: calc(var(--pw) * 0.13); padding: calc(var(--pw) * 0.035); box-shadow: 0 40px 80px rgba(18, 16, 16, 0.35); transform: rotate(2deg); }
 html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
 .hs2-phone__bars { display: flex; gap: 4px; padding: 6px 10px 0; }
 .hs2-phone__bars i { flex: 1; height: 3px; border-radius: 2px; background: rgba(251, 246, 241, 0.25); overflow: hidden; position: relative; }
@@ -557,7 +559,7 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
   .hs2-leak h2 { font-size: clamp(28px, min(8.6vw, calc(4.6 * var(--vh))), 40px); }
   .hs2-leak__head p { font-size: clamp(13.5px, calc(1.9 * var(--vh)), 15px); }
   .hs2-leak__stage { align-self: start; }
-  .hs2-phone { --pw: clamp(124px, min(42vw, calc(var(--screen) * 0.21)), 180px); }
+  .hs2-phone { --pw: clamp(124px, min(42vw, calc(var(--fit) * 0.21)), 180px); }
   .hs2-phone__who { display: none; }
   .hs2-phone__bars { padding: 4px 6px 6px; }
   .hs2-leak__pick-label { font-size: 11px; }
@@ -566,19 +568,28 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
   .hs2-leak__go .hs2-btn { width: 100%; min-height: 52px; font-size: 15px; padding: 6px 12px; line-height: 1.2; }
   .hs2-leak__more .hs2-leak__ghost { flex: 1; font-size: 14px; padding: 0 10px; min-height: 44px; }
   .hs2-leak__nudge { font-size: 13px; }
-  .hs2-leak__paper .hs2-btn { flex: 1 1 100%; min-height: 48px; }
+  .hs2-leak__eyebrow { font-size: 10.5px; letter-spacing: 0.05em; }
+  .hs2-leak__paper { flex-wrap: nowrap; padding: 10px 10px 10px 14px; gap: 10px; }
+  .hs2-leak__paper-title { font-size: 15px; line-height: 1.2; }
+  .hs2-leak__paper-price { display: none; }
+  .hs2-leak__paper .hs2-btn { flex: 0 1 auto; min-height: 44px; padding: 4px 12px; font-size: 13.5px; line-height: 1.2; }
 }
 @media (max-width: 760px) and (max-height: 860px) {
   .hs2-leak__nudge { display: none; }
 }
 @media (max-width: 760px) and (max-height: 760px) {
+  .hs2-carousel-nav button { width: 34px; height: 34px; }
+  .hs2-closure { padding-top: 8px; }
   .hs2-benefits__sub { display: none; }
   .hs2-card p { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .hs2-phone { --pw: 108px; }
   .hs2-leak__head p { font-size: 13px; line-height: 1.45; }
 }
 @media (max-width: 760px) and (max-height: 720px) {
-  .hs2-card__media img { height: clamp(104px, calc(17 * var(--vh)), 150px); }
+  .hs2-card__media img { height: clamp(96px, calc(15 * var(--vh)), 140px); }
+  .hs2-closure__digits b { font-size: 22px; }
+  .hs2-closure__digits span { padding: 5px 4px; }
+  .hs2-closure__scene { gap: 8px; }
   .hs2-benefits h2 { font-size: 24px; }
   .hs2-leak__paper-price { display: none; }
   .hs2-leak h2 { font-size: 26px; }
@@ -600,7 +611,7 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
 .hs2-faq__head { grid-area: head; }
 .hs2-faq__desk { grid-area: desk; display: flex; flex-direction: column; gap: 14px; }
 .hs2-faq__photo { margin: 0; position: relative; }
-.hs2-faq__photo img { width: 100%; height: auto; aspect-ratio: 1; max-height: calc(var(--screen) * 0.42); object-fit: cover; border-radius: 24px; }
+.hs2-faq__photo img { width: 100%; height: auto; aspect-ratio: 1; max-height: calc(var(--fit) * 0.42); object-fit: cover; border-radius: 24px; }
 .hs2-faq__status { position: absolute; left: 12px; top: 12px; background: var(--cream); border-radius: 999px; padding: 7px 13px; font-family: var(--mono); font-size: 12px; font-weight: 700; box-shadow: 0 8px 20px rgba(18, 16, 16, 0.15); }
 .hs2-faq__card { background: var(--white); border: 2px solid var(--ink); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
 .hs2-faq__eyebrow { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--stamp); }
