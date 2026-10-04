@@ -1,6 +1,19 @@
 {%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+{%- comment -%}
+  The memo bar also carries the store-wide dates that drive every countdown on the
+  site (hs2.js reads them from data-* here): the confirmed last order date and the
+  launch offer window. With no last order date, the countdowns count to Christmas
+  morning, which is always true.
+{%- endcomment -%}
 <div class="hs2">
-  <div class="hs2-memo">{% render 'hs2-t', text: section.settings.text %}</div>
+  <div class="hs2-memo" data-hs2-memo data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+    <div class="hs2-memo__viewport">
+      <div class="hs2-memo__track" data-hs2-ticker>
+        <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: s.text %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% schema %}
@@ -16,7 +29,23 @@
       "label": "Memo",
       "info": "One message only: the order-by date and free shipping. Replace [DATE] once Printful confirms it.",
       "default": "MEMO: annual reviews close [DATE] for Christmas delivery. Free US shipping. This is not a drill."
-    }
+    },
+    { "type": "header", "content": "Countdowns (whole site)" },
+    {
+      "type": "text",
+      "id": "deadline",
+      "label": "Last order date for Christmas",
+      "info": "As YYYY-MM-DD, for example 2026-12-10. Only once Printful's dashboard confirms it. Empty: the countdowns count to Christmas morning instead."
+    },
+    {
+      "type": "text",
+      "id": "offer_start",
+      "label": "Free video offer starts",
+      "info": "YYYY-MM-DD. docs/V2-FROM-THE-DOG.md section 4: the read-aloud video is free with any order from 20 October to 1 November. Empty switches the offer off.",
+      "default": "2026-10-20"
+    },
+    { "type": "text", "id": "offer_end", "label": "Free video offer ends (last day)", "default": "2026-11-01" },
+    { "type": "text", "id": "offer_label", "label": "Offer wording on the read-aloud button", "default": "Free until November 1" }
   ],
   "presets": [{ "name": "HS memo bar" }]
 }

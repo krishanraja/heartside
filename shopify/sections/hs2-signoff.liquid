@@ -1,17 +1,23 @@
 {%- render 'hs2-head' -%}
 {%- assign parts = section.settings.text | split: ' · ' -%}
 <div class="hs2">
-  <div class="hs2-signoff">
-    <div class="hs2-signoff__paw">{% render 'hs2-paw' %}<span data-hs2="dog">Biscuit</span></div>
+  <div class="hs2-signoff" data-hs2-reveal data-hs2-group>
+    <div class="hs2-signoff__paw" style="--i: 0">{% render 'hs2-paw' %}<span data-hs2="dog">Biscuit</span></div>
     {%- if parts.size == 3 -%}
       {%- comment -%} The approved line, laid out as a lockup. The hidden separators keep it one line for screen readers. {%- endcomment -%}
-      <p class="hs2-signoff__lockup">
+      <p class="hs2-signoff__lockup" style="--i: 1">
         <span class="hs2-signoff__brand">{{ parts[0] }}</span><span class="hs2-sr"> · </span>
         <span class="hs2-signoff__line">{{ parts[1] }}</span><span class="hs2-sr"> · </span>
         <span class="hs2-signoff__domain">{{ parts[2] }}</span>
       </p>
     {%- else -%}
-      <p class="hs2-signoff__lockup"><span class="hs2-signoff__line">{{ section.settings.text }}</span></p>
+      <p class="hs2-signoff__lockup" style="--i: 1"><span class="hs2-signoff__line">{{ section.settings.text }}</span></p>
+    {%- endif -%}
+    {%- if section.settings.button != blank -%}
+      <div class="hs2-signoff__go" style="--i: 2">
+        <a class="hs2-btn" href="{{ section.settings.link | default: '#review' }}"><span>{% render 'hs2-t', text: section.settings.button %}</span></a>
+        <div class="hs2-signoff__when" data-hs2-countdown="line" hidden></div>
+      </div>
     {%- endif -%}
   </div>
 </div>
@@ -23,7 +29,9 @@
   "class": "hs2-section",
   "settings": [
     { "type": "paragraph", "content": "The last line of the page, signed by the dog. Three parts split by ' · ' become the lockup: brand, tagline, domain." },
-    { "type": "text", "id": "text", "label": "Line", "default": "Heartside · Keep them close · heartside.io" }
+    { "type": "text", "id": "text", "label": "Line", "default": "Heartside · Keep them close · heartside.io" },
+    { "type": "text", "id": "button", "label": "Button", "info": "Empty hides the button.", "default": "Make {dogs} poster · $39" },
+    { "type": "text", "id": "link", "label": "Button goes to", "default": "#review" }
   ],
   "presets": [{ "name": "HS sign-off" }]
 }

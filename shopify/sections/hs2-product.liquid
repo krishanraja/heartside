@@ -12,7 +12,7 @@
   window.teeinblue = Object.assign({ gallerySelector: '[data-hs2-tib-gallery]', gallerySetupMethod: 'append', formSelector: '#hs2-product-form' }, window.teeinblue || {});
 </script>
 <div class="hs2">
-  <div class="hs2-wrap hs2-product">
+  <div class="hs2-wrap hs2-product" id="buy">
 
     <div class="hs2-product__media" data-hs2-media>
       <div class="hs2-product__tib" data-hs2-tib-gallery></div>
@@ -55,6 +55,7 @@
             <div {{ block.shopify_attributes }}>
               <div class="hs2-product__price" data-hs2-price>{{ current.price | money }}</div>
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
+              <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
             </div>
           {%- when 'description' -%}
             <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>

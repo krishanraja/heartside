@@ -25,6 +25,54 @@ One shared state drives the whole page. The dog's name typed in the hero rewrite
 - **Answers carried to the product page.** "Approve [Dog]'s review", the leak section's poster button and the benefit links open the product with the answers in the link. The product page shows them in a "FORM HR-26 · ON FILE" card and adds them to the order as hidden line properties (`_Manager`, `_Employee`, `_Treat cupboard`, `_Improvement`, `_Incident`, `_Enemy`, `_Read-aloud video`).
 - **Nobody types twice (the Teeinblue bridge).** On a product page, `hs2.js` copies the answers into Teeinblue's personalizer and offers a one-tap "Use [Dog]'s headshot". Details in **The Teeinblue bridge** below.
 
+## One screen per section, motion, and honest urgency (4 October)
+
+- **Fit.**
+  - Every homepage section is exactly one screen tall, from 667px-tall phones to 1920 × 1080 desktops. This was measured at 360×740, 375×667, 390×844, 430×932, 768×1024, 1280×720, 1366×768, 1440×900 and 1920×1080.
+  - Sections use `svh` units and type that scales with screen height. On phones the layouts change shape:
+    - The review is five steps, one question per screen, with the poster scaled to fit and "Read it full size".
+    - The benefits become a swipe carousel.
+    - The FAQ shows as many tickets as fit, then "N more tickets".
+  - Only phones 640px tall or less run 12px over, in two sections.
+- **Motion.**
+  - The hero rises in, the stamp lands and the ID badge swings on its lanyard.
+  - Sections reveal as they scroll in, and the management memo lands one paragraph at a time.
+  - The policy and FAQ stamps land, and the closure and memo photos drift slowly.
+  - The story cards play like a story until the shopper touches them.
+  - Approve stamps APPROVED onto the poster before moving on, and the dog's name gets a marker swipe when it changes.
+  - Everything stops for `prefers-reduced-motion`. Without JavaScript nothing hides.
+- **Urgency, all from real dates.**
+  - A countdown to Christmas morning shows in the memo ticker, the hero, the sticky bar, step 5, the sign-off and product pages, with a live clock over the Christmas room.
+  - **HS memo bar > Last order date** (YYYY-MM-DD) switches every countdown to "N days left to order for Christmas" and labels each deadline row "N days left". Set it only once Printful confirms the date.
+  - The free read-aloud video (V2 doc section 4) shows only from 20 October to 1 November. Both dates are memo bar settings. Preview another day with `?hs2_now=2026-10-25`.
+  - Nothing invents stock or resets.
+- **Plain words.** Each screen now says what you are buying:
+  - The hero has a plain "what it is" line, which replaces the second joke line on phones.
+  - Buttons read "Make my poster", "Approve and order [Dog]'s poster" and "Make [Dog]'s poster · $39".
+  - Each benefits card has a product tag, and the leak section is labelled "FREE · FOR YOUR INSTAGRAM OR TIKTOK STORY".
+- **Funnel events.** The theme publishes Shopify customer events for the funnel. Subscribe to them in Settings > Customer events (a custom pixel) to send them to GA4, Meta or TikTok:
+  - `hs2_name_entered`, `hs2_review_step`, `hs2_approve_clicked`
+  - `hs2_photo_attached`, `hs2_story_card`, `hs2_caption_copied`, `hs2_link_shared`
+  - `hs2_faq_open`
+
+## The ad landing page (Instagram and TikTok)
+
+Paid traffic should land on the poster's product page in the `landing` layout rather than the homepage. The page has:
+- No store menu.
+- The hero and the five-step review.
+- The buy box with Teeinblue on the same page.
+- Proof, the memo, the deadlines and the FAQ.
+- A sticky "Order [Dog]'s poster · $39".
+
+Approve stamps the poster and scrolls to the buy box. Nothing opens a new page or a pop-up, so it converts inside Instagram's and TikTok's in-app browsers. There, the story card opens full size to press and hold, because those browsers can't download files.
+
+The template is `templates/product.landing.json`. It needs no assigning: any product opens in it with `?view=landing`. Once the poster product exists, use these ad links (check the macro names in each ads manager):
+
+- **Instagram / Facebook:** `https://heartside.io/products/<poster-handle>?view=landing&utm_source=instagram&utm_medium=paid_social&utm_campaign={{campaign.name}}&utm_content={{ad.name}}`
+- **TikTok:** `https://heartside.io/products/<poster-handle>?view=landing&utm_source=tiktok&utm_medium=paid_social&utm_campaign=__CAMPAIGN_NAME__&utm_content=__CID_NAME__`
+
+Add Teeinblue's app block to the landing template too (`docs/SHOPIFY-BROWSER-PROMPT.md` task 5).
+
 ## The Teeinblue bridge
 
 Teeinblue has no documented prefill feature, so this was built against its storefront code, read and tested on Teeinblue's own demo store on 4 October 2026.
@@ -82,6 +130,16 @@ Teeinblue has no documented prefill feature, so this was built against its store
   - The photos from `assets/v2/`, as WebP at two sizes, built by `tools/build_shopify_assets.py`.
 
 ## New copy for Krish to approve
+
+Added on 4 October to make the page read like a shop:
+- **Hero:** "A personalized 12 × 18 inch poster of your dog's review of you, with their photo and your name. $39, free US shipping." The button reads "Make my poster".
+- **Review:** "FORM HR-26 · 5 QUICK QUESTIONS · TAKES A MINUTE". The steps add "STEP 1 OF 5", "PRINTS AS", "Back" and "Next", and the button reads "Approve and order [Dog]'s poster".
+- **Benefits:** "More gifts made from your dog's photo. Free US shipping on every one." The product tags are "Custom dog-shaped pillow · 16 in", "Sweatshirt + matching dog bandana", "Socks printed with your dog's face" and "Two-sided ceramic photo ornament".
+- **Leak:** the eyebrow reads "FREE · FOR YOUR INSTAGRAM OR TIKTOK STORY".
+- **Buttons:** the sticky bar, sign-off and FAQ buttons read "Make [Dog]'s poster · $39" ("Order [Dog]'s poster · $39" on the ad landing page).
+- **Countdowns:** "Christmas morning in N days", or "N days left to order for Christmas" once a date is set. The offer line reads "Free until November 1".
+
+Earlier additions:
 
 The canvas copy is untouched. These lines are new, written to the comedy bible (`docs/V2-FROM-THE-DOG.md` section 2). Each is a theme-editor setting, so any of them can be changed or deleted there.
 

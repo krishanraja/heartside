@@ -1,10 +1,10 @@
 {%- render 'hs2-head' -%}
 <div class="hs2">
   <section class="hs2-wrap hs2-policy" aria-labelledby="policy-h-{{ section.id }}">
-    <h2 id="policy-h-{{ section.id }}">{{ section.settings.heading }}</h2>
-    <div class="hs2-policy__grid">
+    <h2 id="policy-h-{{ section.id }}" data-hs2-reveal>{{ section.settings.heading }}</h2>
+    <div class="hs2-policy__grid" data-hs2-reveal data-hs2-group>
       {%- for block in section.blocks -%}
-        <div class="hs2-policy__item" {{ block.shopify_attributes }}>
+        <div class="hs2-policy__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <div class="hs2-policy__num">POLICY {{ forloop.index }}</div>
           <div class="hs2-policy__title">{{ block.settings.title }}</div>
           <div class="hs2-policy__text">{{ block.settings.text }}</div>

@@ -1,80 +1,89 @@
 {
   "sections": {
     "hero": {
-      "type": "hs2-hero"
+      "type": "hs2-hero",
+      "settings": {
+        "hide_header": true,
+        "button": "Make my poster"
+      }
     },
     "review": {
       "type": "hs2-review"
     },
-    "management": {
-      "type": "hs2-management"
-    },
-    "benefits": {
-      "type": "hs2-benefits",
+    "main": {
+      "type": "hs2-product",
+      "settings": {
+        "show_poster": false
+      },
       "blocks": {
-        "b1": {
-          "type": "item",
+        "stamp": {
+          "type": "stamp",
           "settings": {
-            "name": "The Body Double",
-            "code": "ITEM BD-01",
-            "price": "$59",
-            "fallback": "asleep",
-            "alt": "A spaniel asleep on a laptop",
-            "shot": "[PILLOW SHOT]",
-            "cta": "Make the double",
-            "copy": "A pillow cut to {dogs} exact outline. For groomer days, vet days, and the occasional covert operation to the kitchen.",
-            "kind": "Custom dog-shaped pillow · 16 in"
+            "text": "FORM HR-26 · ANNUAL PERFORMANCE REVIEW"
           }
         },
-        "b2": {
-          "type": "item",
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "description": {
+          "type": "description"
+        },
+        "answers": {
+          "type": "answers"
+        },
+        "buy": {
+          "type": "buy"
+        },
+        "fine": {
+          "type": "fine"
+        }
+      },
+      "block_order": [
+        "stamp",
+        "title",
+        "price",
+        "description",
+        "answers",
+        "buy",
+        "fine"
+      ]
+    },
+    "policy": {
+      "type": "hs2-policy",
+      "blocks": {
+        "p1": {
+          "type": "policy",
           "settings": {
-            "name": "Mandatory Company Uniform",
-            "code": "ITEM UN-02",
-            "price": "$129 set",
-            "fallback": "team-03",
-            "alt": "A golden retriever at a desk, smiling",
-            "shot": "[SWEATER SHOT]",
-            "cta": "Comply",
-            "copy": "An ugly Christmas sweatshirt covered in {dogs} face, plus a matching bandana for {dog}. Dress code for the holiday party. Non-negotiable.",
-            "kind": "Sweatshirt + matching dog bandana"
+            "title": "A human checks every order",
+            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
           }
         },
-        "b3": {
-          "type": "item",
+        "p2": {
+          "type": "policy",
           "settings": {
-            "name": "Surveillance Socks",
-            "code": "ITEM SS-03",
-            "price": "$24",
-            "fallback": "team-01",
-            "alt": "A pug tilting its head",
-            "shot": "[SOCKS SHOT]",
-            "cta": "Install",
-            "copy": "{dogs} face on your feet, so {dog} can keep an eye on you at work. Stocking-sized.",
-            "kind": "Socks printed with your dog's face"
+            "title": "Misprinted? Remade free",
+            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
           }
         },
-        "b4": {
-          "type": "item",
+        "p3": {
+          "type": "policy",
           "settings": {
-            "name": "Tiny Me, For The Tree",
-            "code": "ITEM TM-04",
-            "price": "$24",
-            "fallback": "team-04",
-            "alt": "A golden retriever on a rug with a toy",
-            "shot": "[ORNAMENT SHOT]",
-            "cta": "Hang {dog}",
-            "copy": "A ceramic ornament with {dog} on the front and {dogs} verdict on your year on the back.",
-            "kind": "Two-sided ceramic photo ornament"
+            "title": "Every review gets published",
+            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
           }
         }
       },
       "block_order": [
-        "b1",
-        "b2",
-        "b3",
-        "b4"
+        "p1",
+        "p2",
+        "p3"
       ]
+    },
+    "management": {
+      "type": "hs2-management"
     },
     "closure": {
       "type": "hs2-closure",
@@ -122,40 +131,6 @@
         "d4",
         "d5"
       ]
-    },
-    "policy": {
-      "type": "hs2-policy",
-      "blocks": {
-        "p1": {
-          "type": "policy",
-          "settings": {
-            "title": "A human checks every order",
-            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
-          }
-        },
-        "p2": {
-          "type": "policy",
-          "settings": {
-            "title": "Misprinted? Remade free",
-            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
-          }
-        },
-        "p3": {
-          "type": "policy",
-          "settings": {
-            "title": "Every review gets published",
-            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
-          }
-        }
-      },
-      "block_order": [
-        "p1",
-        "p2",
-        "p3"
-      ]
-    },
-    "leak": {
-      "type": "hs2-leak"
     },
     "faq": {
       "type": "hs2-faq",
@@ -237,20 +212,27 @@
       ]
     },
     "signoff": {
-      "type": "hs2-signoff"
+      "type": "hs2-signoff",
+      "settings": {
+        "button": "Order {dogs} poster · $39",
+        "link": "#buy"
+      }
     },
     "sticky": {
-      "type": "hs2-sticky"
+      "type": "hs2-sticky",
+      "settings": {
+        "text": "Order {dogs} poster · $39",
+        "link": "#buy"
+      }
     }
   },
   "order": [
     "hero",
     "review",
-    "management",
-    "benefits",
-    "closure",
+    "main",
     "policy",
-    "leak",
+    "management",
+    "closure",
     "faq",
     "signoff",
     "sticky"

@@ -1,12 +1,8 @@
 {%- render 'hs2-head' -%}
 <div class="hs2">
   <section class="hs2-management" aria-label="A word from management">
-    <div class="hs2-management__inner">
-      <div class="hs2-management__eyebrow">{{ section.settings.eyebrow }}</div>
-      <div class="hs2-management__memo">{% render 'hs2-t', text: section.settings.memo %}</div>
-    </div>
     {%- assign img = section.settings.image -%}
-    <figure class="hs2-management__photo">
+    <figure class="hs2-management__photo hs2-anim-drift" aria-hidden="true">
       {%- if img != blank -%}
         {{ img | image_url: width: 1600 | image_tag: widths: '800, 1200, 1600', sizes: '(min-width: 1100px) 1000px, 100vw', loading: 'lazy', alt: section.settings.alt }}
       {%- else -%}
@@ -14,6 +10,16 @@
           sizes="(min-width: 1100px) 1000px, 100vw" width="1600" height="900" loading="lazy" alt="{{ section.settings.alt | escape }}">
       {%- endif -%}
     </figure>
+    <div class="hs2-management__inner">
+      <div class="hs2-management__eyebrow" data-hs2-reveal>{{ section.settings.eyebrow }}</div>
+      {%- comment -%} Each paragraph lands on its own beat; the last one is the signature {%- endcomment -%}
+      {%- assign paras = section.settings.memo | split: '<br><br>' -%}
+      <div class="hs2-management__memo" data-hs2-reveal data-hs2-group>
+        {%- for para in paras -%}
+          <span class="hs2-memo-p{% if forloop.last %} hs2-memo-p--sign{% endif %}" style="--i: {{ forloop.index0 }}">{% render 'hs2-t', text: para %}</span>
+        {%- endfor -%}
+      </div>
+    </div>
   </section>
 </div>
 

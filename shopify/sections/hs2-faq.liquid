@@ -7,9 +7,9 @@
 <div class="hs2">
   <section id="faq" class="hs2-faq" aria-labelledby="faq-h-{{ section.id }}">
     <div class="hs2-faq__inner">
-      <h2 class="hs2-faq__head" id="faq-h-{{ section.id }}">{{ s.heading }}</h2>
+      <h2 class="hs2-faq__head" id="faq-h-{{ section.id }}" data-hs2-reveal>{{ s.heading }}</h2>
 
-      <aside class="hs2-faq__desk" aria-label="{{ s.desk_eyebrow | escape }}">
+      <aside class="hs2-faq__desk" aria-label="{{ s.desk_eyebrow | escape }}" data-hs2-reveal style="--d: .08s">
         <figure class="hs2-faq__photo">
           {%- if s.image != blank -%}
             {{ s.image | image_url: width: 1000 | image_tag: widths: '500, 800, 1000', sizes: '(min-width: 900px) 380px, 100vw', loading: 'lazy', alt: s.alt }}
@@ -26,7 +26,7 @@
         </div>
       </aside>
 
-      <div class="hs2-faq__list">
+      <div class="hs2-faq__list" data-hs2-faq data-hs2-reveal data-hs2-group>
         {%- for block in section.blocks -%}
           {%- liquid
             assign num = forloop.index | prepend: '00' | slice: -3, 3
@@ -35,8 +35,8 @@
               assign answer = answer | replace: mail, mail_link
             endif
           -%}
-          <details class="hs2-ticket" {% if forloop.first and s.open_first %}open{% endif %} {{ block.shopify_attributes }}>
-            <summary><span class="hs2-ticket__no">TICKET {{ num }}</span><span class="hs2-ticket__q">{{ block.settings.question }}</span><span class="hs2-ticket__icon" aria-hidden="true"></span></summary>
+          <details class="hs2-ticket" name="hs2-faq-{{ section.id }}" style="--i: {{ forloop.index0 }}" {% if forloop.first and s.open_first %}open{% endif %} {{ block.shopify_attributes }}>
+            <summary><span class="hs2-ticket__no"><span class="hs2-ticket__word">TICKET </span>{{ num }}</span><span class="hs2-ticket__q">{{ block.settings.question }}</span><span class="hs2-ticket__icon" aria-hidden="true"></span></summary>
             <div class="hs2-ticket__a">
               <p>{% render 'hs2-t', text: answer %}</p>
               <span class="hs2-ticket__stamp" aria-hidden="true">RESOLVED</span>
@@ -44,6 +44,7 @@
           </details>
         {%- endfor -%}
 
+        <button type="button" class="hs2-faq__more" data-hs2-faq-more hidden><span data-hs2-faq-more-n>4</span> more tickets</button>
         {%- if s.close_text != blank -%}
           <div class="hs2-faq__close">
             <p>{% render 'hs2-t', text: s.close_text %}</p>
@@ -86,7 +87,7 @@
     { "type": "textarea", "id": "desk_text", "label": "Desk text", "default": "HR is asleep, so the answers are filed here. Anything {dog} can't answer goes to a person." },
     { "type": "text", "id": "email", "label": "Contact email", "default": "krish@heartside.io" },
     { "type": "text", "id": "close_text", "label": "Closing line", "default": "Still deciding? {dog} has already decided." },
-    { "type": "text", "id": "close_button", "label": "Closing button", "default": "Read {dogs} review · $39" }
+    { "type": "text", "id": "close_button", "label": "Closing button", "default": "Make {dogs} poster · $39" }
   ],
   "blocks": [
     {

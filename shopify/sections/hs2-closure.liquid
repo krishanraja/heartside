@@ -3,7 +3,7 @@
 <div class="hs2">
   <section id="closure" class="hs2-wrap hs2-closure" aria-labelledby="closure-h-{{ section.id }}">
     <div class="hs2-closure__scene">
-      <div class="hs2-closure__bg" aria-hidden="true">
+      <div class="hs2-closure__bg hs2-anim-drift" aria-hidden="true">
         {%- if s.image != blank -%}
           {{ s.image | image_url: width: 1600 | image_tag: widths: '800, 1200, 1600', sizes: '(min-width: 1180px) 1180px, 100vw', loading: 'lazy', alt: '' }}
         {%- else -%}
@@ -11,7 +11,16 @@
             sizes="(min-width: 1180px) 1180px, 100vw" width="1600" height="900" loading="lazy" alt="">
         {%- endif -%}
       </div>
-      <div class="hs2-closure__box">
+      <div class="hs2-closure__clock" data-hs2-clock hidden>
+        <div class="hs2-closure__clock-label" data-hs2-clock-label>CHRISTMAS MORNING IN</div>
+        <div class="hs2-closure__digits" role="timer" aria-live="off">
+          <span><b data-hs2-clock-part="d">00</b><i>days</i></span>
+          <span><b data-hs2-clock-part="h">00</b><i>hrs</i></span>
+          <span><b data-hs2-clock-part="m">00</b><i>min</i></span>
+          <span><b data-hs2-clock-part="s">00</b><i>sec</i></span>
+        </div>
+      </div>
+      <div class="hs2-closure__box" data-hs2-reveal>
         <div class="hs2-closure__copy">
           <div class="hs2-closure__eyebrow">{{ s.eyebrow }}</div>
           <h2 id="closure-h-{{ section.id }}">{{ s.heading }}</h2>
@@ -20,7 +29,7 @@
         </div>
         <div class="hs2-closure__table">
           {%- for block in section.blocks -%}
-            <div class="hs2-closure__row" {{ block.shopify_attributes }}><span>{% render 'hs2-t', text: block.settings.item %}</span><strong>{{ block.settings.date }}</strong></div>
+            <div class="hs2-closure__row" {{ block.shopify_attributes }}><span>{% render 'hs2-t', text: block.settings.item %}</span><strong data-hs2-date>{{ block.settings.date }}</strong><em class="hs2-closure__left" data-hs2-left hidden></em></div>
           {%- endfor -%}
         </div>
       </div>

@@ -1,23 +1,36 @@
 {%- render 'hs2-head' -%}
 {%- assign s = section.settings -%}
+{%- if s.hide_header -%}
+  {%- comment -%} Ad landing: every link away from the offer leaks attention, so Helio's header and menu hide. The memo bar stays. {%- endcomment -%}
+  <style>#header-group > .shopify-section:not(.hs2-section), .shopify-section-group-header-group:not(.hs2-section) { display: none !important; }</style>
+{%- endif -%}
 <div class="hs2">
   <div class="hs2-wrap hs2-hero" data-hs2-hero>
     <div class="hs2-hero__copy">
-      <div class="hs2-stamp">{% render 'hs2-t', text: s.stamp %}</div>
-      <h1>{% render 'hs2-t', text: s.heading %}</h1>
-      <p class="hs2-hero__lede">{% render 'hs2-t', text: s.text %}</p>
-      <div class="hs2-namecard">
+      {%- if s.hide_header -%}<img class="hs2-hero__logo" src="{{ 'hs-logo.png' | asset_url }}" alt="Heartside" width="240" height="81">{%- endif -%}
+      <div class="hs2-stamp hs2-anim-stamp" style="--r: -2deg; --d: .1s">{% render 'hs2-t', text: s.stamp %}</div>
+      <h1 class="hs2-anim-rise" style="--d: .18s">{% render 'hs2-t', text: s.heading %}</h1>
+      <p class="hs2-hero__lede hs2-anim-rise" style="--d: .3s">{% render 'hs2-t', text: s.text %}</p>
+      {%- if s.what != blank -%}<p class="hs2-hero__what hs2-anim-rise" style="--d: .36s">{% render 'hs2-t', text: s.what %}</p>{%- endif -%}
+      <div class="hs2-namecard hs2-anim-rise" style="--d: .42s">
         <label for="dogname-{{ section.id }}">{{ s.name_label }}</label>
         <div class="hs2-namecard__row">
           <input id="dogname-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit"
-            autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog">
+            autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog" data-hs2-cycle="Biscuit,Gerald,Pickle,Waffles,Moose,Duchess">
           <a class="hs2-btn" href="#review">{{ s.button }}</a>
         </div>
         <div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>
       </div>
+      {%- if s.proof != blank -%}
+        <div class="hs2-hero__proof hs2-anim-rise" style="--d: .55s">
+          {%- assign proof = s.proof | split: '|' -%}
+          {%- for p in proof -%}<span>{{ p | strip }}</span>{%- endfor -%}
+          <span data-hs2-countdown="short" hidden></span>
+        </div>
+      {%- endif -%}
     </div>
 
-    <div class="hs2-hero__media">
+    <div class="hs2-hero__media hs2-anim-photo">
       {%- if s.image != blank -%}
         {{ s.image | image_url: width: 1400 | image_tag: widths: '600, 900, 1200, 1400', sizes: '(min-width: 900px) 50vw, 100vw', class: 'hs2-hero__photo', loading: 'eager', fetchpriority: 'high' }}
       {%- else -%}
@@ -26,7 +39,7 @@
           sizes="(min-width: 900px) 50vw, 100vw" width="1200" height="1500" fetchpriority="high"
           alt="A dachshund on the sofa, looking straight at you with notes">
       {%- endif -%}
-      <div class="hs2-badge" aria-hidden="true">
+      <div class="hs2-badge hs2-anim-badge" aria-hidden="true">
         <div class="hs2-badge__top">HEARTSIDE HOUSEHOLD INC.</div>
         <div class="hs2-badge__body">
           <div class="hs2-badge__name" data-hs2="dog">Biscuit</div>
@@ -35,7 +48,7 @@
           <div class="hs2-badge__code"></div>
         </div>
       </div>
-      <div class="hs2-status">{{ s.status }}</div>
+      <div class="hs2-status hs2-anim-rise" style="--d: .8s">{{ s.status }}</div>
     </div>
   </div>
 </div>
@@ -50,10 +63,13 @@
     { "type": "text", "id": "stamp", "label": "Stamp", "default": "CONFIDENTIAL · OFFICE OF {DOG}" },
     { "type": "inline_richtext", "id": "heading", "label": "Headline", "default": "{dog} has completed your <em>annual review.</em>" },
     { "type": "text", "id": "text", "label": "Subline", "default": "You may want to sit down. Overall rating: exceeds expectations. There are some notes about the vacuum." },
+    { "type": "textarea", "id": "what", "label": "What it is, in plain words", "info": "The line that tells a first-time visitor what they are buying.", "default": "A personalized 12 × 18 inch poster of your dog's review of you, with their photo and your name. $39, free US shipping." },
     { "type": "text", "id": "name_label", "label": "Name field label", "default": "Who is your manager? (Your dog's name)" },
-    { "type": "text", "id": "button", "label": "Button", "default": "Read my review" },
+    { "type": "text", "id": "button", "label": "Button", "default": "Make my poster" },
     { "type": "text", "id": "note", "label": "Note under the field", "default": "Everything on this page now reports to {dog}." },
     { "type": "text", "id": "status", "label": "Status pill", "default": "Status: in a meeting (asleep)" },
+    { "type": "text", "id": "proof", "label": "Proof line under the name card", "info": "Short facts split by |. A Christmas countdown follows them automatically.", "default": "Free US shipping | A human checks every order" },
+    { "type": "checkbox", "id": "hide_header", "label": "Ad landing: hide the store header and menu", "info": "For pages that paid traffic lands on. The memo bar stays and the Heartside mark shows in the hero.", "default": false },
     { "type": "image_picker", "id": "image", "label": "Photo", "info": "assets/IMAGE-BRIEF.md item 1. Empty uses hero-manager.jpg, the dachshund on the sofa." }
   ],
   "presets": [{ "name": "HS hero" }]

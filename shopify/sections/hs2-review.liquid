@@ -5,86 +5,106 @@
   if s.product != blank
     assign hs_url = s.product.url
   endif
+  if template.name == 'product'
+    assign hs_url = '#buy'
+  endif
 -%}
 <div class="hs2">
-  <section id="review" class="hs2-review" aria-labelledby="review-h-{{ section.id }}">
+  <section id="review" class="hs2-review" aria-labelledby="review-h-{{ section.id }}" data-hs2-review>
     <div class="hs2-review__inner">
-      <div class="hs2-review__head">
+      <div class="hs2-review__head" data-hs2-reveal>
         <div class="hs2-review__eyebrow">{{ s.eyebrow }}</div>
         <h2 id="review-h-{{ section.id }}">{% render 'hs2-t', text: s.heading %}</h2>
-        <p>{% render 'hs2-t', text: s.text %}</p>
+        <p class="hs2-review__intro">{% render 'hs2-t', text: s.text %}</p>
       </div>
-      <div class="hs2-review__body">
 
-        <div class="hs2-form">
+      <div class="hs2-review__stage" data-hs2-stage>
+        <div class="hs2-review__poster" data-hs2-poster-box>{% render 'hs2-poster', photo: s.poster_photo %}</div>
+        <button type="button" class="hs2-review__zoom" data-hs2-zoom>Read it full size</button>
+        <button type="button" class="hs2-review__close" data-hs2-zoom-close aria-label="Close the full-size review">Close</button>
+      </div>
+
+      {%- comment -%} One question per screen. Without JavaScript every step shows, in order. {%- endcomment -%}
+      <div class="hs2-steps" data-hs2-steps data-hs2-reveal style="--d: .12s">
+        <div class="hs2-steps__top">
+          <div class="hs2-steps__count" aria-live="polite">STEP <span data-hs2-step-no>1</span> OF 5</div>
+          <div class="hs2-steps__dots">
+            <button type="button" data-hs2-step-go="1" aria-label="Step 1: your name and the treat cupboard" aria-current="step"></button>
+            <button type="button" data-hs2-step-go="2" aria-label="Step 2: area for improvement"></button>
+            <button type="button" data-hs2-step-go="3" aria-label="Step 3: open incident report"></button>
+            <button type="button" data-hs2-step-go="4" aria-label="Step 4: known enemy of the company"></button>
+            <button type="button" data-hs2-step-go="5" aria-label="Step 5: sign and approve"></button>
+          </div>
+        </div>
+
+        <div class="hs2-step is-on" data-hs2-step="1">
+          <p class="hs2-step__intro">{% render 'hs2-t', text: s.text %}</p>
           <div class="hs2-form__pair">
             <div class="hs2-field">
               <label for="person-{{ section.id }}">Employee name (you)</label>
-              <input id="person-{{ section.id }}" type="text" maxlength="14" placeholder="Sarah" autocomplete="given-name" data-hs2-input="person">
+              <input id="person-{{ section.id }}" type="text" maxlength="14" placeholder="Sarah" autocomplete="given-name" enterkeyhint="next" data-hs2-input="person">
             </div>
             <div class="hs2-field">
               <label for="cupboard-{{ section.id }}">Times you opened the treat cupboard</label>
-              <input id="cupboard-{{ section.id }}" type="text" maxlength="6" value="1,412" inputmode="numeric" data-hs2-input="cupboard">
+              <input id="cupboard-{{ section.id }}" type="text" maxlength="6" value="1,412" inputmode="numeric" enterkeyhint="next" data-hs2-input="cupboard">
               <div class="hs2-field__note"><span data-hs2="dog">Biscuit</span> counted. Round down if you like.</div>
             </div>
           </div>
+        </div>
 
-          <div class="hs2-chips" role="group" aria-label="Area for improvement">
-            <div class="hs2-chips__label">Area for improvement</div>
-            <div class="hs2-chips__row">{% render 'hs2-lines', kind: 'improvement', mode: 'chips', pick: 'Leaving' %}</div>
+        {%- liquid
+          assign kinds = 'improvement,incident,enemy' | split: ','
+          assign labels = 'Area for improvement|Open incident report|Known enemy of the company' | split: '|'
+          assign picks = 'Leaving|The sock|The mailman' | split: '|'
+          assign photos = 'bed,incident,window' | split: ','
+          assign alts = 'a dachshund across the middle of the bed|a dachshund holding a sock, unrepentant|a terrier at the window, watching the delivery driver' | split: '|'
+          assign letters = 'A,B,C' | split: ','
+        -%}
+        {%- for kind in kinds -%}
+          {%- assign n = forloop.index | plus: 1 -%}
+          {%- assign photo_file = 'hs-photo-' | append: photos[forloop.index0] | append: '-640.webp' -%}
+          {%- assign line_key = kind | append: 'Line' -%}
+          <div class="hs2-step" data-hs2-step="{{ n }}" role="group" aria-labelledby="step-{{ kind }}-{{ section.id }}">
+            <div class="hs2-step__head">
+              <div class="hs2-step__label" id="step-{{ kind }}-{{ section.id }}">{{ labels[forloop.index0] }}</div>
+              {%- if s.exhibits -%}
+                <figure class="hs2-exhibit" data-hs2-exhibit="{{ kind }}">
+                  <img src="{{ photo_file | asset_url }}" alt="Evidence: {{ alts[forloop.index0] }}" width="640" height="640" loading="lazy">
+                  <figcaption>EXHIBIT {{ letters[forloop.index0] }}</figcaption>
+                </figure>
+              {%- endif -%}
+            </div>
+            <div class="hs2-chips__row">{% render 'hs2-lines', kind: kind, mode: 'chips', pick: picks[forloop.index0] %}</div>
+            <p class="hs2-step__prints"><span class="hs2-step__prints-label">PRINTS AS</span><span data-hs2="{{ line_key }}">{% render 'hs2-lines', kind: kind, mode: 'line', pick: picks[forloop.index0] %}</span></p>
           </div>
-          <div class="hs2-chips" role="group" aria-label="Open incident report">
-            <div class="hs2-chips__label">Open incident report</div>
-            <div class="hs2-chips__row">{% render 'hs2-lines', kind: 'incident', mode: 'chips', pick: 'The sock' %}</div>
-          </div>
-          <div class="hs2-chips" role="group" aria-label="Known enemy of the company">
-            <div class="hs2-chips__label">Known enemy of the company</div>
-            <div class="hs2-chips__row">{% render 'hs2-lines', kind: 'enemy', mode: 'chips', pick: 'The mailman' %}</div>
-          </div>
+        {%- endfor -%}
 
+        <div class="hs2-step" data-hs2-step="5">
           <label class="hs2-attach">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#121010" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.2"></circle><path d="M8 5l1.5-2h5L16 5"></path></svg>
             <span class="hs2-attach__text"><strong>Attach <span data-hs2="dogs">Biscuit's</span> headshot</strong> · a person checks every review before it prints</span>
             <input type="file" accept="image/*" data-hs2-photo-in>
           </label>
-
           <div class="hs2-buy">
             <div class="hs2-buy__row">
               <div>
                 <div class="hs2-buy__price">{{ s.price }} <span>{{ s.price_note }}</span></div>
                 <div class="hs2-buy__ship">{{ s.shipping }}</div>
               </div>
-              <a class="hs2-btn hs2-btn--blush" href="{{ hs_url }}" data-hs2-carry><span>Approve <span data-hs2="dogs">Biscuit's</span> review</span></a>
+              <a class="hs2-btn hs2-btn--blush" href="{{ hs_url }}" data-hs2-carry data-hs2-approve><span>{% render 'hs2-t', text: s.approve %}</span></a>
             </div>
             <button type="button" class="hs2-voice" data-hs2-voice aria-pressed="false">+ Hear Biscuit read it out loud · 15s video · $12</button>
+            <div class="hs2-buy__when" data-hs2-countdown="buy" hidden></div>
           </div>
         </div>
 
-        <div class="hs2-review__side">
-          {% render 'hs2-poster', photo: s.poster_photo %}
-          {%- if s.exhibits -%}
-            <div class="hs2-exhibits">
-              <div class="hs2-exhibits__label">EVIDENCE ON FILE</div>
-              <div class="hs2-exhibits__row">
-                <figure class="hs2-exhibit" data-hs2-exhibit="improvement">
-                  <img src="{{ 'hs-photo-bed-640.webp' | asset_url }}" alt="Evidence: a dachshund across the middle of the bed" width="640" height="800" loading="lazy">
-                  <figcaption>EXHIBIT A<span data-hs2="improvement">Leaving</span></figcaption>
-                </figure>
-                <figure class="hs2-exhibit" data-hs2-exhibit="incident">
-                  <img src="{{ 'hs-photo-incident-640.webp' | asset_url }}" alt="Evidence: a dachshund holding a sock, unrepentant" width="640" height="640" loading="lazy">
-                  <figcaption>EXHIBIT B<span data-hs2="incident">The sock</span></figcaption>
-                </figure>
-                <figure class="hs2-exhibit" data-hs2-exhibit="enemy">
-                  <img src="{{ 'hs-photo-window-640.webp' | asset_url }}" alt="Evidence: a terrier at the window, watching the delivery driver" width="640" height="800" loading="lazy">
-                  <figcaption>EXHIBIT C<span data-hs2="enemy">The mailman</span></figcaption>
-                </figure>
-              </div>
-            </div>
-            {% render 'hs2-photos' %}
-          {%- endif -%}
+        <div class="hs2-steps__nav">
+          <button type="button" class="hs2-steps__back" data-hs2-step-back>Back</button>
+          <button type="button" class="hs2-btn hs2-steps__next" data-hs2-step-next>Next</button>
         </div>
       </div>
     </div>
+    {% render 'hs2-photos' %}
   </section>
 </div>
 
@@ -94,16 +114,17 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
-    { "type": "paragraph", "content": "Form HR-26. The chips and their joke lines live in snippets/hs2-lines.liquid. The button opens the poster product with the answers in the link." },
-    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "FORM HR-26 · ANNUAL PERFORMANCE REVIEW" },
+    { "type": "paragraph", "content": "Form HR-26, one question per screen. The chips and their joke lines live in snippets/hs2-lines.liquid. The Approve button stamps the poster, then opens the poster product with the answers in the link." },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "FORM HR-26 · 5 QUICK QUESTIONS · TAKES A MINUTE" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Help {dog} fill in the paperwork." },
     { "type": "text", "id": "text", "label": "Text", "default": "{dog} has opinions and no thumbs. You type, {dog} signs. It prints as a poster, made for your wall or for someone whose dog is clearly their manager." },
     { "type": "product", "id": "product", "label": "Annual Review poster product", "info": "The Approve button opens this product with the answers attached." },
     { "type": "text", "id": "price", "label": "Price", "default": "$39" },
     { "type": "text", "id": "price_note", "label": "Price note", "default": "poster · $89 framed" },
     { "type": "text", "id": "shipping", "label": "Shipping line", "default": "Free US shipping" },
+    { "type": "text", "id": "approve", "label": "Order button", "default": "Approve and order {dogs} poster" },
     { "type": "image_picker", "id": "poster_photo", "label": "Sample headshot on the poster", "info": "Empty uses the hero dachshund's face. Shoppers can attach their own; it stays on their device until they use it on the product page." },
-    { "type": "checkbox", "id": "exhibits", "label": "Show the evidence photos under the poster", "info": "Three photos that change with the chips: Exhibit A (improvement), B (incident), C (enemy).", "default": true }
+    { "type": "checkbox", "id": "exhibits", "label": "Show the evidence photos", "info": "Exhibit A, B and C sit beside each question and change with the chips.", "default": true }
   ],
   "presets": [{ "name": "HS review builder" }]
 }

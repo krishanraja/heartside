@@ -108,7 +108,8 @@ async function renderSection(key, conf, ctx) {
     routes: { root_url: 'index.html' },
     ...ctx,
   });
-  return `<section id="shopify-section-${key}" class="shopify-section">${html}</section>`;
+  const cls = ['shopify-section', schema.class].filter(Boolean).join(' ');
+  return `<section id="shopify-section-${key}" class="${cls}">${html}</section>`;
 }
 
 const header = `
@@ -131,11 +132,14 @@ async function page(file, templateName, ctx = {}) {
   .mock-header { max-width: 1180px; margin: 0 auto; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; font: 15px system-ui; }
   .mock-header nav { display: flex; flex-wrap: wrap; gap: 18px; } .mock-header a { color: #121010; text-decoration: none; }
   .mock-logo { height: 42px; width: auto; }
+  @media (max-width: 760px) { .mock-header { padding: 12px 16px; } .mock-header nav { display: none; } .mock-logo { height: 30px; } }
   .mock-footer { padding: 40px 16px 60px; text-align: center; font: 14px system-ui; color: #5A4A44; background: #F3ECE5; }
 </style>
 </head><body>
-${memo}
-${header}
+<div id="header-group">
+${memo.replace('class="shopify-section', 'class="shopify-section shopify-section-group-header-group')}
+<section class="shopify-section shopify-section-group-header-group header-section">${header}</section>
+</div>
 <main>${main.join('\n')}</main>
 ${footer}
 </body></html>`;
@@ -144,9 +148,10 @@ ${footer}
 }
 
 const written = [
-  await page('index.html', 'index.json'),
-  await page('product-review.html', 'product.review.json', { product: products.poster }),
-  await page('product-pillow.html', 'product.heartside.json', { product: products.pillow }),
+  await page('index.html', 'index.json', { template: { name: 'index', suffix: null } }),
+  await page('product-review.html', 'product.review.json', { product: products.poster, template: { name: 'product', suffix: 'review' } }),
+  await page('product-pillow.html', 'product.heartside.json', { product: products.pillow, template: { name: 'product', suffix: 'heartside' } }),
+  await page('product-landing.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }),
 ];
 for (const f of fs.readdirSync(path.join(theme, 'assets'))) fs.copyFileSync(path.join(theme, 'assets', f), path.join(out, 'assets', f));
 fs.copyFileSync(path.join(repo, 'assets', 'heartside-logo.png'), path.join(out, 'assets', 'heartside-logo.png'));

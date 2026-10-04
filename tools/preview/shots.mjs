@@ -61,11 +61,18 @@ const badge = await pg.locator('.hs2-badge__name').innerText();
 const stamp = await pg.locator('.hs2-hero .hs2-stamp').innerText();
 log('after typing Gerald -> h1:', JSON.stringify(h1), '| badge:', badge, '| stamp:', stamp);
 await pg.locator('#review').scrollIntoViewIfNeeded();
+log('step shown first:', await pg.locator('[data-hs2-step-no]').innerText(), '| poster scale:', await pg.locator('[data-hs2-poster-box]').evaluate((e) => getComputedStyle(e).getPropertyValue('--hs2-scale')));
 await pg.fill('[data-hs2-input="person"]', 'Priya');
 await pg.fill('[data-hs2-input="cupboard"]', '2,019');
+await pg.click('[data-hs2-step-next]');
 await pg.click('[data-hs2-chip="improvement"][data-value="The vacuum"]');
+await pg.waitForTimeout(900);
+log('a chip moves the form on by itself -> step', await pg.locator('[data-hs2-step-no]').innerText());
 await pg.click('[data-hs2-chip="incident"][data-value="The couch"]');
+await pg.waitForTimeout(900);
 await pg.click('[data-hs2-chip="enemy"][data-value="Squirrels"]');
+await pg.waitForTimeout(900);
+log('after three chips -> step', await pg.locator('[data-hs2-step-no]').innerText(), '| prints line:', await pg.locator('[data-hs2-step="4"] .hs2-step__prints span:last-child').innerText());
 await pg.click('[data-hs2-voice]');
 await pg.waitForTimeout(200);
 log('poster improvement:', await pg.locator('.hs2-poster [data-hs2="improvementLine"]').innerText());
@@ -73,7 +80,7 @@ log('poster incident:', await pg.locator('.hs2-poster [data-hs2="incidentLine"]'
 log('poster enemy:', await pg.locator('.hs2-poster [data-hs2="enemyLine"]').innerText());
 log('voice button:', await pg.locator('[data-hs2-voice]').innerText());
 log('memo to:', (await pg.locator('.hs2-management__memo').innerText()).split('\n')[0]);
-log('evidence photos:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-exhibit]')].map((f) => [f.getAttribute('data-hs2-exhibit'), f.querySelector('img').getAttribute('data-key'), f.querySelector('figcaption span').textContent]))));
+log('evidence photos:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-exhibit]')].map((f) => [f.getAttribute('data-hs2-exhibit'), f.querySelector('img').getAttribute('data-key'), f.querySelector('figcaption').textContent]))));
 await pg.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
 await pg.waitForTimeout(300);
 log('headshot attached -> poster photo is local:', await pg.locator('.hs2-poster [data-hs2-photo]').evaluate((i) => i.src.startsWith('blob:')), '| stand-in note hidden:', await pg.locator('[data-hs2-nudge]').isHidden());
@@ -89,7 +96,7 @@ for (const t of ['rating', 'incident', 'threat', 'memo']) {
   ]);
   if (download) { await download.saveAs(path.join(shots, `story-card-${t}.png`)); log(`story card ${t}:`, download.suggestedFilename()); } else log(`story card ${t}: no download`);
 }
-await pg.click('[data-hs2-leak-step="1"]');
+await pg.click('[data-hs2-leak-step="1"]', { force: true }); // the phone floats, so Playwright never sees it still
 log('tap right on the phone wraps to:', await pg.locator('[data-hs2-leak][aria-checked="true"]').getAttribute('data-hs2-leak'));
 await pg.click('[data-hs2-caption]');
 log('caption copied:', await pg.evaluate(() => navigator.clipboard.readText()));
@@ -103,11 +110,19 @@ await pg.evaluate(() => window.scrollTo(0, document.querySelector('#benefits').o
 await pg.waitForTimeout(700);
 log('sticky on at benefits (should be true):', await pg.locator('[data-hs2-sticky]').evaluate((e) => e.classList.contains('is-on')), '|', await pg.locator('[data-hs2-sticky] a').innerText());
 
-// 3. The approve link carries the answers to the poster product page
-await pg.evaluate(() => { const a = document.querySelector('[data-hs2-carry]'); a.setAttribute('data-hs2-base', 'product-review.html'); a.setAttribute('href', 'product-review.html'); });
+// urgency: real dates only
+log('memo countdown:', await pg.locator('[data-hs2-countdown="memo"]').first().innerText(), '| sticky:', await pg.locator('[data-hs2-countdown="sub"]').innerText());
+log('closure clock:', await pg.locator('[data-hs2-clock-label]').innerText(), await pg.locator('.hs2-closure__digits').innerText().then((t) => t.replace(/\s+/g, ' ')));
+
+// 3. The approve link carries the answers to the poster product page; the stamp lands first
+await pg.evaluate(() => { const a = document.querySelector('[data-hs2-approve]'); a.setAttribute('data-hs2-base', 'product-review.html'); a.setAttribute('href', 'product-review.html'); });
 await pg.fill('[data-hs2-input="dog"]', 'Gerald'); // re-render links
-const href = await pg.locator('.hs2-buy [data-hs2-carry]').getAttribute('href');
+const href = await pg.locator('[data-hs2-approve]').getAttribute('href');
 log('approve link:', href);
+await pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
+await pg.click('[data-hs2-step-go="5"]');
+await Promise.all([pg.waitForURL(/product-review/, { timeout: 5000 }), pg.click('[data-hs2-approve]')]);
+log('approve stamped the poster, then opened:', pg.url().split('/').pop().split('?')[0]);
 await pg.goto('http://localhost:4173/' + href);
 await pg.evaluate(() => document.fonts.ready);
 await pg.waitForTimeout(300);
@@ -179,6 +194,34 @@ const pillow = await open(390, 844, 'pillow', 'http://localhost:4173/product-pil
 await fullShot(pillow.pg, 'phone-product-pillow.png');
 await pillow.pg.selectOption('[data-hs2-variant]', '11');
 log('pillow price after picking 10″:', await pillow.pg.locator('[data-hs2-price]').innerText());
+
+// 5. The launch offer only shows inside its dates (here previewed as 25 October)
+const offer = await open(1440, 900, 'offer', 'http://localhost:4173/?hs2_now=2026-10-25');
+log('on 25 October the read-aloud button says:', await offer.pg.locator('[data-hs2-voice]').innerText());
+const before = await open(1440, 900, 'no-offer', 'http://localhost:4173/?hs2_now=2026-10-05');
+log('on 5 October it says:', await before.pg.locator('[data-hs2-voice]').innerText());
+
+// 6. Inside Instagram's in-app browser, the story card opens to press and hold (no download)
+const ig = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0 (iPhone15,3; iOS 18_0; en_US)' });
+const igp = await ig.newPage();
+igp.on('pageerror', (e) => errors.push(`instagram: ${e.message}`));
+await igp.goto('http://localhost:4173/');
+await igp.locator('.hs2-leak').scrollIntoViewIfNeeded();
+await igp.click('[data-hs2-story]');
+await igp.waitForSelector('.hs2-cardview img', { timeout: 6000 }).catch(() => null);
+log('in-app browser flagged:', await igp.evaluate(() => document.documentElement.classList.contains('hs2-inapp')), '| card opens to save:', await igp.locator('.hs2-cardview img').count() === 1);
+await igp.screenshot({ path: path.join(shots, 'phone-instagram-story-card.png') });
+await ig.close();
+
+// 7. The ad landing page: no store menu, Approve lands on the buy box on the same page
+const land = await open(390, 844, 'landing', 'http://localhost:4173/product-landing.html');
+log('landing: store header hidden:', await land.pg.locator('.header-section').isHidden(), '| buy box id:', await land.pg.locator('#buy').count());
+await land.pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
+await land.pg.click('[data-hs2-step-go="5"]');
+await land.pg.click('[data-hs2-approve]');
+await land.pg.waitForTimeout(1600);
+log('landing approve scrolled to the buy box:', await land.pg.evaluate(() => Math.abs(document.querySelector('#buy').getBoundingClientRect().top) < 120));
+await land.pg.screenshot({ path: path.join(shots, 'phone-landing-first-screen.png') });
 
 log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
 await browser.close();

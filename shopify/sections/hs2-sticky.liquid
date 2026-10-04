@@ -1,7 +1,7 @@
 {%- render 'hs2-head' -%}
 <div class="hs2">
   <div class="hs2-sticky" data-hs2-sticky>
-    <a href="#review" tabindex="-1"><span>{% render 'hs2-t', text: section.settings.text %}</span></a>
+    <a href="{{ section.settings.link | default: '#review' }}" tabindex="-1"><span class="hs2-sticky__main">{% render 'hs2-t', text: section.settings.text %}</span><span class="hs2-sticky__sub" data-hs2-countdown="sub" hidden></span></a>
   </div>
 </div>
 
@@ -12,7 +12,8 @@
   "class": "hs2-section",
   "settings": [
     { "type": "paragraph", "content": "Appears once the hero has scrolled away; hides while the review builder or the footer is on screen." },
-    { "type": "text", "id": "text", "label": "Button", "default": "Read {dogs} review · $39" }
+    { "type": "text", "id": "text", "label": "Button", "default": "Make {dogs} poster · $39" },
+    { "type": "text", "id": "link", "label": "Goes to", "info": "#review on the homepage; #buy on the ad landing page.", "default": "#review" }
   ],
   "presets": [{ "name": "HS sticky review button" }]
 }

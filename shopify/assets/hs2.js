@@ -15,6 +15,10 @@
   var DEFAULTS = { dog: 'Biscuit', person: 'Sarah', cupboard: '1,412', improvement: 'Leaving', incident: 'The sock', enemy: 'The mailman', voice: false, leak: 'rating' };
   var LEAKS = ['rating', 'incident', 'threat', 'memo'];
   var state = load();
+  var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var inApp = /Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|Snapchat|Pinterest/i.test(navigator.userAgent || '');
+  document.documentElement.classList.add('hs2-js');
+  if (inApp) document.documentElement.classList.add('hs2-inapp');
   var photoURL = null; // the shopper's headshot, as an object URL, once attached or restored
 
   function load() {
@@ -63,12 +67,14 @@
     document.querySelectorAll('[data-hs2-chip]').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-value') === val(b.getAttribute('data-hs2-chip')) ? 'true' : 'false');
     });
+    var offer = offerLabel();
     document.querySelectorAll('[data-hs2-voice]').forEach(function (b) {
       var on = val('voice');
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('is-offer', !!offer);
       b.textContent = on
-        ? 'Added: ' + dog + ' reads it out loud (15s video, emailed) · +$12'
-        : '+ Hear ' + dog + ' read it out loud · 15s video · $12';
+        ? 'Added: ' + dog + ' reads it out loud (15s video, emailed) · ' + (offer || '+$12')
+        : '+ Hear ' + dog + ' read it out loud · 15s video · ' + (offer || '$12');
     });
     // links to product pages carry the answers
     document.querySelectorAll('[data-hs2-carry]').forEach(function (a) {
@@ -100,7 +106,11 @@
       if (inp.__hs2) return; inp.__hs2 = true;
       var k = inp.getAttribute('data-hs2-input');
       if (state[k]) inp.value = state[k];
-      inp.addEventListener('input', function () { state[k] = inp.value; save(); render(); });
+      inp.addEventListener('input', function () {
+        state[k] = inp.value; save(); render();
+        if (k === 'dog') inkName();
+        if (!bindInputs.sent && k === 'dog' && inp.value.length > 1) { bindInputs.sent = true; track('name_entered'); }
+      });
     });
     document.querySelectorAll('[data-hs2-chip]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
@@ -108,6 +118,10 @@
         var kind = b.getAttribute('data-hs2-chip');
         state[kind] = b.getAttribute('data-value'); save(); render();
         flashExhibit(kind);
+        b.classList.remove('is-picked'); void b.offsetWidth; b.classList.add('is-picked');
+        var prints = b.closest('.hs2-step') && b.closest('.hs2-step').querySelector('.hs2-step__prints');
+        if (prints) { prints.classList.remove('is-new'); void prints.offsetWidth; prints.classList.add('is-new'); }
+        if (steps.go && !steps.auto[kind]) { steps.auto[kind] = true; setTimeout(function () { steps.go(steps.at + 1); }, 700); }
       });
     });
     document.querySelectorAll('[data-hs2-voice]').forEach(function (b) {
@@ -121,19 +135,23 @@
         if (!f || !/^image\//.test(f.type)) return;
         usePhoto(f);
         savePhoto(f);
+        var lab = inp.closest('.hs2-attach');
+        if (lab) lab.classList.add('is-done');
+        track('photo_attached');
       });
     });
     document.querySelectorAll('[data-hs2-story]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
-      b.addEventListener('click', function (e) { e.preventDefault(); downloadCard(); });
+      b.addEventListener('click', function (e) { e.preventDefault(); stopLeakAuto(); downloadCard(); track('story_card', { card: val('leak') }); });
     });
     document.querySelectorAll('[data-hs2-leak]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
-      b.addEventListener('click', function () { setLeak(b.getAttribute('data-hs2-leak')); });
+      b.addEventListener('click', function () { stopLeakAuto(); setLeak(b.getAttribute('data-hs2-leak')); });
       b.addEventListener('keydown', function (e) {
         var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
         if (!d) return;
         e.preventDefault();
+        stopLeakAuto();
         stepLeak(d);
         var on = document.querySelector('[data-hs2-leak="' + val('leak') + '"]');
         if (on) on.focus();
@@ -141,11 +159,12 @@
     });
     document.querySelectorAll('[data-hs2-leak-step]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
-      b.addEventListener('click', function () { stepLeak(Number(b.getAttribute('data-hs2-leak-step'))); });
+      b.addEventListener('click', function () { stopLeakAuto(); stepLeak(Number(b.getAttribute('data-hs2-leak-step'))); });
     });
     document.querySelectorAll('[data-hs2-caption]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
       b.addEventListener('click', function () {
+        stopLeakAuto(); track('caption_copied', { card: val('leak') });
         copy(caption()).then(function (ok) {
           status(document.querySelector('[data-hs2-story-status]'), ok ? 'Caption copied. Paste it under the card.' : caption());
         });
@@ -153,7 +172,7 @@
     });
     document.querySelectorAll('[data-hs2-link]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
-      b.addEventListener('click', sendLink);
+      b.addEventListener('click', function () { stopLeakAuto(); track('link_shared', { card: val('leak') }); sendLink(); });
     });
   }
 
@@ -418,12 +437,14 @@
       b.setAttribute('aria-checked', on ? 'true' : 'false');
       b.tabIndex = on ? 0 : -1;
     });
-    document.querySelectorAll('.hs2-phone__bars i').forEach(function (bar, n) { bar.classList.toggle('is-on', n <= i); });
+    document.querySelectorAll('.hs2-phone__bars i').forEach(function (bar, n) { bar.classList.toggle('is-done', n < i); bar.classList.toggle('is-on', n === i); });
     document.querySelectorAll('[data-hs2-nudge]').forEach(function (n) { n.hidden = !!photoURL; });
   }
   function setLeak(type) {
     if (LEAKS.indexOf(type) === -1) return;
     state.leak = type; save(); leakUI(); drawSoon();
+    var cv = document.querySelector('[data-hs2-story-canvas]');
+    if (cv && !reduced) { cv.classList.add('is-swapping'); setTimeout(function () { cv.classList.remove('is-swapping'); }, 160); }
     status(document.querySelector('[data-hs2-story-status]'), '');
   }
   function stepLeak(d) { setLeak(LEAKS[(LEAKS.indexOf(val('leak')) + d + LEAKS.length) % LEAKS.length]); }
@@ -487,6 +508,7 @@
       try {
         c.toBlob(function (blob) {
           if (!blob) { status(msg, 'This browser could not make the card. A screenshot of it works too.'); return; }
+          if (inApp) { showCard(c.toDataURL('image/png')); return; }
           var file = new File([blob], name, { type: 'image/png' });
           if (navigator.canShare && navigator.canShare({ files: [file] }) && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
             navigator.share({ files: [file], text: caption() }).catch(function () {});
@@ -507,7 +529,7 @@
   function sticky() {
     var bar = document.querySelector('[data-hs2-sticky]');
     if (!bar || bar.__hs2 || !('IntersectionObserver' in window)) return; bar.__hs2 = true;
-    var watch = [document.querySelector('[data-hs2-hero]'), document.querySelector('#review'), document.querySelector('.hs2-faq__close'), document.querySelector('footer')].filter(Boolean);
+    var watch = [document.querySelector('[data-hs2-hero]'), document.querySelector('#review'), document.querySelector('.hs2-faq__close'), document.querySelector('.hs2-signoff'), document.querySelector('#buy'), document.querySelector('footer')].filter(Boolean);
     var seen = new Map();
     var link = bar.querySelector('a');
     var io = new IntersectionObserver(function (entries) {
@@ -781,15 +803,415 @@
     if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
   }
 
+  /* =================================================================== screens
+     Every section is one screen tall (hs2.css). The script supplies what CSS can't
+     know: where the hero starts under Helio's header, how far to scale the poster,
+     how many FAQ tickets fit, and whether the memo needs to scroll as a ticker. */
+  function heroTop() {
+    var hero = document.querySelector('[data-hs2-hero]');
+    if (!hero) return;
+    var top = Math.max(0, Math.round(hero.getBoundingClientRect().top + window.scrollY));
+    document.documentElement.style.setProperty('--hs2-hero-top', top + 'px');
+  }
+  function fitPoster() {
+    var stage = document.querySelector('[data-hs2-stage]'), box = document.querySelector('[data-hs2-poster-box]');
+    if (!stage || !box) return;
+    var review = stage.closest('.hs2-review');
+    var zoomed = review && review.classList.contains('is-zoomed');
+    var w = zoomed ? window.innerWidth - 24 : stage.clientWidth;
+    var h = zoomed ? window.innerHeight - 80 : stage.clientHeight;
+    var nh = box.offsetHeight || 640;
+    var sc = Math.min((w - 16) / 480, (h - (zoomed ? 0 : 44)) / (nh + 30));
+    sc = Math.max(0.18, Math.min(zoomed ? 1.5 : 1, sc));
+    box.style.setProperty('--hs2-scale', sc.toFixed(3));
+  }
+  function zoom() {
+    var review = document.querySelector('[data-hs2-review]');
+    if (!review || review.__hs2z) return; review.__hs2z = true;
+    var open = function () {
+      review.classList.add('is-zoomed'); document.documentElement.style.overflow = 'hidden'; fitPoster();
+      var c = review.querySelector('[data-hs2-zoom-close]'); if (c) c.focus();
+    };
+    var close = function () {
+      review.classList.remove('is-zoomed'); document.documentElement.style.overflow = ''; fitPoster();
+      var z = review.querySelector('[data-hs2-zoom]'); if (z && z.offsetParent) z.focus();
+    };
+    var z = review.querySelector('[data-hs2-zoom]'), c = review.querySelector('[data-hs2-zoom-close]'), stage = review.querySelector('[data-hs2-stage]');
+    if (z) z.addEventListener('click', open);
+    if (c) c.addEventListener('click', close);
+    if (stage) stage.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      if (review.classList.contains('is-zoomed')) close(); else if (z && z.offsetParent) open();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && review.classList.contains('is-zoomed')) close(); });
+  }
+  function ticker() {
+    document.querySelectorAll('[data-hs2-memo]').forEach(function (bar) {
+      var track = bar.querySelector('[data-hs2-ticker]'), vp = bar.querySelector('.hs2-memo__viewport');
+      if (!track || !vp) return;
+      bar.classList.remove('is-ticker');
+      track.querySelectorAll('.is-clone').forEach(function (c) { c.remove(); });
+      var item = track.querySelector('.hs2-memo__item');
+      if (!item || reduced) return;
+      item.style.whiteSpace = 'nowrap'; item.style.display = 'inline-block';
+      var w = item.getBoundingClientRect().width;
+      item.style.whiteSpace = ''; item.style.display = '';
+      if (w <= vp.clientWidth - 32) return;
+      var clone = item.cloneNode(true);
+      clone.classList.add('is-clone'); clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
+      bar.classList.add('is-ticker');
+      bar.style.setProperty('--ticker-s', Math.max(16, Math.round((w + 64) / 42)) + 's');
+    });
+  }
+  function fitFaq() {
+    var list = document.querySelector('[data-hs2-faq]');
+    if (!list || list.__hs2open) return;
+    var sec = list.closest('.hs2-faq'), more = list.querySelector('[data-hs2-faq-more]');
+    var tickets = Array.prototype.slice.call(list.querySelectorAll('.hs2-ticket'));
+    tickets.forEach(function (t) { t.classList.remove('is-folded'); });
+    if (more) more.hidden = true;
+    if (!sec || !more) return;
+    var room = window.innerHeight + 2, shown = tickets.length;
+    if (sec.offsetHeight <= room) return;
+    more.hidden = false;
+    while (sec.offsetHeight > room && shown > 2) {
+      shown--;
+      if (tickets[shown].open) { shown++; break; }
+      tickets[shown].classList.add('is-folded');
+      more.querySelector('[data-hs2-faq-more-n]').textContent = tickets.length - shown;
+    }
+    if (shown === tickets.length) more.hidden = true;
+  }
+  function faq() {
+    var list = document.querySelector('[data-hs2-faq]');
+    if (!list || list.__hs2) return; list.__hs2 = true;
+    var tickets = Array.prototype.slice.call(list.querySelectorAll('.hs2-ticket'));
+    tickets.forEach(function (t) {
+      t.addEventListener('toggle', function () {
+        if (!t.open) return;
+        tickets.forEach(function (o) { if (o !== t && o.open) o.open = false; });
+        track('faq_open', { question: (t.querySelector('.hs2-ticket__q') || {}).textContent || '' });
+        if (reduced) return;
+        t.classList.add('is-typing');
+        setTimeout(function () { t.classList.remove('is-typing'); }, 520);
+      });
+    });
+    var more = list.querySelector('[data-hs2-faq-more]');
+    if (more) more.addEventListener('click', function () {
+      list.__hs2open = true;
+      tickets.forEach(function (t) { t.classList.remove('is-folded'); });
+      more.hidden = true;
+    });
+  }
+
+  /* ===================================================================== motion */
+  function reveal() {
+    var els = document.querySelectorAll('[data-hs2-reveal]:not(.is-in)');
+    if (reduced || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+    if (!reveal.io) {
+      reveal.io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); reveal.io.unobserve(en.target); } });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+      reveal.drift = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { en.target.classList.toggle('is-on', en.isIntersecting); });
+      });
+    }
+    els.forEach(function (e) { reveal.io.observe(e); });
+    document.querySelectorAll('.hs2-anim-drift').forEach(function (e) { reveal.drift.observe(e); });
+  }
+  function inkName() {
+    if (reduced) return;
+    clearTimeout(inkName.t);
+    inkName.t = setTimeout(function () {
+      document.querySelectorAll('.hs2-hero h1 [data-hs2="dog"]').forEach(function (el) {
+        el.classList.remove('is-inked'); void el.offsetWidth; el.classList.add('is-inked');
+      });
+    }, 250);
+  }
+  function cycleNames() {
+    var inp = document.querySelector('[data-hs2-cycle]');
+    if (!inp || reduced || state.dog) return;
+    var names = inp.getAttribute('data-hs2-cycle').split(','), i = 1, ch = 0, del = false, timer, stopped = false;
+    var stop = function () { stopped = true; clearTimeout(timer); inp.placeholder = names[0]; };
+    inp.addEventListener('focus', stop);
+    inp.addEventListener('input', stop);
+    function step() {
+      if (stopped || inp.value) return;
+      var n = names[i];
+      if (!del) {
+        ch++; inp.placeholder = n.slice(0, ch);
+        if (ch >= n.length) { del = true; timer = setTimeout(step, 1500); return; }
+      } else {
+        ch--; inp.placeholder = n.slice(0, Math.max(ch, 0));
+        if (ch <= 0) { del = false; i = (i + 1) % names.length; }
+      }
+      timer = setTimeout(step, del ? 45 : 95);
+    }
+    timer = setTimeout(function () { del = true; ch = names[0].length; i = 0; step(); }, 2600);
+  }
+
+  /* ====================================================== the review, one step at a time */
+  function steps() {
+    var box = document.querySelector('[data-hs2-steps]');
+    steps.auto = steps.auto || {};
+    if (!box || box.__hs2) return; box.__hs2 = true;
+    var all = box.querySelectorAll('[data-hs2-step]'), n = all.length;
+    all.forEach(function (st) { st.setAttribute('tabindex', '-1'); });
+    function go(k, focus) {
+      k = Math.max(1, Math.min(n, k));
+      var back = k < (steps.at || 1);
+      steps.at = k;
+      all.forEach(function (st) {
+        var on = Number(st.getAttribute('data-hs2-step')) === k;
+        st.classList.toggle('is-on', on);
+        st.classList.toggle('is-back', on && back);
+      });
+      box.querySelectorAll('[data-hs2-step-go]').forEach(function (b) {
+        var i = Number(b.getAttribute('data-hs2-step-go'));
+        b.classList.toggle('is-done', i < k);
+        if (i === k) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      });
+      var no = box.querySelector('[data-hs2-step-no]'); if (no) no.textContent = k;
+      var bk = box.querySelector('[data-hs2-step-back]'); if (bk) bk.disabled = k === 1;
+      var nx = box.querySelector('[data-hs2-step-next]'); if (nx) nx.hidden = k === n;
+      if (focus) { var cur = box.querySelector('.hs2-step.is-on'); if (cur) cur.focus({ preventScroll: true }); }
+      fitPoster();
+      track('review_step', { step: k });
+    }
+    steps.go = go;
+    var nx = box.querySelector('[data-hs2-step-next]'), bk = box.querySelector('[data-hs2-step-back]');
+    if (nx) nx.addEventListener('click', function () { go(steps.at + 1, true); });
+    if (bk) bk.addEventListener('click', function () { go(steps.at - 1, true); });
+    box.querySelectorAll('[data-hs2-step-go]').forEach(function (b) {
+      b.addEventListener('click', function () { go(Number(b.getAttribute('data-hs2-step-go')), true); });
+    });
+    box.querySelectorAll('[data-hs2-step="1"] input').forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(steps.at + 1, true); } });
+    });
+    go(1);
+  }
+  /* Approve: the stamp lands on the poster, then the shopper moves on */
+  function approve() {
+    document.querySelectorAll('[data-hs2-approve]').forEach(function (a) {
+      if (a.__hs2a) return; a.__hs2a = true;
+      a.addEventListener('click', function (e) {
+        track('approve_clicked', { dog: val('dog') });
+        var review = a.closest('.hs2-review'), stampEl = review && review.querySelector('.hs2-poster__approved');
+        var href = a.getAttribute('href') || '';
+        if (reduced || !stampEl || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        review.classList.add('is-approving');
+        stampEl.classList.remove('is-slam'); void stampEl.offsetWidth; stampEl.classList.add('is-slam');
+        setTimeout(function () {
+          review.classList.remove('is-approving');
+          if (href.charAt(0) === '#') {
+            var t = document.querySelector(href);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            window.location.href = a.href;
+          }
+        }, 800);
+      });
+    });
+  }
+
+  /* ===================================================== honest urgency
+     Every countdown counts to a real date: Christmas morning, or the confirmed last
+     order date once it is entered in the memo bar's settings. The free video offer
+     shows only inside its dates (docs/V2-FROM-THE-DOG.md section 4). Nothing resets,
+     nothing invents stock. ?hs2_now=YYYY-MM-DD previews another day. */
+  var DAY = 864e5;
+  function parseISO(v) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '').trim());
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+  }
+  function endOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999); }
+  function now() {
+    var q = null;
+    try { q = parseISO(new URLSearchParams(window.location.search).get('hs2_now')); } catch (e) { q = null; }
+    if (!q) return new Date();
+    var t = new Date(); q.setHours(t.getHours(), t.getMinutes(), t.getSeconds());
+    return q;
+  }
+  function config() {
+    var m = document.querySelector('[data-hs2-memo]');
+    if (!m) return {};
+    return {
+      deadline: parseISO(m.getAttribute('data-deadline')),
+      offerStart: parseISO(m.getAttribute('data-offer-start')),
+      offerEnd: parseISO(m.getAttribute('data-offer-end')),
+      offerText: (m.getAttribute('data-offer-label') || '').trim()
+    };
+  }
+  function offerLabel() {
+    var c = config(), t = now();
+    return c.offerStart && c.offerEnd && c.offerText && t >= c.offerStart && t <= endOfDay(c.offerEnd) ? c.offerText : '';
+  }
+  function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+  function timeline() {
+    var t = now(), c = config();
+    var xmas = new Date(t.getFullYear(), 11, 25);
+    var out = { now: t };
+    if (c.deadline && t <= endOfDay(c.deadline)) { out.deadline = endOfDay(c.deadline); out.dl = Math.ceil((out.deadline - t) / DAY); }
+    if (t < xmas) { out.xmas = xmas; out.xd = Math.floor((xmas - t) / DAY); }
+    return out;
+  }
+  function countdownText(kind) {
+    var tl = timeline(), offer = offerLabel(), parts = [];
+    var dl = tl.dl, xd = tl.xd;
+    var xmasLine = tl.xmas ? (xd < 1 ? 'Christmas morning is tomorrow' : 'Christmas morning in ' + plural(xd, 'day')) : '';
+    var lead = dl ? (dl <= 1 ? 'Last day to order for Christmas' : plural(dl, 'day') + ' left to order for Christmas') : xmasLine;
+    if (kind === 'memo') return dl ? (dl <= 1 ? 'Last day' : plural(dl, 'day') + ' left') : lead;
+    if (kind === 'sub') return dl ? (dl <= 1 ? 'Last day to order for Christmas' : 'Order within ' + plural(dl, 'day') + ' for Christmas') : lead;
+    if (kind === 'buy' || kind === 'product') {
+      if (offer) parts.push('Read-aloud video ' + offer.charAt(0).toLowerCase() + offer.slice(1));
+      if (lead) parts.push(lead);
+      return parts.join(' · ');
+    }
+    return lead;
+  }
+  var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  function parseLoose(text, year) {
+    var s = String(text || '').trim().toLowerCase();
+    if (!s || s.indexOf('[') !== -1) return null;
+    if (s === 'christmas eve') return new Date(year, 11, 24);
+    var iso = parseISO(s); if (iso) return iso;
+    var m = /([a-z]{3})[a-z]*\.?\s+(\d{1,2})/.exec(s) || null, d, mo;
+    if (m) { mo = MONTHS.indexOf(m[1]); d = Number(m[2]); }
+    else { m = /(\d{1,2})\s+([a-z]{3})/.exec(s); if (m) { d = Number(m[1]); mo = MONTHS.indexOf(m[2]); } }
+    return m && mo > -1 ? new Date(year, mo, d) : null;
+  }
+  function urgency() {
+    var tl = timeline();
+    document.querySelectorAll('[data-hs2-countdown]').forEach(function (el) {
+      var txt = countdownText(el.getAttribute('data-hs2-countdown'));
+      if (el.textContent !== txt) el.textContent = txt;
+      el.hidden = !txt;
+    });
+    document.querySelectorAll('[data-hs2-date]').forEach(function (el) {
+      var left = el.parentNode.querySelector('[data-hs2-left]');
+      if (!left) return;
+      var d = parseLoose(el.textContent, tl.now.getFullYear());
+      if (!d) { left.hidden = true; return; }
+      var days = Math.ceil((endOfDay(d) - tl.now) / DAY);
+      left.textContent = days < 1 ? 'Closed' : days === 1 ? 'Last day' : plural(days, 'day') + ' left';
+      left.hidden = false;
+    });
+    var label = document.querySelector('[data-hs2-clock-label]');
+    if (label) label.textContent = tl.deadline ? 'LAST DAY TO ORDER FOR CHRISTMAS IN' : 'CHRISTMAS MORNING IN';
+  }
+  function clock() {
+    var box = document.querySelector('[data-hs2-clock]');
+    if (!box || box.__hs2) return; box.__hs2 = true;
+    var parts = {};
+    box.querySelectorAll('[data-hs2-clock-part]').forEach(function (b) { parts[b.getAttribute('data-hs2-clock-part')] = b; });
+    var timer = null;
+    function paint() {
+      var tl = timeline(), target = tl.deadline || tl.xmas;
+      if (!target) { box.hidden = true; return; }
+      box.hidden = false;
+      var ms = Math.max(0, target - new Date(tl.now.getTime()));
+      var v = { d: Math.floor(ms / DAY), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 };
+      Object.keys(v).forEach(function (k) {
+        var t = (v[k] < 10 ? '0' : '') + v[k];
+        if (parts[k] && parts[k].textContent !== t) {
+          parts[k].textContent = t;
+          if (!reduced && k !== 's') { parts[k].classList.remove('is-flip'); void parts[k].offsetWidth; parts[k].classList.add('is-flip'); }
+        }
+      });
+    }
+    paint();
+    if (!('IntersectionObserver' in window)) { timer = setInterval(paint, 1000); return; }
+    new IntersectionObserver(function (en) {
+      clearInterval(timer); timer = null;
+      if (en[0].isIntersecting) timer = setInterval(paint, 1000);
+    }).observe(box);
+  }
+
+  /* ========================================================== benefits carousel */
+  function carousels() {
+    document.querySelectorAll('[data-hs2-carousel]').forEach(function (list) {
+      if (list.__hs2) return; list.__hs2 = true;
+      var nav = list.parentElement.querySelector('[data-hs2-carousel-nav]');
+      if (!nav) return;
+      var dots = nav.querySelector('[data-hs2-carousel-dots]'), items = Array.prototype.slice.call(list.children);
+      dots.innerHTML = '';
+      items.forEach(function () { dots.appendChild(document.createElement('i')); });
+      function current() {
+        var r = list.getBoundingClientRect(), mid = r.left + r.width / 2, best = 0, bd = Infinity;
+        items.forEach(function (it, i) { var ir = it.getBoundingClientRect(), d = Math.abs(ir.left + ir.width / 2 - mid); if (d < bd) { bd = d; best = i; } });
+        return best;
+      }
+      function paint() { var c = current(); Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('is-on', i === c); }); }
+      list.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
+      nav.querySelectorAll('[data-hs2-carousel-step]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var i = Math.max(0, Math.min(items.length - 1, current() + Number(b.getAttribute('data-hs2-carousel-step'))));
+          list.scrollTo({ left: items[i].offsetLeft - (list.clientWidth - items[i].offsetWidth) / 2, behavior: reduced ? 'auto' : 'smooth' });
+        });
+      });
+      paint();
+    });
+  }
+
+  /* ============================================== the story cards play like a story */
+  var leakAuto = { stopped: false, timer: null };
+  function leakAutoplay() {
+    var phone = document.querySelector('[data-hs2-phone]');
+    if (!phone || phone.__hs2 || reduced || !('IntersectionObserver' in window)) return; phone.__hs2 = true;
+    var ms = 4500;
+    phone.style.setProperty('--leak-s', ms + 'ms');
+    function restart() { phone.classList.remove('is-playing'); void phone.offsetWidth; phone.classList.add('is-playing'); }
+    function tick() { if (leakAuto.stopped) return; stepLeak(1); restart(); leakAuto.timer = setTimeout(tick, ms); }
+    new IntersectionObserver(function (en) {
+      clearTimeout(leakAuto.timer);
+      if (en[0].isIntersecting && !leakAuto.stopped) { restart(); leakAuto.timer = setTimeout(tick, ms); }
+      else phone.classList.remove('is-playing');
+    }, { threshold: 0.6 }).observe(phone);
+  }
+  function stopLeakAuto() {
+    leakAuto.stopped = true; clearTimeout(leakAuto.timer);
+    var p = document.querySelector('[data-hs2-phone]'); if (p) p.classList.remove('is-playing');
+  }
+
+  /* ========================================= Instagram and TikTok in-app browsers
+     They can't download files, so the story card opens full size to press and hold. */
+  function showCard(src) {
+    var ov = document.createElement('div');
+    ov.className = 'hs2 hs2-cardview';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Your story card');
+    ov.innerHTML = '<div class="hs2-cardview__box"><img alt="Your story card" src="' + src + '"><p>Press and hold the card to save it. Then post it and tag the person.</p><button type="button" class="hs2-btn hs2-btn--blush">Done</button></div>';
+    document.body.appendChild(ov);
+    document.documentElement.style.overflow = 'hidden';
+    var btn = ov.querySelector('button');
+    var close = function () { ov.remove(); document.documentElement.style.overflow = ''; };
+    btn.addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    btn.focus();
+  }
+
+  /* ============================== funnel events for Shopify's customer events and pixels
+     Subscribe in Settings > Customer events (analytics.subscribe('hs2_approve_clicked', ...)). */
+  function track(name, data) {
+    try { if (window.Shopify && window.Shopify.analytics && window.Shopify.analytics.publish) window.Shopify.analytics.publish('hs2_' + name, data || {}); } catch (e) { /* analytics off */ }
+  }
+
+  function layout() { heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     bindInputs(); render(); sticky(); gallery(); clearHeader();
+    steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
+    layout();
+    setInterval(urgency, 60000);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
     Promise.race([restorePhoto(), late]).then(function (f) { if (f && !usePhoto.file) usePhoto(f); teeinblue(); });
   }
-  window.addEventListener('resize', clearHeader);
-  window.addEventListener('load', function () { clearHeader(); setTimeout(clearHeader, 600); });
+  var resizeT;
+  window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); }, 120); });
+  window.addEventListener('load', function () { clearHeader(); layout(); setTimeout(function () { clearHeader(); layout(); }, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); });
+  document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { state: state, val: val, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto };
+  window.__hs2api = { state: state, val: val, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
