@@ -83,7 +83,14 @@ jobs:
           fi
 
       - name: Push Heartside files into the copy
-        run: shopify theme push --theme "$THEME_ID" --path shopify --nodelete --ignore "preview/*" --ignore "README.md"
+        run: |
+          set -o pipefail
+          shopify theme push --theme "$THEME_ID" --path shopify --nodelete --ignore "preview/*" --ignore "README.md" 2>&1 | tee push.log
+          # The CLI exits 0 even when Shopify rejects files, so read its report
+          if grep -q -e "pushed with errors" -e "─ error" push.log; then
+            echo "::error::Shopify rejected one or more files (see the error boxes above). The theme is partly updated."
+            exit 1
+          fi
 
       - name: Summary
         if: success()

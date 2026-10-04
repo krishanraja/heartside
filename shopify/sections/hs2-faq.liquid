@@ -11,7 +11,9 @@
 <script type="application/ld+json">
 { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
   {%- for block in section.blocks -%}
-  { "@type": "Question", "name": {{ block.settings.question | json }}, "acceptedAnswer": { "@type": "Answer", "text": {{ block.settings.answer | replace: '{dogs}', "your dog's" | replace: '{dog}', 'your dog' | json }} } }{% unless forloop.last %},{% endunless %}
+  {%- comment -%} Shopify ends an output tag at the first closing brace, so the token replacing happens in this tag {%- endcomment -%}
+  {%- assign hs_answer = block.settings.answer | replace: '{dogs}', "your dog's" | replace: '{dog}', 'your dog' -%}
+  { "@type": "Question", "name": {{ block.settings.question | json }}, "acceptedAnswer": { "@type": "Answer", "text": {{ hs_answer | json }} } }{% unless forloop.last %},{% endunless %}
   {%- endfor -%}
 ] }
 </script>

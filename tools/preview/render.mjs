@@ -17,6 +17,19 @@ const theme = path.join(repo, 'shopify');
 const out = path.join(here, 'out');
 fs.mkdirSync(path.join(out, 'assets'), { recursive: true });
 
+// --------------------------------------------- Shopify tokenizer pre-check
+// Shopify's Liquid ends an output tag {{ }} at the FIRST closing brace, even inside a
+// quoted string, so '{{ x | replace: "{dog}", y }}' renders fine here but is rejected by
+// Shopify. Fail early on that pattern.
+for (const dir of ['sections', 'snippets']) {
+  for (const f of fs.readdirSync(path.join(theme, dir))) {
+    const src = fs.readFileSync(path.join(theme, dir, f), 'utf8');
+    for (const m of src.matchAll(/\{\{(?:(?!\}\}).)*?\}(?!\})/gs)) {
+      throw new Error(`${dir}/${f}: Shopify cannot parse this output (a closing brace inside {{ }}): ${m[0].slice(0, 80)}`);
+    }
+  }
+}
+
 // ------------------------------------------------------------ engine + stubs
 const engine = new Liquid({
   root: [path.join(theme, 'sections')],
