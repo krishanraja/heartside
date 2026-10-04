@@ -39,7 +39,7 @@ const poster = `
     <span>ANNUAL PERFORMANCE REVIEW · 2026</span><span>FORM HR-26</span>
   </div>
   <div style="display: flex; gap: 20px; align-items: center">
-    <img data-layer="photo" src="${asset('hs-photo-dachshund-800.webp')}" alt="" style="width: 170px; height: 170px; object-fit: cover; border-radius: 4px">
+    <img data-layer="photo" src="${pathToFileURL(path.join(repo, 'assets', 'v2', 'hero-manager.jpg')).href}" alt="" style="width: 170px; height: 170px; object-fit: cover; object-position: 50% 24%; border-radius: 4px">
     <div style="display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.35">
       <div><strong>Employee:</strong> <span data-layer="person">Sarah</span></div>
       <div><strong>Role:</strong> My Person</div>

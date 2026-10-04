@@ -4,7 +4,7 @@ Run from the repo root:
     python3 tools/build_shopify_assets.py
 
 Needs Pillow and fonttools + brotli (pip install pillow fonttools brotli).
-Photos come from assets/, fonts from tools/fonts/ (all SIL Open Font License).
+Photos come from assets/v2/, fonts from tools/fonts/ (all SIL Open Font License).
 Rerunning keeps the theme's images and fonts in step with the source files.
 """
 from pathlib import Path
@@ -19,15 +19,27 @@ ASSETS = ROOT / "assets"
 FONTS = ROOT / "tools" / "fonts"
 DEST = ROOT / "shopify" / "assets"
 
-# Section imagery (key -> source). Stand-ins until the Canva and Printful images in
-# assets/IMAGE-BRIEF.md exist; every section also has an image picker.
+# Section imagery from the Canva set in assets/v2/ (assets/IMAGE-BRIEF.md).
+# key -> (source, widths). Every section also has an image picker in the theme editor.
+V2 = ASSETS / "v2"
+SQUARE = (640, 1200)
+WIDE = (960, 1600)
 PHOTOS = {
-    "dachshund": ASSETS / "hero-dachshund.png",
-    "golden-asleep": ASSETS / "photos" / "golden-puppy-asleep.jpg",
-    "poodle": ASSETS / "photos" / "red-poodle-head-tilt.jpg",
-    "maltipoo": ASSETS / "photos" / "maltipoo-on-deck.jpg",
-    "pug": ASSETS / "photos" / "pug-autumn-leaves.jpg",
+    "manager": (V2 / "hero-manager.jpg", SQUARE),      # 1 hero, the manager
+    "asleep": (V2 / "status-asleep.jpg", SQUARE),      # 2 in a meeting (asleep)
+    "bed": (V2 / "side-of-bed.jpg", SQUARE),           # 3 your side of the bed
+    "window": (V2 / "window-watch.jpg", SQUARE),       # 4 the mailman watch
+    "vacuum": (V2 / "vacuum.jpg", SQUARE),             # 5 the vacuum standoff
+    "incident": (V2 / "incident.jpg", SQUARE),         # 6 the incident
+    "memo": (V2 / "memo-chest.jpg", WIDE),             # 7 management memo
+    "holiday": (V2 / "holiday-party.jpg", WIDE),       # 8 holiday office closure
+    "team-01": (V2 / "team-01.jpg", SQUARE),           # 9 dogs of the company
+    "team-02": (V2 / "team-02.jpg", SQUARE),
+    "team-03": (V2 / "team-03.jpg", SQUARE),
+    "team-04": (V2 / "team-04.jpg", SQUARE),
 }
+# The manager's face, square, for the poster headshot and the story card
+HEADSHOT = (V2 / "hero-manager.jpg", (245, 80, 885, 720), 480)
 
 LATIN = (list(range(0x20, 0x7F)) + list(range(0xA0, 0x100))
          + [0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2026, 0x00B7])
@@ -43,16 +55,22 @@ FONT_FILES = {
 
 
 def webp(img, path, width, quality=80):
-    if img.width > width:
+    # The Canva exports are 1122 to 1672 px wide, so the large size can upscale a
+    # little; the file name and srcset width stay true to the saved width.
+    if img.width != width:
         img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
     img.save(path, "WEBP", quality=quality, method=6)
 
 
 def photos():
-    for key, src in PHOTOS.items():
+    for old in DEST.glob("hs-photo-*.webp"):
+        old.unlink()
+    for key, (src, widths) in PHOTOS.items():
         im = Image.open(src).convert("RGB")
-        for w in (800, 1600):
+        for w in widths:
             webp(im, DEST / f"hs-photo-{key}-{w}.webp", w)
+    src, box, w = HEADSHOT
+    webp(Image.open(src).convert("RGB").crop(box), DEST / f"hs-photo-headshot-{w}.webp", w, 84)
 
 
 def fonts():

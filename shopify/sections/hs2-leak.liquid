@@ -1,27 +1,85 @@
 {%- render 'hs2-head' -%}
-{%- assign s = section.settings -%}
+{%- liquid
+  assign s = section.settings
+  assign hs_url = '#review'
+  if s.product != blank
+    assign hs_url = s.product.url
+  endif
+-%}
 <div class="hs2">
-  <section class="hs2-leak" aria-labelledby="leak-h-{{ section.id }}">
+  <section id="leak" class="hs2-leak" aria-labelledby="leak-h-{{ section.id }}">
     <div class="hs2-leak__inner">
-      <div class="hs2-leak__copy">
+
+      <div class="hs2-leak__head">
+        <div class="hs2-leak__eyebrow">{{ s.eyebrow }}</div>
         <h2 id="leak-h-{{ section.id }}">{% render 'hs2-t', text: s.heading %}</h2>
         <p>{{ s.text }}</p>
-        <a class="hs2-btn" href="#review" data-hs2-story>{{ s.button }}</a>
-        <p class="hs2-leak__status" data-hs2-story-status role="status"></p>
       </div>
-      <div class="hs2-story" aria-hidden="true">
-        <div class="hs2-story__top">LEAKED · HR-26</div>
-        <div class="hs2-story__mid">
-          <div class="hs2-story__who"><span data-hs2="dog">Biscuit</span> has reviewed <span data-hs2="person">Sarah</span>.</div>
-          <div class="hs2-story__big">Leaving the house: <span class="stars">★☆☆☆☆</span></div>
+
+      <div class="hs2-leak__stage">
+        <div class="hs2-phone">
+          <div class="hs2-phone__bars" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></div>
+          <div class="hs2-phone__who" aria-hidden="true">
+            <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="40" height="40" data-hs2-photo>
+            <span><strong data-hs2="dog">Biscuit</strong> · Head of Household</span>
+          </div>
+          <div class="hs2-phone__screen">
+            {%- comment -%} The canvas design from Main.dc.html. hs2.js swaps in a drawn card that matches the download exactly. {%- endcomment -%}
+            <div class="hs2-story" data-hs2-story-static>
+              <div class="hs2-story__top">LEAKED · HR-26</div>
+              <div class="hs2-story__mid">
+                <div class="hs2-story__who"><span data-hs2="dog">Biscuit</span> has reviewed <span data-hs2="person">Sarah</span>.</div>
+                <div class="hs2-story__big">Leaving the house: <span class="stars">★☆☆☆☆</span></div>
+              </div>
+              <div class="hs2-story__bottom">
+                <div class="hs2-story__ask">Who is your dog's person?</div>
+                <div class="hs2-story__domain">heartside.io</div>
+              </div>
+              <div class="hs2-story__stamp">CONFIDENTIAL</div>
+            </div>
+            <canvas class="hs2-phone__canvas" width="1080" height="1920" data-hs2-story-canvas hidden role="img" aria-label="Preview of the story card"></canvas>
+            <button type="button" class="hs2-phone__tap hs2-phone__tap--prev" data-hs2-leak-step="-1" aria-label="Previous card"></button>
+            <button type="button" class="hs2-phone__tap hs2-phone__tap--next" data-hs2-leak-step="1" aria-label="Next card"></button>
+          </div>
         </div>
-        <div class="hs2-story__bottom">
-          <div class="hs2-story__ask">Who is your dog's person?</div>
-          <div class="hs2-story__domain">heartside.io</div>
-        </div>
-        <div class="hs2-story__stamp">CONFIDENTIAL</div>
       </div>
+
+      <div class="hs2-leak__controls">
+        <div class="hs2-leak__pick" role="radiogroup" aria-label="{{ s.pick_label | escape }}">
+          <div class="hs2-leak__pick-label" aria-hidden="true">{{ s.pick_label }}</div>
+          <div class="hs2-leak__tabs">
+            <button type="button" role="radio" aria-checked="true" data-hs2-leak="rating">{{ s.tab_rating }}</button>
+            <button type="button" role="radio" aria-checked="false" data-hs2-leak="incident">{{ s.tab_incident }}</button>
+            <button type="button" role="radio" aria-checked="false" data-hs2-leak="threat">{{ s.tab_threat }}</button>
+            <button type="button" role="radio" aria-checked="false" data-hs2-leak="memo">{{ s.tab_memo }}</button>
+          </div>
+        </div>
+
+        <div class="hs2-leak__actions">
+          <a class="hs2-btn" href="#review" data-hs2-story>{{ s.button }}</a>
+          <div class="hs2-leak__more">
+            <button type="button" class="hs2-leak__ghost" data-hs2-caption>{{ s.caption_button }}</button>
+            <button type="button" class="hs2-leak__ghost" data-hs2-link>{{ s.link_button }}</button>
+          </div>
+        </div>
+        <p class="hs2-leak__status" data-hs2-story-status role="status" aria-live="polite"></p>
+        <p class="hs2-leak__nudge" data-hs2-nudge>{% render 'hs2-t', text: s.nudge %} <a href="#review">{% render 'hs2-t', text: s.nudge_link %}</a></p>
+
+        <div class="hs2-leak__paper">
+          <div>
+            <div class="hs2-leak__paper-title">{{ s.paper_title }}</div>
+            <div class="hs2-leak__paper-price">{{ s.paper_price }}</div>
+          </div>
+          <a class="hs2-btn hs2-btn--blush" href="{{ hs_url }}" data-hs2-carry><span>{% render 'hs2-t', text: s.paper_button %}</span></a>
+        </div>
+      </div>
+
     </div>
+    {%- comment -%} The cards need the joke lines and photos even if the review builder is removed {%- endcomment -%}
+    {% render 'hs2-photos' %}
+    {% render 'hs2-lines', kind: 'improvement', mode: 'json' %}
+    {% render 'hs2-lines', kind: 'incident', mode: 'json' %}
+    {% render 'hs2-lines', kind: 'enemy', mode: 'json' %}
   </section>
 </div>
 
@@ -31,10 +89,24 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
-    { "type": "paragraph", "content": "The share loop. The button draws a 1080 x 1920 story card from the shopper's answers in their browser and shares or saves it. Nothing is uploaded." },
+    { "type": "paragraph", "content": "The share loop. Shoppers pick one of four story cards, built in their browser from their answers and their dog's headshot. They can save or share the card, copy a caption, or send a link that opens the page on their dog's review. Nothing is uploaded." },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "FOR INTERNAL DISTRIBUTION ONLY" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Leak {dogs} review." },
     { "type": "textarea", "id": "text", "label": "Text", "default": "Get the story-sized version free. Post it, tag the person, and watch the group chat ask for theirs." },
-    { "type": "text", "id": "button", "label": "Button", "default": "Get the free story card" }
+    { "type": "text", "id": "pick_label", "label": "Card picker label", "default": "Pick the leak" },
+    { "type": "text", "id": "tab_rating", "label": "Card 1", "default": "The rating" },
+    { "type": "text", "id": "tab_incident", "label": "Card 2", "default": "The incident" },
+    { "type": "text", "id": "tab_threat", "label": "Card 3", "default": "The threat" },
+    { "type": "text", "id": "tab_memo", "label": "Card 4", "default": "The memo" },
+    { "type": "text", "id": "button", "label": "Button", "default": "Get the free story card" },
+    { "type": "text", "id": "caption_button", "label": "Caption button", "default": "Copy the caption" },
+    { "type": "text", "id": "link_button", "label": "Link button", "default": "Send the link" },
+    { "type": "text", "id": "nudge", "label": "No-photo note", "default": "The card uses a stand-in dog until you attach {dogs} headshot." },
+    { "type": "text", "id": "nudge_link", "label": "No-photo link", "default": "Attach it in the review" },
+    { "type": "text", "id": "paper_title", "label": "Poster line", "default": "The full review, on paper." },
+    { "type": "text", "id": "paper_price", "label": "Poster price line", "default": "$39 poster · $89 framed · Free US shipping" },
+    { "type": "text", "id": "paper_button", "label": "Poster button", "default": "Approve {dogs} review" },
+    { "type": "product", "id": "product", "label": "Annual Review poster product", "info": "The poster button opens it with the shopper's answers. Empty scrolls to the review builder." }
   ],
   "presets": [{ "name": "HS leak the review" }]
 }

@@ -16,13 +16,15 @@ Run this from a Claude session that has the **teeinblue** connector, which is in
 
 ## Before creating any product: the 30% discount
 
-The automatic "30% off" discount covers the **All gifts** collection, and that collection matches every product priced above $0.01. Every new product below would get 30% off automatically: the poster would sell for $27.30. Section 4 of the v2 doc retires the 30% for the new range. **Ask Krish to end that discount, or limit it to the old products, before these products go live.** Don't change it yourself.
+The automatic "30% off" discount covers the **All gifts** collection, and that collection matches every product priced above $0.01. Every new product below would get 30% off automatically: the poster would sell for $27.30.
+
+**Krish decided on 4 October to end it for now.** If it's still active when you get here, end it: Shopify admin > **Discounts** > the 30% automatic discount > **Deactivate**. Free US shipping stays, because it's priced into every product (section 4). The theme's header no longer advertises the 30%: the workflow's `header_memo_bar` option swaps the v1 offer bar for the memo bar.
 
 ## Shared settings for every template
 
 - **Fonts.** Upload these from `tools/fonts/` in the repo: `CourierPrime-Regular.ttf`, `CourierPrime-Bold.ttf` and `Fraunces[opsz,wght].ttf` (all SIL Open Font License).
 - **Colors.** Ink `#121010`, paper `#FFFDF9`, stamp red `#A8284E`, chestnut `#8A4A2B`.
-- **Field labels.** Use the homepage's own words, so the page and the personalizer read as one form:
+- **Field labels.** Use the homepage's own words, so the page and the personalizer read as one form. **Keep them.** The theme copies the shopper's homepage answers into these fields by reading their labels (see "The theme fills these fields" below).
 
 | Field | Label | Limit |
 |---|---|---|
@@ -34,7 +36,7 @@ The automatic "30% off" discount covers the **All gifts** collection, and that c
 | Enemy | Known enemy of the company | dropdown, 5 options below |
 | Photo | Attach [Dog]'s headshot | image upload, with a "send it later" option (section 5) |
 
-- **Dropdowns.** Each option shows the short label to the shopper and prints the full line. These are approved copy; keep them word for word. (They also live in `shopify/snippets/hs2-lines.liquid`.)
+- **Dropdowns.** Use Teeinblue's dropdown display (a select) or buttons; the theme can fill both. Each option shows the short label to the shopper and prints the full line. These are approved copy; keep them word for word. (They also live in `shopify/snippets/hs2-lines.liquid`.)
 
 | Area for improvement | Prints |
 |---|---|
@@ -60,7 +62,32 @@ The automatic "30% off" discount covers the **All gifts** collection, and that c
 | The cat | The cat next door. Under investigation. |
 | My reflection | The other dog in the mirror. Copies everything I do. |
 
-If Teeinblue can't map a dropdown label to different printed text, use the full line as the option itself.
+If Teeinblue can't map a dropdown label to different printed text, use the full line as the option itself. The theme matches either the short label or the full line.
+
+## The theme fills these fields (nobody types twice)
+
+Shoppers answer the HR-26 questions on the homepage before they reach a product. On the product page, the theme's script (`shopify/assets/hs2.js`, "Teeinblue bridge") copies those answers into Teeinblue's fields. It also shows a "Use [Dog]'s headshot" button that hands the photo they attached on the homepage to Teeinblue's upload, which opens Teeinblue's cropper. It was built against Teeinblue's storefront code and tested on Teeinblue's demo store on 4 October 2026.
+
+For it to work:
+- **Labels.** Each field heading must contain one of these words:
+  - "manager" or "dog's name"
+  - "employee" or "your name"
+  - "cupboard"
+  - "improvement"
+  - "incident"
+  - "enemy"
+
+  The labels above already do.
+- **Photo field.** The photo must be an image upload field (Teeinblue's standard one).
+- **Where Teeinblue draws.** The product templates ask Teeinblue to draw its live preview at the top of the media column and to use the theme's form. If Teeinblue's preview shows up somewhere odd, set these in Teeinblue's theme or storefront settings:
+  - gallery selector: `[data-hs2-tib-gallery]`
+  - form selector: `#hs2-product-form`
+
+**Test it once a template exists:**
+1. On the Heartside launch preview, answer the homepage questions with a name like "Gerald" and attach a photo.
+2. Click "Approve Gerald's review".
+3. On the product page, the answers card should say "Copied into the personalizer below". Teeinblue's fields should hold Gerald and the chosen lines.
+4. "Use Gerald's headshot" should open Teeinblue's cropper.
 
 ## The six products
 
@@ -103,12 +130,12 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 
 - **Printful products:** #1418 All-Over Print Unisex Cotton Sweatshirt (XS to 3XL) and #902 Pet Bandana Collar (S to XL).
 - **Design:** an ugly Christmas sweatshirt printed all over with the dog's face (background removed). The bandana gets the same face pattern.
-- **Open: how to sell the set.** A Shopify variant normally maps to one Printful product, so a $129 sweatshirt-plus-bandana set needs a bundle mechanism, such as Shopify's own Bundles app (which needs Krish's approval to install). Simplest launch:
+- **Decided (Krish, 4 October): how to sell the set.** A Shopify variant normally maps to one Printful product, so the $129 set needs a bundle:
   - The sweatshirt as its own product at $89.
   - The bandana as its own product at $40 ($129 minus $89).
-  - The set as a bundle at $129.
+  - The set as a bundle of the two at $129, made with **Shopify Bundles**, Shopify's own free app.
 
-  Ask Krish before installing anything.
+  Installing Shopify Bundles is the one step to confirm with Krish when you get there.
 - **Last order date:** it stays `[DATE]` until Printful confirms the all-over-print facility's cutoff (section 5).
 - **Sample:** this is the other recommended sample.
 
@@ -140,4 +167,5 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 - [ ] Teeinblue sends orders to Printful as drafts, and Printful's "Manually confirm all imported orders" is on.
 - [ ] One test order (Krish approves the spend) arrives in Printful as a draft, with a correct print file.
 - [ ] Theme templates are assigned: **review** for the two Annual Review products, **heartside** for the rest.
-- [ ] The product pickers in the "Heartside launch" theme are set: the review builder's poster product and the four benefits cards.
+- [ ] The product pickers in the "Heartside launch" theme are set: the review builder's and the leak section's poster product, and the four benefits cards.
+- [ ] The bridge test above passes on at least the poster and the Body Double.

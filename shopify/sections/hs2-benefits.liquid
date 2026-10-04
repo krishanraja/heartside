@@ -16,8 +16,9 @@
             {%- if b.image != blank -%}
               {{ b.image | image_url: width: 800 | image_tag: loading: 'lazy', sizes: '(min-width: 900px) 25vw, 90vw', alt: b.alt }}
             {%- else -%}
-              {%- assign f800 = 'hs-photo-' | append: b.fallback | append: '-800.webp' -%}
-              <img src="{{ f800 | asset_url }}" alt="{{ b.alt | escape }}" width="800" height="530" loading="lazy">
+              {%- assign f640 = 'hs-photo-' | append: b.fallback | append: '-640.webp' -%}
+              {%- assign f1200 = 'hs-photo-' | append: b.fallback | append: '-1200.webp' -%}
+              <img src="{{ f640 | asset_url }}" srcset="{{ f640 | asset_url }} 640w, {{ f1200 | asset_url }} 1200w" sizes="(min-width: 900px) 25vw, 90vw" alt="{{ b.alt | escape }}" width="640" height="640" loading="lazy">
             {%- endif -%}
             {%- if b.shot != blank -%}<div class="hs2-card__shot">{{ b.shot }}</div>{%- endif -%}
             <div class="hs2-card__code">{{ b.code }}</div>
@@ -59,13 +60,18 @@
         { "type": "image_picker", "id": "image", "label": "Product shot", "info": "Printful mockup (assets/IMAGE-BRIEF.md items 10 to 15). Then clear the placeholder tag below." },
         { "type": "text", "id": "shot", "label": "Placeholder tag", "default": "[PRODUCT SHOT]" },
         {
-          "type": "select", "id": "fallback", "label": "Stand-in photo until the product shot exists", "default": "golden-asleep",
+          "type": "select", "id": "fallback", "label": "Stand-in photo until the product shot exists", "default": "asleep",
           "options": [
-            { "value": "golden-asleep", "label": "Golden puppy asleep" },
-            { "value": "poodle", "label": "Red poodle" },
-            { "value": "pug", "label": "Pug" },
-            { "value": "maltipoo", "label": "Maltipoo" },
-            { "value": "dachshund", "label": "Dachshund" }
+            { "value": "asleep", "label": "In a meeting (asleep on the laptop)" },
+            { "value": "team-01", "label": "Pug, head tilt" },
+            { "value": "team-02", "label": "Doodle asleep at the desk" },
+            { "value": "team-03", "label": "Golden at the desk" },
+            { "value": "team-04", "label": "Golden on the rug" },
+            { "value": "bed", "label": "Your side of the bed" },
+            { "value": "window", "label": "The mailman watch" },
+            { "value": "incident", "label": "The incident (sock)" },
+            { "value": "vacuum", "label": "The vacuum standoff" },
+            { "value": "manager", "label": "The manager (hero dachshund)" }
           ]
         },
         { "type": "text", "id": "alt", "label": "Image description", "default": "A dog" }

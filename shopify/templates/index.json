@@ -18,8 +18,8 @@
             "name": "The Body Double",
             "code": "ITEM BD-01",
             "price": "$59",
-            "fallback": "golden-asleep",
-            "alt": "A golden puppy asleep",
+            "fallback": "asleep",
+            "alt": "A spaniel asleep on a laptop",
             "shot": "[PILLOW SHOT]",
             "cta": "Make the double",
             "copy": "A pillow cut to {dogs} exact outline. For groomer days, vet days, and the occasional covert operation to the kitchen."
@@ -31,8 +31,8 @@
             "name": "Mandatory Company Uniform",
             "code": "ITEM UN-02",
             "price": "$129 set",
-            "fallback": "poodle",
-            "alt": "A red poodle tilting its head",
+            "fallback": "team-03",
+            "alt": "A golden retriever at a desk, smiling",
             "shot": "[SWEATER SHOT]",
             "cta": "Comply",
             "copy": "An ugly Christmas sweatshirt covered in {dogs} face, plus a matching bandana for {dog}. Dress code for the holiday party. Non-negotiable."
@@ -44,8 +44,8 @@
             "name": "Surveillance Socks",
             "code": "ITEM SS-03",
             "price": "$24",
-            "fallback": "pug",
-            "alt": "A pug in autumn leaves",
+            "fallback": "team-01",
+            "alt": "A pug tilting its head",
             "shot": "[SOCKS SHOT]",
             "cta": "Install",
             "copy": "{dogs} face on your feet, so {dog} can keep an eye on you at work. Stocking-sized."
@@ -57,8 +57,8 @@
             "name": "Tiny Me, For The Tree",
             "code": "ITEM TM-04",
             "price": "$24",
-            "fallback": "maltipoo",
-            "alt": "A maltipoo on a deck",
+            "fallback": "team-04",
+            "alt": "A golden retriever on a rug with a toy",
             "shot": "[ORNAMENT SHOT]",
             "cta": "Hang {dog}",
             "copy": "A ceramic ornament with {dog} on the front and {dogs} verdict on your year on the back."
@@ -183,13 +183,53 @@
             "question": "Where do you ship?",
             "answer": "Anywhere in the US, free."
           }
+        },
+        "q5": {
+          "type": "question",
+          "settings": {
+            "question": "When will it arrive?",
+            "answer": "Everything is made for you after a person checks it, then ships free anywhere in the US. The last days to order for Christmas are in the holiday office closure notice above."
+          }
+        },
+        "q6": {
+          "type": "question",
+          "settings": {
+            "question": "Can I see it before it prints?",
+            "answer": "Yes. The product page shows a live preview as you fill it in, and a person checks it again before anything prints."
+          }
+        },
+        "q7": {
+          "type": "question",
+          "settings": {
+            "question": "What if it arrives damaged or misprinted?",
+            "answer": "Email a photo of the problem to krish@heartside.io and we make it again, free. No forms, no hold music."
+          }
+        },
+        "q8": {
+          "type": "question",
+          "settings": {
+            "question": "What happens to my dog's photo?",
+            "answer": "On this page it stays on your phone. When you order, we send it to our print partner to make your order."
+          }
+        },
+        "q9": {
+          "type": "question",
+          "settings": {
+            "question": "Who do I complain to?",
+            "answer": "{dog}. Response times vary. For anything that needs a human, email krish@heartside.io."
+          }
         }
       },
       "block_order": [
         "q1",
         "q2",
         "q3",
-        "q4"
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
       ]
     },
     "signoff": {

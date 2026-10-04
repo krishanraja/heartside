@@ -60,7 +60,29 @@
           </div>
         </div>
 
-        {% render 'hs2-poster', photo: s.poster_photo %}
+        <div class="hs2-review__side">
+          {% render 'hs2-poster', photo: s.poster_photo %}
+          {%- if s.exhibits -%}
+            <div class="hs2-exhibits">
+              <div class="hs2-exhibits__label">EVIDENCE ON FILE</div>
+              <div class="hs2-exhibits__row">
+                <figure class="hs2-exhibit" data-hs2-exhibit="improvement">
+                  <img src="{{ 'hs-photo-bed-640.webp' | asset_url }}" alt="Evidence: a dachshund across the middle of the bed" width="640" height="800" loading="lazy">
+                  <figcaption>EXHIBIT A<span data-hs2="improvement">Leaving</span></figcaption>
+                </figure>
+                <figure class="hs2-exhibit" data-hs2-exhibit="incident">
+                  <img src="{{ 'hs-photo-incident-640.webp' | asset_url }}" alt="Evidence: a dachshund holding a sock, unrepentant" width="640" height="640" loading="lazy">
+                  <figcaption>EXHIBIT B<span data-hs2="incident">The sock</span></figcaption>
+                </figure>
+                <figure class="hs2-exhibit" data-hs2-exhibit="enemy">
+                  <img src="{{ 'hs-photo-window-640.webp' | asset_url }}" alt="Evidence: a terrier at the window, watching the delivery driver" width="640" height="800" loading="lazy">
+                  <figcaption>EXHIBIT C<span data-hs2="enemy">The mailman</span></figcaption>
+                </figure>
+              </div>
+            </div>
+            {% render 'hs2-photos' %}
+          {%- endif -%}
+        </div>
       </div>
     </div>
   </section>
@@ -80,7 +102,8 @@
     { "type": "text", "id": "price", "label": "Price", "default": "$39" },
     { "type": "text", "id": "price_note", "label": "Price note", "default": "poster · $89 framed" },
     { "type": "text", "id": "shipping", "label": "Shipping line", "default": "Free US shipping" },
-    { "type": "image_picker", "id": "poster_photo", "label": "Sample headshot on the poster", "info": "Empty uses the dachshund. Shoppers can attach their own; it stays on their device." }
+    { "type": "image_picker", "id": "poster_photo", "label": "Sample headshot on the poster", "info": "Empty uses the hero dachshund's face. Shoppers can attach their own; it stays on their device until they use it on the product page." },
+    { "type": "checkbox", "id": "exhibits", "label": "Show the evidence photos under the poster", "info": "Three photos that change with the chips: Exhibit A (improvement), B (incident), C (enemy).", "default": true }
   ],
   "presets": [{ "name": "HS review builder" }]
 }

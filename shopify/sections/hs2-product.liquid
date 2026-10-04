@@ -3,10 +3,19 @@
   assign s = section.settings
   assign current = product.selected_or_first_available_variant
 -%}
+{%- comment -%}
+  Tell Teeinblue where this template keeps its gallery and its form, so its live preview
+  lands in the media column and its add to cart carries our hidden answers. Settings a
+  theme or app sets elsewhere win.
+{%- endcomment -%}
+<script>
+  window.teeinblue = Object.assign({ gallerySelector: '[data-hs2-tib-gallery]', gallerySetupMethod: 'append', formSelector: '#hs2-product-form' }, window.teeinblue || {});
+</script>
 <div class="hs2">
   <div class="hs2-wrap hs2-product">
 
-    <div class="hs2-product__media">
+    <div class="hs2-product__media" data-hs2-media>
+      <div class="hs2-product__tib" data-hs2-tib-gallery></div>
       {%- if s.show_poster -%}
         <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
       {%- endif -%}
@@ -29,7 +38,7 @@
         {%- endif -%}
       {%- elsif s.show_poster == false -%}
         <div class="hs2-product__main hs2-card__media">
-          <img src="{{ 'hs-photo-golden-asleep-800.webp' | asset_url }}" alt="" width="800" height="530">
+          <img src="{{ 'hs-photo-asleep-640.webp' | asset_url }}" alt="" width="640" height="640">
           <div class="hs2-card__shot">{{ s.shot }}</div>
         </div>
       {%- endif -%}
@@ -60,7 +69,12 @@
                 <dt>Incident</dt><dd data-hs2="incidentLine">{% render 'hs2-lines', kind: 'incident', mode: 'line', pick: 'The sock' %}</dd>
                 <dt>Enemy</dt><dd data-hs2="enemyLine">{% render 'hs2-lines', kind: 'enemy', mode: 'line', pick: 'The mailman' %}</dd>
               </dl>
-              {%- if block.settings.note != blank -%}<div class="hs2-answers__note">{{ block.settings.note }}</div>{%- endif -%}
+              {%- if block.settings.note != blank -%}<div class="hs2-answers__note" data-hs2-bridge-note>{{ block.settings.note }}</div>{%- endif -%}
+              <div class="hs2-answers__status" data-hs2-bridge-status role="status" aria-live="polite" hidden></div>
+              <div class="hs2-answers__photo" data-hs2-handoff hidden>
+                <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy" data-hs2-handoff-img>
+                <button type="button" data-hs2-handoff-btn>{% render 'hs2-t', text: block.settings.photo_button %}</button>
+              </div>
             </div>
             {%- unless s.show_poster -%}
               {% render 'hs2-lines', kind: 'improvement', mode: 'json' %}
@@ -127,7 +141,8 @@
       "type": "answers", "name": "Homepage answers", "limit": 1,
       "settings": [
         { "type": "text", "id": "title", "label": "Title", "default": "FORM HR-26 · ON FILE" },
-        { "type": "text", "id": "note", "label": "Note", "default": "Your answers from the homepage. If the personalizer below asks again, use these." }
+        { "type": "text", "id": "note", "label": "Note", "default": "Your answers from the homepage. If the personalizer below asks again, use these." },
+        { "type": "text", "id": "photo_button", "label": "Headshot button", "info": "Shows when the shopper attached a photo on the homepage. One tap hands it to the personalizer.", "default": "Use {dogs} headshot" }
       ]
     },
     { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },

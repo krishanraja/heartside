@@ -1,7 +1,9 @@
 // Serve tools/preview/out, screenshot every page at phone and desktop widths, and
-// exercise the v2 behaviour: the live dog name, the HR-26 chips, the read-aloud
-// toggle, the link that carries answers to the product page, the story card and
-// the sticky button.
+// exercise the v2 behaviour: the live dog name, the HR-26 chips and evidence
+// photos, the read-aloud toggle, the attached headshot, the four story cards with
+// caption and link, the link that carries answers to the product page, the
+// Teeinblue bridge (against a stand-in built like Teeinblue's real markup) and the
+// sticky button.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,7 +14,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, 'out');
 const shots = path.join(root, 'shots');
 fs.mkdirSync(shots, { recursive: true });
-const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2' };
+const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.jpg': 'image/jpeg' };
 const server = http.createServer((req, res) => {
   const p = path.join(root, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
   if (!p.startsWith(root) || !fs.existsSync(p)) { res.writeHead(404); return res.end(); }
@@ -26,7 +28,7 @@ const errors = [];
 const log = (...a) => console.log(...a);
 
 async function open(width, height, name, url = 'http://localhost:4173/') {
-  const ctx = await browser.newContext({ viewport: { width, height }, acceptDownloads: true });
+  const ctx = await browser.newContext({ viewport: { width, height }, acceptDownloads: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const pg = await ctx.newPage();
   pg.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
   pg.on('response', (r) => { if (r.status() >= 400 && !r.url().endsWith('favicon.ico')) errors.push(`${name} ${r.status()}: ${r.url()}`); });
@@ -36,7 +38,8 @@ async function open(width, height, name, url = 'http://localhost:4173/') {
 }
 async function fullShot(pg, file) {
   await pg.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } window.scrollTo(0, 0); });
-  await pg.evaluate(() => Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
+  // lazy images inside hidden boxes never load, so only wait for the ones on the page
+  await pg.evaluate(() => Promise.all([...document.images].filter((i) => i.getClientRects().length).map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
   await pg.waitForTimeout(600);
   await pg.screenshot({ path: path.join(shots, file), fullPage: true });
 }
@@ -70,13 +73,29 @@ log('poster incident:', await pg.locator('.hs2-poster [data-hs2="incidentLine"]'
 log('poster enemy:', await pg.locator('.hs2-poster [data-hs2="enemyLine"]').innerText());
 log('voice button:', await pg.locator('[data-hs2-voice]').innerText());
 log('memo to:', (await pg.locator('.hs2-management__memo').innerText()).split('\n')[0]);
+log('evidence photos:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-exhibit]')].map((f) => [f.getAttribute('data-hs2-exhibit'), f.querySelector('img').getAttribute('data-key'), f.querySelector('figcaption span').textContent]))));
+await pg.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
+await pg.waitForTimeout(300);
+log('headshot attached -> poster photo is local:', await pg.locator('.hs2-poster [data-hs2-photo]').evaluate((i) => i.src.startsWith('blob:')), '| stand-in note hidden:', await pg.locator('[data-hs2-nudge]').isHidden());
 await pg.locator('#review').screenshot({ path: path.join(shots, 'desktop-review-gerald.png') });
 await pg.locator('.hs2-management').screenshot({ path: path.join(shots, 'desktop-management-gerald.png') });
-const [download] = await Promise.all([
-  pg.waitForEvent('download', { timeout: 8000 }).catch(() => null),
-  pg.click('[data-hs2-story]'),
-]);
-if (download) { await download.saveAs(path.join(shots, 'story-card.png')); log('story card:', await download.suggestedFilename()); } else log('story card: no download');
+await pg.locator('.hs2-leak').scrollIntoViewIfNeeded();
+for (const t of ['rating', 'incident', 'threat', 'memo']) {
+  await pg.click(`[data-hs2-leak="${t}"]`);
+  await pg.waitForTimeout(400);
+  const [download] = await Promise.all([
+    pg.waitForEvent('download', { timeout: 8000 }).catch(() => null),
+    pg.click('[data-hs2-story]'),
+  ]);
+  if (download) { await download.saveAs(path.join(shots, `story-card-${t}.png`)); log(`story card ${t}:`, download.suggestedFilename()); } else log(`story card ${t}: no download`);
+}
+await pg.click('[data-hs2-leak-step="1"]');
+log('tap right on the phone wraps to:', await pg.locator('[data-hs2-leak][aria-checked="true"]').getAttribute('data-hs2-leak'));
+await pg.click('[data-hs2-caption]');
+log('caption copied:', await pg.evaluate(() => navigator.clipboard.readText()));
+await pg.click('[data-hs2-link]');
+log('link copied:', await pg.evaluate(() => navigator.clipboard.readText()), '|', await pg.locator('[data-hs2-story-status]').innerText());
+await pg.locator('.hs2-leak').screenshot({ path: path.join(shots, 'desktop-leak-gerald.png') });
 await pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop + 200));
 await pg.waitForTimeout(700);
 log('sticky on while the builder is on screen (should be false):', await pg.locator('[data-hs2-sticky]').evaluate((e) => e.classList.contains('is-on')));
@@ -95,6 +114,65 @@ await pg.waitForTimeout(300);
 log('product page answers visible:', await pg.locator('[data-hs2-answers]').isVisible(), '| poster dog:', await pg.locator('.hs2-poster .hs2-paw [data-hs2="dog"]').innerText());
 log('hidden properties:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value]))));
 await fullShot(pg, 'desktop-product-review.png');
+
+// 3b. The Teeinblue bridge. A stand-in personalizer with Teeinblue's real markup
+// (.tee-field, .tee-field__heading, input.tee__input--text named layer-<id>, a select
+// per dropdown, a photo field) and its API (getCurrentCustomization), arriving late
+// the way Teeinblue does. Labels are the ones in docs/TEEINBLUE-SETUP.md.
+const tib = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const tp = await tib.newPage();
+tp.on('pageerror', (e) => errors.push(`teeinblue: ${e.message}`));
+await tp.addInitScript(() => {
+  const data = {};
+  window.__tibFiles = [];
+  window.teeinblueCampaign = { productId: '9001' };
+  window.teeinblue = Object.assign(window.teeinblue || {}, {
+    getCurrentCustomization: () => ({ ...data }),
+    refillCustomizationData: () => {},
+  });
+  const field = (id, label, control) => `<div class="tee-field tee-field--${id}" id="tee-field--${id}"><div class="tee-field__header"><div class="tee-field__heading"><span>${label}</span><span class="tee-asterisk">*</span></div></div><div class="tee-field__input">${control}</div></div>`;
+  const text = (id) => `<input class="tee__input tee__input--text" type="text" name="${id}" id="${id}">`;
+  const select = (id, opts) => `<select class="tee-field__select" name="${id}" id="${id}"><option disabled value="null">Choose an option</option>${opts.map((o, i) => `<option value="opt-${id}-${i}">${o}</option>`).join('')}</select>`;
+  document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
+    const box = document.createElement('div');
+    box.className = 'tee-customization-form';
+    box.innerHTML = [
+      field('layer-11', "Who is your manager? (Your dog's name)", text('layer-11')),
+      field('layer-12', 'Employee name (you)', text('layer-12')),
+      field('layer-13', 'Times you opened the treat cupboard', text('layer-13')),
+      field('layer-14', 'Area for improvement', select('layer-14', ['Leaving', 'The vacuum', 'Bath time', 'Sharing food', 'Your phone'])),
+      field('layer-15', 'Open incident report', select('layer-15', ['The sock', 'The sandwich', 'The remote', 'Rolled in it', 'The couch'])),
+      field('layer-16', 'Known enemy of the company', select('layer-16', ['The mailman', 'Squirrels', 'The vacuum', 'The cat', 'My reflection'])),
+      `<div class="tee-field tee-field--photo tee-field--layer-17"><div class="tee-field__heading"><span>Attach your dog's headshot</span></div><input type="file" id="tee-photo-layer-17" accept="image/*"></div>`,
+    ].join('');
+    // like Teeinblue's Vue form: state follows input and change events
+    box.addEventListener('input', (e) => { if (e.target.name) data[e.target.name] = e.target.value; });
+    box.addEventListener('change', (e) => {
+      if (e.target.type === 'file') { window.__tibFiles.push(e.target.files[0] && e.target.files[0].name); data['layer-17-origin'] = 'uploaded'; return; }
+      if (e.target.name) data[e.target.name] = e.target.value;
+    });
+    const anchor = document.querySelector('[data-hs2-answers]');
+    anchor.after(box);
+    document.dispatchEvent(new Event('teeinblue-event-component-injected'));
+  }, 700));
+});
+// arrive from the homepage with answers in the link, and a headshot already attached there
+await tp.goto('http://localhost:4173/');
+await tp.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
+await tp.waitForTimeout(400);
+await tp.goto('http://localhost:4173/' + href);
+await tp.waitForTimeout(2200);
+log('teeinblue record after the bridge:', JSON.stringify(await tp.evaluate(() => window.teeinblue.getCurrentCustomization())));
+log('teeinblue fields show:', JSON.stringify(await tp.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field select')].map((i) => i.tagName === 'SELECT' ? i.options[i.selectedIndex].text : i.value))));
+log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot button visible:', await tp.locator('[data-hs2-handoff]').isVisible());
+await tp.locator('.hs2-product__info').screenshot({ path: path.join(shots, 'desktop-product-teeinblue-bridge.png') });
+await tp.click('[data-hs2-handoff-btn]');
+await tp.waitForTimeout(200);
+log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText());
+await tp.fill('#layer-11', 'Gerald Jr');
+await tp.waitForTimeout(200);
+log('shopper edits the dog in the personalizer -> order property:', await tp.locator('[data-hs2-prop="dog"]').inputValue(), '| card:', await tp.locator('[data-hs2-answers] [data-hs2="dog"]').innerText());
+await tib.close();
 
 // 4. Pillow product page on phone (no images yet: placeholder tag)
 const pillow = await open(390, 844, 'pillow', 'http://localhost:4173/product-pillow.html');

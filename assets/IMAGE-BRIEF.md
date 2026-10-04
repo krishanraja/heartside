@@ -37,3 +37,23 @@ Use Biscuit-style placeholder artwork until the real designs exist. Swap in the 
 - **Stamps:** APPROVED, CONFIDENTIAL and FORM HR-26, in stamp red `#A8284E`, made as SVG.
 - **Paw signature:** an SVG mark.
 - **ID badge and memo paper:** built in CSS.
+
+## Delivered (4 October)
+
+Krish sent the Canva set on 4 October. It is saved under `assets/v2/` with the names above, and `tools/build_shopify_assets.py` turns it into the theme's WebP files.
+
+| File | Where it's used |
+|---|---|
+| `hero-manager.jpg` | Hero; its face, cropped square, is the sample headshot on the poster and the first story card |
+| `status-asleep.jpg` | The HR help desk ("HR is in a meeting (asleep)"), the Body Double card until its mockup exists, and the evidence photo for "Your phone" |
+| `side-of-bed.jpg` | Evidence photo A under the live poster (area for improvement) |
+| `window-watch.jpg` | Evidence photo C (known enemy) and the threat story card |
+| `vacuum.jpg` | Evidence and story card whenever "The vacuum" is picked |
+| `incident.jpg` | Evidence photo B (incident) and the incident story card |
+| `memo-chest.jpg` | Under the management memo, and the memo story card |
+| `holiday-party.jpg` | Behind the holiday office closure deadlines |
+| `team-01.jpg` to `team-04.jpg` | Pug, doodle asleep at the desk, golden at the desk, golden on the rug: stand-ins on the Uniform, Socks and Ornament cards, and the "Sharing food" / "The sandwich" evidence (the pug) |
+
+- **Still to come:** `team-05.jpg` and `team-06.jpg` (a Frenchie and a rescue mutt). Nothing is waiting on them.
+- **Size:** the exports came at 1122 to 1672 px on the long side rather than 2400. That is enough for the site, and nothing in print uses them.
+- **Watch the props:** the props in these images carry AI-written text ("Same Dog Different Deadline", "Good Dogs Build Better Days"). It reads fine at site sizes. Check it before using any of them in an ad.

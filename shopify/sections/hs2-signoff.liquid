@@ -1,6 +1,19 @@
 {%- render 'hs2-head' -%}
+{%- assign parts = section.settings.text | split: ' · ' -%}
 <div class="hs2">
-  <div class="hs2-signoff">{{ section.settings.text }}</div>
+  <div class="hs2-signoff">
+    <div class="hs2-signoff__paw">{% render 'hs2-paw' %}<span data-hs2="dog">Biscuit</span></div>
+    {%- if parts.size == 3 -%}
+      {%- comment -%} The approved line, laid out as a lockup. The hidden separators keep it one line for screen readers. {%- endcomment -%}
+      <p class="hs2-signoff__lockup">
+        <span class="hs2-signoff__brand">{{ parts[0] }}</span><span class="hs2-sr"> · </span>
+        <span class="hs2-signoff__line">{{ parts[1] }}</span><span class="hs2-sr"> · </span>
+        <span class="hs2-signoff__domain">{{ parts[2] }}</span>
+      </p>
+    {%- else -%}
+      <p class="hs2-signoff__lockup"><span class="hs2-signoff__line">{{ section.settings.text }}</span></p>
+    {%- endif -%}
+  </div>
 </div>
 
 {% schema %}
@@ -9,6 +22,7 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
+    { "type": "paragraph", "content": "The last line of the page, signed by the dog. Three parts split by ' · ' become the lockup: brand, tagline, domain." },
     { "type": "text", "id": "text", "label": "Line", "default": "Heartside · Keep them close · heartside.io" }
   ],
   "presets": [{ "name": "HS sign-off" }]

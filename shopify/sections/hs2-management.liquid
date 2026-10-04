@@ -5,6 +5,15 @@
       <div class="hs2-management__eyebrow">{{ section.settings.eyebrow }}</div>
       <div class="hs2-management__memo">{% render 'hs2-t', text: section.settings.memo %}</div>
     </div>
+    {%- assign img = section.settings.image -%}
+    <figure class="hs2-management__photo">
+      {%- if img != blank -%}
+        {{ img | image_url: width: 1600 | image_tag: widths: '800, 1200, 1600', sizes: '(min-width: 1100px) 1000px, 100vw', loading: 'lazy', alt: section.settings.alt }}
+      {%- else -%}
+        <img src="{{ 'hs-photo-memo-1600.webp' | asset_url }}" srcset="{{ 'hs-photo-memo-960.webp' | asset_url }} 960w, {{ 'hs-photo-memo-1600.webp' | asset_url }} 1600w"
+          sizes="(min-width: 1100px) 1000px, 100vw" width="1600" height="900" loading="lazy" alt="{{ section.settings.alt | escape }}">
+      {%- endif -%}
+    </figure>
   </section>
 </div>
 
@@ -21,7 +30,9 @@
       "id": "memo",
       "label": "Memo",
       "default": "To {person}.<br><br>This year you were late four times. You waved at the mailman, which I consider treason. You once left for nine days and came back smelling of another dog.<br><br>You also came back. Every single time. I noticed.<br><br>Keep me close.<br>{dog}"
-    }
+    },
+    { "type": "image_picker", "id": "image", "label": "Photo under the memo", "info": "assets/IMAGE-BRIEF.md item 7. Empty uses memo-chest.jpg." },
+    { "type": "text", "id": "alt", "label": "Photo description", "default": "A dachshund asleep on a blanket, a hand resting on its back" }
   ],
   "presets": [{ "name": "HS word from management" }]
 }

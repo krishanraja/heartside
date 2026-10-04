@@ -7,6 +7,6 @@ Start with `docs/V2-FROM-THE-DOG.md`, the current plan: positioning, the comedy 
 - `design/`: the approved canvas source. `Main.dc.html` is the landing page and its copy is approved word for word. `Poster.dc.html` is the printed poster. `poster-template/` holds the print files for Teeinblue.
 - `shopify/`: the theme sections (homepage and two product templates) built from the canvas, with install notes and screenshots in its README. GitHub Actions deploys them into the unpublished "Heartside launch" theme (`.github/workflows/shopify-theme-push.yml`).
 - `docs/TEEINBLUE-SETUP.md`: the six product templates and the drafts-only order setting, for the Claude Desktop session that has the Teeinblue connector.
-- `assets/`: brand files, licensed dog photos, the image brief for Canva and Printful mockups, and the social sharing image.
+- `assets/`: brand files, licensed dog photos, the Canva lifestyle set in `v2/` (see the image brief, which also lists the Printful mockups still to come), and the social sharing image.
 - `tools/`: scripts that build the theme assets and print files, and a local preview that renders the Liquid and screenshots it.
 - `ornament/`, `docs/COWORK-PROMPT.md`, `docs/HANDOFF.md`, `docs/STORE-STATE.md`: v1 history, kept for reference.
