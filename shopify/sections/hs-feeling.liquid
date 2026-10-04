@@ -1,0 +1,41 @@
+{%- render 'hs-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs hs-feeling">
+  {%- if s.image != blank -%}
+    {{ s.image | image_url: width: 2000 | image_tag:
+      widths: '700, 1000, 1400, 2000',
+      sizes: '100vw',
+      class: 'hs-feeling__photo',
+      loading: 'lazy' }}
+  {%- else -%}
+    <img class="hs-feeling__photo" loading="lazy"
+      src="{{ 'hs-photo-golden-asleep-1600.webp' | asset_url }}"
+      srcset="{{ 'hs-photo-golden-asleep-800.webp' | asset_url }} 800w, {{ 'hs-photo-golden-asleep-1600.webp' | asset_url }} 1600w"
+      sizes="100vw" width="1589" height="1053"
+      alt="A golden puppy asleep on the carpet beside the sofa, chin on its paws">
+  {%- endif -%}
+  <div class="hs-feeling__card" data-hs-reveal>
+    <img class="hs-heart" src="{{ 'hs-heart.webp' | asset_url }}" alt="" width="30" height="29" loading="lazy">
+    <h2>{{ s.heading }}</h2>
+    {{ s.text }}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Heartside feeling",
+  "tag": "section",
+  "class": "hs-section",
+  "settings": [
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Some of the best moments of your day are the ones where your loved one is asleep on your heart." },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>They climb onto your chest, turn around twice, and go to sleep with their chin on your collarbone. You stop scrolling. You can feel a small, fast heartbeat against yours.</p><p>Heartside makes the things that go with that: their face on the tree, their name on a tag, and a soft sling for when their legs get tired.</p>"
+    },
+    { "type": "image_picker", "id": "image", "label": "Photo", "info": "Leave empty to use the sleeping golden puppy that ships with these sections." }
+  ],
+  "presets": [{ "name": "Heartside feeling" }]
+}
+{% endschema %}

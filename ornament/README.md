@@ -74,5 +74,5 @@ The product page, the share mechanics and the video concepts are in `SELL.md`. F
 
 ## Still open on this product
 
-- **Licence for the hero dachshund photo.** It's the placeholder in the editor, on the sample front and on the social sharing image. Confirm it before any of those go public, or swap in a photo you own. Then rerun the two build scripts and every file updates.
+- **Licence for the hero dachshund photo.** Confirmed by Krish on 4 October 2026, along with the new photos in `assets/photos/`.
 - **The order-by date.** It equals Printify production time plus shipping, so get both from the chosen provider.

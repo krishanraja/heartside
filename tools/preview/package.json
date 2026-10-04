@@ -1,0 +1,14 @@
+{
+  "name": "heartside-preview",
+  "private": true,
+  "type": "module",
+  "description": "Renders the Shopify sections in shopify/ locally with stubbed Shopify filters, then screenshots them. Preview only; Shopify renders the real thing.",
+  "scripts": {
+    "render": "node render.mjs",
+    "shots": "node shots.mjs"
+  },
+  "dependencies": {
+    "liquidjs": "^10.19.0",
+    "playwright": "^1.48.0"
+  }
+}

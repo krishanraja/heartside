@@ -1,0 +1,64 @@
+{%- render 'hs-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs hs-steps hs-section">
+  <div class="hs-wrap">
+    <div class="hs-steps__head" data-hs-reveal>
+      {%- if s.eyebrow != blank -%}<p class="hs-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2>{{ s.heading }}</h2>
+    </div>
+    <ol class="hs-steps__list" role="list">
+      {%- for block in section.blocks -%}
+        <li class="hs-step" {{ block.shopify_attributes }} data-hs-reveal>
+          <span class="hs-step__num" aria-hidden="true">{{ forloop.index }}</span>
+          <h3>{{ block.settings.title }}</h3>
+          <p>{{ block.settings.text }}</p>
+        </li>
+      {%- endfor -%}
+    </ol>
+    {%- if s.order_by != blank -%}
+      <p class="hs-steps__date" data-hs-reveal>
+        <img src="{{ 'hs-heart.webp' | asset_url }}" alt="" width="20" height="19" loading="lazy">
+        <span>Order by {{ s.order_by }} for Christmas delivery.</span>
+      </p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Heartside how it works",
+  "tag": "section",
+  "class": "hs-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "How it works" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Three steps, then it's on the tree." },
+    {
+      "type": "text",
+      "id": "order_by",
+      "label": "Christmas order-by date",
+      "info": "For example: December 10. Leave empty until the print provider confirms production and shipping times; the line stays hidden until then."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Add their best photo" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Face close to the camera, in good light." }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "Heartside how it works",
+      "blocks": [
+        { "type": "step", "settings": { "title": "Add their best photo", "text": "Face close to the camera, in good light. For a gift, a clear photo from their Instagram works." } },
+        { "type": "step", "settings": { "title": "Type their name", "text": "Up to 14 letters. We print it exactly as you type it." } },
+        { "type": "step", "settings": { "title": "We check it, print it and ship it", "text": "A person looks at every photo before it prints. If one won't print well, we email you before we make anything." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

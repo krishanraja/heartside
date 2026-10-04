@@ -1,0 +1,32 @@
+{%- render 'hs-head' -%}
+{%- liquid
+  assign s = section.settings
+  assign hs_url = s.button_link | default: '/collections/all'
+  if s.product != blank
+    assign hs_url = s.product.url
+  endif
+-%}
+<div class="hs hs-sticky" data-hs-sticky aria-hidden="true">
+  <div class="hs-sticky__text">
+    <span>{{ s.text }}</span>
+    {%- render 'hs-price', hs_product: s.product, fallback_cents: s.fallback_price, note: false -%}
+  </div>
+  <a class="hs-btn" href="{{ hs_url }}" tabindex="-1">{{ s.button_label }}</a>
+</div>
+
+{% schema %}
+{
+  "name": "Heartside phone buy bar",
+  "tag": "section",
+  "class": "hs-section",
+  "settings": [
+    { "type": "paragraph", "content": "A slim bar at the bottom of phone screens. It appears once the hero has scrolled away and hides while the main buy button or the footer is on screen. Desktop never sees it." },
+    { "type": "text", "id": "text", "label": "Text", "default": "Their Person Ornament" },
+    { "type": "text", "id": "button_label", "label": "Button", "default": "Make theirs" },
+    { "type": "product", "id": "product", "label": "Ornament product" },
+    { "type": "number", "id": "fallback_price", "label": "Price in cents if no product is chosen", "default": 3499 },
+    { "type": "url", "id": "button_link", "label": "Button link if no product is chosen" }
+  ],
+  "presets": [{ "name": "Heartside phone buy bar" }]
+}
+{% endschema %}

@@ -1,0 +1,26 @@
+{%- comment -%}
+  The one place the launch offer lives. Every Heartside section reads it from here.
+  Keep it in step with the two automatic discounts in Shopify admin > Discounts:
+  "30% off" (All gifts collection) and "Free shipping" (US), both ending
+  1 November 2026 at 11:59 pm store time. The store time zone is London, which is
+  GMT on that date, so the end is 23:59 +00:00.
+
+  {% render 'hs-offer', part: 'pct' %}         -> 30
+  {% render 'hs-offer', part: 'ends' %}        -> 2026-11-01T23:59:00+00:00
+  {% render 'hs-offer', part: 'ends_label' %}  -> November 1
+  {% render 'hs-offer', part: 'collection' %}  -> all-gifts (handle of the discounted collection)
+  {% render 'hs-offer', part: 'active' %}      -> true or false
+{%- endcomment -%}
+{%- assign hs_pct = 30 -%}
+{%- assign hs_ends = '2026-11-01T23:59:00+00:00' -%}
+{%- assign hs_collection = 'all-gifts' -%}
+{%- case part -%}
+  {%- when 'pct' -%}{{ hs_pct }}
+  {%- when 'ends' -%}{{ hs_ends }}
+  {%- when 'ends_label' -%}{{ hs_ends | date: '%B %-d' }}
+  {%- when 'collection' -%}{{ hs_collection }}
+  {%- when 'active' -%}
+    {%- assign hs_now_s = 'now' | date: '%s' | plus: 0 -%}
+    {%- assign hs_end_s = hs_ends | date: '%s' | plus: 0 -%}
+    {%- if hs_now_s < hs_end_s -%}true{%- else -%}false{%- endif -%}
+{%- endcase -%}

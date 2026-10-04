@@ -1,0 +1,16 @@
+{%- comment -%}
+  Fonts, styles and script for the Heartside sections. Every hs- section renders
+  this so it works wherever it is placed; the browser fetches each file once and
+  heartside.js guards against running twice. Fonts: Cormorant Garamond and DM Sans
+  (SIL Open Font License), self-hosted and subset to Latin.
+{%- endcomment -%}
+<style>
+  @font-face { font-family: "HS Cormorant"; font-style: normal; font-weight: 400; font-display: swap; src: url({{ 'hs-cormorant-400.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Cormorant"; font-style: italic; font-weight: 400; font-display: swap; src: url({{ 'hs-cormorant-400i.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Cormorant"; font-style: normal; font-weight: 500; font-display: swap; src: url({{ 'hs-cormorant-500.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Cormorant"; font-style: italic; font-weight: 500; font-display: swap; src: url({{ 'hs-cormorant-500i.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS DM Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url({{ 'hs-dmsans-400.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS DM Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url({{ 'hs-dmsans-500.woff2' | asset_url }}) format("woff2"); }
+</style>
+{{ 'heartside.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'heartside.js' | asset_url }}" defer="defer"></script>

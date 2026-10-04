@@ -2,7 +2,7 @@
 
 Run from the repo root:
     python3 tools/build_ornament.py                       # rebuild every file in ornament/
-    python3 tools/build_ornament.py --photo dog.jpg --name "Biscuit" [--focus 0.5,0.45]
+    python3 tools/build_ornament.py --photo dog.jpg --name "Biscuit" [--focus 0.5,0.45] [--zoom 1.8]
                                                           # one finished front for one order
 Needs Pillow and the fonts in tools/fonts/ (Cormorant Garamond, DM Sans; SIL OFL).
 
@@ -75,10 +75,13 @@ def window_mask(heart_layer):
     return m.filter(ImageFilter.GaussianBlur(1.6))
 
 
-def cover(photo, box_w, box_h, focus=(0.5, 0.45)):
-    """Scale-and-crop a photo to fill a box, biased toward the focus point."""
+def cover(photo, box_w, box_h, focus=(0.5, 0.45), zoom=1.0):
+    """Scale-and-crop a photo to fill a box, centred on the focus point.
+
+    zoom > 1 crops tighter, so a full-body shot becomes a face in the heart.
+    """
     pw, ph = photo.size
-    scale = max(box_w / pw, box_h / ph)
+    scale = max(box_w / pw, box_h / ph) * zoom
     nw, nh = round(pw * scale), round(ph * scale)
     p = photo.resize((nw, nh), Image.LANCZOS)
     left = min(max(round(nw * focus[0] - box_w / 2), 0), nw - box_w)
@@ -117,12 +120,12 @@ def build_front_parts():
     return heart, win, win_box, frame
 
 
-def compose_front(photo, name, frame, win, win_box, focus=(0.5, 0.45)):
+def compose_front(photo, name, frame, win, win_box, focus=(0.5, 0.45), zoom=1.0):
     x0, y0, x1, y1 = win_box
     pad = 12
     bw, bh = x1 - x0 + pad * 2, y1 - y0 + pad * 2
     img = Image.new("RGBA", (S, S), CREAM + (255,))
-    img.alpha_composite(cover(photo.convert("RGBA"), bw, bh, focus), (x0 - pad, y0 - pad))
+    img.alpha_composite(cover(photo.convert("RGBA"), bw, bh, focus, zoom), (x0 - pad, y0 - pad))
     img.alpha_composite(frame)
     d = ImageDraw.Draw(img)
     d.text((C, NAME_Y), name, font=name_font(d, name), fill=INK, anchor="mm")
@@ -283,7 +286,7 @@ def names_sheet(fronts):
     return sheet
 
 
-def compose_one(photo_path, name, focus, out_path):
+def compose_one(photo_path, name, focus, out_path, zoom=1.0):
     """Fallback for manual personalisation: one finished, print-ready front."""
     _, win, win_box, frame = build_front_parts()
     photo = Image.open(photo_path)
@@ -292,7 +295,7 @@ def compose_one(photo_path, name, focus, out_path):
         photo = ImageOps.exif_transpose(photo)
     except Exception:
         pass
-    front = compose_front(photo, name.strip(), frame, win, win_box, focus)
+    front = compose_front(photo, name.strip(), frame, win, win_box, focus, zoom)
     front.convert("RGB").save(out_path, optimize=True)
     guide_overlay(front).convert("RGB").save(
         Path(out_path).with_name(Path(out_path).stem + "-check.png"))
@@ -305,6 +308,8 @@ def main():
     ap.add_argument("--name", help="dog's name, as typed by the customer")
     ap.add_argument("--focus", default="0.5,0.45",
                     help="where the dog's face is in the photo, as x,y fractions (default 0.5,0.45)")
+    ap.add_argument("--zoom", type=float, default=1.0,
+                    help="crop tighter on the face, e.g. 1.8 for a full-body photo (default 1.0)")
     ap.add_argument("--out", default=None, help="output path (default ornament/orders/<name>.png)")
     args = ap.parse_args()
     if args.photo or args.name:
@@ -313,7 +318,7 @@ def main():
         fx, fy = (float(v) for v in args.focus.split(","))
         out = args.out or str(OUT / "orders" / f"{args.name.strip().replace(' ', '-')}.png")
         Path(out).parent.mkdir(parents=True, exist_ok=True)
-        compose_one(args.photo, args.name, (fx, fy), out)
+        compose_one(args.photo, args.name, (fx, fy), out, args.zoom)
         return
 
     OUT.mkdir(exist_ok=True)

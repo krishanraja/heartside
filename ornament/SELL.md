@@ -1,6 +1,6 @@
 # Selling the "Their Person" ornament
 
-Krish's instruction (4 October 2026): pull out every stop on emotion, humour, shareability and conversion. This file turns that into the product page, the share mechanics and the videos. Read `docs/BRIEF.md` section 1 for the voice and section 10 for the guardrails. The guardrails are why this sells, so they stay (see the last section).
+Krish's instruction (4 October 2026): pull out every stop on emotion, humour, shareability and conversion. Customer-facing lines use US spelling (favorite, watercolor, personalized) because every buyer is in the US. This file turns that into the product page, the share mechanics and the videos. Read `docs/BRIEF.md` section 1 for the voice and section 10 for the guardrails. The guardrails are why this sells, so they stay (see the last section).
 
 ## The idea in one line
 
@@ -13,12 +13,14 @@ Why it converts:
 - **The humour makes it shareable.** "The one who hogs the bed" is true of most small dogs, and people tag the friend it's true of. Tags and DM sends are what the algorithms reward.
 - **It's bought in multiples.** The dog's "grandma" wants one, so a second unit costs nothing to sell.
 
+The homepage built from this file is in `../shopify/` (see its README).
+
 ## Product page, top to bottom
 
 | Slot | Copy |
 |---|---|
-| Headline | **Put the real favourite on the tree.** |
-| Subline | Their photo in our watercolour heart, their name underneath, and a note from them on the back. |
+| Headline | **Put the real favorite on the tree.** |
+| Subline | Their photo in our watercolor heart, their name underneath, and a note from them on the back. |
 | Price | ~~$34.99~~ **$24.49**, 30% off until 1 November. Free US shipping. |
 | Personalise button | Add their photo |
 | Photo help text | Face close to the camera, in good light. We'll fit it into the heart. Buying for someone else? A clear photo from their Instagram works. |
@@ -29,7 +31,7 @@ Why it converts:
 | Image 2 | The back, so the joke lands on the product page too |
 | Image 3 | Name-length test, cropped to one ornament (shows the name in full type) |
 | Image 4 | The ornament on a real tree, once a sample arrives |
-| Below the fold | What it is (size, ceramic, both sides printed, hanger), the order-by dates, returns ("personalised items can't be returned unless we misprint them"), and the line *A person checks every photo before it prints*, if Krish keeps the manual review |
+| Below the fold | What it is (size, ceramic, both sides printed, hanger), the order-by dates, returns ("personalized pieces can't come back unless they arrive misprinted"), and the line *A person checks every photo before it prints*, if Krish keeps the manual review |
 
 Thank-you page and confirmation email: **"[Name] is going on the tree. Who else needs one?"** Add a share link to the product page. This is the cheapest viral loop in the store, so build it before launch.
 
@@ -52,7 +54,7 @@ These come before the sling concepts in `docs/AD-BRIEF.md`, because the ornament
 | 2-5 | Close on the front | *(none, let it land)* |
 | 5-8 | The hand turns it over: "Merry Christmas from the one who hogs the bed." | *(none)* |
 | 8-11 | Hard cut: the dog asleep diagonally across a whole bed, owner's foot hanging off the edge | He's not wrong. |
-| 11-15 | Both sides, then the logo | Put the real favourite on the tree. 30% off until 1 Nov. |
+| 11-15 | Both sides, then the logo | Put the real favorite on the tree. 30% off until 1 Nov. |
 
 Sound: soft piano under the front, one beat of silence, then the cut to the bed lands on the joke.
 Caption: *Tag the person whose dog sleeps like this.*
@@ -81,7 +83,7 @@ Caption: *Send this to someone whose lock screen is their dog.*
 4. The only ornament that hogs the bed.
 5. Your dog is already your lock screen.
 6. POV: you remembered the dog's name.
-7. Every family has a favourite. Ours has four legs.
+7. Every family has a favorite. Ours has four legs.
 8. Your dog has better photos than you. Put one on the tree.
 9. The dog's grandma is getting one too.
 10. Merry Christmas from the one who hogs the bed.

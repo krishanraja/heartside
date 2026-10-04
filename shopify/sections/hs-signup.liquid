@@ -1,0 +1,43 @@
+{%- render 'hs-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs hs-signup hs-section" id="hs-signup-{{ section.id }}">
+  <div class="hs-wrap">
+    <img class="hs-heart" src="{{ 'hs-heart.webp' | asset_url }}" alt="" width="34" height="33" loading="lazy">
+    <h2>{{ s.heading }}</h2>
+    {%- if s.text != blank -%}<p>{{ s.text }}</p>{%- endif -%}
+
+    {%- form 'customer', id: 'hs-signup-form', class: 'hs-signup__form' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter, christmas-dates">
+      {%- if form.posted_successfully? -%}
+        <p class="hs-signup__msg" role="status" style="grid-column: 1 / -1;">{{ s.success }}</p>
+      {%- else -%}
+        <label class="hs-visually-hidden" for="hs-email-{{ section.id }}">Email</label>
+        <input id="hs-email-{{ section.id }}" type="email" name="contact[email]" required
+          autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com"
+          {% if form.errors %}aria-invalid="true" aria-describedby="hs-email-error-{{ section.id }}"{% endif %}>
+        <button class="hs-btn" type="submit">{{ s.button }}</button>
+        {%- if form.errors -%}
+          <p class="hs-signup__msg" id="hs-email-error-{{ section.id }}" role="alert" style="grid-column: 1 / -1;">That email doesn't look right. Try again?</p>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endform -%}
+
+    {%- if s.fine_print != blank -%}<p class="hs-signup__fine">{{ s.fine_print }}</p>{%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Heartside email signup",
+  "tag": "section",
+  "class": "hs-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Get the Christmas order-by date." },
+    { "type": "text", "id": "text", "label": "Text", "default": "One email with the date to order by for Christmas, and one before the 30% ends. That's all we'll send until then." },
+    { "type": "text", "id": "button", "label": "Button", "default": "Send me the date" },
+    { "type": "text", "id": "success", "label": "Thank-you message", "default": "You're on the list. Tell the dog." },
+    { "type": "text", "id": "fine_print", "label": "Fine print", "default": "Unsubscribe in one click, any time." }
+  ],
+  "presets": [{ "name": "Heartside email signup" }]
+}
+{% endschema %}

@@ -1,0 +1,87 @@
+{%- render 'hs-head' -%}
+{%- liquid
+  assign s = section.settings
+  assign hs_url = s.button_link | default: '/collections/all'
+  if s.product != blank
+    assign hs_url = s.product.url
+  endif
+-%}
+<div class="hs hs-gallery hs-section">
+  <div class="hs-wrap">
+    <div class="hs-gallery__head" data-hs-reveal>
+      {%- if s.eyebrow != blank -%}<p class="hs-eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+      <h2>{{ s.heading }}</h2>
+      {%- if s.text != blank -%}<p class="hs-lede hs-muted">{{ s.text }}</p>{%- endif -%}
+    </div>
+
+    <ul class="hs-gallery__grid" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign file = 'hs-ornament-' | append: block.settings.dog | append: '.webp' -%}
+        <li class="hs-gallery__item" {{ block.shopify_attributes }} data-hs-reveal>
+          {%- if block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 760 | image_tag: loading: 'lazy', sizes: '(min-width: 750px) 33vw, 50vw', alt: block.settings.alt }}
+          {%- else -%}
+            <img src="{{ file | asset_url }}" width="760" height="819" loading="lazy" alt="{{ block.settings.alt | escape }}">
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    <div class="hs-gallery__foot" data-hs-reveal>
+      <a class="hs-btn" href="{{ hs_url }}">{{ s.button_label }}</a>
+      {%- if s.fine_print != blank -%}<p class="hs-small hs-muted">{{ s.fine_print }}</p>{%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Heartside ornament wall",
+  "tag": "section",
+  "class": "hs-section",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "Every kind of favorite" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "Curly, squashed, sleepy or <em>slightly</em> suspicious." },
+    { "type": "text", "id": "text", "label": "Text", "default": "They all look like this in the heart. Yours will too." },
+    { "type": "product", "id": "product", "label": "Ornament product" },
+    { "type": "url", "id": "button_link", "label": "Button link if no product is chosen" },
+    { "type": "text", "id": "button_label", "label": "Button", "default": "Make theirs" },
+    { "type": "text", "id": "fine_print", "label": "Fine print", "default": "Sample designs with made-up names. Yours carries your photo and their name." }
+  ],
+  "blocks": [
+    {
+      "type": "ornament",
+      "name": "Ornament",
+      "settings": [
+        {
+          "type": "select",
+          "id": "dog",
+          "label": "Built-in render",
+          "default": "poodle",
+          "options": [
+            { "value": "dachshund", "label": "Dachshund (Biscuit)" },
+            { "value": "poodle", "label": "Red poodle (Mochi)" },
+            { "value": "pug", "label": "Pug (Gerald)" },
+            { "value": "maltipoo", "label": "Maltipoo (Pudding)" },
+            { "value": "apricot", "label": "Poodle mix (Nugget)" },
+            { "value": "golden", "label": "Golden puppy (Waffles)" }
+          ]
+        },
+        { "type": "image_picker", "id": "image", "label": "Or your own image" },
+        { "type": "text", "id": "alt", "label": "Image description", "default": "A sample ornament with a dog's photo in a watercolor heart" }
+      ]
+    }
+  ],
+  "max_blocks": 9,
+  "presets": [
+    {
+      "name": "Heartside ornament wall",
+      "blocks": [
+        { "type": "ornament", "settings": { "dog": "poodle" } },
+        { "type": "ornament", "settings": { "dog": "pug" } },
+        { "type": "ornament", "settings": { "dog": "golden" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
