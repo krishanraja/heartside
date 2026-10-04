@@ -271,13 +271,20 @@
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
     box.style.paddingTop = '';
-    var overlap = header.getBoundingClientRect().bottom - box.getBoundingClientRect().top;
-    if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 8) + 'px';
+    var top = box.getBoundingClientRect().top;
+    // the drawn header can extend past its section box, so take the lowest visible part
+    var bottom = header.getBoundingClientRect().bottom;
+    header.querySelectorAll('*').forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.top < top + 200 && r.bottom > bottom && r.bottom < window.innerHeight / 2) bottom = r.bottom;
+    });
+    var overlap = bottom - top;
+    if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
   }
 
   function init() { bindInputs(); render(); sticky(); gallery(); autofill(); clearHeader(); }
   window.addEventListener('resize', clearHeader);
-  window.addEventListener('load', clearHeader);
+  window.addEventListener('load', function () { clearHeader(); setTimeout(clearHeader, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', init);
 })();
