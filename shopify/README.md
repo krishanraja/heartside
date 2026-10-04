@@ -54,8 +54,8 @@ It only adds and updates files (`--nodelete`). The v1 ornament sections and snip
 
 ## After deploying, in the theme editor (Heartside launch > Customize)
 
-1. **Header:** add **HS memo bar** to the header group, above the header. Remove the v1 "Heartside offer bar" if it's there, and hide Helio's own announcement bar.
-2. **Header layout:** turn off Helio's transparent or overlay header on the homepage, so the logo gets its own row on mobile (`docs/V2-FROM-THE-DOG.md` section 7). Point the main menu at `#review` "Your review", `#benefits` "Benefits package" and `#closure` "Christmas deadlines".
+1. **Header:** the v1 "Heartside offer bar" ("30% off and free US shipping until November 1.") is still in the header group; the live preview on 4 October showed it. Remove it, add **HS memo bar** above the header, and hide Helio's own announcement bar. The 30% offer is retired for the v2 range.
+2. **Header layout:** Helio lays its header over the hero on the homepage. `hs2.js` already pads the hero by the overlap, so nothing collides. The cleaner fix is still to turn off the transparent or overlay header in Helio's header settings, which gives the logo its own row (`docs/V2-FROM-THE-DOG.md` section 7). Point the main menu at `#review` "Your review", `#benefits` "Benefits package" and `#closure` "Christmas deadlines".
 3. **Product pickers:**
    - In the review builder, choose the Annual Review product.
    - In each benefits card, choose its product.
@@ -82,5 +82,7 @@ It only adds and updates files (`--nodelete`). The v1 ornament sections and snip
   - The approve link carries all answers, and the product page shows them and fills the order properties.
   - The story card downloads; the sticky pill hides over the builder and shows below it; the variant picker updates the price.
 - **Copy:** every visible string, chip line, product field and deadline row in `design/Main.dc.html` is present word for word.
+- **On the real store:** after the deploy, the Heartside launch preview (`?preview_theme_id=197492998526`) was loaded in Chromium at 390 px and 1440 px. The sections render inside Helio's header and footer, the self-hosted fonts load from Shopify's CDN, typing a name rewrites the page, and there are no script errors or sideways scroll.
+- **Shopify's Liquid tokenizer:** Shopify ends an output tag at the first closing brace, which the local tools don't. `tools/preview/render.mjs` now fails on that pattern before anything ships, and the workflow fails if Shopify rejects any file.
 
 Rebuild and recheck: `python3 tools/build_shopify_assets.py`, then `cd tools/preview && npm install && node render.mjs && node shots.mjs`. Print files: `node print.mjs`.
