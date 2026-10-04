@@ -5,3 +5,5 @@ Heartside makes gifts for people whose small dog is their person. The line is "K
 This repo holds the brief for finishing the storefront and building the launch videos. Start with docs/BRIEF.md, then docs/AD-BRIEF.md, then docs/HANDOFF.md (the current state of the store and the open list; it supersedes docs/STORE-STATE.md). The assets folder holds the logo, the watercolour heart, the hero photo, the favicon and the social sharing image.
 
 The hero product, the "Their Person" ornament, lives in `ornament/`. It has the print files, the Printify setup steps and the sales pack (`SELL.md`). The homepage lives in `shopify/` as Online Store 2.0 sections for the Helio theme, with install steps in its README. `tools/` holds the scripts that build everything from the brand assets, and a local preview.
+
+To finish the launch from a browser, give Claude CoWork `docs/COWORK-PROMPT.md`. It deploys the homepage through GitHub Actions into a copy of the Helio theme, builds the ornament in Printify, and leaves publishing to Krish.

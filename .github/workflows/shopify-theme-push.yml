@@ -1,0 +1,86 @@
+# Push the Heartside homepage (everything in shopify/) into an UNPUBLISHED copy
+# of the Helio theme. Run it from the browser: Actions > "Push homepage to a
+# Shopify theme" > Run workflow, then paste the copy's theme ID.
+#
+# It only adds and updates Heartside files (--nodelete), so every Helio file in
+# the copy stays as it is. It refuses to push to the live theme. Publishing is
+# Krish's step, in Shopify admin.
+#
+# One-time setup (see docs/COWORK-PROMPT.md):
+#   Repository secret SHOPIFY_CLI_THEME_TOKEN = a password from Shopify's free
+#   Theme Access app. Never commit it or paste it anywhere else.
+
+name: Push homepage to a Shopify theme
+
+on:
+  workflow_dispatch:
+    inputs:
+      theme_id:
+        description: "Theme ID of the UNPUBLISHED Helio copy (digits only, from the Customize URL)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shopify-theme-push
+  cancel-in-progress: false
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHOPIFY_FLAG_STORE: bnf1em-ge.myshopify.com
+      SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
+      SHOPIFY_CLI_NO_ANALYTICS: "1"
+      THEME_ID: ${{ inputs.theme_id }}
+    steps:
+      - name: Check inputs
+        run: |
+          if [ -z "$SHOPIFY_CLI_THEME_TOKEN" ]; then
+            echo "::error::Repository secret SHOPIFY_CLI_THEME_TOKEN is missing. Add the Theme Access password under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          if ! [[ "$THEME_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::theme_id must be digits only, for example 141234567890."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Shopify CLI
+        run: npm install --global @shopify/cli@3
+
+      - name: Refuse the live theme
+        run: |
+          shopify theme list --json > themes.json
+          role=$(node -e 'const t=require("./themes.json").find(x=>String(x.id)===process.env.THEME_ID); console.log(t ? t.role : "missing")')
+          name=$(node -e 'const t=require("./themes.json").find(x=>String(x.id)===process.env.THEME_ID); console.log(t ? t.name : "")')
+          echo "Target theme: $THEME_ID \"$name\" (role: $role)"
+          if [ "$role" = "missing" ]; then
+            echo "::error::No theme with ID $THEME_ID in the store. Check the ID in the Customize URL."
+            exit 1
+          fi
+          if [ "$role" = "live" ] || [ "$role" = "main" ]; then
+            echo "::error::Theme $THEME_ID is the LIVE theme. Duplicate Helio and push to the copy instead."
+            exit 1
+          fi
+
+      - name: Push Heartside files into the copy
+        run: shopify theme push --theme "$THEME_ID" --path shopify --nodelete --ignore "preview/*" --ignore "README.md"
+
+      - name: Summary
+        if: success()
+        run: |
+          {
+            echo "### Pushed to theme $THEME_ID"
+            echo ""
+            echo "Open Shopify admin > Online Store > Themes > the copy > Customize to finish setup."
+            echo "Preview: https://bnf1em-ge.myshopify.com/?preview_theme_id=$THEME_ID"
+          } >> "$GITHUB_STEP_SUMMARY"

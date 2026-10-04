@@ -1,0 +1,3 @@
+# Files in shopify/ that are not theme files. Shopify CLI skips these on push.
+preview/
+README.md

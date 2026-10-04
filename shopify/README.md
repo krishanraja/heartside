@@ -32,9 +32,13 @@ Everything is scoped under a `.hs` class, so Helio's styles stay untouched and H
 - **End time.** It's set to **1 November 2026, 23:59 London time** (the store's time zone), which matches the discount as it stands. For US shoppers that is 7:59 pm Eastern and 4:59 pm Pacific on 1 November. My recommendation is to move both automatic discounts to end at 11:59 pm Pacific on 1 November (that's 07:59 UTC on 2 November). Then "until November 1" holds for every US shopper. If you do, change `hs_ends` to `2026-11-02T07:59:00+00:00`.
 - **Collection handle.** Check that the All gifts collection's handle is `all-gifts` (Products > Collections > All gifts > the URL handle in the search listing). If it differs, change `hs_collection`. If it's wrong, the page shows full prices and never shows a discount that checkout won't honour.
 
-## Install (about 15 minutes with the Shopify CLI)
+## Install
 
 Work on a copy. The live theme stays as it is until you publish.
+
+**From the browser (no terminal):** the repo has a GitHub Actions workflow, `.github/workflows/shopify-theme-push.yml`, that pushes this folder into a theme you name. It refuses the live theme. It needs the repository secret `SHOPIFY_CLI_THEME_TOKEN`, a password from Shopify's free Theme Access app. Then go to Actions > *Push homepage to a Shopify theme* > Run workflow, and enter the copy's theme ID. `docs/COWORK-PROMPT.md` walks through it step by step. Shopify's own GitHub connection doesn't fit here: it only builds a theme from a complete theme stored in the repo, and Helio's paid code must stay out of this public repo.
+
+**From a terminal (about 15 minutes with the Shopify CLI):**
 
 1. **Copy the theme.** Online Store > Themes > Helio > `…` > **Duplicate**. Note the copy's theme ID; it's the number in the Customize URL.
 2. **Push these files into the copy.**
