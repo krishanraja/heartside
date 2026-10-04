@@ -99,9 +99,13 @@ jobs:
           node -e '
             const fs = require("fs");
             const read = (f) => { try { const r = fs.readFileSync(f, "utf8"); return JSON.parse(r.replace(/^\s*\/\*[\s\S]*?\*\//, "")); } catch (e) { return null; } };
+            // Shopify adds empty "settings": {} and reorders keys when it saves, so compare the substance
+            const norm = (v) => Array.isArray(v) ? v.map(norm) : v && typeof v === "object"
+              ? Object.keys(v).sort().reduce((o, k) => { const n = norm(v[k]); if (!(n && typeof n === "object" && !Array.isArray(n) && !Object.keys(n).length)) o[k] = n; return o; }, {})
+              : v;
             for (const f of fs.readdirSync("shopify/templates")) {
               const store = read("backup/templates/" + f), repo = read("shopify/templates/" + f);
-              const same = store && JSON.stringify(store) === JSON.stringify(repo);
+              const same = store && JSON.stringify(norm(store)) === JSON.stringify(norm(repo));
               console.log(`templates/${f}: ${!store ? "new to this theme" : same ? "unchanged" : "the theme has edits that this push replaces (saved in the backup)"}`);
             }'
 

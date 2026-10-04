@@ -11,7 +11,7 @@ More in `preview/`:
 - `review-builder-gerald.jpg`: the live poster and evidence photos after typing "Gerald".
 - `leak-studio-gerald.jpg` and `story-cards.jpg`: the share section and its four free story cards.
 - `product-annual-review.jpg`, `product-body-double-phone.jpg` and `product-teeinblue-bridge.jpg`: product pages, the last one showing answers copied into a stand-in Teeinblue form.
-- `live-store-phone.png` and `live-store-desktop.png`: as Shopify renders the Heartside launch preview.
+- `live-store-phone.jpg`, `live-store-desktop.jpg` and `live-store-leak.jpg`: as Shopify renders the Heartside launch preview (4 October, after the memo bar swap).
 
 ## How the page works
 
