@@ -133,22 +133,47 @@ def compose_front(photo, name, frame, win, win_box, focus=(0.5, 0.45)):
 
 # ----------------------------------------------------------------- back ----
 
-def build_back():
+# The back is the flip-over moment: the front makes them go "aww", the back makes
+# them laugh. Every option is built so Krish can swap with one word.
+BACK_LINES = {
+    # Recommended. The dog is talking: it turns the ornament into a gift "from the
+    # dog" and gives every video a second beat when the ornament is turned over.
+    "hogs-the-bed": ["Merry Christmas", "from the one", "who hogs the bed."],
+    "best-present": ["The best present", "is asleep", "on the sofa."],
+    "keep-them-close": ["Keep them", "close."],          # the brand line, as briefed
+}
+BACK_DEFAULT = "hogs-the-bed"
+
+
+def build_back(variant=BACK_DEFAULT):
     img = Image.new("RGBA", (S, S), CREAM + (255,))
     d = ImageDraw.Draw(img)
+    lines = BACK_LINES[variant]
 
-    # "Keep them close." — the brand line, large, centred slightly above middle
-    f = font("CormorantGaramond-MediumItalic.ttf", 156)
-    d.text((C, 516), "Keep them", font=f, fill=INK, anchor="mm")
-    d.text((C, 680), "close.", font=f, fill=INK, anchor="mm")
+    # Size the line so the widest row sits comfortably inside the safe circle
+    size = 156 if len(lines) == 2 else 128
+    f = font("CormorantGaramond-MediumItalic.ttf", size)
+    while max(d.textlength(t, font=f) for t in lines) > 900:
+        size -= 4
+        f = font("CormorantGaramond-MediumItalic.ttf", size)
+    lead = round(size * 1.05)
 
-    # Heartside mark: the supplied wordmark, as given, under the line. 720 px wide
-    # keeps its hairlines printable on a 3" disc ("EST. 2022" will read as a fine line).
+    # Heartside mark: the supplied wordmark, as given, under the line. 640-720 px
+    # wide keeps its hairlines printable on a 3" disc ("EST. 2022" reads as a fine line).
     logo = Image.open(ASSETS / "heartside-logo.png").convert("RGBA")
     logo = logo.crop(logo.getchannel("A").getbbox())
-    lw = 720
+    lw = 720 if len(lines) == 2 else 640
     logo = logo.resize((lw, round(logo.height * lw / logo.width)), Image.LANCZOS)
-    img.alpha_composite(logo, (C - lw // 2, 856))
+
+    # Stack the line and the wordmark as one block, centred on the disc
+    gap = 120
+    text_h = lead * (len(lines) - 1) + size
+    top = C - (text_h + gap + logo.height) // 2
+    y = top + size // 2
+    for t in lines:
+        d.text((C, y), t, font=f, fill=INK, anchor="mm")
+        y += lead
+    img.alpha_composite(logo, (C - lw // 2, top + text_h + gap))
     return img
 
 
@@ -228,6 +253,20 @@ def preview_sheet(fronts, back):
     return sheet
 
 
+def options_sheet(backs):
+    W, H = 2400, 900
+    sheet = Image.new("RGBA", (W, H), CREAM + (255,))
+    d = ImageDraw.Draw(sheet)
+    lab = font("DMSans-Medium.ttf", 26)
+    slot = W // len(backs)
+    for i, (key, face) in enumerate(backs):
+        r = ornament_render(face, 600)
+        sheet.alpha_composite(r, (i * slot + (slot - r.width) // 2, 0))
+        tag = key + ("  ·  recommended" if key == BACK_DEFAULT else "")
+        d.text((i * slot + slot // 2, 850), tag, font=lab, fill=INK, anchor="mm")
+    return sheet
+
+
 def names_sheet(fronts):
     W, H = 2400, 900
     sheet = Image.new("RGBA", (W, H), CREAM + (255,))
@@ -300,9 +339,16 @@ def main():
     sample = compose_front(dog, "Biscuit", frame, win, win_box, focus)
     sample.convert("RGB").save(OUT / "front-sample-biscuit.png", optimize=True)
 
-    # 3. Back
+    # 3. Back (default line), plus every option as its own print-ready file
     back = build_back()
     back.convert("RGB").save(OUT / "back.png", optimize=True)
+    (OUT / "back-options").mkdir(exist_ok=True)
+    backs = []
+    for key in BACK_LINES:
+        b = build_back(key)
+        b.convert("RGB").save(OUT / "back-options" / f"back-{key}.png", optimize=True)
+        backs.append((key, b))
+    options_sheet(backs).convert("RGB").save(OUT / "preview" / "back-options.png", optimize=True)
 
     # 4. Checking and selling previews
     guide_overlay(sample).convert("RGB").save(OUT / "preview" / "front-with-guides.png")

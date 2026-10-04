@@ -2,6 +2,8 @@
 
 For Claude Code, Higgsfield and Krish. Read `BRIEF.md` first, especially section 1 (the feeling), section 7 (visual direction) and section 10 (guardrails). This document turns them into videos.
 
+> **Update, 4 October 2026.** The "Their Person" ornament is now the hero product. Its concepts (G to J: "The flip", "Ask your dog", "Dog grandma", "Lock screen") and hooks are in `../ornament/SELL.md`, and they take priority over the concepts below. The specs, disclosure rules and test plan in this file still apply to them.
+
 ---
 
 ## 1. What the videos must do

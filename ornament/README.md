@@ -1,6 +1,6 @@
 # The "Their Person" ornament: print files and Printify setup
 
-The hero product from `docs/HANDOFF.md`. It's a round ceramic ornament. The front shows the customer's dog inside the Heartside watercolour heart, with "[Name] is my person." underneath. The back says "Keep them close." above the wordmark.
+The hero product from `docs/HANDOFF.md`. It's a round ceramic ornament. The front shows the customer's dog inside the Heartside watercolour heart, with "[Name] is my person." underneath. The back is the punchline: "Merry Christmas from the one who hogs the bed." above the wordmark. How it sells (product page, share mechanics, videos) is in `SELL.md`.
 
 ![Front and back](preview/ornament-front-back.png)
 
@@ -9,7 +9,11 @@ The hero product from `docs/HANDOFF.md`. It's a round ceramic ornament. The fron
 - **The photo window is the brand heart itself.** I took the outline of `assets/heartside-heart-watercolor.png`, pulled it in by 24 px and cut the photo window from it, so a rim of real watercolour shows all the way round. It keeps the hand-painted wobble of the brand heart, which is what makes it read as hand-drawn rather than a heart icon. It also keeps to the "one heart at a time" rule.
 - **The name sits on its own line, with "is my person." smaller underneath.** A name of any length then centres cleanly, and the sentence still reads as one thought. Names up to 13 characters fit at full size (see the test below). The character limit is set at 14.
 - **Cream background, full bleed.** Brand cream `#FBF6F1` is close to the white of the glazed ceramic, so if the print lands a fraction off the edge, no white sliver shows.
-- **Weights are one step heavier than on screen.** Cormorant Garamond Medium and Medium Italic, so the thin strokes survive printing at 3 inches. The wordmark on the back is 720 px wide on the file (about 1.4 inches). That keeps its letters clear. "EST. 2022" will print as a fine line.
+- **Weights are one step heavier than on screen.** Cormorant Garamond Medium and Medium Italic, so the thin strokes survive printing at 3 inches. The wordmark on the back is 640 to 720 px wide on the file (about 1.3 to 1.4 inches). That keeps its letters clear. "EST. 2022" will print as a fine line.
+- **The back is a joke from the dog.** The front makes people go "aww", and turning it over makes them laugh. That flip gives every video a second beat, and it makes the ornament a gift "from the dog". The handoff asked for "Keep them close." on the back, and it's still built as an option. All three backs are print-ready in `back-options/`; to change the default, edit `BACK_DEFAULT` in `tools/build_ornament.py`.
+
+  ![Back options](preview/back-options.png)
+
 - **No offer, date or year on the ornament.** It's a keepsake, so it shouldn't date. A year on the back ("Christmas 2026") is a common ornament convention and an easy add if you want it. It's one line in `tools/build_ornament.py`.
 
 ![Name length test](preview/name-length-test.png)
@@ -24,7 +28,8 @@ All print files are 1500 × 1500 px, square. That is about 500 px per inch on th
 | `front-heart-window-mask.png` | White heart on black, full canvas: the photo window | Any editor with a mask or clip feature, and the fallback script |
 | `front-heart-window-shape.png` | The same window as a transparent shape, cropped to its own size (715 × 681) | Tools that want a clipping shape |
 | `front-sample-biscuit.png` | The finished front with the sample dog and "Biscuit" | Product images, the Shopify listing, and anywhere the editor needs real artwork to save |
-| `back.png` | "Keep them close." and the wordmark | Back print area, fill |
+| `back.png` | The default back: "Merry Christmas from the one who hogs the bed." and the wordmark | Back print area, fill |
+| `back-options/` | All three backs, print-ready: `hogs-the-bed`, `best-present`, `keep-them-close` | Swap any of them in for `back.png` |
 | `preview/` | Product render, guides overlay and name-length test | For checking only. Don't upload these as print files |
 
 To rebuild everything from the brand assets, run `python3 tools/build_ornament.py` (needs `pip install pillow`).
@@ -63,16 +68,9 @@ That writes `ornament/orders/Biscuit.png` (the print file) and `Biscuit-check.pn
 
 **2. The price clears the floor, with a ceiling on cost.** At $34.99 list, the price after 30% off is $24.49. The floor rule (landed cost + 3% + $0.30 + $8) means landed cost (ornament + print + US shipping) can be at most **$15.45**. The base price starts around $4.90. Check that the double-sided print and the provider's first-item US shipping together stay under $15.45. If not, raise the list price rather than dropping the discount.
 
-## Product page copy (draft)
+## Product page copy
 
-These drafts follow the voice rules in `docs/BRIEF.md` section 1.
-
-- **Title:** Their Person Ornament
-- **Promise:** Their face and their name, on the tree every year.
-- **Body:** A round ceramic ornament with your dog's photo inside our watercolour heart, and one line underneath: *[Name] is my person.* On the back, *Keep them close.* Upload a photo, add their name, and it goes to print with both.
-- **Photo field:** "Their best photo." Help text: "Face close to the camera, in good light. We'll fit it into the heart. Buying for someone else? A clear photo from their Instagram works."
-- **Name field:** "What's their name?" Placeholder "e.g. Biscuit". Up to 14 characters.
-- **Fine print to confirm with the print provider before publishing:** size (2.99" round), ceramic with glossy finish, printed both sides, what it hangs from (ribbon or string), production time, and the order-by date for Christmas.
+The product page, the share mechanics and the video concepts are in `SELL.md`. Fine print to confirm with the print provider before publishing: size (2.99" round), ceramic with glossy finish, printed both sides, what it hangs from (ribbon or string), production time, and the order-by date for Christmas.
 
 ## Still open on this product
 
