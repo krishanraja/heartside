@@ -1,5 +1,7 @@
 # The "Their Person" ornament: print files and Printify setup
 
+> **Out of the range in v2** (`docs/V2-FROM-THE-DOG.md` section 3). Kept for reference; the v2 "Tiny Me" ornament is a different design, specified in `docs/TEEINBLUE-SETUP.md`.
+
 The hero product from `docs/HANDOFF.md`. It's a round ceramic ornament. The front shows the customer's dog inside the Heartside watercolour heart, with "[Name] is my person." underneath. The back is the punchline: "Merry Christmas from the one who hogs the bed." above the wordmark. How it sells (product page, share mechanics, videos) is in `SELL.md`.
 
 ![Front and back](preview/ornament-front-back.png)

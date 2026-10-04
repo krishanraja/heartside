@@ -1,0 +1,168 @@
+{
+  "sections": {
+    "main": {
+      "type": "hs2-product",
+      "settings": {
+        "show_poster": false
+      },
+      "blocks": {
+        "stamp": {
+          "type": "stamp",
+          "settings": {
+            "text": "BENEFITS PACKAGE · APPROVED BY {DOG}"
+          }
+        },
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "description": {
+          "type": "description"
+        },
+        "answers": {
+          "type": "answers"
+        },
+        "buy": {
+          "type": "buy"
+        },
+        "fine": {
+          "type": "fine"
+        }
+      },
+      "block_order": [
+        "stamp",
+        "title",
+        "price",
+        "description",
+        "answers",
+        "buy",
+        "fine"
+      ]
+    },
+    "policy": {
+      "type": "hs2-policy",
+      "blocks": {
+        "p1": {
+          "type": "policy",
+          "settings": {
+            "title": "A human checks every order",
+            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "policy",
+          "settings": {
+            "title": "Misprinted? Remade free",
+            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
+          }
+        },
+        "p3": {
+          "type": "policy",
+          "settings": {
+            "title": "Every review gets published",
+            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    },
+    "closure": {
+      "type": "hs2-closure",
+      "blocks": {
+        "d1": {
+          "type": "deadline",
+          "settings": {
+            "item": "Mandatory Company Uniform",
+            "date": "[DATE]"
+          }
+        },
+        "d2": {
+          "type": "deadline",
+          "settings": {
+            "item": "The Body Double",
+            "date": "[DATE]"
+          }
+        },
+        "d3": {
+          "type": "deadline",
+          "settings": {
+            "item": "Framed review",
+            "date": "[DATE]"
+          }
+        },
+        "d4": {
+          "type": "deadline",
+          "settings": {
+            "item": "Review poster, socks, ornament",
+            "date": "[DATE]"
+          }
+        },
+        "d5": {
+          "type": "deadline",
+          "settings": {
+            "item": "{dogs} video and story card",
+            "date": "Christmas Eve"
+          }
+        }
+      },
+      "block_order": [
+        "d1",
+        "d2",
+        "d3",
+        "d4",
+        "d5"
+      ]
+    },
+    "faq": {
+      "type": "hs2-faq",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "My dog's photos are all blurry. Is that a problem?",
+            "answer": "Send your best one. A person checks it before printing and tells you if it needs a better shot. You can also send it after you order."
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order a review for a friend's dog?",
+            "answer": "Yes. That is most of the fun. Fill in their dog and their name, and we ship it straight to them."
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change what the review says?",
+            "answer": "Within 12 hours of ordering, yes. After that, {dog} considers the matter closed."
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "Where do you ship?",
+            "answer": "Anywhere in the US, free."
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ]
+    }
+  },
+  "order": [
+    "main",
+    "policy",
+    "closure",
+    "faq"
+  ]
+}

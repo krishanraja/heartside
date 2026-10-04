@@ -1,5 +1,7 @@
-// Serve tools/preview/out and screenshot it at phone and desktop widths, then
-// exercise the name preview (type, pick a face, turn it over, share-as-image).
+// Serve tools/preview/out, screenshot every page at phone and desktop widths, and
+// exercise the v2 behaviour: the live dog name, the HR-26 chips, the read-aloud
+// toggle, the link that carries answers to the product page, the story card and
+// the sticky button.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,7 +10,7 @@ import { chromium } from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, 'out');
-const shots = path.join(here, 'out', 'shots');
+const shots = path.join(root, 'shots');
 fs.mkdirSync(shots, { recursive: true });
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = http.createServer((req, res) => {
@@ -18,72 +20,88 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(p).pipe(res);
 }).listen(4173);
 
-const exe = ['/opt/pw-browsers/chromium', process.env.CHROMIUM_PATH].find((p) => p && fs.existsSync(p) && fs.statSync(p).isFile());
+const exe = ['/opt/pw-browsers/chromium'].find((p) => fs.existsSync(p) && fs.statSync(p).isFile());
 const browser = await chromium.launch(exe ? { executablePath: exe } : {});
 const errors = [];
-async function page(width, height, name) {
-  const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, acceptDownloads: true });
+const log = (...a) => console.log(...a);
+
+async function open(width, height, name, url = 'http://localhost:4173/') {
+  const ctx = await browser.newContext({ viewport: { width, height }, acceptDownloads: true });
   const pg = await ctx.newPage();
   pg.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
-  pg.on('console', (m) => { if (m.type() === 'error') errors.push(`${name} console: ${m.text()}`); });
-  pg.on('response', (r) => { if (r.status() >= 400) errors.push(`${name} ${r.status()}: ${r.url()}`); });
-  await pg.goto('http://localhost:4173/');
+  pg.on('response', (r) => { if (r.status() >= 400 && !r.url().endsWith('favicon.ico')) errors.push(`${name} ${r.status()}: ${r.url()}`); });
+  await pg.goto(url);
   await pg.evaluate(() => document.fonts.ready);
-  // scroll the page once so lazy images load and reveals fire, then back to the top
-  await pg.evaluate(async () => {
-    for (let y = 0; y < document.body.scrollHeight; y += 500) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); }
-    window.scrollTo(0, 0);
-  });
-  await pg.evaluate(() => Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
-  await pg.evaluate(() => document.querySelectorAll('[data-hs-reveal]').forEach((e) => e.classList.add('is-in')));
-  await pg.waitForTimeout(900);
-  console.log(`${name} sticky bar at top of page (should be false):`, await pg.locator('[data-hs-sticky]').evaluate((e) => e.classList.contains('is-on')));
-  await pg.screenshot({ path: path.join(shots, `${name}-full.png`), fullPage: true });
-  await pg.screenshot({ path: path.join(shots, `${name}-fold.png`) });
   return { ctx, pg };
 }
-
-const mobile = await page(390, 844, 'phone');
-const desktop = await page(1440, 900, 'desktop');
-
-// Interaction: type a name, pick the pug, screenshot; turn it over, screenshot
-for (const [label, { pg }] of [['phone', mobile], ['desktop', desktop]]) {
-  const maker = pg.locator('[data-hs-maker]');
-  await maker.scrollIntoViewIfNeeded();
-  await pg.fill('[data-hs-name-in]', 'Gerald');
-  await pg.locator('.hs-chip', { hasText: 'Pug' }).click();
-  await pg.waitForTimeout(500);
-  await maker.screenshot({ path: path.join(shots, `${label}-maker-gerald.png`) });
-  await pg.click('[data-hs-flip]');
-  await pg.waitForTimeout(1100);
-  await pg.locator('.hs-maker__stage').screenshot({ path: path.join(shots, `${label}-maker-flipped.png`) });
-  await pg.click('[data-hs-flip]');
-  await pg.fill('[data-hs-name-in]', 'Sir Waffleton');
-  await pg.waitForTimeout(300);
-  await pg.locator('.hs-orn').screenshot({ path: path.join(shots, `${label}-maker-longname.png`) });
-  const cta = await pg.locator('[data-hs-cta]').evaluate((a) => [a.textContent.trim(), a.getAttribute('href')]);
-  console.log(`${label} CTA:`, cta);
+async function fullShot(pg, file) {
+  await pg.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 600) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 40)); } window.scrollTo(0, 0); });
+  await pg.evaluate(() => Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
+  await pg.waitForTimeout(600);
+  await pg.screenshot({ path: path.join(shots, file), fullPage: true });
 }
 
-// Share-as-image: desktop Chromium has no file sharing, so it should download a PNG
-const [download] = await Promise.all([
-  desktop.pg.waitForEvent('download', { timeout: 8000 }).catch(() => null),
-  desktop.pg.click('[data-hs-share]'),
-]);
-if (download) { await download.saveAs(path.join(shots, 'shared-image.png')); console.log('share: downloaded', await download.suggestedFilename()); }
-else console.log('share: no download fired');
-
-// Sticky bar on phone: scroll past the hero and the maker
-await mobile.pg.evaluate(() => window.scrollTo(0, document.querySelector('#shopify-section-steps').offsetTop));
-await mobile.pg.waitForTimeout(700);
-console.log('sticky bar on after scroll:', await mobile.pg.locator('[data-hs-sticky]').evaluate((e) => e.classList.contains('is-on')));
-await mobile.pg.screenshot({ path: path.join(shots, 'phone-sticky.png') });
-
-// Overflow check: nothing wider than the viewport
-for (const [label, { pg }] of [['phone', mobile], ['desktop', desktop]]) {
+// 1. Homepage, as first seen
+for (const [w, h, name] of [[390, 844, 'phone'], [1440, 900, 'desktop']]) {
+  const { pg } = await open(w, h, name);
+  await pg.screenshot({ path: path.join(shots, `${name}-home-first-screen.png`) });
+  await fullShot(pg, `${name}-home-full.png`);
   const over = await pg.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-  console.log(`${label} horizontal overflow: ${over}px`);
+  log(`${name} horizontal overflow: ${over}px`);
 }
-console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
+
+// 2. Interactions on desktop
+const { pg } = await open(1440, 900, 'interact');
+await pg.fill('[data-hs2-input="dog"]', 'Gerald');
+const h1 = await pg.locator('h1').innerText();
+const badge = await pg.locator('.hs2-badge__name').innerText();
+const stamp = await pg.locator('.hs2-hero .hs2-stamp').innerText();
+log('after typing Gerald -> h1:', JSON.stringify(h1), '| badge:', badge, '| stamp:', stamp);
+await pg.locator('#review').scrollIntoViewIfNeeded();
+await pg.fill('[data-hs2-input="person"]', 'Priya');
+await pg.fill('[data-hs2-input="cupboard"]', '2,019');
+await pg.click('[data-hs2-chip="improvement"][data-value="The vacuum"]');
+await pg.click('[data-hs2-chip="incident"][data-value="The couch"]');
+await pg.click('[data-hs2-chip="enemy"][data-value="Squirrels"]');
+await pg.click('[data-hs2-voice]');
+await pg.waitForTimeout(200);
+log('poster improvement:', await pg.locator('.hs2-poster [data-hs2="improvementLine"]').innerText());
+log('poster incident:', await pg.locator('.hs2-poster [data-hs2="incidentLine"]').innerText());
+log('poster enemy:', await pg.locator('.hs2-poster [data-hs2="enemyLine"]').innerText());
+log('voice button:', await pg.locator('[data-hs2-voice]').innerText());
+log('memo to:', (await pg.locator('.hs2-management__memo').innerText()).split('\n')[0]);
+await pg.locator('#review').screenshot({ path: path.join(shots, 'desktop-review-gerald.png') });
+await pg.locator('.hs2-management').screenshot({ path: path.join(shots, 'desktop-management-gerald.png') });
+const [download] = await Promise.all([
+  pg.waitForEvent('download', { timeout: 8000 }).catch(() => null),
+  pg.click('[data-hs2-story]'),
+]);
+if (download) { await download.saveAs(path.join(shots, 'story-card.png')); log('story card:', await download.suggestedFilename()); } else log('story card: no download');
+await pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop + 200));
+await pg.waitForTimeout(700);
+log('sticky on while the builder is on screen (should be false):', await pg.locator('[data-hs2-sticky]').evaluate((e) => e.classList.contains('is-on')));
+await pg.evaluate(() => window.scrollTo(0, document.querySelector('#benefits').offsetTop));
+await pg.waitForTimeout(700);
+log('sticky on at benefits (should be true):', await pg.locator('[data-hs2-sticky]').evaluate((e) => e.classList.contains('is-on')), '|', await pg.locator('[data-hs2-sticky] a').innerText());
+
+// 3. The approve link carries the answers to the poster product page
+await pg.evaluate(() => { const a = document.querySelector('[data-hs2-carry]'); a.setAttribute('data-hs2-base', 'product-review.html'); a.setAttribute('href', 'product-review.html'); });
+await pg.fill('[data-hs2-input="dog"]', 'Gerald'); // re-render links
+const href = await pg.locator('.hs2-buy [data-hs2-carry]').getAttribute('href');
+log('approve link:', href);
+await pg.goto('http://localhost:4173/' + href);
+await pg.evaluate(() => document.fonts.ready);
+await pg.waitForTimeout(300);
+log('product page answers visible:', await pg.locator('[data-hs2-answers]').isVisible(), '| poster dog:', await pg.locator('.hs2-poster .hs2-paw [data-hs2="dog"]').innerText());
+log('hidden properties:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value]))));
+await fullShot(pg, 'desktop-product-review.png');
+
+// 4. Pillow product page on phone (no images yet: placeholder tag)
+const pillow = await open(390, 844, 'pillow', 'http://localhost:4173/product-pillow.html');
+await fullShot(pillow.pg, 'phone-product-pillow.png');
+await pillow.pg.selectOption('[data-hs2-variant]', '11');
+log('pillow price after picking 10″:', await pillow.pg.locator('[data-hs2-price]').innerText());
+
+log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
 await browser.close();
 server.close();

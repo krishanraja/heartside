@@ -1,5 +1,7 @@
 # Selling the "Their Person" ornament
 
+> **Superseded by `docs/V2-FROM-THE-DOG.md`.** The v2 comedy bible and ads replace this.
+
 Krish's instruction (4 October 2026): pull out every stop on emotion, humour, shareability and conversion. Customer-facing lines use US spelling (favorite, watercolor, personalized) because every buyer is in the US. This file turns that into the product page, the share mechanics and the videos. Read `docs/BRIEF.md` section 1 for the voice and section 10 for the guardrails. The guardrails are why this sells, so they stay (see the last section).
 
 ## The idea in one line

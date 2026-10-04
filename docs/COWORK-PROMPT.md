@@ -1,5 +1,7 @@
 # Heartside: brief for Claude CoWork to finish the launch
 
+> **Superseded on 4 October 2026 by `docs/V2-FROM-THE-DOG.md`.** The ornament-led plan below no longer applies. Two parts still hold: the deploy route (Phase 1: Theme Access, the GitHub secret and the workflow, already working) and the browser notes at the end. Teeinblue setup is in `docs/TEEINBLUE-SETUP.md`.
+
 Paste everything below the line into CoWork. It's written for an agent working in Krish's browser with Shopify admin, Printify and GitHub open.
 
 ---
@@ -34,7 +36,7 @@ The feeling every page should give: *"that is literally my dog, I need to send t
 2. **Don't change store-level settings:** currency, payments, markets, tax, domains, checkout.
 3. **Don't spend money or install apps without asking Krish.** That covers test orders, paid apps and samples. The one exception: Shopify's free **Theme Access** app, which Krish approves for Phase 1.
 4. **The Theme Access password goes in exactly one place**, the GitHub repository secret. It never goes in chat, notes, files, commits, Shopify fields or any summary you write.
-5. **No invented trust signals:** no fake reviews, ratings, customer counts, testimonials or "only 3 left". Never publish a delivery or order-by date that a supplier hasn't confirmed. Krish's personal Gmail never appears anywhere customer-facing; the contact address is krish@heart-side.org.
+5. **No invented trust signals:** no fake reviews, ratings, customer counts, testimonials or "only 3 left". Never publish a delivery or order-by date that a supplier hasn't confirmed. Krish's personal Gmail never appears anywhere customer-facing; the contact address is krish@heartside.io.
 6. **Code changes go through GitHub, not Shopify's code editor.** Edit the file on github.com, commit to `main`, then rerun the workflow. That keeps the repo as the single source of truth. Settings in the theme editor (products, words, images, toggles) are fine to change in Shopify.
 7. **When something is Krish's call**, write it down with your recommendation and keep going on everything else. Bring all the decisions to him together in the final report.
 
@@ -44,7 +46,7 @@ Why this route: the repo is public, so Helio's paid theme code can't live in it,
 
 1. **Duplicate the theme.** Shopify admin > Online Store > Themes > the current theme (Helio) > `…` > **Duplicate**. Rename the copy **Heartside launch**. Open it in **Customize**. The theme ID is the number in the URL (`/themes/<ID>/editor`); note it.
 2. **Create a deploy password.** Install **Theme Access** by Shopify (free) from the Shopify App Store.
-   - In the app: **Create password**, name `GitHub deploy`, email `krish@heart-side.org`.
+   - In the app: **Create password**, name `GitHub deploy`, email `krish@heartside.io`.
    - Shopify emails a one-time link to view it. Open the link and copy the password (it starts `shptka_`).
 3. **Store it in GitHub.** On github.com/krishanraja/heartside: **Settings > Secrets and variables > Actions > New repository secret**. Name: `SHOPIFY_CLI_THEME_TOKEN`. Value: the password. Save, then close the email tab.
 4. **Run the deploy.** On the repo: **Actions** > **Push homepage to a Shopify theme** > **Run workflow** > branch `main` > `theme_id` = the copy's ID > Run.

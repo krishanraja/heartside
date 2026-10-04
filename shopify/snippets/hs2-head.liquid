@@ -1,0 +1,15 @@
+{%- comment -%}
+  Fonts, styles and script for the Heartside v2 sections. Every hs2- section renders
+  this, so a section works wherever it is placed; the browser fetches each file once
+  and hs2.js guards against running twice. Fonts are self-hosted and subset to Latin:
+  Fraunces (headlines), DM Sans (UI), Courier Prime (paperwork). SIL Open Font License.
+{%- endcomment -%}
+<style>
+  @font-face { font-family: "HS Fraunces"; font-style: normal; font-weight: 400 700; font-display: swap; src: url({{ 'hs-fraunces.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Fraunces"; font-style: italic; font-weight: 400; font-display: swap; src: url({{ 'hs-fraunces-italic.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS DM Sans"; font-style: normal; font-weight: 400 700; font-display: swap; src: url({{ 'hs-dmsans.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Courier Prime"; font-style: normal; font-weight: 400; font-display: swap; src: url({{ 'hs-courierprime-400.woff2' | asset_url }}) format("woff2"); }
+  @font-face { font-family: "HS Courier Prime"; font-style: normal; font-weight: 700; font-display: swap; src: url({{ 'hs-courierprime-700.woff2' | asset_url }}) format("woff2"); }
+</style>
+{{ 'hs2.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs2.js' | asset_url }}" defer="defer"></script>

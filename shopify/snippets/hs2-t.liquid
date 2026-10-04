@@ -1,0 +1,13 @@
+{%- comment -%}
+  Turns the tokens {dog}, {DOG}, {dogs} and {person} in editor text into live spans.
+  The page renders with the sample names (Biscuit, Sarah); hs2.js swaps in the
+  shopper's dog and name as they type.
+  Usage: {% render 'hs2-t', text: section.settings.heading %}
+{%- endcomment -%}
+{%- liquid
+  assign t_dog = '<span data-hs2="dog">Biscuit</span>'
+  assign t_dog_upper = '<span data-hs2="DOG">BISCUIT</span>'
+  assign t_dogs = '<span data-hs2="dogs">Biscuit' | append: "'s</span>"
+  assign t_person = '<span data-hs2="person">Sarah</span>'
+  echo text | replace: '{dogs}', t_dogs | replace: '{DOG}', t_dog_upper | replace: '{dog}', t_dog | replace: '{person}', t_person
+-%}

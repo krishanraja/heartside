@@ -1,0 +1,41 @@
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs2">
+  <section class="hs2-leak" aria-labelledby="leak-h-{{ section.id }}">
+    <div class="hs2-leak__inner">
+      <div class="hs2-leak__copy">
+        <h2 id="leak-h-{{ section.id }}">{% render 'hs2-t', text: s.heading %}</h2>
+        <p>{{ s.text }}</p>
+        <a class="hs2-btn" href="#review" data-hs2-story>{{ s.button }}</a>
+        <p class="hs2-leak__status" data-hs2-story-status role="status"></p>
+      </div>
+      <div class="hs2-story" aria-hidden="true">
+        <div class="hs2-story__top">LEAKED · HR-26</div>
+        <div class="hs2-story__mid">
+          <div class="hs2-story__who"><span data-hs2="dog">Biscuit</span> has reviewed <span data-hs2="person">Sarah</span>.</div>
+          <div class="hs2-story__big">Leaving the house: <span class="stars">★☆☆☆☆</span></div>
+        </div>
+        <div class="hs2-story__bottom">
+          <div class="hs2-story__ask">Who is your dog's person?</div>
+          <div class="hs2-story__domain">heartside.io</div>
+        </div>
+        <div class="hs2-story__stamp">CONFIDENTIAL</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "HS leak the review",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "The share loop. The button draws a 1080 x 1920 story card from the shopper's answers in their browser and shares or saves it. Nothing is uploaded." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Leak {dogs} review." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Get the story-sized version free. Post it, tag the person, and watch the group chat ask for theirs." },
+    { "type": "text", "id": "button", "label": "Button", "default": "Get the free story card" }
+  ],
+  "presets": [{ "name": "HS leak the review" }]
+}
+{% endschema %}

@@ -1,0 +1,61 @@
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs2">
+  <div class="hs2-wrap hs2-hero" data-hs2-hero>
+    <div class="hs2-hero__copy">
+      <div class="hs2-stamp">{% render 'hs2-t', text: s.stamp %}</div>
+      <h1>{% render 'hs2-t', text: s.heading %}</h1>
+      <p class="hs2-hero__lede">{% render 'hs2-t', text: s.text %}</p>
+      <div class="hs2-namecard">
+        <label for="dogname-{{ section.id }}">{{ s.name_label }}</label>
+        <div class="hs2-namecard__row">
+          <input id="dogname-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit"
+            autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog">
+          <a class="hs2-btn" href="#review">{{ s.button }}</a>
+        </div>
+        <div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>
+      </div>
+    </div>
+
+    <div class="hs2-hero__media">
+      {%- if s.image != blank -%}
+        {{ s.image | image_url: width: 1400 | image_tag: widths: '600, 900, 1200, 1400', sizes: '(min-width: 900px) 50vw, 100vw', class: 'hs2-hero__photo', loading: 'eager', fetchpriority: 'high' }}
+      {%- else -%}
+        <img class="hs2-hero__photo" src="{{ 'hs-photo-dachshund-1600.webp' | asset_url }}"
+          srcset="{{ 'hs-photo-dachshund-800.webp' | asset_url }} 800w, {{ 'hs-photo-dachshund-1600.webp' | asset_url }} 1600w"
+          sizes="(min-width: 900px) 50vw, 100vw" width="1600" height="1048" fetchpriority="high"
+          alt="A dachshund looking up at the camera">
+      {%- endif -%}
+      <div class="hs2-badge" aria-hidden="true">
+        <div class="hs2-badge__top">HEARTSIDE HOUSEHOLD INC.</div>
+        <div class="hs2-badge__body">
+          <div class="hs2-badge__name" data-hs2="dog">Biscuit</div>
+          <div class="hs2-badge__role">Head of Household</div>
+          <div class="hs2-badge__access">Access: all areas, including your side of the bed</div>
+          <div class="hs2-badge__code"></div>
+        </div>
+      </div>
+      <div class="hs2-status">{{ s.status }}</div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HS hero",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "Approved copy from design/Main.dc.html. {dog}, {DOG}, {dogs} and {person} turn into the shopper's dog and name as they type." },
+    { "type": "text", "id": "stamp", "label": "Stamp", "default": "CONFIDENTIAL · OFFICE OF {DOG}" },
+    { "type": "inline_richtext", "id": "heading", "label": "Headline", "default": "{dog} has completed your <em>annual review.</em>" },
+    { "type": "text", "id": "text", "label": "Subline", "default": "You may want to sit down. Overall rating: exceeds expectations. There are some notes about the vacuum." },
+    { "type": "text", "id": "name_label", "label": "Name field label", "default": "Who is your manager? (Your dog's name)" },
+    { "type": "text", "id": "button", "label": "Button", "default": "Read my review" },
+    { "type": "text", "id": "note", "label": "Note under the field", "default": "Everything on this page now reports to {dog}." },
+    { "type": "text", "id": "status", "label": "Status pill", "default": "Status: in a meeting (asleep)" },
+    { "type": "image_picker", "id": "image", "label": "Photo", "info": "assets/IMAGE-BRIEF.md item 1 (hero-manager.jpg). Empty uses the dachshund." }
+  ],
+  "presets": [{ "name": "HS hero" }]
+}
+{% endschema %}

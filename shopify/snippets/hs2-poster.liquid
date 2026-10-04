@@ -1,0 +1,56 @@
+{%- comment -%}
+  The live Annual Review poster (Form HR-26), as on design/Main.dc.html. Used by the
+  homepage review builder and the poster product page. The printed poster is the
+  Teeinblue template built from design/Poster.dc.html.
+  Usage: {% render 'hs2-poster', photo: image_object_or_blank %}
+{%- endcomment -%}
+<div class="hs2-poster-wrap">
+  <div class="hs2-poster">
+    <div class="hs2-poster__head"><span>ANNUAL PERFORMANCE REVIEW · 2026</span><span>FORM HR-26</span></div>
+    <div class="hs2-poster__id">
+      {%- if photo != blank -%}
+        <img data-hs2-photo src="{{ photo | image_url: width: 300 }}" alt="" width="104" height="104" loading="lazy">
+      {%- else -%}
+        <img data-hs2-photo src="{{ 'hs-photo-dachshund-800.webp' | asset_url }}" alt="" width="104" height="104" loading="lazy">
+      {%- endif -%}
+      <div class="hs2-poster__who">
+        <div><strong>Employee:</strong> <span data-hs2="person">Sarah</span></div>
+        <div><strong>Role:</strong> My Person</div>
+        <div><strong>Reviewer:</strong> <span data-hs2="dog">Biscuit</span>, Head of Household</div>
+      </div>
+    </div>
+    <div class="hs2-poster__block hs2-poster__block--ratings">
+      <div class="hs2-poster__label">RATINGS</div>
+      <div class="hs2-poster__rating"><span>Snack delivery</span><span class="stars" aria-label="5 out of 5">★★★★★</span></div>
+      <div class="hs2-poster__rating"><span>Belly rubs</span><span class="stars" aria-label="4 out of 5">★★★★☆</span></div>
+      <div class="hs2-poster__rating"><span>Leaving the house</span><span class="stars" aria-label="1 out of 5">★☆☆☆☆</span></div>
+    </div>
+    <div class="hs2-poster__block">
+      <div class="hs2-poster__label">KEY ACHIEVEMENTS</div>
+      <div>Opened the treat cupboard <span data-hs2="cupboard">1,412</span> times. Strong numbers.</div>
+    </div>
+    <div class="hs2-poster__block">
+      <div class="hs2-poster__label">AREAS FOR IMPROVEMENT</div>
+      <div data-hs2="improvementLine">{% render 'hs2-lines', kind: 'improvement', mode: 'line', pick: 'Leaving' %}</div>
+    </div>
+    <div class="hs2-poster__block">
+      <div class="hs2-poster__label">INCIDENT REPORT</div>
+      <div data-hs2="incidentLine">{% render 'hs2-lines', kind: 'incident', mode: 'line', pick: 'The sock' %}</div>
+    </div>
+    <div class="hs2-poster__block">
+      <div class="hs2-poster__label">THREAT ASSESSMENT</div>
+      <div data-hs2="enemyLine">{% render 'hs2-lines', kind: 'enemy', mode: 'line', pick: 'The mailman' %}</div>
+    </div>
+    <div class="hs2-poster__foot">
+      <div>
+        <div class="hs2-poster__outcome-label">OUTCOME</div>
+        <div class="hs2-poster__outcome">Contract renewed. For life.</div>
+      </div>
+      <div class="hs2-paw">{% render 'hs2-paw' %}<div data-hs2="dog">Biscuit</div></div>
+    </div>
+  </div>
+  <div class="hs2-poster__approved" aria-hidden="true">APPROVED</div>
+</div>
+{% render 'hs2-lines', kind: 'improvement', mode: 'json' %}
+{% render 'hs2-lines', kind: 'incident', mode: 'json' %}
+{% render 'hs2-lines', kind: 'enemy', mode: 'json' %}

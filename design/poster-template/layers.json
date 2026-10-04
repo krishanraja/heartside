@@ -1,0 +1,106 @@
+{
+  "canvas": {
+    "width": 3600,
+    "height": 5400,
+    "dpi": 300,
+    "inches": "12 x 18"
+  },
+  "layers": [
+    {
+      "id": "photo",
+      "x": 252,
+      "y": 522,
+      "width": 1020,
+      "height": 1020,
+      "font": null,
+      "font_size_px": null,
+      "font_weight": null,
+      "color": null,
+      "sample": "dog photo, cover-cropped, 4 px corner radius"
+    },
+    {
+      "id": "person",
+      "x": 1968,
+      "y": 725,
+      "width": 288,
+      "height": 108,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "Sarah"
+    },
+    {
+      "id": "dog",
+      "x": 1968,
+      "y": 1056,
+      "width": 403,
+      "height": 108,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "Biscuit"
+    },
+    {
+      "id": "cupboard_line",
+      "x": 252,
+      "y": 2498,
+      "width": 3096,
+      "height": 269,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "Opened the treat cupboard 1,412 times. Strong numbers."
+    },
+    {
+      "id": "improvement",
+      "x": 252,
+      "y": 3039,
+      "width": 3096,
+      "height": 134,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "Leaving. Please stop leaving."
+    },
+    {
+      "id": "incident",
+      "x": 252,
+      "y": 3446,
+      "width": 3096,
+      "height": 134,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "The sock. I would do it again. Case closed."
+    },
+    {
+      "id": "enemy",
+      "x": 252,
+      "y": 3853,
+      "width": 3096,
+      "height": 269,
+      "font": "HS Courier Prime",
+      "font_size_px": 96,
+      "font_weight": "400",
+      "color": "rgb(18, 16, 16)",
+      "sample": "The mailman. Comes every day. Clearly planning something."
+    },
+    {
+      "id": "signature",
+      "x": 2970,
+      "y": 5094,
+      "width": 378,
+      "height": 102,
+      "font": "HS Courier Prime",
+      "font_size_px": 90,
+      "font_weight": "400",
+      "color": "rgb(138, 74, 43)",
+      "sample": "Biscuit"
+    }
+  ]
+}

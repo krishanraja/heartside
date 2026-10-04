@@ -1,0 +1,16 @@
+{%- render 'hs2-head' -%}
+<div class="hs2">
+  <div class="hs2-signoff">{{ section.settings.text }}</div>
+</div>
+
+{% schema %}
+{
+  "name": "HS sign-off",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "text", "id": "text", "label": "Line", "default": "Heartside · Keep them close · heartside.io" }
+  ],
+  "presets": [{ "name": "HS sign-off" }]
+}
+{% endschema %}

@@ -1,0 +1,46 @@
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs2">
+  <section id="closure" class="hs2-wrap hs2-closure" aria-labelledby="closure-h-{{ section.id }}">
+    <div class="hs2-closure__box">
+      <div class="hs2-closure__copy">
+        <div class="hs2-closure__eyebrow">{{ s.eyebrow }}</div>
+        <h2 id="closure-h-{{ section.id }}">{{ s.heading }}</h2>
+        <p>{{ s.text }}</p>
+        <p class="hs2-closure__missed">{% render 'hs2-t', text: s.missed %}</p>
+      </div>
+      <div class="hs2-closure__table">
+        {%- for block in section.blocks -%}
+          <div class="hs2-closure__row" {{ block.shopify_attributes }}><span>{% render 'hs2-t', text: block.settings.item %}</span><strong>{{ block.settings.date }}</strong></div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "HS holiday closure",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "Last order dates. Replace each [DATE] only once Printful's dashboard confirms it (docs/V2-FROM-THE-DOG.md section 5)." },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "NOTICE OF HOLIDAY OFFICE CLOSURE" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Last days to order for Christmas" },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "Everything is made after you order, so each item has its own deadline. These come from our maker. If they change, this table changes the same day." },
+    { "type": "textarea", "id": "missed", "label": "Missed it", "default": "Missed it? We email {dogs} review the moment you order, so there is something to read out on Christmas morning. The poster follows." }
+  ],
+  "blocks": [
+    {
+      "type": "deadline",
+      "name": "Deadline",
+      "settings": [
+        { "type": "text", "id": "item", "label": "Item", "default": "The Body Double" },
+        { "type": "text", "id": "date", "label": "Last order date", "default": "[DATE]" }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [{ "name": "HS holiday closure" }]
+}
+{% endschema %}

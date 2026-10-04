@@ -8,7 +8,7 @@ Heartside sells gifts for people whose small dog is their person. Tagline: "Keep
 
 The feeling a visitor should have: "that is literally my dog, I need to send this to someone." The products are stock supplier items, so they do not carry the brand. The gift framing, the personalisation and the one standout product do. Krish's own verdict on the current range was that it is generic and has no "take my money" product. Treat that as the design problem. A clean-looking store that sells a tag and a sling has not solved it.
 
-Krish's working style: he decides fast when he can react to something concrete. Show finished options, make the call, say what was assumed. Do not hand him blank-page questions. No "not X, it's Y" phrasing and no staccato false binaries in any copy. Personal Gmail never appears on anything customer-facing. The only contact is krish@heart-side.org and the site is heart-side.org.
+Krish's working style: he decides fast when he can react to something concrete. Show finished options, make the call, say what was assumed. Do not hand him blank-page questions. No "not X, it's Y" phrasing and no staccato false binaries in any copy. Personal Gmail never appears on anything customer-facing. The only contact is krish@heartside.io and the site is heartside.io.
 
 ## State of the Shopify store (store id bnf1em-ge, theme Helio)
 
@@ -19,8 +19,8 @@ Done and saved:
 - Currency shown to US visitors is USD via the United States market. Product base prices are still stored in GBP and converted dynamically. Setting fixed USD prices per product is an open item.
 - Discounts, both automatic, both end 1 November 11:59 PM: "30% off" on the "All gifts" automated collection (price above 0.01), and "Free shipping" for US. They combine.
 - Shipping: the dropship profile charges a flat $5.99 US Standard. The free-shipping discount takes it to $0 until 1 November, so "free until 1 November" is literally true and the rate returns on its own afterwards. The fallback General profile now has only US Standard $5.99. UK zone and US Express removed.
-- Policies published: returns (30 days, personalised items non-returnable unless misprinted), shipping, terms, contact. All use krish@heart-side.org.
-- Store contact and sender email: krish@heart-side.org. Email domain authentication was still propagating on 4 October.
+- Policies published: returns (30 days, personalised items non-returnable unless misprinted), shipping, terms, contact. All use krish@heartside.io.
+- Store contact and sender email: krish@heartside.io. Email domain authentication was still propagating on 4 October.
 - SEO: home page title "Heartside | Gifts for people whose dog is their person" and a meta description with the offer. The social sharing image is empty; it needs a 1200 x 628 image.
 - Checkout reviewed and left as is: email contact, first and last name required, phone optional, marketing opt-in at checkout.
 - Products: The Heartside Sling and The Heartside Travel Bottle have brand copy and prices. Treat Bag and Travel Harness are draft. Nancy Track Top, Puff Parka and Golden Spike Collar are archived.

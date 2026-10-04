@@ -1,0 +1,28 @@
+{%- render 'hs2-head' -%}
+<div class="hs2">
+  <section class="hs2-management" aria-label="A word from management">
+    <div class="hs2-management__inner">
+      <div class="hs2-management__eyebrow">{{ section.settings.eyebrow }}</div>
+      <div class="hs2-management__memo">{% render 'hs2-t', text: section.settings.memo %}</div>
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "HS word from management",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "The tender turn. Approved copy, word for word." },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "A WORD FROM MANAGEMENT" },
+    {
+      "type": "html",
+      "id": "memo",
+      "label": "Memo",
+      "default": "To {person}.<br><br>This year you were late four times. You waved at the mailman, which I consider treason. You once left for nine days and came back smelling of another dog.<br><br>You also came back. Every single time. I noticed.<br><br>Keep me close.<br>{dog}"
+    }
+  ],
+  "presets": [{ "name": "HS word from management" }]
+}
+{% endschema %}

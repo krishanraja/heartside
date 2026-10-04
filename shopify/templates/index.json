@@ -1,240 +1,187 @@
 {
   "sections": {
     "hero": {
-      "type": "hs-hero",
-      "settings": {
-        "eyebrow": "Personalized ceramic ornament",
-        "heading": "Put the real <em>favorite</em> on the tree.",
-        "text": "Their photo in our watercolor heart, their name underneath, and a note from them on the back.",
-        "trust": "A person checks every photo before it prints.",
-        "show_price": true,
-        "fallback_price": 3499,
-        "button_label": "Make theirs",
-        "button2_label": "Try their name on it"
-      }
+      "type": "hs2-hero"
     },
-    "maker": {
-      "type": "hs-maker",
-      "settings": {
-        "eyebrow": "Who's your person?",
-        "heading": "Try it with their name.",
-        "text": "Type it in, pick a face like theirs or use your own photo, then turn it over.",
-        "default_name": "Biscuit",
-        "fallback_price": 3499,
-        "share_label": "Send it to the group chat",
-        "share_text": "Who's your person?"
-      }
+    "review": {
+      "type": "hs2-review"
     },
-    "wall": {
-      "type": "hs-gallery",
-      "settings": {
-        "eyebrow": "Every kind of favorite",
-        "heading": "Curly, squashed, sleepy or <em>slightly</em> suspicious.",
-        "text": "They all look like this in the heart. Yours will too.",
-        "button_label": "Make theirs",
-        "fine_print": "Sample designs with made-up names. Yours carries your photo and their name."
-      },
+    "management": {
+      "type": "hs2-management"
+    },
+    "benefits": {
+      "type": "hs2-benefits",
       "blocks": {
-        "orn-poodle": {
-          "type": "ornament",
+        "b1": {
+          "type": "item",
           "settings": {
-            "dog": "poodle",
-            "alt": "Sample ornament: a curly red poodle, Mochi is my person"
+            "name": "The Body Double",
+            "code": "ITEM BD-01",
+            "price": "$59",
+            "fallback": "golden-asleep",
+            "alt": "A golden puppy asleep",
+            "shot": "[PILLOW SHOT]",
+            "cta": "Make the double",
+            "copy": "A pillow cut to {dogs} exact outline. For groomer days, vet days, and the occasional covert operation to the kitchen."
           }
         },
-        "orn-pug": {
-          "type": "ornament",
+        "b2": {
+          "type": "item",
           "settings": {
-            "dog": "pug",
-            "alt": "Sample ornament: a pug, Gerald is my person"
+            "name": "Mandatory Company Uniform",
+            "code": "ITEM UN-02",
+            "price": "$129 set",
+            "fallback": "poodle",
+            "alt": "A red poodle tilting its head",
+            "shot": "[SWEATER SHOT]",
+            "cta": "Comply",
+            "copy": "An ugly Christmas sweatshirt covered in {dogs} face, plus a matching bandana for {dog}. Dress code for the holiday party. Non-negotiable."
           }
         },
-        "orn-golden": {
-          "type": "ornament",
+        "b3": {
+          "type": "item",
           "settings": {
-            "dog": "golden",
-            "alt": "Sample ornament: a sleepy golden puppy, Waffles is my person"
+            "name": "Surveillance Socks",
+            "code": "ITEM SS-03",
+            "price": "$24",
+            "fallback": "pug",
+            "alt": "A pug in autumn leaves",
+            "shot": "[SOCKS SHOT]",
+            "cta": "Install",
+            "copy": "{dogs} face on your feet, so {dog} can keep an eye on you at work. Stocking-sized."
           }
         },
-        "orn-maltipoo": {
-          "type": "ornament",
+        "b4": {
+          "type": "item",
           "settings": {
-            "dog": "maltipoo",
-            "alt": "Sample ornament: a fluffy maltipoo, Pudding is my person"
-          }
-        },
-        "orn-apricot": {
-          "type": "ornament",
-          "settings": {
-            "dog": "apricot",
-            "alt": "Sample ornament: an apricot poodle mix, Nugget is my person"
-          }
-        },
-        "orn-dachshund": {
-          "type": "ornament",
-          "settings": {
-            "dog": "dachshund",
-            "alt": "Sample ornament: a dachshund, Biscuit is my person"
+            "name": "Tiny Me, For The Tree",
+            "code": "ITEM TM-04",
+            "price": "$24",
+            "fallback": "maltipoo",
+            "alt": "A maltipoo on a deck",
+            "shot": "[ORNAMENT SHOT]",
+            "cta": "Hang {dog}",
+            "copy": "A ceramic ornament with {dog} on the front and {dogs} verdict on your year on the back."
           }
         }
       },
       "block_order": [
-        "orn-poodle",
-        "orn-pug",
-        "orn-golden",
-        "orn-maltipoo",
-        "orn-apricot",
-        "orn-dachshund"
+        "b1",
+        "b2",
+        "b3",
+        "b4"
       ]
     },
-    "steps": {
-      "type": "hs-steps",
-      "settings": {
-        "eyebrow": "How it works",
-        "heading": "Three steps, then it's on the tree."
-      },
+    "closure": {
+      "type": "hs2-closure",
       "blocks": {
-        "s1": {
-          "type": "step",
+        "d1": {
+          "type": "deadline",
           "settings": {
-            "title": "Add their best photo",
-            "text": "Face close to the camera, in good light. For a gift, a clear photo from their Instagram works."
+            "item": "Mandatory Company Uniform",
+            "date": "[DATE]"
           }
         },
-        "s2": {
-          "type": "step",
+        "d2": {
+          "type": "deadline",
           "settings": {
-            "title": "Type their name",
-            "text": "Up to 14 letters. We print it exactly as you type it."
+            "item": "The Body Double",
+            "date": "[DATE]"
           }
         },
-        "s3": {
-          "type": "step",
+        "d3": {
+          "type": "deadline",
           "settings": {
-            "title": "We check it, print it and ship it",
-            "text": "A person looks at every photo before it prints. If one won't print well, we email you before we make anything."
+            "item": "Framed review",
+            "date": "[DATE]"
+          }
+        },
+        "d4": {
+          "type": "deadline",
+          "settings": {
+            "item": "Review poster, socks, ornament",
+            "date": "[DATE]"
+          }
+        },
+        "d5": {
+          "type": "deadline",
+          "settings": {
+            "item": "{dogs} video and story card",
+            "date": "Christmas Eve"
           }
         }
       },
       "block_order": [
-        "s1",
-        "s2",
-        "s3"
+        "d1",
+        "d2",
+        "d3",
+        "d4",
+        "d5"
       ]
     },
-    "feeling": {
-      "type": "hs-feeling",
-      "settings": {
-        "heading": "Some of the best moments of your day are the ones where your loved one is asleep on your heart.",
-        "text": "<p>They climb onto your chest, turn around twice, and go to sleep with their chin on your collarbone. You stop scrolling. You can feel a small, fast heartbeat against yours.</p><p>Heartside makes the things that go with that: their face on the tree, their name on a tag, and a soft sling for when their legs get tired.</p>"
-      }
-    },
-    "gifts": {
-      "type": "hs-gifts",
-      "settings": {
-        "eyebrow": "The rest of the shop",
-        "heading": "More ways to keep them close."
-      },
+    "policy": {
+      "type": "hs2-policy",
       "blocks": {
-        "g1": {
-          "type": "product",
+        "p1": {
+          "type": "policy",
           "settings": {
-            "title": "Their Person Ornament",
-            "promise": "Their face and their name, on the tree every year.",
-            "contain": true
+            "title": "A human checks every order",
+            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
           }
         },
-        "g2": {
-          "type": "product",
+        "p2": {
+          "type": "policy",
           "settings": {
-            "title": "The Heartside Sling",
-            "promise": "For the walk where little legs get tired. Dogs up to 15 lbs."
+            "title": "Misprinted? Remade free",
+            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
           }
         },
-        "g3": {
-          "type": "product",
+        "p3": {
+          "type": "policy",
           "settings": {
-            "title": "The Heartside Tag",
-            "promise": "Their name, on something they wear every day."
-          }
-        },
-        "g4": {
-          "type": "product",
-          "settings": {
-            "title": "Travel Water Bottle",
-            "promise": "Water for the long walk, in your bag."
+            "title": "Every review gets published",
+            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
           }
         }
       },
       "block_order": [
-        "g1",
-        "g2",
-        "g3",
-        "g4"
+        "p1",
+        "p2",
+        "p3"
       ]
+    },
+    "leak": {
+      "type": "hs2-leak"
     },
     "faq": {
-      "type": "hs-faq",
-      "settings": {
-        "eyebrow": "Questions",
-        "heading": "Before you order",
-        "text": "<p>Something else? Email <a href=\"mailto:krish@heart-side.org\">krish@heart-side.org</a> and a person writes back.</p>"
-      },
+      "type": "hs2-faq",
       "blocks": {
         "q1": {
           "type": "question",
           "settings": {
-            "question": "How does their photo get onto the ornament?",
-            "answer": "<p>Upload it on the ornament's page and type their name. We fit the photo into the heart, print it on a 3-inch round ceramic ornament, front and back, and ship it to you.</p>"
+            "question": "My dog's photos are all blurry. Is that a problem?",
+            "answer": "Send your best one. A person checks it before printing and tells you if it needs a better shot. You can also send it after you order."
           }
         },
         "q2": {
           "type": "question",
           "settings": {
-            "question": "What kind of photo works best?",
-            "answer": "<p>One where their face is close to the camera, in good light, looking at you. Phone photos are perfect. A person checks every photo before it prints, and if one won't print well, we email you before we make anything.</p>"
+            "question": "Can I order a review for a friend's dog?",
+            "answer": "Yes. That is most of the fun. Fill in their dog and their name, and we ship it straight to them."
           }
         },
         "q3": {
           "type": "question",
           "settings": {
-            "question": "Can I make one for someone else's dog?",
-            "answer": "<p>Yes, and it's the best kind of gift. Any clear photo works, including one from their Instagram. Spell the name the way their person does.</p>"
+            "question": "Can I change what the review says?",
+            "answer": "Within 12 hours of ordering, yes. After that, {dog} considers the matter closed."
           }
         },
         "q4": {
           "type": "question",
           "settings": {
-            "question": "When will it arrive?",
-            "answer": "<p>We print each ornament when you order it, then ship it anywhere in the US. The ornament's page shows how long that takes, and the Christmas order-by date goes up on this page as soon as our print partner confirms it.</p>"
-          }
-        },
-        "q5": {
-          "type": "question",
-          "settings": {
-            "question": "Is the 30% off real? When does it end?",
-            "answer": "<p>Yes. 30% comes off every gift automatically at checkout, with free US shipping, until November 1. After that, standard US shipping is $5.99.</p>"
-          }
-        },
-        "q6": {
-          "type": "question",
-          "settings": {
-            "question": "Can I return it?",
-            "answer": "<p>We can't take back personalized pieces unless they arrive misprinted, since each one carries one dog's face. Everything else can come back within 30 days. The details are in our <a href=\"/policies/refund-policy\">returns policy</a>.</p>"
-          }
-        },
-        "q7": {
-          "type": "question",
-          "settings": {
-            "question": "Do you ship outside the US?",
-            "answer": "<p>Not yet. Everything ships within the US for now.</p>"
-          }
-        },
-        "q8": {
-          "type": "question",
-          "settings": {
-            "question": "What size dog fits the sling?",
-            "answer": "<p>Dogs up to 15 lbs. It's a soft neoprene sling you wear across your body, with a pocket for your phone, in Charcoal.</p>"
+            "question": "Where do you ship?",
+            "answer": "Anywhere in the US, free."
           }
         }
       },
@@ -242,41 +189,26 @@
         "q1",
         "q2",
         "q3",
-        "q4",
-        "q5",
-        "q6",
-        "q7",
-        "q8"
+        "q4"
       ]
     },
-    "signup": {
-      "type": "hs-signup",
-      "settings": {
-        "heading": "Get the Christmas order-by date.",
-        "text": "One email with the date to order by for Christmas, and one before the 30% ends. That's all we'll send until then.",
-        "button": "Send me the date",
-        "success": "You're on the list. Tell the dog.",
-        "fine_print": "Unsubscribe in one click, any time."
-      }
+    "signoff": {
+      "type": "hs2-signoff"
     },
     "sticky": {
-      "type": "hs-sticky-cta",
-      "settings": {
-        "text": "Their Person Ornament",
-        "button_label": "Make theirs",
-        "fallback_price": 3499
-      }
+      "type": "hs2-sticky"
     }
   },
   "order": [
     "hero",
-    "maker",
-    "wall",
-    "steps",
-    "feeling",
-    "gifts",
+    "review",
+    "management",
+    "benefits",
+    "closure",
+    "policy",
+    "leak",
     "faq",
-    "signup",
+    "signoff",
     "sticky"
   ]
 }

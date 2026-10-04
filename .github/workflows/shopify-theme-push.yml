@@ -19,6 +19,11 @@ on:
         description: "Theme ID of the UNPUBLISHED Helio copy (digits only, from the Customize URL)"
         required: true
         type: string
+      theme_name:
+        description: "The target theme's exact name. The push stops if it differs."
+        required: true
+        default: "Heartside launch"
+        type: string
 
 permissions:
   contents: read
@@ -36,6 +41,7 @@ jobs:
       SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
       SHOPIFY_CLI_NO_ANALYTICS: "1"
       THEME_ID: ${{ inputs.theme_id }}
+      THEME_NAME: ${{ inputs.theme_name }}
     steps:
       - name: Check inputs
         run: |
@@ -69,6 +75,10 @@ jobs:
           fi
           if [ "$role" = "live" ] || [ "$role" = "main" ]; then
             echo "::error::Theme $THEME_ID is the LIVE theme. Duplicate Helio and push to the copy instead."
+            exit 1
+          fi
+          if [ "$name" != "$THEME_NAME" ]; then
+            echo "::error::Theme $THEME_ID is named \"$name\", not \"$THEME_NAME\". Nothing was pushed."
             exit 1
           fi
 

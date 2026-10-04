@@ -1,0 +1,19 @@
+{%- render 'hs2-head' -%}
+<div class="hs2">
+  <div class="hs2-sticky" data-hs2-sticky>
+    <a href="#review" tabindex="-1"><span>{% render 'hs2-t', text: section.settings.text %}</span></a>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HS sticky review button",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "Appears once the hero has scrolled away; hides while the review builder or the footer is on screen." },
+    { "type": "text", "id": "text", "label": "Button", "default": "Read {dogs} review · $39" }
+  ],
+  "presets": [{ "name": "HS sticky review button" }]
+}
+{% endschema %}

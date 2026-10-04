@@ -3,12 +3,11 @@
 Run from the repo root after tools/build_ornament.py:
     python3 tools/build_brand_assets.py
 
-Writes:
-    assets/favicon-512.png          the watercolour heart, square, transparent
-    assets/social-share-1200x628.png  Shopify "social sharing image" (Online Store > Preferences)
+Writes assets/favicon-512.png, the watercolour heart, square and transparent.
 
-The share image carries no offer or date on purpose: platforms cache it for weeks,
-so anything that expires on 1 November would still be showing in December.
+The v2 social sharing image (assets/social-share-1200x628.png) is built by
+tools/preview/print.mjs from the poster design; share_image() below is the v1
+ornament version, kept for reference and no longer run.
 """
 from pathlib import Path
 
@@ -51,7 +50,7 @@ def share_image():
     d.text((x0, y + 58), "dog is their ", font=f, fill=INK)
     d.text((x0 + d.textlength("dog is their ", font=f), y + 58), "person.", font=fi, fill=INK)
     small = ImageFont.truetype(str(FONTS / "DMSans-Medium.ttf"), 20)
-    d.text((x0 + 2, y + 160), "HEART-SIDE.ORG", font=small, fill=(110, 100, 96))
+    d.text((x0 + 2, y + 160), "HEARTSIDE.IO", font=small, fill=(110, 100, 96))
 
     # Right: the ornament, the hero product
     face = Image.open(OUT / "front-sample-biscuit.png").convert("RGBA")
@@ -62,5 +61,4 @@ def share_image():
 
 if __name__ == "__main__":
     favicon()
-    share_image()
-    print("wrote assets/favicon-512.png and assets/social-share-1200x628.png")
+    print("wrote assets/favicon-512.png")

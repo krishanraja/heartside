@@ -1,0 +1,39 @@
+{%- render 'hs2-head' -%}
+<div class="hs2">
+  <section class="hs2-wrap hs2-policy" aria-labelledby="policy-h-{{ section.id }}">
+    <h2 id="policy-h-{{ section.id }}">{{ section.settings.heading }}</h2>
+    <div class="hs2-policy__grid">
+      {%- for block in section.blocks -%}
+        <div class="hs2-policy__item" {{ block.shopify_attributes }}>
+          <div class="hs2-policy__num">POLICY {{ forloop.index }}</div>
+          <div class="hs2-policy__title">{{ block.settings.title }}</div>
+          <div class="hs2-policy__text">{{ block.settings.text }}</div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </section>
+</div>
+
+{% schema %}
+{
+  "name": "HS company policy",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "These stand in for reviews until real ones exist. Every one must stay true." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Company policy" }
+  ],
+  "blocks": [
+    {
+      "type": "policy",
+      "name": "Policy",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "A human checks every order" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first." }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "HS company policy" }]
+}
+{% endschema %}

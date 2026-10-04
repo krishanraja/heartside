@@ -1,0 +1,23 @@
+{%- render 'hs2-head' -%}
+<div class="hs2">
+  <div class="hs2-memo">{% render 'hs2-t', text: section.settings.text %}</div>
+</div>
+
+{% schema %}
+{
+  "name": "HS memo bar",
+  "tag": "section",
+  "class": "hs2-section",
+  "enabled_on": { "templates": ["*"], "groups": ["header"] },
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Memo",
+      "info": "One message only: the order-by date and free shipping. Replace [DATE] once Printful confirms it.",
+      "default": "MEMO: annual reviews close [DATE] for Christmas delivery. Free US shipping. This is not a drill."
+    }
+  ],
+  "presets": [{ "name": "HS memo bar" }]
+}
+{% endschema %}

@@ -1,0 +1,144 @@
+{%- render 'hs2-head' -%}
+{%- liquid
+  assign s = section.settings
+  assign current = product.selected_or_first_available_variant
+-%}
+<div class="hs2">
+  <div class="hs2-wrap hs2-product">
+
+    <div class="hs2-product__media">
+      {%- if s.show_poster -%}
+        <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
+      {%- endif -%}
+      {%- if product.media.size > 0 -%}
+        {%- assign first = product.featured_media -%}
+        <div class="hs2-product__main">
+          <img data-hs2-main src="{{ first | image_url: width: 1200 }}"
+            srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
+            sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
+            {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+        </div>
+        {%- if product.media.size > 1 -%}
+          <div class="hs2-product__thumbs">
+            {%- for m in product.media limit: 8 -%}
+              <button type="button" data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
+                <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
+              </button>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      {%- elsif s.show_poster == false -%}
+        <div class="hs2-product__main hs2-card__media">
+          <img src="{{ 'hs-photo-golden-asleep-800.webp' | asset_url }}" alt="" width="800" height="530">
+          <div class="hs2-card__shot">{{ s.shot }}</div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="hs2-product__info">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'stamp' -%}
+            <div class="hs2-stamp" style="align-self: flex-start; transform: rotate(-2deg);" {{ block.shopify_attributes }}>{% render 'hs2-t', text: block.settings.text %}</div>
+          {%- when 'title' -%}
+            <h1 {{ block.shopify_attributes }}>{{ product.title }}</h1>
+          {%- when 'price' -%}
+            <div {{ block.shopify_attributes }}>
+              <div class="hs2-product__price" data-hs2-price>{{ current.price | money }}</div>
+              {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
+            </div>
+          {%- when 'description' -%}
+            <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
+          {%- when 'answers' -%}
+            <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>
+              <div class="hs2-answers__title">{{ block.settings.title }}</div>
+              <dl>
+                <dt>Manager</dt><dd data-hs2="dog">Biscuit</dd>
+                <dt>Employee</dt><dd data-hs2="person">Sarah</dd>
+                <dt>Treat cupboard</dt><dd data-hs2="cupboard">1,412</dd>
+                <dt>Improvement</dt><dd data-hs2="improvementLine">{% render 'hs2-lines', kind: 'improvement', mode: 'line', pick: 'Leaving' %}</dd>
+                <dt>Incident</dt><dd data-hs2="incidentLine">{% render 'hs2-lines', kind: 'incident', mode: 'line', pick: 'The sock' %}</dd>
+                <dt>Enemy</dt><dd data-hs2="enemyLine">{% render 'hs2-lines', kind: 'enemy', mode: 'line', pick: 'The mailman' %}</dd>
+              </dl>
+              {%- if block.settings.note != blank -%}<div class="hs2-answers__note">{{ block.settings.note }}</div>{%- endif -%}
+            </div>
+            {%- unless s.show_poster -%}
+              {% render 'hs2-lines', kind: 'improvement', mode: 'json' %}
+              {% render 'hs2-lines', kind: 'incident', mode: 'json' %}
+              {% render 'hs2-lines', kind: 'enemy', mode: 'json' %}
+            {%- endunless -%}
+          {%- when '@app' -%}
+            {% render block %}
+          {%- when 'buy' -%}
+            <div {{ block.shopify_attributes }}>
+              {%- form 'product', product, id: 'hs2-product-form', novalidate: 'novalidate' -%}
+                {%- if product.has_only_default_variant -%}
+                  <input type="hidden" name="id" value="{{ current.id }}">
+                {%- else -%}
+                  <div class="hs2-variant">
+                    <label for="hs2-variant-{{ section.id }}">{{ product.options | join: ' / ' }}</label>
+                    <select id="hs2-variant-{{ section.id }}" name="id" data-hs2-variant>
+                      {%- for v in product.variants -%}
+                        <option value="{{ v.id }}" data-price="{{ v.price | money }}" data-available="{{ v.available }}"{% if v.id == current.id %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>{{ v.title }}{% unless v.available %} (gone for now){% endunless %}</option>
+                      {%- endfor -%}
+                    </select>
+                  </div>
+                {%- endif -%}
+                <input type="hidden" name="properties[_Manager]" data-hs2-prop="dog" value="">
+                <input type="hidden" name="properties[_Employee]" data-hs2-prop="person" value="">
+                <input type="hidden" name="properties[_Treat cupboard]" data-hs2-prop="cupboard" value="">
+                <input type="hidden" name="properties[_Improvement]" data-hs2-prop="improvement" value="">
+                <input type="hidden" name="properties[_Incident]" data-hs2-prop="incident" value="">
+                <input type="hidden" name="properties[_Enemy]" data-hs2-prop="enemy" value="">
+                <input type="hidden" name="properties[_Read-aloud video]" data-hs2-prop="voice" value="">
+                <button type="submit" name="add" class="hs2-btn" data-hs2-add{% unless current.available %} disabled{% endunless %}>
+                  {%- if current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
+                </button>
+              {%- endform -%}
+            </div>
+          {%- when 'fine' -%}
+            <div class="hs2-product__fine" {{ block.shopify_attributes }}>
+              {%- if block.settings.line_1 != blank -%}<div>{{ block.settings.line_1 }}</div>{%- endif -%}
+              {%- if block.settings.line_2 != blank -%}<div>{{ block.settings.line_2 }}</div>{%- endif -%}
+              {%- if block.settings.link_label != blank -%}<div><a href="{{ routes.root_url }}#closure">{{ block.settings.link_label }}</a></div>{%- endif -%}
+            </div>
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HS product",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "checkbox", "id": "show_poster", "label": "Show the live review poster", "info": "On for the Annual Review products. It fills in from the shopper's homepage answers.", "default": false },
+    { "type": "text", "id": "shot", "label": "Placeholder tag when the product has no images", "default": "[PRODUCT SHOT]" }
+  ],
+  "blocks": [
+    { "type": "@app" },
+    { "type": "stamp", "name": "Stamp", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "BENEFITS PACKAGE · APPROVED BY {DOG}" } ] },
+    { "type": "title", "name": "Title", "limit": 1, "settings": [] },
+    { "type": "price", "name": "Price", "limit": 1, "settings": [ { "type": "text", "id": "note", "label": "Note under the price", "default": "Free US shipping" } ] },
+    { "type": "description", "name": "Description", "limit": 1, "settings": [ { "type": "paragraph", "content": "Shows the product description. Write it in the dog's voice (docs/V2-FROM-THE-DOG.md section 2)." } ] },
+    {
+      "type": "answers", "name": "Homepage answers", "limit": 1,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "FORM HR-26 · ON FILE" },
+        { "type": "text", "id": "note", "label": "Note", "default": "Your answers from the homepage. If the personalizer below asks again, use these." }
+      ]
+    },
+    { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },
+    {
+      "type": "fine", "name": "Policy lines", "limit": 1,
+      "settings": [
+        { "type": "text", "id": "line_1", "label": "Line 1", "default": "A human checks every order before anything prints." },
+        { "type": "text", "id": "line_2", "label": "Line 2", "default": "Misprinted? Remade free." },
+        { "type": "text", "id": "link_label", "label": "Link to the deadlines", "default": "Christmas deadlines" }
+      ]
+    }
+  ]
+}
+{% endschema %}

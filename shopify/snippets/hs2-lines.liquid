@@ -1,0 +1,32 @@
+{%- comment -%}
+  The joke lines behind the HR-26 chips. Approved copy from design/Main.dc.html
+  (renderVals), word for word. One place: the review builder, the live poster and
+  the product page all read from here.
+
+  {% render 'hs2-lines', kind: 'improvement', mode: 'chips' %}   chip buttons
+  {% render 'hs2-lines', kind: 'improvement', mode: 'json' %}    data for hs2.js
+  {% render 'hs2-lines', kind: 'improvement', mode: 'line', pick: 'Leaving' %}
+{%- endcomment -%}
+{%- liquid
+  case kind
+    when 'improvement'
+      assign labels = 'Leaving|The vacuum|Bath time|Sharing food|Your phone' | split: '|'
+      assign lines = 'Leaving. Please stop leaving.|Continues to bring the vacuum into the building. We have discussed this.|Scheduled a bath without consulting me. Bold.|Ate an entire sandwich in front of me. Shared none of it.|Looked at a rectangle for six hours instead of me.' | split: '|'
+    when 'incident'
+      assign labels = 'The sock|The sandwich|The remote|Rolled in it|The couch' | split: '|'
+      assign lines = 'The sock. I would do it again. Case closed.|The sandwich was unattended. Legally, it was mine.|The remote was asking for it.|I rolled in something. You will never know what.|The couch had a weakness. I found it.' | split: '|'
+    when 'enemy'
+      assign labels = 'The mailman|Squirrels|The vacuum|The cat|My reflection' | split: '|'
+      assign lines = 'The mailman. Comes every day. Clearly planning something.|Squirrels. They know what they did.|The vacuum. Loud. Hungry. Unemployable.|The cat next door. Under investigation.|The other dog in the mirror. Copies everything I do.' | split: '|'
+  endcase
+-%}
+{%- case mode -%}
+  {%- when 'chips' -%}
+    {%- for label in labels -%}
+      <button type="button" class="hs2-chip" data-hs2-chip="{{ kind }}" data-value="{{ label | escape }}" aria-pressed="{% if label == pick %}true{% else %}false{% endif %}">{{ label }}</button>
+    {%- endfor -%}
+  {%- when 'json' -%}
+    <script type="application/json" data-hs2-lines="{{ kind }}">{ {%- for label in labels -%}{{ label | json }}: {{ lines[forloop.index0] | json }}{% unless forloop.last %}, {% endunless %}{%- endfor -%} }</script>
+  {%- when 'line' -%}
+    {%- for label in labels -%}{%- if label == pick -%}{{ lines[forloop.index0] }}{%- endif -%}{%- endfor -%}
+{%- endcase -%}
