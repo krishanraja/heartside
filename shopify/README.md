@@ -34,6 +34,7 @@ One shared state drives the whole page. The dog's name typed in the hero rewrite
     - The benefits become a swipe carousel.
     - The FAQ shows as many tickets as fit, then "N more tickets".
   - Only phones 640px tall or less run 12px over, in two sections.
+  - Helio pins its header row while the page scrolls (60px on phones, 66px on desktop). `hs2.js` measures it, so every section after the hero fits the room under it, and anchors stop below it.
 - **Motion.**
   - The hero rises in, the stamp lands and the ID badge swings on its lanyard.
   - Sections reveal as they scroll in, and the management memo lands one paragraph at a time.
