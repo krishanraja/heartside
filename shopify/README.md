@@ -6,7 +6,7 @@ The homepage and product templates, rebuilt from the approved canvas `design/Mai
 |---|---|
 | ![Phone](preview/phone-first-screen.png) | ![Desktop](preview/desktop-first-screen.png) |
 
-Full pages are in `preview/`: `phone-home-full.png`, `desktop-home-full.png`, `product-annual-review.png`, `product-body-double-phone.png`. `review-builder-gerald.png` shows the live poster after typing "Gerald". `story-card.png` is the free 1080 × 1920 card the share button makes.
+As rendered by Shopify in the Heartside launch preview: `preview/live-store-phone.png` and `preview/live-store-desktop.png`. Local renders, full pages, are also in `preview/`: `phone-home-full.png`, `desktop-home-full.png`, `product-annual-review.png`, `product-body-double-phone.png`. `review-builder-gerald.png` shows the live poster after typing "Gerald". `story-card.png` is the free 1080 × 1920 card the share button makes.
 
 ## How the page works
 
