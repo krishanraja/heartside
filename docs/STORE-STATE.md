@@ -1,5 +1,7 @@
 # Heartside: Shopify store state
 
+> **Superseded.** This is the store as found on 4 October 2026, before any changes. For the current state and the open list, read `docs/HANDOFF.md`.
+
 Verified by looking at the admin on 4 October 2026. Store id `bnf1em-ge` (admin.shopify.com/store/bnf1em-ge). Theme: Helio (active). Nothing here has been changed except the two products pushed in section 3. Treat every item in "Problems" as a to-do.
 
 ## 1. Settings and markets

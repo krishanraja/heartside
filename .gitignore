@@ -1,0 +1,3 @@
+__pycache__/
+# customer photos and per-order print files never go in the repo
+ornament/orders/
