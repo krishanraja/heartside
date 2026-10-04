@@ -136,7 +136,7 @@ html.hs2-js .is-in .hs2-anim-drift img, html.hs2-js .hs2-anim-drift.is-on img { 
 }
 .hs2-hero__copy { min-width: 0; display: flex; flex-direction: column; gap: clamp(12px, calc(2.4 * var(--vh)), 22px); }
 .hs2-hero__copy .hs2-stamp { align-self: flex-start; transform: rotate(-2deg); }
-.hs2-hero h1 { font-weight: 650; font-size: clamp(36px, min(6.6vw, calc(9.6 * var(--vh))), 92px); line-height: 0.96; letter-spacing: -0.025em; margin: 0; }
+.hs2-hero h1 { font-weight: 650; font-size: clamp(36px, min(6.6vw, calc(8.9 * var(--vh))), 92px); line-height: 0.96; letter-spacing: -0.025em; margin: 0; }
 .hs2-hero h1 em { font-weight: 400; color: var(--stamp); font-style: italic; }
 .hs2-hero__lede { font-size: clamp(15px, min(1.6vw, calc(2.4 * var(--vh))), 20px); line-height: 1.5; max-width: 540px; }
 .hs2-hero__what { font-size: clamp(15px, min(1.5vw, calc(2.2 * var(--vh))), 18px); line-height: 1.5; max-width: 540px; font-weight: 700; border-left: 4px solid var(--stamp); padding-left: 12px; }
