@@ -123,6 +123,10 @@
       if (inp.__hs2) return; inp.__hs2 = true;
       var k = inp.getAttribute('data-hs2-input');
       if (state[k]) inp.value = state[k];
+      // the treat-cupboard field starts on a real value ("1,412"), not a placeholder, so a
+      // tap and a typed digit used to land after it ("1,4124"). Select it on focus, the way
+      // a phone's own numeric fields do, so typing replaces it.
+      if (k === 'cupboard') inp.addEventListener('focus', function () { inp.select(); });
       inp.addEventListener('input', function () {
         state[k] = inp.value; save(); render();
         if (k === 'dog') inkName();
@@ -944,45 +948,50 @@
       media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
     }
   }
-  /* The headshot: one tap hands the review's photo to Teeinblue's own upload, which opens
-     its cropper. It needs the tap, so nothing uploads without the shopper. The button shows
-     until this photo has gone to this product (remembered per product), even when Teeinblue
-     restored an older upload from an earlier visit: that one may be a different photo. */
   function photoInput() { return document.querySelector('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]'); }
   function handedKey() { return 'hs2-handed-' + (productId() || location.pathname); }
   function handed() { try { return window.localStorage.getItem(handedKey()) === String(usePhoto.t); } catch (e) { return false; } }
+  /* Hands the review's photo to Teeinblue's own upload field, the way picking a file does.
+     Used both automatically (handoff, below) and by the fallback button. */
+  function doHandoff(box) {
+    var target = photoInput();
+    var st = document.querySelector('[data-hs2-bridge-status]');
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(new File([usePhoto.file], usePhoto.file.name || 'headshot.jpg', { type: usePhoto.file.type || 'image/jpeg' }));
+      target.files = dt.files;
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+      try { window.localStorage.setItem(handedKey(), String(usePhoto.t)); } catch (e) { /* private mode */ }
+      if (box) box.hidden = true;
+      bridge.photoReady = false; if (bridge.folded) fold(true);
+      if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
+      track('photo_handoff');
+    } catch (e) {
+      if (box) box.hidden = false; // let the shopper send it themselves
+      if (st) { st.__hs2photo = true; st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
+    }
+  }
+  /* The headshot now hands itself to Teeinblue's upload as soon as its photo field appears,
+     instead of waiting for a tap on "Use [Dog]'s headshot". A phone test on 5 October found
+     Add To Cart could otherwise succeed before that tap, with Teeinblue falling back to its
+     own sample photo and nothing in the cart or checkout to show the order held a stranger's
+     dog, not the shopper's. The card and its button stay, only as a fallback for a browser
+     where the automatic hand-off throws. */
   function handoff() {
     var box = document.querySelector('[data-hs2-handoff]');
     if (!box) return;
-    var inp = photoInput(), file = usePhoto.file;
-    var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');
-    box.hidden = !can;
-    if (bridge.photoReady !== can) { bridge.photoReady = can; if (bridge.folded) fold(true); }
-    if (!can) return;
     var img = box.querySelector('[data-hs2-handoff-img]');
-    if (img && img.src !== photoURL) img.src = photoURL;
+    if (img && photoURL && img.src !== photoURL) img.src = photoURL;
     var btn = box.querySelector('[data-hs2-handoff-btn]');
     if (btn && !btn.__hs2) {
       btn.__hs2 = true;
-      btn.addEventListener('click', function () {
-        var target = photoInput();
-        var st = document.querySelector('[data-hs2-bridge-status]');
-        try {
-          var dt = new DataTransfer();
-          dt.items.add(new File([usePhoto.file], usePhoto.file.name || 'headshot.jpg', { type: usePhoto.file.type || 'image/jpeg' }));
-          target.files = dt.files;
-          target.dispatchEvent(new Event('change', { bubbles: true }));
-          try { window.localStorage.setItem(handedKey(), String(usePhoto.t)); } catch (e) { /* private mode */ }
-          box.hidden = true;
-          bridge.photoReady = false; if (bridge.folded) fold(true);
-          if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
-          track('photo_handoff');
-        } catch (e) {
-          box.hidden = true;
-          if (st) { st.__hs2photo = true; st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
-        }
-      });
+      btn.addEventListener('click', function () { doHandoff(box); });
     }
+    var inp = photoInput(), file = usePhoto.file;
+    var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');
+    if (bridge.photoReady !== can) { bridge.photoReady = can; if (bridge.folded) fold(true); }
+    if (can) { doHandoff(box); return; }
+    box.hidden = true;
   }
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;

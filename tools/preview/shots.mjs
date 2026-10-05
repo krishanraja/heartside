@@ -207,14 +207,11 @@ await tp.waitForTimeout(2600);
 const tibState = (p) => p.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field .tee-radio.active label')].map((i) => i.tagName === 'LABEL' ? i.textContent : i.value));
 log('teeinblue record after the bridge:', JSON.stringify(await tp.evaluate(() => window.teeinblue.getCurrentCustomization())));
 log('teeinblue fields show:', JSON.stringify(await tibState(tp)), '(picks by Teeinblue\'s active mark)');
-log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot button visible:', await tp.locator('[data-hs2-handoff]').isVisible());
+log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot handed itself over automatically, no tap needed:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '| box hidden again:', await tp.locator('[data-hs2-handoff]').isHidden());
 const foldState = (p) => p.evaluate(() => ({ folded: document.getElementById('buy').classList.contains('hs2-tib-folded'), shown: [...document.querySelectorAll('.tee-field')].filter((f) => f.getClientRects().length).map((f) => f.id.replace('tee-field--', '')), edit: (document.querySelector('[data-hs2-tib-edit]') || {}).hidden === false ? document.querySelector('[data-hs2-tib-edit]').textContent : 'hidden' }));
 log('FOLD Teeinblue\'s copies of the answers fold away (its photo box waits behind the headshot button):', JSON.stringify(await foldState(tp)));
 log('GAP Teeinblue preview box height (inline 1557px):', await tp.locator('.tee-gallery-content').evaluate((e) => Math.round(e.getBoundingClientRect().height)), '| preview is the first thumbnail, current:', await tp.locator('[data-hs2-thumb-preview]').getAttribute('aria-current'), '| product photo hidden behind it:', await tp.locator('.hs2-product__main').isHidden());
 await tp.locator('.hs2-product__info').screenshot({ path: path.join(shots, 'desktop-product-teeinblue-bridge.png') });
-await tp.click('[data-hs2-handoff-btn]');
-await tp.waitForTimeout(200);
-log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText(), '| photo box back:', JSON.stringify((await foldState(tp)).shown));
 // "Edit details" opens Teeinblue's fields; the shopper changes a pick there and it flows back
 await tp.click('[data-hs2-tib-edit]');
 await tp.waitForTimeout(200);
