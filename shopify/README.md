@@ -97,6 +97,8 @@ Teeinblue has no documented prefill feature, so this was built against its store
   - Teeinblue marks a field invalid at Add To Cart.
 
   The fields are hidden by id, which Teeinblue keeps when it redraws a field.
+  - **On the ad landing page** the review sits above the buy box, so the fields it answers fold from the start, filled or not. A missing name is asked for in the review, and Teeinblue's own check at Add To Cart opens the fold.
+  - **Teeinblue's photo box** waits behind "Use [Dog]'s headshot" while the review holds a photo that hasn't gone to this product yet. It comes back once the photo is handed over.
 - **Proof.**
   - On Teeinblue's live demo store, the bridge filled the name field, Teeinblue's record and preview updated, and the hand-off opened Teeinblue's cropper and uploaded the photo.
   - `tools/preview/shots.mjs` repeats the whole flow against a stand-in built with Teeinblue's markup and the six field labels.
