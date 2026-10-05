@@ -116,8 +116,9 @@ Teeinblue has no documented prefill feature, so this was built against its store
 | `entry-oak-a`, `entry-oak-b` | Framed, red oak | Product image 2, ads |
 | `christmas-sheet-a`, `christmas-sheet-b` | Poster, unframed | Product image 1, holiday ads |
 | `ornament-tree` | Tiny Me | Product image 1, the homepage card. **Provisional:** its face is built to the spec in the admin log until checked against Teeinblue's artwork |
+| `pillow-sofa-a` (`pillow-sofa-b` spare) | The Body Double | Product image 1, the homepage card. The print is the headshot itself, edge to edge, as the Body Double prints a customer's photo. The pillow's outline is traced once and kept as `assets/v2/scenes/pillow-sofa-a.mask.png` |
 
-Each comes full size (2:3), as `-4x5` (product pages, feed ads) and as `-1x1` (cards). Rebuild with `node tools/preview/print.mjs` (the poster and ornament faces with Biscuit) then `python3 tools/preview/mockups.py`. The Body Double has no scene yet, so its card keeps the stand-in photo and `[PILLOW SHOT]`.
+Each comes full size, plus a `-4x5` crop (product pages, feed ads; portrait scenes only) and a `-1x1` crop (cards). Crops start just above the product and never cut it. Rebuild with `node tools/preview/print.mjs` (the poster and ornament faces with Biscuit) then `python3 tools/preview/mockups.py`.
 
 ## Funnel pixel (Meta and TikTok)
 

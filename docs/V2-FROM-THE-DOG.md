@@ -116,7 +116,7 @@ Nothing goes on the site until each date is confirmed in the Printful dashboard.
 
 ## 6. The ads (AI-made with Higgsfield; scripts are on the canvas)
 
-**The recurring character:** Biscuit, a miniature dachshund, Head of Household. Generate an **original** character in Higgsfield as a character sheet, not from the stock hero photo, whose licence is still unconfirmed. Keep him identical across every ad. Reading glasses for HR scenes, a tiny black turtleneck for the heist. Give him one voice: a flat, sincere, middle-aged American office manager. Create it once with Higgsfield's voice tool and pass it as the audio reference on every clip, so he always sounds the same.
+**The recurring character:** Biscuit, a miniature dachshund, Head of Household. He exists now: `assets/v2/biscuit-headshot.jpg`, made for Heartside on 5 October and already in the product photos (`design/mockups/`). Use it as the reference for the Higgsfield character sheet, so the ads and the product photos show the same dog. (The site's own photos are licensed; Krish confirmed this on 5 October.) Keep him identical across every ad. Reading glasses for HR scenes, a tiny black turtleneck for the heist. Give him one voice: a flat, sincere, middle-aged American office manager. Create it once with Higgsfield's voice tool and pass it as the audio reference on every clip, so he always sounds the same.
 
 **Production recipe.**
 - **Model:** Seedance 2.5, mode `omni_reference`, 9:16. Image references: the Biscuit character sheet and the product shot.
@@ -198,5 +198,5 @@ Build exactly what the canvas shows. Sections, in order:
 - **Hero product: the Annual Review poster.** Highest margin (54%), fastest to make, the most shareable output, and the funniest thing to personalise.
 - **Printful as the single maker.** One shipment and one set of cutoffs. US production for nearly everything.
 - **30% off retired for the new range; the free video is the launch offer.** It protects margin and drives the share loop.
-- **Original AI Biscuit in ads, never the stock dachshund photo.** The photo's licence is unconfirmed, and one character lets the brand compound.
+- **One Biscuit across ads and product photos** (`assets/v2/biscuit-headshot.jpg`). One recurring character lets the brand compound. The site's photos are licensed (Krish confirmed, 5 October).
 - **Organic first, paid only behind proven clips.** The ad budget is $100–150, and break-even per purchase is $21–60.

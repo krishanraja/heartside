@@ -39,6 +39,7 @@ PHOTOS = {
     "team-04": (V2 / "team-04.jpg", SQUARE),
     # product photos: the real design composited into a staged scene (tools/preview/mockups.py)
     "ornament-tree": (ROOT / "design" / "mockups" / "ornament-tree-1x1.jpg", SQUARE),
+    "pillow-sofa": (ROOT / "design" / "mockups" / "pillow-sofa-a-1x1.jpg", SQUARE),
 }
 # The manager's face, square, for the poster headshot and the story card
 HEADSHOT = (V2 / "hero-manager.jpg", (245, 80, 885, 720), 480)

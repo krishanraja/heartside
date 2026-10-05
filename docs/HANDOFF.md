@@ -37,7 +37,7 @@ Open, in this order:
 5. Confirm order-by dates for Christmas delivery with each supplier before publishing them.
 6. US sales tax: not configured for the US. Krish's accountant decides.
 7. Pink and Beige sling variants show sold out and cannot be hidden without permanent deletion. Decide.
-8. Confirm the licence for the hero dachshund photo.
+8. Confirm the licence for the hero dachshund photo. **Done: Krish confirmed all current photos are licensed, 5 October.**
 
 Price floor used for every product: landed cost plus 3% plus $0.30 plus $8, checked after the 30% discount.
 

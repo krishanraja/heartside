@@ -51,7 +51,7 @@ Artwork **"The Annual Review (HR-26)"** (ID 1329726), used by campaigns 1032639 
 
 ### 2. Product photos
 
-Each photo is a staged scene with the **real print file** composited into a blank frame, sheet or ornament. The product itself was never AI-drawn. The dog is Biscuit, made for Heartside.
+Each photo is a staged scene with the **real print file** composited into a blank frame, sheet, ornament or pillow. The product itself was never AI-drawn. The dog is Biscuit, made for Heartside.
 
 Add them in Shopify admin > Products > each product > Media. Use **Add from URL** if it's offered; otherwise download the file and upload it. Drag each new photo into the position given. Keep Teeinblue's own mockups after ours.
 
@@ -61,7 +61,7 @@ Add them in Shopify admin > Products > each product > Media. Use **Add from URL*
 | The Annual Review, Framed | 1 | `office-black-b-4x5.jpg` | The Annual Review in a black frame above a desk, with a dachshund asleep in his bed below |
 | The Annual Review, Framed | 2 | `entry-oak-a-4x5.jpg` | The Annual Review in a red oak frame in an entryway, with a dachshund sitting and looking up at it |
 | Tiny Me, For The Tree | 1 | `ornament-tree-1x1.jpg` | Tiny Me, a round ceramic ornament with a dachshund's photo and verdict, hanging on a Christmas tree. **Only after task 3 passes.** |
-| The Body Double | none | Keep Teeinblue's mockup. There's no pillow photo yet. | |
+| The Body Double | 1 | `pillow-sofa-a-1x1.jpg` | The Body Double, a square pillow printed with a dachshund's photo, on a sofa beside the dog himself, asleep |
 
 - Don't attach these photos to individual variants; Teeinblue manages the variant mockups.
 - **Teeinblue may overwrite product photos** when a campaign is updated. Look for a setting about syncing or updating product images or mockups in each campaign, and report what it does. If an update wipes our photos, add them again after your last campaign update, and tell Krish that any future update will need the same.
