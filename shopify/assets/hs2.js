@@ -677,13 +677,19 @@
       setValue(select, opt.value);
       return { name: select.name, value: opt.value, changed: true };
     }
-    // radio buttons or swatch buttons
+    // radio buttons, like Teeinblue's clipart choices. Teeinblue listens to the label, not
+    // the input: ticking the input leaves its own pick (marked "active") as it was, and
+    // that is what prints. So judge by its mark and click the label, as a shopper does.
     var radios = Array.prototype.slice.call(el.querySelectorAll('input[type="radio"]'));
+    if (radios.length) watchChoice(el, radios, k);
+    if (radios.length && el.__hs2owned) return null;
     for (var i = 0; i < radios.length; i++) {
-      var lab = (radios[i].labels && radios[i].labels[0] && radios[i].labels[0].textContent) || radios[i].value;
-      if (choiceMatches(lab, k)) {
-        if (radios[i].checked) return { name: radios[i].name, value: radios[i].value };
-        radios[i].click();
+      var lab = radioLabel(radios[i]);
+      if (choiceMatches(lab ? lab.textContent : radios[i].value, k)) {
+        if (radioPicked(radios[i])) return { name: radios[i].name, value: radios[i].value };
+        el.__hs2set = true;
+        (lab || radios[i]).click();
+        el.__hs2set = false;
         return { name: radios[i].name, value: radios[i].value, changed: true };
       }
     }
@@ -702,6 +708,24 @@
     if (!document.querySelector('.tee-field')) return;
     clearTimeout(bridgeSoon.t);
     bridgeSoon.t = setTimeout(function () { runBridge(); }, 400);
+  }
+  function radioLabel(r) { return (r.labels && r.labels[0]) || null; }
+  function radioPicked(r) {
+    var wrap = r.closest('.tee-radio');
+    return wrap ? wrap.classList.contains('active') : r.checked;
+  }
+  // a shopper's own pick in Teeinblue's choices flows back to the answers card and the order
+  function watchChoice(el, radios, k) {
+    if (el.__hs2watch) return; el.__hs2watch = true;
+    el.addEventListener('click', function (e) {
+      if (el.__hs2set || !e.isTrusted) return;
+      var lab = e.target.closest && e.target.closest('label');
+      if (!lab) return;
+      var text = norm(lab.textContent), all = lines(k);
+      Object.keys(all).forEach(function (label) {
+        if (text === norm(label) || text === norm(all[label])) { state[k] = label; el.__hs2owned = true; save(); render(); }
+      });
+    });
   }
   function watchField(inp, k) {
     if (inp.__hs2watch) return; inp.__hs2watch = true;

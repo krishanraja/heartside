@@ -80,7 +80,7 @@ Add Teeinblue's app block to the landing template too (`docs/SHOPIFY-BROWSER-PRO
 Teeinblue has no documented prefill feature, so this was built against its storefront code, read and tested on Teeinblue's own demo store on 4 October 2026.
 
 - **What it does.**
-  - It finds each Teeinblue field by its heading and fills it the way typing does. Dropdowns are matched by the chip label or the full printed line.
+  - It finds each Teeinblue field by its heading and fills it the way typing does. Dropdowns and Teeinblue's picture choices are matched by the chip label or the full printed line. For picture choices it clicks the label, because Teeinblue ignores a ticked input and keeps its own pick (marked `active`), which is what prints; found on the live store on 5 October, where the poster would have printed Teeinblue's first option.
   - It then checks Teeinblue's own record (`window.teeinblue.getCurrentCustomization()`).
   - If a value didn't take, it writes Teeinblue's saved customization and asks it to reload (`refillCustomizationData`), which is Teeinblue's own restore path.
 - **The headshot.** One tap on "Use [Dog]'s headshot" hands the homepage photo to Teeinblue's upload field. Teeinblue then opens its cropper and uploads as if the shopper had picked the file. It needs the tap, so nothing uploads without the shopper.

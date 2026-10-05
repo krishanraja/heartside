@@ -158,7 +158,10 @@ const standIn = () => {
   });
   const field = (id, label, control) => `<div class="tee-field tee-field--${id}" id="tee-field--${id}"><div class="tee-field__header"><div class="tee-field__heading"><span>${label}</span><span class="tee-asterisk">*</span></div></div><div class="tee-field__input">${control}</div></div>`;
   const text = (id) => `<input class="tee__input tee__input--text" type="text" name="${id}" id="${id}">`;
-  const select = (id, opts) => `<select class="tee-field__select" name="${id}" id="${id}"><option disabled value="null">Choose an option</option>${opts.map((o, i) => `<option value="opt-${id}-${i}">${o}</option>`).join('')}</select>`;
+  // Teeinblue's clipart choices, as on the live store: a radio per option, valued by image
+  // path, labelled with the chip name, the first one "active". Like Teeinblue, the stand-in
+  // only takes a pick from a click on the label; ticking the input changes nothing it prints.
+  const clipart = (id, opts) => `<div class="tee-row" role="radiogroup">${opts.map((o, i) => `<div class="tee-radio${i === 0 ? ' active' : ''}"><input class="tee-checkbox-input" type="radio" id="${id}-${i}" name="${id}" value="cliparts/${id}/${i}_large.webp"><label class="tee-radio-label" for="${id}-${i}"><span>${o}</span></label></div>`).join('')}</div>`;
   document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
     const box = document.createElement('div');
     box.className = 'tee-customization-form';
@@ -166,17 +169,26 @@ const standIn = () => {
       field('layer-11', "Who is your manager? (Your dog's name)", text('layer-11')),
       field('layer-12', 'Employee name (you)', text('layer-12')),
       field('layer-13', 'Times you opened the treat cupboard', text('layer-13')),
-      field('layer-14', 'Area for improvement', select('layer-14', ['Leaving', 'The vacuum', 'Bath time', 'Sharing food', 'Your phone'])),
-      field('layer-15', 'Open incident report', select('layer-15', ['The sock', 'The sandwich', 'The remote', 'Rolled in it', 'The couch'])),
-      field('layer-16', 'Known enemy of the company', select('layer-16', ['The mailman', 'Squirrels', 'The vacuum', 'The cat', 'My reflection'])),
+      field('layer-14', 'Area for improvement', clipart('layer-14', ['Leaving', 'Sharing food', 'Bath time', 'Your phone', 'The vacuum'])),
+      field('layer-15', 'Open incident report', clipart('layer-15', ['The remote', 'The sock', 'The sandwich', 'Rolled in it', 'The couch'])),
+      field('layer-16', 'Known enemy of the company', clipart('layer-16', ['The mailman', 'The vacuum', 'My reflection', 'The cat', 'Squirrels'])),
       `<div class="tee-field tee-field--photo tee-field--layer-17"><div class="tee-field__heading"><span>Attach your dog's headshot</span></div><input type="file" id="tee-photo-layer-17" accept="image/*"></div>`,
     ].join('');
     // like Teeinblue's Vue form: state follows input and change events
     box.addEventListener('input', (e) => { if (e.target.name) data[e.target.name] = e.target.value; });
     box.addEventListener('change', (e) => {
       if (e.target.type === 'file') { window.__tibFiles.push(e.target.files[0] && e.target.files[0].name); data['layer-17-origin'] = 'uploaded'; return; }
-      if (e.target.name) data[e.target.name] = e.target.value;
+      if (e.target.name && e.target.type !== 'radio') data[e.target.name] = e.target.value;
     });
+    box.addEventListener('click', (e) => {
+      const lab = e.target.closest('label.tee-radio-label');
+      if (!lab) return;
+      const r = document.getElementById(lab.htmlFor), row = r.closest('.tee-row');
+      row.querySelectorAll('.tee-radio').forEach((w) => w.classList.toggle('active', w.contains(r)));
+      data[r.name] = r.value;
+    });
+    // Teeinblue's first clipart is picked from the start
+    box.querySelectorAll('.tee-row').forEach((row) => { const r = row.querySelector('input'); data[r.name] = r.value; });
     const anchor = document.querySelector('[data-hs2-answers]');
     anchor.after(box);
     document.dispatchEvent(new Event('teeinblue-event-component-injected'));
@@ -190,12 +202,16 @@ await tp.waitForTimeout(400);
 await tp.goto('http://localhost:4173/' + href);
 await tp.waitForTimeout(2200);
 log('teeinblue record after the bridge:', JSON.stringify(await tp.evaluate(() => window.teeinblue.getCurrentCustomization())));
-log('teeinblue fields show:', JSON.stringify(await tp.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field select')].map((i) => i.tagName === 'SELECT' ? i.options[i.selectedIndex].text : i.value))));
+log('teeinblue fields show:', JSON.stringify(await tp.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field .tee-radio.active label')].map((i) => i.tagName === 'LABEL' ? i.textContent : i.value))), '(picks by Teeinblue\'s active mark)');
 log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot button visible:', await tp.locator('[data-hs2-handoff]').isVisible());
 await tp.locator('.hs2-product__info').screenshot({ path: path.join(shots, 'desktop-product-teeinblue-bridge.png') });
 await tp.click('[data-hs2-handoff-btn]');
 await tp.waitForTimeout(200);
 log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText());
+// the shopper changes a pick in Teeinblue itself: it flows back to the answers card
+await tp.click('label[for="layer-16-3"]');
+await tp.waitForTimeout(200);
+log('shopper picks The cat in the personalizer -> order property:', await tp.locator('[data-hs2-prop="enemy"]').inputValue(), '| Teeinblue record:', await tp.evaluate(() => window.teeinblue.getCurrentCustomization()['layer-16']));
 await tp.fill('#layer-11', 'Gerald Jr');
 await tp.waitForTimeout(200);
 log('shopper edits the dog in the personalizer -> order property:', await tp.locator('[data-hs2-prop="dog"]').inputValue(), '| card:', await tp.locator('[data-hs2-answers] [data-hs2="dog"]').innerText());

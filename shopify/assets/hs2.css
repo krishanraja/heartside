@@ -756,9 +756,11 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
 .hs2-variant label { font-size: 14px; font-weight: 700; display: block; margin-bottom: 6px; }
 .hs2-variant select { width: 100%; font-size: 17px; padding: 12px 14px; border: 2px solid var(--ink); border-radius: 12px; background: var(--cream); }
 .hs2-product .hs2-btn { width: 100%; }
-/* Teeinblue's block in our column. Its price is off in the template (ours shows, one price).
+/* Teeinblue's block in our column. Its "Show price" is off in the templates, but on the live
+   store (5 October) it still drew its price, so it hides here too: ours shows, one price.
    Options with a single value are not a choice, so they hide; the section names the rest
    ("Frame"). Its Add To Cart is the only one on the page, so it gets our button. */
+#buy .tee-product-price { display: none !important; }
 #buy .tee-variants .tee-option:not(:has(.tee-radio + .tee-radio)):not(:has(option + option)) { display: none; }
 #buy .tee-option__title { font-size: 14px; font-weight: 700; text-transform: none; }
 #buy .tee-btn.tee-btn--atc {
