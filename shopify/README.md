@@ -83,16 +83,25 @@ Teeinblue has no documented prefill feature, so this was built against its store
   - It finds each Teeinblue field by its heading and fills it the way typing does. Dropdowns and Teeinblue's picture choices are matched by the chip label or the full printed line. For picture choices it clicks the label, because Teeinblue ignores a ticked input and keeps its own pick (marked `active`), which is what prints; found on the live store on 5 October, where the poster would have printed Teeinblue's first option.
   - It then checks Teeinblue's own record (`window.teeinblue.getCurrentCustomization()`).
   - If a value didn't take, it writes Teeinblue's saved customization and asks it to reload (`refillCustomizationData`), which is Teeinblue's own restore path.
-- **The headshot.** One tap on "Use [Dog]'s headshot" hands the homepage photo to Teeinblue's upload field. Teeinblue then opens its cropper and uploads as if the shopper had picked the file. It needs the tap, so nothing uploads without the shopper.
+- **The headshot.** One tap on "Use [Dog]'s headshot" hands the review's photo to Teeinblue's upload field. Teeinblue then opens its cropper and uploads as if the shopper had picked the file. It needs the tap, so nothing uploads without the shopper.
+  - The button shows until that photo has gone to that product (remembered per product in the browser), even when Teeinblue restored an older upload from an earlier visit.
+  - On 5 October the landing page lost the button because Teeinblue had restored an upload. The cropper now sits above Helio's sticky header.
 - **Respecting the shopper.**
   - It never overwrites a field the shopper has edited.
-  - On a reload with the same answers, it leaves alone what Teeinblue restored.
-  - Edits made in Teeinblue flow back into the answers card and the order's hidden properties.
+  - Edits made in Teeinblue flow back into the answers card and the order's hidden properties, so the answers are always the source.
+  - **Every visit** (since 5 October evening). It compares the answers with what Teeinblue holds and copies over any difference. It used to copy once per product per session, and on a second visit Teeinblue's own first picks stayed.
+  - **Focus and scroll stay put.** A scripted click on a label moves focus to its radio, and the browser scrolls to it. On the ad landing page, that pulled a shopper typing in the hero 5,000px down the page. The bridge now puts focus and scroll back after each click.
+- **The fold.** Once every field the review fills holds its answer, Teeinblue's copies of them hide, and the card offers **Edit details**. The page reads: preview, price, answers, photo, Add To Cart. The photo field, and any field the review doesn't fill (the ornament's note, for one), stay open. The fold opens again, and never closes on its own, when:
+  - the shopper edits a Teeinblue field;
+  - a name is missing;
+  - Teeinblue marks a field invalid at Add To Cart.
+
+  The fields are hidden by id, which Teeinblue keeps when it redraws a field.
 - **Proof.**
   - On Teeinblue's live demo store, the bridge filled the name field, Teeinblue's record and preview updated, and the hand-off opened Teeinblue's cropper and uploaded the photo.
   - `tools/preview/shots.mjs` repeats the whole flow against a stand-in built with Teeinblue's markup and the six field labels.
 - **What it depends on.**
-  - **The field labels** in `docs/TEEINBLUE-SETUP.md`. A heading must contain "manager" or "dog's name", "employee" or "your name", "cupboard", "improvement", "incident" and "enemy".
+  - **The field labels** in `docs/TEEINBLUE-SETUP.md`. A heading must contain "manager" or "dog's name" (either apostrophe), "employee" or "your name", "cupboard", "improvement", "incident" and "enemy". The plain labels Krish asked for ("Your dog's name", "Your name"; `docs/COWORK-PROMPT-2026-10-06.md`) match. A new field's label must avoid those words, or the bridge writes into it.
   - **Teeinblue's markup:** `.tee-field`, `.tee-field__heading`, and `input[type=file]` for photos.
   - If Teeinblue changes either, the answers card still shows the answers, and the order still carries them as hidden properties.
 - **Placeholders never travel.** "Biscuit" and "Sarah" only fill the page until the shopper types. The approve link, the order's hidden answers and the bridge carry real answers only, so a poster can't print a stranger's name. Approve without both names goes back to step 1 with "HR needs your name for the file." (or the manager's name, or both), and opens a dog-name field there if the hero was skipped. The treat count (1,412) and the chips keep their defaults, because they print sensibly.
@@ -105,6 +114,13 @@ Teeinblue has no documented prefill feature, so this was built against its store
 - **A clean picker.** "Show available product options" is off. Options with one value hide (CSS). The section setting **Plain names for product options** renames the rest in Teeinblue's picker and in the theme's own: the review and landing templates use `Color: Frame | Size: Size`, so the framed poster asks for a **Frame** (Black, Red Oak, White) and the poster shows no picker. Teeinblue's title is its own option key ("color", set in its block from the product base, not the Shopify option name), so renaming the option in admin wouldn't change it. `hs2.js` swaps the title's text and swaps it back whenever Teeinblue redraws the picker. (Until 5 October this was a CSS swap, which the phone test showed losing to Teeinblue's own styles.)
 - **"Want it framed? $89".** An **Upsell link** block under the Add To Cart on the poster's templates points to the framed poster, with its price and a line of facts. It's a link, styled quietly so it never competes with Add To Cart, carries the answers, and hides on the framed page itself.
 - **Descriptions.** Teeinblue rewrites the product description with Printful's text on every campaign update, so each **Description** block names a product and holds our copy for it. The block for this product wins, then a block with no product, then the product's own description.
+- **One picture at a time.** Teeinblue's live preview is the picture on show, and the product photos are thumbnails behind it. The first thumbnail, "Yours", brings the preview back. Teeinblue's inline gallery height is overridden: on a desktop browser it equals the form's height (1,557px on a narrow window), which left a blank gap under the preview. Teeinblue's copy of Printful's description is hidden, because the section shows ours.
+- **Express checkout.** It stays in the cart (Shop Pay, PayPal and Google Pay showed there on 5 October, and Apple Pay shows in Safari), not on the product page. A product-page express button would skip Teeinblue's Add To Cart, and that button is the only one that attaches the print file.
+- **The cart** (Helio's drawer and page, tidied by `hs2.js`, which loads on every page with the memo bar):
+  - The framed poster reads "Frame: Red Oak".
+  - "Available Product" and options that aren't a choice ("Default", "1 pc") are left out.
+  - The picture is the shopper's own preview (Teeinblue's `_customization_image`, read from `/cart.js`).
+  - The tax note reads "Free US shipping. Taxes calculated at checkout." It keeps the tax half, so the total is never implied tax-free.
 - **Links.** The homepage's poster links open `?view=review` and the benefits cards `?view=heartside`, so the flow works before the templates are assigned in admin, and still works after.
 
 ## Product photos (5 October)
@@ -126,7 +142,13 @@ Each comes full size, plus a `-4x5` crop (product pages, feed ads; portrait scen
 The review is the hook and the ornament is what people keep, so the homepage runs: the review builder (the $39 poster), then Tiny Me ($24), then the Body Double ($59). The framed poster is an upsell on the poster's page only. Every part of the order is a setting, so it can flip back without code:
 
 - **HS ornament** (after the review builder): Tiny Me's own section. **Show this section** is off until its photo is checked; when it goes on, also hide the Tiny Me card in the benefits section.
-- **HS benefits package**: each card has **Position** (1 shows first) and **Hide this card**. Tiny Me is 1, the Body Double 2; the Uniform and Socks are hidden.
+- **Length** (5 October evening, Krish: the long scroll tires quick buyers).
+  - **Homepage:** hero, review, (Tiny Me, hidden), more gifts, questions with our promises, the story card, sign-off.
+  - **Ad landing page:** hero, review, buy box, questions with our promises, sign-off with the Christmas line under its button.
+  - **Product pages:** the buy box, then questions.
+  - The management memo, the holiday closure and company policy are out of every template. Their sections stay in the theme.
+  - The Christmas order date moves to the memo bar, which shows it only once **Last order date for Christmas** is set (`[DATE]` in the memo becomes that date). Until then it reads "Free US shipping on every order." with the Christmas countdown.
+- **HS more gifts** (was "benefits package"): each card has **Position** (1 shows first) and **Hide this card**. Tiny Me is 1, the Body Double 2; the Uniform and Socks are hidden.
 - **The read-aloud video**: the review builder's **Show the read-aloud video button** is off. Nothing sells or makes the video yet: there's no product for it, Teeinblue's Add To Cart doesn't carry the request, and no process records and emails it. With the button off, no page mentions the video or its "Free until November 1" offer, and its Christmas Eve deadline row is hidden.
 
 ## Funnel pixel (Meta and TikTok)
@@ -177,6 +199,37 @@ The workflow never pushes this file (`--ignore "pixels/*"`); it lives in the rep
   - The photos from `assets/v2/`, as WebP at two sizes, built by `tools/build_shopify_assets.py`.
 
 ## New copy for Krish to approve
+
+Added on 5 October evening (live, except the hero):
+- **The hero, version B (not live; Krish decides on `design/hero-2026-10-05/`).**
+  - Eyebrow: "PERSONALIZED POSTER · $39 · FREE US SHIPPING"
+  - Headline: "Your dog loves you too. Now it's *in writing.*" Once a name is typed it becomes "Moose loves you too…".
+  - Subline: "Their annual review of you, printed on a 12 × 18 inch poster with their photo and your name."
+  - Name field: "Your dog's name"
+  - Proof line: "A person checks every order · Misprinted? We make it right · Free US shipping"
+  - Version A (fallback for colder traffic): "Your dog wrote your *annual review.*" / "They love you too, and they'd like it on the record. A 12 × 18 inch poster with their photo, your name and three notes you pick."
+  - The renders live in `tools/preview/render.mjs` (`HERO_B`, `HERO_A`).
+- **Review step 1:** labels "Your dog's name" and "Your name".
+  - The nudges: "Add your name. It goes on the poster." / "Add your dog's name. It goes on the poster." / "Add both names. They go on the poster."
+  - New: "[Dog] has picked the rest. Skip to the photo".
+  - The attach box after a photo: "Headshot attached · change".
+- **Product page.** The answers card: "YOUR ANSWERS", "From [Dog] to [Name]", the picks in one line, "Copied into the preview.", "Edit details" / "Hide details". Its note: "If the personalizer below asks for these, use them." The headshot status: "Headshot sent to the personalizer. Crop it there and press Select." Policy line 2: "Misprinted or damaged? Full refund or a free remake."
+- **Questions** (was "HR FAQs"), with our promises:
+  - "A person checks every order before it prints." (detail: "If the photo won't print well, we tell you first.")
+  - "Misprinted or damaged? Full refund or a free remake." ("Email a photo within 30 days of delivery.")
+  - "Every review gets published, good or bad." ("We're new, so there are none yet.")
+  - The contact line: "Anything else: krish@heartside.io".
+  - Rewritten answers:
+    - "What if something is wrong with it?": "Email a photo of the problem to krish@heartside.io within 30 days of delivery. If it arrived misprinted, damaged or wrong, you get a full refund or a free remake, your choice. Each one is made for you, so we can't take returns for a change of mind."
+    - "When will it arrive?": "…Once our maker confirms this year's last order date for Christmas, it goes in the bar at the top of the page."
+    - "What happens to my dog's photo?": "…When you add it in the personalizer, it goes to our print partner so they can make your order."
+- **More gifts** (was "Benefits package"): eyebrow "MADE FROM THE SAME PHOTO", heading "More of [Dog], for the tree and the sofa.", line "You both had a big year. Free US shipping on every one."
+  - The cards, in the dog's voice. Tiny Me ("Ceramic ornament · 3 in"): "Me, on a ceramic ornament, with a little note to you around the edge. We both had a good year. This one is for the tree." The Body Double ("Photo pillow · 16 in square"): "My face, on both sides of a 16-inch pillow. For when I can't be on the sofa with you."
+  - The item codes and the "[ORNAMENT SHOT]" tag are gone from the cards.
+- **The Body Double's description:** "[Dog]'s face on a 16-inch pillow, printed on both sides. For when [Dog] can't be on the sofa with you: groomer days, vet days, work trips." Both sides is confirmed: Teeinblue campaign 1032878 maps the artwork to front and back.
+- **Memo bar:** "Order by [DATE] for Christmas delivery. Free US shipping." once the date is set. Until then: "Free US shipping on every order."
+- **Sticky bar:** "Make my poster · $39".
+- **Renamed sections:** "Our promises", "Christmas order dates", "HS questions", "HS more gifts".
 
 Added on 5 October, second run (all live on the preview theme except where marked):
 - **Printful-true fixes.** Framed: "…in a black, red oak or white wood frame with an acrylic front, hanging hardware included." Pillow: "A 16-inch pillow printed with [Dog]'s face. … / Square, printed edge to edge, with a shape-retaining insert included." The pillow no longer says "on both sides" (product page and card) until Krish confirms it in Printful.
@@ -243,7 +296,7 @@ On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify them
 
 ## After deploying, in the theme editor (Heartside launch > Customize)
 
-1. **Header layout:** Helio lays its header over the hero on the homepage. `hs2.js` pads the hero by the overlap, so nothing collides. The cleaner fix is to turn off the transparent or overlay header in Helio's header settings, which gives the logo its own row (`docs/V2-FROM-THE-DOG.md` section 7). Point the main menu at `#review` "Your review", `#benefits` "Benefits package" and `#closure` "Christmas deadlines".
+1. **Header layout:** Helio lays its header over the hero on the homepage. `hs2.js` pads the hero by the overlap, so nothing collides. The cleaner fix is to turn off the transparent or overlay header in Helio's header settings, which gives the logo its own row (`docs/V2-FROM-THE-DOG.md` section 7). Point the main menu at `#review` "Your review", `#benefits` "More gifts" and `#faq` "Questions". `#closure` is off the homepage since 5 October evening.
 2. **Product pickers and Teeinblue:** done in the repo since 5 October (the review builder, leak section and benefits cards point at their products; Teeinblue's block sits in all three product templates). One step is left for after Krish publishes: assign the product templates (Products > each product > Theme template), **review** for the poster and framed poster, **heartside** for the rest. The homepage links already open those templates with `?view=`, so nothing breaks before then.
 3. **Placeholders:** replace `[DATE]` and `[… SHOT]` only when the real date or image exists (see below).
 
@@ -251,9 +304,9 @@ On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify them
 
 | Where | Placeholder | Replace with |
 |---|---|---|
-| HS memo bar | `[DATE]` | The poster's Christmas order date, once confirmed in Printful |
-| HS holiday closure | `[DATE]` × 3 shown (+1 hidden) | Body Double, framed review, and poster/ornament, each confirmed in Printful's dashboard. The Uniform row is hidden with its "Hide this row" setting |
-| HS benefits package | `[PILLOW SHOT]`, `[SWEATER SHOT]`, `[SOCKS SHOT]`, `[ORNAMENT SHOT]` | Printful mockups (`assets/IMAGE-BRIEF.md` items 12 to 15): pick the image, then clear the tag. Until then each card shows a photo from the Canva set |
+| HS memo bar | **Last order date for Christmas** (empty) | The confirmed date as YYYY-MM-DD. `[DATE]` in the memo becomes it, and the bar never shows `[DATE]` before then. Printful's 2026 guide is dated November 2025 (11 Dec standard for US-fulfilled home and living), so recheck it in early November and get Krish's yes |
+| HS Christmas order dates | `[DATE]` × 3 | Off every page since 5 October evening. Fill it only if the section comes back |
+| HS more gifts | Tiny Me's card shows a stand-in photo (no tag) | The ornament photo, rebuilt from Teeinblue's real output once the note picker is live (`docs/COWORK-PROMPT-2026-10-06.md` task 5). Then switch on the HS ornament section and hide the card |
 | HS product (both templates) | `[PRODUCT SHOT]` | Shows only when a product has no images; disappears once Printful mockups are on the product |
 
 ## Checks run

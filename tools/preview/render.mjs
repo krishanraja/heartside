@@ -30,6 +30,13 @@ for (const dir of ['sections', 'snippets']) {
   }
 }
 
+// Shopify also rejects a schema setting whose default is an empty string (Theme Check
+// doesn't flag it; the 5 October deploy was refused for two). Leave the default out instead.
+for (const f of fs.readdirSync(path.join(theme, 'sections'))) {
+  const src = fs.readFileSync(path.join(theme, 'sections', f), 'utf8');
+  if (/"default"\s*:\s*""/.test(src)) throw new Error(`sections/${f}: a setting has "default": "", which Shopify rejects. Remove the default.`);
+}
+
 // ------------------------------------------------------------ engine + stubs
 const engine = new Liquid({
   root: [path.join(theme, 'sections')],
