@@ -106,11 +106,12 @@ For it to work:
 | Employee name | 1968 | 725 | auto | 108 | Courier Prime Regular, 96 px, `#121010`, left |
 | Reviewer (dog's name) | 1968 | 1056 | auto | 108 | Courier Prime Regular, 96 px, `#121010`, left |
 | Key achievement | 252 | 2498 | 3096 | 269 | Courier Prime Regular, 96 px, `#121010`, wraps. Text: `Opened the treat cupboard {cupboard} times. Strong numbers.` |
-| Improvement line | 252 | 3039 | 3096 | 134 | As above, wraps to 2 lines |
-| Incident line | 252 | 3446 | 3096 | 134 | As above, wraps to 2 lines |
-| Threat line | 252 | 3853 | 3096 | 269 | As above, wraps to 2 lines |
+| Improvement line | 252 | 3039 | 3096 | 269 | Clipart `lines/improvement/<Label>.png`, two lines of room |
+| Incident line | 252 | **3581** (was 3446) | 3096 | 269 | Clipart `lines/incident/<Label>.png`, two lines of room |
+| Threat line | 252 | **4122** (was 3853) | 3096 | 269 | Clipart `lines/enemy/<Label>.png`, two lines of room |
 | Signature (dog's name) | 2970 | 5094 | 378 | 102 | Courier Prime Regular, 90 px, `#8A4A2B`, centred under the paw |
 
+- **The joke lines are clipart.** `design/poster-template/lines/<kind>/<Label>.png`, 15 transparent PNGs at 3096 × 269: two lines of Courier Prime 96 px at line height 1.4, copy from `shopify/snippets/hs2-lines.liquid`. Since 5 October every joke line has two lines of room before the next heading, so a two-line answer no longer crowds it. **Move the incident layer to y 3581 and the threat layer to y 4122, and upload the new `poster-background.png` and the 15 PNGs.** Every other layer keeps its position.
 - **If Teeinblue can't put fixed text around a field** (the Key achievement line), let the whole sentence be the layer, with the cupboard number as its only variable part.
 - **One addition to `Poster.dc.html`:** a THREAT ASSESSMENT block. The homepage asks for the "known enemy" and shows it on the live preview, so the print has to show it too. If Krish wants the print exactly as the canvas, delete the block and the enemy dropdown together.
 

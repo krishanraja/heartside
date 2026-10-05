@@ -8,27 +8,28 @@
   assign tib = false
   # Each description block can name a product. The one for this product wins, then one for any
   # product, then the product's own description (Teeinblue overwrites that with Printful's text).
-  assign desc_pick = ''
-  assign desc_any = ''
-  assign desc_first = ''
+  # (block positions, not IDs: Shopify generates the IDs)
+  assign desc_pick = 0
+  assign desc_any = 0
+  assign desc_first = 0
   for b in section.blocks
     if b.type == '@app'
       assign tib = true
     endif
     if b.type == 'description'
-      if desc_first == ''
-        assign desc_first = b.id
+      if desc_first == 0
+        assign desc_first = forloop.index
       endif
       if b.settings.text != blank
-        if b.settings.product != blank and b.settings.product.id == product.id and desc_pick == ''
-          assign desc_pick = b.id
-        elsif b.settings.product == blank and desc_any == ''
-          assign desc_any = b.id
+        if b.settings.product != blank and b.settings.product.id == product.id and desc_pick == 0
+          assign desc_pick = forloop.index
+        elsif b.settings.product == blank and desc_any == 0
+          assign desc_any = forloop.index
         endif
       endif
     endif
   endfor
-  if desc_pick == ''
+  if desc_pick == 0
     assign desc_pick = desc_any
   endif
 
@@ -137,11 +138,11 @@
               <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
             </div>
           {%- when 'description' -%}
-            {%- if desc_pick != '' -%}
-              {%- if block.id == desc_pick -%}
+            {%- if desc_pick > 0 -%}
+              {%- if forloop.index == desc_pick -%}
                 <div class="hs2-product__desc" {{ block.shopify_attributes }}>{% render 'hs2-t', text: block.settings.text %}</div>
               {%- endif -%}
-            {%- elsif block.id == desc_first -%}
+            {%- elsif forloop.index == desc_first -%}
               <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- endif -%}
           {%- when 'answers' -%}

@@ -95,7 +95,29 @@ Teeinblue has no documented prefill feature, so this was built against its store
   - **The field labels** in `docs/TEEINBLUE-SETUP.md`. A heading must contain "manager" or "dog's name", "employee" or "your name", "cupboard", "improvement", "incident" and "enemy".
   - **Teeinblue's markup:** `.tee-field`, `.tee-field__heading`, and `input[type=file]` for photos.
   - If Teeinblue changes either, the answers card still shows the answers, and the order still carries them as hidden properties.
-- **Where Teeinblue draws.** The product section tells Teeinblue to put its live preview at the top of the media column (`[data-hs2-tib-gallery]`) and to use the theme's form (`#hs2-product-form`). Its add to cart then carries the hidden answers too. When Teeinblue's preview appears, the theme's own live poster hides, so there is one preview.
+- **Placeholders never travel.** "Biscuit" and "Sarah" only fill the page until the shopper types. The approve link, the order's hidden answers and the bridge carry real answers only, so a poster can't print a stranger's name. Approve without both names goes back to step 1 with "HR needs your name for the file." (or the manager's name, or both), and opens a dog-name field there if the hero was skipped. The treat count (1,412) and the chips keep their defaults, because they print sensibly.
+- **Where Teeinblue draws.** The product section tells Teeinblue to put its live preview at the top of the media column (`[data-hs2-tib-gallery]`). When Teeinblue's preview appears, the theme's own live poster hides, so there is one preview.
+
+## The product page with Teeinblue's block (5 October)
+
+- **One add to cart.** With Teeinblue's app block on the page, the theme's button and variant select step aside and Teeinblue's "Add To Cart" is the only one. It is the only button that attaches the print file: on 5 October the theme's button posted the form straight to the cart with no personalization. The theme's form stays, hidden, with the order's hidden answers.
+- **One price.** The block's "Show price" is off in the templates, so the theme's price shows. It follows Teeinblue's picker through the `?variant=` Teeinblue writes to the address.
+- **A clean picker.** "Show available product options" is off. Options with one value hide (CSS). The section setting **Plain names for product options** renames the rest in Teeinblue's picker and in the theme's own: the review and landing templates use `Color: Frame | Size: Size`, so the framed poster asks for a **Frame** (Black, Red Oak, White) and the poster shows no picker.
+- **Descriptions.** Teeinblue rewrites the product description with Printful's text on every campaign update, so each **Description** block names a product and holds our copy for it. The block for this product wins, then a block with no product, then the product's own description.
+- **Links.** The homepage's poster links open `?view=review` and the benefits cards `?view=heartside`, so the flow works before the templates are assigned in admin, and still works after.
+
+## Funnel pixel (Meta and TikTok)
+
+`shopify/pixels/hs2-funnel.js` is a Shopify custom pixel. It forwards the theme's funnel events to Meta and TikTok as custom events: `hs2_name_entered`, `hs2_review_step` (with the step), `hs2_names_needed`, `hs2_approve_clicked`, `hs2_photo_attached`, `hs2_story_card`, `hs2_caption_copied`, `hs2_link_shared` and `hs2_faq_open`. Approving is also sent as the standard event `CustomizeProduct`, which both platforms can optimize for straight away. Page views, add to cart, checkout and purchase come from Shopify's Facebook & Instagram channel (and TikTok's, if installed); this pixel doesn't send them again. Names never leave the store: only the step, card, question and which name was missing.
+
+To install it:
+1. Copy the Meta pixel (dataset) ID from Meta Events Manager and, if TikTok ads will run, the pixel ID from TikTok Events Manager. Paste them into `META_PIXEL_ID` and `TIKTOK_PIXEL_ID` at the top of the file. Either can stay empty; with both empty the pixel does nothing.
+2. Shopify admin > **Settings > Customer events > Add custom pixel**, named "Heartside funnel".
+3. **Customer privacy:** Permission "Required: marketing", Data sale "Data collected qualifies as data sale".
+4. Paste the whole file into the code box, **Save**, then **Connect**.
+5. Test it: open the store, type a dog's name, step through the review. Meta Events Manager > Test events and TikTok's Pixel Helper should show the `hs2_` events. Customer events also has a **Test** button that logs each event.
+
+The workflow never pushes this file (`--ignore "pixels/*"`); it lives in the repo so it is versioned.
 - **Check once templates exist.** Open a product from the homepage after answering, and confirm that the fields fill, the headshot button works, and Teeinblue's preview sits in the media column. If the preview lands somewhere else, set the gallery selector to `[data-hs2-tib-gallery]` in Teeinblue's theme settings.
 
 ## Files
@@ -132,6 +154,16 @@ Teeinblue has no documented prefill feature, so this was built against its store
   - The photos from `assets/v2/`, as WebP at two sizes, built by `tools/build_shopify_assets.py`.
 
 ## New copy for Krish to approve
+
+Added on 5 October:
+- **The name nudge** (review step 1, shown when Approve is pressed without a name): "HR needs your name for the file.", "HR needs your manager's name for the file." and "HR needs both names for the file."
+- **Product descriptions** (Description blocks in the product templates). The facts in them (paper, frame, insert, size) are to check against Printful before launch.
+  - **The Annual Review:** "[Dog]'s review of your year, printed for the wall: your name, [Dog]'s headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper. / Frame not included. [Dog] has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping."
+  - **The Annual Review, Framed:** "The same review, framed and ready to hang. [Dog] felt the paperwork deserved it. / A 12 × 18 inch poster on thick matte paper, in a black, red oak or white wood frame, with the hanging hardware already on. Made after you order, and a person checks it before it prints. Free US shipping."
+  - **The Body Double:** "A 16-inch pillow with [Dog]'s face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen. / Square, printed edge to edge, insert included. Made after you order, and a person checks it before it prints. Free US shipping."
+  - **Tiny Me, For The Tree:** "[Dog], about three inches across, for the tree. The verdict runs in a ring around the photo: Overall rating: exceeds expectations. Contract renewed. For life. [Dog]'s name sits underneath. / Ceramic, with the same design on both sides, so it faces the room whichever way it turns. Made after you order, and a person checks it before it prints. Free US shipping."
+- **Benefits cards:** the Body Double tag "Square photo pillow · 16 in" with "A 16-inch pillow with [Dog]'s face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen." Tiny Me: "A ceramic ornament of [Dog], with [Dog]'s verdict on your year printed in a ring around the photo."
+- **Deadline row:** "Review poster and ornament" (was "Review poster, socks, ornament").
 
 Added on 4 October to make the page read like a shop:
 - **Hero:** "A personalized 12 × 18 inch poster of your dog's review of you, with their photo and your name. $39, free US shipping." The button reads "Make my poster".
@@ -172,17 +204,13 @@ The canvas copy is untouched. These lines are new, written to the comedy bible (
 On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify theme > Run workflow**, branch `main`, `theme_id` **197492998526**. The workflow refuses the live theme and any theme not named "Heartside launch".
 
 - **Files.** It only adds and updates files (`--nodelete`). The v1 ornament sections and snippets therefore stay in the theme, unused. Delete them in the code editor if they clutter the "Add section" list.
-- **Backup.** Before every push it saves the theme's templates and section groups as a run artifact (`theme-backup-…`, kept 30 days). The log says whether each template had theme-editor changes, because pushing `templates/*.json` replaces them. Once product pickers or images are set in the editor, copy those settings into `shopify/templates/` before the next push, or restore them from the backup.
+- **Backup and the editor-edit guard.** Before every push it saves the theme's templates, section groups, `settings_data.json` and the hs2 section files as a run artifact (`theme-backup-…`, kept 30 days). `.github/scripts/editor-edits.mjs` then compares each template with every committed version, ignoring settings the editor writes out at their default. If a template has theme-editor changes the repo doesn't, the push **stops**, because pushing `templates/*.json` replaces them. Copy those settings into `shopify/templates/` from the artifact, or rerun with **overwrite_editor_edits** to discard them. Tick **pull_only** to save the artifact without pushing anything. The footer group and `settings_data.json` (app embeds) are never pushed.
 - **Header.** Tick **header_memo_bar** to put the HS memo bar at the top of the header group and remove the v1 offer bar ("30% off and free US shipping until November 1."). Any other announcement bar is hidden, not deleted. The script is `.github/scripts/header-memo.mjs`.
 
 ## After deploying, in the theme editor (Heartside launch > Customize)
 
 1. **Header layout:** Helio lays its header over the hero on the homepage. `hs2.js` pads the hero by the overlap, so nothing collides. The cleaner fix is to turn off the transparent or overlay header in Helio's header settings, which gives the logo its own row (`docs/V2-FROM-THE-DOG.md` section 7). Point the main menu at `#review` "Your review", `#benefits` "Benefits package" and `#closure` "Christmas deadlines".
-2. **Product pickers:**
-   - In the review builder and the leak section, choose the Annual Review product.
-   - In each benefits card, choose its product.
-   - Assign the product templates (Products > each product > Theme template): **review** for the poster and framed poster, **heartside** for the rest.
-   - Add Teeinblue's app block to both product templates, between "Homepage answers" and "Add to cart".
+2. **Product pickers and Teeinblue:** done in the repo since 5 October (the review builder, leak section and benefits cards point at their products; Teeinblue's block sits in all three product templates). One step is left for after Krish publishes: assign the product templates (Products > each product > Theme template), **review** for the poster and framed poster, **heartside** for the rest. The homepage links already open those templates with `?view=`, so nothing breaks before then.
 3. **Placeholders:** replace `[DATE]` and `[… SHOT]` only when the real date or image exists (see below).
 
 ## Placeholders left in place
@@ -205,7 +233,8 @@ On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify them
   - All four story cards download. The phone tap zones cycle the cards, and the caption and link copy to the clipboard.
   - The approve link carries every answer, and the product page shows them and fills the order properties.
   - On the stand-in Teeinblue form, all six fields fill, the headshot reaches Teeinblue's upload, and an edit in Teeinblue updates the order property.
-  - The sticky pill hides over the builder and the help desk's closing button. The variant picker updates the price.
+  - The sticky pill hides over the builder and the help desk's closing button.
+  - The 5 October bugs, each with its own `BUG n` line: Approve with no names stays on step 1 with the nudge and never carries "Sarah" (link, hidden answers, Teeinblue); a chip then Next lands on the next step and stays there; the framed poster shows one price, a "Frame" picker and one add to cart, and its price and variant follow the picker; the poster shows no picker; without Teeinblue the theme's own picker reads "Frame: Black, Red Oak, White"; each product shows its own description, and Printful's when none is written.
 - **Teeinblue's real code:** the bridge and the headshot hand-off ran against Teeinblue's live demo store (see above).
 - **Copy:** every visible string in `design/Main.dc.html` is present word for word. The only changes are the alt texts of the old stand-in photos, which now describe the real photos.
 - **On the real store:** after each deploy the Heartside launch preview (`?preview_theme_id=197492998526`) is loaded in Chromium at 390 px and 1440 px.

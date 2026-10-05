@@ -8,6 +8,9 @@
 //   poster-background.png   everything that never changes; personalised parts left blank
 //   poster-stamp.png        the APPROVED stamp alone on a transparent full-size canvas (top layer)
 //   layers.json             where each personalised layer goes, in print pixels
+//   lines/<kind>/<Label>.png  the 15 joke lines as Teeinblue clipart, 3096 x 269 transparent:
+//                           two lines of Courier Prime 96 px at line height 1.4 (134.4 px),
+//                           copy read from shopify/snippets/hs2-lines.liquid
 // and assets/social-share-1200x628.png.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,9 +33,9 @@ const fontCss = `
 `;
 const paw = '<svg width="58" height="58" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="6.2" cy="9.2" rx="2" ry="2.6"></ellipse><ellipse cx="10" cy="5.8" rx="2" ry="2.6"></ellipse><ellipse cx="14.4" cy="5.8" rx="2" ry="2.6"></ellipse><ellipse cx="18.2" cy="9.2" rx="2" ry="2.6"></ellipse><path d="M12.2 10.6c-3.2 0-6 3.6-6 6.2 0 1.8 1.4 2.6 3 2.6 1.3 0 2-.6 3-.6s1.7.6 3 .6c1.6 0 3-.8 3-2.6 0-2.6-2.8-6.2-6-6.2z"></path></svg>';
 
-// Markup follows design/Poster.dc.html. One addition: the THREAT ASSESSMENT block,
-// because the homepage builder asks for the "known enemy" and shows it on the preview.
-// data-layer marks each personalised part.
+// Markup follows design/Poster.dc.html, THREAT ASSESSMENT block included. Every line that
+// can wrap gets two lines of room (min-height 2.8em at line-height 1.4), so a two-line
+// answer never reaches the next heading. data-layer marks each personalised part.
 const poster = `
 <div id="poster" style="width: 600px; height: 900px; box-sizing: border-box; background: #FFFDF9; color: #121010; font-family: 'HS Courier Prime', monospace; padding: 40px 42px 34px; display: flex; flex-direction: column; gap: 18px; position: relative; overflow: hidden">
   <div style="display: flex; justify-content: space-between; border-bottom: 3px solid #121010; padding-bottom: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em">
@@ -55,21 +58,21 @@ const poster = `
   </div>
   <div style="display: flex; flex-direction: column; gap: 5px; font-size: 16px; line-height: 1.4">
     <div style="font-weight: 700; letter-spacing: 0.1em">KEY ACHIEVEMENTS</div>
-    <div data-layer="cupboard_line">Opened the treat cupboard 1,412 times. Strong numbers.</div>
+    <div data-layer="cupboard_line" style="min-height: 2.8em">Opened the treat cupboard 1,412 times. Strong numbers.</div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 5px; font-size: 16px; line-height: 1.4">
     <div style="font-weight: 700; letter-spacing: 0.1em">AREAS FOR IMPROVEMENT</div>
-    <div data-layer="improvement">Leaving. Please stop leaving.</div>
+    <div data-layer="improvement" style="min-height: 2.8em">Leaving. Please stop leaving.</div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 5px; font-size: 16px; line-height: 1.4">
     <div style="font-weight: 700; letter-spacing: 0.1em">INCIDENT REPORT</div>
-    <div data-layer="incident">The sock. I would do it again. Case closed.</div>
+    <div data-layer="incident" style="min-height: 2.8em">The sock. I would do it again. Case closed.</div>
   </div>
   <div style="display: flex; flex-direction: column; gap: 5px; font-size: 16px; line-height: 1.4">
     <div style="font-weight: 700; letter-spacing: 0.1em">THREAT ASSESSMENT</div>
-    <div data-layer="enemy">The mailman. Comes every day. Clearly planning something.</div>
+    <div data-layer="enemy" style="min-height: 2.8em">The mailman. Comes every day. Clearly planning something.</div>
   </div>
-  <div style="margin-top: auto; border-top: 3px solid #121010; padding-top: 14px; display: flex; justify-content: space-between; align-items: flex-end">
+  <div style="margin-top: auto; border-top: 3px solid #121010; padding-top: 11px; display: flex; justify-content: space-between; align-items: flex-end">
     <div style="display: flex; flex-direction: column; gap: 4px">
       <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.12em">OUTCOME</div>
       <div style="font-family: 'HS Fraunces', serif; font-size: 40px; font-weight: 700; line-height: 1.02">Contract renewed.<br>For life.</div>
@@ -116,6 +119,13 @@ const layers = await pg.evaluate((S) => {
     };
   });
 }, SCALE);
+const room = await pg.evaluate(() => {
+  const enemy = document.querySelector('[data-layer="enemy"]').getBoundingClientRect();
+  const outcome = document.querySelector('[data-layer="signature"]').closest('#poster > div').getBoundingClientRect();
+  return Math.round(outcome.top - enemy.bottom);
+});
+console.log('room between the threat lines and the outcome rule:', room, 'design px');
+if (room < 12) throw new Error('the joke lines push the outcome off its place; refusing to write print files');
 fs.writeFileSync(path.join(outDir, 'layers.json'), JSON.stringify({ canvas: { width: 3600, height: 5400, dpi: 300, inches: '12 x 18' }, layers }, null, 2) + '\n');
 
 // 3. background: personalised parts and the stamp hidden
@@ -135,7 +145,35 @@ await pg.evaluate(() => {
 await pg.evaluate(() => { document.body.style.background = 'transparent'; });
 await pg.locator('#poster').screenshot({ path: path.join(outDir, 'poster-stamp.png'), omitBackground: true });
 
-// 5. v2 social sharing image, 1200 x 628
+// 5. the joke lines as clipart, one PNG per chip, sized to the layer boxes above
+const snippet = fs.readFileSync(path.join(repo, 'shopify', 'snippets', 'hs2-lines.liquid'), 'utf8');
+const lineSets = {};
+for (const m of snippet.matchAll(/when '(\w+)'\s+assign labels = '([^']+)' \| split: '\|'\s+assign lines = '([^']+)'/g)) {
+  const labels = m[2].split('|'), texts = m[3].split('|');
+  lineSets[m[1]] = labels.map((l, i) => [l, texts[i]]);
+}
+const lineCtx = await browser.newContext({ viewport: { width: 3096, height: 269 }, deviceScaleFactor: 1 });
+const lp = await lineCtx.newPage();
+fs.writeFileSync(path.join(tmp, 'print-line.html'), `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
+  html, body { background: transparent; }
+  #line { width: 3096px; height: 269px; font-family: "HS Courier Prime", monospace; font-size: 96px; line-height: 1.4; color: #121010; overflow: hidden; }
+</style></head><body><div id="line"></div></body></html>`);
+await lp.goto(pathToFileURL(path.join(tmp, 'print-line.html')).href, { waitUntil: 'load' });
+await lp.evaluate(() => document.fonts.load('96px "HS Courier Prime"'));
+let lineCount = 0;
+for (const [kind, set] of Object.entries(lineSets)) {
+  const dir = path.join(outDir, 'lines', kind);
+  fs.mkdirSync(dir, { recursive: true });
+  for (const [label, text] of set) {
+    const rows = await lp.evaluate((t) => { const el = document.querySelector('#line'); el.textContent = t; return Math.round(el.scrollHeight / 134.4); }, text);
+    if (rows > 2) throw new Error(`"${text}" needs ${rows} lines; the layer holds 2`);
+    await lp.locator('#line').screenshot({ path: path.join(dir, `${label}.png`), omitBackground: true });
+    lineCount++;
+  }
+}
+console.log('joke line PNGs:', lineCount, Object.entries(lineSets).map(([k, s]) => `${k}: ${s.length}`).join(', '));
+
+// 6. v2 social sharing image, 1200 x 628
 const share = await browser.newContext({ viewport: { width: 1200, height: 628 }, deviceScaleFactor: 1 });
 const sp = await share.newPage();
 fs.writeFileSync(path.join(tmp, 'print-share.html'), `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
