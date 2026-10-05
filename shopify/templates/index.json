@@ -194,7 +194,10 @@
       ]
     },
     "signoff": {
-      "type": "hs2-signoff"
+      "type": "hs2-signoff",
+      "settings": {
+        "compact": true
+      }
     },
     "sticky": {
       "type": "hs2-sticky"
