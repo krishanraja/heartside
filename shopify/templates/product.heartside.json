@@ -105,7 +105,8 @@
           "type": "deadline",
           "settings": {
             "item": "Mandatory Company Uniform",
-            "date": "[DATE]"
+            "date": "[DATE]",
+            "hide": true
           }
         },
         "d2": {
@@ -125,7 +126,7 @@
         "d4": {
           "type": "deadline",
           "settings": {
-            "item": "Review poster, socks, ornament",
+            "item": "Review poster and ornament",
             "date": "[DATE]"
           }
         },

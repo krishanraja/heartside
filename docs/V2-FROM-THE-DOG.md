@@ -44,11 +44,13 @@ One maker for everything means one dashboard, combined tracking back to Shopify 
 |---|---|---|---|
 | **The Annual Review** (hero) | Personalised performance review poster written by the dog | #1 Enhanced Matte Paper Poster | 12×18 |
 | **The Annual Review, framed** | Same, framed, ready to hang | #2 Enhanced Matte Paper Framed Poster | 12×18, black / white / red oak |
-| **The Body Double** | Pillow cut to the dog's outline | #743 Custom Shaped Pillow | 16″ (also 10″, 22″) |
-| **Mandatory Company Uniform** | Ugly Christmas sweatshirt printed all over with the dog's face, plus a matching bandana for the dog | #1418 All-Over Print Unisex Cotton Sweatshirt + #902 Pet Bandana Collar | XS–3XL; bandana S–XL |
-| **Surveillance Socks** | Dog's face all over | #882 Sublimation Socks | S, M, L |
-| **Tiny Me, For The Tree** | Ceramic ornament: dog on the front, the dog's verdict on your year on the back | #900 Ceramic Ornament, 2-side print | Circle (also heart) |
+| **The Body Double** | Square photo pillow: the dog's photo printed edge to edge, the same on both sides | All-Over Print Basic Pillow (Teeinblue base 364803) | 16″ × 16″ only |
+| **Mandatory Company Uniform** (paused) | Ugly Christmas sweatshirt printed all over with the dog's face, plus a matching bandana for the dog | #1418 All-Over Print Unisex Cotton Sweatshirt + #902 Pet Bandana Collar | XS–3XL; bandana S–XL |
+| **Surveillance Socks** (paused) | Dog's face all over | #882 Sublimation Socks | S, M, L |
+| **Tiny Me, For The Tree** | Ceramic ornament: the dog's photo cropped to a circle, the verdict printed in a ring around it ("OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •"), the dog's name in Fraunces underneath. Printful prints the same design on both sides. | #900 Ceramic Ornament | Circle |
 | **[Dog] reads your review** | 15-second video of the customer's dog photo reading their review aloud, emailed | Digital, made with Higgsfield (see 6) | n/a |
+
+**Changed on 4 October (Krish).** Printful's shaped pillow isn't available through Teeinblue and there's no background removal yet, so the Body Double is a square photo pillow, and the Uniform and the Socks are **paused** until background removal exists. They return after the first sales; their Teeinblue product bases are already imported. The site hides their cards and deadline rows with a setting, and says nothing about them coming soon.
 
 **Out of the range:** the photo ornament at $34.99, the sling and travel bottle in the hero (keep them in the catalog, out of ads), the Pet ID tag (it can't capture the name), knitted sweaters (Printful's knitwear is made in China and takes 3–4 weeks), plush (no print-on-demand option).
 
@@ -62,21 +64,23 @@ Fees use Shopify Payments 2.9% + $0.30. Free US shipping on everything, already 
 |---|---|---|---|---|---|---|---|
 | Annual Review poster 12×18 | $39 | $11.62 | $4.99 | $1.43 | $18.04 | $20.96 | 54% |
 | Annual Review framed 12×18 | $89 | $32.77 | $10.89 | $2.88 | $46.54 | $42.46 | 48% |
-| The Body Double 16″ | $59 | $16.60 | $10.89 | $2.01 | $29.50 | $29.50 | 50% |
-| Uniform set (sweatshirt + bandana) | $129 | $55.87 | $9.49 | $4.04 | $69.40 | $59.60 | 46% |
-| Uniform sweatshirt only | $89 | $39.77 | $8.79 | $2.88 | $51.44 | $37.56 | 42% |
-| Surveillance Socks | $24 | $7.14 | $4.69 | $1.00 | $12.83 | $11.17 | 47% |
+| The Body Double 16″ × 16″ | $59 | re-check | re-check | $2.01 | re-check | re-check | re-check |
+| Uniform set (sweatshirt + bandana), paused | $129 | $55.87 | $9.49 | $4.04 | $69.40 | $59.60 | 46% |
+| Uniform sweatshirt only, paused | $89 | $39.77 | $8.79 | $2.88 | $51.44 | $37.56 | 42% |
+| Surveillance Socks, paused | $24 | $7.14 | $4.69 | $1.00 | $12.83 | $11.17 | 47% |
 | Tiny Me ornament | $24 | $7.73 | $5.49 | $1.00 | $14.22 | $9.78 | 41% |
-| Socks as add-on to another order | $19 | $7.14 | $2.00 | $0.85 | $9.99 | $9.01 | 47% |
+| Socks as add-on to another order, paused | $19 | $7.14 | $2.00 | $0.85 | $9.99 | $9.01 | 47% |
 | Ornament as add-on | $19 | $7.73 | $0.80 | $0.85 | $9.38 | $9.62 | 51% |
 | Dog reads your review (video) | $12 | Higgsfield credits | $0 | $0.65 | credits + time | about $11 | high |
+
+The Body Double's costs above were for the shaped pillow. Re-read the All-Over Print Basic Pillow's base price and US shipping in the Printful dashboard before putting ad money behind it; the $59 price stays.
 
 **Pricing rules.**
 - Price is the price. No strike-through "was" prices: the store has never charged them, and 16 CFR 233.1 requires a real former price.
 - **Retire the 30% off** for the new range. At 30% off the poster drops to about $9 of contribution and the pillow to about $12. Keep the automatic discount only on the old products, or end it.
 - **Launch offer, 20 Oct to 1 Nov:** the read-aloud video is free with any order. It costs no shipping, it is genuinely limited by time, and every video a customer receives is a video they post. From 2 November it is $12.
-- **Order bumps at checkout:** "Add Surveillance Socks for $19" and "Add Tiny Me for $19". They ride the same shipment, so the add-on prices still clear 47–51%.
-- **Bundle:** "The Full Review" = framed review + socks + ornament at $119. Components are $137 separately. Contribution about $54 (framed $42.46, plus the socks and ornament as add-ons riding the same shipment, minus the bundle saving).
+- **Order bump at checkout:** "Add Tiny Me for $19". It rides the same shipment, so the add-on price still clears 51%. The socks bump returns with the socks.
+- **Bundle (paused with the socks):** "The Full Review" = framed review + socks + ornament at $119. Shopify Bundles is installed, so it and the $129 Uniform set can be built once the products exist. Components are $137 separately. Contribution about $54 (framed $42.46, plus the socks and ornament as add-ons riding the same shipment, minus the bundle saving).
 - **Break-even cost per purchase for ads** is roughly the contribution above: $21 on a poster order, $42 framed. This is why organic content comes first and money only goes behind proven clips.
 
 ---
@@ -85,7 +89,7 @@ Fees use Shopify Payments 2.9% + $0.30. Free US shipping on everything, already 
 
 **Stack:** Shopify, the Printful app (free) and Teeinblue (personalization, $49/month plus per-item). Both installs need Krish's yes.
 
-**Why Teeinblue:** it is the only piece that does all four hard things for photo products. It removes the background and cuts out the dog (needed for the pillow, socks, sweatshirt and bandana). It shows a live preview on the product page. It renders print-ready files from a template. It sends the order to Printful automatically. Building that ourselves would take longer than the 16 days to launch. Customily ($49/month) is the fallback with the same integrations.
+**Why Teeinblue:** it is the only piece that does all four hard things for photo products. It can remove the background and cut out the dog (needed later for the socks, sweatshirt and bandana; not set up yet). It shows a live preview on the product page. It renders print-ready files from a template. It sends the order to Printful automatically. Building that ourselves would take longer than the 16 days to launch. Customily ($49/month) is the fallback with the same integrations.
 
 **Flow per order.**
 1. The customer personalises on the product page: the dog's name, their name, the treat-cupboard number, picks from the joke options (the same chips as the homepage), and uploads a photo or chooses "send it later".
@@ -96,14 +100,14 @@ Fees use Shopify Payments 2.9% + $0.30. Free US shipping on everything, already 
 
 **Homepage generator → product page.** The homepage review builder is our own theme section (no app). Its "Approve [Dog]'s review" button opens the product page with the answers in URL parameters. Claude Code must check whether Teeinblue can prefill its fields from URL parameters or a JS API. If it can't, the product page repeats the choices in Teeinblue's own customizer, styled to match. Do not ship a flow where the customer has to type everything twice without telling Krish.
 
-**Quality before launch.** See section 8, item 2. If Krish orders the two samples, check the pillow cutout edges and the sweatshirt face alignment, and photograph both for the site. Every other product image comes from Printful's mockup generator, using the real design. Do not use mockups that look better than the real thing.
+**Quality before launch.** See section 8, item 2. If Krish orders the two samples, check the pillow's photo crop and print sharpness, and photograph both for the site. Every other product image comes from Printful's mockup generator, using the real design. Do not use mockups that look better than the real thing.
 
 **Christmas deadlines.** Printful's verified 2026 cutoff for US-made products on standard shipping is 11 December. Publish one day earlier per product to cover the daily review step:
 
 | Product | Publish as last order date | Status |
 |---|---|---|
-| Poster, framed, socks, ornament, pillow | 10 December | Printful US cutoff 11 Dec verified; confirm per product in the Printful dashboard |
-| Uniform sweatshirt and bandana | [DATE] | Printful's all-over-print facility and its cutoff must be confirmed before publishing |
+| Poster, framed, ornament, pillow | 10 December | Printful US cutoff 11 Dec verified; confirm per product in the Printful dashboard |
+| Uniform sweatshirt and bandana (paused) | [DATE] | Printful's all-over-print facility and its cutoff must be confirmed before publishing |
 | Video | 23 December | Our own process |
 
 Nothing goes on the site until each date is confirmed in the Printful dashboard.
@@ -125,9 +129,9 @@ Nothing goes on the site until each date is confirmed in the Printful dashboard.
 
 **The five ads** (full frame-by-frame on the canvas):
 1. **The Review (20s):** Biscuit runs Sarah's annual review across a mahogany desk. "You left the house 41 times." "For work." "Allegedly." Sells the poster and framed poster.
-2. **The Body Double (15s):** a heist. Biscuit plants his pillow double next to Sarah on the sofa and goes for the Christmas ham. "You're so calm tonight." Sells the pillow.
-3. **Mandatory Company Uniform (20s):** the living-room holiday party. Everyone is in Biscuit sweatshirts. Uncle Dave walks in wearing a plain sweater. "Security." Two bulldogs with earpieces walk him out. Sells the set.
-4. **Surveillance Socks (12s):** Sarah kicks her shoes off at the office. Cut to Biscuit at a wall of CCTV monitors. "Who is Brenda." Sells socks.
+2. **The Body Double (15s):** a heist. Biscuit plants his pillow double next to Sarah on the sofa and goes for the Christmas ham. "You're so calm tonight." Sells the pillow. **Product change, 4 October:** the pillow is now a 16-inch square with Biscuit's face printed on both sides, not a pillow shaped like him. Show the square pillow in every shot. The joke gets better: the decoy is plainly a square, and Sarah still doesn't notice.
+3. **Mandatory Company Uniform (20s, paused with the product):** the living-room holiday party. Everyone is in Biscuit sweatshirts. Uncle Dave walks in wearing a plain sweater. "Security." Two bulldogs with earpieces walk him out. Sells the set.
+4. **Surveillance Socks (12s, paused with the product):** Sarah kicks her shoes off at the office. Cut to Biscuit at a wall of CCTV monitors. "Who is Brenda." Sells socks.
 5. **Your dog reads your review (15s):** a UGC-style phone video. A woman holds her phone next to her confused real dog while the dog's photo reads her review aloud. "You went to Cabo without me. One star." Sells the video, and with it the poster.
 
 **The tender cut, for retargeting only:** the "word from management" memo read over quiet footage, ending "You also came back. Every single time. I noticed. Keep me close."

@@ -8,11 +8,14 @@
       {%- if s.subheading != blank -%}<p class="hs2-benefits__sub">{% render 'hs2-t', text: s.subheading %}</p>{%- endif -%}
     </div>
     <div class="hs2-cards" data-hs2-carousel data-hs2-reveal data-hs2-group>
+      {%- assign shown = 0 -%}
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
+        {%- if b.hide -%}{%- continue -%}{%- endif -%}
         {%- assign link = '#review' -%}
         {%- if b.product != blank -%}{%- assign link = b.product.url | append: '?view=heartside' -%}{%- endif -%}
-        <article class="hs2-card" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
+        <article class="hs2-card" style="--i: {{ shown }}" {{ block.shopify_attributes }}>
+          {%- assign shown = shown | plus: 1 -%}
           <div class="hs2-card__media">
             {%- if b.image != blank -%}
               {{ b.image | image_url: width: 800 | image_tag: loading: 'lazy', sizes: '(min-width: 900px) 25vw, 90vw', alt: b.alt }}
@@ -59,9 +62,10 @@
       "type": "item",
       "name": "Benefit",
       "settings": [
+        { "type": "checkbox", "id": "hide", "label": "Hide this card", "info": "For a product that isn't on sale yet. The card keeps its settings.", "default": false },
         { "type": "product", "id": "product", "label": "Product", "info": "The link goes here with the shopper's answers. Empty links to the review builder." },
         { "type": "text", "id": "name", "label": "Name", "default": "The Body Double" },
-        { "type": "text", "id": "kind", "label": "What it is, in plain words", "default": "Custom dog-shaped pillow · 16 in" },
+        { "type": "text", "id": "kind", "label": "What it is, in plain words", "default": "Square photo pillow · 16 in" },
         { "type": "text", "id": "code", "label": "Item code", "default": "ITEM BD-01" },
         { "type": "text", "id": "price", "label": "Price", "default": "$59" },
         { "type": "textarea", "id": "copy", "label": "Copy", "info": "{dog} and {dogs} become the shopper's dog." },

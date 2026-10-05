@@ -118,7 +118,7 @@ Teeinblue has no documented prefill feature, so this was built against its store
 - **Templates:**
   - `index.json` (the homepage).
   - `product.review.json` for the two Annual Review products; it shows the live poster.
-  - `product.heartside.json` for the pillow, uniform, socks and ornament.
+  - `product.heartside.json` for the Body Double and Tiny Me (and the Uniform and Socks when they return).
 - **Snippets:**
   - `hs2-head`: fonts, CSS and JS.
   - `hs2-t`: tokens.
@@ -136,7 +136,7 @@ Teeinblue has no documented prefill feature, so this was built against its store
 Added on 4 October to make the page read like a shop:
 - **Hero:** "A personalized 12 × 18 inch poster of your dog's review of you, with their photo and your name. $39, free US shipping." The button reads "Make my poster".
 - **Review:** "FORM HR-26 · 5 QUICK QUESTIONS · TAKES A MINUTE". The steps add "STEP 1 OF 5", "PRINTS AS", "Back" and "Next", and the button reads "Approve and order [Dog]'s poster".
-- **Benefits:** "More gifts made from your dog's photo. Free US shipping on every one." The product tags are "Custom dog-shaped pillow · 16 in", "Sweatshirt + matching dog bandana", "Socks printed with your dog's face" and "Two-sided ceramic photo ornament".
+- **Benefits:** "More gifts made from your dog's photo. Free US shipping on every one." The product tags are "Square photo pillow · 16 in" and "Two-sided ceramic photo ornament". The Uniform and Socks cards are hidden for launch with each card's "Hide this card" setting; their copy stays in the template for when they return.
 - **Leak:** the eyebrow reads "FREE · FOR YOUR INSTAGRAM OR TIKTOK STORY".
 - **Buttons:** the sticky bar, sign-off and FAQ buttons read "Make [Dog]'s poster · $39" ("Order [Dog]'s poster · $39" on the ad landing page).
 - **Countdowns:** "Christmas morning in N days", or "N days left to order for Christmas" once a date is set. The offer line reads "Free until November 1".
@@ -190,7 +190,7 @@ On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify them
 | Where | Placeholder | Replace with |
 |---|---|---|
 | HS memo bar | `[DATE]` | The poster's Christmas order date, once confirmed in Printful |
-| HS holiday closure | `[DATE]` × 4 | Uniform, Body Double, framed review, and poster/socks/ornament, each confirmed in Printful's dashboard |
+| HS holiday closure | `[DATE]` × 3 shown (+1 hidden) | Body Double, framed review, and poster/ornament, each confirmed in Printful's dashboard. The Uniform row is hidden with its "Hide this row" setting |
 | HS benefits package | `[PILLOW SHOT]`, `[SWEATER SHOT]`, `[SOCKS SHOT]`, `[ORNAMENT SHOT]` | Printful mockups (`assets/IMAGE-BRIEF.md` items 12 to 15): pick the image, then clear the tag. Until then each card shows a photo from the Canva set |
 | HS product (both templates) | `[PRODUCT SHOT]` | Shows only when a product has no images; disappears once Printful mockups are on the product |
 

@@ -392,7 +392,8 @@ html.hs2-js .hs2-management__memo.is-in > .hs2-memo-p { animation-duration: 1s; 
 .hs2-benefits__head { display: flex; flex-direction: column; gap: 10px; }
 .hs2-eyebrow-stamp { font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--stamp); }
 .hs2-benefits h2 { font-weight: 650; font-size: clamp(30px, min(4.4vw, calc(6 * var(--vh))), 56px); line-height: 1; letter-spacing: -0.02em; }
-.hs2-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+/* cards keep their size when some are hidden, and the row centres */
+.hs2-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 280px)); justify-content: center; gap: 20px; }
 .hs2-card { background: var(--white); border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.25s var(--ease), box-shadow 0.25s ease; }
 .hs2-card:hover { transform: translateY(-4px); box-shadow: 0 22px 44px rgba(138, 74, 43, 0.16); }
 .hs2-card__media { position: relative; overflow: hidden; }

@@ -29,6 +29,7 @@
         </div>
         <div class="hs2-closure__table">
           {%- for block in section.blocks -%}
+            {%- if block.settings.hide -%}{%- continue -%}{%- endif -%}
             <div class="hs2-closure__row" {{ block.shopify_attributes }}><span>{% render 'hs2-t', text: block.settings.item %}</span><strong data-hs2-date>{{ block.settings.date }}</strong><em class="hs2-closure__left" data-hs2-left hidden></em></div>
           {%- endfor -%}
         </div>
@@ -56,6 +57,7 @@
       "name": "Deadline",
       "settings": [
         { "type": "text", "id": "item", "label": "Item", "default": "The Body Double" },
+        { "type": "checkbox", "id": "hide", "label": "Hide this row", "info": "For a product that isn't on sale yet.", "default": false },
         { "type": "text", "id": "date", "label": "Last order date", "default": "[DATE]" }
       ]
     }

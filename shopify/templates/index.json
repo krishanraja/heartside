@@ -25,8 +25,9 @@
             "alt": "A spaniel asleep on a laptop",
             "shot": "[PILLOW SHOT]",
             "cta": "Make the double",
-            "copy": "A pillow cut to {dogs} exact outline. For groomer days, vet days, and the occasional covert operation to the kitchen.",
-            "kind": "Custom dog-shaped pillow · 16 in"
+            "copy": "A 16-inch pillow with {dogs} face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen.",
+            "kind": "Square photo pillow · 16 in",
+            "product": "the-body-double"
           }
         },
         "b2": {
@@ -40,7 +41,8 @@
             "shot": "[SWEATER SHOT]",
             "cta": "Comply",
             "copy": "An ugly Christmas sweatshirt covered in {dogs} face, plus a matching bandana for {dog}. Dress code for the holiday party. Non-negotiable.",
-            "kind": "Sweatshirt + matching dog bandana"
+            "kind": "Sweatshirt + matching dog bandana",
+            "hide": true
           }
         },
         "b3": {
@@ -54,7 +56,8 @@
             "shot": "[SOCKS SHOT]",
             "cta": "Install",
             "copy": "{dogs} face on your feet, so {dog} can keep an eye on you at work. Stocking-sized.",
-            "kind": "Socks printed with your dog's face"
+            "kind": "Socks printed with your dog's face",
+            "hide": true
           }
         },
         "b4": {
@@ -67,8 +70,9 @@
             "alt": "A golden retriever on a rug with a toy",
             "shot": "[ORNAMENT SHOT]",
             "cta": "Hang {dog}",
-            "copy": "A ceramic ornament with {dog} on the front and {dogs} verdict on your year on the back.",
-            "kind": "Two-sided ceramic photo ornament"
+            "copy": "A ceramic ornament of {dog}, with {dogs} verdict on your year printed in a ring around the photo.",
+            "kind": "Two-sided ceramic photo ornament",
+            "product": "tiny-me-for-the-tree"
           }
         }
       },
@@ -86,7 +90,8 @@
           "type": "deadline",
           "settings": {
             "item": "Mandatory Company Uniform",
-            "date": "[DATE]"
+            "date": "[DATE]",
+            "hide": true
           }
         },
         "d2": {
@@ -106,7 +111,7 @@
         "d4": {
           "type": "deadline",
           "settings": {
-            "item": "Review poster, socks, ornament",
+            "item": "Review poster and ornament",
             "date": "[DATE]"
           }
         },

@@ -120,13 +120,16 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 
 ### 3. The Body Double: $59
 
-- **Printful product:** #743 Custom Shaped Pillow, **16″**.
-- **Other sizes:** section 3 also mentions 10″ and 22″, but section 4 prices only 16″. Recommendation: launch 16″ only, and add the other sizes once Krish sets their prices.
-- **Template:** the dog's photo with **background removal on**. The pillow is cut to the cutout's outline, so keep the whole dog, ears included, inside the safe area.
-- **No text** on the pillow.
-- **Sample:** this is one of the two products the v2 doc recommends sampling.
+Live since 4 October (docs/ADMIN-RUN-2026-10-04.md): handle `the-body-double`, campaign 1032878.
 
-### 4. Mandatory Company Uniform: $129 set, $89 sweatshirt only
+- **Printful product:** All-Over Print Basic Pillow, **16″ × 16″** only (Teeinblue base 364803). Printful's shaped pillow isn't available through Teeinblue.
+- **Template:** "The Body Double (16in square)", the dog's photo full-bleed at 5100 px with the cropper on, the same on both sides. No background removal.
+- **No text** on the pillow.
+- **Sample:** worth one, to check the photo crop and sharpness at 16 inches.
+
+### 4. Mandatory Company Uniform: $129 set, $89 sweatshirt only (paused)
+
+Paused on 4 October until background removal is set up. The product bases are imported (sweatshirt 364794, bandana 364795); there is no artwork or campaign yet. The site hides its card and deadline row by setting.
 
 - **Printful products:** #1418 All-Over Print Unisex Cotton Sweatshirt (XS to 3XL) and #902 Pet Bandana Collar (S to XL).
 - **Design:** an ugly Christmas sweatshirt printed all over with the dog's face (background removed). The bandana gets the same face pattern.
@@ -139,7 +142,9 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 - **Last order date:** it stays `[DATE]` until Printful confirms the all-over-print facility's cutoff (section 5).
 - **Sample:** this is the other recommended sample.
 
-### 5. Surveillance Socks: $24
+### 5. Surveillance Socks: $24 (paused)
+
+Paused with the Uniform. The product base is imported (364796).
 
 - **Printful product:** #882 Sublimation Socks, S / M / L.
 - **Design:** the dog's face (background removed) tiled all over.
@@ -147,14 +152,15 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 
 ### 6. Tiny Me, For The Tree: $24
 
-- **Printful product:** #900 Ceramic Ornament, 2-side print, **circle**.
-- **Front:** the dog's photo, cut out, with their name in Fraunces.
-- **Back:** "the dog's verdict on your year". To stay inside approved copy, use the hero's verdict and the poster's outcome: `Overall rating: exceeds expectations.` / `Contract renewed. For life.` / paw / `{dog}`.
-- **Add-on price:** $19, the same upsell question as the socks.
+Live since 4 October: handle `tiny-me-for-the-tree`, campaign 1032885.
+
+- **Printful product:** #900 Ceramic Ornament, **circle** (Teeinblue base 364797). Printful prints the same design on both sides.
+- **Design:** the dog's photo cropped to a circle. The verdict is printed in a ring around it: `OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •`. The dog's name sits under the photo in Fraunces (max 14 characters, required).
+- **Add-on price:** $19, an upsell question for Krish.
 
 ## Not covered by Teeinblue (bring to Krish)
 
-- **"The Full Review" bundle** (framed review, socks and ornament at $119) needs the same bundle mechanism as the Uniform set.
+- **"The Full Review" bundle** (framed review, socks and ornament at $119) is paused with the socks. Shopify Bundles is installed for when it returns.
 - **The read-aloud video** ($12, free with any order until 1 November per section 4). The homepage copy says "+$12" word for word.
   - The product pages pass the shopper's choice to the order as a hidden "_Read-aloud video: Yes" line property. That covers the free launch period.
   - A paid $12 add-on needs a product and an upsell.
@@ -162,7 +168,7 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 
 ## Done when
 
-- [ ] All six products exist in Shopify with Printful variants, the prices above and no compare-at prices.
+- [ ] The four launch products (poster, framed poster, Body Double, Tiny Me) exist in Shopify with Printful variants, the prices above and no compare-at prices.
 - [ ] Each has its Teeinblue template, and its live preview matches `poster-sample.png` for the poster.
 - [ ] Teeinblue sends orders to Printful as drafts, and Printful's "Manually confirm all imported orders" is on.
 - [ ] One test order (Krish approves the spend) arrives in Printful as a draft, with a correct print file.
