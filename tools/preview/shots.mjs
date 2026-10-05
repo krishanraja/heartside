@@ -209,12 +209,12 @@ log('teeinblue record after the bridge:', JSON.stringify(await tp.evaluate(() =>
 log('teeinblue fields show:', JSON.stringify(await tibState(tp)), '(picks by Teeinblue\'s active mark)');
 log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot button visible:', await tp.locator('[data-hs2-handoff]').isVisible());
 const foldState = (p) => p.evaluate(() => ({ folded: document.getElementById('buy').classList.contains('hs2-tib-folded'), shown: [...document.querySelectorAll('.tee-field')].filter((f) => f.getClientRects().length).map((f) => f.id.replace('tee-field--', '')), edit: (document.querySelector('[data-hs2-tib-edit]') || {}).hidden === false ? document.querySelector('[data-hs2-tib-edit]').textContent : 'hidden' }));
-log('FOLD Teeinblue\'s copies of the answers fold away (photo stays):', JSON.stringify(await foldState(tp)));
+log('FOLD Teeinblue\'s copies of the answers fold away (its photo box waits behind the headshot button):', JSON.stringify(await foldState(tp)));
 log('GAP Teeinblue preview box height (inline 1557px):', await tp.locator('.tee-gallery-content').evaluate((e) => Math.round(e.getBoundingClientRect().height)), '| preview is the first thumbnail, current:', await tp.locator('[data-hs2-thumb-preview]').getAttribute('aria-current'), '| product photo hidden behind it:', await tp.locator('.hs2-product__main').isHidden());
 await tp.locator('.hs2-product__info').screenshot({ path: path.join(shots, 'desktop-product-teeinblue-bridge.png') });
 await tp.click('[data-hs2-handoff-btn]');
 await tp.waitForTimeout(200);
-log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText());
+log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText(), '| photo box back:', JSON.stringify((await foldState(tp)).shown));
 // "Edit details" opens Teeinblue's fields; the shopper changes a pick there and it flows back
 await tp.click('[data-hs2-tib-edit]');
 await tp.waitForTimeout(200);
@@ -266,6 +266,7 @@ const hero = lp.locator('.hs2-hero [data-hs2-input="dog"]');
 await hero.click();
 await hero.type('Moose', { delay: 120 });
 await lp.waitForTimeout(1600);
+log('LANDING the review is on the page, so Teeinblue\'s answer fields fold before any are filled:', JSON.stringify(await foldState(lp)));
 const lpos = await lp.evaluate(() => ({ focus: document.activeElement.getAttribute('data-hs2-input') || document.activeElement.id, y: Math.round(scrollY) }));
 await lp.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
 await lp.fill('[data-hs2-step="1"] [data-hs2-input="person"]', 'Dana');
@@ -277,7 +278,11 @@ await lp.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'asset
 await lp.waitForTimeout(400);
 await lp.click('[data-hs2-approve]');
 await lp.waitForTimeout(1600);
-log('BUG 3 landing: headshot button after Approve:', await lp.locator('[data-hs2-handoff]').isVisible(), '| card:', await lp.locator('[data-hs2-bridge-status]').innerText());
+log('BUG 3 landing: headshot button after Approve:', await lp.locator('[data-hs2-handoff]').isVisible(), '| card:', await lp.locator('[data-hs2-bridge-status]').innerText(), '|', JSON.stringify(await foldState(lp)));
+// Add To Cart with a field Teeinblue marks invalid opens the fold
+await lp.evaluate(() => document.querySelector('#tee-field--layer-12').classList.add('tee-field--invalid'));
+await lp.waitForTimeout(300);
+log('LANDING invalid at Add To Cart opens the fold:', JSON.stringify(await foldState(lp)));
 await lp.screenshot({ path: path.join(shots, 'phone-landing-buy.png') });
 await lc.close();
 

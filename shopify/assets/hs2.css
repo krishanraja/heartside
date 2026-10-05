@@ -694,6 +694,8 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
 .hs2-signoff__domain { font-size: 15px; color: var(--muted); }
 .hs2-signoff__go { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .hs2-signoff__when { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--stamp); }
+.hs2-signoff--compact { min-height: 0; padding-top: clamp(36px, calc(6 * var(--vh)), 64px); padding-bottom: calc(clamp(36px, calc(6 * var(--vh)), 64px) + var(--sticky-room)); }
+.hs2-signoff--compact .hs2-signoff__line { font-size: clamp(40px, min(9vw, calc(9 * var(--vh))), 96px); }
 
 /* --------------------------------------------------------------- sticky bar */
 .hs2-sticky {
@@ -831,6 +833,7 @@ html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
 .hs2-product .hs2-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 .hs2-product__fine { display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--rule); padding-top: 14px; }
 
+@media (max-width: 760px) { .hs2-product__info > .hs2-stamp { font-size: 11px; padding: 4px 8px; border-width: 2px; letter-spacing: 0.03em; white-space: nowrap; } }
 .hs2-product__when { margin-top: 6px; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--stamp); letter-spacing: 0.03em; }
 @media (min-width: 900px) { .hs2-product__media { position: sticky; top: 20px; } }
 

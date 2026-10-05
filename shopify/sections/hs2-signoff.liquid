@@ -1,7 +1,7 @@
 {%- render 'hs2-head' -%}
 {%- assign parts = section.settings.text | split: ' · ' -%}
 <div class="hs2">
-  <div class="hs2-signoff" data-hs2-reveal data-hs2-group>
+  <div class="hs2-signoff{% if section.settings.compact %} hs2-signoff--compact{% endif %}" data-hs2-reveal data-hs2-group>
     <div class="hs2-signoff__paw" style="--i: 0">{% render 'hs2-paw' %}<span data-hs2="dog">Biscuit</span></div>
     {%- if parts.size == 3 -%}
       {%- comment -%} The approved line, laid out as a lockup. The hidden separators keep it one line for screen readers. {%- endcomment -%}
@@ -31,7 +31,8 @@
     { "type": "paragraph", "content": "The last line of the page, signed by the dog. Three parts split by ' · ' become the lockup: brand, tagline, domain." },
     { "type": "text", "id": "text", "label": "Line", "default": "Heartside · Keep them close · heartside.io" },
     { "type": "text", "id": "button", "label": "Button", "info": "Empty hides the button.", "default": "Make {dogs} poster · $39" },
-    { "type": "text", "id": "link", "label": "Button goes to", "default": "#review" }
+    { "type": "text", "id": "link", "label": "Button goes to", "default": "#review" },
+    { "type": "checkbox", "id": "compact", "label": "Compact", "info": "As tall as its content, not a full screen. For the ad landing page, where it is the last call to order.", "default": false }
   ],
   "presets": [{ "name": "HS sign-off" }]
 }

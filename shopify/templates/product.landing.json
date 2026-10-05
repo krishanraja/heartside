@@ -33,7 +33,7 @@
           "type": "description",
           "settings": {
             "product": "the-annual-review",
-            "text": "<p>{dogs} review of your year, printed for the fridge, the office or the wall by {dogs} bed: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p><p>Frame not included. {dog} has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+            "text": "<p>{dogs} review of your year, printed for the fridge, the office or the wall by {dogs} bed: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p>"
           }
         },
         "description_framed": {
@@ -195,7 +195,8 @@
       "type": "hs2-signoff",
       "settings": {
         "button": "Order {dogs} poster · $39",
-        "link": "#buy"
+        "link": "#buy",
+        "compact": true
       }
     },
     "sticky": {

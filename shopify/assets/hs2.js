@@ -804,10 +804,13 @@
      first options, and those used to stay). A field the shopper changed in Teeinblue is
      theirs: its value flows back into the answers instead. After a change the bridge
      looks again, since Teeinblue can redraw a field after the click. */
+  // the ad landing page has the review on the same page, so the review owns these answers
+  function reviewHere() { return !!document.querySelector('[data-hs2-steps]'); }
   function runBridge() {
-    if (!engaged()) return;
     var fields = tibFields();
     if (!fields.length) return;
+    bridge.all = fields;
+    if (!engaged()) { if (reviewHere()) { bridge.fields = fields.length; bridge.filled = 0; bridge.wanted = []; fold(!bridge.opened); } return; }
     var wanted = [], changed = false;
     fields.forEach(function (f) {
       var r = fillField(f);
@@ -848,7 +851,7 @@
     }
     if (note) note.hidden = !!bridge.filled;
     if (!settled) return; // mid-copy: leave the fold as it is until Teeinblue holds the answers
-    fold(complete && !bridge.opened);
+    fold((complete || reviewHere()) && !bridge.opened);
     var edit = card.querySelector('[data-hs2-tib-edit]');
     if (edit) edit.hidden = !complete;
   }
@@ -857,8 +860,14 @@
     if (!buy) return;
     var css = document.getElementById('hs2-tib-fold');
     if (!css) { css = document.createElement('style'); css.id = 'hs2-tib-fold'; document.head.appendChild(css); }
-    // by id, which Teeinblue keeps when it redraws a field (it rewrites the class list)
-    var ids = on ? (bridge.wanted || []).map(function (w) { return w.el && w.el.id; }).filter(Boolean) : [];
+    // by id, which Teeinblue keeps when it redraws a field (it rewrites the class list). With the
+    // review on the same page, every field it answers folds, filled or not: a name still missing
+    // is asked for in the review, and Teeinblue's own check at Add To Cart opens the fold.
+    var els = reviewHere() ? (bridge.all || []).map(function (f) { return f.el; }) : (bridge.wanted || []).map(function (w) { return w.el; });
+    // a headshot from the review waiting for its button: Teeinblue's photo box waits behind it
+    var photo = document.querySelector('.tee-field--photo');
+    if (bridge.photoReady && photo) els = els.concat([photo]);
+    var ids = on ? els.map(function (el) { return el && el.id; }).filter(Boolean) : [];
     var rules = ids.map(function (id) { return '#buy.hs2-tib-folded #' + (window.CSS && CSS.escape ? CSS.escape(id) : id); });
     var text = rules.length ? rules.join(',') + '{display:none!important}' : '';
     if (css.textContent !== text) css.textContent = text;
@@ -941,6 +950,7 @@
     var inp = photoInput(), file = usePhoto.file;
     var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');
     box.hidden = !can;
+    if (bridge.photoReady !== can) { bridge.photoReady = can; if (bridge.folded) fold(true); }
     if (!can) return;
     var img = box.querySelector('[data-hs2-handoff-img]');
     if (img && img.src !== photoURL) img.src = photoURL;
@@ -957,6 +967,7 @@
           target.dispatchEvent(new Event('change', { bubbles: true }));
           try { window.localStorage.setItem(handedKey(), String(usePhoto.t)); } catch (e) { /* private mode */ }
           box.hidden = true;
+          bridge.photoReady = false; if (bridge.folded) fold(true);
           if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
           track('photo_handoff');
         } catch (e) {
