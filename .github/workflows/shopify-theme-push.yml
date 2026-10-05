@@ -3,8 +3,10 @@
 # Shopify theme" > Run workflow, then paste the copy's theme ID.
 #
 # It only adds and updates Heartside files (--nodelete), so every Helio file in
-# the copy stays as it is. It refuses to push to the live theme. Publishing is
-# Krish's step, in Shopify admin.
+# the copy stays as it is. It refuses to push to the live theme unless
+# "allow_live_theme" is ticked for that run. Krish published "Heartside launch" on
+# 5 October and chose to deploy to it directly from then on; the box keeps every
+# live push deliberate. Publishing is Krish's step, in Shopify admin.
 #
 # Before pushing it saves the theme's templates and section groups as a run
 # artifact ("theme-backup-..."), because pushing templates/*.json replaces any
@@ -36,6 +38,11 @@ on:
         type: boolean
       pull_only:
         description: "Only save the theme's current templates, section groups and settings as an artifact. Pushes nothing."
+        required: false
+        default: false
+        type: boolean
+      allow_live_theme:
+        description: "Allow the push when the target is the published (live) theme. Every check, the backup and the editor-edit guard still run."
         required: false
         default: false
         type: boolean
@@ -96,8 +103,11 @@ jobs:
             exit 1
           fi
           if [ "$role" = "live" ] || [ "$role" = "main" ]; then
-            echo "::error::Theme $THEME_ID is the LIVE theme. Duplicate Helio and push to the copy instead."
-            exit 1
+            if [ "${{ inputs.allow_live_theme }}" != "true" ]; then
+              echo "::error::Theme $THEME_ID is the LIVE theme. Tick allow_live_theme to push to it on purpose, or push to an unpublished copy."
+              exit 1
+            fi
+            echo "::warning::Theme $THEME_ID is the LIVE theme, and allow_live_theme is ticked. Shoppers see this push as soon as it lands."
           fi
           if [ "$name" != "$THEME_NAME" ]; then
             echo "::error::Theme $THEME_ID is named \"$name\", not \"$THEME_NAME\". Nothing was pushed."

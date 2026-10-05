@@ -1,6 +1,6 @@
 # Heartside v2 theme sections: "Your dog has notes"
 
-The homepage and product templates, rebuilt from the approved canvas `design/Main.dc.html` as Online Store 2.0 sections for the Helio theme. The canvas copy is used word for word, checked by script against the source. They deploy through GitHub Actions into the unpublished **Heartside launch** theme (#197492998526) and nowhere else. Krish publishes.
+The homepage and product templates, rebuilt from the approved canvas `design/Main.dc.html` as Online Store 2.0 sections for the Helio theme. The canvas copy is used word for word, checked by script against the source. They deploy through GitHub Actions into the **Heartside launch** theme (#197492998526) and nowhere else. Krish published it on 5 October, so it is the live theme: every deploy needs **allow_live_theme** ticked, and shoppers see it as soon as it lands.
 
 | Phone | Desktop |
 |---|---|
@@ -235,7 +235,7 @@ The canvas copy is untouched. These lines are new, written to the comedy bible (
 
 ## Deploy
 
-On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify theme > Run workflow**, branch `main`, `theme_id` **197492998526**. The workflow refuses the live theme and any theme not named "Heartside launch".
+On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify theme > Run workflow**, branch `main`, `theme_id` **197492998526**. The workflow refuses any theme not named "Heartside launch", and refuses the live theme unless **allow_live_theme** is ticked for that run. Since 5 October Heartside launch is live, so tick it.
 
 - **Files.** It only adds and updates files (`--nodelete`). The v1 ornament sections and snippets therefore stay in the theme, unused. Delete them in the code editor if they clutter the "Add section" list.
 - **Backup and the editor-edit guard.** Before every push it saves the theme's templates, section groups, `settings_data.json` and the hs2 section files as a run artifact (`theme-backup-…`, kept 30 days). `.github/scripts/editor-edits.mjs` then compares each template with every committed version, ignoring settings the editor writes out at their default. If a template has theme-editor changes the repo doesn't, the push **stops**, because pushing `templates/*.json` replaces them. Copy those settings into `shopify/templates/` from the artifact, or rerun with **overwrite_editor_edits** to discard them. Tick **pull_only** to save the artifact without pushing anything. The footer group and `settings_data.json` (app embeds) are never pushed.
