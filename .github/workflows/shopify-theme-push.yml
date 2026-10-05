@@ -148,7 +148,11 @@ jobs:
         if: ${{ !inputs.pull_only }}
         run: |
           set -o pipefail
-          shopify theme push --theme "$THEME_ID" --path shopify --nodelete --ignore "preview/*" --ignore "pixels/*" --ignore "README.md" 2>&1 | tee push.log
+          # the CLI asks before pushing to the live theme; a run can only answer yes when
+          # allow_live_theme is ticked (the "Refuse the live theme" step has already checked)
+          live=""
+          if [ "${{ inputs.allow_live_theme }}" = "true" ]; then live="--allow-live"; fi
+          shopify theme push --theme "$THEME_ID" --path shopify --nodelete $live --ignore "preview/*" --ignore "pixels/*" --ignore "README.md" 2>&1 | tee push.log
           # The CLI exits 0 even when Shopify rejects files, so read its report
           if grep -q -e "pushed with errors" -e "─ error" push.log; then
             echo "::error::Shopify rejected one or more files (see the error boxes above). The theme is partly updated."
