@@ -4,7 +4,10 @@
       "type": "hs2-hero"
     },
     "review": {
-      "type": "hs2-review"
+      "type": "hs2-review",
+      "settings": {
+        "product": "the-annual-review"
+      }
     },
     "management": {
       "type": "hs2-management"
@@ -155,7 +158,10 @@
       ]
     },
     "leak": {
-      "type": "hs2-leak"
+      "type": "hs2-leak",
+      "settings": {
+        "product": "the-annual-review"
+      }
     },
     "faq": {
       "type": "hs2-faq",

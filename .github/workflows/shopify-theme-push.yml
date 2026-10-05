@@ -107,27 +107,8 @@ jobs:
       - name: Back up the theme's templates and section groups
         run: |
           mkdir -p backup
-          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json" --only "config/settings_data.json"
-          node -e '
-            const fs = require("fs"), { execSync } = require("child_process");
-            const parse = (t) => { try { return JSON.parse(t.replace(/^\s*\/\*[\s\S]*?\*\//, "")); } catch (e) { return null; } };
-            // Shopify adds empty "settings": {} and reorders keys when it saves, so compare the substance
-            const norm = (v) => Array.isArray(v) ? v.map(norm) : v && typeof v === "object"
-              ? Object.keys(v).sort().reduce((o, k) => { const n = norm(v[k]); if (!(n && typeof n === "object" && !Array.isArray(n) && !Object.keys(n).length)) o[k] = n; return o; }, {})
-              : v;
-            const key = (v) => JSON.stringify(norm(v));
-            for (const f of fs.readdirSync("shopify/templates")) {
-              const path = "shopify/templates/" + f;
-              const store = fs.existsSync("backup/templates/" + f) ? parse(fs.readFileSync("backup/templates/" + f, "utf8")) : null;
-              if (!store) { console.log(`templates/${f}: new to this theme`); continue; }
-              // every version of this template that was ever committed, newest first
-              const shas = execSync(`git log --format=%H -n 60 -- ${path}`).toString().trim().split("\n").filter(Boolean);
-              const known = new Set(shas.map((sha) => { try { return key(parse(execSync(`git show ${sha}:${path}`).toString())); } catch (e) { return ""; } }));
-              const now = key(parse(fs.readFileSync(path, "utf8")));
-              if (key(store) === now) console.log(`templates/${f}: unchanged`);
-              else if (known.has(key(store))) console.log(`templates/${f}: updated from an earlier deploy, no theme-editor edits`);
-              else { console.log(`::warning::templates/${f} was edited in the theme editor and the repo does not have those edits yet.`); fs.appendFileSync("editor-edits.txt", f + "\n"); }
-            }'
+          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json" --only "sections/hs2-*.liquid" --only "config/settings_data.json"
+          node .github/scripts/editor-edits.mjs backup
 
       - uses: actions/upload-artifact@v4
         with:
