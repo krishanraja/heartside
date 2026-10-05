@@ -810,7 +810,14 @@
     var fields = tibFields();
     if (!fields.length) return;
     bridge.all = fields;
-    if (!engaged()) { if (reviewHere()) { bridge.fields = fields.length; bridge.filled = 0; bridge.wanted = []; fold(!bridge.opened); } return; }
+    if (!engaged()) {
+      // Nothing of ours to push yet, but a shopper who lands straight on a product page
+      // (no review above it) can still type into Teeinblue directly. Attach the watchers
+      // so that reaches the answers card, the live poster and the framed-poster upsell link.
+      fields.forEach(function (f) { fillField(f); });
+      if (reviewHere()) { bridge.fields = fields.length; bridge.filled = 0; bridge.wanted = []; fold(!bridge.opened); }
+      return;
+    }
     var wanted = [], changed = false;
     fields.forEach(function (f) {
       var r = fillField(f);
