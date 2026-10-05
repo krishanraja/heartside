@@ -56,7 +56,7 @@
 
 /* one screen per section: Helio pins its header row while scrolling, so sections fit the room under it */
 #review, #benefits, #closure, #leak, #faq, #buy { scroll-margin-top: var(--hs2-head, 0px); }
-.hs2-fit, .hs2-review, .hs2-management, .hs2-benefits, .hs2-closure, .hs2-policy, .hs2-leak, .hs2-faq, .hs2-signoff {
+.hs2-fit, .hs2-review, .hs2-orn, .hs2-management, .hs2-benefits, .hs2-closure, .hs2-policy, .hs2-leak, .hs2-faq, .hs2-signoff {
   min-height: var(--fit); display: flex; flex-direction: column; justify-content: center;
 }
 
@@ -761,8 +761,42 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
    Options with a single value are not a choice, so they hide; the section names the rest
    ("Frame"). Its Add To Cart is the only one on the page, so it gets our button. */
 #buy .tee-product-price { display: none !important; }
+/* Tiny Me, the second hero: the photo beside the verdict, one screen */
+.hs2-orn { background: var(--paper); padding: var(--pad-y) 20px; }
+.hs2-orn__inner { max-width: 1180px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+.hs2-orn__media { border-radius: 24px; overflow: hidden; box-shadow: 0 24px 50px rgba(18, 16, 16, 0.18); aspect-ratio: 1; max-height: calc(var(--fit) - 2 * var(--pad-y)); justify-self: center; width: 100%; }
+.hs2-orn__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hs2-orn__copy { display: flex; flex-direction: column; gap: clamp(12px, calc(2 * var(--vh)), 18px); }
+.hs2-orn h2 { font-weight: 650; font-size: clamp(30px, min(5vw, calc(6.4 * var(--vh))), 60px); line-height: 1; letter-spacing: -0.02em; }
+.hs2-orn__text { font-size: clamp(15px, calc(2.1 * var(--vh)), 18px); line-height: 1.55; max-width: 520px; }
+.hs2-orn__verdict { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--stamp); border-left: 4px solid var(--stamp); padding: 4px 0 4px 10px; }
+.hs2-orn__xmas { font-family: var(--serif); font-style: italic; font-size: 18px; }
+.hs2-orn__buy { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.hs2-orn__when { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--stamp); }
+.hs2-orn__facts { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 520px; }
+@media (max-width: 860px) {
+  .hs2-orn { padding: clamp(16px, calc(3 * var(--vh)), 28px) 16px; }
+  .hs2-orn__inner { grid-template-columns: minmax(0, 1fr); gap: clamp(12px, calc(2 * var(--vh)), 20px); }
+  .hs2-orn__media { max-height: calc(var(--fit) * 0.36); width: auto; }
+  .hs2-orn__text { font-size: 15px; line-height: 1.5; }
+  .hs2-orn h2 { font-size: clamp(26px, min(8vw, calc(4.4 * var(--vh))), 40px); }
+  .hs2-orn__buy .hs2-btn { width: 100%; }
+}
+/* shorter phones: the ring is already on the ornament in the photo, so its line goes first */
+@media (max-width: 860px) and (max-height: 880px) { .hs2-orn__verdict { display: none; } }
+@media (max-width: 860px) and (max-height: 720px) { .hs2-orn__facts { display: none; } }
+
+/* "Want it framed? $89": a link with a price, quiet beside the Add To Cart */
+.hs2-upsell { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 14px; color: var(--ink); text-decoration: none; background: transparent; transition: border-color 0.2s ease, background 0.2s ease; }
+.hs2-upsell:hover { border-color: var(--ink); background: rgba(255, 255, 255, 0.5); }
+.hs2-upsell img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; flex: 0 0 auto; }
+.hs2-upsell__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.hs2-upsell__title { font-size: 15px; font-weight: 600; }
+.hs2-upsell__title strong { font-weight: 700; }
+.hs2-upsell__note { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.hs2-upsell__go { flex: 0 0 auto; color: var(--muted); }
 #buy .tee-variants .tee-option:not(:has(.tee-radio + .tee-radio)):not(:has(option + option)) { display: none; }
-#buy .tee-option__title { font-size: 14px; font-weight: 700; text-transform: none; }
+#buy .tee-option__title { font-size: 14px; font-weight: 700; text-transform: none !important; }
 #buy .tee-btn.tee-btn--atc {
   min-height: 56px; width: 100%; border: 0; border-radius: 14px; background: var(--ink); color: var(--cream);
   font-family: var(--sans); font-size: 17px; font-weight: 700; letter-spacing: 0; text-transform: none; cursor: pointer;

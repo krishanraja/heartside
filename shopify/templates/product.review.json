@@ -23,14 +23,14 @@
           "type": "description",
           "settings": {
             "product": "the-annual-review",
-            "text": "<p>{dogs} review of your year, printed for the wall: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p><p>Frame not included. {dog} has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+            "text": "<p>{dogs} review of your year, printed for the fridge, the office or the wall by {dogs} bed: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p><p>Frame not included. {dog} has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
           }
         },
         "description_framed": {
           "type": "description",
           "settings": {
             "product": "the-annual-review-framed",
-            "text": "<p>The same review, framed and ready to hang. {dog} felt the paperwork deserved it.</p><p>A 12 × 18 inch poster on thick matte paper, in a black, red oak or white wood frame, with the hanging hardware already on. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+            "text": "<p>The same review, framed and ready to hang. {dog} felt the paperwork deserved it.</p><p>A 12 × 18 inch poster on thick matte paper, in a black, red oak or white wood frame with an acrylic front, hanging hardware included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
           }
         },
         "answers": {
@@ -52,6 +52,12 @@
         "buy": {
           "type": "buy"
         },
+        "frame_it": {
+          "type": "upsell",
+          "settings": {
+            "product": "the-annual-review-framed"
+          }
+        },
         "fine": {
           "type": "fine"
         }
@@ -65,6 +71,7 @@
         "answers",
         "teeinblue_product_personalizer_product_app_block_4fiR9C",
         "buy",
+        "frame_it",
         "fine"
       ]
     },
@@ -135,7 +142,8 @@
           "type": "deadline",
           "settings": {
             "item": "{dogs} video and story card",
-            "date": "Christmas Eve"
+            "date": "Christmas Eve",
+            "hide": true
           }
         }
       },

@@ -1,0 +1,72 @@
+{%- render 'hs2-head' -%}
+{%- comment -%}
+  Tiny Me, the second hero: the review is the hook, the ornament is what people keep.
+  Hidden by default ("Show this section") until its photo is checked against Teeinblue's own
+  preview, because the photo must show what Teeinblue prints. Facts here are the ones Printful
+  confirms: ceramic, 2.99 inches across, the same design on both sides.
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- if s.show -%}
+  {%- liquid
+    assign link = '#review'
+    if s.product != blank
+      assign link = s.product.url | append: '?view=heartside'
+    endif
+    assign f640 = 'hs-photo-' | append: s.fallback | append: '-640.webp'
+    assign f1200 = 'hs-photo-' | append: s.fallback | append: '-1200.webp'
+  -%}
+  <div class="hs2">
+    <section id="tiny-me" class="hs2-orn" aria-labelledby="orn-h-{{ section.id }}">
+      <div class="hs2-orn__inner">
+        <div class="hs2-orn__media" data-hs2-reveal>
+          {%- if s.image != blank -%}
+            {{ s.image | image_url: width: 1200 | image_tag: loading: 'lazy', sizes: '(min-width: 900px) 45vw, 100vw', alt: s.alt }}
+          {%- else -%}
+            <img src="{{ f640 | asset_url }}" srcset="{{ f640 | asset_url }} 640w, {{ f1200 | asset_url }} 1200w" sizes="(min-width: 900px) 45vw, 100vw" alt="{{ s.alt | escape }}" width="640" height="640" loading="lazy">
+          {%- endif -%}
+        </div>
+        <div class="hs2-orn__copy" data-hs2-reveal data-hs2-group>
+          <div class="hs2-eyebrow-stamp" style="--i: 0">{% render 'hs2-t', text: s.eyebrow %}</div>
+          <h2 id="orn-h-{{ section.id }}" style="--i: 1">{% render 'hs2-t', text: s.heading %}</h2>
+          <p class="hs2-orn__text" style="--i: 2">{% render 'hs2-t', text: s.text %}</p>
+          {%- if s.verdict != blank -%}<p class="hs2-orn__verdict" style="--i: 3">{{ s.verdict }}</p>{%- endif -%}
+          {%- if s.christmas != blank -%}<p class="hs2-orn__xmas" style="--i: 3">{% render 'hs2-t', text: s.christmas %}</p>{%- endif -%}
+          <div class="hs2-orn__buy" style="--i: 4">
+            <a class="hs2-btn" href="{{ link }}"{% if s.product != blank %} data-hs2-carry{% endif %}><span>{% render 'hs2-t', text: s.button %}</span></a>
+            <div class="hs2-orn__when" data-hs2-countdown="line" hidden></div>
+          </div>
+          {%- if s.facts != blank -%}<p class="hs2-orn__facts" style="--i: 5">{{ s.facts }}</p>{%- endif -%}
+        </div>
+      </div>
+    </section>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HS ornament",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "checkbox", "id": "show", "label": "Show this section", "info": "Leave off until the ornament photo has been checked against a fresh Teeinblue preview. Then also hide the Tiny Me card in HS benefits package, so it isn't on the page twice.", "default": false },
+    { "type": "product", "id": "product", "label": "Ornament product", "info": "The button opens it with the shopper's answers." },
+    { "type": "image_picker", "id": "image", "label": "Product photo", "info": "Empty uses the photo picked below." },
+    {
+      "type": "select", "id": "fallback", "label": "Photo from the theme", "default": "ornament-tree",
+      "options": [
+        { "value": "ornament-tree", "label": "Tiny Me on the tree (product photo)" },
+        { "value": "team-04", "label": "Golden on the rug (stand-in)" }
+      ]
+    },
+    { "type": "text", "id": "alt", "label": "Photo description", "default": "Tiny Me, a round ceramic ornament with a dachshund's photo and verdict, hanging on a Christmas tree" },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "ITEM TM-04 · FOR THE TREE" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "{dog}, for the tree." },
+    { "type": "textarea", "id": "text", "label": "Text", "default": "{dogs} face on a ceramic ornament, with the verdict on your year printed in a ring around it and {dogs} name underneath. It comes out every December. The verdict does not change." },
+    { "type": "text", "id": "verdict", "label": "The ring, word for word", "info": "Must match what Teeinblue prints.", "default": "OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •" },
+    { "type": "text", "id": "christmas", "label": "Christmas line", "info": "Empty until Krish picks one (shopify/README.md lists the options). It must not promise delivery by Christmas." },
+    { "type": "text", "id": "button", "label": "Button", "default": "Hang {dog} on the tree · $24" },
+    { "type": "text", "id": "facts", "label": "The facts", "info": "Only what Printful confirms.", "default": "Ceramic, 2.99 inches across, printed the same on both sides. Made after you order and checked by a person. Free US shipping." }
+  ],
+  "presets": [{ "name": "HS ornament" }]
+}
+{% endschema %}

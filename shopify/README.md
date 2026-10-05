@@ -102,7 +102,8 @@ Teeinblue has no documented prefill feature, so this was built against its store
 
 - **One add to cart.** With Teeinblue's app block on the page, the theme's button and variant select step aside and Teeinblue's "Add To Cart" is the only one. It is the only button that attaches the print file: on 5 October the theme's button posted the form straight to the cart with no personalization. The theme's form stays, hidden, with the order's hidden answers.
 - **One price.** The block's "Show price" is off in the templates, so the theme's price shows. It follows Teeinblue's picker through the `?variant=` Teeinblue writes to the address.
-- **A clean picker.** "Show available product options" is off. Options with one value hide (CSS). The section setting **Plain names for product options** renames the rest in Teeinblue's picker and in the theme's own: the review and landing templates use `Color: Frame | Size: Size`, so the framed poster asks for a **Frame** (Black, Red Oak, White) and the poster shows no picker.
+- **A clean picker.** "Show available product options" is off. Options with one value hide (CSS). The section setting **Plain names for product options** renames the rest in Teeinblue's picker and in the theme's own: the review and landing templates use `Color: Frame | Size: Size`, so the framed poster asks for a **Frame** (Black, Red Oak, White) and the poster shows no picker. Teeinblue's title is its own option key ("color", set in its block from the product base, not the Shopify option name), so renaming the option in admin wouldn't change it. `hs2.js` swaps the title's text and swaps it back whenever Teeinblue redraws the picker. (Until 5 October this was a CSS swap, which the phone test showed losing to Teeinblue's own styles.)
+- **"Want it framed? $89".** An **Upsell link** block under the Add To Cart on the poster's templates points to the framed poster, with its price and a line of facts. It's a link, styled quietly so it never competes with Add To Cart, carries the answers, and hides on the framed page itself.
 - **Descriptions.** Teeinblue rewrites the product description with Printful's text on every campaign update, so each **Description** block names a product and holds our copy for it. The block for this product wins, then a block with no product, then the product's own description.
 - **Links.** The homepage's poster links open `?view=review` and the benefits cards `?view=heartside`, so the flow works before the templates are assigned in admin, and still works after.
 
@@ -115,10 +116,18 @@ Teeinblue has no documented prefill feature, so this was built against its store
 | `office-black-b`, `office-black-a` | Framed, black | Product image 1, ads |
 | `entry-oak-a`, `entry-oak-b` | Framed, red oak | Product image 2, ads |
 | `christmas-sheet-a`, `christmas-sheet-b` | Poster, unframed | Product image 1, holiday ads |
-| `ornament-tree` | Tiny Me | Product image 1, the homepage card. **Provisional:** its face is built to the spec in the admin log until checked against Teeinblue's artwork |
+| `ornament-tree` | Tiny Me | The HS ornament section, once it's switched on. **Not in use yet.** On 5 October the face was rebuilt to Teeinblue's artwork as the admin run described it (double red ring, red verdict from top right, clockwise, smaller photo with no outline, black Fraunces name). It stays off the homepage card and the product until it's matched against `teeinblue-ornament-preview.png` and a fresh Teeinblue preview |
 | `pillow-sofa-a` (`pillow-sofa-b` spare) | The Body Double | Product image 1, the homepage card. The print is the headshot itself, edge to edge, as the Body Double prints a customer's photo. The pillow's outline is traced once and kept as `assets/v2/scenes/pillow-sofa-a.mask.png` |
 
 Each comes full size, plus a `-4x5` crop (product pages, feed ads; portrait scenes only) and a `-1x1` crop (cards). Crops start just above the product and never cut it. Rebuild with `node tools/preview/print.mjs` (the poster and ornament faces with Biscuit) then `python3 tools/preview/mockups.py`.
+
+## The store's order (5 October)
+
+The review is the hook and the ornament is what people keep, so the homepage runs: the review builder (the $39 poster), then Tiny Me ($24), then the Body Double ($59). The framed poster is an upsell on the poster's page only. Every part of the order is a setting, so it can flip back without code:
+
+- **HS ornament** (after the review builder): Tiny Me's own section. **Show this section** is off until its photo is checked; when it goes on, also hide the Tiny Me card in the benefits section.
+- **HS benefits package**: each card has **Position** (1 shows first) and **Hide this card**. Tiny Me is 1, the Body Double 2; the Uniform and Socks are hidden.
+- **The read-aloud video**: the review builder's **Show the read-aloud video button** is off. Nothing sells or makes the video yet: there's no product for it, Teeinblue's Add To Cart doesn't carry the request, and no process records and emails it. With the button off, no page mentions the video or its "Free until November 1" offer, and its Christmas Eve deadline row is hidden.
 
 ## Funnel pixel (Meta and TikTok)
 
@@ -169,7 +178,18 @@ The workflow never pushes this file (`--ignore "pixels/*"`); it lives in the rep
 
 ## New copy for Krish to approve
 
-Added on 5 October:
+Added on 5 October, second run (all live on the preview theme except where marked):
+- **Printful-true fixes.** Framed: "…in a black, red oak or white wood frame with an acrylic front, hanging hardware included." Pillow: "A 16-inch pillow printed with [Dog]'s face. … / Square, printed edge to edge, with a shape-retaining insert included." The pillow no longer says "on both sides" (product page and card) until Krish confirms it in Printful.
+- **The poster's job.** Review builder: "…It prints as a poster for the fridge, the office or the wall by [Dog]'s bed, or for someone whose dog is clearly their manager." Poster description: "[Dog]'s review of your year, printed for the fridge, the office or the wall by [Dog]'s bed: …" One price on the homepage: the buy box reads "$39 12 × 18 poster" and the leak section "$39 poster · Free US shipping".
+- **Holiday closure, "Missed it?":** "Missed it? The story card is free and instant, so [Dog] still has something to say on Christmas morning. The poster follows." (It used to promise an email of the review that nothing sends.)
+- **Upsell link:** "Want it framed? $89" with "Black, red oak or white wood, acrylic front, hanging hardware included."
+- **HS ornament** (hidden until its photo is checked): eyebrow "ITEM TM-04 · FOR THE TREE"; heading "[Dog], for the tree."; text "[Dog]'s face on a ceramic ornament, with the verdict on your year printed in a ring around it and [Dog]'s name underneath. It comes out every December. The verdict does not change."; the ring word for word; button "Hang [Dog] on the tree · $24"; facts "Ceramic, 2.99 inches across, printed the same on both sides. Made after you order and checked by a person. Free US shipping."
+- **Christmas line for the ornament, pick one (none is live; the setting is empty):**
+  1. "Filed for the tree. Reviewed every December. The rating has not changed."
+  2. "[Dog] has approved a seasonal placement on the tree. Renewed every December, for life."
+  3. "Tiny Me reports to the tree each December. HR has no further notes."
+
+Added on 5 October, first run:
 - **The name nudge** (review step 1, shown when Approve is pressed without a name): "HR needs your name for the file.", "HR needs your manager's name for the file." and "HR needs both names for the file."
 - **Product descriptions** (Description blocks in the product templates). The facts in them (paper, frame, insert, size) are to check against Printful before launch.
   - **The Annual Review:** "[Dog]'s review of your year, printed for the wall: your name, [Dog]'s headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper. / Frame not included. [Dog] has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping."

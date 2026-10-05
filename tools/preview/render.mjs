@@ -46,6 +46,7 @@ engine.registerFilter('image_tag', (src, ...args) => {
   return `<img src="${src}" ${attrs}${'alt' in o ? '' : ' alt=""'}>`;
 });
 engine.registerFilter('money', (cents) => `$${(Number(cents) / 100).toFixed(2)}`);
+engine.registerFilter('money_without_trailing_zeros', (cents) => `$${(Number(cents) / 100).toFixed(2).replace(/\.00$/, '')}`);
 engine.registerFilter('stylesheet_tag', (href) => `<link rel="stylesheet" href="${href}">`);
 engine.registerFilter('json', (v) => JSON.stringify(v));
 engine.registerFilter('handleize', (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
@@ -203,6 +204,8 @@ ${footer}
 
 const written = [
   await page('index.html', 'index.json', { template: { name: 'index', suffix: null } }),
+  // the homepage once Tiny Me's own section is switched on
+  await page('index-ornament.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.ornament.settings.show = true; return t; }),
   await page('product-review.html', 'product.review.json', { product: products.poster, template: { name: 'product', suffix: 'review' } }),
   await page('product-framed.html', 'product.review.json', { product: products.framed, template: { name: 'product', suffix: 'review' } }),
   // the same page if Teeinblue's block were removed: the theme's own picker and button come back

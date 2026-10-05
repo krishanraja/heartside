@@ -796,6 +796,37 @@
     var note = document.querySelector('[data-hs2-bridge-note]');
     if (note) note.hidden = true;
   }
+  /* Teeinblue titles its own picker with its raw option key ("color"), set inside its block,
+     not from the Shopify option name. The section's "Plain names for product options" map
+     ("color" -> "Frame") is applied to the title's text here, and again whenever Teeinblue
+     redraws the picker, so the shopper reads "Frame". */
+  function relabelOptions() {
+    var buy = document.getElementById('buy');
+    if (!buy || !buy.getAttribute('data-hs2-option-labels')) return;
+    var map = {};
+    try { map = JSON.parse(buy.getAttribute('data-hs2-option-labels')) || {}; } catch (e) { return; }
+    buy.querySelectorAll('.tee-option').forEach(function (opt) {
+      var m = /(?:^|\s)tee-option--([a-z0-9-]+)/.exec(opt.className), title = opt.querySelector('.tee-option__title');
+      if (!m || !title || !map[m[1]]) return;
+      var want = map[m[1]];
+      if (title.textContent.trim() === want) return;
+      // change only the text, never Teeinblue's elements
+      var walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT), node, done = false;
+      while ((node = walker.nextNode())) {
+        if (!node.nodeValue.trim()) continue;
+        node.nodeValue = done ? '' : want;
+        done = true;
+      }
+    });
+    if (!buy.__hs2labels && 'MutationObserver' in window) {
+      buy.__hs2labels = true;
+      var queued = false;
+      new MutationObserver(function () {
+        if (queued) return; queued = true;
+        setTimeout(function () { queued = false; relabelOptions(); }, 50);
+      }).observe(buy, { childList: true, subtree: true, characterData: true });
+    }
+  }
   function tibGallery() {
     var box = document.querySelector('[data-hs2-tib-gallery]'), media = document.querySelector('[data-hs2-media]');
     if (box && media) media.setAttribute('data-tib', box.children.length ? 'on' : 'off');
@@ -836,7 +867,7 @@
   }
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;
-    var tick = function () { runBridge(); tibGallery(); handoff(); };
+    var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); };
     ['teeinblue-event-component-injected', 'teeinblue-event-campaign-loaded', 'teeinblue-event-variant-changed', 'teeinblue-event-customization-changed'].forEach(function (ev) {
       document.addEventListener(ev, function () { setTimeout(tick, 60); });
     });
@@ -1154,6 +1185,9 @@
     };
   }
   function offerLabel() {
+    // the offer is the read-aloud video: with its button switched off (hs2-review), no line
+    // on any page mentions it
+    if (!document.querySelector('[data-hs2-voice]')) return '';
     var c = config(), t = now();
     return c.offerStart && c.offerEnd && c.offerText && t >= c.offerStart && t <= endOfDay(c.offerEnd) ? c.offerText : '';
   }

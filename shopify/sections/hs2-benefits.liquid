@@ -9,9 +9,11 @@
     </div>
     <div class="hs2-cards" data-hs2-carousel data-hs2-reveal data-hs2-group>
       {%- assign shown = 0 -%}
+      {%- comment -%} Cards appear in the order of their Position setting (ties keep the block order), so the line-up changes without code. {%- endcomment -%}
+      {%- for pos in (1..8) -%}
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
-        {%- if b.hide -%}{%- continue -%}{%- endif -%}
+        {%- if b.position != pos or b.hide -%}{%- continue -%}{%- endif -%}
         {%- assign link = '#review' -%}
         {%- if b.product != blank -%}{%- assign link = b.product.url | append: '?view=heartside' -%}{%- endif -%}
         <article class="hs2-card" style="--i: {{ shown }}" {{ block.shopify_attributes }}>
@@ -38,6 +40,7 @@
           </div>
         </article>
       {%- endfor -%}
+      {%- endfor -%}
     </div>
     <div class="hs2-carousel-nav" data-hs2-carousel-nav>
       <button type="button" data-hs2-carousel-step="-1" aria-label="Previous item"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -63,6 +66,7 @@
       "name": "Benefit",
       "settings": [
         { "type": "checkbox", "id": "hide", "label": "Hide this card", "info": "For a product that isn't on sale yet. The card keeps its settings.", "default": false },
+        { "type": "range", "id": "position", "label": "Position", "info": "1 shows first.", "min": 1, "max": 8, "step": 1, "default": 4 },
         { "type": "product", "id": "product", "label": "Product", "info": "The link goes here with the shopper's answers. Empty links to the review builder." },
         { "type": "text", "id": "name", "label": "Name", "default": "The Body Double" },
         { "type": "text", "id": "kind", "label": "What it is, in plain words", "default": "Square photo pillow · 16 in" },

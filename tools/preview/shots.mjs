@@ -84,12 +84,11 @@ await pg.waitForTimeout(900);
 await pg.click('[data-hs2-chip="enemy"][data-value="Squirrels"]');
 await pg.waitForTimeout(900);
 log('after three chips -> step', await pg.locator('[data-hs2-step-no]').innerText(), '| prints line:', await pg.locator('[data-hs2-step="4"] .hs2-step__prints span:last-child').innerText());
-await pg.click('[data-hs2-voice]');
+log('VIDEO the read-aloud video button is off (nothing sells or makes the video yet):', await pg.locator('[data-hs2-voice]').count() === 0);
 await pg.waitForTimeout(200);
 log('poster improvement:', await pg.locator('.hs2-poster [data-hs2="improvementLine"]').innerText());
 log('poster incident:', await pg.locator('.hs2-poster [data-hs2="incidentLine"]').innerText());
 log('poster enemy:', await pg.locator('.hs2-poster [data-hs2="enemyLine"]').innerText());
-log('voice button:', await pg.locator('[data-hs2-voice]').innerText());
 log('memo to:', (await pg.locator('.hs2-management__memo').innerText()).split('\n')[0]);
 log('evidence photos:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-exhibit]')].map((f) => [f.getAttribute('data-hs2-exhibit'), f.querySelector('img').getAttribute('data-key'), f.querySelector('figcaption').textContent]))));
 await pg.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
@@ -228,11 +227,16 @@ await tib.close();
 
 // 4. Product pages with Teeinblue's block (a stand-in built from its live markup)
 const visiblePrices = (p) => p.evaluate(() => [...document.querySelectorAll('#buy [data-hs2-price], #buy .tee-product-price')].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim()));
-const pickers = (p) => p.evaluate(() => [...document.querySelectorAll('#buy .tee-option, #buy [data-hs2-variant]')].filter((e) => e.getClientRects().length && !e.classList.contains('sr-only')).map((e) => e.matches('select') ? 'theme select' : getComputedStyle(e.querySelector('.tee-option__title'), '::after').content + ': ' + [...e.querySelectorAll('.tee-radio-label')].map((l) => l.textContent).join(', ')));
+const pickers = (p) => p.evaluate(() => [...document.querySelectorAll('#buy .tee-option, #buy [data-hs2-variant]')].filter((e) => e.getClientRects().length && !e.classList.contains('sr-only')).map((e) => e.matches('select') ? 'theme select' : e.querySelector('.tee-option__title').innerText.trim() + ': ' + [...e.querySelectorAll('.tee-radio-label')].map((l) => l.textContent).join(', ')));
 const addButtons = (p) => p.evaluate(() => [...document.querySelectorAll('#buy button, #buy [type=submit]')].filter((e) => e.getClientRects().length && /add to cart/i.test(e.textContent)).map((e) => e.className.split(' ').pop()));
 const framed = await open(390, 844, 'framed', 'http://localhost:4173/product-framed.html');
 log('BUG 3 framed prices on show (one):', JSON.stringify(await visiblePrices(framed.pg)));
 log('BUG 4 framed pickers on show:', JSON.stringify(await pickers(framed.pg)), '| add to cart buttons:', JSON.stringify(await addButtons(framed.pg)));
+// Teeinblue redraws its picker; the label must come back as "Frame"
+await framed.pg.evaluate(() => { const t = document.querySelector('#buy .tee-option--color .tee-option__title'); t.textContent = 'color'; });
+await framed.pg.waitForTimeout(300);
+log('FRAME label after Teeinblue redraws it:', await framed.pg.locator('#buy .tee-option--color .tee-option__title').innerText());
+log('UPSELL on the framed page itself (none):', await framed.pg.locator('.hs2-upsell').count());
 await framed.pg.click('#buy label[title="Red Oak"]');
 await framed.pg.waitForTimeout(700);
 log('BUG 4 Red Oak in the picker -> form variant:', await framed.pg.locator('[data-hs2-variant-id]').inputValue(), '| price:', await framed.pg.locator('[data-hs2-price]').innerText());
@@ -240,6 +244,7 @@ log('BUG 5 framed description:', (await framed.pg.locator('.hs2-product__desc').
 await fullShot(framed.pg, 'phone-product-framed.png');
 const poster = await open(390, 844, 'poster', 'http://localhost:4173/product-review.html');
 log('BUG 4 poster pickers on show (none):', JSON.stringify(await pickers(poster.pg)), '| prices:', JSON.stringify(await visiblePrices(poster.pg)));
+log('UPSELL on the poster:', (await poster.pg.locator('.hs2-upsell').innerText()).replace(/\s+/g, ' '), '| a link, not a button:', await poster.pg.locator('.hs2-upsell').evaluate((a) => a.tagName), '| goes to:', (await poster.pg.locator('.hs2-upsell').getAttribute('href')).split('&')[0], '| add to cart buttons still:', JSON.stringify(await addButtons(poster.pg)));
 log('BUG 5 poster description:', (await poster.pg.locator('.hs2-product__desc').innerText()).split('\n')[0]);
 const plain = await open(390, 844, 'plain', 'http://localhost:4173/product-framed-plain.html');
 log('BUG 4 without Teeinblue, the theme picker:', await plain.pg.locator('.hs2-variant label').innerText(), JSON.stringify(await plain.pg.locator('[data-hs2-variant] option').allInnerTexts()), '| add to cart buttons:', JSON.stringify(await addButtons(plain.pg)));
@@ -276,11 +281,28 @@ log('BUG 1 with both names, Approve opens:', blank.pg.url().split('/').pop());
 const fresh = await open(390, 844, 'fresh-product', 'http://localhost:4173/product-review.html?dog=Gerald');
 log('BUG 1 product page, no name given -> hidden answers:', JSON.stringify(await fresh.pg.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.getAttribute('data-hs2-prop'), i.value])))));
 
-// 5. The launch offer only shows inside its dates (here previewed as 25 October)
+// 5. With the video button off, no page mentions the video offer, even inside its dates
 const offer = await open(1440, 900, 'offer', 'http://localhost:4173/?hs2_now=2026-10-25');
-log('on 25 October the read-aloud button says:', await offer.pg.locator('[data-hs2-voice]').innerText());
-const before = await open(1440, 900, 'no-offer', 'http://localhost:4173/?hs2_now=2026-10-05');
-log('on 5 October it says:', await before.pg.locator('[data-hs2-voice]').innerText());
+log('VIDEO on 25 October, mentions of the video anywhere on the page:', await offer.pg.evaluate(() => (document.body.innerText.match(/read-aloud|read it out loud|15s video/gi) || []).length));
+
+// 5b. The store's order: the review (poster), then Tiny Me, then the pillow; framed only from the poster page
+const home = await open(1440, 900, 'order');
+log('ORDER benefits cards:', JSON.stringify(await home.pg.evaluate(() => [...document.querySelectorAll('.hs2-card h3')].map((h) => h.textContent))), '| Tiny Me section hidden by default:', await home.pg.locator('#tiny-me').count() === 0, '| links to the framed poster on the homepage:', await home.pg.locator('a[href*="annual-review-framed"]').count());
+const orn = await open(390, 844, 'ornament-on', 'http://localhost:4173/index-ornament.html');
+await orn.pg.locator('#tiny-me').scrollIntoViewIfNeeded();
+await orn.pg.waitForTimeout(900);
+log('ORNAMENT section when switched on: follows the review:', await orn.pg.evaluate(() => { const r = document.querySelector('#review').closest('.shopify-section'); return r.nextElementSibling && !!r.nextElementSibling.querySelector('#tiny-me'); }), '| button:', await orn.pg.locator('#tiny-me .hs2-btn').innerText(), '| to:', (await orn.pg.locator('#tiny-me .hs2-btn').getAttribute('href')).split('?')[0], '| facts:', await orn.pg.locator('.hs2-orn__facts').innerText());
+await orn.pg.locator('#tiny-me').screenshot({ path: path.join(shots, 'phone-ornament-section.png') });
+
+// 5c. No page promises delivery by a date: a countdown to Christmas morning is fine, an order-by or arrive-by line is not
+const promises = [];
+for (const f of ['index.html', 'index-ornament.html', 'product-review.html', 'product-framed.html', 'product-pillow.html', 'product-ornament.html', 'product-landing.html']) {
+  const x = await open(1440, 900, 'promise-' + f, 'http://localhost:4173/' + f + '?hs2_now=2026-10-25');
+  const hits = await x.pg.evaluate(() => (document.body.innerText.match(/(arrives?|delivered|delivery|ships?) (by|before|in time for)[^.\n]*|order by [A-Z][a-z]+ \d+[^.\n]*|guaranteed[^.\n]*/gi) || []));
+  if (hits.length) promises.push(f + ': ' + hits.join(' | '));
+  await x.ctx.close();
+}
+log('PROMISE delivery or order-by promises on any page:', promises.length ? promises.join(' ; ') : 'none');
 
 // 6. Inside Instagram's in-app browser, the story card opens to press and hold (no download)
 const ig = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0 (iPhone15,3; iOS 18_0; en_US)' });

@@ -124,7 +124,7 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 Live since 4 October (docs/ADMIN-RUN-2026-10-04.md): handle `the-body-double`, campaign 1032878.
 
 - **Printful product:** All-Over Print Basic Pillow, **16″ × 16″** only (Teeinblue base 364803). Printful's shaped pillow isn't available through Teeinblue.
-- **Template:** "The Body Double (16in square)", the dog's photo full-bleed at 5100 px with the cropper on, the same on both sides. No background removal.
+- **Template:** "The Body Double (16in square)", the dog's photo full-bleed at 5100 px with the cropper on. Whether the back carries the same print is unconfirmed (check Printful's product details). No background removal.
 - **No text** on the pillow.
 - **Sample:** worth one, to check the photo crop and sharpness at 16 inches.
 
@@ -156,7 +156,8 @@ Paused with the Uniform. The product base is imported (364796).
 Live since 4 October: handle `tiny-me-for-the-tree`, campaign 1032885.
 
 - **Printful product:** #900 Ceramic Ornament, **circle** (Teeinblue base 364797). Printful prints the same design on both sides.
-- **Design:** the dog's photo cropped to a circle. The verdict is printed in a ring around it: `OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •`. The dog's name sits under the photo in Fraunces (max 14 characters, required).
+- **Design (as Teeinblue prints it, 5 October):** a double red ring with the verdict in red between the rings, starting top right and running clockwise: `OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •`. The photo is cropped to a smaller circle with no outline; the dog's name sits under it in black Fraunces (max 14 characters, required). 2.99 inches across.
+- **Mockup:** the campaign's mockup has no print area, so the live preview on the product page shows a blank ornament. Fix it in Teeinblue before the ornament leads anywhere.
 - **Add-on price:** $19, an upsell question for Krish.
 
 ## Not covered by Teeinblue (bring to Krish)

@@ -183,10 +183,11 @@ for (const [kind, set] of Object.entries(lineSets)) {
 }
 console.log('joke line PNGs:', lineCount, Object.entries(lineSets).map(([k, s]) => `${k}: ${s.length}`).join(', '));
 
-// 6. Tiny Me's face with Biscuit, for the ornament product photo. Built to the spec in
-// docs/ADMIN-RUN-2026-10-04.md (photo cropped to a circle, the verdict in a ring around it,
-// the name in Fraunces underneath). Provisional until it is checked against Teeinblue's
-// artwork for the ornament, which is the file that actually prints.
+// 6. Tiny Me's face with Biscuit, for the ornament product photo. Rebuilt on 5 October to
+// Teeinblue's artwork as described by the admin run: a double red ring (the APPROVED stamp's
+// red) with the verdict in red between the rings, starting top right and running clockwise;
+// a smaller photo with no outline; the name in black Fraunces under the photo. Still to be
+// matched against teeinblue-ornament-preview.png and a fresh Teeinblue preview before use.
 if (fs.existsSync(biscuit)) {
   const orn = await browser.newContext({ viewport: { width: 1200, height: 1200 }, deviceScaleFactor: 1 });
   const op = await orn.newPage();
@@ -196,16 +197,17 @@ if (fs.existsSync(biscuit)) {
   </style></head><body>
   <svg width="1200" height="1200" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <clipPath id="c"><circle cx="600" cy="500" r="300"/></clipPath>
-      <path id="ring" d="M 600,1105 a 505,505 0 1,1 0,-1010 a 505,505 0 1,1 0,1010"/>
+      <clipPath id="c"><circle cx="600" cy="540" r="250"/></clipPath>
+      <path id="ring" d="M 834.7,158.5 A 500,500 0 1,1 365.3,1041.5 A 500,500 0 1,1 834.7,158.5"/>
     </defs>
     <circle cx="600" cy="600" r="600" fill="#FFFDF9"/>
-    <image href="${pathToFileURL(biscuit).href}" x="300" y="200" width="600" height="600" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)"/>
-    <circle cx="600" cy="500" r="300" fill="none" stroke="#121010" stroke-width="5"/>
-    <text font-family="HS Courier Prime" font-weight="700" font-size="52" fill="#121010">
-      <textPath href="#ring" startOffset="12" textLength="3140" lengthAdjust="spacing">${ring}</textPath>
+    <circle cx="600" cy="600" r="560" fill="none" stroke="#A8284E" stroke-width="7"/>
+    <circle cx="600" cy="600" r="440" fill="none" stroke="#A8284E" stroke-width="5"/>
+    <text font-family="HS Courier Prime" font-weight="700" font-size="46" fill="#A8284E" dominant-baseline="central">
+      <textPath href="#ring" startOffset="0" textLength="3120" lengthAdjust="spacing">${ring}</textPath>
     </text>
-    <text x="600" y="910" text-anchor="middle" font-family="HS Fraunces" font-weight="650" font-size="96" fill="#121010">Biscuit</text>
+    <image href="${pathToFileURL(biscuit).href}" x="350" y="290" width="500" height="500" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)"/>
+    <text x="600" y="905" text-anchor="middle" font-family="HS Fraunces" font-weight="650" font-size="92" fill="#121010">Biscuit</text>
   </svg></body></html>`);
   await op.goto(pathToFileURL(path.join(tmp, 'print-ornament.html')).href, { waitUntil: 'load' });
   await op.evaluate(() => document.fonts.ready);

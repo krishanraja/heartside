@@ -44,7 +44,7 @@ One maker for everything means one dashboard, combined tracking back to Shopify 
 |---|---|---|---|
 | **The Annual Review** (hero) | Personalised performance review poster written by the dog | #1 Enhanced Matte Paper Poster | 12×18 |
 | **The Annual Review, framed** | Same, framed, ready to hang | #2 Enhanced Matte Paper Framed Poster | 12×18, black / white / red oak |
-| **The Body Double** | Square photo pillow: the dog's photo printed edge to edge, the same on both sides | All-Over Print Basic Pillow (Teeinblue base 364803) | 16″ × 16″ only |
+| **The Body Double** | Square photo pillow: the dog's photo printed edge to edge on the front (both sides unconfirmed: check in Printful) | All-Over Print Basic Pillow (Teeinblue base 364803) | 16″ × 16″ only |
 | **Mandatory Company Uniform** (paused) | Ugly Christmas sweatshirt printed all over with the dog's face, plus a matching bandana for the dog | #1418 All-Over Print Unisex Cotton Sweatshirt + #902 Pet Bandana Collar | XS–3XL; bandana S–XL |
 | **Surveillance Socks** (paused) | Dog's face all over | #882 Sublimation Socks | S, M, L |
 | **Tiny Me, For The Tree** | Ceramic ornament: the dog's photo cropped to a circle, the verdict printed in a ring around it ("OVERALL RATING: EXCEEDS EXPECTATIONS • CONTRACT RENEWED. FOR LIFE. •"), the dog's name in Fraunces underneath. Printful prints the same design on both sides. | #900 Ceramic Ornament | Circle |
@@ -64,7 +64,7 @@ Fees use Shopify Payments 2.9% + $0.30. Free US shipping on everything, already 
 |---|---|---|---|---|---|---|---|
 | Annual Review poster 12×18 | $39 | $11.62 | $4.99 | $1.43 | $18.04 | $20.96 | 54% |
 | Annual Review framed 12×18 | $89 | $32.77 | $10.89 | $2.88 | $46.54 | $42.46 | 48% |
-| The Body Double 16″ × 16″ | $59 | re-check | re-check | $2.01 | re-check | re-check | re-check |
+| The Body Double 16″ × 16″ | $59 | $14.95 | re-check | $2.01 | re-check | re-check | re-check |
 | Uniform set (sweatshirt + bandana), paused | $129 | $55.87 | $9.49 | $4.04 | $69.40 | $59.60 | 46% |
 | Uniform sweatshirt only, paused | $89 | $39.77 | $8.79 | $2.88 | $51.44 | $37.56 | 42% |
 | Surveillance Socks, paused | $24 | $7.14 | $4.69 | $1.00 | $12.83 | $11.17 | 47% |
@@ -74,6 +74,8 @@ Fees use Shopify Payments 2.9% + $0.30. Free US shipping on everything, already 
 | Dog reads your review (video) | $12 | Higgsfield credits | $0 | $0.65 | credits + time | about $11 | high |
 
 The Body Double's costs above were for the shaped pillow. Re-read the All-Over Print Basic Pillow's base price and US shipping in the Printful dashboard before putting ad money behind it; the $59 price stays.
+
+**5 October: the order changes.** Nobody has bought yet, and an $89 framed joke asks a stranger to hang it on a wall. The poster ($39) is the funny object people send; the ornament ($24) is the cherished one they keep, every December. The homepage now leads with the review and the poster, then Tiny Me, then the Body Double; the framed poster is an upsell on the poster's page. All of it is section settings, so it can flip back. The ornament has the thinnest margin above ($9.78 on the 4 October numbers), so it works best riding along with a poster order rather than as the thing ads pay to sell. Re-read the poster, framed and ornament base and shipping costs in Printful before ads.
 
 **Pricing rules.**
 - Price is the price. No strike-through "was" prices: the store has never charged them, and 16 CFR 233.1 requires a real former price.
@@ -129,7 +131,7 @@ Nothing goes on the site until each date is confirmed in the Printful dashboard.
 
 **The five ads** (full frame-by-frame on the canvas):
 1. **The Review (20s):** Biscuit runs Sarah's annual review across a mahogany desk. "You left the house 41 times." "For work." "Allegedly." Sells the poster and framed poster.
-2. **The Body Double (15s):** a heist. Biscuit plants his pillow double next to Sarah on the sofa and goes for the Christmas ham. "You're so calm tonight." Sells the pillow. **Product change, 4 October:** the pillow is now a 16-inch square with Biscuit's face printed on both sides, not a pillow shaped like him. Show the square pillow in every shot. The joke gets better: the decoy is plainly a square, and Sarah still doesn't notice.
+2. **The Body Double (15s):** a heist. Biscuit plants his pillow double next to Sarah on the sofa and goes for the Christmas ham. "You're so calm tonight." Sells the pillow. **Product change, 4 October:** the pillow is now a 16-inch square printed with Biscuit's face, not a pillow shaped like him. Show the square pillow in every shot. The joke gets better: the decoy is plainly a square, and Sarah still doesn't notice.
 3. **Mandatory Company Uniform (20s, paused with the product):** the living-room holiday party. Everyone is in Biscuit sweatshirts. Uncle Dave walks in wearing a plain sweater. "Security." Two bulldogs with earpieces walk him out. Sells the set.
 4. **Surveillance Socks (12s, paused with the product):** Sarah kicks her shoes off at the office. Cut to Biscuit at a wall of CCTV monitors. "Who is Brenda." Sells socks.
 5. **Your dog reads your review (15s):** a UGC-style phone video. A woman holds her phone next to her confused real dog while the dog's photo reads her review aloud. "You went to Cabo without me. One star." Sells the video, and with it the poster.

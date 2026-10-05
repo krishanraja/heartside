@@ -22,7 +22,7 @@
           "type": "description",
           "settings": {
             "product": "the-body-double",
-            "text": "<p>A 16-inch pillow with {dogs} face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen.</p><p>Square, printed edge to edge, insert included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+            "text": "<p>A 16-inch pillow printed with {dogs} face. For groomer days, vet days, and the occasional covert operation to the kitchen.</p><p>Square, printed edge to edge, with a shape-retaining insert included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
           }
         },
         "description_ornament": {
@@ -134,7 +134,8 @@
           "type": "deadline",
           "settings": {
             "item": "{dogs} video and story card",
-            "date": "Christmas Eve"
+            "date": "Christmas Eve",
+            "hide": true
           }
         }
       },

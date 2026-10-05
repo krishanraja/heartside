@@ -103,7 +103,9 @@
               </div>
               <a class="hs2-btn hs2-btn--blush" href="{{ hs_url }}" data-hs2-carry data-hs2-approve><span>{% render 'hs2-t', text: s.approve %}</span></a>
             </div>
-            <button type="button" class="hs2-voice" data-hs2-voice aria-pressed="false">+ Hear Biscuit read it out loud · 15s video · $12</button>
+            {%- if s.voice -%}
+              <button type="button" class="hs2-voice" data-hs2-voice aria-pressed="false">+ Hear Biscuit read it out loud · 15s video · $12</button>
+            {%- endif -%}
             <div class="hs2-buy__when" data-hs2-countdown="buy" hidden></div>
           </div>
         </div>
@@ -127,13 +129,14 @@
     { "type": "paragraph", "content": "Form HR-26, one question per screen. The chips and their joke lines live in snippets/hs2-lines.liquid. The Approve button stamps the poster, then opens the poster product with the answers in the link." },
     { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "FORM HR-26 · 5 QUICK QUESTIONS · TAKES A MINUTE" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "Help {dog} fill in the paperwork." },
-    { "type": "text", "id": "text", "label": "Text", "default": "{dog} has opinions and no thumbs. You type, {dog} signs. It prints as a poster, made for your wall or for someone whose dog is clearly their manager." },
+    { "type": "text", "id": "text", "label": "Text", "default": "{dog} has opinions and no thumbs. You type, {dog} signs. It prints as a poster for the fridge, the office or the wall by {dogs} bed, or for someone whose dog is clearly their manager." },
     { "type": "product", "id": "product", "label": "Annual Review poster product", "info": "The Approve button opens this product with the answers attached." },
     { "type": "text", "id": "price", "label": "Price", "default": "$39" },
-    { "type": "text", "id": "price_note", "label": "Price note", "default": "poster · $89 framed" },
+    { "type": "text", "id": "price_note", "label": "Price note", "info": "The framed poster is offered on the poster page, so the homepage keeps one price.", "default": "12 × 18 poster" },
     { "type": "text", "id": "shipping", "label": "Shipping line", "default": "Free US shipping" },
     { "type": "text", "id": "approve", "label": "Order button", "default": "Approve and order {dogs} poster" },
     { "type": "image_picker", "id": "poster_photo", "label": "Sample headshot on the poster", "info": "Empty uses the hero dachshund's face. Shoppers can attach their own; it stays on their device until they use it on the product page." },
+    { "type": "checkbox", "id": "voice", "label": "Show the read-aloud video button", "info": "Off until the video is something a shopper can buy and someone makes: a product (free or $12) in the cart, and the process that records and emails it. With it off, no page mentions the video offer.", "default": false },
     { "type": "checkbox", "id": "exhibits", "label": "Show the evidence photos", "info": "Exhibit A, B and C sit beside each question and change with the chips.", "default": true }
   ],
   "presets": [{ "name": "HS review builder" }]

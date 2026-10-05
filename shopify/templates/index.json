@@ -25,9 +25,10 @@
             "alt": "The Body Double, a square pillow printed with a dachshund's photo, on a sofa beside the dog himself, asleep",
             "shot": "",
             "cta": "Make the double",
-            "copy": "A 16-inch pillow with {dogs} face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen.",
+            "copy": "A 16-inch pillow printed with {dogs} face. For groomer days, vet days, and the occasional covert operation to the kitchen.",
             "kind": "Square photo pillow · 16 in",
-            "product": "the-body-double"
+            "product": "the-body-double",
+            "position": 2
           }
         },
         "b2": {
@@ -42,7 +43,8 @@
             "cta": "Comply",
             "copy": "An ugly Christmas sweatshirt covered in {dogs} face, plus a matching bandana for {dog}. Dress code for the holiday party. Non-negotiable.",
             "kind": "Sweatshirt + matching dog bandana",
-            "hide": true
+            "hide": true,
+            "position": 3
           }
         },
         "b3": {
@@ -57,7 +59,8 @@
             "cta": "Install",
             "copy": "{dogs} face on your feet, so {dog} can keep an eye on you at work. Stocking-sized.",
             "kind": "Socks printed with your dog's face",
-            "hide": true
+            "hide": true,
+            "position": 4
           }
         },
         "b4": {
@@ -66,13 +69,14 @@
             "name": "Tiny Me, For The Tree",
             "code": "ITEM TM-04",
             "price": "$24",
-            "fallback": "ornament-tree",
-            "alt": "Tiny Me, a round ceramic ornament with a dachshund's photo and verdict, hanging on a Christmas tree",
-            "shot": "",
+            "fallback": "team-04",
+            "alt": "A golden retriever on a rug with a toy",
+            "shot": "[ORNAMENT SHOT]",
             "cta": "Hang {dog}",
             "copy": "A ceramic ornament of {dog}, with {dogs} verdict on your year printed in a ring around the photo.",
             "kind": "Two-sided ceramic photo ornament",
-            "product": "tiny-me-for-the-tree"
+            "product": "tiny-me-for-the-tree",
+            "position": 1
           }
         }
       },
@@ -119,7 +123,8 @@
           "type": "deadline",
           "settings": {
             "item": "{dogs} video and story card",
-            "date": "Christmas Eve"
+            "date": "Christmas Eve",
+            "hide": true
           }
         }
       },
@@ -252,11 +257,18 @@
     },
     "sticky": {
       "type": "hs2-sticky"
+    },
+    "ornament": {
+      "type": "hs2-ornament",
+      "settings": {
+        "product": "tiny-me-for-the-tree"
+      }
     }
   },
   "order": [
     "hero",
     "review",
+    "ornament",
     "management",
     "benefits",
     "closure",

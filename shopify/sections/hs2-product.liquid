@@ -78,18 +78,10 @@
 <script>
   window.teeinblue = Object.assign({ gallerySelector: '[data-hs2-tib-gallery]', gallerySetupMethod: 'append', formSelector: '#hs2-product-form' }, window.teeinblue || {});
 </script>
-{%- if tib and label_from.size > 0 -%}
-  {%- comment -%} Teeinblue titles its picker with the raw option name ("color"). Swap in the plain one, in CSS so its re-renders keep it. {%- endcomment -%}
-  <style>
-    {%- for f in label_from -%}
-      {%- assign cls = f | handleize -%}
-      #buy .tee-option--{{ cls }} .tee-option__title { font-size: 0; }
-      #buy .tee-option--{{ cls }} .tee-option__title::after { content: {{ label_to[forloop.index0] | json }}; font-size: 14px; }
-    {%- endfor -%}
-  </style>
-{%- endif -%}
+
 <div class="hs2">
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}" id="buy">
+  {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}" id="buy" data-hs2-option-labels="{{ option_labels | escape }}">
 
     <div class="hs2-product__media" data-hs2-media>
       <div class="hs2-product__tib" data-hs2-tib-gallery></div>
@@ -202,6 +194,21 @@
                 {%- endunless -%}
               {%- endform -%}
             </div>
+          {%- when 'upsell' -%}
+            {%- comment -%} A quiet link to another version (the framed poster from the plain one). It shows
+              its own price and reads as a link, so it never competes with Add To Cart. Hidden on the
+              product it points to. {%- endcomment -%}
+            {%- assign up = block.settings.product -%}
+            {%- if up != blank and up.id != product.id -%}
+              <a class="hs2-upsell" href="{{ up.url }}?view={{ block.settings.view | default: 'review' }}" data-hs2-carry {{ block.shopify_attributes }}>
+                {%- if up.featured_media -%}<img src="{{ up.featured_media | image_url: width: 160 }}" alt="" width="56" height="56" loading="lazy">{%- endif -%}
+                <span class="hs2-upsell__text">
+                  <span class="hs2-upsell__title">{% render 'hs2-t', text: block.settings.title %} <strong>{{ up.price | money_without_trailing_zeros }}</strong></span>
+                  {%- if block.settings.note != blank -%}<span class="hs2-upsell__note">{{ block.settings.note }}</span>{%- endif -%}
+                </span>
+                <svg class="hs2-upsell__go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+              </a>
+            {%- endif -%}
           {%- when 'fine' -%}
             <div class="hs2-product__fine" {{ block.shopify_attributes }}>
               {%- if block.settings.line_1 != blank -%}<div>{{ block.settings.line_1 }}</div>{%- endif -%}
@@ -246,6 +253,16 @@
       ]
     },
     { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "paragraph", "content": "With Teeinblue's app block on the page, Teeinblue's own button adds to cart, because only it attaches the print file. This button then hides." }, { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },
+    {
+      "type": "upsell", "name": "Upsell link", "limit": 1,
+      "settings": [
+        { "type": "paragraph", "content": "A quiet link to another version of this product, with its price. It hides on the product it points to." },
+        { "type": "product", "id": "product", "label": "Product" },
+        { "type": "text", "id": "view", "label": "Its template", "info": "Opens the product with ?view= this, so the answers carry over.", "default": "review" },
+        { "type": "text", "id": "title", "label": "Line", "default": "Want it framed?" },
+        { "type": "text", "id": "note", "label": "Small print", "default": "Black, red oak or white wood, acrylic front, hanging hardware included." }
+      ]
+    },
     {
       "type": "fine", "name": "Policy lines", "limit": 1,
       "settings": [
