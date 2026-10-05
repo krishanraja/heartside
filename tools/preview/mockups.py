@@ -111,14 +111,19 @@ def place(scene, art, quad, held, shape='quad'):
     return Image.fromarray(np.clip(s * (1 - m) + p * m, 0, 255).astype(np.uint8))
 
 
-def crops(img, name):
+def crops(img, name, quad, held):
+    """4:5 for product pages and feed ads, 1:1 for cards. The product is never cut: each
+    crop starts a little above it and keeps as much of the scene below (the dog) as fits.
+    A held sheet is too tall for a square without cutting the dog's face, so it gets none."""
     W, H = img.size
-    # 4:5 for product pages and feed ads, 1:1 for cards; both keep the middle, where the
-    # scenes keep the product and the dog
-    h45 = min(H, round(W * 5 / 4)); top = (H - h45) // 2
-    img.crop((0, top, W, top + h45)).save(OUT / f'{name}-4x5.jpg', quality=92, optimize=True)
-    s = min(W, H); top = (H - s) // 2
-    img.crop(((W - s) // 2, top, (W - s) // 2 + s, top + s)).save(OUT / f'{name}-1x1.jpg', quality=92, optimize=True)
+    top_of_product = min(y for _, y in quad)
+    sizes = [('4x5', min(W, round(H * 4 / 5)), min(H, round(W * 5 / 4)))]
+    if not held:
+        sizes.append(('1x1', min(W, H), min(W, H)))
+    for label, cw, ch in sizes:
+        top = int(max(0, min(top_of_product - 48, H - ch)))
+        left = (W - cw) // 2
+        img.crop((left, top, left + cw, top + ch)).save(OUT / f'{name}-{label}.jpg', quality=92, optimize=True)
 
 
 def main():
@@ -130,7 +135,7 @@ def main():
         flat.paste(art, mask=art.split()[3])
         out = place(scene, flat, quad, held, *shape)
         out.save(OUT / f'{name}.jpg', quality=93, optimize=True)
-        crops(out, name)
+        crops(out, name, quad, held)
         print('wrote', name)
 
 
