@@ -13,7 +13,8 @@
     "main": {
       "type": "hs2-product",
       "settings": {
-        "show_poster": false
+        "show_poster": false,
+        "option_labels": "Color: Frame | Size: Size"
       },
       "blocks": {
         "stamp": {
@@ -29,7 +30,18 @@
           "type": "price"
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {
+            "product": "the-annual-review",
+            "text": "<p>{dogs} review of your year, printed for the wall: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p><p>Frame not included. {dog} has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
+        },
+        "description_framed": {
+          "type": "description",
+          "settings": {
+            "product": "the-annual-review-framed",
+            "text": "<p>The same review, framed and ready to hang. {dog} felt the paperwork deserved it.</p><p>A 12 × 18 inch poster on thick matte paper, in a black, red oak or white wood frame, with the hanging hardware already on. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
         },
         "answers": {
           "type": "answers"
@@ -39,8 +51,8 @@
           "settings": {
             "enable_design_mode": false,
             "loading_background_color": "#000000",
-            "show_price": true,
-            "show_available_product": true,
+            "show_price": false,
+            "show_available_product": false,
             "show_color": true,
             "show_size": true,
             "show_form": true,
@@ -59,6 +71,7 @@
         "title",
         "price",
         "description",
+        "description_framed",
         "answers",
         "teeinblue_product_personalizer_product_app_block_BmCrep",
         "buy",

@@ -2,6 +2,72 @@
 {%- liquid
   assign s = section.settings
   assign current = product.selected_or_first_available_variant
+
+  # Teeinblue's app block brings its own variant picker and add to cart, and only its button
+  # attaches the print file. When it is on the page, ours stand down.
+  assign tib = false
+  # Each description block can name a product. The one for this product wins, then one for any
+  # product, then the product's own description (Teeinblue overwrites that with Printful's text).
+  assign desc_pick = ''
+  assign desc_any = ''
+  assign desc_first = ''
+  for b in section.blocks
+    if b.type == '@app'
+      assign tib = true
+    endif
+    if b.type == 'description'
+      if desc_first == ''
+        assign desc_first = b.id
+      endif
+      if b.settings.text != blank
+        if b.settings.product != blank and b.settings.product.id == product.id and desc_pick == ''
+          assign desc_pick = b.id
+        elsif b.settings.product == blank and desc_any == ''
+          assign desc_any = b.id
+        endif
+      endif
+    endif
+  endfor
+  if desc_pick == ''
+    assign desc_pick = desc_any
+  endif
+
+  # Plain names for the options shoppers choose, from "Color: Frame | Size: Size"
+  assign label_from = ''
+  assign label_to = ''
+  assign pairs = s.option_labels | split: '|'
+  for pair in pairs
+    assign kv = pair | split: ':'
+    if kv.size == 2
+      assign k0 = kv[0] | strip | downcase
+      assign k1 = kv[1] | strip
+      assign label_from = label_from | append: '|' | append: k0
+      assign label_to = label_to | append: '|' | append: k1
+    endif
+  endfor
+  assign label_from = label_from | remove_first: '|' | split: '|'
+  assign label_to = label_to | remove_first: '|' | split: '|'
+
+  # Options with more than one value are the only real choices
+  assign choice_positions = ''
+  assign choice_label = ''
+  for opt in product.options_with_values
+    if opt.values.size > 1
+      assign choice_positions = choice_positions | append: ',' | append: opt.position
+      assign nice = opt.name
+      assign key = opt.name | downcase
+      for f in label_from
+        if f == key
+          assign nice = label_to[forloop.index0]
+        endif
+      endfor
+      if choice_label != ''
+        assign choice_label = choice_label | append: ' / '
+      endif
+      assign choice_label = choice_label | append: nice
+    endif
+  endfor
+  assign choice_positions = choice_positions | remove_first: ',' | split: ','
 -%}
 {%- comment -%}
   Tell Teeinblue where this template keeps its gallery and its form, so its live preview
@@ -11,8 +77,18 @@
 <script>
   window.teeinblue = Object.assign({ gallerySelector: '[data-hs2-tib-gallery]', gallerySetupMethod: 'append', formSelector: '#hs2-product-form' }, window.teeinblue || {});
 </script>
+{%- if tib and label_from.size > 0 -%}
+  {%- comment -%} Teeinblue titles its picker with the raw option name ("color"). Swap in the plain one, in CSS so its re-renders keep it. {%- endcomment -%}
+  <style>
+    {%- for f in label_from -%}
+      {%- assign cls = f | handleize -%}
+      #buy .tee-option--{{ cls }} .tee-option__title { font-size: 0; }
+      #buy .tee-option--{{ cls }} .tee-option__title::after { content: {{ label_to[forloop.index0] | json }}; font-size: 14px; }
+    {%- endfor -%}
+  </style>
+{%- endif -%}
 <div class="hs2">
-  <div class="hs2-wrap hs2-product" id="buy">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}" id="buy">
 
     <div class="hs2-product__media" data-hs2-media>
       <div class="hs2-product__tib" data-hs2-tib-gallery></div>
@@ -54,11 +130,20 @@
           {%- when 'price' -%}
             <div {{ block.shopify_attributes }}>
               <div class="hs2-product__price" data-hs2-price>{{ current.price | money }}</div>
+              {%- unless product.has_only_default_variant -%}
+                <script type="application/json" data-hs2-prices>{ {%- for v in product.variants -%}{{ v.id | append: '' | json }}: {{ v.price | money | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }</script>
+              {%- endunless -%}
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
             </div>
           {%- when 'description' -%}
-            <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
+            {%- if desc_pick != '' -%}
+              {%- if block.id == desc_pick -%}
+                <div class="hs2-product__desc" {{ block.shopify_attributes }}>{% render 'hs2-t', text: block.settings.text %}</div>
+              {%- endif -%}
+            {%- elsif block.id == desc_first -%}
+              <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
+            {%- endif -%}
           {%- when 'answers' -%}
             <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>
               <div class="hs2-answers__title">{{ block.settings.title }}</div>
@@ -87,14 +172,17 @@
           {%- when 'buy' -%}
             <div {{ block.shopify_attributes }}>
               {%- form 'product', product, id: 'hs2-product-form', novalidate: 'novalidate' -%}
-                {%- if product.has_only_default_variant -%}
-                  <input type="hidden" name="id" value="{{ current.id }}">
+                {%- if tib or choice_positions.size == 0 -%}
+                  <input type="hidden" name="id" value="{{ current.id }}" data-hs2-variant-id>
                 {%- else -%}
                   <div class="hs2-variant">
-                    <label for="hs2-variant-{{ section.id }}">{{ product.options | join: ' / ' }}</label>
+                    <label for="hs2-variant-{{ section.id }}">{{ choice_label }}</label>
                     <select id="hs2-variant-{{ section.id }}" name="id" data-hs2-variant>
                       {%- for v in product.variants -%}
-                        <option value="{{ v.id }}" data-price="{{ v.price | money }}" data-available="{{ v.available }}"{% if v.id == current.id %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>{{ v.title }}{% unless v.available %} (gone for now){% endunless %}</option>
+                        {%- capture v_name -%}
+                          {%- for pos in choice_positions -%}{%- assign i = pos | minus: 1 -%}{{ v.options[i] }}{%- unless forloop.last %} / {% endunless -%}{%- endfor -%}
+                        {%- endcapture -%}
+                        <option value="{{ v.id }}" data-price="{{ v.price | money }}" data-available="{{ v.available }}"{% if v.id == current.id %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>{{ v_name | strip }}{% unless v.available %} (gone for now){% endunless %}</option>
                       {%- endfor -%}
                     </select>
                   </div>
@@ -106,9 +194,11 @@
                 <input type="hidden" name="properties[_Incident]" data-hs2-prop="incident" value="">
                 <input type="hidden" name="properties[_Enemy]" data-hs2-prop="enemy" value="">
                 <input type="hidden" name="properties[_Read-aloud video]" data-hs2-prop="voice" value="">
-                <button type="submit" name="add" class="hs2-btn" data-hs2-add{% unless current.available %} disabled{% endunless %}>
-                  {%- if current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
-                </button>
+                {%- unless tib -%}
+                  <button type="submit" name="add" class="hs2-btn" data-hs2-add{% unless current.available %} disabled{% endunless %}>
+                    {%- if current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
+                  </button>
+                {%- endunless -%}
               {%- endform -%}
             </div>
           {%- when 'fine' -%}
@@ -130,14 +220,22 @@
   "class": "hs2-section",
   "settings": [
     { "type": "checkbox", "id": "show_poster", "label": "Show the live review poster", "info": "On for the Annual Review products. It fills in from the shopper's homepage answers.", "default": false },
-    { "type": "text", "id": "shot", "label": "Placeholder tag when the product has no images", "default": "[PRODUCT SHOT]" }
+    { "type": "text", "id": "shot", "label": "Placeholder tag when the product has no images", "default": "[PRODUCT SHOT]" },
+    { "type": "text", "id": "option_labels", "label": "Plain names for product options", "info": "Option: name, split by |. Options with one value are hidden. Example: Color: Frame | Size: Size", "default": "Size: Size" }
   ],
   "blocks": [
     { "type": "@app" },
     { "type": "stamp", "name": "Stamp", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "BENEFITS PACKAGE · APPROVED BY {DOG}" } ] },
     { "type": "title", "name": "Title", "limit": 1, "settings": [] },
     { "type": "price", "name": "Price", "limit": 1, "settings": [ { "type": "text", "id": "note", "label": "Note under the price", "default": "Free US shipping" } ] },
-    { "type": "description", "name": "Description", "limit": 1, "settings": [ { "type": "paragraph", "content": "Shows the product description. Write it in the dog's voice (docs/V2-FROM-THE-DOG.md section 2)." } ] },
+    {
+      "type": "description", "name": "Description",
+      "settings": [
+        { "type": "paragraph", "content": "Teeinblue overwrites the product description with Printful's text on every campaign update, so write ours here, in the dog's voice. Add one block per product. Empty everywhere shows the product's own description." },
+        { "type": "product", "id": "product", "label": "For product", "info": "Empty applies to every product on this template." },
+        { "type": "richtext", "id": "text", "label": "Description", "info": "Tokens: {dog}, {dogs}, {person}." }
+      ]
+    },
     {
       "type": "answers", "name": "Homepage answers", "limit": 1,
       "settings": [
@@ -146,7 +244,7 @@
         { "type": "text", "id": "photo_button", "label": "Headshot button", "info": "Shows when the shopper attached a photo on the homepage. One tap hands it to the personalizer.", "default": "Use {dogs} headshot" }
       ]
     },
-    { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },
+    { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "paragraph", "content": "With Teeinblue's app block on the page, Teeinblue's own button adds to cart, because only it attaches the print file. This button then hides." }, { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },
     {
       "type": "fine", "name": "Policy lines", "limit": 1,
       "settings": [

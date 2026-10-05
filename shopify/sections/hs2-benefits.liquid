@@ -11,7 +11,7 @@
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
         {%- assign link = '#review' -%}
-        {%- if b.product != blank -%}{%- assign link = b.product.url -%}{%- endif -%}
+        {%- if b.product != blank -%}{%- assign link = b.product.url | append: '?view=heartside' -%}{%- endif -%}
         <article class="hs2-card" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
           <div class="hs2-card__media">
             {%- if b.image != blank -%}

@@ -3,7 +3,8 @@
   assign s = section.settings
   assign hs_url = '#benefits'
   if s.product != blank
-    assign hs_url = s.product.url
+    # ?view= opens our product template even before it is assigned to the product in admin
+    assign hs_url = s.product.url | append: '?view=review'
   endif
   if template.name == 'product'
     assign hs_url = '#buy'
@@ -39,6 +40,15 @@
 
         <div class="hs2-step is-on" data-hs2-step="1">
           <p class="hs2-step__intro">{% render 'hs2-t', text: s.text %}</p>
+          {%- comment -%} Approve shows this when a name is missing. Both names print on the poster, and a placeholder never does. {%- endcomment -%}
+          <p class="hs2-step__nudge" data-hs2-names-nudge role="alert" hidden
+            data-person="HR needs your name for the file."
+            data-dog="HR needs your manager's name for the file."
+            data-both="HR needs both names for the file."></p>
+          <div class="hs2-field" data-hs2-ask="dog" hidden>
+            <label for="manager-{{ section.id }}">Who is your manager? (Your dog's name)</label>
+            <input id="manager-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" data-hs2-input="dog">
+          </div>
           <div class="hs2-form__pair">
             <div class="hs2-field">
               <label for="person-{{ section.id }}">Employee name (you)</label>

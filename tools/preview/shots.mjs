@@ -68,6 +68,17 @@ await pg.click('[data-hs2-step-next]');
 await pg.click('[data-hs2-chip="improvement"][data-value="The vacuum"]');
 await pg.waitForTimeout(900);
 log('a chip moves the form on by itself -> step', await pg.locator('[data-hs2-step-no]').innerText());
+// a chip then Next straight away must land on the next step, never skip one
+await pg.click('[data-hs2-step-go="2"]');
+await pg.evaluate(() => { const api = window.__hs2api; if (api && api.steps) api.steps.auto = {}; });
+await pg.click('[data-hs2-chip="improvement"][data-value="Leaving"]');
+await pg.click('[data-hs2-step-next]');
+const afterNext = await pg.locator('[data-hs2-step-no]').innerText();
+await pg.waitForTimeout(1000);
+log('BUG 2 chip then Next -> step', afterNext, 'and after the auto-advance delay -> step', await pg.locator('[data-hs2-step-no]').innerText(), '(both should be 3)');
+await pg.click('[data-hs2-step-go="2"]');
+await pg.click('[data-hs2-chip="improvement"][data-value="The vacuum"]');
+await pg.click('[data-hs2-step-go="3"]');
 await pg.click('[data-hs2-chip="incident"][data-value="The couch"]');
 await pg.waitForTimeout(900);
 await pg.click('[data-hs2-chip="enemy"][data-value="Squirrels"]');
@@ -137,7 +148,7 @@ await fullShot(pg, 'desktop-product-review.png');
 const tib = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const tp = await tib.newPage();
 tp.on('pageerror', (e) => errors.push(`teeinblue: ${e.message}`));
-await tp.addInitScript(() => {
+const standIn = () => {
   const data = {};
   window.__tibFiles = [];
   window.teeinblueCampaign = { productId: '9001' };
@@ -170,7 +181,8 @@ await tp.addInitScript(() => {
     anchor.after(box);
     document.dispatchEvent(new Event('teeinblue-event-component-injected'));
   }, 700));
-});
+};
+await tp.addInitScript(standIn);
 // arrive from the homepage with answers in the link, and a headshot already attached there
 await tp.goto('http://localhost:4173/');
 await tp.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
@@ -187,13 +199,66 @@ log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() 
 await tp.fill('#layer-11', 'Gerald Jr');
 await tp.waitForTimeout(200);
 log('shopper edits the dog in the personalizer -> order property:', await tp.locator('[data-hs2-prop="dog"]').inputValue(), '| card:', await tp.locator('[data-hs2-answers] [data-hs2="dog"]').innerText());
+// BUG 1 in the bridge: a shopper who gave the dog's name but never their own
+const tp2 = await tib.newPage();
+tp2.on('pageerror', (e) => errors.push(`teeinblue-2: ${e.message}`));
+await tp2.addInitScript(standIn);
+await tp2.goto('http://localhost:4173/product-review.html?dog=Waffles');
+await tp2.evaluate(() => sessionStorage.clear());
+await tp2.goto('http://localhost:4173/product-review.html?dog=Waffles');
+await tp2.waitForTimeout(2200);
+log('BUG 1 bridge with no employee name -> Teeinblue manager / employee:', JSON.stringify(await tp2.evaluate(() => [document.querySelector('#layer-11').value, document.querySelector('#layer-12').value])));
 await tib.close();
 
-// 4. Pillow product page on phone (no images yet: placeholder tag)
+// 4. Product pages with Teeinblue's block (a stand-in built from its live markup)
+const visiblePrices = (p) => p.evaluate(() => [...document.querySelectorAll('#buy [data-hs2-price], #buy .tee-product-price')].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim()));
+const pickers = (p) => p.evaluate(() => [...document.querySelectorAll('#buy .tee-option, #buy [data-hs2-variant]')].filter((e) => e.getClientRects().length && !e.classList.contains('sr-only')).map((e) => e.matches('select') ? 'theme select' : getComputedStyle(e.querySelector('.tee-option__title'), '::after').content + ': ' + [...e.querySelectorAll('.tee-radio-label')].map((l) => l.textContent).join(', ')));
+const addButtons = (p) => p.evaluate(() => [...document.querySelectorAll('#buy button, #buy [type=submit]')].filter((e) => e.getClientRects().length && /add to cart/i.test(e.textContent)).map((e) => e.className.split(' ').pop()));
+const framed = await open(390, 844, 'framed', 'http://localhost:4173/product-framed.html');
+log('BUG 3 framed prices on show (one):', JSON.stringify(await visiblePrices(framed.pg)));
+log('BUG 4 framed pickers on show:', JSON.stringify(await pickers(framed.pg)), '| add to cart buttons:', JSON.stringify(await addButtons(framed.pg)));
+await framed.pg.click('#buy label[title="Red Oak"]');
+await framed.pg.waitForTimeout(700);
+log('BUG 4 Red Oak in the picker -> form variant:', await framed.pg.locator('[data-hs2-variant-id]').inputValue(), '| price:', await framed.pg.locator('[data-hs2-price]').innerText());
+log('BUG 5 framed description:', (await framed.pg.locator('.hs2-product__desc').innerText()).split('\n')[0]);
+await fullShot(framed.pg, 'phone-product-framed.png');
+const poster = await open(390, 844, 'poster', 'http://localhost:4173/product-review.html');
+log('BUG 4 poster pickers on show (none):', JSON.stringify(await pickers(poster.pg)), '| prices:', JSON.stringify(await visiblePrices(poster.pg)));
+log('BUG 5 poster description:', (await poster.pg.locator('.hs2-product__desc').innerText()).split('\n')[0]);
+const plain = await open(390, 844, 'plain', 'http://localhost:4173/product-framed-plain.html');
+log('BUG 4 without Teeinblue, the theme picker:', await plain.pg.locator('.hs2-variant label').innerText(), JSON.stringify(await plain.pg.locator('[data-hs2-variant] option').allInnerTexts()), '| add to cart buttons:', JSON.stringify(await addButtons(plain.pg)));
 const pillow = await open(390, 844, 'pillow', 'http://localhost:4173/product-pillow.html');
 await fullShot(pillow.pg, 'phone-product-pillow.png');
-await pillow.pg.selectOption('[data-hs2-variant]', '11');
-log('pillow price after picking 10″:', await pillow.pg.locator('[data-hs2-price]').innerText());
+log('BUG 5 pillow description:', (await pillow.pg.locator('.hs2-product__desc').innerText()).split('\n')[0], '| pickers:', JSON.stringify(await pickers(pillow.pg)));
+const ornament = await open(390, 844, 'ornament', 'http://localhost:4173/product-ornament.html');
+log('BUG 5 ornament description:', (await ornament.pg.locator('.hs2-product__desc').innerText()).split('\n')[0]);
+const nodesc = await open(390, 844, 'nodesc', 'http://localhost:4173/product-pillow-nodesc.html');
+log('BUG 5 no description written -> product description:', (await nodesc.pg.locator('.hs2-product__desc').innerText()).split('\n')[0]);
+
+// 4b. BUG 1: placeholders never reach an order. With no names, Approve keeps the shopper
+// on step 1 and says what HR needs; the product page, its hidden answers and Teeinblue
+// never see "Sarah" or "Biscuit".
+const blank = await open(390, 844, 'blank-names');
+await blank.pg.evaluate(() => { const a = document.querySelector('[data-hs2-approve]'); a.setAttribute('data-hs2-base', 'product-review.html'); a.setAttribute('href', 'product-review.html'); });
+await blank.pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
+await blank.pg.click('[data-hs2-step-go="5"]');
+await blank.pg.click('[data-hs2-approve]');
+await blank.pg.waitForTimeout(1200);
+log('BUG 1 no names, Approve -> still on:', blank.pg.url().split('/').pop() || 'index', '| step', await blank.pg.locator('[data-hs2-step-no]').innerText(), '| nudge:', await blank.pg.locator('[data-hs2-names-nudge]').innerText(), '| dog field shown:', await blank.pg.locator('[data-hs2-ask="dog"]').isVisible(), '| focus:', await blank.pg.evaluate(() => document.activeElement.getAttribute('data-hs2-input')));
+log('BUG 1 approve link with no names:', await blank.pg.locator('[data-hs2-approve]').getAttribute('href'));
+await blank.pg.screenshot({ path: path.join(shots, 'phone-review-names-nudge.png') });
+await blank.pg.fill('[data-hs2-step="1"] [data-hs2-input="person"]', 'Priya');
+await blank.pg.click('[data-hs2-step-go="5"]');
+await blank.pg.click('[data-hs2-approve]');
+await blank.pg.waitForTimeout(400);
+log('BUG 1 only the dog missing -> nudge:', await blank.pg.locator('[data-hs2-names-nudge]').innerText());
+await blank.pg.fill('[data-hs2-step="1"] [data-hs2-input="dog"]', 'Pickle');
+log('BUG 1 nudge clears once both names are in:', await blank.pg.locator('[data-hs2-names-nudge]').isHidden(), '| hero name follows:', await blank.pg.locator('.hs2-hero [data-hs2-input="dog"]').inputValue());
+await blank.pg.click('[data-hs2-step-go="5"]');
+await Promise.all([blank.pg.waitForURL(/product-review/, { timeout: 5000 }), blank.pg.click('[data-hs2-approve]')]);
+log('BUG 1 with both names, Approve opens:', blank.pg.url().split('/').pop());
+const fresh = await open(390, 844, 'fresh-product', 'http://localhost:4173/product-review.html?dog=Gerald');
+log('BUG 1 product page, no name given -> hidden answers:', JSON.stringify(await fresh.pg.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.getAttribute('data-hs2-prop'), i.value])))));
 
 // 5. The launch offer only shows inside its dates (here previewed as 25 October)
 const offer = await open(1440, 900, 'offer', 'http://localhost:4173/?hs2_now=2026-10-25');
@@ -216,7 +281,9 @@ await ig.close();
 // 7. The ad landing page: no store menu, Approve lands on the buy box on the same page
 const land = await open(390, 844, 'landing', 'http://localhost:4173/product-landing.html');
 log('landing: store header hidden:', await land.pg.locator('.header-section').isHidden(), '| buy box id:', await land.pg.locator('#buy').count());
+await land.pg.fill('.hs2-hero [data-hs2-input="dog"]', 'Moose');
 await land.pg.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
+await land.pg.fill('[data-hs2-step="1"] [data-hs2-input="person"]', 'Dana');
 await land.pg.click('[data-hs2-step-go="5"]');
 await land.pg.click('[data-hs2-approve]');
 await land.pg.waitForTimeout(1600);

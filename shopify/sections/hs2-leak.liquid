@@ -3,7 +3,8 @@
   assign s = section.settings
   assign hs_url = '#review'
   if s.product != blank
-    assign hs_url = s.product.url
+    # ?view= opens our product template even before it is assigned to the product in admin
+    assign hs_url = s.product.url | append: '?view=review'
   endif
 -%}
 <div class="hs2">

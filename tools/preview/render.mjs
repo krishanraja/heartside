@@ -48,6 +48,7 @@ engine.registerFilter('image_tag', (src, ...args) => {
 engine.registerFilter('money', (cents) => `$${(Number(cents) / 100).toFixed(2)}`);
 engine.registerFilter('stylesheet_tag', (href) => `<link rel="stylesheet" href="${href}">`);
 engine.registerFilter('json', (v) => JSON.stringify(v));
+engine.registerFilter('handleize', (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
 engine.registerTag('form', {
   parse(token, remain) {
     this.id = (token.args.match(/id:\s*'([^']*)'/) || [])[1] || '';
@@ -69,37 +70,89 @@ engine.registerTag('form', {
 });
 
 // --------------------------------------------------------------- mock store
-const variant = (id, title, price, available = true) => ({ id, title, price, available });
-const products = {
-  poster: {
-    title: 'The Annual Review', url: '/products/the-annual-review', price: 3900, media: [], featured_media: null,
-    has_only_default_variant: true, options: ['Title'], variants: [variant(1, 'Default Title', 3900)],
-    description: '<p>A 12 by 18 inch poster of your annual review, written and signed by your dog. Printed on matte paper and checked by a person before it prints.</p>',
-  },
-  pillow: {
-    title: 'The Body Double', url: '/products/the-body-double', price: 5900, media: [], featured_media: null,
-    has_only_default_variant: false, options: ['Size'],
-    variants: [variant(11, '10″', 4900), variant(12, '16″', 5900), variant(13, '22″', 6900, false)],
-    description: "<p>A pillow cut to your dog's exact outline. For groomer days, vet days, and the occasional covert operation to the kitchen.</p>",
-  },
+// The four launch products as Teeinblue created them (docs/ADMIN-RUN-2026-10-04.md): three
+// options each, "Available Product", "Color" and "Size", most with one value, and Printful's
+// stock description, which Teeinblue rewrites on every campaign update.
+const PRINTFUL = '<p>Museum-quality posters made on thick matte paper. Add a wonderful accent to your room and office with these posters that are sure to brighten any environment.</p>';
+const mkProduct = (handle, id, title, base, colors, sizes, price, variantIds, description = PRINTFUL) => {
+  const options_with_values = [
+    { name: 'Available Product', position: 1, values: [base] },
+    { name: 'Color', position: 2, values: colors },
+    { name: 'Size', position: 3, values: sizes },
+  ];
+  const variants = [];
+  let n = 0;
+  for (const c of colors) for (const s of sizes) {
+    const options = [base, c, s];
+    variants.push({ id: variantIds[n++], title: options.join(' / '), options, price, available: true });
+  }
+  return {
+    handle, id, title, url: `/products/${handle}`, price, media: [], featured_media: null, description,
+    has_only_default_variant: false, options: options_with_values.map((o) => o.name), options_with_values, variants,
+    selected_or_first_available_variant: variants[0],
+  };
 };
-for (const p of Object.values(products)) p.selected_or_first_available_variant = p.variants.find((v) => v.available);
+const products = {
+  poster: mkProduct('the-annual-review', 16115061457278, 'The Annual Review', 'Enhanced Matte Paper Poster (in)', ['Default'], ['12″×18″'], 3900, [58152473002366]),
+  framed: mkProduct('the-annual-review-framed', 16115081773438, 'The Annual Review, Framed', 'Enhanced Matte Paper Framed Poster (in)', ['Black', 'Red Oak', 'White'], ['12″×18″'], 8900, [58152515797374, 58152515830142, 58152515862910]),
+  pillow: mkProduct('the-body-double', 16115384746366, 'The Body Double', 'All-Over Print Basic Pillow', ['Default'], ['16″×16″'], 5900, [58160000000001], '<p>This basic pillow will add some character to your home, and the 100% polyester fabric makes it soft and durable.</p>'),
+  ornament: mkProduct('tiny-me-for-the-tree', 16115386876286, 'Tiny Me, For The Tree', 'Ceramic Ornament', ['Default'], ['Circle'], 2400, [58160000000002], '<p>Add a personal touch to your holiday decor with this ceramic ornament.</p>'),
+};
+const byHandle = Object.fromEntries(Object.values(products).map((p) => [p.handle, p]));
+
+// Teeinblue's app block, built from its block settings and the markup it renders on the
+// live store (tee-product-price, tee-variants with one radio group per option, a single
+// size marked sr-only, Preview and Add To Cart buttons). Picking a radio puts the variant
+// in the URL, which is all Teeinblue tells the page.
+const money = (c) => `$${(Number(c) / 100).toFixed(2)}`;
+function teeinblueBlock(settings, product) {
+  if (!product) return '';
+  const cur = product.selected_or_first_available_variant;
+  const show = { 'Available Product': settings.show_available_product, Color: settings.show_color, Size: settings.show_size };
+  const parts = [];
+  if (settings.show_price) parts.push(`<div class="tee-block tee-product-price"><div class="tee-price-wrapper"><span class="money theme-money price tee-price--current" data-variant-price>${money(cur.price)}</span></div></div>`);
+  const groups = product.options_with_values.filter((o) => show[o.name]).map((o) => {
+    const key = o.name.toLowerCase().replace(/\s+/g, '-');
+    const sr = o.name === 'Size' && o.values.length === 1 ? ' sr-only' : '';
+    const radios = o.values.map((v, i) => `<div class="tee-radio${v === cur.options[o.position - 1] ? ' active' : ''}"><input type="radio" id="${key}-${i}" name="${key}-tee" data-pos="${o.position}" value="${v}"${v === cur.options[o.position - 1] ? ' checked' : ''}><label class="tee-radio-label" for="${key}-${i}" title="${v}"><span>${v}</span></label></div>`).join('');
+    return `<div class="tee-option tee-option--${key}${sr} tee-block" display-type="radio"><label class="tee-option__title">${o.name.toLowerCase()}</label><div class="tee-row tee-option-inner" role="radiogroup">${radios}</div></div>`;
+  });
+  if (groups.length) parts.push(`<div class="tee-block tee-variants">${groups.join('')}</div>`);
+  if (settings.show_action_buttons) parts.push('<div class="tee-block tee-actions"><button type="button" class="tee-btn tee-btn--full tee-btn--preview">Preview</button><button type="button" class="tee-btn tee-btn--atc">Add To Cart</button></div>');
+  const variants = JSON.stringify(product.variants.map((v) => ({ id: v.id, options: v.options })));
+  return `<div class="shopify-app-block tee-stub" data-tee-stub>${parts.join('')}<script>(function () {
+    var vs = ${variants}, box = document.currentScript.parentNode;
+    box.addEventListener('change', function (e) {
+      var picked = {};
+      box.querySelectorAll('.tee-variants input:checked').forEach(function (i) { picked[i.getAttribute('data-pos')] = i.value; i.parentNode.parentNode.querySelectorAll('.tee-radio').forEach(function (r) { r.classList.toggle('active', r.contains(i)); }); });
+      var v = vs.filter(function (v) { return Object.keys(picked).every(function (p) { return v.options[p - 1] === picked[p]; }); })[0];
+      if (v) history.replaceState(null, '', location.pathname + '?variant=' + v.id);
+    });
+  })();</script></div>`;
+}
 
 // ---------------------------------------------------------------- sections
 function readSection(type) {
   const src = fs.readFileSync(path.join(theme, 'sections', `${type}.liquid`), 'utf8');
   const m = src.match(/{%-?\s*schema\s*-?%}([\s\S]*?){%-?\s*endschema\s*-?%}/);
-  return { schema: JSON.parse(m[1]), body: src.replace(m[0], '') };
+  // app blocks render their own markup; here that is the stand-in built above
+  return { schema: JSON.parse(m[1]), body: src.replace(m[0], '').replace(/{%-?\s*render block\s*-?%}/g, '{{ block.app_html }}') };
 }
 const defaults = (settings = []) => Object.fromEntries(settings.filter((s) => 'default' in s).map((s) => [s.id, s.default]));
+// product pickers store a handle; Liquid sees the product, or nothing if it doesn't exist
+const resolve = (schemaSettings = [], values) => {
+  for (const s of schemaSettings) if (s.type === 'product' && typeof values[s.id] === 'string') values[s.id] = byHandle[values[s.id]] || null;
+  return values;
+};
 
 async function renderSection(key, conf, ctx) {
   const { schema, body } = readSection(conf.type);
-  const settings = { ...defaults(schema.settings), ...(conf.settings || {}) };
+  const settings = resolve(schema.settings, { ...defaults(schema.settings), ...(conf.settings || {}) });
   const blocks = (conf.block_order || []).map((id) => {
     const b = conf.blocks[id];
+    if (String(b.type).startsWith('shopify://apps/')) return { id, type: '@app', settings: b.settings || {}, shopify_attributes: '', app_html: teeinblueBlock(b.settings || {}, ctx.product) };
     const bs = (schema.blocks || []).find((x) => x.type === b.type) || {};
-    return { id, type: b.type, settings: { ...defaults(bs.settings), ...(b.settings || {}) }, shopify_attributes: '' };
+    return { id, type: b.type, settings: resolve(bs.settings, { ...defaults(bs.settings), ...(b.settings || {}) }), shopify_attributes: '' };
   });
   const html = await engine.parseAndRender(body, {
     section: { id: `template--${key}`, settings, blocks },
@@ -119,8 +172,8 @@ const header = `
 </header>`;
 const footer = `<footer class="mock-footer"><p>Helio footer (policies, contact) renders here.</p></footer>`;
 
-async function page(file, templateName, ctx = {}) {
-  const tpl = JSON.parse(fs.readFileSync(path.join(theme, 'templates', templateName), 'utf8'));
+async function page(file, templateName, ctx = {}, edit = (t) => t) {
+  const tpl = edit(JSON.parse(fs.readFileSync(path.join(theme, 'templates', templateName), 'utf8')));
   const memo = await renderSection('memo', { type: 'hs2-memo' }, ctx);
   const main = [];
   for (const key of tpl.order) main.push(await renderSection(key, tpl.sections[key], ctx));
@@ -151,7 +204,20 @@ ${footer}
 const written = [
   await page('index.html', 'index.json', { template: { name: 'index', suffix: null } }),
   await page('product-review.html', 'product.review.json', { product: products.poster, template: { name: 'product', suffix: 'review' } }),
+  await page('product-framed.html', 'product.review.json', { product: products.framed, template: { name: 'product', suffix: 'review' } }),
+  // the same page if Teeinblue's block were removed: the theme's own picker and button come back
+  await page('product-framed-plain.html', 'product.review.json', { product: products.framed, template: { name: 'product', suffix: 'review' } }, (t) => {
+    const m = t.sections.main;
+    m.block_order = m.block_order.filter((id) => !String(m.blocks[id].type).startsWith('shopify://'));
+    return t;
+  }),
   await page('product-pillow.html', 'product.heartside.json', { product: products.pillow, template: { name: 'product', suffix: 'heartside' } }),
+  await page('product-ornament.html', 'product.heartside.json', { product: products.ornament, template: { name: 'product', suffix: 'heartside' } }),
+  // no description written for this product: Printful's text shows, as before
+  await page('product-pillow-nodesc.html', 'product.heartside.json', { product: products.pillow, template: { name: 'product', suffix: 'heartside' } }, (t) => {
+    for (const b of Object.values(t.sections.main.blocks)) if (b.type === 'description' && b.settings && b.settings.product === 'the-body-double') delete b.settings.text;
+    return t;
+  }),
   await page('product-landing.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }),
 ];
 for (const f of fs.readdirSync(path.join(theme, 'assets'))) fs.copyFileSync(path.join(theme, 'assets', f), path.join(out, 'assets', f));

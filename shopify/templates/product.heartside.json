@@ -19,7 +19,18 @@
           "type": "price"
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {
+            "product": "the-body-double",
+            "text": "<p>A 16-inch pillow with {dogs} face on both sides. For groomer days, vet days, and the occasional covert operation to the kitchen.</p><p>Square, printed edge to edge, insert included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
+        },
+        "description_ornament": {
+          "type": "description",
+          "settings": {
+            "product": "tiny-me-for-the-tree",
+            "text": "<p>{dog}, about three inches across, for the tree. The verdict runs in a ring around the photo: Overall rating: exceeds expectations. Contract renewed. For life. {dogs} name sits underneath.</p><p>Ceramic, with the same design on both sides, so it faces the room whichever way it turns. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
         },
         "answers": {
           "type": "answers"
@@ -29,8 +40,8 @@
           "settings": {
             "enable_design_mode": false,
             "loading_background_color": "#000000",
-            "show_price": true,
-            "show_available_product": true,
+            "show_price": false,
+            "show_available_product": false,
             "show_color": true,
             "show_size": true,
             "show_form": true,
@@ -49,6 +60,7 @@
         "title",
         "price",
         "description",
+        "description_ornament",
         "answers",
         "teeinblue_product_personalizer_product_app_block_UBn6nK",
         "buy",

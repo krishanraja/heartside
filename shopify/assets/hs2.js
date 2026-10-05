@@ -39,7 +39,17 @@
     v = (v == null ? '' : String(v)).trim();
     return v || DEFAULTS[k];
   }
-  function engaged() { return !!(String(state.dog || '').trim() || String(state.person || '').trim()); }
+  /* What the shopper actually gave us. The names have no default: "Biscuit" and "Sarah"
+     only fill the page until they type. They never go into a link, an order or the
+     personalizer, or the poster would print a stranger's name. The treat count and the
+     chips keep their defaults, because those print sensibly as they are. */
+  var NAMES = ['dog', 'person'];
+  function answer(k) {
+    var v = (state[k] == null ? '' : String(state[k])).trim();
+    return v || (NAMES.indexOf(k) === -1 ? DEFAULTS[k] : '');
+  }
+  function missingNames() { return NAMES.filter(function (k) { return !answer(k); }); }
+  function engaged() { return !!(answer('dog') || answer('person')); }
   function possessive(n) { return /s$/i.test(n) ? n + "'" : n + "'s"; }
   function json(sel) {
     var el = document.querySelector(sel);
@@ -86,17 +96,23 @@
     // hidden line-item properties on product forms
     document.querySelectorAll('[data-hs2-prop]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs2-prop');
-      inp.value = k === 'voice' ? (val('voice') ? 'Yes' : '') : val(k);
+      inp.value = k === 'voice' ? (val('voice') ? 'Yes' : '') : answer(k);
     });
+    document.querySelectorAll('[data-hs2-input]').forEach(function (inp) {
+      var k = inp.getAttribute('data-hs2-input');
+      if (state[k] != null && inp !== document.activeElement && inp.value !== String(state[k])) inp.value = state[k];
+    });
+    document.querySelectorAll('[data-hs2-names-nudge]').forEach(function (n) { if (!n.hidden && !missingNames().length) n.hidden = true; });
     var answers = document.querySelector('[data-hs2-answers]');
     if (answers && engaged()) answers.hidden = false;
+    bridgeSoon();
     exhibits();
     leakUI();
     drawSoon();
   }
   function answerParams() {
     var p = new URLSearchParams();
-    ANSWERS.forEach(function (k) { p.set(k, val(k)); });
+    ANSWERS.forEach(function (k) { var v = answer(k); if (v) p.set(k, v); });
     if (val('voice')) p.set('video', '1');
     return p;
   }
@@ -121,7 +137,13 @@
         b.classList.remove('is-picked'); void b.offsetWidth; b.classList.add('is-picked');
         var prints = b.closest('.hs2-step') && b.closest('.hs2-step').querySelector('.hs2-step__prints');
         if (prints) { prints.classList.remove('is-new'); void prints.offsetWidth; prints.classList.add('is-new'); }
-        if (steps.go && !steps.auto[kind]) { steps.auto[kind] = true; setTimeout(function () { steps.go(steps.at + 1); }, 700); }
+        // the first pick on each question moves on by itself, unless the shopper moves first
+        var own = b.closest('[data-hs2-step]'), from = own ? Number(own.getAttribute('data-hs2-step')) : 0;
+        if (steps.go && from && !steps.auto[kind]) {
+          steps.auto[kind] = true;
+          clearTimeout(steps.timer);
+          steps.timer = setTimeout(function () { if (steps.at === from) steps.go(from + 1); }, 700);
+        }
       });
     });
     document.querySelectorAll('[data-hs2-voice]').forEach(function (b) {
@@ -564,6 +586,25 @@
         if (btn) btn.disabled = opt.getAttribute('data-available') !== 'true';
       });
     }
+    // With Teeinblue's picker in charge, follow the variant it puts in the URL, so the one
+    // price on the page (ours, Teeinblue's is off) and the form's variant stay with it
+    var buy = document.getElementById('buy');
+    if (buy && buy.classList.contains('hs2-product--tib') && !buy.__hs2v) {
+      buy.__hs2v = true;
+      var follow = function () {
+        var id = new URLSearchParams(window.location.search).get('variant');
+        var prices = json('script[data-hs2-prices]'), price = document.querySelector('[data-hs2-price]');
+        if (!id || !(id in prices)) return;
+        if (price && price.textContent !== prices[id]) price.textContent = prices[id];
+        var idIn = buy.querySelector('[data-hs2-variant-id]');
+        if (idIn) idIn.value = id;
+      };
+      buy.addEventListener('change', function (e) {
+        if (!e.target.closest || !e.target.closest('.tee-variants')) return;
+        setTimeout(follow, 80); setTimeout(follow, 500);
+      });
+      document.addEventListener('teeinblue-event-variant-changed', function () { setTimeout(follow, 80); });
+    }
   }
 
   /* ------------------------------------------------------------ Teeinblue bridge
@@ -620,7 +661,8 @@
       var name = text.name || text.id;
       watchField(text, k);
       if (bridge.owned[name]) return null;
-      var want = val(k);
+      var want = answer(k);
+      if (!want) return null; // no name yet: leave the field for the shopper, never a placeholder
       if (text.value === want) return { name: name, value: want };
       if (text.value && !fresh) return null; // keep what Teeinblue restored from an earlier visit
       setValue(text, want);
@@ -654,6 +696,12 @@
       }
     }
     return null;
+  }
+  // answers typed on the same page (the ad landing page) reach the personalizer too
+  function bridgeSoon() {
+    if (!document.querySelector('.tee-field')) return;
+    clearTimeout(bridgeSoon.t);
+    bridgeSoon.t = setTimeout(function () { runBridge(); }, 400);
   }
   function watchField(inp, k) {
     if (inp.__hs2watch) return; inp.__hs2watch = true;
@@ -698,7 +746,7 @@
     var fields = tibFields();
     if (!fields.length) return;
     var pid = productId() || location.pathname;
-    var fp = JSON.stringify(ANSWERS.map(val));
+    var fp = JSON.stringify(ANSWERS.map(answer));
     var seenKey = 'hs2-tib-' + pid, fresh = true;
     try { fresh = window.sessionStorage.getItem(seenKey) !== fp; } catch (e) { fresh = true; }
     var wanted = [];
@@ -971,6 +1019,7 @@
     var all = box.querySelectorAll('[data-hs2-step]'), n = all.length;
     all.forEach(function (st) { st.setAttribute('tabindex', '-1'); });
     function go(k, focus) {
+      clearTimeout(steps.timer); // a pending chip auto-advance must never skip a step
       k = Math.max(1, Math.min(n, k));
       var back = k < (steps.at || 1);
       steps.at = k;
@@ -1003,11 +1052,35 @@
     });
     go(1);
   }
+  /* Both names print on the poster, so Approve waits for them. It takes the shopper back
+     to step 1, opens the dog's name there if the hero was skipped, and says what HR needs. */
+  function askNames(a) {
+    var review = a.closest('.hs2-review') || document;
+    var box = review.querySelector('[data-hs2-steps]'), nudge = review.querySelector('[data-hs2-names-nudge]');
+    if (!box || !steps.go) return false;
+    var missing = missingNames();
+    var ask = review.querySelector('[data-hs2-ask="dog"]');
+    if (ask && missing.indexOf('dog') !== -1) ask.hidden = false;
+    steps.go(1);
+    if (nudge) {
+      nudge.textContent = nudge.getAttribute(missing.length > 1 ? 'data-both' : 'data-' + missing[0]) || '';
+      nudge.hidden = false;
+      nudge.classList.remove('is-new'); void nudge.offsetWidth; nudge.classList.add('is-new');
+    }
+    var first = box.querySelector('[data-hs2-step="1"] [data-hs2-input="' + missing[0] + '"]');
+    if (first) {
+      box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+      first.focus({ preventScroll: true });
+    }
+    track('names_needed', { missing: missing.join(',') });
+    return true;
+  }
   /* Approve: the stamp lands on the poster, then the shopper moves on */
   function approve() {
     document.querySelectorAll('[data-hs2-approve]').forEach(function (a) {
       if (a.__hs2a) return; a.__hs2a = true;
       a.addEventListener('click', function (e) {
+        if (missingNames().length && askNames(a)) { e.preventDefault(); return; }
         track('approve_clicked', { dog: val('dog') });
         var review = a.closest('.hs2-review'), stampEl = review && review.querySelector('.hs2-poster__approved');
         var href = a.getAttribute('href') || '';
@@ -1225,5 +1298,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { state: state, val: val, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
