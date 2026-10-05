@@ -106,6 +106,19 @@ Teeinblue has no documented prefill feature, so this was built against its store
 - **Descriptions.** Teeinblue rewrites the product description with Printful's text on every campaign update, so each **Description** block names a product and holds our copy for it. The block for this product wins, then a block with no product, then the product's own description.
 - **Links.** The homepage's poster links open `?view=review` and the benefits cards `?view=heartside`, so the flow works before the templates are assigned in admin, and still works after.
 
+## Product photos (5 October)
+
+`design/mockups/` holds product photos with the real print in them. The scenes (`assets/v2/scenes/`) were generated in ChatGPT with every product surface left blank, and `tools/preview/mockups.py` places the real file on each one, in the scene's own light, with fingers and ribbons kept in front. The product itself is never AI-drawn, because image models redraw text. The dog is Biscuit (`assets/v2/biscuit-headshot.jpg`), generated for Heartside, so the photos carry no licence question.
+
+| File | Product | Use |
+|---|---|---|
+| `office-black-b`, `office-black-a` | Framed, black | Product image 1, ads |
+| `entry-oak-a`, `entry-oak-b` | Framed, red oak | Product image 2, ads |
+| `christmas-sheet-a`, `christmas-sheet-b` | Poster, unframed | Product image 1, holiday ads |
+| `ornament-tree` | Tiny Me | Product image 1, the homepage card. **Provisional:** its face is built to the spec in the admin log until checked against Teeinblue's artwork |
+
+Each comes full size (2:3), as `-4x5` (product pages, feed ads) and as `-1x1` (cards). Rebuild with `node tools/preview/print.mjs` (the poster and ornament faces with Biscuit) then `python3 tools/preview/mockups.py`. The Body Double has no scene yet, so its card keeps the stand-in photo and `[PILLOW SHOT]`.
+
 ## Funnel pixel (Meta and TikTok)
 
 `shopify/pixels/hs2-funnel.js` is a Shopify custom pixel. It forwards the theme's funnel events to Meta and TikTok as custom events: `hs2_name_entered`, `hs2_review_step` (with the step), `hs2_names_needed`, `hs2_approve_clicked`, `hs2_photo_attached`, `hs2_story_card`, `hs2_caption_copied`, `hs2_link_shared` and `hs2_faq_open`. Approving is also sent as the standard event `CustomizeProduct`, which both platforms can optimize for straight away. Page views, add to cart, checkout and purchase come from Shopify's Facebook & Instagram channel (and TikTok's, if installed); this pixel doesn't send them again. Names never leave the store: only the step, card, question and which name was missing.

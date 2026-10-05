@@ -101,6 +101,16 @@ await pg.waitForTimeout(300);
 
 // 1. sample
 await pg.locator('#poster').screenshot({ path: path.join(outDir, 'poster-sample.png') });
+// 1b. the same sample with Biscuit, the brand's own dog (generated for Heartside, so it carries
+// no licence question), for the product photos in design/mockups/
+const biscuit = path.join(repo, 'assets', 'v2', 'biscuit-headshot.jpg');
+if (fs.existsSync(biscuit)) {
+  const mockDir = path.join(repo, 'design', 'mockups'); fs.mkdirSync(mockDir, { recursive: true });
+  const before = await pg.evaluate(() => { const i = document.querySelector('[data-layer="photo"]'); return [i.src, i.style.objectPosition]; });
+  await pg.evaluate((src) => new Promise((r) => { const i = document.querySelector('[data-layer="photo"]'); i.onload = r; i.style.objectPosition = '50% 35%'; i.src = src; }), pathToFileURL(biscuit).href);
+  await pg.locator('#poster').screenshot({ path: path.join(mockDir, 'poster-biscuit.png') });
+  await pg.evaluate(([src, pos]) => new Promise((r) => { const i = document.querySelector('[data-layer="photo"]'); i.onload = r; i.style.objectPosition = pos; i.src = src; }), before);
+}
 
 // 2. layer boxes, measured on the sample (print px = design px x 6)
 const layers = await pg.evaluate((S) => {
@@ -173,7 +183,38 @@ for (const [kind, set] of Object.entries(lineSets)) {
 }
 console.log('joke line PNGs:', lineCount, Object.entries(lineSets).map(([k, s]) => `${k}: ${s.length}`).join(', '));
 
-// 6. v2 social sharing image, 1200 x 628
+// 6. Tiny Me's face with Biscuit, for the ornament product photo. Built to the spec in
+// docs/ADMIN-RUN-2026-10-04.md (photo cropped to a circle, the verdict in a ring around it,
+// the name in Fraunces underneath). Provisional until it is checked against Teeinblue's
+// artwork for the ornament, which is the file that actually prints.
+if (fs.existsSync(biscuit)) {
+  const orn = await browser.newContext({ viewport: { width: 1200, height: 1200 }, deviceScaleFactor: 1 });
+  const op = await orn.newPage();
+  const ring = 'OVERALL RATING: EXCEEDS EXPECTATIONS \u2022 CONTRACT RENEWED. FOR LIFE. \u2022 ';
+  fs.writeFileSync(path.join(tmp, 'print-ornament.html'), `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
+    html, body { margin: 0; background: transparent; }
+  </style></head><body>
+  <svg width="1200" height="1200" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <clipPath id="c"><circle cx="600" cy="500" r="300"/></clipPath>
+      <path id="ring" d="M 600,1105 a 505,505 0 1,1 0,-1010 a 505,505 0 1,1 0,1010"/>
+    </defs>
+    <circle cx="600" cy="600" r="600" fill="#FFFDF9"/>
+    <image href="${pathToFileURL(biscuit).href}" x="300" y="200" width="600" height="600" preserveAspectRatio="xMidYMid slice" clip-path="url(#c)"/>
+    <circle cx="600" cy="500" r="300" fill="none" stroke="#121010" stroke-width="5"/>
+    <text font-family="HS Courier Prime" font-weight="700" font-size="52" fill="#121010">
+      <textPath href="#ring" startOffset="12" textLength="3140" lengthAdjust="spacing">${ring}</textPath>
+    </text>
+    <text x="600" y="910" text-anchor="middle" font-family="HS Fraunces" font-weight="650" font-size="96" fill="#121010">Biscuit</text>
+  </svg></body></html>`);
+  await op.goto(pathToFileURL(path.join(tmp, 'print-ornament.html')).href, { waitUntil: 'load' });
+  await op.evaluate(() => document.fonts.ready);
+  await op.waitForTimeout(300);
+  await op.locator('svg').screenshot({ path: path.join(repo, 'design', 'mockups', 'ornament-biscuit.png'), omitBackground: true });
+  await orn.close();
+}
+
+// 7. v2 social sharing image, 1200 x 628
 const share = await browser.newContext({ viewport: { width: 1200, height: 628 }, deviceScaleFactor: 1 });
 const sp = await share.newPage();
 fs.writeFileSync(path.join(tmp, 'print-share.html'), `<!doctype html><html><head><meta charset="utf-8"><style>${fontCss}
