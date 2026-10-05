@@ -75,89 +75,30 @@
         "fine"
       ]
     },
-    "policy": {
-      "type": "hs2-policy",
-      "blocks": {
-        "p1": {
-          "type": "policy",
-          "settings": {
-            "title": "A human checks every order",
-            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
-          }
-        },
-        "p2": {
-          "type": "policy",
-          "settings": {
-            "title": "Misprinted? Remade free",
-            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
-          }
-        },
-        "p3": {
-          "type": "policy",
-          "settings": {
-            "title": "Every review gets published",
-            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
-          }
-        }
-      },
-      "block_order": [
-        "p1",
-        "p2",
-        "p3"
-      ]
-    },
-    "closure": {
-      "type": "hs2-closure",
-      "blocks": {
-        "d1": {
-          "type": "deadline",
-          "settings": {
-            "item": "Mandatory Company Uniform",
-            "date": "[DATE]",
-            "hide": true
-          }
-        },
-        "d2": {
-          "type": "deadline",
-          "settings": {
-            "item": "The Body Double",
-            "date": "[DATE]"
-          }
-        },
-        "d3": {
-          "type": "deadline",
-          "settings": {
-            "item": "Framed review",
-            "date": "[DATE]"
-          }
-        },
-        "d4": {
-          "type": "deadline",
-          "settings": {
-            "item": "Review poster and ornament",
-            "date": "[DATE]"
-          }
-        },
-        "d5": {
-          "type": "deadline",
-          "settings": {
-            "item": "{dogs} video and story card",
-            "date": "Christmas Eve",
-            "hide": true
-          }
-        }
-      },
-      "block_order": [
-        "d1",
-        "d2",
-        "d3",
-        "d4",
-        "d5"
-      ]
-    },
     "faq": {
       "type": "hs2-faq",
       "blocks": {
+        "p1": {
+          "type": "promise",
+          "settings": {
+            "title": "A person checks every order before it prints.",
+            "text": "If the photo won't print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "promise",
+          "settings": {
+            "title": "Misprinted or damaged? Full refund or a free remake.",
+            "text": "Email a photo within 30 days of delivery."
+          }
+        },
+        "p3": {
+          "type": "promise",
+          "settings": {
+            "title": "Every review gets published, good or bad.",
+            "text": "We're new, so there are none yet."
+          }
+        },
         "q1": {
           "type": "question",
           "settings": {
@@ -188,17 +129,21 @@
         }
       },
       "block_order": [
+        "p1",
+        "p2",
+        "p3",
         "q1",
         "q2",
         "q3",
         "q4"
-      ]
+      ],
+      "settings": {
+        "close_text": ""
+      }
     }
   },
   "order": [
     "main",
-    "policy",
-    "closure",
     "faq"
   ]
 }

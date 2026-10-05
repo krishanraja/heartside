@@ -93,12 +93,22 @@ const mkProduct = (handle, id, title, base, colors, sizes, price, variantIds, de
     selected_or_first_available_variant: variants[0],
   };
 };
+// product photos, as the store has them (our staged photo first, then Printful's mockups)
+const withMedia = (p, files) => {
+  p.media = files.map((f) => ({ src: `assets/${f}`, alt: p.title }));
+  p.featured_media = p.media[0] || null;
+  return p;
+};
 const products = {
   poster: mkProduct('the-annual-review', 16115061457278, 'The Annual Review', 'Enhanced Matte Paper Poster (in)', ['Default'], ['12″×18″'], 3900, [58152473002366]),
   framed: mkProduct('the-annual-review-framed', 16115081773438, 'The Annual Review, Framed', 'Enhanced Matte Paper Framed Poster (in)', ['Black', 'Red Oak', 'White'], ['12″×18″'], 8900, [58152515797374, 58152515830142, 58152515862910]),
   pillow: mkProduct('the-body-double', 16115384746366, 'The Body Double', 'All-Over Print Basic Pillow', ['Default'], ['16″×16″'], 5900, [58160000000001], '<p>This basic pillow will add some character to your home, and the 100% polyester fabric makes it soft and durable.</p>'),
   ornament: mkProduct('tiny-me-for-the-tree', 16115386876286, 'Tiny Me, For The Tree', 'Ceramic Ornament', ['Default'], ['Circle'], 2400, [58160000000002], '<p>Add a personal touch to your holiday decor with this ceramic ornament.</p>'),
 };
+withMedia(products.poster, ['hs-photo-memo-960.webp', 'hs-photo-team-02-640.webp', 'hs-photo-team-03-640.webp']);
+withMedia(products.framed, ['hs-photo-manager-640.webp', 'hs-photo-team-01-640.webp']);
+withMedia(products.pillow, ['hs-photo-pillow-sofa-640.webp']);
+withMedia(products.ornament, ['hs-photo-ornament-tree-640.webp']);
 const byHandle = Object.fromEntries(Object.values(products).map((p) => [p.handle, p]));
 
 // Teeinblue's app block, built from its block settings and the markup it renders on the
@@ -169,7 +179,7 @@ async function renderSection(key, conf, ctx) {
 const header = `
 <header class="mock-header">
   <img src="assets/heartside-logo.png" alt="Heartside" class="mock-logo">
-  <nav><a href="#review">Your review</a><a href="#benefits">Benefits package</a><a href="#closure"><b>Christmas deadlines</b></a></nav>
+  <nav><a href="#review">Your review</a><a href="#benefits">More gifts</a><a href="#faq">Questions</a></nav>
 </header>`;
 const footer = `<footer class="mock-footer"><p>Helio footer (policies, contact) renders here.</p></footer>`;
 
@@ -202,6 +212,20 @@ ${footer}
   return file;
 }
 
+const HERO_B = {
+  stamp: 'PERSONALIZED POSTER · $39 · FREE US SHIPPING',
+  heading: "{yourdog} loves you too. Now it's <em>in\u00a0writing.</em>",
+  text: 'Their annual review of you, printed on a 12 × 18 inch poster with their photo and your name.',
+  what: '',
+  name_label: "Your dog's name",
+  button: 'Make my poster',
+  note: '',
+  proof: 'A person checks every order | Misprinted? We make it right | Free US shipping',
+};
+const HERO_A = {
+  heading: '{yourdog} wrote your <em>annual review.</em>',
+  text: "They love you too, and they'd like it on the record. A 12 × 18 inch poster with their photo, your name and three notes you pick.",
+};
 const written = [
   await page('index.html', 'index.json', { template: { name: 'index', suffix: null } }),
   // the homepage once Tiny Me's own section is switched on
@@ -222,7 +246,35 @@ const written = [
     return t;
   }),
   await page('product-landing.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }),
+  // the hero Krish proposed on 5 October (B) and the colder-traffic fallback (A), for him to see
+  // before either goes live
+  await page('index-hero-b.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B }; return t; }),
+  await page('landing-hero-b.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }, (t) => { t.sections.hero.settings = { ...t.sections.hero.settings, ...HERO_B }; return t; }),
+  await page('index-hero-a.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];
+// Helio's cart drawer, as the live store rendered it on 5 October with a framed poster in it
+// (one row per line, the variant options in a list, Teeinblue's visible properties under
+// them, the tax note). hs2.js tidies it; shots.mjs serves /cart.js for it.
+{
+  const memo = await renderSection('memo', { type: 'hs2-memo' }, {});
+  fs.writeFileSync(path.join(out, 'cart.html'), `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Heartside preview: cart</title>
+<style>body{margin:0;font:15px system-ui;background:#fff}.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.cart-items__table{width:100%}.cart-items__media img{width:90px;height:90px;border-radius:12px}.cart-items__variants,.cart-items__properties{margin:4px 0;color:#555}.cart-items__variant{display:inline}.cart-items__variant dd,.cart-items__property dd{display:inline;margin:0}.cart-items__property dt{display:inline}.cart-totals__tax-note{margin:12px;color:#555}</style></head><body>
+<div id="header-group">${memo}</div>
+<cart-items-component class="cart-items-component"><form action="/cart" class="cart-form" id="cart-form"><table class="cart-items__table"><tbody>
+<tr id="CartItem-58152515830142:cd7e" class="cart-items__table-row" data-key="58152515830142:cd7e">
+<td class="cart-items__media"><a href="/products/the-annual-review-framed?variant=58152515830142" class="cart-items__media-container"><img src="assets/hs-photo-team-04-640.webp" srcset="assets/hs-photo-team-04-640.webp 250w" width="250" height="250" class="cart-items__media-image" alt="mockup-framed-redoak"></a></td>
+<td class="cart-items__details"><div class="cart-items__product-info"><a href="/products/the-annual-review-framed?variant=58152515830142" class="cart-items__title">The Annual Review, Framed</a></div>
+<div class="cart-items__variants-wrapper"><dl class="cart-items__variants"><div class="cart-items__variant"><dt class="visually-hidden">Available Product:</dt><dd>Enhanced Matte Paper Framed Poster (in),&nbsp;</dd></div><div class="cart-items__variant"><dt class="visually-hidden">Color:</dt><dd>Red Oak,&nbsp;</dd></div><div class="cart-items__variant"><dt class="visually-hidden">Size:</dt><dd>12″×18″</dd></div></dl>
+<dl class="cart-items__properties"><div class="cart-items__property"><dt>Available Product:</dt><dd>Enhanced Matte Paper Framed Poster (in) </dd></div><div class="cart-items__property"><dt>Employee name (you):</dt><dd>Jordan </dd></div></dl></div></td></tr>
+<tr id="CartItem-58160000000002:ab12" class="cart-items__table-row" data-key="58160000000002:ab12">
+<td class="cart-items__media"><a href="/products/tiny-me-for-the-tree?variant=58160000000002" class="cart-items__media-container"><img src="assets/hs-photo-team-01-640.webp" width="250" height="250" class="cart-items__media-image" alt="ornament"></a></td>
+<td class="cart-items__details"><div class="cart-items__product-info"><a href="/products/tiny-me-for-the-tree?variant=58160000000002" class="cart-items__title">Tiny Me, For The Tree</a></div>
+<div class="cart-items__variants-wrapper"><dl class="cart-items__variants"><div class="cart-items__variant"><dt class="visually-hidden">Available Product:</dt><dd>Ceramic Ornament,&nbsp;</dd></div><div class="cart-items__variant"><dt class="visually-hidden">color:</dt><dd>1 pc,&nbsp;</dd></div><div class="cart-items__variant"><dt class="visually-hidden">Size:</dt><dd>Circle</dd></div></dl></div></td></tr>
+</tbody></table></form></cart-items-component>
+<div class="cart-totals__item cart-totals__tax-note cart-primary-typography"><small>Taxes and <a href="/policies/shipping-policy">shipping</a> calculated at checkout. </small></div>
+</body></html>`);
+  written.push('cart.html');
+}
 for (const f of fs.readdirSync(path.join(theme, 'assets'))) fs.copyFileSync(path.join(theme, 'assets', f), path.join(out, 'assets', f));
 fs.copyFileSync(path.join(repo, 'assets', 'heartside-logo.png'), path.join(out, 'assets', 'heartside-logo.png'));
 console.log('rendered', written.join(', '));

@@ -10,7 +10,8 @@
       {%- if s.hide_header -%}<img class="hs2-hero__logo" src="{{ 'hs-logo.png' | asset_url }}" alt="Heartside" width="240" height="81">{%- endif -%}
       <div class="hs2-stamp hs2-anim-stamp" style="--r: -2deg; --d: .1s">{% render 'hs2-t', text: s.stamp %}</div>
       <h1 class="hs2-anim-rise" style="--d: .18s">{% render 'hs2-t', text: s.heading %}</h1>
-      <p class="hs2-hero__lede hs2-anim-rise" style="--d: .3s">{% render 'hs2-t', text: s.text %}</p>
+      {%- comment -%} With no "what it is" line, the subline is the one that says it, so it shows on every screen. {%- endcomment -%}
+      {%- if s.text != blank -%}<p class="hs2-hero__lede{% if s.what == blank %} hs2-hero__lede--key{% endif %} hs2-anim-rise" style="--d: .3s">{% render 'hs2-t', text: s.text %}</p>{%- endif -%}
       {%- if s.what != blank -%}<p class="hs2-hero__what hs2-anim-rise" style="--d: .36s">{% render 'hs2-t', text: s.what %}</p>{%- endif -%}
       <div class="hs2-namecard hs2-anim-rise" style="--d: .42s">
         <label for="dogname-{{ section.id }}">{{ s.name_label }}</label>
@@ -19,7 +20,7 @@
             autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog" data-hs2-cycle="Biscuit,Gerald,Pickle,Waffles,Moose,Duchess">
           <a class="hs2-btn" href="#review">{{ s.button }}</a>
         </div>
-        <div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>
+        {%- if s.note != blank -%}<div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>{%- endif -%}
       </div>
       {%- if s.proof != blank -%}
         <div class="hs2-hero__proof hs2-anim-rise" style="--d: .55s">
@@ -59,7 +60,7 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
-    { "type": "paragraph", "content": "Approved copy from design/Main.dc.html. {dog}, {DOG}, {dogs} and {person} turn into the shopper's dog and name as they type." },
+    { "type": "paragraph", "content": "{dog}, {DOG}, {dogs} and {person} turn into the shopper's dog and name as they type. {yourdog} reads \"Your dog\" until they type a name." },
     { "type": "text", "id": "stamp", "label": "Stamp", "default": "CONFIDENTIAL · OFFICE OF {DOG}" },
     { "type": "inline_richtext", "id": "heading", "label": "Headline", "default": "{dog} has completed your <em>annual review.</em>" },
     { "type": "text", "id": "text", "label": "Subline", "default": "You may want to sit down. Overall rating: exceeds expectations. There are some notes about the vacuum." },

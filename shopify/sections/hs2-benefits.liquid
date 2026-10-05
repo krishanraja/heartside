@@ -4,7 +4,7 @@
   <section id="benefits" class="hs2-wrap hs2-benefits" aria-labelledby="benefits-h-{{ section.id }}">
     <div class="hs2-benefits__head" data-hs2-reveal>
       <div class="hs2-eyebrow-stamp">{% render 'hs2-t', text: s.eyebrow %}</div>
-      <h2 id="benefits-h-{{ section.id }}">{{ s.heading }}</h2>
+      <h2 id="benefits-h-{{ section.id }}">{% render 'hs2-t', text: s.heading %}</h2>
       {%- if s.subheading != blank -%}<p class="hs2-benefits__sub">{% render 'hs2-t', text: s.subheading %}</p>{%- endif -%}
     </div>
     <div class="hs2-cards" data-hs2-carousel data-hs2-reveal data-hs2-group>
@@ -27,7 +27,7 @@
               <img src="{{ f640 | asset_url }}" srcset="{{ f640 | asset_url }} 640w, {{ f1200 | asset_url }} 1200w" sizes="(min-width: 900px) 25vw, 90vw" alt="{{ b.alt | escape }}" width="640" height="640" loading="lazy">
             {%- endif -%}
             {%- if b.shot != blank -%}<div class="hs2-card__shot">{{ b.shot }}</div>{%- endif -%}
-            <div class="hs2-card__code">{{ b.code }}</div>
+            {%- if b.code != blank -%}<div class="hs2-card__code">{{ b.code }}</div>{%- endif -%}
           </div>
           <div class="hs2-card__body">
             <h3>{{ b.name }}</h3>
@@ -52,13 +52,13 @@
 
 {% schema %}
 {
-  "name": "HS benefits package",
+  "name": "HS more gifts",
   "tag": "section",
   "class": "hs2-section",
   "settings": [
-    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "YOUR BENEFITS PACKAGE, APPROVED BY {DOG}" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Company merchandise. Mandatory, in some cases." },
-    { "type": "text", "id": "subheading", "label": "Plain line under the heading", "default": "More gifts made from your dog's photo. Free US shipping on every one." }
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "MADE FROM THE SAME PHOTO" },
+    { "type": "text", "id": "heading", "label": "Heading", "info": "{dog} and {dogs} become the shopper's dog.", "default": "More of {dog}, for the tree and the sofa." },
+    { "type": "text", "id": "subheading", "label": "Plain line under the heading", "default": "You both had a big year. Free US shipping on every one." }
   ],
   "blocks": [
     {
@@ -70,7 +70,7 @@
         { "type": "product", "id": "product", "label": "Product", "info": "The link goes here with the shopper's answers. Empty links to the review builder." },
         { "type": "text", "id": "name", "label": "Name", "default": "The Body Double" },
         { "type": "text", "id": "kind", "label": "What it is, in plain words", "default": "Square photo pillow · 16 in" },
-        { "type": "text", "id": "code", "label": "Item code", "default": "ITEM BD-01" },
+        { "type": "text", "id": "code", "label": "Item code", "info": "A small tag on the photo. Empty hides it.", "default": "" },
         { "type": "text", "id": "price", "label": "Price", "default": "$59" },
         { "type": "textarea", "id": "copy", "label": "Copy", "info": "{dog} and {dogs} become the shopper's dog." },
         { "type": "text", "id": "cta", "label": "Link text", "default": "Make the double" },
@@ -98,6 +98,6 @@
     }
   ],
   "max_blocks": 8,
-  "presets": [{ "name": "HS benefits package" }]
+  "presets": [{ "name": "HS more gifts" }]
 }
 {% endschema %}

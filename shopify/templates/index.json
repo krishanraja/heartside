@@ -9,9 +9,6 @@
         "product": "the-annual-review"
       }
     },
-    "management": {
-      "type": "hs2-management"
-    },
     "benefits": {
       "type": "hs2-benefits",
       "blocks": {
@@ -19,14 +16,14 @@
           "type": "item",
           "settings": {
             "name": "The Body Double",
-            "code": "ITEM BD-01",
+            "code": "",
             "price": "$59",
             "fallback": "pillow-sofa",
             "alt": "The Body Double, a square pillow printed with a dachshund's photo, on a sofa beside the dog himself, asleep",
             "shot": "",
             "cta": "Make the double",
-            "copy": "A 16-inch pillow printed with {dogs} face. For groomer days, vet days, and the occasional covert operation to the kitchen.",
-            "kind": "Square photo pillow · 16 in",
+            "copy": "My face, on both sides of a 16-inch pillow. For when I can't be on the sofa with you.",
+            "kind": "Photo pillow · 16 in square",
             "product": "the-body-double",
             "position": 2
           }
@@ -35,7 +32,7 @@
           "type": "item",
           "settings": {
             "name": "Mandatory Company Uniform",
-            "code": "ITEM UN-02",
+            "code": "",
             "price": "$129 set",
             "fallback": "team-03",
             "alt": "A golden retriever at a desk, smiling",
@@ -51,7 +48,7 @@
           "type": "item",
           "settings": {
             "name": "Surveillance Socks",
-            "code": "ITEM SS-03",
+            "code": "",
             "price": "$24",
             "fallback": "team-01",
             "alt": "A pug tilting its head",
@@ -67,14 +64,14 @@
           "type": "item",
           "settings": {
             "name": "Tiny Me, For The Tree",
-            "code": "ITEM TM-04",
+            "code": "",
             "price": "$24",
             "fallback": "team-04",
             "alt": "A golden retriever on a rug with a toy",
-            "shot": "[ORNAMENT SHOT]",
+            "shot": "",
             "cta": "Hang {dog}",
-            "copy": "A ceramic ornament of {dog}, with {dogs} verdict on your year printed in a ring around the photo.",
-            "kind": "Two-sided ceramic photo ornament",
+            "copy": "Me, on a ceramic ornament, with a little note to you around the edge. We both had a good year. This one is for the tree.",
+            "kind": "Ceramic ornament · 3 in",
             "product": "tiny-me-for-the-tree",
             "position": 1
           }
@@ -87,86 +84,6 @@
         "b4"
       ]
     },
-    "closure": {
-      "type": "hs2-closure",
-      "blocks": {
-        "d1": {
-          "type": "deadline",
-          "settings": {
-            "item": "Mandatory Company Uniform",
-            "date": "[DATE]",
-            "hide": true
-          }
-        },
-        "d2": {
-          "type": "deadline",
-          "settings": {
-            "item": "The Body Double",
-            "date": "[DATE]"
-          }
-        },
-        "d3": {
-          "type": "deadline",
-          "settings": {
-            "item": "Framed review",
-            "date": "[DATE]"
-          }
-        },
-        "d4": {
-          "type": "deadline",
-          "settings": {
-            "item": "Review poster and ornament",
-            "date": "[DATE]"
-          }
-        },
-        "d5": {
-          "type": "deadline",
-          "settings": {
-            "item": "{dogs} video and story card",
-            "date": "Christmas Eve",
-            "hide": true
-          }
-        }
-      },
-      "block_order": [
-        "d1",
-        "d2",
-        "d3",
-        "d4",
-        "d5"
-      ]
-    },
-    "policy": {
-      "type": "hs2-policy",
-      "blocks": {
-        "p1": {
-          "type": "policy",
-          "settings": {
-            "title": "A human checks every order",
-            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
-          }
-        },
-        "p2": {
-          "type": "policy",
-          "settings": {
-            "title": "Misprinted? Remade free",
-            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
-          }
-        },
-        "p3": {
-          "type": "policy",
-          "settings": {
-            "title": "Every review gets published",
-            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
-          }
-        }
-      },
-      "block_order": [
-        "p1",
-        "p2",
-        "p3"
-      ]
-    },
     "leak": {
       "type": "hs2-leak",
       "settings": {
@@ -176,6 +93,27 @@
     "faq": {
       "type": "hs2-faq",
       "blocks": {
+        "p1": {
+          "type": "promise",
+          "settings": {
+            "title": "A person checks every order before it prints.",
+            "text": "If the photo won't print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "promise",
+          "settings": {
+            "title": "Misprinted or damaged? Full refund or a free remake.",
+            "text": "Email a photo within 30 days of delivery."
+          }
+        },
+        "p3": {
+          "type": "promise",
+          "settings": {
+            "title": "Every review gets published, good or bad.",
+            "text": "We're new, so there are none yet."
+          }
+        },
         "q1": {
           "type": "question",
           "settings": {
@@ -208,7 +146,7 @@
           "type": "question",
           "settings": {
             "question": "When will it arrive?",
-            "answer": "Everything is made for you after a person checks it, then ships free anywhere in the US. The last days to order for Christmas are in the holiday office closure notice above."
+            "answer": "Everything is made for you after a person checks it, then ships free anywhere in the US. Once our maker confirms this year's last order date for Christmas, it goes in the bar at the top of the page."
           }
         },
         "q6": {
@@ -221,15 +159,15 @@
         "q7": {
           "type": "question",
           "settings": {
-            "question": "What if it arrives damaged or misprinted?",
-            "answer": "Email a photo of the problem to krish@heartside.io and we make it again, free. No forms, no hold music."
+            "question": "What if something is wrong with it?",
+            "answer": "Email a photo of the problem to krish@heartside.io within 30 days of delivery. If it arrived misprinted, damaged or wrong, you get a full refund or a free remake, your choice. Each one is made for you, so we can't take returns for a change of mind."
           }
         },
         "q8": {
           "type": "question",
           "settings": {
             "question": "What happens to my dog's photo?",
-            "answer": "On this page it stays on your phone. When you order, we send it to our print partner to make your order."
+            "answer": "On this page it stays on your phone. When you add it in the personalizer, it goes to our print partner so they can make your order."
           }
         },
         "q9": {
@@ -241,6 +179,9 @@
         }
       },
       "block_order": [
+        "p1",
+        "p2",
+        "p3",
         "q1",
         "q2",
         "q3",
@@ -269,12 +210,9 @@
     "hero",
     "review",
     "ornament",
-    "management",
     "benefits",
-    "closure",
-    "policy",
-    "leak",
     "faq",
+    "leak",
     "signoff",
     "sticky"
   ]

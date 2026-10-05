@@ -5,7 +5,6 @@
     <div class="hs2-policy__grid" data-hs2-reveal data-hs2-group>
       {%- for block in section.blocks -%}
         <div class="hs2-policy__item" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
-          <div class="hs2-policy__num">POLICY {{ forloop.index }}</div>
           <div class="hs2-policy__title">{{ block.settings.title }}</div>
           <div class="hs2-policy__text">{{ block.settings.text }}</div>
         </div>
@@ -16,12 +15,12 @@
 
 {% schema %}
 {
-  "name": "HS company policy",
+  "name": "HS our promises",
   "tag": "section",
   "class": "hs2-section",
   "settings": [
     { "type": "paragraph", "content": "These stand in for reviews until real ones exist. Every one must stay true." },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Company policy" }
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Our promises" }
   ],
   "blocks": [
     {
@@ -34,6 +33,6 @@
     }
   ],
   "max_blocks": 6,
-  "presets": [{ "name": "HS company policy" }]
+  "presets": [{ "name": "HS our promises" }]
 }
 {% endschema %}

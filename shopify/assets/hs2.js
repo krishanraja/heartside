@@ -65,6 +65,7 @@
     var dog = val('dog'), person = val('person');
     var map = {
       dog: dog, DOG: dog.toUpperCase(), dogs: possessive(dog), person: person, cupboard: val('cupboard'),
+      yourdog: answer('dog') || 'Your dog',
       improvement: val('improvement'), incident: val('incident'), enemy: val('enemy'),
       improvementLine: lines('improvement')[val('improvement')] || '',
       incidentLine: lines('incident')[val('incident')] || '',
@@ -155,10 +156,9 @@
       inp.addEventListener('change', function () {
         var f = inp.files && inp.files[0];
         if (!f || !/^image\//.test(f.type)) return;
-        usePhoto(f);
-        savePhoto(f);
-        var lab = inp.closest('.hs2-attach');
-        if (lab) lab.classList.add('is-done');
+        var t = Date.now();
+        usePhoto(f, t);
+        savePhoto(f, t);
         track('photo_attached');
       });
     });
@@ -215,23 +215,36 @@
       };
     });
   }
-  function savePhoto(file) {
-    idb('readwrite', function (st) { return st.put({ file: file, t: Date.now() }, PHOTO); }).catch(function () {});
+  function savePhoto(file, t) {
+    idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).catch(function () {});
   }
   function restorePhoto() {
     return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
       if (!rec || !rec.file || Date.now() - rec.t > PHOTO_DAYS * 864e5) return null;
-      return rec.file;
+      return rec;
     }).catch(function () { return null; });
   }
-  function usePhoto(file) {
+  // t marks which photo this is, so the product page knows whether it has handed this one over yet
+  function usePhoto(file, t) {
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(file);
     usePhoto.file = file;
+    usePhoto.t = t || Date.now();
     document.querySelectorAll('[data-hs2-photo]').forEach(function (img) { img.src = photoURL; img.removeAttribute('srcset'); });
+    attachDone();
     leakUI();
     drawSoon();
     handoff();
+  }
+  // the review's attach box shows the photo it holds, and says it can be changed
+  function attachDone() {
+    document.querySelectorAll('.hs2-attach').forEach(function (lab) {
+      lab.classList.add('is-done');
+      var thumb = lab.querySelector('[data-hs2-attach-thumb]');
+      if (thumb && photoURL) thumb.src = photoURL;
+      var txt = lab.querySelector('.hs2-attach__text');
+      if (txt && !lab.__hs2done) { lab.__hs2done = true; txt.innerHTML = '<strong>Headshot attached</strong> · change'; }
+    });
   }
 
   /* ------------------------------------------------- evidence under the poster */
@@ -565,6 +578,8 @@
 
   /* ---------------------------------------------------------- product gallery */
   function gallery() {
+    var media = document.querySelector('[data-hs2-media]');
+    var current = function (b) { document.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === b ? 'true' : 'false'); }); };
     document.querySelectorAll('[data-hs2-thumb]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
       b.addEventListener('click', function () {
@@ -572,8 +587,14 @@
         if (!main) return;
         main.src = b.getAttribute('data-hs2-thumb'); main.removeAttribute('srcset');
         main.alt = b.getAttribute('data-alt') || '';
-        document.querySelectorAll('[data-hs2-thumb]').forEach(function (o) { o.setAttribute('aria-current', o === b ? 'true' : 'false'); });
+        if (media) media.setAttribute('data-show', 'photo');
+        current(b);
       });
+    });
+    // the shopper's own live preview (Teeinblue's), first in the row
+    document.querySelectorAll('[data-hs2-thumb-preview]').forEach(function (b) {
+      if (b.__hs2) return; b.__hs2 = true;
+      b.addEventListener('click', function () { if (media) media.removeAttribute('data-show'); current(b); });
     });
     var sel = document.querySelector('[data-hs2-variant]');
     if (sel && !sel.__hs2) {
@@ -624,14 +645,15 @@
     { k: 'incident', re: /incident/i, choice: true },
     { k: 'enemy', re: /enemy|threat/i, choice: true }
   ];
-  var bridge = { owned: {}, filled: 0, refilled: false, announced: false };
+  var bridge = { owned: {}, filled: 0, fields: 0, tries: 0, refilled: false, folded: false, opened: false };
   function norm(t) { return String(t || '').replace(/[\s*:]+/g, ' ').replace(/[’‘]/g, "'").trim().toLowerCase(); }
   function tibFields() {
     return Array.prototype.slice.call(document.querySelectorAll('.tee-field')).filter(function (f) {
       return !/tee-field--photo|tee-field--template/.test(f.className);
     }).map(function (f) {
       var h = f.querySelector('.tee-field__heading span, .tee-field__heading, label');
-      var heading = h ? h.textContent : '';
+      // Teeinblue may print "Your dog’s name" with a curly apostrophe
+      var heading = h ? h.textContent.replace(/[’‘]/g, "'") : '';
       var rule = null;
       for (var i = 0; i < TIB_RULES.length; i++) { if (TIB_RULES[i].re.test(heading)) { rule = TIB_RULES[i]; break; } }
       return { el: f, heading: heading, rule: rule };
@@ -653,24 +675,34 @@
   function tibCurrent() {
     try { return (window.teeinblue && window.teeinblue.getCurrentCustomization && window.teeinblue.getCurrentCustomization()) || null; } catch (e) { return null; }
   }
-  function fillField(f, fresh) {
+  /* A scripted click on a label moves focus to its radio, and the browser scrolls to it: on
+     the ad landing page that pulled a shopper typing in the hero 5,000px down the page. So
+     the bridge puts focus and scroll back where the shopper had them. */
+  function stayPut(fn) {
+    var had = document.activeElement, x = window.scrollX, y = window.scrollY;
+    fn();
+    if (document.activeElement !== had) {
+      try { if (had && had !== document.body && had.focus) had.focus({ preventScroll: true }); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) { /* old browser */ }
+    }
+    if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
+  }
+  function fillField(f) {
     var k = f.rule.k, el = f.el;
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
       var name = text.name || text.id;
       watchField(text, k);
-      if (bridge.owned[name]) return null;
+      if (bridge.owned[name]) return { name: name, value: text.value, mine: true };
       var want = answer(k);
       if (!want) return null; // no name yet: leave the field for the shopper, never a placeholder
       if (text.value === want) return { name: name, value: want };
-      if (text.value && !fresh) return null; // keep what Teeinblue restored from an earlier visit
       setValue(text, want);
       return { name: name, value: want, changed: true };
     }
     if (select) {
       watchField(select, k);
-      if (bridge.owned[select.name]) return null;
+      if (bridge.owned[select.name]) return { name: select.name, value: select.value, mine: true };
       var opt = Array.prototype.slice.call(select.options).filter(function (o) { return !o.disabled && choiceMatches(o.textContent, k); })[0];
       if (!opt) return null;
       if (select.value === opt.value) return { name: select.name, value: opt.value };
@@ -682,13 +714,13 @@
     // that is what prints. So judge by its mark and click the label, as a shopper does.
     var radios = Array.prototype.slice.call(el.querySelectorAll('input[type="radio"]'));
     if (radios.length) watchChoice(el, radios, k);
-    if (radios.length && el.__hs2owned) return null;
+    if (radios.length && el.__hs2owned) return { name: radios[0].name, value: '', mine: true };
     for (var i = 0; i < radios.length; i++) {
       var lab = radioLabel(radios[i]);
       if (choiceMatches(lab ? lab.textContent : radios[i].value, k)) {
         if (radioPicked(radios[i])) return { name: radios[i].name, value: radios[i].value };
         el.__hs2set = true;
-        (lab || radios[i]).click();
+        stayPut(function () { (lab || radios[i]).click(); });
         el.__hs2set = false;
         return { name: radios[i].name, value: radios[i].value, changed: true };
       }
@@ -697,7 +729,7 @@
     for (var j = 0; j < buttons.length; j++) {
       if (choiceMatches(buttons[j].textContent, k)) {
         if (/active|selected|checked/.test(buttons[j].className) || buttons[j].getAttribute('aria-checked') === 'true') return { name: k, value: val(k) };
-        buttons[j].click();
+        stayPut(function () { buttons[j].click(); });
         return { name: k, value: val(k), changed: true };
       }
     }
@@ -706,6 +738,7 @@
   // answers typed on the same page (the ad landing page) reach the personalizer too
   function bridgeSoon() {
     if (!document.querySelector('.tee-field')) return;
+    bridge.tries = 0;
     clearTimeout(bridgeSoon.t);
     bridgeSoon.t = setTimeout(function () { runBridge(); }, 400);
   }
@@ -723,7 +756,7 @@
       if (!lab) return;
       var text = norm(lab.textContent), all = lines(k);
       Object.keys(all).forEach(function (label) {
-        if (text === norm(label) || text === norm(all[label])) { state[k] = label; el.__hs2owned = true; save(); render(); }
+        if (text === norm(label) || text === norm(all[label])) { state[k] = label; el.__hs2owned = true; bridge.opened = true; save(); render(); }
       });
     });
   }
@@ -732,6 +765,7 @@
     var handler = function () {
       if (inp.__hs2set) return;
       bridge.owned[inp.name || inp.id] = true;
+      bridge.opened = true; // the shopper is working in the personalizer: it never folds under them
       // carry the shopper's edit back to the order's hidden answers
       if (inp.tagName === 'SELECT') {
         var o = inp.options[inp.selectedIndex], all = lines(k);
@@ -758,43 +792,98 @@
       if (!Array.isArray(list)) list = [];
       var mine = list.filter(function (x) { return String(x.productId) === String(pid); })[0];
       var data = Object.assign({}, (mine && mine.customization) || {}, tibCurrent() || {});
-      wanted.forEach(function (w) { data[w.name] = w.value; });
+      wanted.forEach(function (w) { if (!w.mine) data[w.name] = w.value; });
       list = list.filter(function (x) { return String(x.productId) !== String(pid); });
       list.push({ productId: String(pid), customization: data, timestamp: Date.now() });
       window.localStorage.setItem(keyName, JSON.stringify(list.slice(-10)));
       api.refillCustomizationData(pid);
     } catch (e) { /* Teeinblue changed; the shopper still sees the answers card */ }
   }
+  /* Every pass compares the answers with what Teeinblue holds and copies over the
+     difference, on every visit (Teeinblue restores an earlier visit's picks, or its own
+     first options, and those used to stay). A field the shopper changed in Teeinblue is
+     theirs: its value flows back into the answers instead. After a change the bridge
+     looks again, since Teeinblue can redraw a field after the click. */
   function runBridge() {
     if (!engaged()) return;
     var fields = tibFields();
     if (!fields.length) return;
-    var pid = productId() || location.pathname;
-    var fp = JSON.stringify(ANSWERS.map(answer));
-    var seenKey = 'hs2-tib-' + pid, fresh = true;
-    try { fresh = window.sessionStorage.getItem(seenKey) !== fp; } catch (e) { fresh = true; }
-    var wanted = [];
-    fields.forEach(function (f) { var r = fillField(f, fresh); if (r) wanted.push(r); });
-    if (!wanted.some(function (w) { return w.changed; })) return; // nothing new to copy
-    try { window.sessionStorage.setItem(seenKey, fp); } catch (e) { /* private mode */ }
+    var wanted = [], changed = false;
+    fields.forEach(function (f) {
+      var r = fillField(f);
+      if (r) { r.el = f.el; wanted.push(r); if (r.changed) changed = true; }
+    });
     bridge.filled = wanted.length;
-    setTimeout(function () {
-      var cur = tibCurrent();
-      if (cur) {
-        var missed = wanted.filter(function (w) { return w.name in cur && String(cur[w.name]) !== String(w.value); });
-        if (missed.length) refill(wanted);
-      }
-      bridgeStatus();
-    }, 400);
+    bridge.fields = fields.length;
+    bridge.wanted = wanted;
+    if (changed && bridge.tries < 6) {
+      bridge.tries++;
+      clearTimeout(runBridge.t);
+      runBridge.t = setTimeout(function () {
+        var cur = tibCurrent();
+        if (cur) {
+          var missed = wanted.filter(function (w) { return !w.mine && w.name in cur && String(cur[w.name]) !== String(w.value); });
+          if (missed.length) refill(wanted);
+        }
+        runBridge();
+      }, 450);
+      bridgeStatus(false);
+      return;
+    }
+    bridgeStatus(true);
   }
-  function bridgeStatus() {
-    var st = document.querySelector('[data-hs2-bridge-status]');
-    if (!st || !bridge.filled || bridge.announced) return;
-    bridge.announced = true;
-    st.textContent = 'Copied into the personalizer below. Change anything you like there.';
-    st.hidden = false;
-    var note = document.querySelector('[data-hs2-bridge-note]');
-    if (note) note.hidden = true;
+  /* The answers card says where the answers went. Once every field the review fills holds
+     its answer, Teeinblue's copies of them fold away behind "Edit details", so the page
+     reads preview, price, photo, Add To Cart. The photo field and any field the review
+     doesn't fill (a line to pick, say) stay open. */
+  function bridgeStatus(settled) {
+    var card = document.querySelector('[data-hs2-answers]');
+    if (!card) return;
+    var st = card.querySelector('[data-hs2-bridge-status]'), note = card.querySelector('[data-hs2-bridge-note]');
+    var complete = bridge.fields > 0 && bridge.filled === bridge.fields;
+    if (st && !st.__hs2photo) {
+      var say = complete ? 'Copied into the preview.' : bridge.filled ? 'Copied into the personalizer below. Change anything you like there.' : '';
+      if (st.textContent !== say) st.textContent = say;
+      st.hidden = !say;
+    }
+    if (note) note.hidden = !!bridge.filled;
+    if (!settled) return; // mid-copy: leave the fold as it is until Teeinblue holds the answers
+    fold(complete && !bridge.opened);
+    var edit = card.querySelector('[data-hs2-tib-edit]');
+    if (edit) edit.hidden = !complete;
+  }
+  function fold(on) {
+    var buy = document.getElementById('buy');
+    if (!buy) return;
+    var css = document.getElementById('hs2-tib-fold');
+    if (!css) { css = document.createElement('style'); css.id = 'hs2-tib-fold'; document.head.appendChild(css); }
+    // by id, which Teeinblue keeps when it redraws a field (it rewrites the class list)
+    var ids = on ? (bridge.wanted || []).map(function (w) { return w.el && w.el.id; }).filter(Boolean) : [];
+    var rules = ids.map(function (id) { return '#buy.hs2-tib-folded #' + (window.CSS && CSS.escape ? CSS.escape(id) : id); });
+    var text = rules.length ? rules.join(',') + '{display:none!important}' : '';
+    if (css.textContent !== text) css.textContent = text;
+    on = on && rules.length > 0;
+    buy.classList.toggle('hs2-tib-folded', on);
+    document.documentElement.classList.toggle('hs2-tib-folded', on);
+    bridge.folded = on;
+    var edit = document.querySelector('[data-hs2-tib-edit]');
+    if (edit) { edit.textContent = on ? 'Edit details' : 'Hide details'; edit.setAttribute('aria-expanded', on ? 'false' : 'true'); }
+  }
+  function editDetails() {
+    var edit = document.querySelector('[data-hs2-tib-edit]');
+    if (!edit || edit.__hs2) return; edit.__hs2 = true;
+    edit.addEventListener('click', function () {
+      bridge.opened = bridge.folded;
+      fold(!bridge.opened);
+      if (bridge.opened) {
+        var first = (bridge.wanted || [])[0];
+        if (first && first.el) first.el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
+      }
+    });
+  }
+  // a field Teeinblue marks invalid (at Add To Cart) never stays folded away
+  function unfoldInvalid() {
+    if (bridge.folded && document.querySelector('#buy .tee-field--invalid')) { bridge.opened = true; fold(false); }
   }
   /* Teeinblue titles its own picker with its raw option key ("color"), set inside its block,
      not from the Shopify option name. The section's "Plain names for product options" map
@@ -829,18 +918,28 @@
   }
   function tibGallery() {
     var box = document.querySelector('[data-hs2-tib-gallery]'), media = document.querySelector('[data-hs2-media]');
-    if (box && media) media.setAttribute('data-tib', box.children.length ? 'on' : 'off');
+    if (!box || !media) return;
+    var on = box.children.length ? 'on' : 'off';
+    if (media.getAttribute('data-tib') === on) return;
+    media.setAttribute('data-tib', on);
+    // the preview arrived: it is the picture on show, so its thumbnail is the current one
+    var pv = media.querySelector('[data-hs2-thumb-preview]');
+    if (on === 'on' && pv && !media.hasAttribute('data-show')) {
+      media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
+    }
   }
-  /* The headshot: one tap hands the homepage photo to Teeinblue's own upload, which
-     opens its cropper. It needs the tap, so nothing uploads without the shopper. */
+  /* The headshot: one tap hands the review's photo to Teeinblue's own upload, which opens
+     its cropper. It needs the tap, so nothing uploads without the shopper. The button shows
+     until this photo has gone to this product (remembered per product), even when Teeinblue
+     restored an older upload from an earlier visit: that one may be a different photo. */
   function photoInput() { return document.querySelector('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]'); }
+  function handedKey() { return 'hs2-handed-' + (productId() || location.pathname); }
+  function handed() { try { return window.localStorage.getItem(handedKey()) === String(usePhoto.t); } catch (e) { return false; } }
   function handoff() {
     var box = document.querySelector('[data-hs2-handoff]');
     if (!box) return;
     var inp = photoInput(), file = usePhoto.file;
-    var uploaded = false, cur = tibCurrent();
-    if (cur) Object.keys(cur).forEach(function (k) { if (/-origin$|-upload-id$/.test(k) && cur[k]) uploaded = true; });
-    var can = !!(inp && file && !uploaded && !box.__done && typeof DataTransfer === 'function');
+    var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');
     box.hidden = !can;
     if (!can) return;
     var img = box.querySelector('[data-hs2-handoff-img]');
@@ -856,20 +955,23 @@
           dt.items.add(new File([usePhoto.file], usePhoto.file.name || 'headshot.jpg', { type: usePhoto.file.type || 'image/jpeg' }));
           target.files = dt.files;
           target.dispatchEvent(new Event('change', { bubbles: true }));
-          box.__done = true; box.hidden = true;
-          if (st) { st.textContent = 'Headshot sent to the personalizer. Crop it there.'; st.hidden = false; }
+          try { window.localStorage.setItem(handedKey(), String(usePhoto.t)); } catch (e) { /* private mode */ }
+          box.hidden = true;
+          if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
+          track('photo_handoff');
         } catch (e) {
           box.hidden = true;
-          if (st) { st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
+          if (st) { st.__hs2photo = true; st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
         }
       });
     }
   }
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;
-    var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); };
+    editDetails();
+    var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); unfoldInvalid(); };
     ['teeinblue-event-component-injected', 'teeinblue-event-campaign-loaded', 'teeinblue-event-variant-changed', 'teeinblue-event-customization-changed'].forEach(function (ev) {
-      document.addEventListener(ev, function () { setTimeout(tick, 60); });
+      document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); });
     });
     tick();
     if ('MutationObserver' in window) {
@@ -880,7 +982,83 @@
       });
       mo.observe(document.body, { childList: true, subtree: true });
       setTimeout(function () { mo.disconnect(); }, 60000);
+      // invalid marks arrive at Add To Cart, long after the first minute
+      var buy = document.getElementById('buy');
+      if (buy) new MutationObserver(function () { unfoldInvalid(); }).observe(buy, { attributes: true, subtree: true, attributeFilter: ['class'] });
     }
+  }
+
+  /* ------------------------------------------------------------------ the cart
+     Helio's cart (drawer and page) shows what Printful and Teeinblue call things. This
+     tidies each line: no "Available Product", "Frame: Red Oak" for the framed poster,
+     options that aren't a choice ("Default", "1 pc") left out, the shopper's own
+     preview (Teeinblue's _customization_image, read from /cart.js) as the picture,
+     and the free US shipping the site promises in place of the shipping-at-checkout note. */
+  var CART_DROP_PROPS = /^available product$/i;
+  var CART_DROP_VALUES = /^(default|default title|1 pc|one size)$/i;
+  var cartImages = {};
+  function cartTidy() {
+    var run = function () {
+      var rows = document.querySelectorAll('.cart-items__table-row[data-key]');
+      if (!rows.length && !document.querySelector('.cart-totals__tax-note')) return;
+      var need = false;
+      rows.forEach(function (row) {
+        var link = row.querySelector('a[href*="/products/"]');
+        var framed = !!link && /framed/i.test(link.getAttribute('href') || '');
+        row.querySelectorAll('.cart-items__variant').forEach(function (v) {
+          var dt = v.querySelector('dt'), dd = v.querySelector('dd');
+          if (!dt || !dd || v.__hs2) return; v.__hs2 = true;
+          var name = norm(dt.textContent), value = dd.textContent.replace(/[,\s ]+$/, '').trim();
+          if (name === 'available product' || CART_DROP_VALUES.test(value)) { v.hidden = true; return; }
+          var nice = name === 'color' && framed ? 'Frame' : dt.textContent.replace(/:\s*$/, '').trim();
+          dt.classList.remove('visually-hidden');
+          dt.textContent = nice + ':';
+          dd.textContent = value;
+          v.classList.add('hs2-cart-opt');
+        });
+        row.querySelectorAll('.cart-items__property').forEach(function (p) {
+          var dt = p.querySelector('dt');
+          if (dt && CART_DROP_PROPS.test(norm(dt.textContent))) p.hidden = true;
+        });
+        var key = row.getAttribute('data-key');
+        if (cartImages[key]) cartPicture(row, cartImages[key]);
+        else if (!(key in cartImages)) need = true;
+      });
+      document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
+        if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
+        var want = 'Free US shipping. Taxes calculated at checkout.';
+        if (n.textContent.trim() !== want) n.textContent = want;
+      });
+      if (need && !cartTidy.busy) {
+        cartTidy.busy = true;
+        fetch((window.Shopify && window.Shopify.routes && window.Shopify.routes.root || '/') + 'cart.js', { credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (cart) {
+            (cart.items || []).forEach(function (it) {
+              var u = it.properties && (it.properties._customization_image || it.properties['_customization_image']);
+              cartImages[it.key] = /^https?:\/\//.test(u || '') ? u : '';
+            });
+          })
+          .catch(function () {})
+          .then(function () { cartTidy.busy = false; run(); });
+      }
+    };
+    run();
+    if ('MutationObserver' in window && !cartTidy.mo) {
+      var queued = false;
+      cartTidy.mo = new MutationObserver(function () {
+        if (queued) return; queued = true;
+        setTimeout(function () { queued = false; run(); }, 60);
+      });
+      cartTidy.mo.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  function cartPicture(row, url) {
+    var img = row.querySelector('.cart-items__media img');
+    if (!img || img.getAttribute('data-hs2-src') === url) return;
+    img.setAttribute('data-hs2-src', url);
+    img.src = url; img.removeAttribute('srcset');
+    img.classList.add('hs2-cart-preview');
   }
 
   /* Helio can lay its header over the first section (a transparent header). When it
@@ -1007,9 +1185,6 @@
         if (!t.open) return;
         tickets.forEach(function (o) { if (o !== t && o.open) o.open = false; });
         track('faq_open', { question: (t.querySelector('.hs2-ticket__q') || {}).textContent || '' });
-        if (reduced) return;
-        t.classList.add('is-typing');
-        setTimeout(function () { t.classList.remove('is-typing'); }, 520);
       });
     });
     var more = list.querySelector('[data-hs2-faq-more]');
@@ -1039,7 +1214,7 @@
     if (reduced) return;
     clearTimeout(inkName.t);
     inkName.t = setTimeout(function () {
-      document.querySelectorAll('.hs2-hero h1 [data-hs2="dog"]').forEach(function (el) {
+      document.querySelectorAll('.hs2-hero h1 [data-hs2="dog"], .hs2-hero h1 [data-hs2="yourdog"]').forEach(function (el) {
         el.classList.remove('is-inked'); void el.offsetWidth; el.classList.add('is-inked');
       });
     }, 250);
@@ -1101,6 +1276,10 @@
     if (bk) bk.addEventListener('click', function () { go(steps.at - 1, true); });
     box.querySelectorAll('[data-hs2-step-go]').forEach(function (b) {
       b.addEventListener('click', function () { go(Number(b.getAttribute('data-hs2-step-go')), true); });
+    });
+    // step 1's "Skip to the photo": the picks keep their starting answers
+    box.querySelectorAll('[data-hs2-step-skip]').forEach(function (b) {
+      b.addEventListener('click', function () { go(n, true); });
     });
     box.querySelectorAll('[data-hs2-step="1"] input').forEach(function (inp) {
       inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(steps.at + 1, true); } });
@@ -1348,7 +1527,8 @@
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
-    Promise.race([restorePhoto(), late]).then(function (f) { if (f && !usePhoto.file) usePhoto(f); teeinblue(); });
+    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); });
+    cartTidy();
   }
   var resizeT;
   window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); }, 120); });

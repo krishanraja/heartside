@@ -1,5 +1,17 @@
 {%- render 'hs2-head' -%}
-{%- assign s = section.settings -%}
+{%- liquid
+  assign s = section.settings
+  # The order-by date shows only once it is confirmed in "Last order date for Christmas":
+  # [DATE] in the memo becomes that date. Until then the bar shows the line without a date.
+  assign msg = s.text
+  assign when = s.deadline | strip
+  if when != blank
+    assign nice = when | date: '%B %-d'
+    assign msg = msg | replace: '[DATE]', nice
+  elsif msg contains '[DATE]'
+    assign msg = s.text_undated
+  endif
+-%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the
   site (hs2.js reads them from data-* here): the confirmed last order date and the
@@ -10,7 +22,7 @@
   <div class="hs2-memo" data-hs2-memo data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
-        <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: s.text %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
+        <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
       </div>
     </div>
   </div>
@@ -27,8 +39,15 @@
       "type": "text",
       "id": "text",
       "label": "Memo",
-      "info": "One message only: the order-by date and free shipping. Replace [DATE] once Printful confirms it.",
-      "default": "MEMO: annual reviews close [DATE] for Christmas delivery. Free US shipping. This is not a drill."
+      "info": "One message: the order-by date and free shipping. [DATE] becomes the last order date below, once it is set.",
+      "default": "Order by [DATE] for Christmas delivery. Free US shipping."
+    },
+    {
+      "type": "text",
+      "id": "text_undated",
+      "label": "Memo until the last order date is set",
+      "info": "Shows while the date below is empty, so the bar never shows [DATE].",
+      "default": "Free US shipping on every order."
     },
     { "type": "header", "content": "Countdowns (whole site)" },
     {

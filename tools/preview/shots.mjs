@@ -89,13 +89,11 @@ await pg.waitForTimeout(200);
 log('poster improvement:', await pg.locator('.hs2-poster [data-hs2="improvementLine"]').innerText());
 log('poster incident:', await pg.locator('.hs2-poster [data-hs2="incidentLine"]').innerText());
 log('poster enemy:', await pg.locator('.hs2-poster [data-hs2="enemyLine"]').innerText());
-log('memo to:', (await pg.locator('.hs2-management__memo').innerText()).split('\n')[0]);
 log('evidence photos:', JSON.stringify(await pg.evaluate(() => [...document.querySelectorAll('[data-hs2-exhibit]')].map((f) => [f.getAttribute('data-hs2-exhibit'), f.querySelector('img').getAttribute('data-key'), f.querySelector('figcaption').textContent]))));
 await pg.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
 await pg.waitForTimeout(300);
 log('headshot attached -> poster photo is local:', await pg.locator('.hs2-poster [data-hs2-photo]').evaluate((i) => i.src.startsWith('blob:')), '| stand-in note hidden:', await pg.locator('[data-hs2-nudge]').isHidden());
 await pg.locator('#review').screenshot({ path: path.join(shots, 'desktop-review-gerald.png') });
-await pg.locator('.hs2-management').screenshot({ path: path.join(shots, 'desktop-management-gerald.png') });
 await pg.locator('.hs2-leak').scrollIntoViewIfNeeded();
 for (const t of ['rating', 'incident', 'threat', 'memo']) {
   await pg.click(`[data-hs2-leak="${t}"]`);
@@ -122,7 +120,7 @@ log('sticky on at benefits (should be true):', await pg.locator('[data-hs2-stick
 
 // urgency: real dates only
 log('memo countdown:', await pg.locator('[data-hs2-countdown="memo"]').first().innerText(), '| sticky:', await pg.locator('[data-hs2-countdown="sub"]').innerText());
-log('closure clock:', await pg.locator('[data-hs2-clock-label]').innerText(), await pg.locator('.hs2-closure__digits').innerText().then((t) => t.replace(/\s+/g, ' ')));
+log('VOICE no HR desk, company policy, closure notice or management memo on the homepage:', await pg.evaluate(() => (document.body.innerText.match(/HR FAQs|Company policy|holiday office closure|word from management|Benefits package|TICKET 0|RESOLVED|POLICY \d/gi) || []).join(', ') || 'none'), '| memo bar:', await pg.locator('.hs2-memo__msg').innerText());
 
 // 3. The approve link carries the answers to the poster product page; the stamp lands first
 await pg.evaluate(() => { const a = document.querySelector('[data-hs2-approve]'); a.setAttribute('data-hs2-base', 'product-review.html'); a.setAttribute('href', 'product-review.html'); });
@@ -147,8 +145,8 @@ await fullShot(pg, 'desktop-product-review.png');
 const tib = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const tp = await tib.newPage();
 tp.on('pageerror', (e) => errors.push(`teeinblue: ${e.message}`));
-const standIn = () => {
-  const data = {};
+const standIn = (opt = {}) => {
+  const data = Object.assign({}, opt.data || {});
   window.__tibFiles = [];
   window.teeinblueCampaign = { productId: '9001' };
   window.teeinblue = Object.assign(window.teeinblue || {}, {
@@ -165,14 +163,18 @@ const standIn = () => {
     const box = document.createElement('div');
     box.className = 'tee-customization-form';
     box.innerHTML = [
-      field('layer-11', "Who is your manager? (Your dog's name)", text('layer-11')),
-      field('layer-12', 'Employee name (you)', text('layer-12')),
+      field('layer-11', opt.labels === 'new' ? 'Your dog’s name' : "Who is your manager? (Your dog's name)", text('layer-11')),
+      field('layer-12', opt.labels === 'new' ? 'Your name' : 'Employee name (you)', text('layer-12')),
       field('layer-13', 'Times you opened the treat cupboard', text('layer-13')),
       field('layer-14', 'Area for improvement', clipart('layer-14', ['Leaving', 'Sharing food', 'Bath time', 'Your phone', 'The vacuum'])),
       field('layer-15', 'Open incident report', clipart('layer-15', ['The remote', 'The sock', 'The sandwich', 'Rolled in it', 'The couch'])),
       field('layer-16', 'Known enemy of the company', clipart('layer-16', ['The mailman', 'The vacuum', 'My reflection', 'The cat', 'Squirrels'])),
-      `<div class="tee-field tee-field--photo tee-field--layer-17"><div class="tee-field__heading"><span>Attach your dog's headshot</span></div><input type="file" id="tee-photo-layer-17" accept="image/*"></div>`,
+      `<div class="tee-field tee-field--photo tee-field--layer-17" id="tee-field--layer-17"><div class="tee-field__heading"><span>Attach your dog's headshot</span></div><input type="file" id="tee-photo-layer-17" accept="image/*"></div>`,
     ].join('');
+    // Teeinblue's live preview, in the section's gallery box, with the inline height a
+    // desktop browser gives it (the height of its form)
+    const gal = document.querySelector('[data-hs2-tib-gallery]');
+    if (gal) gal.innerHTML = '<div class="tee-gallery-content" style="height: 1557px;"><div class="tee-gallery" style="aspect-ratio:1;background:#ddd">preview</div></div>';
     // like Teeinblue's Vue form: state follows input and change events
     box.addEventListener('input', (e) => { if (e.target.name) data[e.target.name] = e.target.value; });
     box.addEventListener('change', (e) => {
@@ -190,6 +192,7 @@ const standIn = () => {
     box.querySelectorAll('.tee-row').forEach((row) => { const r = row.querySelector('input'); data[r.name] = r.value; });
     const anchor = document.querySelector('[data-hs2-answers]');
     anchor.after(box);
+    if (opt.focusTrap) { const r = box.querySelector('#layer-16-0'); r.tabIndex = 0; }
     document.dispatchEvent(new Event('teeinblue-event-component-injected'));
   }, 700));
 };
@@ -198,22 +201,37 @@ await tp.addInitScript(standIn);
 await tp.goto('http://localhost:4173/');
 await tp.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
 await tp.waitForTimeout(400);
+log('ATTACH label once a photo is attached:', (await tp.locator('[data-hs2-steps] .hs2-attach__text').innerText()).replace(/\s+/g, ' '), '| shows the photo:', await tp.locator('[data-hs2-steps] [data-hs2-attach-thumb]').evaluate((i) => getComputedStyle(i).display !== 'none' && i.src.startsWith('blob:')));
 await tp.goto('http://localhost:4173/' + href);
-await tp.waitForTimeout(2200);
+await tp.waitForTimeout(2600);
+const tibState = (p) => p.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field .tee-radio.active label')].map((i) => i.tagName === 'LABEL' ? i.textContent : i.value));
 log('teeinblue record after the bridge:', JSON.stringify(await tp.evaluate(() => window.teeinblue.getCurrentCustomization())));
-log('teeinblue fields show:', JSON.stringify(await tp.evaluate(() => [...document.querySelectorAll('.tee-field input[type=text], .tee-field .tee-radio.active label')].map((i) => i.tagName === 'LABEL' ? i.textContent : i.value))), '(picks by Teeinblue\'s active mark)');
+log('teeinblue fields show:', JSON.stringify(await tibState(tp)), '(picks by Teeinblue\'s active mark)');
 log('answers card says:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| headshot button visible:', await tp.locator('[data-hs2-handoff]').isVisible());
+const foldState = (p) => p.evaluate(() => ({ folded: document.getElementById('buy').classList.contains('hs2-tib-folded'), shown: [...document.querySelectorAll('.tee-field')].filter((f) => f.getClientRects().length).map((f) => f.id.replace('tee-field--', '')), edit: (document.querySelector('[data-hs2-tib-edit]') || {}).hidden === false ? document.querySelector('[data-hs2-tib-edit]').textContent : 'hidden' }));
+log('FOLD Teeinblue\'s copies of the answers fold away (photo stays):', JSON.stringify(await foldState(tp)));
+log('GAP Teeinblue preview box height (inline 1557px):', await tp.locator('.tee-gallery-content').evaluate((e) => Math.round(e.getBoundingClientRect().height)), '| preview is the first thumbnail, current:', await tp.locator('[data-hs2-thumb-preview]').getAttribute('aria-current'), '| product photo hidden behind it:', await tp.locator('.hs2-product__main').isHidden());
 await tp.locator('.hs2-product__info').screenshot({ path: path.join(shots, 'desktop-product-teeinblue-bridge.png') });
 await tp.click('[data-hs2-handoff-btn]');
 await tp.waitForTimeout(200);
 log('headshot handed to the personalizer:', JSON.stringify(await tp.evaluate(() => window.__tibFiles)), '|', await tp.locator('[data-hs2-bridge-status]').innerText());
-// the shopper changes a pick in Teeinblue itself: it flows back to the answers card
+// "Edit details" opens Teeinblue's fields; the shopper changes a pick there and it flows back
+await tp.click('[data-hs2-tib-edit]');
+await tp.waitForTimeout(200);
+log('FOLD after Edit details:', JSON.stringify(await foldState(tp)));
 await tp.click('label[for="layer-16-3"]');
 await tp.waitForTimeout(200);
 log('shopper picks The cat in the personalizer -> order property:', await tp.locator('[data-hs2-prop="enemy"]').inputValue(), '| Teeinblue record:', await tp.evaluate(() => window.teeinblue.getCurrentCustomization()['layer-16']));
 await tp.fill('#layer-11', 'Gerald Jr');
-await tp.waitForTimeout(200);
-log('shopper edits the dog in the personalizer -> order property:', await tp.locator('[data-hs2-prop="dog"]').inputValue(), '| card:', await tp.locator('[data-hs2-answers] [data-hs2="dog"]').innerText());
+await tp.waitForTimeout(900);
+log('shopper edits the dog in the personalizer -> order property:', await tp.locator('[data-hs2-prop="dog"]').inputValue(), '| card:', await tp.locator('[data-hs2-answers] [data-hs2="dog"]').innerText(), '| stays open while they work in it:', !(await foldState(tp)).folded);
+// BUG 2: a second visit in the same session. Teeinblue starts on its own first picks again
+// (or restores an older visit's); the bridge copies the answers again, every time.
+await tp.goto('http://localhost:4173/' + href.replace('Gerald', 'Gerald%20Jr'));
+await tp.waitForTimeout(2600);
+log('BUG 2 second visit, Teeinblue shows:', JSON.stringify(await tibState(tp)), '| card:', await tp.locator('[data-hs2-bridge-status]').innerText(), '| folded:', (await foldState(tp)).folded);
+// the headshot was handed to this product already: no button. A new photo brings it back.
+log('BUG 3 same photo, same product -> headshot button:', await tp.locator('[data-hs2-handoff]').isVisible());
 // BUG 1 in the bridge: a shopper who gave the dog's name but never their own
 const tp2 = await tib.newPage();
 tp2.on('pageerror', (e) => errors.push(`teeinblue-2: ${e.message}`));
@@ -222,8 +240,58 @@ await tp2.goto('http://localhost:4173/product-review.html?dog=Waffles');
 await tp2.evaluate(() => sessionStorage.clear());
 await tp2.goto('http://localhost:4173/product-review.html?dog=Waffles');
 await tp2.waitForTimeout(2200);
-log('BUG 1 bridge with no employee name -> Teeinblue manager / employee:', JSON.stringify(await tp2.evaluate(() => [document.querySelector('#layer-11').value, document.querySelector('#layer-12').value])));
+log('BUG 1 bridge with no employee name -> Teeinblue manager / employee:', JSON.stringify(await tp2.evaluate(() => [document.querySelector('#layer-11').value, document.querySelector('#layer-12').value])), '| not folded (the name is still needed):', !(await foldState(tp2)).folded);
+// Teeinblue's labels once they are renamed (P5), with its curly apostrophe
+const tp3 = await tib.newPage();
+tp3.on('pageerror', (e) => errors.push(`teeinblue-3: ${e.message}`));
+await tp3.addInitScript(standIn, { labels: 'new' });
+await tp3.goto('http://localhost:4173/product-review.html?dog=Mochi&person=Ana');
+await tp3.waitForTimeout(2200);
+log('LABELS "Your dog’s name" / "Your name" -> Teeinblue fields:', JSON.stringify(await tp3.evaluate(() => [document.querySelector('#layer-11').value, document.querySelector('#layer-12').value])));
+// Teeinblue invalid mark at Add To Cart opens the fold
+await tp3.evaluate(() => document.querySelector('#tee-field--layer-12').classList.add('tee-field--invalid'));
+await tp3.waitForTimeout(300);
+log('FOLD a field Teeinblue marks invalid opens again:', !(await foldState(tp3)).folded);
 await tib.close();
+
+// 3c. The ad landing page, typed fast while Teeinblue arrives: focus and scroll stay with the
+// shopper (BUG 4), and a photo attached in the review reaches the product (BUG 3), even with
+// an older upload already in Teeinblue from an earlier visit.
+const lc = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+const lp = await lc.newPage();
+lp.on('pageerror', (e) => errors.push(`landing-tib: ${e.message}`));
+await lp.addInitScript(standIn, { data: { 'layer-17-origin': 'https://cdn.example/old.jpg' } });
+await lp.goto('http://localhost:4173/product-landing.html');
+const hero = lp.locator('.hs2-hero [data-hs2-input="dog"]');
+await hero.click();
+await hero.type('Moose', { delay: 120 });
+await lp.waitForTimeout(1600);
+const lpos = await lp.evaluate(() => ({ focus: document.activeElement.getAttribute('data-hs2-input') || document.activeElement.id, y: Math.round(scrollY) }));
+await lp.evaluate(() => window.scrollTo(0, document.querySelector('#review').offsetTop));
+await lp.fill('[data-hs2-step="1"] [data-hs2-input="person"]', 'Dana');
+await lp.waitForTimeout(1600);
+log('BUG 4 typing in the hero while Teeinblue arrives -> focus:', lpos.focus, '| scrollY:', lpos.y, '| after the name, focus:', await lp.evaluate(() => document.activeElement.getAttribute('data-hs2-input')), '| Teeinblue got:', JSON.stringify(await tibState(lp)));
+await lp.click('[data-hs2-step-skip]');
+log('SKIP step 1 -> step', await lp.locator('[data-hs2-step-no]').innerText());
+await lp.setInputFiles('[data-hs2-photo-in]', path.join(here, '..', '..', 'assets', 'v2', 'team-02.jpg'));
+await lp.waitForTimeout(400);
+await lp.click('[data-hs2-approve]');
+await lp.waitForTimeout(1600);
+log('BUG 3 landing: headshot button after Approve:', await lp.locator('[data-hs2-handoff]').isVisible(), '| card:', await lp.locator('[data-hs2-bridge-status]').innerText());
+await lp.screenshot({ path: path.join(shots, 'phone-landing-buy.png') });
+await lc.close();
+
+// 3d. Helio's cart, tidied: Frame for the framed poster, no Printful jargon, the shopper's
+// preview as the picture, free US shipping in the note
+const cc = await browser.newContext({ viewport: { width: 390, height: 844 } });
+const cp = await cc.newPage();
+cp.on('pageerror', (e) => errors.push(`cart: ${e.message}`));
+await cp.route('**/cart.js', (r) => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [{ key: '58152515830142:cd7e', properties: { _customization_image: 'http://localhost:4173/assets/hs-photo-headshot-480.webp' } }, { key: '58160000000002:ab12', properties: {} }] }) }));
+await cp.goto('http://localhost:4173/cart.html');
+await cp.waitForTimeout(800);
+log('CART lines:', JSON.stringify(await cp.evaluate(() => [...document.querySelectorAll('.cart-items__table-row')].map((r) => [...r.querySelectorAll('.cart-items__variant, .cart-items__property')].filter((v) => !v.hidden).map((v) => v.textContent.replace(/\s+/g, ' ').trim())))), '| pictures:', JSON.stringify(await cp.evaluate(() => [...document.querySelectorAll('.cart-items__media img')].map((i) => i.getAttribute('src').split('/').pop()))), '| note:', await cp.locator('.cart-totals__tax-note').innerText());
+await cp.screenshot({ path: path.join(shots, 'phone-cart-tidy.png') });
+await cc.close();
 
 // 4. Product pages with Teeinblue's block (a stand-in built from its live markup)
 const visiblePrices = (p) => p.evaluate(() => [...document.querySelectorAll('#buy [data-hs2-price], #buy .tee-product-price')].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim()));
@@ -327,6 +395,15 @@ await land.pg.click('[data-hs2-approve]');
 await land.pg.waitForTimeout(1600);
 log('landing approve scrolled to the buy box:', await land.pg.evaluate(() => Math.abs(document.querySelector('#buy').getBoundingClientRect().top) < 120));
 await land.pg.screenshot({ path: path.join(shots, 'phone-landing-first-screen.png') });
+
+// 8. Length at 390 x 844, in screens (Krish's targets: homepage 6 or less, ad landing 7 or less)
+for (const f of ['index.html', 'product-landing.html', 'product-review.html']) {
+  const x = await open(390, 844, 'height-' + f, 'http://localhost:4173/' + f);
+  await x.pg.waitForTimeout(500);
+  const h = await x.pg.evaluate(() => document.documentElement.scrollHeight);
+  log(`LENGTH ${f}: ${h}px = ${(h / 844).toFixed(1)} screens`);
+  await x.ctx.close();
+}
 
 log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
 await browser.close();

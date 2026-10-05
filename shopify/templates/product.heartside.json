@@ -6,12 +6,6 @@
         "show_poster": false
       },
       "blocks": {
-        "stamp": {
-          "type": "stamp",
-          "settings": {
-            "text": "BENEFITS PACKAGE · APPROVED BY {DOG}"
-          }
-        },
         "title": {
           "type": "title"
         },
@@ -22,7 +16,7 @@
           "type": "description",
           "settings": {
             "product": "the-body-double",
-            "text": "<p>A 16-inch pillow printed with {dogs} face. For groomer days, vet days, and the occasional covert operation to the kitchen.</p><p>Square, printed edge to edge, with a shape-retaining insert included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+            "text": "<p>{dogs} face on a 16-inch pillow, printed on both sides. For when {dog} can't be on the sofa with you: groomer days, vet days, work trips.</p><p>Square, printed edge to edge, with a shape-retaining insert included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
           }
         },
         "description_ornament": {
@@ -33,7 +27,10 @@
           }
         },
         "answers": {
-          "type": "answers"
+          "type": "answers",
+          "settings": {
+            "picks": false
+          }
         },
         "teeinblue_product_personalizer_product_app_block_UBn6nK": {
           "type": "shopify://apps/teeinblue-product-personalizer/blocks/product-app-block/67212f31-32b0-450c-97dd-7e182a5fac7b",
@@ -56,7 +53,6 @@
         }
       },
       "block_order": [
-        "stamp",
         "title",
         "price",
         "description",
@@ -67,89 +63,30 @@
         "fine"
       ]
     },
-    "policy": {
-      "type": "hs2-policy",
-      "blocks": {
-        "p1": {
-          "type": "policy",
-          "settings": {
-            "title": "A human checks every order",
-            "text": "Before anything prints, a person looks at it. If the photo will not print well, we tell you first."
-          }
-        },
-        "p2": {
-          "type": "policy",
-          "settings": {
-            "title": "Misprinted? Remade free",
-            "text": "Send a photo of the problem and we make it again. No forms, no hold music."
-          }
-        },
-        "p3": {
-          "type": "policy",
-          "settings": {
-            "title": "Every review gets published",
-            "text": "We are new, so there are none yet. When they come in, good or bad, they go here."
-          }
-        }
-      },
-      "block_order": [
-        "p1",
-        "p2",
-        "p3"
-      ]
-    },
-    "closure": {
-      "type": "hs2-closure",
-      "blocks": {
-        "d1": {
-          "type": "deadline",
-          "settings": {
-            "item": "Mandatory Company Uniform",
-            "date": "[DATE]",
-            "hide": true
-          }
-        },
-        "d2": {
-          "type": "deadline",
-          "settings": {
-            "item": "The Body Double",
-            "date": "[DATE]"
-          }
-        },
-        "d3": {
-          "type": "deadline",
-          "settings": {
-            "item": "Framed review",
-            "date": "[DATE]"
-          }
-        },
-        "d4": {
-          "type": "deadline",
-          "settings": {
-            "item": "Review poster and ornament",
-            "date": "[DATE]"
-          }
-        },
-        "d5": {
-          "type": "deadline",
-          "settings": {
-            "item": "{dogs} video and story card",
-            "date": "Christmas Eve",
-            "hide": true
-          }
-        }
-      },
-      "block_order": [
-        "d1",
-        "d2",
-        "d3",
-        "d4",
-        "d5"
-      ]
-    },
     "faq": {
       "type": "hs2-faq",
       "blocks": {
+        "p1": {
+          "type": "promise",
+          "settings": {
+            "title": "A person checks every order before it prints.",
+            "text": "If the photo won't print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "promise",
+          "settings": {
+            "title": "Misprinted or damaged? Full refund or a free remake.",
+            "text": "Email a photo within 30 days of delivery."
+          }
+        },
+        "p3": {
+          "type": "promise",
+          "settings": {
+            "title": "Every review gets published, good or bad.",
+            "text": "We're new, so there are none yet."
+          }
+        },
         "q1": {
           "type": "question",
           "settings": {
@@ -180,17 +117,21 @@
         }
       },
       "block_order": [
+        "p1",
+        "p2",
+        "p3",
         "q1",
         "q2",
         "q3",
         "q4"
-      ]
+      ],
+      "settings": {
+        "close_text": ""
+      }
     }
   },
   "order": [
     "main",
-    "policy",
-    "closure",
     "faq"
   ]
 }

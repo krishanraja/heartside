@@ -42,16 +42,16 @@
           <p class="hs2-step__intro">{% render 'hs2-t', text: s.text %}</p>
           {%- comment -%} Approve shows this when a name is missing. Both names print on the poster, and a placeholder never does. {%- endcomment -%}
           <p class="hs2-step__nudge" data-hs2-names-nudge role="alert" hidden
-            data-person="HR needs your name for the file."
-            data-dog="HR needs your manager's name for the file."
-            data-both="HR needs both names for the file."></p>
+            data-person="Add your name. It goes on the poster."
+            data-dog="Add your dog's name. It goes on the poster."
+            data-both="Add both names. They go on the poster."></p>
           <div class="hs2-field" data-hs2-ask="dog" hidden>
-            <label for="manager-{{ section.id }}">Who is your manager? (Your dog's name)</label>
+            <label for="manager-{{ section.id }}">Your dog's name</label>
             <input id="manager-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="next" data-hs2-input="dog">
           </div>
           <div class="hs2-form__pair">
             <div class="hs2-field">
-              <label for="person-{{ section.id }}">Employee name (you)</label>
+              <label for="person-{{ section.id }}">Your name</label>
               <input id="person-{{ section.id }}" type="text" maxlength="14" placeholder="Sarah" autocomplete="given-name" enterkeyhint="next" data-hs2-input="person">
             </div>
             <div class="hs2-field">
@@ -60,6 +60,9 @@
               <div class="hs2-field__note"><span data-hs2="dog">Biscuit</span> counted. Round down if you like.</div>
             </div>
           </div>
+          {%- comment -%} The three picks start on the house favourites, so a shopper in a hurry can go
+            straight to the photo and Approve. {%- endcomment -%}
+          <p class="hs2-step__skip"><span><span data-hs2="dog">Biscuit</span> has picked the rest.</span> <button type="button" data-hs2-step-skip>Skip to the photo</button></p>
         </div>
 
         {%- liquid
@@ -92,6 +95,7 @@
         <div class="hs2-step" data-hs2-step="5">
           <label class="hs2-attach">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#121010" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><circle cx="12" cy="12" r="3.2"></circle><path d="M8 5l1.5-2h5L16 5"></path></svg>
+            <img class="hs2-attach__thumb" data-hs2-attach-thumb alt="" width="40" height="40">
             <span class="hs2-attach__text"><strong>Attach <span data-hs2="dogs">Biscuit's</span> headshot</strong> · a person checks every review before it prints</span>
             <input type="file" accept="image/*" data-hs2-photo-in>
           </label>

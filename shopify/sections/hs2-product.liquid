@@ -96,8 +96,16 @@
             sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
             {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
         </div>
-        {%- if product.media.size > 1 -%}
+        {%- comment -%} With Teeinblue's live preview on the page, it is the first picture and the product
+          photos sit behind it as thumbnails, so the page shows one picture at a time. {%- endcomment -%}
+        {%- if product.media.size > 1 or tib -%}
           <div class="hs2-product__thumbs">
+            {%- if tib -%}
+              <button type="button" class="hs2-product__thumb-preview" data-hs2-thumb-preview aria-current="false" aria-label="Show your preview">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Yours</span>
+              </button>
+            {%- endif -%}
             {%- for m in product.media limit: 8 -%}
               <button type="button" data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
                 <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
@@ -138,16 +146,17 @@
               <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- endif -%}
           {%- when 'answers' -%}
+            {%- comment -%} The review's answers, short. Once they are in Teeinblue's preview, its copies of
+              them fold away and "Edit details" opens them again. {%- endcomment -%}
             <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>
-              <div class="hs2-answers__title">{{ block.settings.title }}</div>
-              <dl>
-                <dt>Manager</dt><dd data-hs2="dog">Biscuit</dd>
-                <dt>Employee</dt><dd data-hs2="person">Sarah</dd>
-                <dt>Treat cupboard</dt><dd data-hs2="cupboard">1,412</dd>
-                <dt>Improvement</dt><dd data-hs2="improvementLine">{% render 'hs2-lines', kind: 'improvement', mode: 'line', pick: 'Leaving' %}</dd>
-                <dt>Incident</dt><dd data-hs2="incidentLine">{% render 'hs2-lines', kind: 'incident', mode: 'line', pick: 'The sock' %}</dd>
-                <dt>Enemy</dt><dd data-hs2="enemyLine">{% render 'hs2-lines', kind: 'enemy', mode: 'line', pick: 'The mailman' %}</dd>
-              </dl>
+              <div class="hs2-answers__top">
+                <div class="hs2-answers__title">{{ block.settings.title }}</div>
+                <button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>
+              </div>
+              <p class="hs2-answers__who">From <strong data-hs2="dog">Biscuit</strong> to <strong data-hs2="person">Sarah</strong></p>
+              {%- if block.settings.picks -%}
+                <p class="hs2-answers__picks"><span data-hs2="improvement">Leaving</span> · <span data-hs2="incident">The sock</span> · <span data-hs2="enemy">The mailman</span> · <span data-hs2="cupboard">1,412</span> treats</p>
+              {%- endif -%}
               {%- if block.settings.note != blank -%}<div class="hs2-answers__note" data-hs2-bridge-note>{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-answers__status" data-hs2-bridge-status role="status" aria-live="polite" hidden></div>
               <div class="hs2-answers__photo" data-hs2-handoff hidden>
@@ -233,7 +242,7 @@
   ],
   "blocks": [
     { "type": "@app" },
-    { "type": "stamp", "name": "Stamp", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "BENEFITS PACKAGE · APPROVED BY {DOG}" } ] },
+    { "type": "stamp", "name": "Stamp", "limit": 1, "settings": [ { "type": "text", "id": "text", "label": "Text", "default": "MADE FOR {DOG}" } ] },
     { "type": "title", "name": "Title", "limit": 1, "settings": [] },
     { "type": "price", "name": "Price", "limit": 1, "settings": [ { "type": "text", "id": "note", "label": "Note under the price", "default": "Free US shipping" } ] },
     {
@@ -247,8 +256,9 @@
     {
       "type": "answers", "name": "Homepage answers", "limit": 1,
       "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "FORM HR-26 · ON FILE" },
-        { "type": "text", "id": "note", "label": "Note", "default": "Your answers from the homepage. If the personalizer below asks again, use these." },
+        { "type": "text", "id": "title", "label": "Title", "default": "YOUR ANSWERS" },
+        { "type": "checkbox", "id": "picks", "label": "Show the three picks and the treat count", "info": "On for the Annual Review. Off for products that print only the dog's name and photo.", "default": true },
+        { "type": "text", "id": "note", "label": "Note", "info": "Shows until the answers are copied into the personalizer.", "default": "If the personalizer below asks for these, use them." },
         { "type": "text", "id": "photo_button", "label": "Headshot button", "info": "Shows when the shopper attached a photo on the homepage. One tap hands it to the personalizer.", "default": "Use {dogs} headshot" }
       ]
     },
@@ -267,8 +277,8 @@
       "type": "fine", "name": "Policy lines", "limit": 1,
       "settings": [
         { "type": "text", "id": "line_1", "label": "Line 1", "default": "A human checks every order before anything prints." },
-        { "type": "text", "id": "line_2", "label": "Line 2", "default": "Misprinted? Remade free." },
-        { "type": "text", "id": "link_label", "label": "Link to the deadlines", "default": "Christmas deadlines" }
+        { "type": "text", "id": "line_2", "label": "Line 2", "default": "Misprinted or damaged? Full refund or a free remake." },
+        { "type": "text", "id": "link_label", "label": "Link to the Christmas order dates", "info": "Empty hides it. It goes to the homepage's Christmas order dates, so leave it empty while that section is off.", "default": "" }
       ]
     }
   ]

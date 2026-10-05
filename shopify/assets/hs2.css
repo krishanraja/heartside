@@ -177,15 +177,16 @@ html.hs2-js .is-in .hs2-anim-drift img, html.hs2-js .hs2-anim-drift.is-on img { 
 .hs2-badge__role { font-size: 13px; font-weight: 700; }
 .hs2-badge__access { font-family: var(--mono); font-size: 12px; line-height: 1.4; color: var(--muted); }
 .hs2-badge__code { height: 26px; margin-top: 6px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 5px, var(--ink) 5px 6px, transparent 6px 9px); }
+/* bottom left, clear of the dog's face (the badge has the bottom right) */
 .hs2-status {
-  position: absolute; left: 14px; top: 16px; background: var(--cream); border-radius: 999px; padding: 8px 14px;
-  font-family: var(--mono); font-size: 13px; font-weight: 700; box-shadow: 0 8px 20px rgba(18, 16, 16, 0.15);
+  position: absolute; left: 14px; bottom: 22px; background: var(--cream); border-radius: 999px; padding: 7px 12px;
+  font-family: var(--mono); font-size: 12px; font-weight: 700; box-shadow: 0 8px 20px rgba(18, 16, 16, 0.15);
 }
 @media (max-width: 760px) {
   .hs2-hero { grid-template-columns: minmax(0, 1fr); gap: clamp(12px, calc(2 * var(--vh)), 18px); align-content: start; padding-top: 12px; }
   .hs2-hero__media { order: -1; height: clamp(150px, calc(29 * var(--vh)), 300px); border-radius: 20px; }
   .hs2-hero__copy { gap: clamp(10px, calc(1.8 * var(--vh)), 16px); }
-  .hs2-hero__copy .hs2-stamp { font-size: 12px; padding: 4px 9px; border-width: 2px; letter-spacing: 0.12em; }
+  .hs2-hero__copy .hs2-stamp { font-size: 11px; padding: 4px 8px; border-width: 2px; letter-spacing: 0.03em; white-space: nowrap; }
   .hs2-hero h1 { font-size: clamp(30px, min(9.4vw, calc(5.2 * var(--vh))), 46px); }
   .hs2-hero__lede { font-size: clamp(14px, calc(1.95 * var(--vh)), 16px); line-height: 1.45; }
   .hs2-namecard { padding: 12px; gap: 8px; border-radius: 16px; }
@@ -202,12 +203,13 @@ html.hs2-js .is-in .hs2-anim-drift img, html.hs2-js .hs2-anim-drift.is-on img { 
   .hs2-badge__code { height: 12px; margin-top: 3px; }
   .hs2-hero__what { font-size: 14px; line-height: 1.45; padding-left: 10px; }
   .hs2-hero__lede:has(+ .hs2-hero__what) { display: none; }
+  .hs2-hero__lede--key { font-size: 15px; line-height: 1.45; }
   .hs2-hero__proof { font-size: 11px; gap: 4px 12px; }
-  .hs2-status { left: 10px; top: 10px; font-size: 11px; padding: 6px 10px; }
+  .hs2-status { left: 8px; bottom: 8px; font-size: 10px; padding: 5px 8px; letter-spacing: 0; }
 }
 @media (max-width: 760px) and (max-height: 800px) {
   .hs2-hero__media { height: clamp(130px, calc(22 * var(--vh)), 190px); }
-  .hs2-hero__lede { display: none; }
+  .hs2-hero__lede:not(.hs2-hero__lede--key) { display: none; }
 }
 @media (max-width: 760px) and (max-height: 700px) {
   .hs2-hero__proof { display: none; }
@@ -296,6 +298,12 @@ html.hs2-js .hs2-step.is-on.is-back { animation-name: hs2-rise; }
 .hs2-attach:focus-within { outline: 3px solid var(--rose); outline-offset: 3px; }
 .hs2-attach__text { font-size: 15px; line-height: 1.4; }
 .hs2-attach.is-done { border-style: solid; background: var(--white); }
+.hs2 .hs2-attach__thumb { display: none; flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.hs2 .hs2-attach.is-done svg { display: none; }
+.hs2 .hs2-attach.is-done .hs2-attach__thumb { display: block; }
+/* step 1: the picks start on the house favourites, so a hurried shopper can skip to the photo */
+.hs2-step__skip { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; font-size: 14px; color: var(--muted); }
+.hs2-step__skip button { min-height: 36px; padding: 0; border: 0; background: none; color: var(--ink); font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hs2-buy { background: var(--ink); color: var(--cream); border-radius: 18px; padding: clamp(14px, calc(2 * var(--vh)), 20px); display: flex; flex-direction: column; gap: 12px; }
 .hs2-buy__row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
 .hs2-buy__price { font-family: var(--serif); font-size: clamp(24px, calc(3.4 * var(--vh)), 30px); font-weight: 600; }
@@ -491,7 +499,7 @@ html.hs2-js .hs2-policy__grid.is-in .hs2-policy__num { --r: -3deg; animation: hs
   .hs2-policy__grid { gap: 10px; }
   .hs2-policy__item { padding: 14px 16px; gap: 6px; border-radius: 18px; }
   .hs2-policy__num { position: absolute; top: 12px; right: 12px; font-size: 10px; padding: 2px 6px; }
-  .hs2-policy__title { font-size: clamp(19px, calc(2.6 * var(--vh)), 22px); padding-right: 76px; }
+  .hs2-policy__title { font-size: clamp(19px, calc(2.6 * var(--vh)), 22px); }
   .hs2-policy__text { font-size: 14px; line-height: 1.42; }
 }
 
@@ -600,7 +608,6 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
   .hs2-closure__clock { display: none !important; }
   .hs2-closure__bg { height: 34%; }
   .hs2-closure__scene { padding-top: 64px; }
-  .hs2-faq__card p { display: none; }
 }
 @media (max-width: 760px) and (max-height: 720px) {
   .hs2-card__media img { height: clamp(96px, calc(15 * var(--vh)), 140px); }
@@ -613,7 +620,6 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
   .hs2-leak__inner { row-gap: 8px; }
   .hs2-leak__paper { padding: 10px 12px; }
   .hs2-leak__paper .hs2-btn { min-height: 44px; }
-  .hs2-faq__photo { flex-basis: 48px; }
   .hs2-phone { --pw: 104px; }
   .hs2-leak__tabs button { min-height: 36px; font-size: 13px; }
   .hs2-leak__go .hs2-btn { min-height: 46px; }
@@ -626,25 +632,24 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
   grid-template-areas: "desk head" "desk list"; grid-template-rows: auto 1fr; column-gap: clamp(32px, 5vw, 64px); row-gap: clamp(12px, calc(2 * var(--vh)), 20px); align-items: start;
 }
 .hs2-faq__head { grid-area: head; }
-.hs2-faq__desk { grid-area: desk; display: flex; flex-direction: column; gap: 14px; }
-.hs2-faq__photo { margin: 0; position: relative; }
-.hs2-faq__photo img { width: 100%; height: auto; aspect-ratio: 1; max-height: calc(var(--fit) * 0.42); object-fit: cover; border-radius: 24px; }
-.hs2-faq__status { position: absolute; left: 12px; top: 12px; background: var(--cream); border-radius: 999px; padding: 7px 13px; font-family: var(--mono); font-size: 12px; font-weight: 700; box-shadow: 0 8px 20px rgba(18, 16, 16, 0.15); }
-.hs2-faq__card { background: var(--white); border: 2px solid var(--ink); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
-.hs2-faq__eyebrow { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: var(--stamp); }
-.hs2-faq__card p { font-size: 15px; line-height: 1.5; }
-.hs2-faq__mail { font-family: var(--mono); font-size: 16px; font-weight: 700; }
+.hs2-faq__desk { grid-area: desk; display: flex; flex-direction: column; gap: 16px; }
+.hs2-faq__promises { display: flex; flex-direction: column; gap: 14px; background: var(--white); border: 2px solid var(--ink); border-radius: 20px; padding: 18px 18px; }
+.hs2-faq__promises li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 15px; line-height: 1.45; }
+.hs2-faq__promises svg { color: var(--stamp); margin-top: 1px; }
+.hs2-faq__promises strong { font-weight: 700; }
+.hs2-faq__promise-text { color: var(--muted); }
+.hs2-faq__contact { font-size: 14px; line-height: 1.5; color: var(--muted); }
+.hs2-faq__mail { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--ink); }
 .hs2-faq__list { grid-area: list; display: flex; flex-direction: column; gap: clamp(6px, calc(1 * var(--vh)), 10px); min-width: 0; }
 .hs2-faq h2 { font-weight: 650; font-size: clamp(34px, min(5vw, calc(7 * var(--vh))), 64px); line-height: 1; letter-spacing: -0.02em; margin: 0; }
 .hs2-ticket { background: var(--white); border: 2px solid transparent; border-radius: 14px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
 .hs2-ticket[open] { border-color: var(--ink); box-shadow: 0 14px 30px rgba(138, 74, 43, 0.12); }
 .hs2-ticket.is-folded { display: none; }
 .hs2-ticket summary {
-  list-style: none; cursor: pointer; padding: clamp(10px, calc(1.6 * var(--vh)), 15px) 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) 28px;
+  list-style: none; cursor: pointer; padding: clamp(10px, calc(1.6 * var(--vh)), 15px) 16px; display: grid; grid-template-columns: minmax(0, 1fr) 28px;
   gap: 4px 14px; align-items: center;
 }
 .hs2-ticket summary::-webkit-details-marker { display: none; }
-.hs2-ticket__no { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); white-space: nowrap; }
 .hs2-ticket__q { font-weight: 700; font-size: clamp(15px, calc(2 * var(--vh)), 17px); line-height: 1.3; }
 .hs2-ticket__icon { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ink); position: relative; transition: background 0.2s ease, transform 0.25s var(--ease); }
 .hs2-ticket__icon::before, .hs2-ticket__icon::after { content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 2px; background: var(--ink); transform: translate(-50%, -50%); transition: transform 0.2s ease, background 0.2s ease; }
@@ -655,14 +660,7 @@ html.hs2-js .hs2-anim-float { animation: hs2-float 6s ease-in-out infinite; }
 .hs2-ticket__a { padding: 0 16px 14px; position: relative; }
 .hs2-ticket__a p { font-size: clamp(14px, calc(1.9 * var(--vh)), 16px); line-height: 1.5; }
 .hs2-ticket__a a { font-weight: 700; }
-.hs2-ticket__stamp { display: inline-block; margin-top: 8px; border: 2px solid var(--stamp); color: var(--stamp); border-radius: 5px; padding: 1px 7px; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.12em; transform: rotate(-3deg); }
-/* HR types before it answers */
-html.hs2-js .hs2-ticket.is-typing .hs2-ticket__a > * { visibility: hidden; }
-html.hs2-js .hs2-ticket.is-typing .hs2-ticket__a::before {
-  content: "• • •"; position: absolute; left: 16px; top: 0; font-size: 18px; letter-spacing: 0.15em; color: var(--muted); animation: hs2-dots 0.9s ease-in-out infinite;
-}
-html.hs2-js .hs2-ticket:not(.is-typing)[open] .hs2-ticket__a p { animation: hs2-rise 0.35s var(--ease) both; }
-html.hs2-js .hs2-ticket:not(.is-typing)[open] .hs2-ticket__stamp { --r: -3deg; animation: hs2-thunk 0.5s var(--ease) 0.2s both; }
+html.hs2-js .hs2-ticket[open] .hs2-ticket__a p { animation: hs2-rise 0.35s var(--ease) both; }
 .hs2-faq__more { align-self: flex-start; min-height: 42px; padding: 0 16px; border-radius: 999px; border: 2px dashed var(--ink); background: transparent; font-weight: 700; font-size: 14px; cursor: pointer; }
 .hs2-faq__close { margin-top: clamp(4px, calc(1 * var(--vh)), 12px); background: var(--blush); border-radius: 18px; padding: clamp(14px, calc(2.2 * var(--vh)), 22px); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
 .hs2-faq__close p { font-family: var(--serif); font-size: clamp(20px, calc(3 * var(--vh)), 26px); font-weight: 650; line-height: 1.15; }
@@ -670,16 +668,13 @@ html.hs2-js .hs2-ticket:not(.is-typing)[open] .hs2-ticket__stamp { --r: -3deg; a
   .hs2-faq { padding: clamp(18px, calc(3 * var(--vh)), 32px) 16px; }
   .hs2-faq__inner { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "head" "desk" "list"; row-gap: clamp(10px, calc(1.6 * var(--vh)), 16px); }
   .hs2-faq h2 { font-size: clamp(30px, min(9vw, calc(5 * var(--vh))), 44px); }
-  .hs2-faq__desk { flex-direction: row; align-items: center; gap: 12px; }
-  .hs2-faq__photo { flex: 0 0 64px; }
-  .hs2-faq__photo img { border-radius: 14px; }
-  .hs2-faq__status { display: none; }
-  .hs2-faq__card { flex: 1; border: 0; padding: 0; background: transparent; gap: 2px; }
-  .hs2-faq__eyebrow { font-size: 11px; }
-  .hs2-faq__card p { font-size: 13px; line-height: 1.4; }
-  .hs2-faq__mail { font-size: 14px; }
+  .hs2-faq__desk { gap: 8px; }
+  .hs2-faq__promises { gap: 7px; padding: 12px 14px; border-radius: 16px; }
+  .hs2-faq__promises li { grid-template-columns: 18px minmax(0, 1fr); gap: 8px; font-size: 14px; line-height: 1.35; }
+  .hs2-faq__promises svg { width: 18px; height: 18px; }
+  .hs2-faq__promise-text { display: none; }
+  .hs2-faq__contact { display: none; }
   .hs2-ticket summary { grid-template-columns: minmax(0, 1fr) 26px; grid-template-areas: "q icon"; padding: 11px 14px; }
-  .hs2-ticket__no { display: none; }
   .hs2-ticket__q { grid-area: q; font-size: 15px; }
   .hs2-ticket__icon { grid-area: icon; width: 26px; height: 26px; }
   .hs2-ticket__a { padding: 0 14px 12px; }
@@ -723,9 +718,22 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
 .hs2-product__main { position: relative; background: var(--white); border-radius: 24px; overflow: hidden; }
 .hs2-product__main img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
 .hs2-product__thumbs { display: flex; flex-wrap: wrap; gap: 10px; }
-.hs2-product__thumbs button { padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: var(--white); cursor: pointer; width: 76px; height: 76px; }
+.hs2-product__thumbs button { flex: 0 0 auto; padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: var(--white); cursor: pointer; width: 76px; height: 76px; }
 .hs2-product__thumbs button[aria-current="true"] { border-color: var(--ink); }
 .hs2-product__thumbs img { width: 100%; height: 100%; object-fit: cover; }
+/* the live preview's own thumbnail: shown only once Teeinblue's preview is on the page */
+.hs2-product__thumb-preview { display: none !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink); font-size: 12px; font-weight: 700; }
+.hs2-product__media[data-tib="on"] .hs2-product__thumb-preview { display: inline-flex !important; }
+/* one picture at a time: Teeinblue's preview, or the photo picked below it. The preview
+   keeps its width while hidden, because Teeinblue sizes its slider from it. */
+.hs2-product__media { position: relative; }
+.hs2-product__media[data-tib="on"]:not([data-show="photo"]) .hs2-product__main { display: none; }
+.hs2-product__media[data-tib="on"][data-show="photo"] .hs2-product__tib { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; pointer-events: none; }
+@media (max-width: 899px) {
+  .hs2-product__thumbs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; margin: 0 -20px; padding: 0 20px 2px; }
+  .hs2-product__thumbs::-webkit-scrollbar { display: none; }
+  .hs2-product__thumbs button { width: 64px; height: 64px; border-radius: 10px; }
+}
 .hs2-product__poster { padding: 26px 18px 34px; }
 .hs2-product__info { flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
 .hs2-product__info h1 { font-weight: 650; font-size: clamp(38px, 4.6vw, 60px); line-height: 1; letter-spacing: -0.02em; }
@@ -733,11 +741,15 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
 .hs2-product__ship { font-size: 14px; color: var(--muted); }
 .hs2-product__desc { font-size: 17px; line-height: 1.55; }
 .hs2-product__desc p + p { margin-top: 10px; }
-.hs2-answers { background: var(--white); border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; border: 2px dashed var(--ink); }
+.hs2-answers { background: var(--white); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; border: 2px solid var(--ink); }
 .hs2-answers[hidden] { display: none; }
-.hs2-answers__title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: 0.1em; }
-.hs2-answers dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 15px; }
-.hs2-answers dt { font-weight: 700; }
+.hs2-answers__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hs2-answers__title { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+.hs2-answers__edit { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--ink); background: transparent; font-weight: 700; font-size: 14px; cursor: pointer; }
+.hs2-answers__edit[aria-expanded="true"] { background: var(--ink); color: var(--cream); }
+.hs2-answers__who { font-size: 17px; line-height: 1.35; }
+.hs2-answers__who strong { font-family: var(--serif); font-weight: 650; }
+.hs2-answers__picks { font-size: 14px; line-height: 1.45; color: var(--muted); }
 .hs2-answers__note { font-size: 13px; color: var(--muted); }
 .hs2-answers__status { font-size: 14px; font-weight: 700; color: var(--ink); }
 .hs2-answers__status[hidden] { display: none; }
@@ -761,6 +773,19 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
    Options with a single value are not a choice, so they hide; the section names the rest
    ("Frame"). Its Add To Cart is the only one on the page, so it gets our button. */
 #buy .tee-product-price { display: none !important; }
+/* Teeinblue sizes its preview to the height of its form on a desktop browser (1,557px on a
+   narrow window: a blank gap under the preview). The section's own column keeps the
+   preview in view, so the box is only as tall as the preview. */
+#buy .tee-gallery-content { height: auto !important; }
+/* Teeinblue's copy of Printful's description: the section shows ours */
+#buy .tee-description { display: none !important; }
+/* once the review's answers are in, Teeinblue's copies of them fold (hs2.js lists them by id) */
+#buy.hs2-tib-folded .tee-form-header { display: none !important; }
+html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
+.tee-btn-wrapper--personalize .tee-btn--personalize { background-color: #121010 !important; color: #fbf6f1 !important; border-radius: 12px; font-weight: 700; }
+/* Teeinblue's popups (the photo cropper) sit inside its block, which Helio's sticky header
+   (z-index 18) would cover: lift the block while a popup is open */
+.teeinblue-item:has(.vm--container) { z-index: 1000 !important; }
 /* Tiny Me, the second hero: the photo beside the verdict, one screen */
 .hs2-orn { background: var(--paper); padding: var(--pad-y) 20px; }
 .hs2-orn__inner { max-width: 1180px; width: 100%; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
@@ -831,3 +856,11 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
   .hs2-memo.is-ticker .hs2-memo__track { animation: none; width: auto; flex-wrap: wrap; }
 }
 .hs2-sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ------------------------------------------------- Helio's cart, tidied by hs2.js */
+.cart-items__variant.hs2-cart-opt { display: block; flex-basis: 100%; width: 100%; }
+.cart-items__variant.hs2-cart-opt dt, .cart-items__variant.hs2-cart-opt dd { display: inline; margin: 0; }
+.cart-items__variant.hs2-cart-opt dt { margin-right: 0.3em; }
+/* Helio sets a display on these rows, which would beat the hidden attribute */
+.cart-items__variant[hidden], .cart-items__property[hidden] { display: none !important; }
+.cart-items__media img.hs2-cart-preview { object-fit: cover; }
