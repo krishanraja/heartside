@@ -34,6 +34,16 @@ on:
         required: false
         default: false
         type: boolean
+      pull_only:
+        description: "Only save the theme's current templates, section groups and settings as an artifact. Pushes nothing."
+        required: false
+        default: false
+        type: boolean
+      overwrite_editor_edits:
+        description: "Push even if the theme has theme-editor edits that aren't in the repo (they are saved in the backup first)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -97,7 +107,7 @@ jobs:
       - name: Back up the theme's templates and section groups
         run: |
           mkdir -p backup
-          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json"
+          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json" --only "config/settings_data.json"
           node -e '
             const fs = require("fs"), { execSync } = require("child_process");
             const parse = (t) => { try { return JSON.parse(t.replace(/^\s*\/\*[\s\S]*?\*\//, "")); } catch (e) { return null; } };
@@ -116,7 +126,7 @@ jobs:
               const now = key(parse(fs.readFileSync(path, "utf8")));
               if (key(store) === now) console.log(`templates/${f}: unchanged`);
               else if (known.has(key(store))) console.log(`templates/${f}: updated from an earlier deploy, no theme-editor edits`);
-              else console.log(`::warning::templates/${f} was edited in the theme editor. This push replaces those edits; they are saved in the theme-backup artifact.`);
+              else { console.log(`::warning::templates/${f} was edited in the theme editor and the repo does not have those edits yet.`); fs.appendFileSync("editor-edits.txt", f + "\n"); }
             }'
 
       - uses: actions/upload-artifact@v4
@@ -125,8 +135,16 @@ jobs:
           path: backup
           retention-days: 30
 
+      - name: Stop if a push would wipe theme-editor edits
+        if: ${{ !inputs.pull_only && !inputs.overwrite_editor_edits }}
+        run: |
+          if [ -s editor-edits.txt ]; then
+            echo "::error::These templates have theme-editor edits that aren't in the repo: $(tr '\n' ' ' < editor-edits.txt). Copy them into shopify/templates/ (the theme-backup artifact has them), or rerun with overwrite_editor_edits. Nothing was pushed."
+            exit 1
+          fi
+
       - name: Put the memo bar at the top of the header
-        if: ${{ inputs.header_memo_bar }}
+        if: ${{ inputs.header_memo_bar && !inputs.pull_only }}
         run: |
           if [ ! -f backup/sections/header-group.json ]; then
             echo "::error::The theme has no sections/header-group.json, so the header was left alone."
@@ -136,6 +154,7 @@ jobs:
           node .github/scripts/header-memo.mjs shopify/sections/header-group.json
 
       - name: Push Heartside files into the copy
+        if: ${{ !inputs.pull_only }}
         run: |
           set -o pipefail
           shopify theme push --theme "$THEME_ID" --path shopify --nodelete --ignore "preview/*" --ignore "README.md" 2>&1 | tee push.log
@@ -149,7 +168,7 @@ jobs:
         if: success()
         run: |
           {
-            echo "### Pushed to theme $THEME_ID"
+            if [ "${{ inputs.pull_only }}" = "true" ]; then echo "### Saved theme $THEME_ID (nothing pushed)"; else echo "### Pushed to theme $THEME_ID"; fi
             echo ""
             echo "Open Shopify admin > Online Store > Themes > the copy > Customize to finish setup."
             echo "The theme's templates and section groups from before this push are saved under Artifacts."
