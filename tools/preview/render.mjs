@@ -35,6 +35,15 @@ for (const dir of ['sections', 'snippets']) {
 for (const f of fs.readdirSync(path.join(theme, 'sections'))) {
   const src = fs.readFileSync(path.join(theme, 'sections', f), 'utf8');
   if (/"default"\s*:\s*""/.test(src)) throw new Error(`sections/${f}: a setting has "default": "", which Shopify rejects. Remove the default.`);
+  // Shopify also refuses a select or radio option label over 50 characters (6 October deploy)
+  const m = src.match(/{%-?\s*schema\s*-?%}([\s\S]*?){%-?\s*endschema\s*-?%}/);
+  if (m) {
+    const schema = JSON.parse(m[1]);
+    const all = [...(schema.settings || []), ...(schema.blocks || []).flatMap((b) => b.settings || [])];
+    for (const st of all) for (const o of st.options || []) {
+      if (String(o.label).length > 50) throw new Error(`sections/${f}: option label for "${st.id}" is ${String(o.label).length} characters; Shopify allows 50: "${o.label}"`);
+    }
+  }
 }
 
 // ------------------------------------------------------------ engine + stubs
