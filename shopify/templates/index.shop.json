@@ -41,7 +41,7 @@
           "type": "item",
           "settings": {
             "product": "tiny-me-for-the-tree",
-            "kind": "Ceramic ornament · 3 in",
+            "kind": "3 in ceramic ornament",
             "fallback": "ornament-tree",
             "view": "shopgift"
           }
@@ -50,7 +50,7 @@
           "type": "item",
           "settings": {
             "product": "the-body-double",
-            "kind": "Photo pillow · 16 in",
+            "kind": "16 in photo pillow",
             "fallback": "pillow-sofa",
             "view": "shopgift"
           }

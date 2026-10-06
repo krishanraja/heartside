@@ -132,6 +132,9 @@ for (const v of views) {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
       await page.waitForTimeout(3500);
       if (/verify you are human|just a moment/i.test(await page.title())) { console.log(`?? ${v} ${p}: Cloudflare challenge, not checked`); failed++; continue; }
+      // a page that scrolls itself while the shopper only watches (Helio's search grabbing focus did)
+      await page.waitForTimeout(3500);
+      const drift = await page.evaluate(() => { const w = document.querySelector('.page-wrapper'); return Math.round(Math.max(window.scrollY, w ? w.scrollTop : 0)); });
       // scroll through once so reveal animations finish, then back to the top
       await page.evaluate(async () => {
         const s = document.querySelector('.page-wrapper') || document.scrollingElement;
@@ -140,6 +143,7 @@ for (const v of views) {
       });
       await page.waitForTimeout(900);
       const res = await page.evaluate(inspect);
+      if (drift > 40 && !/#/.test(url)) res.fails.unshift(`page scrolled itself to ${drift}px within 7s of loading, with nobody touching it`);
       await page.screenshot({ path: path.join(OUT, `${v}-${p}.png`) });
       if (res.fails.length) {
         failed++;

@@ -1678,6 +1678,25 @@
     onCartAdd(queueBar);
     queueBar();
   }
+  /* Helio's search resets itself when its panel "closes", and every reset focuses its input,
+     even while the panel is shut. The shut input sits near the foot of the page, so the browser
+     scrolls there: a shopper landing on a product page watched it slide to the footer three
+     seconds in (the bridge's chip clicks were one trigger). The input may only take focus
+     while it can be seen, which is whenever the shopper has actually opened search. */
+  function guardSearchFocus() {
+    document.querySelectorAll('predictive-search-component input, #cmdk-input').forEach(function (inp) {
+      if (inp.__hs2guard) return;
+      inp.__hs2guard = true;
+      var focus0 = inp.focus;
+      inp.focus = function () {
+        var r = inp.getBoundingClientRect();
+        var shown = r.width > 1 && r.height > 1 && (!inp.checkVisibility || inp.checkVisibility({ opacityProperty: true, visibilityProperty: true }));
+        var dlg = inp.closest('dialog');
+        if (!shown && !(dlg && dlg.open)) return;
+        return focus0.apply(inp, arguments);
+      };
+    });
+  }
   // a product page that opens on its photo switches to the shopper's live preview once they add one
   function previewOnPhoto() {
     var media = document.querySelector('[data-hs2-media][data-open="photo"]');
@@ -1696,6 +1715,7 @@
 
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
+    guardSearchFocus();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
     shop(); giftList(); previewOnPhoto();
@@ -1708,7 +1728,7 @@
   }
   var resizeT;
   window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); }, 120); });
-  window.addEventListener('load', function () { clearHeader(); layout(); setTimeout(function () { clearHeader(); layout(); }, 600); });
+  window.addEventListener('load', function () { guardSearchFocus(); clearHeader(); layout(); setTimeout(function () { clearHeader(); layout(); }, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
