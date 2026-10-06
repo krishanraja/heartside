@@ -263,6 +263,9 @@ html.hs2-js .hs2-step.is-on.is-back { animation-name: hs2-rise; }
 .hs2-field { flex: 1 1 160px; display: flex; flex-direction: column; gap: 7px; }
 .hs2-step > .hs2-field { flex: none; }
 .hs2-field label { font-size: 14px; font-weight: 700; }
+/* "Times you opened the treat cupboard" wraps to two lines next to "Your name"'s one, so without
+   this the two inputs in the pair start at different heights */
+.hs2-form__pair .hs2-field label { min-height: 2.6em; line-height: 1.3; }
 .hs2-field input { font-size: 18px; padding: clamp(9px, calc(1.4 * var(--vh)), 12px) 14px; border: 2px solid var(--ink); border-radius: 12px; background: var(--white); color: var(--ink); font-family: var(--sans); width: 100%; }
 .hs2-field__note { font-size: 12px; color: var(--muted); }
 /* Approve's nudge when a name is missing: a stamped line, and the step makes room for it */
@@ -419,7 +422,10 @@ html.hs2-js .hs2-management__memo.is-in > .hs2-memo-p { animation-duration: 1s; 
 .hs2-card__cta { font-weight: 700; font-size: 15px; }
 .hs2-carousel-nav { display: none; }
 @media (max-width: 1024px) {
-  .hs2-cards { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -20px; padding: 4px 20px 10px; scrollbar-width: none; overscroll-behavior-x: contain; }
+  /* the grid rule above centers with justify-content, which this carousel still inherits;
+     centering an overflowing flex row clips the first card's left edge out of view with no
+     way to scroll back to it (the price was landing there, looking blank) */
+  .hs2-cards { display: flex; justify-content: flex-start; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -20px; padding: 4px 20px 10px; scrollbar-width: none; overscroll-behavior-x: contain; }
   .hs2-cards::-webkit-scrollbar { display: none; }
   .hs2-card { flex: 0 0 min(44%, 360px); scroll-snap-align: center; }
   .hs2-card:hover { transform: none; box-shadow: none; }
