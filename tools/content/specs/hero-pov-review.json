@@ -1,0 +1,18 @@
+{
+  "name": "hs_pov-review_h1_18s_v1",
+  "series": "POV: your dog filed your review",
+  "poster": { "photo": "assets/v2/biscuit-headshot.jpg", "person": "Sarah", "dog": "Biscuit", "improvement": "Leaving", "incident": "The sock", "enemy": "The vacuum" },
+  "scenes": [
+    { "type": "photo", "dur": 2.4, "photo": "assets/v2/hero-manager.jpg", "zoom": [1.0, 1.07], "focus": [0.5, 0.42],
+      "label": "FORM HR-26", "hook_at": "bottom", "hook": "POV: your dog just wrote your annual performance review" },
+    { "type": "photo", "dur": 2.7, "photo": "assets/v2/incident.jpg", "zoom": [1.0, 1.06], "focus": [0.45, 0.5],
+      "form": { "heading": "INCIDENT REPORT", "line": "The sock. I would do it again. Case closed." } },
+    { "type": "photo", "dur": 2.5, "photo": "assets/v2/side-of-bed.jpg", "zoom": [1.0, 1.06], "focus": [0.55, 0.62],
+      "form": { "heading": "AREAS FOR IMPROVEMENT", "line": "Leaving. Please stop leaving." } },
+    { "type": "photo", "dur": 2.6, "photo": "assets/v2/vacuum.jpg", "zoom": [1.0, 1.06], "focus": [0.45, 0.55],
+      "form": { "heading": "THREAT ASSESSMENT", "line": "The vacuum. Loud. Hungry. Unemployable." } },
+    { "type": "poster", "dur": 3.2, "stamp_at": 0.9, "width": 820, "top": 250 },
+    { "type": "end", "dur": 4.2, "scene": "christmas-sheet-a", "zoom": [1.0, 1.05], "focus": [0.5, 0.45], "shade": 0.35,
+      "end": { "headline": "Made from your dog's photo.", "offer": "The Annual Review · $39 · Free US shipping", "address": "HEARTSIDE.IO", "at": 1.6 } }
+  ]
+}

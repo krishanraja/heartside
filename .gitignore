@@ -3,3 +3,4 @@ __pycache__/
 ornament/orders/
 node_modules/
 tools/preview/out/
+content/out/
