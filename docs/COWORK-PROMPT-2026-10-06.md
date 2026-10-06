@@ -83,7 +83,9 @@ The files are at https://raw.githubusercontent.com/krishanraja/heartside/main/de
 
 ### 4. Product descriptions (Shopify admin > Products > Description)
 
-Teeinblue's updates put Printful's stock text back, and the Facebook and Instagram catalog reads these descriptions. Paste each one exactly, as plain paragraphs with the bullet list as a list.
+Teeinblue's "Update" syncs Description, Images, Title and Tags back to Shopify **by default** (found during the 6 October audit-fix session) — untick all of them in the Update dialog before saving any campaign, every time, including tasks 1 and 2 above. If you've already run an Update since reading this, check each product's description before you paste: Teeinblue may have already put Printful's stock text back over whatever's there.
+
+Paste each one exactly, as plain paragraphs with the bullet list as a list. (As of 6 October, all four products still carry generic Printful text — this task hasn't been run yet.)
 
 **Before you paste, check two facts on Printful's product pages and tell Krish:**
 - Does the ceramic ornament come with a ribbon or string for hanging?
