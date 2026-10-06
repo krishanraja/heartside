@@ -1,0 +1,91 @@
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs2">
+  <section id="shop" class="hs2-wrap hs2-shop" aria-labelledby="shop-h-{{ section.id }}">
+    <div class="hs2-shop__head" data-hs2-reveal>
+      <div class="hs2-eyebrow-stamp">{% render 'hs2-t', text: s.eyebrow %}</div>
+      <h2 id="shop-h-{{ section.id }}">{% render 'hs2-t', text: s.heading %}</h2>
+      {%- if s.subheading != blank -%}<p class="hs2-shop__sub">{% render 'hs2-t', text: s.subheading %}</p>{%- endif -%}
+    </div>
+    <div class="hs2-shop__grid" data-hs2-reveal data-hs2-group>
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- if b.hide -%}{%- continue -%}{%- endif -%}
+        <label class="hs2-shop__item" {{ block.shopify_attributes }}>
+          <input type="checkbox" class="hs2-shop__check" data-hs2-shop-check data-price="{{ b.price_cents }}" data-name="{{ b.name | escape }}"{% if b.checked_by_default %} checked{% endif %}>
+          <span class="hs2-shop__media">
+            {%- if b.image != blank -%}
+              {{ b.image | image_url: width: 600 | image_tag: loading: 'lazy', sizes: '(min-width: 760px) 45vw, 90vw', alt: b.name }}
+            {%- endif -%}
+            <span class="hs2-shop__tick" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span>
+          </span>
+          <span class="hs2-shop__body">
+            <span class="hs2-shop__name">{{ b.name }}</span>
+            <span class="hs2-shop__kind">{{ b.kind }}</span>
+            <span class="hs2-shop__price">{{ b.price }}</span>
+          </span>
+        </label>
+      {%- endfor -%}
+    </div>
+    <div class="hs2-shop__bar" data-hs2-shop-bar hidden>
+      <div class="hs2-shop__bar-text">
+        <span data-hs2-shop-count></span> · <span data-hs2-shop-total></span> · Free US shipping
+      </div>
+      <a class="hs2-btn" href="#review" data-hs2-shop-cta>{{ s.cta }}</a>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var root = document.currentScript.closest('.hs2-wrap') || document.getElementById('shop');
+  if (!root) return;
+  var boxes = root.querySelectorAll('[data-hs2-shop-check]');
+  var bar = root.querySelector('[data-hs2-shop-bar]');
+  var countEl = root.querySelector('[data-hs2-shop-count]');
+  var totalEl = root.querySelector('[data-hs2-shop-total]');
+  function money(c) { return '$' + (c / 100).toFixed(0); }
+  function update() {
+    var picked = Array.prototype.filter.call(boxes, function (b) { return b.checked; });
+    if (!picked.length) { bar.hidden = true; return; }
+    bar.hidden = false;
+    var total = picked.reduce(function (sum, b) { return sum + Number(b.dataset.price || 0); }, 0);
+    countEl.textContent = picked.length + (picked.length === 1 ? ' item' : ' items');
+    totalEl.textContent = money(total);
+  }
+  boxes.forEach(function (b) { b.addEventListener('change', update); });
+  update();
+})();
+</script>
+
+{% schema %}
+{
+  "name": "HS shop",
+  "tag": "section",
+  "class": "hs2-section",
+  "settings": [
+    { "type": "paragraph", "content": "Prototype, not wired to cart yet: picking items shows a running total and free shipping, but the button is a placeholder until the personalize-once flow is built." },
+    { "type": "text", "id": "eyebrow", "label": "Small line above", "default": "EVERYTHING, ONE PHOTO" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Pick what you want. Personalize once." },
+    { "type": "text", "id": "subheading", "label": "Plain line under the heading", "default": "Free US shipping, however many you choose." },
+    { "type": "text", "id": "cta", "label": "Button once something's picked", "default": "Personalize your order" }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Product",
+      "settings": [
+        { "type": "checkbox", "id": "hide", "label": "Hide this card", "default": false },
+        { "type": "checkbox", "id": "checked_by_default", "label": "Pre-selected", "default": false },
+        { "type": "text", "id": "name", "label": "Name", "default": "The Annual Review" },
+        { "type": "text", "id": "kind", "label": "What it is", "default": "12 × 18 in poster" },
+        { "type": "text", "id": "price", "label": "Price (shown)", "default": "$39" },
+        { "type": "number", "id": "price_cents", "label": "Price in cents (for the running total)", "default": 3900 },
+        { "type": "image_picker", "id": "image", "label": "Photo" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [{ "name": "HS shop" }]
+}
+{% endschema %}
