@@ -684,11 +684,36 @@
      the bridge puts focus and scroll back where the shopper had them. */
   function stayPut(fn) {
     var had = document.activeElement, x = window.scrollX, y = window.scrollY;
+    var wrap = document.querySelector('.page-wrapper'), wy = wrap ? wrap.scrollTop : 0;
     fn();
     if (document.activeElement !== had) {
       try { if (had && had !== document.body && had.focus) had.focus({ preventScroll: true }); else if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) { /* old browser */ }
     }
     if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
+    holdScroll(x, y, wrap, wy);
+  }
+  /* The browser's scroll to a newly focused input starts a beat later, and the page's smooth
+     scrolling stretches it over half a second, so the check above can't see it. For a second
+     after a scripted click, any scroll the shopper didn't make is undone; the first touch,
+     wheel or key hands the page straight back to them. */
+  function holdScroll(x, y, wrap, wy) {
+    var until = Date.now() + 1200, mine = false;
+    var off = function () {
+      window.removeEventListener('scroll', back, true);
+      ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(function (t) { window.removeEventListener(t, theirs, true); });
+    };
+    var theirs = function () { mine = true; off(); };
+    var back = function () {
+      if (mine || Date.now() > until) { off(); return; }
+      var html = document.documentElement, was = html.style.scrollBehavior;
+      html.style.scrollBehavior = 'auto';
+      if (Math.abs(window.scrollY - y) > 2) window.scrollTo(x, y);
+      if (wrap && Math.abs(wrap.scrollTop - wy) > 2) { wrap.style.scrollBehavior = 'auto'; wrap.scrollTop = wy; wrap.style.scrollBehavior = ''; }
+      html.style.scrollBehavior = was;
+    };
+    window.addEventListener('scroll', back, true);
+    ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(function (t) { window.addEventListener(t, theirs, { capture: true, passive: true }); });
+    setTimeout(off, 1300);
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
