@@ -1707,26 +1707,47 @@
      step (in-app test, 6 October). So hs2 tells Helio the way Helio's own Add To Cart does,
      with Shopify's cart event: the count updates, the drawer refreshes and, for a single
      gift, opens on its Check out button. On a gift list the drawer stays shut, since the bar
-     below names the next gift. If Helio can't hear it, a bar offers checkout instead. */
+     below names the next gift. If Helio can't hear it, a bar offers checkout instead.
+     The event is built by hand, field for field as Shopify's standard-events.js builds
+     its CartLinesUpdateEvent, because Shopify minifies theme assets and its minifier turns
+     an import() of that module into a require() that fails in the browser. */
+  var GID = 'gid://shopify/';
+  function money(cents, currency) {
+    var digits = 2;
+    try { digits = new Intl.NumberFormat('en', { style: 'currency', currency: currency }).resolvedOptions().maximumFractionDigits; } catch (e) { /* default */ }
+    return (Number(cents) / 100).toFixed(digits);
+  }
+  function cartForEvent(cart) {
+    return {
+      id: GID + 'Cart/' + cart.token,
+      totalQuantity: cart.item_count,
+      cost: { totalAmount: { amount: money(cart.total_price, cart.currency), currencyCode: cart.currency } },
+      lines: (cart.items || []).map(function (it) {
+        return { id: String(it.key || it.id), quantity: it.quantity, cost: { totalAmount: { amount: money(it.final_line_price, cart.currency), currencyCode: cart.currency } } };
+      }),
+      discountCodes: (Array.isArray(cart.discount_codes) ? cart.discount_codes : []).map(function (c) { return { applicable: c.applicable, code: c.code }; })
+    };
+  }
   function announceAdd(items) {
     var list = queueGet().length > 0;
     var fallback = function () { if (!list) showNext('In your cart', 'Free US shipping.', shopRoot() + 'checkout', 'Check out'); };
     if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
-    import('@shopify/events').then(function (m) {
-      var E = m && m.CartLinesUpdateEvent;
-      if (!E || !E.createPromise) { fallback(); return; }
-      var d = E.createPromise();
-      var lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: String(it.variant_id), quantity: it.quantity || 1 }; });
-      var opts = { action: list ? 'update' : 'add', context: 'product', promise: d.promise };
-      if (!list && lines.length) opts.lines = lines;
-      document.dispatchEvent(new E(opts));
-      fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
-        .then(function (r) { return r.json(); })
-        .then(function (cart) {
-          d.resolve({ cart: E.createCartFromAjaxResponse(cart), detail: { items: cart.items, itemCount: cart.item_count, source: 'hs2-personalizer', didError: false } });
-        })
-        .catch(function (e) { d.reject(e); fallback(); });
-    }).catch(fallback);
+    var settle = {};
+    var promise = new Promise(function (resolve, reject) { settle.resolve = resolve; settle.reject = reject; });
+    promise.catch(function () { /* each listener handles its own */ });
+    var ev;
+    try { ev = new Event('shopify:cart:lines-update', { bubbles: true, cancelable: true }); } catch (e) { fallback(); return; }
+    ev.action = list ? 'update' : 'add';
+    ev.context = 'product';
+    ev.promise = promise;
+    if (!list) ev.lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: GID + 'ProductVariant/' + it.variant_id, quantity: it.quantity || 1 }; });
+    document.dispatchEvent(ev);
+    fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
+      .then(function (r) { if (!r.ok) throw new Error('cart ' + r.status); return r.json(); })
+      .then(function (cart) {
+        settle.resolve({ cart: cartForEvent(cart), detail: { items: cart.items, itemCount: cart.item_count, source: 'hs2-personalizer', didError: false } });
+      })
+      .catch(function (e) { settle.reject(e); fallback(); });
   }
   function hideNext() {
     var bar = document.querySelector('[data-hs2-next]');
