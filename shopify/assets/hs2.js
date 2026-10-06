@@ -1092,7 +1092,8 @@
      does, push the hero down by the overlap so the stamp and headline never sit under
      the logo or menu. Turning the overlay off in Helio's header settings also fixes it. */
   function clearHeader() {
-    var hero = document.querySelector('[data-hs2-hero]');
+    // whichever of ours opens the page: the hero on the homepage and landing, the buy box on a product page
+    var hero = document.querySelector('[data-hs2-hero]') || document.querySelector('.hs2-product');
     var header = document.querySelector('.header-section, header.shopify-section');
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
@@ -1109,6 +1110,8 @@
     });
     var overlap = bottom - top;
     if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
+    // a sticky gallery has to stop below the same line, or it slides back under the logo on scroll
+    document.documentElement.style.setProperty('--hs2-clear', Math.max(0, Math.ceil(bottom)) + 'px');
   }
 
   /* =================================================================== screens

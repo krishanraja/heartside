@@ -836,12 +836,46 @@ html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
 }
 #buy .tee-btn.tee-btn--atc:hover { background: #2a2422; color: var(--cream); }
 #buy .tee-btn.tee-btn--preview { min-height: 48px; border-radius: 12px; font-family: var(--sans); font-weight: 700; }
+
+/* Teeinblue's form in the house style. Left alone it draws a grey "PERSONALIZE" bar, a bright
+   blue upload button, blue chips and a blue-outlined Preview: a second brand inside ours.
+   Its own rules are specific, so these carry the id and !important where they must win. */
+#buy .tee-form-header { background: transparent !important; border-radius: 0 !important; padding: 0 0 10px !important; text-align: left !important; }
+#buy .tee-form-header__title { font-family: var(--mono) !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0.08em !important; color: var(--stamp) !important; text-transform: uppercase !important; }
+#buy .tee-form-wrapper, #buy .tee-customization-wrapper, #buy .tee-customize-main-form { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+#buy .tee-customization-form { padding: 0 !important; background: transparent !important; }
+#buy .tee-field { margin-bottom: 18px !important; }
+#buy .tee-field__heading { font-family: var(--sans) !important; font-size: 15px !important; font-weight: 700 !important; color: var(--ink) !important; }
+#buy .tee-asterisk { color: var(--stamp) !important; }
+#buy .tee-field__input input, #buy .tee-field__input textarea, #buy .tee-field__select select {
+  font-family: var(--sans) !important; font-size: 16px !important; color: var(--ink) !important; background: var(--white) !important;
+  border: 1.5px solid #d6c8bd !important; border-radius: 12px !important; box-shadow: none !important;
+}
+#buy .tee-field__input input:focus, #buy .tee-field__input textarea:focus { border-color: var(--ink) !important; outline: 3px solid var(--rose) !important; outline-offset: 1px; }
+#buy .tee-photo-placeholder { border: 2px dashed #d6c8bd !important; border-radius: 16px !important; background: var(--white) !important; }
+#buy .tee-btn.tee-btn--upload { background: var(--ink) !important; color: var(--cream) !important; border: 0 !important; border-radius: 12px !important; font-family: var(--sans) !important; font-size: 15px !important; font-weight: 700 !important; min-height: 44px !important; padding: 0 18px !important; }
+#buy .tee-upload-instruction { color: var(--muted) !important; font-style: normal !important; font-size: 13px !important; }
+#buy .tee-radio { background: transparent !important; border-radius: 12px !important; }
+#buy .tee-radio-label {
+  color: var(--ink) !important; background: var(--white) !important; border: 1.5px solid #d6c8bd !important; border-radius: 12px !important;
+  font-family: var(--sans) !important; font-size: 15px !important; box-shadow: none !important;
+}
+#buy .tee-radio.active .tee-radio-label, #buy .tee-radio:has(input:checked) .tee-radio-label { border: 2px solid var(--ink) !important; background: #fff4f2 !important; font-weight: 700 !important; }
+#buy .tee-clipart-checkmark { background: var(--stamp) !important; color: var(--white) !important; border-color: var(--white) !important; }
+#buy .tee-btn.tee-btn--preview { background: transparent !important; color: var(--ink) !important; border: 1.5px solid var(--ink) !important; border-radius: 12px !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 15px !important; }
+#buy .tee-btn.tee-btn--atc { min-height: 56px !important; height: auto !important; border-radius: 14px !important; }
+/* Teeinblue pins its Preview / quantity / Add To Cart bar to the top of the screen while the form
+   scrolls, so on a phone it covers the photo upload and the first fields. In place, it sits right
+   after the last answer, which the folded form keeps short. */
+#buy .tee-form-actions { position: relative !important; top: auto !important; bottom: auto !important; background: transparent !important; padding: 8px 0 0 !important; box-shadow: none !important; }
+.tee-btn-wrapper--personalize { background: #fbf6f1 !important; border-top: 1px solid #e8dcd3 !important; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)) !important; }
+.tee-btn-wrapper--personalize .tee-btn--personalize { font-family: "HS DM Sans", "DM Sans", system-ui, sans-serif !important; min-height: 48px; }
 .hs2-product .hs2-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 .hs2-product__fine { display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--rule); padding-top: 14px; }
 
 @media (max-width: 760px) { .hs2-product__info > .hs2-stamp { font-size: 11px; padding: 4px 8px; border-width: 2px; letter-spacing: 0.03em; white-space: nowrap; } }
 .hs2-product__when { margin-top: 6px; font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--stamp); letter-spacing: 0.03em; }
-@media (min-width: 900px) { .hs2-product__media { position: sticky; top: 20px; } }
+@media (min-width: 900px) { .hs2-product__media { position: sticky; top: calc(var(--hs2-clear, 0px) + 16px); } }
 
 
 /* --------------------------------------------- approve: the stamp lands */
