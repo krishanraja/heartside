@@ -257,6 +257,10 @@ const written = [
   // before either goes live
   await page('index-hero-b.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B }; return t; }),
   await page('landing-hero-b.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }, (t) => { t.sections.hero.settings = { ...t.sections.hero.settings, ...HERO_B }; return t; }),
+  // the shop-first homepage and its product pages (hidden ?view=shop templates), for Krish to judge
+  await page('index-shop.html', 'index.shop.json', { template: { name: 'index', suffix: 'shop' } }),
+  await page('product-shop.html', 'product.shop.json', { product: products.poster, template: { name: 'product', suffix: 'shop' } }),
+  await page('product-shopgift.html', 'product.shopgift.json', { product: products.pillow, template: { name: 'product', suffix: 'shopgift' } }),
   await page('index-hero-a.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];
 // Helio's cart drawer, as the live store rendered it on 5 October with a framed poster in it

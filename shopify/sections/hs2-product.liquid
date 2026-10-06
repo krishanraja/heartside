@@ -81,9 +81,9 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}" id="buy" data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy" data-hs2-option-labels="{{ option_labels | escape }}">
 
-    <div class="hs2-product__media" data-hs2-media>
+    <div class="hs2-product__media" data-hs2-media{% if s.open_on == 'photo' and product.media.size > 0 %} data-open="photo" data-show="photo"{% endif %}>
       <div class="hs2-product__tib" data-hs2-tib-gallery></div>
       {%- if s.show_poster -%}
         <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
@@ -237,6 +237,17 @@
   "class": "hs2-section",
   "settings": [
     { "type": "checkbox", "id": "show_poster", "label": "Show the live review poster", "info": "On for the Annual Review products. It fills in from the shopper's homepage answers.", "default": false },
+    {
+      "type": "select", "id": "open_on", "label": "Gallery opens on", "default": "preview",
+      "options": [
+        { "value": "preview", "label": "The live preview" },
+        { "value": "photo", "label": "The first product photo, then the preview once a photo is added" }
+      ]
+    },
+    {
+      "type": "select", "id": "photo_shape", "label": "Photo shape", "default": "square",
+      "options": [ { "value": "square", "label": "Square" }, { "value": "portrait", "label": "Portrait, 4:5" } ]
+    },
     { "type": "text", "id": "shot", "label": "Placeholder tag when the product has no images", "default": "[PRODUCT SHOT]" },
     { "type": "text", "id": "option_labels", "label": "Plain names for product options", "info": "Option: name, split by |. Options with one value are hidden. Example: Color: Frame | Size: Size", "default": "Size: Size" }
   ],

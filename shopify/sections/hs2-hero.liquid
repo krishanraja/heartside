@@ -18,7 +18,7 @@
         <div class="hs2-namecard__row">
           <input id="dogname-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit"
             autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog" data-hs2-cycle="Biscuit,Gerald,Pickle,Waffles,Moose,Duchess">
-          <a class="hs2-btn" href="#review">{{ s.button }}</a>
+          <a class="hs2-btn" href="{{ s.link | default: '#review' }}">{% render 'hs2-t', text: s.button %}</a>
         </div>
         {%- if s.note != blank -%}<div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>{%- endif -%}
       </div>
@@ -67,6 +67,7 @@
     { "type": "textarea", "id": "what", "label": "What it is, in plain words", "info": "Leave empty to let the subline carry this instead (it does, by default now: the review's premise is already the hook, so the hero doesn't need to explain the format twice before showing it)." },
     { "type": "text", "id": "name_label", "label": "Name field label", "default": "Your dog's name" },
     { "type": "text", "id": "button", "label": "Button", "default": "Make my poster" },
+    { "type": "text", "id": "link", "label": "Button goes to", "info": "#review for the review builder, #shop for the gift grid. Empty means #review.", "default": "#review" },
     { "type": "text", "id": "note", "label": "Note under the field", "info": "Empty hides it." },
     { "type": "text", "id": "status", "label": "Status pill", "default": "Status: in a meeting (asleep)" },
     { "type": "text", "id": "proof", "label": "Proof line under the name card", "info": "Short facts split by |. A Christmas countdown follows them automatically.", "default": "A person checks every order | Misprinted? We make it right | Free US shipping" },

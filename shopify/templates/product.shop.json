@@ -1,0 +1,144 @@
+{
+  "sections": {
+    "main": {
+      "type": "hs2-product",
+      "settings": {
+        "show_poster": true,
+        "option_labels": "Color: Frame | Size: Size",
+        "open_on": "photo",
+        "photo_shape": "portrait"
+      },
+      "blocks": {
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "product": "the-annual-review",
+            "text": "<p>{dogs} review of your year, printed for the fridge, the office or the wall by {dogs} bed: your name, {dogs} headshot and the three notes you picked, on a 12 × 18 inch poster of thick matte paper.</p><p>Frame not included. {dog} has requested one in next year's budget. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
+        },
+        "description_framed": {
+          "type": "description",
+          "settings": {
+            "product": "the-annual-review-framed",
+            "text": "<p>The same review, framed and ready to hang. {dog} felt the paperwork deserved it.</p><p>A 12 × 18 inch poster on thick matte paper, in a black, red oak or white wood frame with an acrylic front, hanging hardware included. Made after you order, and a person checks it before it prints. Free US shipping.</p>"
+          }
+        },
+        "answers": {
+          "type": "answers"
+        },
+        "teeinblue_product_personalizer_product_app_block_4fiR9C": {
+          "type": "shopify://apps/teeinblue-product-personalizer/blocks/product-app-block/67212f31-32b0-450c-97dd-7e182a5fac7b",
+          "settings": {
+            "enable_design_mode": false,
+            "loading_background_color": "#000000",
+            "show_price": false,
+            "show_available_product": false,
+            "show_color": true,
+            "show_size": true,
+            "show_form": true,
+            "show_action_buttons": true
+          }
+        },
+        "buy": {
+          "type": "buy"
+        },
+        "frame_it": {
+          "type": "upsell",
+          "settings": {
+            "product": "the-annual-review-framed"
+          }
+        },
+        "fine": {
+          "type": "fine"
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "description",
+        "description_framed",
+        "answers",
+        "teeinblue_product_personalizer_product_app_block_4fiR9C",
+        "buy",
+        "frame_it",
+        "fine"
+      ]
+    },
+    "faq": {
+      "type": "hs2-faq",
+      "blocks": {
+        "p1": {
+          "type": "promise",
+          "settings": {
+            "title": "A person checks every order before it prints.",
+            "text": "If the photo won't print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "promise",
+          "settings": {
+            "title": "Misprinted or damaged? Full refund or a free remake.",
+            "text": "Email a photo within 30 days of delivery."
+          }
+        },
+        "p3": {
+          "type": "promise",
+          "settings": {
+            "title": "Every review gets published, good or bad.",
+            "text": "We're new, so there are none yet."
+          }
+        },
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "My dog's photos are all blurry. Is that a problem?",
+            "answer": "Send your best one. A person checks it before printing and tells you if it needs a better shot. You can also send it after you order."
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order a review for a friend's dog?",
+            "answer": "Yes. That is most of the fun. Fill in their dog and their name, and we ship it straight to them."
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change what the review says?",
+            "answer": "Within 12 hours of ordering, yes. After that, {dog} considers the matter closed."
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "Where do you ship?",
+            "answer": "Anywhere in the US, free."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "settings": {
+        "close_text": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "faq"
+  ]
+}

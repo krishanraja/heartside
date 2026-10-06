@@ -1,0 +1,184 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hs2-hero",
+      "settings": {
+        "button": "See the gifts",
+        "link": "#shop"
+      }
+    },
+    "shop": {
+      "type": "hs2-shop",
+      "settings": {
+        "eyebrow": "EVERYTHING, ONE PHOTO",
+        "heading": "Pick what you want. Personalize once.",
+        "subheading": "Free US shipping, however many you choose.",
+        "hint": "Tap to pick. You add the photo and names on the next screen.",
+        "cta_one": "Personalize it",
+        "cta_many": "Personalize them"
+      },
+      "blocks": {
+        "poster": {
+          "type": "item",
+          "settings": {
+            "product": "the-annual-review",
+            "kind": "12 × 18 in poster",
+            "fallback": "none",
+            "view": "shop",
+            "checked": true
+          }
+        },
+        "framed": {
+          "type": "item",
+          "settings": {
+            "product": "the-annual-review-framed",
+            "kind": "Framed, ready to hang",
+            "fallback": "none",
+            "view": "shop"
+          }
+        },
+        "ornament": {
+          "type": "item",
+          "settings": {
+            "product": "tiny-me-for-the-tree",
+            "kind": "Ceramic ornament · 3 in",
+            "fallback": "ornament-tree",
+            "view": "shopgift"
+          }
+        },
+        "pillow": {
+          "type": "item",
+          "settings": {
+            "product": "the-body-double",
+            "kind": "Photo pillow · 16 in",
+            "fallback": "pillow-sofa",
+            "view": "shopgift"
+          }
+        }
+      },
+      "block_order": [
+        "poster",
+        "framed",
+        "ornament",
+        "pillow"
+      ]
+    },
+    "faq": {
+      "type": "hs2-faq",
+      "blocks": {
+        "p1": {
+          "type": "promise",
+          "settings": {
+            "title": "A person checks every order before it prints.",
+            "text": "If the photo won't print well, we tell you first."
+          }
+        },
+        "p2": {
+          "type": "promise",
+          "settings": {
+            "title": "Misprinted or damaged? Full refund or a free remake.",
+            "text": "Email a photo within 30 days of delivery."
+          }
+        },
+        "p3": {
+          "type": "promise",
+          "settings": {
+            "title": "Every review gets published, good or bad.",
+            "text": "We're new, so there are none yet."
+          }
+        },
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "My dog's photos are all blurry. Is that a problem?",
+            "answer": "Send your best one. A person checks it before printing and tells you if it needs a better shot. You can also send it after you order."
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order a review for a friend's dog?",
+            "answer": "Yes. That is most of the fun. Fill in their dog and their name, and we ship it straight to them."
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Can I change what the review says?",
+            "answer": "Within 12 hours of ordering, yes. After that, {dog} considers the matter closed."
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "Where do you ship?",
+            "answer": "Anywhere in the US, free."
+          }
+        },
+        "q5": {
+          "type": "question",
+          "settings": {
+            "question": "When will it arrive?",
+            "answer": "Everything is made for you after a person checks it, then ships free anywhere in the US. Once our maker confirms this year's last order date for Christmas, it goes in the bar at the top of the page."
+          }
+        },
+        "q6": {
+          "type": "question",
+          "settings": {
+            "question": "Can I see it before it prints?",
+            "answer": "Yes. The product page shows a live preview as you fill it in, and a person checks it again before anything prints."
+          }
+        },
+        "q7": {
+          "type": "question",
+          "settings": {
+            "question": "What if something is wrong with it?",
+            "answer": "Email a photo of the problem to krish@heartside.io within 30 days of delivery. If it arrived misprinted, damaged or wrong, you get a full refund or a free remake, your choice. Each one is made for you, so we can't take returns for a change of mind."
+          }
+        },
+        "q8": {
+          "type": "question",
+          "settings": {
+            "question": "What happens to my dog's photo?",
+            "answer": "On this page it stays on your phone. When you add it in the personalizer, it goes to our print partner so they can make your order."
+          }
+        },
+        "q9": {
+          "type": "question",
+          "settings": {
+            "question": "Who do I complain to?",
+            "answer": "{dog}. Response times vary. For anything that needs a human, email krish@heartside.io."
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ]
+    },
+    "signoff": {
+      "type": "hs2-signoff",
+      "settings": {
+        "compact": true,
+        "button": "See the gifts",
+        "link": "#shop"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "shop",
+    "faq",
+    "signoff"
+  ]
+}

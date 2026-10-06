@@ -1549,10 +1549,156 @@
     try { if (window.Shopify && window.Shopify.analytics && window.Shopify.analytics.publish) window.Shopify.analytics.publish('hs2_' + name, data || {}); } catch (e) { /* analytics off */ }
   }
 
+  /* ------------------------------------------------------------- gift list
+     The shop grid (hs2-shop) keeps the gifts a shopper picked in sessionStorage and opens the
+     first. Each product page personalizes as usual (the bridge carries the photo and names);
+     after its Add To Cart, a bar offers the next gift not yet in the cart, then checkout. */
+  var QKEY = 'hs2-queue';
+  function queueGet() { try { var q = JSON.parse(window.sessionStorage.getItem(QKEY) || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } }
+  function queueSet(q) { try { if (q && q.length) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ } }
+  function handleOf(u) { var m = /\/products\/([^/?#]+)/.exec(u || ''); return m ? decodeURIComponent(m[1]) : ''; }
+  function shopRoot() { return (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/'; }
+  function shop() {
+    document.querySelectorAll('[data-hs2-shop]').forEach(function (root) {
+      if (root.__hs2) return; root.__hs2 = true;
+      var boxes = Array.prototype.slice.call(root.querySelectorAll('[data-hs2-shop-check]'));
+      var bar = root.querySelector('[data-hs2-shop-bar]'), go = root.querySelector('[data-hs2-shop-go]');
+      var count = root.querySelector('[data-hs2-shop-count]'), total = root.querySelector('[data-hs2-shop-total]'), hint = root.querySelector('[data-hs2-shop-hint]');
+      var picked = function () { return boxes.filter(function (b) { return b.checked; }); };
+      var update = function () {
+        var p = picked();
+        boxes.forEach(function (b) { var card = b.closest('.hs2-shop__item'); if (card) card.classList.toggle('is-picked', b.checked); });
+        if (bar) bar.hidden = !p.length;
+        if (hint) hint.hidden = p.length > 0;
+        if (!p.length) return;
+        var cents = p.reduce(function (s, b) { return s + (parseInt(b.getAttribute('data-price'), 10) || 0); }, 0);
+        if (count) count.textContent = p.length === 1 ? '1 gift' : p.length + ' gifts';
+        if (total) total.textContent = '$' + (cents % 100 ? (cents / 100).toFixed(2) : String(cents / 100));
+        if (go) go.textContent = (p.length === 1 ? go.getAttribute('data-one') : go.getAttribute('data-many')) || go.textContent;
+      };
+      boxes.forEach(function (b) {
+        b.addEventListener('change', function () { update(); if (b.checked) track('shop_pick', { gift: b.getAttribute('data-title') }); });
+      });
+      if (go) go.addEventListener('click', function (e) {
+        var p = picked();
+        if (!p.length) return;
+        e.preventDefault();
+        var q = p.map(function (b) { return { url: b.getAttribute('data-url'), title: b.getAttribute('data-title') }; });
+        queueSet(q);
+        track('shop_go', { gifts: q.length });
+        window.location.href = q[0].url;
+      });
+      update();
+    });
+  }
+  // Teeinblue adds to the cart with its own request; watch for any successful /cart/add
+  function onCartAdd(cb) {
+    (onCartAdd.cbs = onCartAdd.cbs || []).push(cb);
+    if (onCartAdd.hooked) return;
+    onCartAdd.hooked = true;
+    var fire = function () { setTimeout(function () { onCartAdd.cbs.forEach(function (f) { try { f(); } catch (e) { /* keep going */ } }); }, 400); };
+    var isAdd = function (u) { return /\/cart\/add(\.js)?(?:[?#]|$)/.test(String(u || '')); };
+    if (window.fetch) {
+      var f0 = window.fetch;
+      window.fetch = function (input) {
+        var u = typeof input === 'string' ? input : (input && input.url);
+        var pr = f0.apply(this, arguments);
+        if (isAdd(u)) pr.then(function (r) { if (r && r.ok) fire(); }, function () {});
+        return pr;
+      };
+    }
+    if (window.XMLHttpRequest) {
+      var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send;
+      X.open = function (m, u) { this.__hs2add = isAdd(u); return open0.apply(this, arguments); };
+      X.send = function () {
+        if (this.__hs2add) this.addEventListener('load', function () { if (this.status >= 200 && this.status < 300) fire(); });
+        return send0.apply(this, arguments);
+      };
+    }
+  }
+  function hideNext() {
+    var bar = document.querySelector('[data-hs2-next]');
+    if (bar) bar.remove();
+    document.documentElement.classList.remove('hs2-has-next');
+  }
+  function showNext(title, sub, href, label) {
+    var onCart = /^\/cart\/?$/.test(location.pathname);
+    var anchor = onCart && document.querySelector('.cart-totals__tax-note');
+    if (anchor) {
+      // on the cart page the next step sits in the page, beside the totals, not over them
+      var a = document.querySelector('[data-hs2-next-inline]');
+      if (!a) { a = document.createElement('a'); a.className = 'hs2-next-inline'; a.setAttribute('data-hs2-next-inline', ''); anchor.parentNode.insertBefore(a, anchor); }
+      a.href = href; a.textContent = title + ' · ' + label;
+      return;
+    }
+    var bar = document.querySelector('[data-hs2-next]');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'hs2-next';
+      bar.setAttribute('data-hs2-next', '');
+      bar.setAttribute('role', 'status');
+      bar.innerHTML = '<div class="hs2-next__text"><strong></strong><span></span></div><a class="hs2-next__go"></a><button type="button" class="hs2-next__x" aria-label="Close">&times;</button>';
+      bar.querySelector('.hs2-next__x').addEventListener('click', function () { hideNext(); queueSet([]); });
+      document.body.appendChild(bar);
+    }
+    bar.querySelector('strong').textContent = title;
+    bar.querySelector('.hs2-next__text span').textContent = sub;
+    var go = bar.querySelector('.hs2-next__go');
+    go.textContent = label; go.href = href;
+    document.documentElement.classList.add('hs2-has-next');
+  }
+  function queueBar() {
+    var q = queueGet();
+    if (!q.length) return;
+    fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (cart) {
+        var inCart = {};
+        (cart.items || []).forEach(function (it) { inCart[it.handle] = true; });
+        var here = handleOf(location.pathname);
+        var left = q.filter(function (it) { return !inCart[handleOf(it.url)]; });
+        // on a gift still to personalize, this page is the step: no bar until it's in the cart
+        if (left.some(function (it) { return handleOf(it.url) === here; })) { hideNext(); return; }
+        var next = left[0];
+        if (next) {
+          var done = q.length - left.length;
+          showNext('Next: ' + next.title, done + ' of ' + q.length + ' in your cart. Photo and names carry over.', next.url, 'Personalize it');
+        } else {
+          showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping.', shopRoot() + 'checkout', 'Check out');
+        }
+      })
+      .catch(function () { /* the bar is a convenience; the cart still works */ });
+  }
+  function giftList() {
+    if (giftList.done) return;
+    giftList.done = true;
+    if (!document.querySelector('#buy') && !/^\/cart\/?$/.test(location.pathname)) return;
+    // nothing to do (and nothing hooked) unless the shopper came through the gift grid
+    if (!queueGet().length) return;
+    onCartAdd(queueBar);
+    queueBar();
+  }
+  // a product page that opens on its photo switches to the shopper's live preview once they add one
+  function previewOnPhoto() {
+    var media = document.querySelector('[data-hs2-media][data-open="photo"]');
+    if (!media || previewOnPhoto.done) return;
+    previewOnPhoto.done = true;
+    document.addEventListener('change', function (e) {
+      var t = e.target;
+      if (!t || t.type !== 'file' || !t.closest || !t.closest('.tee-field--photo')) return;
+      setTimeout(function () {
+        media.removeAttribute('data-show');
+        var pv = media.querySelector('[data-hs2-thumb-preview]');
+        media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
+      }, 900);
+    }, true);
+  }
+
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
+    shop(); giftList(); previewOnPhoto();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
@@ -1564,7 +1710,7 @@
   window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); }, 120); });
   window.addEventListener('load', function () { clearHeader(); layout(); setTimeout(function () { clearHeader(); layout(); }, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); layout(); });
+  document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
   window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
