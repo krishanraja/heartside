@@ -975,22 +975,48 @@
   }
   function photoInput() { return document.querySelector('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]'); }
   function handedKey() { return 'hs2-handed-' + (productId() || location.pathname); }
-  function handed() { try { return window.localStorage.getItem(handedKey()) === String(usePhoto.t); } catch (e) { return false; } }
+  function handed() {
+    if (handed.mem === handedKey() + String(usePhoto.t)) return true;
+    try { return window.localStorage.getItem(handedKey()) === String(usePhoto.t); } catch (e) { return false; }
+  }
+  function markHanded(t) {
+    handed.mem = handedKey() + String(t);
+    try { window.localStorage.setItem(handedKey(), String(t)); } catch (e) { /* private mode */ }
+  }
+  // Teeinblue took the photo: its crop dialog opened, or its field offers "Choose another image"
+  function tibTookPhoto() {
+    var f = document.querySelector('.tee-field--photo');
+    return !!document.querySelector('.vm--container') || !!(f && /choose another image/i.test(f.innerText || ''));
+  }
   /* Hands the review's photo to Teeinblue's own upload field, the way picking a file does.
-     Used both automatically (handoff, below) and by the fallback button. */
-  function doHandoff(box) {
+     Used both automatically (handoff, below) and by the fallback button. Teeinblue draws its
+     upload field a beat before it listens to it: a gift list's second gift handed the photo
+     over 0.2s after the field appeared and Teeinblue never saw it (6 October). So the hand-off
+     checks that Teeinblue took it and tries again, a few times, if it didn't. */
+  function doHandoff(box, attempt) {
+    attempt = attempt || 0;
     var target = photoInput();
     var st = document.querySelector('[data-hs2-bridge-status]');
     try {
       var dt = new DataTransfer();
       dt.items.add(new File([usePhoto.file], usePhoto.file.name || 'headshot.jpg', { type: usePhoto.file.type || 'image/jpeg' }));
       target.files = dt.files;
-      target.dispatchEvent(new Event('change', { bubbles: true }));
-      try { window.localStorage.setItem(handedKey(), String(usePhoto.t)); } catch (e) { /* private mode */ }
+      doHandoff.busy = true;
+      try { target.dispatchEvent(new Event('change', { bubbles: true })); } finally { doHandoff.busy = false; }
+      markHanded(usePhoto.t);
       if (box) box.hidden = true;
       bridge.photoReady = false; if (bridge.folded) fold(true);
       if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
-      track('photo_handoff');
+      if (!attempt) track('photo_handoff');
+      var t0 = Date.now(), file = usePhoto.file;
+      clearInterval(doHandoff.watch);
+      doHandoff.watch = setInterval(function () {
+        if (tibTookPhoto() || usePhoto.file !== file) { clearInterval(doHandoff.watch); return; }
+        if (Date.now() - t0 < 1200) return;
+        clearInterval(doHandoff.watch);
+        if (attempt < 4) doHandoff(box, attempt + 1);
+        else if (box) box.hidden = false; // Teeinblue never took it: the button lets the shopper try
+      }, 150);
     } catch (e) {
       if (box) box.hidden = false; // let the shopper send it themselves
       if (st) { st.__hs2photo = true; st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
@@ -1017,6 +1043,27 @@
     if (bridge.photoReady !== can) { bridge.photoReady = can; if (bridge.folded) fold(true); }
     if (can) { doHandoff(box); return; }
     box.hidden = true;
+  }
+  /* A photo picked in Teeinblue's own upload field is kept the same way as one from the
+     review's attach box, so the next gift on a gift list opens with it. The in-app test on
+     6 October found the second gift opening on an empty photo box, under a bar promising
+     the photo carries over. This page's field already holds the photo, so it is marked as
+     handed here and never sent back in. */
+  function keepTibPhoto() {
+    if (keepTibPhoto.done) return;
+    keepTibPhoto.done = true;
+    document.addEventListener('change', function (e) {
+      var inp = e.target;
+      if (doHandoff.busy || !inp || inp.type !== 'file' || !inp.matches) return;
+      if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
+      var f = inp.files && inp.files[0];
+      if (!f || !/^image\//.test(f.type)) return;
+      var t = Date.now();
+      markHanded(t);
+      usePhoto(f, t);
+      savePhoto(f, t);
+      track('photo_attached', { where: 'personalizer' });
+    }, true);
   }
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;
@@ -1616,19 +1663,28 @@
       update();
     });
   }
-  // Teeinblue adds to the cart with its own request; watch for any successful /cart/add
+  /* Teeinblue adds to the cart with its own request; watch for any successful /cart/add.
+     Each callback gets the added lines as /cart/add answers them (null if unreadable). */
   function onCartAdd(cb) {
     (onCartAdd.cbs = onCartAdd.cbs || []).push(cb);
     if (onCartAdd.hooked) return;
     onCartAdd.hooked = true;
-    var fire = function () { setTimeout(function () { onCartAdd.cbs.forEach(function (f) { try { f(); } catch (e) { /* keep going */ } }); }, 400); };
+    var fire = function (body) {
+      var items = body && (Array.isArray(body.items) ? body.items : body.variant_id ? [body] : null);
+      setTimeout(function () { onCartAdd.cbs.forEach(function (f) { try { f(items); } catch (e) { /* keep going */ } }); }, 400);
+    };
     var isAdd = function (u) { return /\/cart\/add(\.js)?(?:[?#]|$)/.test(String(u || '')); };
     if (window.fetch) {
       var f0 = window.fetch;
       window.fetch = function (input) {
         var u = typeof input === 'string' ? input : (input && input.url);
         var pr = f0.apply(this, arguments);
-        if (isAdd(u)) pr.then(function (r) { if (r && r.ok) fire(); }, function () {});
+        if (isAdd(u)) pr.then(function (r) {
+          if (!r || !r.ok) return;
+          var copy = null;
+          try { copy = r.clone(); } catch (e) { /* body already read */ }
+          if (copy) copy.json().then(fire, function () { fire(null); }); else fire(null);
+        }, function () {});
         return pr;
       };
     }
@@ -1636,10 +1692,41 @@
       var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send;
       X.open = function (m, u) { this.__hs2add = isAdd(u); return open0.apply(this, arguments); };
       X.send = function () {
-        if (this.__hs2add) this.addEventListener('load', function () { if (this.status >= 200 && this.status < 300) fire(); });
+        if (this.__hs2add) this.addEventListener('load', function () {
+          if (this.status < 200 || this.status >= 300) return;
+          var body = null;
+          try { body = JSON.parse(this.responseText); } catch (e) { /* not JSON */ }
+          fire(body);
+        });
         return send0.apply(this, arguments);
       };
     }
+  }
+  /* Teeinblue's Add To Cart tells nobody: the header's cart count stayed at nothing and the
+     cart drawer stayed shut, leaving a shopper from an ad with a small green line and no next
+     step (in-app test, 6 October). So hs2 tells Helio the way Helio's own Add To Cart does,
+     with Shopify's cart event: the count updates, the drawer refreshes and, for a single
+     gift, opens on its Check out button. On a gift list the drawer stays shut, since the bar
+     below names the next gift. If Helio can't hear it, a bar offers checkout instead. */
+  function announceAdd(items) {
+    var list = queueGet().length > 0;
+    var fallback = function () { if (!list) showNext('In your cart', 'Free US shipping.', shopRoot() + 'checkout', 'Check out'); };
+    if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
+    import('@shopify/events').then(function (m) {
+      var E = m && m.CartLinesUpdateEvent;
+      if (!E || !E.createPromise) { fallback(); return; }
+      var d = E.createPromise();
+      var lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: String(it.variant_id), quantity: it.quantity || 1 }; });
+      var opts = { action: list ? 'update' : 'add', context: 'product', promise: d.promise };
+      if (!list && lines.length) opts.lines = lines;
+      document.dispatchEvent(new E(opts));
+      fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (cart) {
+          d.resolve({ cart: E.createCartFromAjaxResponse(cart), detail: { items: cart.items, itemCount: cart.item_count, source: 'hs2-personalizer', didError: false } });
+        })
+        .catch(function (e) { d.reject(e); fallback(); });
+    }).catch(fallback);
   }
   function hideNext() {
     var bar = document.querySelector('[data-hs2-next]');
@@ -1694,6 +1781,11 @@
       })
       .catch(function () { /* the bar is a convenience; the cart still works */ });
   }
+  function confirmAdds() {
+    if (confirmAdds.done || !document.querySelector('#buy')) return;
+    confirmAdds.done = true;
+    onCartAdd(announceAdd);
+  }
   function giftList() {
     if (giftList.done) return;
     giftList.done = true;
@@ -1743,7 +1835,7 @@
     guardSearchFocus();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); previewOnPhoto();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
