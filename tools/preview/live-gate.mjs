@@ -92,14 +92,22 @@ function inspect() {
     if (w > 4 && h > 4) fails.push(`overlap: ${label(a)} and ${label(b)} (${Math.round(w)}x${Math.round(h)}px)`);
   }
 
-  // 4. Teeinblue's own blue, anywhere a shopper can see it
-  const BLUE = /rgb\((19, 80, 222|54, 109, 238)\)/;
+  // 4. Teeinblue's own blue, anywhere a shopper can see it. The house palette has no blue at all,
+  //    so any blue-dominant colour in a visible paint property is someone else's default.
+  const isBlue = (c) => { const m = /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/.exec(c || ''); if (!m) return false; const [r, g, b, a] = [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]]; return a > 0.2 && b > 150 && b > r + 70 && b > g + 40; };
+  // anywhere on the page, not just the first screen: the form sits below the fold
+  const rendered = (el) => { const r = el.getBoundingClientRect(); return r.width >= 2 && r.height >= 2 && (!el.checkVisibility || el.checkVisibility({ opacityProperty: true, visibilityProperty: true })); };
   document.querySelectorAll('.teeinblue-item *, [class*="tee-"]').forEach((el) => {
-    if (!vis(el)) return;
+    if (!rendered(el)) return;
     const cs = getComputedStyle(el);
-    for (const p of ['color', 'backgroundColor', 'borderTopColor']) {
-      if (BLUE.test(cs[p]) && (p !== 'borderTopColor' || parseFloat(cs.borderTopWidth) > 0)) { fails.push(`Teeinblue blue (${p}) on ${label(el)}`); return; }
-    }
+    const painted = {
+      color: (el.innerText || '').trim() ? cs.color : '',
+      backgroundColor: cs.backgroundColor,
+      borderTopColor: parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== 'none' ? cs.borderTopColor : '',
+      outlineColor: parseFloat(cs.outlineWidth) > 0 && cs.outlineStyle !== 'none' ? cs.outlineColor : '',
+      fill: el instanceof SVGElement ? cs.fill : '', stroke: el instanceof SVGElement && cs.stroke !== 'none' ? cs.stroke : '',
+    };
+    for (const [p, c] of Object.entries(painted)) if (isBlue(c)) { fails.push(`blue ${p} ${c} on ${label(el)}`); return; }
   });
 
   // 5. Teeinblue's action bar pinned over its own form
