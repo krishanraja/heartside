@@ -1,0 +1,30 @@
+{
+  "name": "hs_lotd-leaving_7s_v1",
+  "series": "Line of the day",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 7.0,
+      "photo": "assets/v2/side-of-bed.jpg",
+      "zoom": [
+        1.0,
+        1.09
+      ],
+      "focus": [
+        0.55,
+        0.6
+      ],
+      "label": "FORM HR-26",
+      "hook": "My dog wrote my annual review.",
+      "form": {
+        "heading": "AREAS FOR IMPROVEMENT",
+        "line": "Leaving. Please stop leaving.",
+        "delay": 0.9,
+        "cps": 20,
+        "footer": "FROM THE ANNUAL REVIEW \u00b7 HEARTSIDE.IO"
+      },
+      "hook_at": "card",
+      "card_at": "top"
+    }
+  ]
+}

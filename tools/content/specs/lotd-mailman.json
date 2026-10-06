@@ -1,0 +1,29 @@
+{
+  "name": "hs_lotd-mailman_7s_v1",
+  "series": "Line of the day",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 7.5,
+      "photo": "assets/v2/window-watch.jpg",
+      "zoom": [
+        1.0,
+        1.09
+      ],
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "label": "FORM HR-26",
+      "hook": "My dog did a threat assessment.",
+      "form": {
+        "heading": "THREAT ASSESSMENT",
+        "line": "The mailman. Comes every day. Clearly planning something.",
+        "delay": 0.9,
+        "cps": 20,
+        "footer": "FROM THE ANNUAL REVIEW \u00b7 HEARTSIDE.IO"
+      },
+      "hook_at": "card"
+    }
+  ]
+}

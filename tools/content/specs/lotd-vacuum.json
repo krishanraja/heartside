@@ -1,0 +1,29 @@
+{
+  "name": "hs_lotd-vacuum_7s_v1",
+  "series": "Line of the day",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 7.0,
+      "photo": "assets/v2/vacuum.jpg",
+      "zoom": [
+        1.0,
+        1.09
+      ],
+      "focus": [
+        0.45,
+        0.55
+      ],
+      "label": "FORM HR-26",
+      "hook": "My dog did a threat assessment.",
+      "form": {
+        "heading": "THREAT ASSESSMENT",
+        "line": "The vacuum. Loud. Hungry. Unemployable.",
+        "delay": 0.9,
+        "cps": 20,
+        "footer": "FROM THE ANNUAL REVIEW \u00b7 HEARTSIDE.IO"
+      },
+      "hook_at": "card"
+    }
+  ]
+}

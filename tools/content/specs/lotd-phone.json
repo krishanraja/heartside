@@ -1,0 +1,29 @@
+{
+  "name": "hs_lotd-phone_7s_v1",
+  "series": "Line of the day",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 7.5,
+      "photo": "assets/v2/status-asleep.jpg",
+      "zoom": [
+        1.0,
+        1.09
+      ],
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "label": "FORM HR-26",
+      "hook": "My dog wrote my annual review.",
+      "form": {
+        "heading": "AREAS FOR IMPROVEMENT",
+        "line": "Looked at a rectangle for six hours instead of me.",
+        "delay": 0.9,
+        "cps": 20,
+        "footer": "FROM THE ANNUAL REVIEW \u00b7 HEARTSIDE.IO"
+      },
+      "hook_at": "card"
+    }
+  ]
+}

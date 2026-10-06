@@ -1,0 +1,29 @@
+{
+  "name": "hs_lotd-sock_7s_v1",
+  "series": "Line of the day",
+  "scenes": [
+    {
+      "type": "photo",
+      "dur": 7.0,
+      "photo": "assets/v2/incident.jpg",
+      "zoom": [
+        1.0,
+        1.09
+      ],
+      "focus": [
+        0.45,
+        0.5
+      ],
+      "label": "FORM HR-26",
+      "hook": "My dog filed an incident report.",
+      "form": {
+        "heading": "INCIDENT REPORT",
+        "line": "The sock. I would do it again. Case closed.",
+        "delay": 0.9,
+        "cps": 20,
+        "footer": "FROM THE ANNUAL REVIEW \u00b7 HEARTSIDE.IO"
+      },
+      "hook_at": "card"
+    }
+  ]
+}

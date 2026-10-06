@@ -13,7 +13,8 @@ Writes content/out/<name>.mp4 and a contact sheet <name>.jpg (one frame per scen
 
 Scene types:
   photo   a library photo, slow push-in, with an optional hook card (top) and an optional
-          form card (lower middle) whose line types itself out, with typewriter sound
+          form card (lower middle) whose line types itself out, with typewriter sound;
+          "hook_at": "card" puts the hook at the head of the form card instead
   poster  the real poster, pushed in, with the APPROVED stamp slamming on
   end     a scene photo (or "scene": a staged scene from tools/preview/mockups.py, which
           then holds this reel's own poster) with the end card (headline, offer, address), arriving at end.at
@@ -176,17 +177,27 @@ def hook_card(text, label=None):
     return card
 
 
-def form_card(heading, line, shown, cursor_on):
+def form_card(heading, line, shown, cursor_on, footer=None, footer_k=0.0, hook=None, label=None):
     tmp = ImageDraw.Draw(Image.new('RGB', (10, 10)))
-    fh, fl = font('courier-bold', 34), font('courier', 52)
+    fh, fl, fk = font('courier-bold', 34), font('courier', 52), font('dmsans', 54, wght=600)
     full = wrap(tmp, line, fl, 936 - 96)
-    h = 44 + 44 + 26 + len(full) * 70 + 40
+    hook_lines = wrap(tmp, hook, fk, 936 - 96) if hook else []
+    top = (40 + (52 if label else 0) + len(hook_lines) * 66 + 18) if hook else 0
+    h = top + 44 + 44 + 26 + len(full) * 70 + 40 + (62 if footer else 0)
     card = Image.new('RGB', (936, h), PAPER)
     d = ImageDraw.Draw(card)
-    d.rectangle((48, 40, 936 - 48, 43), fill=INK)
-    spaced(d, (48, 62), heading, fh, INK, 5)
+    if hook:
+        y = 40
+        if label:
+            spaced(d, (48, y), label, font('courier-bold', 28), BERRY, 5)
+            y += 52
+        for ln in hook_lines:
+            d.text((48, y), ln, font=fk, fill=INK)
+            y += 66
+    d.rectangle((48, top + 40, 936 - 48, top + 43), fill=INK)
+    spaced(d, (48, top + 62), heading, fh, INK, 5)
     # type the line out, wrapping exactly as the full line will
-    left, y = shown, 62 + 44 + 26
+    left, y = shown, top + 62 + 44 + 26
     last = (48, y)
     for ln in full:
         part = ln[:max(left, 0)]
@@ -198,6 +209,11 @@ def form_card(heading, line, shown, cursor_on):
         y += 70
     if cursor_on:
         d.rectangle((last[0] + 4, last[1] + 6, last[0] + 30, last[1] + 58), fill=BERRY)
+    if footer and footer_k > 0:
+        y = h - 40 - 34
+        c = tuple(int(255 + (v - 255) * footer_k) for v in BERRY)
+        d.rectangle((48, y - 18, 936 - 48, y - 17), fill=tuple(int(255 + (v - 255) * footer_k) for v in INK))
+        spaced(d, (48, y), footer, font('courier-bold', 26), c, 4)
     return card
 
 
@@ -348,7 +364,7 @@ def build(spec_path):
                     a = int(sc['shade'] * 255 * max(0, (y - H * 0.45) / (H * 0.55)))
                     gd.line((0, y, W, y), fill=(0, 0, 0, a))
                 frame.alpha_composite(g)
-            if sc.get('hook'):
+            if sc.get('hook') and not (sc.get('form') and sc.get('hook_at') == 'card'):
                 k = ease((t - sc['t0']) / 0.25)
                 card = hook_card(sc['hook'], sc.get('label'))
                 # top of the safe zone, or its foot when the top would cover the dog's face
@@ -360,9 +376,14 @@ def build(spec_path):
                 shown = int(max(0, (t - start) * rate)) if t >= start else 0
                 done = shown >= len(sc['form']['line'])
                 cursor = (not done) or (int(t * 2.2) % 2 == 0)
-                card = form_card(sc['form']['heading'], sc['form']['line'], shown, cursor)
+                end_t = start + len(sc['form']['line']) / rate
+                fk = ease((t - end_t - 0.5) / 0.4)
+                in_card = sc.get('hook_at') == 'card'
+                card = form_card(sc['form']['heading'], sc['form']['line'], shown, cursor, sc['form'].get('footer'), fk,
+                                 sc.get('hook') if in_card else None, sc.get('label') if in_card else None)
                 k = ease((t - sc['t0']) / 0.22)
-                y = int(1500 - card.height + (1 - k) * 60)
+                # at the foot of the safe zone, or its top when the dog lies low in the shot
+                y = int((270 if sc.get('card_at') == 'top' else 1500 - card.height) + (1 - k) * 60)
                 shadowed(frame, card, (72, y))
             if sc['type'] == 'end':
                 e = sc['end']
