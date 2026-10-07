@@ -12,7 +12,7 @@ Version 2, 4 October 2026. Written for Claude Code (or any AI or human with zero
 4. Sections 7 to 9 are the visual direction, the site build and the copy.
 5. Section 10 holds the guardrails. They are firm.
 6. Section 11 lists what is still undecided. Do not invent answers to those; surface them.
-7. `AD-BRIEF.md` is the video plan. `STORE-STATE.md` is what is actually in Shopify today. `../assets/README.md` explains the brand assets.
+7. `archive/AD-BRIEF.md` was the v1 video plan and `archive/STORE-STATE.md` the store on 4 October; both are history now. `HANDOFF.md` is current. `../assets/README.md` explains the brand assets.
 
 What is decided and what is open is marked throughout. "Decided" means Krish has said it or approved it. "Recommended" means it is Claude's call and Krish can overturn it.
 

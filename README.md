@@ -1,12 +1,12 @@
 # Heartside
 
-Heartside sells gifts written by your dog. The brand sign-off is "Your dog has notes." and the tagline is "Keep them close." The store runs on Shopify, sells to the US, and launches on 20 October 2026 at heartside.io.
+Heartside sells personalised gifts written by your dog: The Annual Review poster, its framed version, the Tiny Me ornament and The Body Double pillow, made to order by Printful for US customers at heartside.io. The brand sign-off is "Your dog has notes." and the tagline is "Keep them close." The site is live; launch (posting and ads) is 20 October 2026, and the goal is $10,000 in sales by Christmas.
 
-Start with `docs/V2-FROM-THE-DOG.md`, the current plan: positioning, the comedy bible, range, prices and fulfilment. It replaces the ornament-led plan. `docs/BRIEF.md` still holds the guardrails (no invented reviews, scarcity or claims).
+**Picking this up? Start with [`docs/HANDOFF.md`](docs/HANDOFF.md).** It holds the state of everything, the hard rules, the work left in order, how to change and deploy the site, how to test the purchase path, how to make videos, and an index of every asset.
 
-- `design/`: the approved canvas source. `Main.dc.html` is the landing page and its copy is approved word for word. `Poster.dc.html` is the printed poster. `poster-template/` holds the print files for Teeinblue.
-- `shopify/`: the theme sections (homepage and two product templates) built from the canvas, with install notes and screenshots in its README. GitHub Actions deploys them into the unpublished "Heartside launch" theme (`.github/workflows/shopify-theme-push.yml`).
-- `docs/TEEINBLUE-SETUP.md`: the six product templates and the drafts-only order setting, for the Claude Desktop session that has the Teeinblue connector.
-- `assets/`: brand files, licensed dog photos, the Canva lifestyle set in `v2/` (see the image brief, which also lists the Printful mockups still to come), and the social sharing image.
-- `tools/`: scripts that build the theme assets and print files, and a local preview that renders the Liquid and screenshots it.
-- `ornament/`, `docs/COWORK-PROMPT.md`, `docs/HANDOFF.md`, `docs/STORE-STATE.md`: v1 history, kept for reference.
+- `docs/`: the handoff manual, the current plan (`V2-FROM-THE-DOG.md`), the guardrails (`BRIEF.md`), the browser-session prompts, and `archive/` (history, don't act on it).
+- `shopify/`: the theme code (our sections, snippets, templates, `hs2.js`, `hs2.css`), deployed by `.github/workflows/shopify-theme-push.yml`. `shopify/README.md` documents every section.
+- `tools/preview/`: local render, Theme Check, the minify check, the live-store gate and the in-app purchase test.
+- `tools/content/`: the video builder and its specs.
+- `content/`: rendered videos kept for reference (the first set is in `content/v1-2026-10-06/`).
+- `design/`, `assets/`, `ornament/`: design source, print templates, product photos, the photo library and brand files.

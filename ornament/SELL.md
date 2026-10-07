@@ -46,7 +46,7 @@ Thank-you page and confirmation email: **"[Name] is going on the tree. Who else 
 
 ## Videos for the ornament
 
-These come before the sling concepts in `docs/AD-BRIEF.md`, because the ornament is now the hero. The specs, file naming, disclosure rules and test plan there still apply. Use the real product once a sample arrives. A generated ornament must match the print file exactly: the same heart, the same line, the same back.
+These come before the sling concepts in `docs/archive/AD-BRIEF.md`, because the ornament is now the hero. The specs, file naming, disclosure rules and test plan there still apply. Use the real product once a sample arrives. A generated ornament must match the print file exactly: the same heart, the same line, the same back.
 
 ### G. "The flip" (lead concept)
 
@@ -103,4 +103,4 @@ Judge hooks on shares and sends per 1,000 views first, then 3-second hold. A hoo
 - **Guilt and mortality** ("they won't be here forever"), and anything about loss or memorials. It's the most tempting line for an ornament, and the brief rules it out. It would make Heartside a grief brand, and the front only works because the dog is right there on the sofa.
 - **Fake scarcity** (resetting timers, "only 3 left", "selling fast"). The product is printed on demand, so any stock claim would be false. False urgency is an FTC enforcement area, and misleading claims break Meta's and TikTok's ad policies.
 - **Invented reactions and reviews**, including AI-generated "customers" crying at their gift. The FTC rule on fake reviews and testimonials (in force since October 2024) carries civil penalties, and a restricted ad account sells nothing. Real reactions from real buyers, with permission, are the best content you'll get, so ask for them in the review email.
-- **AI-generated people presented as real.** Label generated footage where the platform requires it (see `docs/AD-BRIEF.md` section 2).
+- **AI-generated people presented as real.** Label generated footage where the platform requires it (see `docs/archive/AD-BRIEF.md` section 2).

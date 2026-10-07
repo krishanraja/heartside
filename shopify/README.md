@@ -73,7 +73,7 @@ The template is `templates/product.landing.json`. It needs no assigning: any pro
 - **Instagram / Facebook:** `https://heartside.io/products/<poster-handle>?view=landing&utm_source=instagram&utm_medium=paid_social&utm_campaign={{campaign.name}}&utm_content={{ad.name}}`
 - **TikTok:** `https://heartside.io/products/<poster-handle>?view=landing&utm_source=tiktok&utm_medium=paid_social&utm_campaign=__CAMPAIGN_NAME__&utm_content=__CID_NAME__`
 
-Add Teeinblue's app block to the landing template too (`docs/SHOPIFY-BROWSER-PROMPT.md` task 5).
+Add Teeinblue's app block to the landing template too (`docs/archive/SHOPIFY-BROWSER-PROMPT.md` task 5).
 
 ## The Teeinblue bridge
 

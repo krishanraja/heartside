@@ -87,7 +87,7 @@ engine.registerTag('form', {
 });
 
 // --------------------------------------------------------------- mock store
-// The four launch products as Teeinblue created them (docs/ADMIN-RUN-2026-10-04.md): three
+// The four launch products as Teeinblue created them (docs/archive/ADMIN-RUN-2026-10-04.md): three
 // options each, "Available Product", "Color" and "Size", most with one value, and Printful's
 // stock description, which Teeinblue rewrites on every campaign update.
 const PRINTFUL = '<p>Museum-quality posters made on thick matte paper. Add a wonderful accent to your room and office with these posters that are sure to brighten any environment.</p>';

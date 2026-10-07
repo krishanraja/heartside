@@ -121,7 +121,7 @@ Printful #2 Enhanced Matte Paper Framed Poster, 12×18, frames black / white / r
 
 ### 3. The Body Double: $59
 
-Live since 4 October (docs/ADMIN-RUN-2026-10-04.md): handle `the-body-double`, campaign 1032878.
+Live since 4 October (docs/archive/ADMIN-RUN-2026-10-04.md): handle `the-body-double`, campaign 1032878.
 
 - **Printful product:** All-Over Print Basic Pillow, **16″ × 16″** only (Teeinblue base 364803). Printful's shaped pillow isn't available through Teeinblue.
 - **Template:** "The Body Double (16in square)", the dog's photo full-bleed at 5100 px with the cropper on. Whether the back carries the same print is unconfirmed (check Printful's product details). No background removal.
