@@ -1,5 +1,7 @@
 # Heartside: handoff manual
 
+> **12 October 2026: read [`POSITIONING.md`](POSITIONING.md) first.** Krish changed the positioning and approved the $10k social plan. Where this file and `POSITIONING.md` disagree on headlines, brand copy or social, `POSITIONING.md` wins. What lives in this repo, what lives in Google Drive, and which copy is canonical: [`SYNC.md`](SYNC.md). Facts below were refreshed on 12 Oct where marked.
+
 Written 7 October 2026 by the Claude Code session that built the site, so that anyone (a person, Cowork, ChatGPT, another Claude) can pick the business up with nothing but this repo and Krish's logins. It replaces the 4 October hand-off, which described the v1 store (sling, tag, 30% off) and is now in `docs/archive/HANDOFF-2026-10-04.md`.
 
 Read sections 1 to 3 before touching anything. Section 4 is the work left, in order. Section 5 is how to do each kind of job. Sections 6 to 9 are reference.
@@ -8,7 +10,7 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 
 ## 1. What this is and why it matters
 
-**Heartside** (heartside.io) sells personalised gifts "written by your dog", to US customers, made to order by Printful. The joke: the dog is Head of Household at "Heartside Household Inc." and has written your annual performance review. The hero product is **The Annual Review**, a 12×18 poster printed with the customer's dog photo, their names and HR-style lines the customer picks ("Areas for improvement: Leaving. Please stop leaving."). It ends "Contract renewed. For life." and carries an APPROVED stamp.
+**Heartside** (heartside.io) sells personalized dog gifts to US customers, made to order by Printful. The lead line is "Your dog loves you too." (12 Oct; see `POSITIONING.md`). The joke: the dog is Head of Household at "Heartside Household Inc." and has written your annual performance review. The hero product is **The Annual Review**, a 12×18 poster printed with the customer's dog photo, their names and HR-style lines the customer picks ("Areas for improvement: Leaving. Please stop leaving."). It ends "Contract renewed. For life." and carries an APPROVED stamp.
 
 **Dates and the goal.** The site is live now. Launch (ads and posting) is **20 October 2026**. Krish's target is **$10,000 in sales by Christmas**, roughly 180 to 250 orders depending on the mix. The last order date for Christmas delivery is about **10 December** (Printful's US cutoff is 11 December; confirm per product in the Printful dashboard before publishing any date).
 
@@ -44,8 +46,8 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 | Personaliser | **Teeinblue** app ($49/month) | Builds the live preview and print file, sends the order to Printful |
 | Printing | **Printful** app | Manual confirm is ON: each order waits as a draft until someone confirms it |
 | Products | The Annual Review $39 (`/products/the-annual-review`), The Annual Review Framed $89 (`/products/the-annual-review-framed`), Tiny Me For The Tree ornament $24 (`/products/tiny-me-for-the-tree`), The Body Double 16″ pillow $59 (`/products/the-body-double`) | Free US shipping on all. Margins: `docs/V2-FROM-THE-DOG.md` section 4. Break-even ad cost per poster sale is about $21 |
-| Meta | Facebook Page "Heartside: From Your Dog", Instagram @yourdoghasnotes, an ad account, the Facebook & Instagram Shopify channel | See open items: pixel, payment method, Instagram link, catalog |
-| TikTok | Not verified by Claude | Krish says a TikTok page exists |
+| Meta | Facebook Page "Heartside: Personalized Dog Gifts" (facebook.com/yourdoghasnotes), Instagram @yourdoghasnotes (connected to the Page, checked 12 Oct), an ad account, the Facebook & Instagram Shopify channel | See open items: pixel, payment method, catalog. Profile state: `POSITIONING.md` section 5 |
+| TikTok | @yourdoghasnotes, personal account (checked 12 Oct) | Switching to a Business account asked for a US EIN; not needed for organic posting. A clickable bio link comes at 1,000 followers |
 | Video tools | **Higgsfield** (Ultra plan, 2,319 credits on 6 Oct, none spent on Heartside yet); Runway not set up | Krish's own "video engine" repo (`krishanraja/content-engine`) is built for Mindmake and is not used here |
 | Email | krish@heartside.io | |
 
@@ -68,7 +70,6 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 - **Meta:**
   - The pixel isn't connected to the ad account.
   - The ad account has no payment method.
-  - Instagram isn't linked to the Page.
   - Only 2 of 4 products are in the catalog (the ornament and pillow are missing).
 - **Old store leftovers:** a "Dropshipper-AI Shipping" profile still holds 31 old products.
 - **No real order has gone through yet.** Emulation can't prove the phone's photo picker, HEIC photos, Apple Pay, or that Teeinblue makes the print file for a paid order. One Teeinblue request (`PUT .../customization/<id>/cart-token`) is cut off in every test run; it is probably harmless, and only a real order will tell.
@@ -84,7 +85,7 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
 1. **A real sample order from inside Instagram** (Krish). DM himself `heartside.io/products/the-annual-review`, open it inside Instagram, and order with a real dog photo. Then, in Printful > Orders, check the draft's print file (crop, names, spelling) and confirm it. This is the only proof that the whole chain works (Shopify > Teeinblue print file > Printful > shipping), and it is the physical sample the content needs. Note anything awkward on the phone; each one is a bug.
 2. **Run `docs/COWORK-PROMPT-2026-10-07.md` in a browser session with Krish** (Cowork or any browser agent; Krish logs in). It covers:
    - Teeinblue labels and product descriptions (via the 6 Oct prompt).
-   - Meta: catalog 4/4, pixel connected to the ad account, Instagram linked. Krish adds the card himself.
+   - Meta: catalog 4/4, pixel connected to the ad account. Instagram is already linked to the Page (12 Oct). Krish adds the card himself.
    - The shipping profiles.
    - Asking Krish about the test order and a bundle discount.
 
@@ -100,6 +101,7 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
 
 **Content (the plan Krish agreed on 6 October, with an open question on style)**
 
+- **12 Oct update:** the social plan in `POSITIONING.md` section 6 now governs content: Meta first, 20 US creators, the comment loop, AI-made daily Reels, and a two-week A/B test of the review roast against the love letter. The style question below is still open.
 - Volume: 2 posts a day from 13 Oct, each cut posted to Instagram Reels, TikTok and Facebook Reels. 15 ad versions ready by 20 Oct.
 - Five series:
   1. **Line of the day:** one real poster line over a dog shot. The daily volume.
@@ -204,8 +206,10 @@ Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md
 
 | File | Status |
 |---|---|
-| `docs/HANDOFF.md` (this) | **Current. Start here.** |
-| `docs/V2-FROM-THE-DOG.md` | **Current** plan: positioning, voice, range, prices, margins, fulfilment, ad ideas. Its "launch offer" and "order bump" ideas are not all built; check the live site |
+| `docs/POSITIONING.md` | **Current. Read first.** Positioning, Krish's reasons, social profile state and the $10k social plan (12 Oct). Wins over older docs on headlines and brand copy |
+| `docs/SYNC.md` | **Current.** What lives in the repo, what lives in Drive, and which copy is canonical |
+| `docs/HANDOFF.md` (this) | **Current.** State, hard rules, work left, how-tos |
+| `docs/V2-FROM-THE-DOG.md` | Range, prices, margins, fulfilment and ad ideas still current. Its positioning and headline copy are superseded by `POSITIONING.md` (12 Oct). Its "launch offer" and "order bump" ideas are not all built; check the live site |
 | `docs/BRIEF.md` | Guardrails section still applies (honesty, claims). The product content is v1 |
 | `shopify/README.md` | **Current** reference for every theme section, the Teeinblue bridge, the ad landing links and the funnel pixel |
 | `docs/COWORK-PROMPT-2026-10-07.md` | **Current** browser-session prompt (open admin work) |
@@ -229,6 +233,8 @@ Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md
 | Approved design canvas source | `design/Main.dc.html` (landing copy, approved word for word), `design/Poster.dc.html` |
 | Redesign preview screenshots | `design/redesign-2026-10-06/` |
 | Social share image (live) | `design/share-image/heartside-share-1200x630.jpg` |
+| Social profile images (12 Oct) | `assets/heartside-avatar-biscuit-1080.jpg` (Biscuit, all three platforms), `assets/heartside-fb-cover-1640x624.jpg` (Facebook cover) |
+| Brand system and Canva links | `design/BRAND-SYSTEM.md`, `design/CANVA-SOURCES.md` |
 | Fonts | `shopify/assets/*.woff2` (site), `tools/fonts/` and `tools/content/fonts/` (TTF for images and video); all OFL |
 | First videos | `content/v1-2026-10-06/` |
 | In-app purchase proof | `docs/evidence/inapp-2026-10-06/` |
@@ -236,6 +242,8 @@ Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md
 
 ## 9. Recent decisions and why
 
+- **Positioning changed (12 Oct, Krish).** Display name "Heartside: Personalized Dog Gifts", lead line "Your dog loves you too." Krish found "a poster of your dog reviewing you" lame as the business headline and rejected "gifts written by your dog". Business headlines must never be lame or dumb; the HR joke stays inside the poster and in content. Full reasoning: `POSITIONING.md`.
+- **$10k social plan approved (12 Oct, Krish).** Meta first, 20 gifted US creators with Collabs commission, US-only for now. `POSITIONING.md` section 6.
 - **Poster first, ornament second, pillow third; framed is an upsell on the poster page** (5 Oct). The $39 poster is the funny thing people send; an $89 framed joke is a big ask from a stranger. The ornament has the thinnest margin, so it rides along.
 - **No 30% off on the new range.** At 30% off the poster's contribution falls to about $9. Free US shipping is priced in.
 - **The cart drawer opens after a single gift is added** (6 Oct). The test found ad shoppers left with no next step. On a gift list the drawer stays shut, so the next-gift bar can lead.
@@ -248,4 +256,5 @@ Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md
 1. Verdict on heartside.io/?view=shop.
 2. Which content style, after seeing two or three directions.
 3. A bundle discount: yes or no, and what (for example 15% off two or more).
-4. His timezone, for scheduled check-ins.
+4. Settled: Krish is in London (Europe/London time).
+5. Whether "Your dog has notes." stays as the end-card line on ads.

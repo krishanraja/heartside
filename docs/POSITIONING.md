@@ -1,6 +1,6 @@
 # Heartside positioning and social plan (12 October 2026)
 
-Decided by Krish on 12 October 2026 in a Cowork session. **Where this file disagrees with older docs on positioning, headlines or brand copy, this file wins.** That includes `V2-FROM-THE-DOG.md`, `BRIEF.md`, `HANDOFF.md` and the Drive `Brand-system.md`. Facts in `HANDOFF.md` (products, prices, fulfilment, hard rules) still stand. A copy of this file is in the Heartside Google Drive folder as `POSITIONING-2026-10-12.md`.
+Decided by Krish on 12 October 2026 in a Cowork session. **Where this file disagrees with older docs on positioning, headlines or brand copy, this file wins.** That includes `V2-FROM-THE-DOG.md`, `BRIEF.md`, `HANDOFF.md` and the Drive `Brand-system.md`. Facts in `HANDOFF.md` (products, prices, fulfilment, hard rules) still stand. This repo copy is canonical; Drive holds a mirror at `Heartside/POSITIONING.md` (see [`SYNC.md`](SYNC.md)).
 
 ## 1. The positioning
 

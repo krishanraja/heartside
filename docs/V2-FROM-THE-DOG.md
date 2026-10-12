@@ -1,5 +1,7 @@
 # Heartside v2: Your dog has notes
 
+> **Superseded in part (12 October 2026).** Positioning, headlines and brand copy in this file are replaced by [`POSITIONING.md`](POSITIONING.md): the display name is "Heartside: Personalized Dog Gifts" and the lead line is "Your dog loves you too." The range, prices, margins, fulfilment, comedy rules for the poster and ad ideas below still stand.
+
 Build pack for Claude Code and for Krish. Written 4 October 2026. This replaces the ornament-led plan in `docs/COWORK-PROMPT.md` and the quiet-editorial art direction in `docs/BRIEF.md` section 7. Everything else in BRIEF.md still stands: no invented reviews, customers, numbers or scarcity, no safety or health claims, and no grief or loss used to sell anything.
 
 The visual reference for everything below is the Design canvas "Heartside: From the dog" (claude.ai artifact). It holds the landing page (interactive), the poster and five ad storyboards. When this file and the canvas disagree, the canvas wins on look and this file wins on facts.
