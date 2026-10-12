@@ -7,3 +7,9 @@ These are the source files of the approved design canvas, exported so Claude Cod
 - `Ad1`–`Ad5` are the ad storyboards. `ads/AD-SCRIPTS.md` has the same ads in full.
 
 Image URLs starting `/_blob/` only resolve inside the canvas. Replace them with the images listed in `assets/IMAGE-BRIEF.md`.
+
+## Brand files (added 12 Oct 2026)
+
+- `BRAND-SYSTEM.md`: the brand book (voice, colour, type, imagery), updated for the 12 Oct positioning. Mirrored in Drive at `00_Brand-Assets/01_Identity/Brand-system.md` and `06_Claude-Design-System/Heartside-Brand-system.md`.
+- `CANVA-SOURCES.md`: links to the editable Canva sources.
+- The full design system (tokens, components, previews) is the claude.ai Design System artifact; its export lives in Drive `06_Claude-Design-System`. See `docs/SYNC.md`.
