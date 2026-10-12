@@ -10,6 +10,8 @@ Three files supplied by Krish, and two built from them. Use the supplied files a
 
 | `favicon-512.png` | 512 x 512, transparent | Built from the watercolour heart by `tools/build_brand_assets.py` | Shopify favicon (Online Store > Themes > Customize > Theme settings > Favicon). |
 | `social-share-1200x628.png` | 1200 x 628 | Built by `tools/build_brand_assets.py`: wordmark, "Gifts for people whose dog is their person.", and the ornament | Shopify social sharing image (Online Store > Preferences). It carries no offer or date on purpose, because platforms cache it for weeks. Uses the hero dachshund, so it waits on that licence too. |
+| `heartside-avatar-biscuit-1080.jpg` | 1080 x 1080 | Biscuit's headshot (`v2/biscuit-headshot.jpg`) cropped tighter for a circle | Profile photo on Instagram, Facebook and TikTok (12 Oct 2026). |
+| `heartside-fb-cover-1640x624.jpg` | 1640 x 624 | "Your dog loves you too." with the real poster print, site fonts | Facebook Page cover (12 Oct 2026). Text sits clear of the profile photo on wide and narrow layouts. |
 
 ## Photos
 
