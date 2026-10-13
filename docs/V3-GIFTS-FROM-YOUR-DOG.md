@@ -252,7 +252,7 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 4. **AI:** live Gemini AI in version one, with Krish's key, running through his existing n8n (credential "Google Gemini(PaLM) - Heartside"). Heartside stays on Shopify with no new outside project. Section 5.4.
 5. **Approved:** the fulfilment routine, a twice-daily batch check of every order's print file with an AI pre-check that flags problems first. Cowork sets this up; it is not part of the theme build.
 
-Still open: switching on the n8n webhooks, Krish's go-live approval on Sunday, and any spend (test orders).
+Still open: Krish's go-live approval on Sunday, and any spend (test orders). The n8n webhooks were switched on by Krish on 13 Oct (section 13).
 
 ## 13. Decision log (append only)
 
@@ -265,6 +265,8 @@ Still open: switching on the n8n webhooks, Krish's go-live approval on Sunday, a
 - 2026-10-13: AI drawings from answers deferred to phase two, as illustrations, gated by a five-dog likeness test.
 - 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Live AI stays in version one, as agreed, using Gemini with Krish's key. Krish: "This is a Shopify business": no new outside project. Where the key sits is his call (5.4).
 - 2026-10-13: The Gemini key is in Krish's n8n as "Google Gemini(PaLM) - Heartside"; the AI runs through n8n webhooks. Sample order #1001 (the old HR-ring ornament) refunded by Krish; he reorders once the v3 page and products are live.
+
+- 2026-10-13: Krish: "Build the two n8n webhooks and the site against section 11, switch everything on and merge everything to main." Built: the two webhooks are live in n8n (`n8n/README.md`), and the chat is in the theme as `hs3-chat` on hidden templates `?view=gifts` and `?view=landing` (`shopify/README.md`, v3). The live homepage is unchanged: the four gift products don't exist in Shopify yet, and section 7 keeps publishing for Sunday.
 
 ## 14. Next action
 

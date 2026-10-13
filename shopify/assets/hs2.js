@@ -45,8 +45,25 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
+    if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
     return v || (NAMES.indexOf(k) === -1 ? DEFAULTS[k] : '');
+  }
+  /* v3, gifts from your dog (docs/V3-GIFTS-FROM-YOUR-DOG.md). The chat (hs3.js) leaves its
+     words in this same state: hs3_lines (home, spot, together, meaning) and hs3_kinds, which
+     gift each product handle is. Each Teeinblue campaign numbers its lines in the order below,
+     so "Line 1" on the mug is the home line and on the ornament the meaning line. */
+  var V3_ANSWER = /^(line[1-4]|signed|hs_answers|hs_lines|hs_ship_to)$/;
+  var V3_ORDER = { mug: ['home', 'spot', 'meaning'], ornament: ['meaning'], blanket: ['home', 'spot', 'together', 'meaning'], print: ['home', 'spot', 'together', 'meaning'] };
+  function v3Kind() { var kinds = state.hs3_kinds || {}; return kinds[handleOf(window.location.pathname)] || ''; }
+  function v3Answer(k) {
+    var lines = state.hs3_lines || {};
+    if (k === 'signed') { var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
+    if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
+    var order = V3_ORDER[v3Kind()] || V3_ORDER.print;
+    if (k === 'hs_lines') return order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
+    var key = order[Number(k.slice(4)) - 1];
+    return key ? String(lines[key] || '') : '';
   }
   function missingNames() { return NAMES.filter(function (k) { return !answer(k); }); }
   function engaged() { return !!(answer('dog') || answer('person')); }
@@ -642,6 +659,12 @@
      into the order's hidden answers. Tested against Teeinblue's storefront code on
      its demo store, 4 October 2026. */
   var TIB_RULES = [
+    // v3 gifts: the words and the signature (labels "Line 1" to "Line 4" and "Signed")
+    { k: 'line1', re: /^\s*line\s*1\b/i },
+    { k: 'line2', re: /^\s*line\s*2\b/i },
+    { k: 'line3', re: /^\s*line\s*3\b/i },
+    { k: 'line4', re: /^\s*line\s*4\b/i },
+    { k: 'signed', re: /^\s*sign(ed|ature)\b/i },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
     { k: 'cupboard', re: /cupboard|treat/i },
@@ -799,7 +822,11 @@
       if (inp.tagName === 'SELECT') {
         var o = inp.options[inp.selectedIndex], all = lines(k);
         Object.keys(all).forEach(function (label) { if (o && (norm(o.textContent) === norm(label) || norm(o.textContent) === norm(all[label]))) state[k] = label; });
-      } else {
+      } else if (/^line[1-4]$/.test(k)) {
+        // a v3 line edited in the personalizer flows back to the gift's words
+        var key = (V3_ORDER[v3Kind()] || V3_ORDER.print)[Number(k.slice(4)) - 1];
+        if (key) { state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value; }
+      } else if (k !== 'signed') {
         state[k] = inp.value;
       }
       save(); render();

@@ -189,6 +189,12 @@
                     </select>
                   </div>
                 {%- endif -%}
+                {%- if block.settings.v3 -%}
+                  {%- comment -%} v3 gifts: what the buyer told Biscuit and the words on the gift, for the person who checks the order {%- endcomment -%}
+                  <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
+                  <input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">
+                  <input type="hidden" name="properties[_hs_ship_to]" data-hs2-prop="hs_ship_to" value="">
+                {%- else -%}
                 <input type="hidden" name="properties[_Manager]" data-hs2-prop="dog" value="">
                 <input type="hidden" name="properties[_Employee]" data-hs2-prop="person" value="">
                 <input type="hidden" name="properties[_Treat cupboard]" data-hs2-prop="cupboard" value="">
@@ -196,6 +202,7 @@
                 <input type="hidden" name="properties[_Incident]" data-hs2-prop="incident" value="">
                 <input type="hidden" name="properties[_Enemy]" data-hs2-prop="enemy" value="">
                 <input type="hidden" name="properties[_Read-aloud video]" data-hs2-prop="voice" value="">
+                {%- endif -%}
                 {%- unless tib -%}
                   <button type="submit" name="add" class="hs2-btn" data-hs2-add{% unless current.available %} disabled{% endunless %}>
                     {%- if current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
@@ -273,7 +280,7 @@
         { "type": "text", "id": "photo_button", "label": "Headshot button", "info": "The photo now hands itself to the personalizer as soon as it can. This button only shows if that fails, as a fallback.", "default": "Use {dogs} headshot" }
       ]
     },
-    { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "paragraph", "content": "With Teeinblue's app block on the page, Teeinblue's own button adds to cart, because only it attaches the print file. This button then hides." }, { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" } ] },
+    { "type": "buy", "name": "Add to cart", "limit": 1, "settings": [ { "type": "paragraph", "content": "With Teeinblue's app block on the page, Teeinblue's own button adds to cart, because only it attaches the print file. This button then hides." }, { "type": "text", "id": "label", "label": "Button", "default": "Add to cart" }, { "type": "checkbox", "id": "v3", "label": "Gifts from your dog (v3)", "info": "Adds the chat answers and the gift's words to the order as hidden properties instead of the review's.", "default": false } ] },
     {
       "type": "upsell", "name": "Upsell link", "limit": 1,
       "settings": [
