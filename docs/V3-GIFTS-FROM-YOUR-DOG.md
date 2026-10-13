@@ -144,7 +144,7 @@ The chips already produce good lines without AI. The AI makes it feel like it kn
 
 Chip-only paths use the scripted lines and reactions and make no AI call. That keeps the common path instant and free.
 
-**Version one (Sunday) runs with no AI calls at all** (decided 13 Oct, see 5.4). The approved prototype is fully scripted, and that is what ships. Live AI (1 to 3 above) arrives in week two, once Krish picks where it runs.
+All three ship in version one, on Sunday.
 
 ### 5.2 Contract
 
@@ -178,16 +178,15 @@ Chip-only paths use the scripted lines and reactions and make no AI call. That k
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
 - The model is never asked to draw. No per-visitor image generation in version one (see section 10).
 
-### 5.4 Where it runs (decided 13 Oct)
+### 5.4 Where it runs
 
-- **Heartside stays a Shopify business. Version one adds no server, no outside project and no API key.** The conversation runs entirely in the Shopify theme, scripted as in the approved prototype.
-- **"Something else" in version one:** the buyer's own words go onto the gift as typed, trimmed to 44 characters and checked in the browser against the banned word list and for em dashes. Biscuit answers with a warm scripted reaction that fits any answer, for example "Ooh. I'm writing that down." The person checking each order sees exactly what was typed.
-- **Why there's no live AI on Sunday:** a Shopify theme can't hide a key (everything in it reaches the shopper's browser), and a GitHub secret only reaches GitHub's own automation, never a shopper's chat. Live AI therefore needs one small place outside the theme that holds the key, and Krish hasn't chosen one.
-- **Week two, Krish to choose:**
-  1. **n8n** (recommended): a webhook in the n8n account Krish already runs, using n8n's built-in Gemini access, so no new account and no key to manage.
-  2. **Google's Firebase AI Logic:** Google's own way to call Gemini from a website, protected by App Check. Needs a free Firebase project.
-  3. **A Gemini key in the page**, locked to heartside.io and capped with a daily quota in Google Cloud. Cheapest, but anyone can copy the key and spend up to the cap.
-- **The key, whenever there is one:** Krish adds it himself in that service's settings. It never goes in the repo, the theme, a doc, a log or a chat.
+- **Live AI ships in version one. The model is Google Gemini, with Krish's key.** Heartside stays a Shopify business: no new outside project.
+- A Shopify theme sends everything in it to the shopper's browser, so the key has to sit behind something the shopper can't read. Two ways that use only what Krish already has:
+  1. **Recommended: Krish's existing n8n.** A webhook workflow in his n8n holds the Gemini key (or uses n8n's built-in Gemini access) and returns the JSON in 5.2. The theme calls that webhook. The key never reaches the browser.
+  2. **Krish's GitHub route:** the Gemini key stored as a GitHub Actions secret, injected into the theme by the deploy workflow. No other service, but the key is readable in the page, so it must be locked to heartside.io in Google Cloud and capped with a daily quota and a budget alert, so the worst case is a capped bill.
+- Krish confirms which before the AI is wired in. Build everything else in the meantime.
+- **The key:** Krish adds it himself (n8n credentials, or GitHub's Actions secrets page). It never goes in the repo, a doc, a log or a chat.
+- **Guard rails either way:** only heartside.io and the preview theme may call it, a cap of 8 calls per session, and the scripted lines as the fallback whenever the AI is slow or fails.
 
 ## 6. Printing the words (Teeinblue and Printful)
 
@@ -207,7 +206,7 @@ Chip-only paths use the scripted lines and reactions and make no AI call. That k
 - The chat runs on the home page and on `?view=landing` for ad traffic. State persists in the browser for the session (answers and photo), so a reload or a jump to a product page loses nothing.
 - Log a step event for each question shown, answered and skipped, plus reveal, gift tab taps, choose and add to cart, so the weakest question can be cut in week one.
 - Respect `prefers-reduced-motion`. Touch targets at least 44 px. Text contrast 4.5:1.
-- Privacy: version one sends the answers nowhere except the order itself. When live AI arrives in week two, say on the page that answers are processed by an AI service, update the privacy policy, and never send the buyer's email or address to it.
+- Privacy: say on the page that answers are processed by an AI service to write the words, and update the privacy policy to match. Don't send the buyer's email or address to the AI.
 
 ## 8. Marketing (EPIC)
 
@@ -240,7 +239,7 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 ## 11. Done for Sunday (pass or fail)
 
 1. On a real iPhone inside the Instagram app and a real Android phone inside the Facebook app, a new visitor completes the chat with chips only in under 90 seconds and reaches the cart with two gifts.
-2. "Something else" puts the buyer's own typed words on the gift (44 characters at most, banned words and em dashes refused) with a warm scripted reaction from Biscuit. No network call.
+2. "Something else" with a typed answer returns a reaction and a line within 3 seconds, or falls back cleanly.
 3. Each of the four gift templates prints the longest allowed lines (44 characters, 14-character names, apostrophes) without clipping, checked on Teeinblue's real print file at full size.
 4. The all-"Not sure" path produces a warm, complete gift.
 5. One real order with at least two gifts goes Shopify > Teeinblue > Printful draft with correct print files (Krish approves the spend).
@@ -253,10 +252,10 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 1. **Prices approved:** Mug $29, Blanket $89, Framed Print $89, Ornament $24, or $19 with another gift.
 2. **Approved:** hide the HR poster, its framed version and the pillow at launch (hidden, not deleted).
 3. Unframed print at $39 stays off the launch menu (Cowork's recommendation; Krish can add it).
-4. **AI:** Heartside stays on Shopify. Version one ships scripted, with no AI server and no key. Live AI with Gemini comes in week two; where it runs is still Krish's choice (section 5.4).
+4. **AI:** live Gemini AI in version one, with Krish's key. Heartside stays on Shopify with no new outside project. Where the key sits (his n8n, or a GitHub secret injected at deploy) is Krish's call, section 5.4.
 5. **Approved:** the fulfilment routine, a twice-daily batch check of every order's print file with an AI pre-check that flags problems first. Cowork sets this up; it is not part of the theme build.
 
-Still open: Krish's go-live approval on Sunday, any spend (test orders), and where live AI runs from week two.
+Still open: where the AI key sits (5.4), Krish's go-live approval on Sunday, and any spend (test orders).
 
 ## 13. Decision log (append only)
 
@@ -267,8 +266,8 @@ Still open: Krish's go-live approval on Sunday, any spend (test orders), and whe
 - 2026-10-13: Concept process: three independent concepts (conversation, recognition deck, print-as-interface), two blind judges; the conversation with Biscuit won, with grafts from the other two. Trace in the Cowork session.
 - 2026-10-13: Prototype approved ("I love it"), with two changes: make the choice of gifts obvious, and make Biscuit talk a bit like a dog. Both made in version 7; approved ("love it").
 - 2026-10-13: AI drawings from answers deferred to phase two, as illustrations, gated by a five-dog likeness test.
-- 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Krish: "This is a Shopify business." No outside project for launch: version one ships the scripted conversation with no AI server or key; live Gemini AI comes in week two, host to be chosen (n8n recommended).
+- 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Live AI stays in version one, as agreed, using Gemini with Krish's key. Krish: "This is a Shopify business": no new outside project. Where the key sits is his call (5.4).
 
 ## 14. Next action
 
-Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and don't create any outside service or ask for an API key for version one.
+Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and ask Krish which option in 5.4 holds the Gemini key before wiring the AI in.
