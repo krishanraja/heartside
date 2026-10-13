@@ -178,15 +178,12 @@ All three ship in version one, on Sunday.
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
 - The model is never asked to draw. No per-visitor image generation in version one (see section 10).
 
-### 5.4 Where it runs
+### 5.4 Where it runs (decided 13 Oct)
 
 - **Live AI ships in version one. The model is Google Gemini, with Krish's key.** Heartside stays a Shopify business: no new outside project.
-- A Shopify theme sends everything in it to the shopper's browser, so the key has to sit behind something the shopper can't read. Two ways that use only what Krish already has:
-  1. **Recommended: Krish's existing n8n.** A webhook workflow in his n8n holds the Gemini key (or uses n8n's built-in Gemini access) and returns the JSON in 5.2. The theme calls that webhook. The key never reaches the browser.
-  2. **Krish's GitHub route:** the Gemini key stored as a GitHub Actions secret, injected into the theme by the deploy workflow. No other service, but the key is readable in the page, so it must be locked to heartside.io in Google Cloud and capped with a daily quota and a budget alert, so the worst case is a capped bill.
-- Krish confirms which before the AI is wired in. Build everything else in the meantime.
-- **The key:** Krish adds it himself (n8n credentials, or GitHub's Actions secrets page). It never goes in the repo, a doc, a log or a chat.
-- **Guard rails either way:** only heartside.io and the preview theme may call it, a cap of 8 calls per session, and the scripted lines as the fallback whenever the AI is slow or fails.
+- **Host: Krish's existing n8n.** The Gemini key is saved there as the credential **"Google Gemini(PaLM) - Heartside"** (n8n credential id `LtlmaVHoTQdTTngQ`, checked 13 Oct). Build two webhook workflows that use it, one per call in 5.2 (typed answer, compose), each returning exactly the JSON in 5.2. The theme calls those webhooks; the key never reaches the browser, the repo or a chat.
+- Turning a webhook on makes it public, so activate the workflows only with Krish's OK.
+- **Guard rails:** only heartside.io and the preview theme may call the webhooks (check the Origin header), a cap of 8 calls per session, and the scripted lines as the fallback whenever the AI is slow or fails.
 
 ## 6. Printing the words (Teeinblue and Printful)
 
@@ -242,7 +239,7 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 2. "Something else" with a typed answer returns a reaction and a line within 3 seconds, or falls back cleanly.
 3. Each of the four gift templates prints the longest allowed lines (44 characters, 14-character names, apostrophes) without clipping, checked on Teeinblue's real print file at full size.
 4. The all-"Not sure" path produces a warm, complete gift.
-5. One real order with at least two gifts goes Shopify > Teeinblue > Printful draft with correct print files (Krish approves the spend).
+5. One real order with at least two gifts goes Shopify > Teeinblue > Printful draft with correct print files (Krish approves the spend). Krish will place it himself once the new page and products are live; it replaces sample order #1001, which he refunded.
 6. No em dashes, banned words or HR copy on any page a buyer can reach; the old builder is gone from the live journey; retired products are hidden.
 7. Step events arrive in analytics.
 8. Krish approves go-live.
@@ -252,10 +249,10 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 1. **Prices approved:** Mug $29, Blanket $89, Framed Print $89, Ornament $24, or $19 with another gift.
 2. **Approved:** hide the HR poster, its framed version and the pillow at launch (hidden, not deleted).
 3. Unframed print at $39 stays off the launch menu (Cowork's recommendation; Krish can add it).
-4. **AI:** live Gemini AI in version one, with Krish's key. Heartside stays on Shopify with no new outside project. Where the key sits (his n8n, or a GitHub secret injected at deploy) is Krish's call, section 5.4.
+4. **AI:** live Gemini AI in version one, with Krish's key, running through his existing n8n (credential "Google Gemini(PaLM) - Heartside"). Heartside stays on Shopify with no new outside project. Section 5.4.
 5. **Approved:** the fulfilment routine, a twice-daily batch check of every order's print file with an AI pre-check that flags problems first. Cowork sets this up; it is not part of the theme build.
 
-Still open: where the AI key sits (5.4), Krish's go-live approval on Sunday, and any spend (test orders).
+Still open: switching on the n8n webhooks, Krish's go-live approval on Sunday, and any spend (test orders).
 
 ## 13. Decision log (append only)
 
@@ -267,7 +264,8 @@ Still open: where the AI key sits (5.4), Krish's go-live approval on Sunday, and
 - 2026-10-13: Prototype approved ("I love it"), with two changes: make the choice of gifts obvious, and make Biscuit talk a bit like a dog. Both made in version 7; approved ("love it").
 - 2026-10-13: AI drawings from answers deferred to phase two, as illustrations, gated by a five-dog likeness test.
 - 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Live AI stays in version one, as agreed, using Gemini with Krish's key. Krish: "This is a Shopify business": no new outside project. Where the key sits is his call (5.4).
+- 2026-10-13: The Gemini key is in Krish's n8n as "Google Gemini(PaLM) - Heartside"; the AI runs through n8n webhooks. Sample order #1001 (the old HR-ring ornament) refunded by Krish; he reorders once the v3 page and products are live.
 
 ## 14. Next action
 
-Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and ask Krish which option in 5.4 holds the Gemini key before wiring the AI in.
+Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and use the n8n credential in 5.4 for the AI; ask Krish before switching the webhooks on.
