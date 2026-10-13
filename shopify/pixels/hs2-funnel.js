@@ -29,15 +29,27 @@ const EVENTS = [
   'hs2_caption_copied',   // copied the story caption ({ card })
   'hs2_link_shared',      // shared the review link ({ card })
   'hs2_faq_open',         // opened an FAQ ticket ({ question })
+  // v3, the chat with Biscuit (shopify/assets/hs3.js). Typed words and names never leave the store.
+  'hs3_start',            // pressed "Start with your dog"
+  'hs3_step',             // a question shown, answered or skipped ({ step, action, kind, value, sub })
+  'hs3_photo_attached',   // added the dog's photo
+  'hs3_ai',               // an AI call finished ({ call, result: ok, timeout or error })
+  'hs3_reveal',           // pressed "Show me" ({ typed })
+  'hs3_gift_tab',         // looked at a gift on the reveal ({ gift })
+  'hs3_edit',             // opened "Change a word"
+  'hs3_choose',           // "That's them. Choose gifts" ({ gift })
+  'hs3_gift_pick',        // ticked or unticked a gift ({ gift, on })
+  'hs3_add_to_cart',      // left for the first gift's page ({ gifts, picks })
+  'hs3_share_card',       // drew the story card
 ];
 
 // Fields that may be forwarded. Anything else in the event data is dropped.
-const SAFE = ['step', 'card', 'question', 'missing'];
+const SAFE = ['step', 'card', 'question', 'missing', 'action', 'kind', 'value', 'sub', 'gift', 'gifts', 'picks', 'on', 'typed', 'call', 'result'];
 
 // Approving the review is the shopper customizing the product, which both platforms have a
 // standard event for. Standard events can be optimized for without setting up a custom
 // conversion first, so this one is sent as both.
-const STANDARD = { hs2_approve_clicked: 'CustomizeProduct' };
+const STANDARD = { hs2_approve_clicked: 'CustomizeProduct', hs3_choose: 'CustomizeProduct' };
 
 function clean(data) {
   const out = {};

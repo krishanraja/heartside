@@ -125,6 +125,11 @@ withMedia(products.poster, ['hs-photo-memo-960.webp', 'hs-photo-team-02-640.webp
 withMedia(products.framed, ['hs-photo-manager-640.webp', 'hs-photo-team-01-640.webp']);
 withMedia(products.pillow, ['hs-photo-pillow-sofa-640.webp']);
 withMedia(products.ornament, ['hs-photo-ornament-tree-640.webp']);
+// v3 gifts (docs/V3-GIFTS-FROM-YOUR-DOG.md section 3), as Teeinblue would create them
+products.mug = mkProduct('the-morning-mug', 16200000000001, 'The Morning Mug', 'White Ceramic Mug with Color Inside', ['Pink'], ['11 oz'], 2900, [58200000000001], '');
+products.blanket = mkProduct('the-couch-blanket', 16200000000002, 'The Couch Blanket', 'Sublimated Sherpa Blanket', ['Default'], ['50″×60″'], 8900, [58200000000002], '');
+products.print = mkProduct('the-framed-print', 16200000000003, 'The Framed Print', 'Enhanced Matte Paper Framed Poster (in)', ['Black', 'Red Oak', 'White'], ['12″×18″'], 8900, [58200000000003, 58200000000004, 58200000000005], '');
+products.tree = mkProduct('the-tree-ornament', 16200000000004, 'The Tree Ornament', 'Ceramic Ornament', ['Default'], ['Circle'], 2400, [58200000000006], '');
 const byHandle = Object.fromEntries(Object.values(products).map((p) => [p.handle, p]));
 
 // Teeinblue's app block, built from its block settings and the markup it renders on the
@@ -270,6 +275,13 @@ const written = [
   await page('index-shop.html', 'index.shop.json', { template: { name: 'index', suffix: 'shop' } }),
   await page('product-shop.html', 'product.shop.json', { product: products.poster, template: { name: 'product', suffix: 'shop' } }),
   await page('product-shopgift.html', 'product.shopgift.json', { product: products.pillow, template: { name: 'product', suffix: 'shopgift' } }),
+  // v3: the chat with Biscuit (hidden ?view=gifts and ?view=landing until go-live), with and without the gift products picked
+  await page('index-gifts.html', 'index.gifts.json', { template: { name: 'index', suffix: 'gifts' } }, (t) => {
+    Object.assign(t.sections.gift.settings, { product_mug: 'the-morning-mug', product_blanket: 'the-couch-blanket', product_print: 'the-framed-print', product_ornament: 'the-tree-ornament' });
+    return t;
+  }),
+  await page('index-gifts-noproducts.html', 'index.gifts.json', { template: { name: 'index', suffix: 'gifts' } }),
+  await page('product-gift.html', 'product.gift.json', { product: products.mug, template: { name: 'product', suffix: 'gift' } }),
   await page('index-hero-a.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];
 // Helio's cart drawer, as the live store rendered it on 5 October with a framed poster in it

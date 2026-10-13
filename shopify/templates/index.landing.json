@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "gift": {
+      "type": "hs3-chat",
+      "settings": {}
+    }
+  },
+  "order": ["gift"]
+}

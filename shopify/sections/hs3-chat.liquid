@@ -1,0 +1,114 @@
+{%- comment -%}
+  Heartside v3: gifts from your dog. The whole journey on one screen, phone first:
+  home, the chat with Biscuit, the reveal, choose gifts and the share card.
+  Built from the approved prototype (design/prototype-v3/Main.dc.html) against
+  docs/V3-GIFTS-FROM-YOUR-DOG.md. Behaviour lives in assets/hs3.js; this file holds the
+  first screen (so it shows before the script runs) and the settings.
+{%- endcomment -%}
+{%- render 'hs2-head' -%}
+{{ 'hs3.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs3.js' | asset_url }}" defer="defer"></script>
+{%- assign s = section.settings -%}
+{%- capture example_photo -%}{%- if s.example_photo != blank -%}{{ s.example_photo | image_url: width: 400 }}{%- else -%}{{ 'hs-photo-headshot-480.webp' | asset_url }}{%- endif -%}{%- endcapture -%}
+<div class="hs3" data-hs3 id="gift-{{ section.id }}">
+  <script type="application/json" data-hs3-config>
+    {
+      "typedUrl": {{ s.typed_url | json }},
+      "composeUrl": {{ s.compose_url | json }},
+      "ai": {{ s.ai_on | json }},
+      "ornamentBundle": {{ s.ornament_bundle | json }},
+      "examplePhoto": {{ example_photo | strip | json }},
+      "gifts": {
+        {%- assign keys = 'mug,blanket,print,ornament' | split: ',' -%}
+        {%- for k in keys -%}
+          {%- assign pid = 'product_' | append: k -%}
+          {%- assign pp = 'price_' | append: k -%}
+          {%- assign p = s[pid] -%}
+          "{{ k }}": {
+            "url": {% if p != blank %}{{ p.url | append: '?view=' | append: s.product_view | json }}{% else %}null{% endif %},
+            "handle": {% if p != blank %}{{ p.handle | json }}{% else %}null{% endif %},
+            "price": {% if p != blank %}{{ p.price | divided_by: 100.0 | json }}{% else %}{{ s[pp] | json }}{% endif %}
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      }
+    }
+  </script>
+  <div class="hs3__frame" data-hs3-screen="hero">
+    {%- if s.ribbon != blank -%}<div class="hs3-ribbon">{{ s.ribbon }}</div>{%- endif -%}
+    <div class="hs3-hero">
+      <div class="hs3-hero__copy">
+        <div class="hs3-eyebrow">{{ s.eyebrow }}</div>
+        <h1 class="hs3-hero__h">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
+        <p class="hs3-hero__p">{{ s.intro }}</p>
+      </div>
+      <div class="hs3-hero__art">
+        <div class="hs3-mug hs3-mug--hero" aria-hidden="true">
+          <span class="hs3-example">EXAMPLE</span>
+          <span class="hs3-mug__handle"></span>
+          <span class="hs3-mug__body">
+            <span class="hs3-mug__rim"></span>
+            <span class="hs3-mug__face">
+              <img src="{{ example_photo | strip }}" alt="" width="86" height="86" class="hs3-photo" loading="eager">
+              <span class="hs3-mug__words">
+                <span class="hs3-line">Waits at the door for you, weekends too.</span>
+                <span class="hs3-line">Your shadow, always.</span>
+                <span class="hs3-sign">Love, Kuku {% render 'hs2-paw' %}</span>
+              </span>
+            </span>
+          </span>
+        </div>
+        <div class="hs3-peek">
+          <span class="hs3-biscuit hs3-biscuit--peek" aria-hidden="true"></span>
+          <span class="hs3-bubble hs3-bubble--peek">{{ s.peek }}</span>
+        </div>
+      </div>
+      <div class="hs3-hero__foot">
+        <div class="hs3-pills" aria-hidden="true">
+          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span><span class="hs3-pill" data-icon="ornament">Ornament</span>
+        </div>
+        <p class="hs3-small">{{ s.gifts_note }}</p>
+        <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
+      </div>
+    </div>
+  </div>
+  <noscript><p class="hs3-small">Biscuit needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
+  <p class="hs3-privacy" data-hs3-privacy hidden>{{ s.privacy }}</p>
+</div>
+
+{% schema %}
+{
+  "name": "HS3 gift chat",
+  "tag": "section",
+  "class": "hs3-section",
+  "settings": [
+    { "type": "paragraph", "content": "Gifts from your dog: the chat with Biscuit, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Biscuit's lines are in assets/hs3.js, word for word from the approved prototype." },
+    { "type": "header", "content": "First screen" },
+    { "type": "text", "id": "ribbon", "label": "Ribbon", "default": "This year, the dog's buying." },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
+    { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
+    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Biscuit about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
+    { "type": "text", "id": "peek", "label": "Biscuit's first bubble", "default": "Psst. Who does your dog love most?" },
+    { "type": "text", "id": "gifts_note", "label": "Under the gift pills", "default": "Chat for a minute, then put your words on any of these. Pick one, or a few." },
+    { "type": "text", "id": "start", "label": "Button", "default": "Start with your dog" },
+    { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. Empty uses Biscuit's headshot." },
+    { "type": "header", "content": "Biscuit's AI (n8n)" },
+    { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
+    { "type": "url", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },
+    { "type": "url", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" },
+    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.", "default": "Answers you type are read by an AI service (Google Gemini) to write the words. Your email and address never are." },
+    { "type": "header", "content": "The gifts" },
+    { "type": "text", "id": "product_view", "label": "Product template for the gifts", "info": "Opens each gift with ?view= this.", "default": "gift" },
+    { "type": "product", "id": "product_mug", "label": "The Morning Mug" },
+    { "type": "product", "id": "product_blanket", "label": "The Couch Blanket" },
+    { "type": "product", "id": "product_print", "label": "The Framed Print" },
+    { "type": "product", "id": "product_ornament", "label": "The Tree Ornament" },
+    { "type": "number", "id": "price_mug", "label": "Mug price until the product is picked", "default": 29 },
+    { "type": "number", "id": "price_blanket", "label": "Blanket price until the product is picked", "default": 89 },
+    { "type": "number", "id": "price_print", "label": "Print price until the product is picked", "default": 89 },
+    { "type": "number", "id": "price_ornament", "label": "Ornament price until the product is picked", "default": 24 },
+    { "type": "checkbox", "id": "ornament_bundle", "label": "Show the ornament at $19 with another gift", "info": "Tick only once a Shopify automatic discount takes $5 off the ornament when another gift is in the cart. Until then the page shows $24, so it never promises a price the cart won't charge.", "default": false }
+  ],
+  "presets": [{ "name": "HS3 gift chat" }]
+}
+{% endschema %}

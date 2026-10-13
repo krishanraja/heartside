@@ -1,0 +1,65 @@
+{
+  "sections": {
+    "main": {
+      "type": "hs2-product",
+      "settings": {
+        "show_poster": false,
+        "open_on": "photo",
+        "photo_shape": "square"
+      },
+      "blocks": {
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price"
+        },
+        "answers": {
+          "type": "answers",
+          "settings": {
+            "picks": false,
+            "title": "YOUR WORDS",
+            "note": "Your words and photo are filled in below. Change anything you like there."
+          }
+        },
+        "teeinblue_product_personalizer_product_app_block_UBn6nK": {
+          "type": "shopify://apps/teeinblue-product-personalizer/blocks/product-app-block/67212f31-32b0-450c-97dd-7e182a5fac7b",
+          "settings": {
+            "enable_design_mode": false,
+            "loading_background_color": "#000000",
+            "show_price": false,
+            "show_available_product": false,
+            "show_color": true,
+            "show_size": true,
+            "show_form": true,
+            "show_action_buttons": true
+          }
+        },
+        "buy": {
+          "type": "buy",
+          "settings": {
+            "v3": true
+          }
+        },
+        "fine": {
+          "type": "fine"
+        },
+        "description": {
+          "type": "description"
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "description",
+        "answers",
+        "teeinblue_product_personalizer_product_app_block_UBn6nK",
+        "buy",
+        "fine"
+      ]
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
