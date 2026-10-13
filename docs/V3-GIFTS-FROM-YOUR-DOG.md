@@ -144,6 +144,8 @@ The chips already produce good lines without AI. The AI makes it feel like it kn
 
 Chip-only paths use the scripted lines and reactions and make no AI call. That keeps the common path instant and free.
 
+**Version one (Sunday) runs with no AI calls at all** (decided 13 Oct, see 5.4). The approved prototype is fully scripted, and that is what ships. Live AI (1 to 3 above) arrives in week two, once Krish picks where it runs.
+
 ### 5.2 Contract
 
 **Typed answer call.** In: `{ step, question, typed_text, dog: {name, pronoun}, recipient: {name, relation} }`. Out:
@@ -176,9 +178,16 @@ Chip-only paths use the scripted lines and reactions and make no AI call. That k
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
 - The model is never asked to draw. No per-visitor image generation in version one (see section 10).
 
-### 5.4 Where it runs
+### 5.4 Where it runs (decided 13 Oct)
 
-Recommendation: a small serverless function in this repo (Vercel), called by the theme, with the Anthropic API key set as an environment variable by Krish in Vercel's dashboard. The key never goes in the repo, a doc or a chat. Fallback if that blocks the date: an n8n webhook workflow using the n8n instance's existing Anthropic credential. Either way, the theme only ever talks to our endpoint.
+- **Heartside stays a Shopify business. Version one adds no server, no outside project and no API key.** The conversation runs entirely in the Shopify theme, scripted as in the approved prototype.
+- **"Something else" in version one:** the buyer's own words go onto the gift as typed, trimmed to 44 characters and checked in the browser against the banned word list and for em dashes. Biscuit answers with a warm scripted reaction that fits any answer, for example "Ooh. I'm writing that down." The person checking each order sees exactly what was typed.
+- **Why there's no live AI on Sunday:** a Shopify theme can't hide a key (everything in it reaches the shopper's browser), and a GitHub secret only reaches GitHub's own automation, never a shopper's chat. Live AI therefore needs one small place outside the theme that holds the key, and Krish hasn't chosen one.
+- **Week two, Krish to choose:**
+  1. **n8n** (recommended): a webhook in the n8n account Krish already runs, using n8n's built-in Gemini access, so no new account and no key to manage.
+  2. **Google's Firebase AI Logic:** Google's own way to call Gemini from a website, protected by App Check. Needs a free Firebase project.
+  3. **A Gemini key in the page**, locked to heartside.io and capped with a daily quota in Google Cloud. Cheapest, but anyone can copy the key and spend up to the cap.
+- **The key, whenever there is one:** Krish adds it himself in that service's settings. It never goes in the repo, the theme, a doc, a log or a chat.
 
 ## 6. Printing the words (Teeinblue and Printful)
 
@@ -190,7 +199,7 @@ Recommendation: a small serverless function in this repo (Vercel), called by the
 - Every template must render a 44-character line without clipping or shrinking below a readable size at its real print size. Test the longest and shortest cases (section 11).
 - The bridge (`shopify/assets/hs2.js`, documented in `shopify/README.md`) already fills Teeinblue fields by label and hands over the photo with one tap. Reuse it. A multi-gift order goes through each gift's product page in turn; the hidden shop-first flow (`?view=shop`, `product.shopgift.json`) already walks a shopper through several gifts and is the starting point.
 - Add the chat answers to each line item as hidden properties (`_hs_answers`, `_hs_lines`) so the person checking the order sees what the buyer said and what the AI wrote.
-- Fulfilment: Teeinblue does not send orders to Printful by itself. Each order needs "Confirm & Send to fulfill" in Teeinblue, and Teeinblue's "Auto confirm order" is off, so Printful holds it as a draft until confirmed. That two-step check is the "a person checks every order" promise. Cowork recommended (13 Oct) a twice-daily batch check with an AI pre-check; that is a separate decision for Krish.
+- Fulfilment: Teeinblue does not send orders to Printful by itself. Each order needs "Confirm & Send to fulfill" in Teeinblue, and Teeinblue's "Auto confirm order" is off, so Printful holds it as a draft until confirmed. That two-step check is the "a person checks every order" promise. Krish approved (13 Oct) a twice-daily batch check with an AI pre-check; Cowork sets it up separately.
 
 ## 7. Technical notes for the build
 
@@ -198,7 +207,7 @@ Recommendation: a small serverless function in this repo (Vercel), called by the
 - The chat runs on the home page and on `?view=landing` for ad traffic. State persists in the browser for the session (answers and photo), so a reload or a jump to a product page loses nothing.
 - Log a step event for each question shown, answered and skipped, plus reveal, gift tab taps, choose and add to cart, so the weakest question can be cut in week one.
 - Respect `prefers-reduced-motion`. Touch targets at least 44 px. Text contrast 4.5:1.
-- Privacy: say on the page that answers are processed by an AI service to write the words, and update the privacy policy to match. Don't send the buyer's email or address to the AI.
+- Privacy: version one sends the answers nowhere except the order itself. When live AI arrives in week two, say on the page that answers are processed by an AI service, update the privacy policy, and never send the buyer's email or address to it.
 
 ## 8. Marketing (EPIC)
 
@@ -231,7 +240,7 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 ## 11. Done for Sunday (pass or fail)
 
 1. On a real iPhone inside the Instagram app and a real Android phone inside the Facebook app, a new visitor completes the chat with chips only in under 90 seconds and reaches the cart with two gifts.
-2. "Something else" with a typed answer returns a reaction and a line within 3 seconds, or falls back cleanly.
+2. "Something else" puts the buyer's own typed words on the gift (44 characters at most, banned words and em dashes refused) with a warm scripted reaction from Biscuit. No network call.
 3. Each of the four gift templates prints the longest allowed lines (44 characters, 14-character names, apostrophes) without clipping, checked on Teeinblue's real print file at full size.
 4. The all-"Not sure" path produces a warm, complete gift.
 5. One real order with at least two gifts goes Shopify > Teeinblue > Printful draft with correct print files (Krish approves the spend).
@@ -239,13 +248,15 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 7. Step events arrive in analytics.
 8. Krish approves go-live.
 
-## 12. Open decisions for Krish
+## 12. Decisions (made by Krish on 13 Oct)
 
-1. Prices: Mug $29, Blanket $89, Framed Print $89, Ornament $24 or $19 with another gift. Recommendation: yes.
-2. Retire the HR poster, its framed version and the pillow from sale at launch. Recommendation: yes, hidden, not deleted.
-3. Unframed print at $39 off the menu for launch. Recommendation: yes.
-4. Where the AI runs: Vercel function with a key you add in Vercel (recommended), or the n8n webhook.
-5. The fulfilment routine (twice-daily batch check with an AI pre-check).
+1. **Prices approved:** Mug $29, Blanket $89, Framed Print $89, Ornament $24, or $19 with another gift.
+2. **Approved:** hide the HR poster, its framed version and the pillow at launch (hidden, not deleted).
+3. Unframed print at $39 stays off the launch menu (Cowork's recommendation; Krish can add it).
+4. **AI:** Heartside stays on Shopify. Version one ships scripted, with no AI server and no key. Live AI with Gemini comes in week two; where it runs is still Krish's choice (section 5.4).
+5. **Approved:** the fulfilment routine, a twice-daily batch check of every order's print file with an AI pre-check that flags problems first. Cowork sets this up; it is not part of the theme build.
+
+Still open: Krish's go-live approval on Sunday, any spend (test orders), and where live AI runs from week two.
 
 ## 13. Decision log (append only)
 
@@ -256,7 +267,8 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 - 2026-10-13: Concept process: three independent concepts (conversation, recognition deck, print-as-interface), two blind judges; the conversation with Biscuit won, with grafts from the other two. Trace in the Cowork session.
 - 2026-10-13: Prototype approved ("I love it"), with two changes: make the choice of gifts obvious, and make Biscuit talk a bit like a dog. Both made in version 7; approved ("love it").
 - 2026-10-13: AI drawings from answers deferred to phase two, as illustrations, gated by a five-dog likeness test.
+- 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Krish: "This is a Shopify business." No outside project for launch: version one ships the scripted conversation with no AI server or key; live Gemini AI comes in week two, host to be chosen (n8n recommended).
 
 ## 14. Next action
 
-Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme; ask Krish about section 12 before anything is published or bought.
+Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and don't create any outside service or ask for an API key for version one.
