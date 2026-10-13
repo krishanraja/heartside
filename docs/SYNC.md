@@ -1,6 +1,6 @@
 # Repo and Drive: what lives where
 
-Last synced: **12 October 2026**, by a Cowork session at Krish's request ("everything in sync").
+Last synced: **13 October 2026**, by a Cowork session at Krish's request ("everything in sync").
 
 ## The rule
 
@@ -21,6 +21,7 @@ A file that is changed only in Drive is not real yet. Bring it into the repo the
 
 | Repo path | Drive location (under `Heartside/`) |
 |---|---|
+| `docs/V3-GIFTS-FROM-YOUR-DOG.md` | `V3-GIFTS-FROM-YOUR-DOG.md` |
 | `docs/POSITIONING.md` | `POSITIONING.md` |
 | `docs/SYNC.md` (this file) | `SYNC.md` |
 | `design/BRAND-SYSTEM.md` | `00_Brand-Assets/01_Identity/Brand-system.md` and `00_Brand-Assets/06_Claude-Design-System/Heartside-Brand-system.md` |
@@ -48,6 +49,7 @@ These are binary working files, edited in PowerPoint, Canva or claude.ai rather 
 | `00_Brand-Assets/04_Decks/Deck-starter-editable.pptx` | Editable deck starter | Drive |
 | `00_Brand-Assets/02_Imagery/founder-heart-gesture-wide.png` | Founder image | Drive |
 | `00_Brand-Assets/03_Social-and-Ads/Annual-Review/heartside-share-1200x628.jpg` | Earlier share image variant | Drive (reference only; the live one is the repo's 1200x630) |
+| The claude.ai Design canvas "Heartside: gifts from your dog" | The approved v3 phone prototype | The claude.ai artifact https://claude.ai/artifact/68cvd4wN9xLGFzkFJSughX; its source is mirrored in the repo at `design/prototype-v3/` |
 | `00_Brand-Assets/06_Claude-Design-System/` (two zips, `MIGRATE.md`, `heartside.tokens.json`) | Export of the claude.ai Design System artifact (tokens, components, previews) | The claude.ai artifact https://claude.ai/artifact/WjHjEeVf8xJCBgYzYjNcBM. Its hero sample text still reads "Now it's in writing."; update it when the site hero changes |
 | Canva folder https://www.canva.com/folder/FAHXUgmLxDM | Logo exploration and the share-graphic draft | Canva (links in `design/CANVA-SOURCES.md`) |
 

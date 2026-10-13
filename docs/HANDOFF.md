@@ -1,5 +1,7 @@
 # Heartside: handoff manual
 
+> **13 October 2026: the product and the journey changed. Read [`V3-GIFTS-FROM-YOUR-DOG.md`](V3-GIFTS-FROM-YOUR-DOG.md) first.** Heartside now sells gifts given on behalf of the dog (mug, blanket, framed print, ornament) through a chat with Biscuit. That file wins on product, journey, AI and copy; this one still holds for systems, deploys and hard rules. Launch is Sunday 18 October.
+
 > **12 October 2026: read [`POSITIONING.md`](POSITIONING.md) first.** Krish changed the positioning and approved the $10k social plan. Where this file and `POSITIONING.md` disagree on headlines, brand copy or social, `POSITIONING.md` wins. What lives in this repo, what lives in Google Drive, and which copy is canonical: [`SYNC.md`](SYNC.md). Facts below were refreshed on 12 Oct where marked.
 
 Written 7 October 2026 by the Claude Code session that built the site, so that anyone (a person, Cowork, ChatGPT, another Claude) can pick the business up with nothing but this repo and Krish's logins. It replaces the 4 October hand-off, which described the v1 store (sling, tag, 30% off) and is now in `docs/archive/HANDOFF-2026-10-04.md`.
