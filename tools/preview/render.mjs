@@ -40,6 +40,8 @@ for (const f of fs.readdirSync(path.join(theme, 'sections'))) {
   if (m) {
     const schema = JSON.parse(m[1]);
     const all = [...(schema.settings || []), ...(schema.blocks || []).flatMap((b) => b.settings || [])];
+    // and a url setting whose default is a web address (13 October deploy: only shop paths are allowed)
+    for (const st of all) if (st.type === 'url' && 'default' in st && !/^\/(collections|products|pages|blogs|search|cart)?/.test(String(st.default))) throw new Error(`sections/${f}: url setting "${st.id}" has default "${st.default}"; Shopify allows only shop paths. Use a text setting.`);
     for (const st of all) for (const o of st.options || []) {
       if (String(o.label).length > 50) throw new Error(`sections/${f}: option label for "${st.id}" is ${String(o.label).length} characters; Shopify allows 50: "${o.label}"`);
     }
