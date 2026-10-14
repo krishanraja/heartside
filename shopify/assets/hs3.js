@@ -442,7 +442,7 @@
     if (ui.editing) {
       h += '<div class="hs3-edit">' + keys.map(function (k) {
         var t = lineFor(k) || '';
-        return '<label class="hs3-edit__row"><span class="hs3-sr">Edit line</span><input class="hs3-field hs3-field--mono" type="text" maxlength="44" value="' + esc(t) + '" data-hs3-edit="' + k + '"><span class="hs3-small hs3-right" data-hs3-left="' + k + '">' + (44 - t.length) + ' characters left</span></label>';
+        return '<label class="hs3-edit__row"><span class="hs3-sr">Edit line</span><input class="hs3-field hs3-field--mono" type="text" maxlength="45" value="' + esc(t) + '" data-hs3-edit="' + k + '"><span class="hs3-small hs3-right" data-hs3-left="' + k + '">' + (45 - t.length) + ' characters left</span></label>';
       }).join('') + '</div>';
     } else {
       h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BISCUIT + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
@@ -451,10 +451,11 @@
     return h;
   }
   function mockup(g, n, lines) {
-    if (g === 'mug') return '<div class="hs3-mug"><span class="hs3-mug__handle"></span><span class="hs3-mug__body"><span class="hs3-mug__rim"></span><span class="hs3-mug__face">' + img('Your dog on the mug', 'hs3-photo--mug') + '<span class="hs3-mug__words">' + lines + '<span class="hs3-sign">Love, ' + esc(n.dog) + '</span></span></span></span></div>';
-    if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__words">' + lines + '<span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div></div>';
-    if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + '<span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
-    return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + '</div></div>';
+    // laid out like the real print files (Cowork's fit test, 14 Oct): the name in normal case, signed with a paw
+    if (g === 'mug') return '<div class="hs3-mug"><span class="hs3-mug__handle"></span><span class="hs3-mug__body"><span class="hs3-mug__rim"></span><span class="hs3-mug__face">' + img('Your dog on the mug', 'hs3-photo--mug') + '<span class="hs3-mug__words">' + lines + sign(n) + '</span></span></span></div>';
+    if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
+    if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
+    return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
   }
   function startReveal(g) {
     clearTimers();
@@ -728,8 +729,8 @@
     frame.querySelectorAll('[data-hs3-edit]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-edit');
       inp.addEventListener('input', function () {
-        S.edits[k] = inp.value.slice(0, 44); save();
-        var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (44 - inp.value.length) + ' characters left';
+        S.edits[k] = inp.value.slice(0, 45); save();
+        var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (45 - inp.value.length) + ' characters left';
         var i = giftKeys(S.gift || recGift()).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
         if (l) l.textContent = inp.value;
       });

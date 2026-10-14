@@ -100,14 +100,14 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok((await page.locator('.hs3-stage .hs3-line').count()) === 4, 'reveal: the blanket tab shows the same words, all four');
   await page.screenshot({ path: path.join(shots, '4-reveal-blanket.png') });
   await tap(page, '[data-hs3="edit"]');
-  await page.locator('[data-hs3-edit="home"]').fill('Waits at the door for you, every single day.');
-  ok((await page.locator('[data-hs3-left="home"]').innerText()) === '0 characters left', 'change a word: 44-character count');
+  await page.locator('[data-hs3-edit="home"]').fill('Will ride anywhere, as long as it\'s with you.');
+  ok((await page.locator('[data-hs3-left="home"]').innerText()) === '0 characters left' && (await page.locator('[data-hs3-edit="home"]').inputValue()).length === 45, 'change a word: 45 characters, as Teeinblue allows');
   await tap(page, '[data-hs3="edit"]');
   await tap(page, '[data-hs3="them"]');
   await tap(page, '[data-hs3="sel"][data-v="mug"]');
   const label = await page.locator('[data-hs3="add"]').innerText();
   ok(label === 'Add 2 gifts to cart · $118', `choose: two gifts ("${label}")`);
-  ok(!(await page.locator('.hs3-opts').innerText()).includes('$19'), 'choose: no $19 ornament promise while the discount is off');
+  ok((await page.locator('.hs3-opts').innerText()).includes('$19'), 'choose: the ornament shows $19 with another gift (discount on)');
   await page.screenshot({ path: path.join(shots, '5-choose.png'), fullPage: true });
   await tap(page, '[data-hs3="add"]');
   await page.waitForURL(/\/products\/the-morning-mug\?view=gift/, { waitUntil: "domcontentloaded" }); await page.waitForTimeout(800);
@@ -116,10 +116,10 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   const hs2 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')));
   const q = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-queue') || '[]'));
   ok(hs2.dog === 'Kuku' && hs2.person === 'Sam', 'bridge: names handed to the product page');
-  ok(hs2.hs3_lines.home === 'Waits at the door for you, every single day.' && hs2.hs3_kinds['the-morning-mug'] === 'mug', 'bridge: edited words and gift kinds handed over');
+  ok(hs2.hs3_lines.home === 'Will ride anywhere, as long as it\'s with you.' && hs2.hs3_kinds['the-morning-mug'] === 'mug', 'bridge: edited words and gift kinds handed over');
   ok(q.length === 2, 'bridge: both gifts queued for the next-gift bar');
   const props = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value])));
-  ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /every single day/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
+  ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /as long as it's with you/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
   ok(!('properties[_Manager]' in props), 'order: no v2 review properties on a v3 gift');
   ok(calls.length === 0, `chips only made no AI call (${calls.length})`);
   ok(warms.length === 1 && warms[0].includes('typed-answer'), `one warm-up ping when the chat starts (${warms.length})`);
@@ -240,6 +240,7 @@ for (const mode of ['fail', 'slow']) {
   await page.evaluate(() => sessionStorage.setItem('hs3-gift', JSON.stringify({ screen: 'choose', step: 6, dog: 'Kuku', rec: 'Sam', home: 'door', follow: 'weekends', spot: 'bed', together: 'walk', meaning: 'shadow', sel: { mug: true } })));
   await page.reload();
   ok(await page.locator('[data-hs3="add"]').isDisabled() && (await page.locator('.hs3-dock').innerText()).includes('The Morning Mug is not in the shop yet.'), 'no products yet: add is disabled and says why');
+  ok(!(await page.locator('.hs3-opts').innerText()).includes('$19'), 'bundle off: no $19 ornament promise');
   await ctx.close();
 }
 // 5. narrow phone and the Instagram in-app height

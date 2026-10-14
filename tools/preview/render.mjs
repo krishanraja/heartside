@@ -282,7 +282,12 @@ const written = [
     Object.assign(t.sections.gift.settings, { product_mug: 'the-morning-mug', product_blanket: 'the-couch-blanket', product_print: 'the-framed-print', product_ornament: 'the-tree-ornament' });
     return t;
   }),
-  await page('index-gifts-noproducts.html', 'index.gifts.json', { template: { name: 'index', suffix: 'gifts' } }),
+  await page('index-gifts-noproducts.html', 'index.gifts.json', { template: { name: 'index', suffix: 'gifts' } }, (t) => {
+    const g = t.sections.gift.settings;
+    ['product_mug', 'product_blanket', 'product_print', 'product_ornament'].forEach((k) => delete g[k]);
+    g.ornament_bundle = false;
+    return t;
+  }),
   await page('product-gift.html', 'product.gift.json', { product: products.mug, template: { name: 'product', suffix: 'gift' } }),
   await page('index-hero-a.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];

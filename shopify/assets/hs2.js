@@ -1192,7 +1192,7 @@
      the logo or menu. Turning the overlay off in Helio's header settings also fixes it. */
   function clearHeader() {
     // whichever of ours opens the page: the hero on the homepage and landing, the buy box on a product page
-    var hero = document.querySelector('[data-hs2-hero]') || document.querySelector('.hs2-product');
+    var hero = document.querySelector('[data-hs2-hero]') || document.querySelector('[data-hs3]') || document.querySelector('.hs2-product');
     var header = document.querySelector('.header-section, header.shopify-section');
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
