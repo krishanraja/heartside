@@ -83,16 +83,26 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
   const reaction = clean(m.reaction);
   const line = clean(m.line);
   let fu = null;
-  if (m.follow_up && typeof m.follow_up === 'object' && inp.step !== 'home_follow' && inp.step !== 'meaning') {
+  if (m.follow_up && typeof m.follow_up === 'object' && inp.step === 'home') {
     const q = clean(m.follow_up.question);
-    const chips = (Array.isArray(m.follow_up.chips) ? m.follow_up.chips : []).map(clean).filter(c => okText(c, 24)).slice(0, 3);
-    if (okText(q, 70) && chips.length) fu = { question: q, chips: chips };
+    const arr = (k) => (Array.isArray(m.follow_up[k]) ? m.follow_up[k] : []);
+    // each chip keeps its own refined line and reply, so a chip tap needs no second call
+    const f = { question: q, chips: [], lines: [], replies: [] };
+    arr('chips').slice(0, 3).forEach((c, i) => {
+      c = clean(c);
+      if (!okText(c, 24)) return;
+      const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
+      f.chips.push(c);
+      f.lines.push(okLine(l, hay + ' ' + c) ? l : null);
+      f.replies.push(okText(r, 50) ? r : null);
+    });
+    if (okText(q, 70) && f.chips.length) fu = f;
   }
   const goodLine = okLine(line, hay) ? line : (ownWords(inp.typed_text) || inp.previous_line);
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,
-    follow_up: ai ? fu : (inp.step === 'home' || inp.step === 'spot' || inp.step === 'together' ? { question: 'Tell me more?', chips: [] } : null),
+    follow_up: ai ? fu : (inp.step === 'home' ? { question: 'Tell me more?', chips: [] } : null),
     flags: flags
   };
 }

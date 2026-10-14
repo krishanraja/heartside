@@ -182,7 +182,12 @@
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
         return {
           reaction: clip(r.reaction, 70), line: clip(r.line, 44),
-          follow_up: r.follow_up && r.follow_up.question ? { question: clip(r.follow_up.question, 70), chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }) } : null,
+          follow_up: r.follow_up && r.follow_up.question ? {
+            question: clip(r.follow_up.question, 70),
+            chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }),
+            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' && l.length <= 44 ? l : null; }),
+            replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? x : null; })
+          } : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
         };
       }
@@ -190,6 +195,33 @@
       var flags = GRIEF.test(text) ? ['grief'] : PROFANE.test(text) ? ['profanity'] : [];
       return { reaction: 'Tell me more?', line: ownWords(text) || previous || '', follow_up: step === 'home' ? { question: 'Tell me more?', chips: [] } : null, flags: flags, ai: false };
     });
+  }
+  /* While the buyer types, a pause of 600 ms sends what they have so far. If they press Done
+     on the same words, that answer is already back (or on its way), so Biscuit replies at once.
+     It spends from the same 8-call budget, so it never runs with fewer than 3 calls left. */
+  var spec = null, specTimer = null;
+  function typedParams(text) {
+    if (S.step === 3 && S.fu) return { step: 'home_follow', prev: (S.ai.home && S.ai.home.line) || '', text: text };
+    return { step: ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step], prev: '', text: text };
+  }
+  function speculate(text) {
+    text = String(text || '').trim();
+    if (text.length < 8 || GRIEF.test(text) || PROFANE.test(text)) return;
+    if (!cfg.ai || S.calls > MAX_CALLS - 3) return;
+    if (S.step === 3 && S.fu && !(S.fu.chips && S.fu.chips.length)) return; // the "Tell me more?" fallback needs no AI
+    var p = typedParams(text);
+    if (spec && spec.text === p.text && spec.step === p.step) return;
+    var mine = spec = { step: p.step, text: p.text, prev: p.prev };
+    mine.promise = typedAnswer(p.step, chatQ ? chatQ.question : '', p.text, p.prev);
+    mine.promise.then(function (r) { if (!r.ai && spec === mine) spec = null; });
+    track('ai_early', { step: p.step });
+  }
+  // the answer for exactly these words: the early one if it matches, otherwise a fresh call
+  function answerFor(step, question, text, prev) {
+    clearTimeout(specTimer);
+    if (spec && spec.step === step && spec.text === String(text).trim() && spec.prev === (prev || '')) { var p = spec.promise; spec = null; return p; }
+    spec = null;
+    return typedAnswer(step, question, text, prev);
   }
   function anyTyped() { return Object.keys(S.typed).some(function (k) { return !!S.typed[k]; }); }
   function compose() {
@@ -542,7 +574,16 @@
     (m.chips || []).forEach(function (c) { if (c.id === id) label = c.label; });
     ui.echo = label; ui.flagged = '';
     stepEvent('answered', { kind: 'chip', value: id });
-    if (S.step === 3 && S.fu) { followAnswer(label, true); return; }
+    if (S.step === 3 && S.fu) {
+      var i = Number(String(id).slice(2)), ready = S.fu.lines && S.fu.lines[i];
+      if (!ready) { followAnswer(label, true); return; }
+      stepEvent('answered', { kind: 'chip', sub: 'follow', value: 'prepared' });
+      S.typed.home_follow = label; S.follow = 'typed';
+      S.ai.home_follow = { line: ready, reaction: (S.fu.replies && S.fu.replies[i]) || '' };
+      ui.prefix = (S.fu.replies && S.fu.replies[i]) || '';
+      S.fu = null; S.step = 4; save(); render(); stepEvent('shown');
+      return;
+    }
     if (S.step === 3 && (!S.home || S.home === 'skip')) {
       S.home = id; S.follow = null; save();
       ui.prefix = '';
@@ -578,7 +619,7 @@
     ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(text) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';
-    typedAnswer(key, q, text, '').then(function (r) {
+    answerFor(key, q, text, '').then(function (r) {
       ui.thinking = false; ui.pending = null;
       if (r.flags.some(function (f) { return f === 'grief' || f === 'profanity' || f === 'unclear'; })) {
         ui.flagged = CATCH; ui.echo = ''; render(); stepEvent('flagged'); return;
@@ -609,7 +650,7 @@
     S.fu = null; save();
     if (!aiFollow) { ui.prefix = ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
     ui.thinking = true; render();
-    typedAnswer('home_follow', chatQ ? chatQ.question : '', text, prev).then(function (r) {
+    answerFor('home_follow', chatQ ? chatQ.question : '', text, prev).then(function (r) {
       ui.thinking = false;
       if (r.ai && r.line && !r.flags.length) S.ai.home_follow = { line: r.line, reaction: r.reaction };
       ui.prefix = r.ai && r.reaction ? r.reaction : '';
@@ -665,6 +706,7 @@
       var k = inp.getAttribute('data-hs3-in');
       inp.addEventListener('input', function () {
         inp.classList.remove('is-need');
+        if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, 14); save(); }
       });
       inp.addEventListener('keydown', function (e) {
