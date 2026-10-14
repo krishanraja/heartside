@@ -6,6 +6,8 @@
   first screen (so it shows before the script runs) and the settings.
 {%- endcomment -%}
 {%- render 'hs2-head' -%}
+{%- assign ai_host = section.settings.typed_url | split: '/webhook' | first -%}
+{%- if section.settings.ai_on and ai_host contains 'https://' -%}<link rel="preconnect" href="{{ ai_host }}" crossorigin>{%- endif -%}
 {{ 'hs3.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs3.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}

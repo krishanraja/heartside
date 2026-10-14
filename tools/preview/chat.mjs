@@ -34,11 +34,13 @@ const BANNED = /—|\belevate|\bunleash|must-have|game-changer|fur baby|annual r
 async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Instagram 350.0' });
   const page = await ctx.newPage();
-  const events = [], errors = [], calls = [];
+  const events = [], errors = [], calls = [], warms = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(() => { window.Shopify = { analytics: { publish: (n, d) => { (window.__ev = window.__ev || []).push([n, d]); } } }; });
   await page.route(/krishraja10101\.app\.n8n\.cloud/, async (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Allow-Methods': 'POST' } });
     const body = JSON.parse(route.request().postData() || '{}');
+    if (body.warm) { warms.push(route.request().url()); return route.fulfill({ status: 200, contentType: 'application/json', body: '{"warm":true}' }); }
     calls.push(body);
     if (ai === 'fail') return route.fulfill({ status: 403, contentType: 'application/json', body: '{"error":"origin"}' });
     if (ai === 'slow') { await new Promise((r) => setTimeout(r, 4000)); return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }).catch(() => {}); }
@@ -51,7 +53,7 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: 'The window watch. Very serious work.', line, follow_up: fu, flags: [] }) });
   });
   await page.goto(`${base}/${name}`);
-  return { ctx, page, events, errors, calls };
+  return { ctx, page, events, errors, calls, warms };
 }
 const tap = (page, sel) => page.locator(sel).first().click();
 const chipNamed = (page, label) => page.locator('[data-hs3="chip"]', { hasText: label }).first().click();
@@ -61,7 +63,7 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
 
 // 1. chips only, two gifts, timed (spec 11.1)
 {
-  const { ctx, page, errors, calls } = await session('index-gifts.html');
+  const { ctx, page, errors, calls, warms } = await session('index-gifts.html');
   const t0 = Date.now();
   await page.screenshot({ path: path.join(shots, '0-home.png') });
   ok(await page.locator('.hs3-hero__h').innerText() === 'Your dog loves you too.', 'home: headline "Your dog loves you too."');
@@ -118,6 +120,7 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /every single day/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
   ok(!('properties[_Manager]' in props), 'order: no v2 review properties on a v3 gift');
   ok(calls.length === 0, `chips only made no AI call (${calls.length})`);
+  ok(warms.length === 1 && warms[0].includes('typed-answer'), `one warm-up ping when the chat starts (${warms.length})`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
@@ -167,6 +170,11 @@ for (const mode of ['fail', 'slow']) {
   await page.fill('#hs3-typed', 'he howls the moment my key turns in the lock');
   const t = Date.now();
   await tap(page, '[data-hs3="send"]');
+  if (mode === 'slow') {
+    await page.waitForTimeout(150);
+    const first = (await noteLines(page))[0];
+    ok(first === 'He howls the moment my key turns.', `while the AI writes, the buyer's own words ink at once ("${first}")`);
+  }
   await page.waitForSelector('text=Tell me more?', { timeout: 4000 });
   ok(Date.now() - t < 3600, `AI ${mode}: "Tell me more?" fallback in ${Date.now() - t}ms`);
   ok((await noteLines(page))[0] === 'He howls the moment my key turns.', `AI ${mode}: the buyer's own words become the line ("${(await noteLines(page))[0]}")`);
