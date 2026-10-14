@@ -5,6 +5,8 @@ const NUMWORDS = /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twel
 const GRIEF = /\b(died|dead|death|dying|passed away|passed on|put down|put to sleep|rainbow bridge|cancer|tumou?r|terminal|euthani[sz]|funeral|lost (him|her|them)|miss (him|her|them) so|in heaven|rip\b)/i;
 const PROFANE = /\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|cock\w*|piss\w*|asshole\w*|bastard\w*|whore\w*|slut\w*|nigg\w*|fag\w*|retard\w*)/i;
 const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
+// Biscuit talks to the buyer; only gift lines may say you (to the person)
+const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
 function clean(s) {
   return String(s == null ? '' : s)
@@ -75,6 +77,8 @@ const KEYS = ['home', 'spot', 'together', 'meaning'];
 const GIFTS = ['mug', 'blanket', 'print', 'ornament'];
 const typed = inp.answers.map(a => a.typed || '').join(' ');
 const hay = [typed, inp.answers.map(a => a.label).join(' '), KEYS.map(k => inp.current_lines[k]).join(' '), inp.dog.name, inp.recipient.name, inp.recipient.relation].join(' ');
+// gift lines speak to the person as you, so their name never appears in one
+const named = (t) => !!inp.recipient.name && new RegExp('(^|[^A-Za-z])' + inp.recipient.name.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(typed) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(typed) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -83,8 +87,8 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   const cur = inp.current_lines[k];
   const l = clean(m.lines && m.lines[k]);
-  lines[k] = (!blocked && okLine(l, hay)) ? l : cur;
-  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay)).slice(0, 2);
+  lines[k] = (!blocked && okLine(l, hay) && !named(l)) ? l : cur;
+  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay) && !named(a)).slice(0, 2);
   if (alts.length && !blocked) alternates[k] = alts;
   const src = m.sources && Array.isArray(m.sources[k]) ? m.sources[k].map(String).filter(s => /^[a-z_]{2,20}$/.test(s)).slice(0, 4) : [];
   if (src.length) sources[k] = src;
@@ -94,7 +98,7 @@ const out = {
   lines: lines,
   alternates: alternates,
   recommended_gift: GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift,
-  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay)) ? reason : '',
+  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay) && !YOU.test(reason)) ? reason : '',
   sources: sources,
   flags: flags,
   source: m.lines ? 'ai' : 'fallback'

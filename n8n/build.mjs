@@ -29,9 +29,10 @@ const VOICE = [
 const TYPED_SYS = VOICE + '\n\n' + [
   "The buyer has typed an answer in their own words instead of picking a chip. Reply with JSON only, exactly this shape:",
   '{"reaction": "<= 70 characters. Biscuit reacting to the specific thing they said.",',
-  ' "line": "<= 44 characters. A line printed on the gift, about the dog, said to the person in the second person (you, your), never by their name. Never I, me or my (\\"our\\" is fine). Keep the buyer\'s specifics (numbers, times, places, names) word for word and add none they did not give. Plain, warm and true. No joke.",',
+  ' "line": "<= 44 characters. A line printed on the gift, about the dog, said to the person in the second person (you, your), never by their name (wrong: \\\"Howls until Linda sits down.\\\" right: \\\"Howls until you sit down.\\\"). Never I, me or my (\\"our\\" is fine). Keep the buyer\'s specifics (numbers, times, places, names) word for word and add none they did not give. Plain, warm and true. No joke.",',
   ' "follow_up": {"question": "<= 70 characters. One question in Biscuit\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"], "lines": ["for each chip, in order: your line refined with that answer, <= 44 characters, same rules as line"], "replies": ["for each chip, in order: Biscuit\'s short reaction to that answer, <= 50 characters"]},',
   ' "flags": ["any of: grief (death, illness, loss), profanity, person_described (the answer describes a person, not the dog), unclear (not an answer to the question)"]}',
+  "Who is who: Biscuit talks to the buyer. The person is someone else, the recipient, named in the input. Only the gift lines speak to the person as you. In reaction, question, chips and replies, call the person by their name (or he, she, they), never you, and never I, me or my: chips are the buyer's answers about the dog and the person, like \"Follows Sam everywhere\".",
   "Steps: home = what the dog does when the person comes home. home_follow = more detail on that answer (refine previous_line with it). spot = where the dog's spot is when the person is around. together = what the dog and the person do together. meaning = what the dog is to the person. Only step home gets a follow_up; on every other step follow_up is null.",
   "Line shapes: home \"Waits at the door for you.\", spot \"Steals your side of the bed.\", together \"Lives for our morning walks.\", meaning \"Your shadow, always.\"",
   'Example. Input: step home, typed "she sits in the window from 5pm". Output: {"reaction":"The window watch. Very serious work.","line":"Watches the window for you from 5pm.","follow_up":{"question":"From 5pm sharp? Every day?","chips":["Every single day","Weekdays","Even weekends"],"lines":["Watches for you from 5pm, every day.","Watches for you from 5pm on weekdays.","Watches for you from 5pm, weekends too."],"replies":["Every day! Now that is a good dog.","Keeps office hours. Smart dog.","Weekends too. Very loyal."]},"flags":[]}'
@@ -45,7 +46,8 @@ const COMPOSE_SYS = VOICE + '\n\n' + [
   ' "reason": "<= 140 characters. Biscuit explaining the pick from what the dog and the person do together.",',
   ' "sources": {"home": ["answer ids each line came from"]},',
   ' "flags": []}',
-  "Rules for lines: said to the person in the second person (you, your), about the dog. Never I, me or my (\"our\" is fine). Where an answer was typed, keep the buyer's specifics word for word. Never add a number, time, place or name the buyer did not give. Lines that came from chips (no typed text) are already approved: return them unchanged unless they must change to fit a typed detail. Each line at most 44 characters.",
+  "Rules for lines: said to the person in the second person (you, your), about the dog, never by their name (wrong: \"Howls until Linda sits down.\" right: \"Howls until you sit down.\"). Never I, me or my (\"our\" is fine). Where an answer was typed, keep the buyer's specifics word for word. Never add a number, time, place or name the buyer did not give. Lines that came from chips (no typed text) are already approved: return them unchanged unless they must change to fit a typed detail. Each line at most 44 characters.",
+  "In reason, Biscuit talks to the buyer: call the person by their name, never you.",
   "Pick: the morning walk or coffee means mug; couch and a movie or naps means blanket; car rides or anything else means print. Never pick ornament unless the buyer asked for the tree.",
   'Reason example: "Walks start with coffee. I would know. So Kuku gets a spot in Sam\'s mug every morning."'
 ].join('\n');
@@ -104,6 +106,8 @@ const inp = g.input;
 const raw = $input.first().json;
 const m = findJson(raw, 'reaction') || findJson(raw, 'line') || {};
 const hay = [inp.typed_text, inp.previous_line, inp.dog.name, inp.recipient.name, inp.recipient.relation, inp.question].join(' ');
+// gift lines speak to the person as you, so their name never appears in one
+const named = (t) => !!inp.recipient.name && new RegExp('(^|[^A-Za-z])' + inp.recipient.name.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(inp.typed_text) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(inp.typed_text) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -125,12 +129,15 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       if (!okText(c, 24)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
-      f.lines.push(okLine(l, hay + ' ' + c) ? l : null);
+      f.lines.push(okLine(l, hay + ' ' + c) && !named(l) ? l : null);
       f.replies.push(okText(r, 50) ? r : null);
     });
-    if (okText(q, 70) && f.chips.length) fu = f;
+    // the buyer is not the person: a question or chip that says you, I or my is about the wrong one
+    const wrong = (t) => YOU.test(t) || FIRST_PERSON.test(t);
+    f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
+    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong)) fu = f;
   }
-  const goodLine = okLine(line, hay) ? line : (ownWords(inp.typed_text) || inp.previous_line);
+  const goodLine = okLine(line, hay) && !named(line) ? line : (ownWords(inp.typed_text) || inp.previous_line);
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,
@@ -151,6 +158,8 @@ const KEYS = ['home', 'spot', 'together', 'meaning'];
 const GIFTS = ['mug', 'blanket', 'print', 'ornament'];
 const typed = inp.answers.map(a => a.typed || '').join(' ');
 const hay = [typed, inp.answers.map(a => a.label).join(' '), KEYS.map(k => inp.current_lines[k]).join(' '), inp.dog.name, inp.recipient.name, inp.recipient.relation].join(' ');
+// gift lines speak to the person as you, so their name never appears in one
+const named = (t) => !!inp.recipient.name && new RegExp('(^|[^A-Za-z])' + inp.recipient.name.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(typed) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(typed) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -159,8 +168,8 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   const cur = inp.current_lines[k];
   const l = clean(m.lines && m.lines[k]);
-  lines[k] = (!blocked && okLine(l, hay)) ? l : cur;
-  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay)).slice(0, 2);
+  lines[k] = (!blocked && okLine(l, hay) && !named(l)) ? l : cur;
+  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay) && !named(a)).slice(0, 2);
   if (alts.length && !blocked) alternates[k] = alts;
   const src = m.sources && Array.isArray(m.sources[k]) ? m.sources[k].map(String).filter(s => /^[a-z_]{2,20}$/.test(s)).slice(0, 4) : [];
   if (src.length) sources[k] = src;
@@ -170,7 +179,7 @@ const out = {
   lines: lines,
   alternates: alternates,
   recommended_gift: GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift,
-  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay)) ? reason : '',
+  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay) && !YOU.test(reason)) ? reason : '',
   sources: sources,
   flags: flags,
   source: m.lines ? 'ai' : 'fallback'

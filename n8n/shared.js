@@ -5,6 +5,8 @@ const NUMWORDS = /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twel
 const GRIEF = /\b(died|dead|death|dying|passed away|passed on|put down|put to sleep|rainbow bridge|cancer|tumou?r|terminal|euthani[sz]|funeral|lost (him|her|them)|miss (him|her|them) so|in heaven|rip\b)/i;
 const PROFANE = /\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|cock\w*|piss\w*|asshole\w*|bastard\w*|whore\w*|slut\w*|nigg\w*|fag\w*|retard\w*)/i;
 const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
+// Biscuit talks to the buyer; only gift lines may say you (to the person)
+const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
 function clean(s) {
   return String(s == null ? '' : s)

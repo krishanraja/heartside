@@ -5,6 +5,8 @@ const NUMWORDS = /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twel
 const GRIEF = /\b(died|dead|death|dying|passed away|passed on|put down|put to sleep|rainbow bridge|cancer|tumou?r|terminal|euthani[sz]|funeral|lost (him|her|them)|miss (him|her|them) so|in heaven|rip\b)/i;
 const PROFANE = /\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|cock\w*|piss\w*|asshole\w*|bastard\w*|whore\w*|slut\w*|nigg\w*|fag\w*|retard\w*)/i;
 const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
+// Biscuit talks to the buyer; only gift lines may say you (to the person)
+const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
 function clean(s) {
   return String(s == null ? '' : s)
@@ -72,6 +74,8 @@ const inp = g.input;
 const raw = $input.first().json;
 const m = findJson(raw, 'reaction') || findJson(raw, 'line') || {};
 const hay = [inp.typed_text, inp.previous_line, inp.dog.name, inp.recipient.name, inp.recipient.relation, inp.question].join(' ');
+// gift lines speak to the person as you, so their name never appears in one
+const named = (t) => !!inp.recipient.name && new RegExp('(^|[^A-Za-z])' + inp.recipient.name.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(inp.typed_text) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(inp.typed_text) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -93,12 +97,15 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       if (!okText(c, 24)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
-      f.lines.push(okLine(l, hay + ' ' + c) ? l : null);
+      f.lines.push(okLine(l, hay + ' ' + c) && !named(l) ? l : null);
       f.replies.push(okText(r, 50) ? r : null);
     });
-    if (okText(q, 70) && f.chips.length) fu = f;
+    // the buyer is not the person: a question or chip that says you, I or my is about the wrong one
+    const wrong = (t) => YOU.test(t) || FIRST_PERSON.test(t);
+    f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
+    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong)) fu = f;
   }
-  const goodLine = okLine(line, hay) ? line : (ownWords(inp.typed_text) || inp.previous_line);
+  const goodLine = okLine(line, hay) && !named(line) ? line : (ownWords(inp.typed_text) || inp.previous_line);
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,
