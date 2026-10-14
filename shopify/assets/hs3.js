@@ -154,6 +154,17 @@
         .catch(function () { if (done) return; done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: 'error' }); resolve(null); });
     });
   }
+  /* The n8n code runner sleeps when the site is quiet, and waking it costs about 1.5 s. A
+     tiny {"warm":true} call (no AI, no budget) wakes it, and opens the connection, while the
+     buyer is still reading or typing, so the real call answers in about a second. */
+  var warmed = {};
+  function warm(url) {
+    if (!cfg.ai || !url || !window.fetch) return;
+    var now = Date.now();
+    if (warmed[url] && now - warmed[url] < 45000) return;
+    warmed[url] = now;
+    try { window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"warm":true}', credentials: 'omit', mode: 'cors', keepalive: true }).catch(function () {}); } catch (e) { /* old browser */ }
+  }
   function ownWords(t) {
     t = String(t || '').replace(/[\u2014\u2013]/g, ', ').replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
     if (t.length > 43) t = t.slice(0, 43).replace(/[\s,]+\S*$/, '').replace(/(\s+(the|a|an|and|or|but|of|to|in|on|at|by|for|from|with|near|under|over|into|onto|is|was|my|your|our|his|her|their))+$/i, '');
@@ -339,7 +350,7 @@
     var dots = '';
     for (var i = 1; i <= 6; i++) dots += '<span class="hs3-dot' + (i <= S.step ? ' is-on' : '') + '"></span>';
     var note = ['home', 'spot', 'together', 'meaning'].map(function (k) {
-      var t = lineFor(k);
+      var t = ui.pending && ui.pending.key === k && ui.pending.line ? ui.pending.line : lineFor(k);
       var fresh_ = t && ui.inked[k] !== t; if (t) ui.inked[k] = t;
       return t ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(t) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>';
     }).join('');
@@ -541,7 +552,7 @@
     if (S.step === 3) { S.follow = id; ui.prefix = REACT4[id] || ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
     if (S.step === 4) { S.spot = id; ui.prefix = REACT5[id] || ''; S.step = 5; save(); render(); stepEvent('shown'); return; }
     if (S.step === 5) { S.together = id; ui.prefix = REACT6[id] || ''; S.step = 6; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 6) { S.meaning = id; ui.prefix = ''; save(); render(); return; }
+    if (S.step === 6) { S.meaning = id; ui.prefix = ''; save(); render(); if (anyTyped()) warm(cfg.composeUrl); return; }
     void n;
   }
   function skip() {
@@ -563,10 +574,12 @@
     var key = ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step];
     if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
+    // the buyer's own words ink at once; Biscuit's version replaces them when it lands
+    ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(text) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';
     typedAnswer(key, q, text, '').then(function (r) {
-      ui.thinking = false;
+      ui.thinking = false; ui.pending = null;
       if (r.flags.some(function (f) { return f === 'grief' || f === 'profanity' || f === 'unclear'; })) {
         ui.flagged = CATCH; ui.echo = ''; render(); stepEvent('flagged'); return;
       }
@@ -583,6 +596,7 @@
       }
       ui.prefix = r.reaction && r.reaction !== 'Tell me more?' ? r.reaction : '';
       if (key === 'spot') S.step = 5; else if (key === 'together') S.step = 6;
+      if (key === 'meaning') warm(cfg.composeUrl);
       save(); render();
       if (key !== 'meaning') stepEvent('shown');
     });
@@ -638,6 +652,7 @@
     if (b) b.addEventListener('click', function () {
       track('start', {});
       S.screen = 'chat'; if (S.step > 6 || S.step < 1) S.step = 1; ui.echo = ''; ui.prefix = ''; save(); render(); stepEvent('shown');
+      warm(cfg.typedUrl);
       scrollTop();
     });
   }
@@ -690,7 +705,7 @@
       case 'next': next(); break;
       case 'chip': chip(v); break;
       case 'skip': skip(); break;
-      case 'other': ui.typing = true; ui.flagged = ''; render(); stepEvent('something_else'); break;
+      case 'other': warm(cfg.typedUrl); ui.typing = true; ui.flagged = ''; render(); stepEvent('something_else'); break;
       case 'untype': ui.typing = false; if (S.fu && !S.fu.chips.length) { skip(); return; } render(); break;
       case 'send': var t = frame.querySelector('#hs3-typed'); sendTyped(t ? t.value : ''); break;
       case 'tab': S.tabbed = true; track('gift_tab', { gift: v }); startReveal(v); break;
@@ -715,6 +730,7 @@
     heroHTML = frame.innerHTML;
     if (S.screen === 'reveal') ui.revealN = 9;
     if (S.screen === 'chat' && S.step === 3 && S.fu && !S.fu.chips.length) ui.typing = true;
+    if (S.screen === 'chat') warm(cfg.typedUrl);
     render();
     restorePhoto().then(function () { if (S.screen !== 'hero') render(); });
     var q = null;

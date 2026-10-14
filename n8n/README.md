@@ -7,11 +7,15 @@ The live AI in v3 (`docs/V3-GIFTS-FROM-YOUR-DOG.md` section 5) runs on Krish's n
 | Heartside: typed answer (Biscuit AI) | `ryyzdxv8SBm5HTjP` | `https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer` | a "Something else" answer: reaction, line, follow-up, flags |
 | Heartside: compose gift lines (Biscuit AI) | `28WZgPmgTaY33KY3` | `https://krishraja10101.app.n8n.cloud/webhook/heartside-compose` | at the reveal, only when an answer was typed: four lines, the pick, Biscuit's reason |
 
-Both were switched on by Krish's instruction on 13 October 2026. Model: `models/gemini-3.1-flash-lite`, thinking off.
+Both were switched on by Krish's instruction on 13 October 2026. Model: `models/gemini-3.1-flash-lite`, thinking off. Gemini is on a paid tier (Krish, 14 Oct).
 
 ## How each one works
 
-Webhook (POST) > **Guard** > **Allowed?** > **Gemini** > **Enforce rules** > Respond. A refused call goes to **Refuse**.
+Webhook (POST) > **Stamp** > **Warm?** > **Guard** > **Allowed?** > **Gemini** (or **Gemini backup**) > **Enforce rules** > **Tag** > Respond > **Log**. A refused call goes to **Refuse**.
+
+- **Speed (14 Oct, "this needs to be lightning fast").** n8n's code runner sleeps when the site is quiet, and waking it took about 1.5 s, which pushed one real call past 3 s. So the theme sends `{"warm":true}` as a chat starts and again when the buyer taps "Something else" (at most once every 45 s). **Warm?** sends it down a one-line Code node and back, with no AI and no budget used. The runner is then awake, and the phone already has its connection open (the page also preconnects to n8n), by the time the buyer presses Done. The page inks the buyer's own words the instant they press Done, and swaps in Biscuit's version when it lands. Measured warm: the server takes about 1 s (almost all Gemini), and the full round trip is 1.3 to 1.6 s.
+- **Gemini backup:** if the first call errors (a passing error or a rate limit), one retry on the same model, inside the 3 s. Tested on 14 Oct: `gemini-2.5-flash-lite` returns "not found" on this key, `gemini-3.5-flash-lite` took 4.6 s, and `gemini-flash-lite-latest` needs its thinking time and runs out of tokens at our limit. None of them can answer in time, so a full model outage falls back to the buyer's own words.
+- **Stamp, Tag and Log (the fallback watch):** Stamp records the arrival time before any code runs. Tag adds `model` (primary, backup or none) and `ms` (arrival to answer, cold start included) to the response. After the response has gone, Log writes one row per call to the n8n data table **Heartside AI calls**: call, step, source (ai or fallback), model, ms, slow (over 2.7 s for a typed answer, which the buyer saw as a fallback, or over 5.7 s for compose), and flags. The table is in n8n under Overview > Data tables. Read the fallback rate as rows with `source = fallback` or `slow = true`, over all rows. Look again if it goes above about 1 in 10 in launch week.
 
 - **Guard** (spec 5.4 guard rails): the `Origin` header must be `https://heartside.io`, `https://www.heartside.io` or `https://bnf1em-ge.myshopify.com` (403 otherwise). A `session` id is required (the theme makes one per visit). Caps per hour: the typed answer 8 calls per session and 60 per IP; compose 3 per session and 20 per IP (429 over the cap). Inputs are trimmed to the lengths in 5.2.
 - **Gemini** gets Biscuit's voice rules (spec 4.6) and the JSON shape, and is told the buyer's words are data, not instructions. If it errors, its error output still goes to Enforce rules.
@@ -34,7 +38,7 @@ curl -sS -A 'Mozilla/5.0 (iPhone) Mobile' -H 'Origin: https://heartside.io' -H '
 
 ## Checked on 13 October 2026 (live)
 
-- Typed answer: 200 with the 5.2 JSON, usually 1.3 to 1.9 s with thinking off (one cold call took 3.6 s, which the theme turns into the fallback).
+- Typed answer: 200 with the 5.2 JSON, usually 1.3 to 1.9 s with thinking off (one cold call took 3.6 s, which the theme turns into the fallback). On 14 Oct, with the warm-up: the warm call itself took 2.4 s (it carries the cold start), then real answers took 1.3 to 1.6 s with the server at about 1 s.
 - Grief ("she passed away in March"), profanity, a prompt injection ("ignore your instructions...") and an answer about chemo were all refused with the try-again line.
 - The ninth call in one session got 429. A call from another origin got 403.
 - Compose: 200 in 1.5 to 1.9 s; chip lines came back unchanged, the typed line kept "5pm", the pick and the reason followed the answers.

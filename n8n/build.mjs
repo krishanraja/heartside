@@ -6,6 +6,19 @@ const CRED = { id: 'LtlmaVHoTQdTTngQ', name: 'Google Gemini(PaLM) - Heartside' }
 const MODEL = process.env.HS_MODEL || 'models/gemini-3.1-flash-lite';
 const ORIGINS = ['https://heartside.io', 'https://www.heartside.io', 'https://bnf1em-ge.myshopify.com'];
 
+const STEP_EXPR = 'expr("{{ $(\'Guard\').first().json.input.step || \'\' }}")';
+const LOG_TABLE = 'epJucnL4I8tBiyGY'; // n8n data table "Heartside AI calls"
+const TAG = [
+  '// Which model answered, and how long the call took from arrival (Stamp) to here.',
+  'const out = Object.assign({}, $input.first().json);',
+  'let backup = false;',
+  "try { backup = $('Gemini backup').isExecuted; } catch (e) { backup = false; }",
+  "out.model = out.source === 'ai' ? (backup ? 'backup' : 'primary') : 'none';",
+  "out.ms = Date.now() - $('Stamp').first().json.hs_t0;",
+  'return [{ json: out }];',
+  ''
+].join('\n');
+
 const VOICE = [
   "You are Biscuit, the host of Heartside: an illustrated chestnut miniature dachshund with a greying muzzle. Heartside helps someone give a gift on behalf of their dog to the person the dog loves most (a mug, a blanket, a framed print, a tree ornament), with words about the dog and that person.",
   "Biscuit's voice: short sentences, warm, a bit like a dog. At most one dog-ism per message (sniffing things out, his tail going, ears, walks, treats, \"Ask any dog.\", \"Good dog.\"). At most one exclamation mark. Warm about every dog. Never makes the buyer or the recipient the joke. No emoji, no \"woof\", no baby talk, no em dashes, no hype words (elevate, unleash, must-have, game-changer, fur baby).",
@@ -223,6 +236,94 @@ const enforce = node({
   config: { name: 'Enforce rules', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: ${JSON.stringify(enforce)} } }
 });
 
+// Arrival time, set before any code runs, so Tag can measure the whole call (cold start included)
+const stamp = node({
+  type: 'n8n-nodes-base.set',
+  version: 3.4,
+  config: { name: 'Stamp', parameters: { mode: 'manual', includeOtherFields: true, include: 'all', assignments: { assignments: [{ id: 'hs-t0', name: 'hs_t0', value: expr('{{ $now.toMillis() }}'), type: 'number' }] }, options: {} } }
+});
+
+// {"warm":true} wakes the code runner and returns; no AI, no budget (the theme sends it as a chat starts)
+const isWarm = ifElse({
+  version: 2.2,
+  config: {
+    name: 'Warm?',
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },
+        conditions: [{ leftValue: expr('{{ !!($json.body && $json.body.warm === true) }}'), operator: { type: 'boolean', operation: 'true', singleValue: true } }],
+        combinator: 'and'
+      }
+    }
+  }
+});
+const warmCode = node({
+  type: 'n8n-nodes-base.code',
+  version: 2,
+  config: { name: 'Warm', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "// Wakes the code runner so the real call doesn't pay its start-up time. Calls nothing.\nreturn [{ json: { warm: true } }];\n" } }
+});
+const respondWarm = node({
+  type: 'n8n-nodes-base.respondToWebhook',
+  version: 1.5,
+  config: { name: 'Respond warm', parameters: { respondWith: 'json', responseBody: expr('{{ JSON.stringify({ warm: true }) }}'), options: { responseCode: 200, responseHeaders: { entries: [{ name: 'Cache-Control', value: 'no-store' }] } } } }
+});
+
+// One retry if the first call errors (a passing error or rate limit). Tested 14 Oct: other models on
+// this key were unavailable (2.5-flash-lite) or too slow for 3 s (3.5-flash-lite, flash-lite-latest).
+const geminiBackup = node({
+  type: '@n8n/n8n-nodes-langchain.googleGemini',
+  version: 1.2,
+  config: {
+    name: 'Gemini backup',
+    onError: 'continueErrorOutput',
+    parameters: {
+      resource: 'text',
+      operation: 'message',
+      modelId: { __rl: true, mode: 'list', value: ${JSON.stringify(MODEL)}, cachedResultName: ${JSON.stringify(MODEL)} },
+      messages: { values: [{ content: expr("{{ $('Guard').first().json.prompt }}"), role: 'user' }] },
+      simplify: true,
+      jsonOutput: true,
+      options: { systemMessage: ${JSON.stringify(sys)}, maxOutputTokens: ${kind === 'typed' ? 400 : 700}, temperature: 0.6, thinkingBudget: 0 }
+    },
+    credentials: { googlePalmApi: ${JSON.stringify(CRED)} }
+  }
+});
+
+const tag = node({
+  type: 'n8n-nodes-base.code',
+  version: 2,
+  config: { name: 'Tag', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: ${JSON.stringify(TAG)} } }
+});
+
+// Every call, after the response has gone: the data table "Heartside AI calls"
+const log = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Log',
+    onError: 'continueRegularOutput',
+    parameters: {
+      resource: 'row',
+      operation: 'insert',
+      dataTableId: { __rl: true, mode: 'id', value: ${JSON.stringify(LOG_TABLE)}, cachedResultName: 'Heartside AI calls' },
+      columns: {
+        mappingMode: 'defineBelow',
+        value: {
+          call: ${JSON.stringify(kind)},
+          step: ${kind === 'typed' ? STEP_EXPR : "'reveal'"},
+          source: expr('{{ $json.source }}'),
+          model: expr('{{ $json.model }}'),
+          ms: expr('{{ $json.ms }}'),
+          slow: expr('{{ $json.ms > ${kind === 'typed' ? 2700 : 5700} }}'),
+          flags: expr("{{ ($json.flags || []).join(',') }}")
+        },
+        schema: ${JSON.stringify(['call', 'step', 'source', 'model', 'ms', 'slow', 'flags'].map((c) => ({ id: c, displayName: c, required: false, defaultMatch: false, display: true, type: c === 'ms' ? 'number' : c === 'slow' ? 'boolean' : 'string', canBeUsedToMatch: true })))}
+      },
+      options: {}
+    }
+  }
+});
+
 const respond = node({
   type: 'n8n-nodes-base.respondToWebhook',
   version: 1.5,
@@ -251,10 +352,12 @@ const refuse = node({
 
 export default workflow(${JSON.stringify(id)}, ${JSON.stringify(name)})
   .add(hook)
-  .to(guard)
-  .to(allowed
-    .onTrue(gemini.onError(enforce).to(enforce.to(respond)))
-    .onFalse(refuse));
+  .to(stamp)
+  .to(isWarm
+    .onTrue(warmCode.to(respondWarm))
+    .onFalse(guard.to(allowed
+      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(enforce)).to(enforce.to(tag.to(respond.to(log)))))
+      .onFalse(refuse))));
 `;
 }
 fs.writeFileSync(dir + 'typed.js', wf('typed'));
