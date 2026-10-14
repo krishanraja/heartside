@@ -10,4 +10,5 @@ Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and
 - `tools/content/`: the video builder and its specs.
 - `content/`: rendered videos kept for reference (the first set is in `content/v1-2026-10-06/`).
 - `design/prototype-v3/`: the approved phone prototype of the v3 journey (reference, not production code).
+- Growth lives in [`krishanraja/growth-heartside`](https://github.com/krishanraja/growth-heartside). It drafts the marketing (Reels, replies, creator notes, store fixes, the numbers) and reads this repository before every job and every hour. It takes its canon from the "Picking this up?" line above, in that order, so keep that line pointing at the documents that win. Store fixes it finds come back as briefs for a build session here; it never changes this repository or the store.
 - `design/`, `assets/`, `ornament/`: design source, print templates, product photos, the photo library and brand files.
