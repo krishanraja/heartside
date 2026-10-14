@@ -32,6 +32,7 @@ const browser = await chromium.launch(exe ? { executablePath: exe } : {});
 const BANNED = /—|\belevate|\bunleash|must-have|game-changer|fur baby|annual review|area for improvement|known enemy|HR\b/i;
 
 async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
+  const mode = ai;
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Instagram 350.0' });
   const page = await ctx.newPage();
   const events = [], errors = [], calls = [], warms = [];
@@ -48,7 +49,8 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: 'mug', reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
     }
     if (/passed away/.test(body.typed_text)) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: "I didn't quite catch that one. Try again, or pick one of these?", line: '', follow_up: null, flags: ['grief'] }) });
-    const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'] } : null;
+    const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps office hours. Smart dog.', 'Weekends too. Very loyal.'] } : null;
+    if (mode === 'delay') await new Promise((r) => setTimeout(r, 1200));
     const line = body.step === 'home_follow' ? 'Watches the window for you from 5pm, daily.' : 'Watches the window for you from 5pm.';
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: 'The window watch. Very serious work.', line, follow_up: fu, flags: [] }) });
   });
@@ -208,6 +210,30 @@ for (const mode of ['fail', 'slow']) {
   ok(!BANNED.test(text), 'no em dashes, banned words or HR copy on the page');
   await ctx.close();
 }
+// 3b. speed: a prepared follow-up chip is instant, and a pause while typing sends the answer early
+{
+  const { ctx, page, calls, errors } = await session('index-gifts.html', { ai: 'delay' });
+  await tap(page, '[data-hs3-start]');
+  await page.fill('#hs3-dog', 'Kuku'); await tap(page, '[data-hs3="next"]');
+  await page.fill('#hs3-rec', 'Sam'); await tap(page, '[data-hs3="next"]');
+  await tap(page, '[data-hs3="other"]');
+  await page.locator('#hs3-typed').pressSequentially('she sits in the window from 5pm', { delay: 10 });
+  await page.waitForTimeout(2000); // a buyer reading it back before pressing Done
+  const t = Date.now();
+  await tap(page, '[data-hs3="send"]');
+  await page.waitForSelector('text=From 5pm sharp? Every day?', { timeout: 3500 });
+  const took = Date.now() - t;
+  ok(took < 400, `paused before Done: Biscuit replies in ${took} ms (the AI takes 1200 ms here)`);
+  ok(calls.length === 1, `the early call is reused, not repeated (${calls.length} call)`);
+  const t2 = Date.now();
+  await chipNamed(page, 'Weekdays');
+  await page.waitForSelector("text=Where's Kuku's spot", { timeout: 1000 });
+  ok(Date.now() - t2 < 400 && calls.length === 1, `a prepared follow-up chip is instant, with no second call (${Date.now() - t2} ms, ${calls.length} call)`);
+  ok((await noteLines(page))[0] === 'Watches for you from 5pm on weekdays.' && (await bubble(page)).startsWith('Keeps office hours. Smart dog.'), 'the chip\'s prepared line and reply are used');
+  ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
+  await ctx.close();
+}
+
 // 4. products not created yet: the button says so instead of failing (today's live state)
 {
   const { ctx, page } = await session('index-gifts-noproducts.html');

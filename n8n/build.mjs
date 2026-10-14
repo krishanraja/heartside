@@ -29,12 +29,12 @@ const VOICE = [
 const TYPED_SYS = VOICE + '\n\n' + [
   "The buyer has typed an answer in their own words instead of picking a chip. Reply with JSON only, exactly this shape:",
   '{"reaction": "<= 70 characters. Biscuit reacting to the specific thing they said.",',
-  ' "line": "<= 44 characters. A line printed on the gift, about the dog, said to the person in the second person (you, your). Never I, me or my (\\"our\\" is fine). Keep the buyer\'s specifics (numbers, times, places, names) word for word and add none they did not give. Plain, warm and true. No joke.",',
-  ' "follow_up": {"question": "<= 70 characters. One question in Biscuit\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"]},',
+  ' "line": "<= 44 characters. A line printed on the gift, about the dog, said to the person in the second person (you, your), never by their name. Never I, me or my (\\"our\\" is fine). Keep the buyer\'s specifics (numbers, times, places, names) word for word and add none they did not give. Plain, warm and true. No joke.",',
+  ' "follow_up": {"question": "<= 70 characters. One question in Biscuit\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"], "lines": ["for each chip, in order: your line refined with that answer, <= 44 characters, same rules as line"], "replies": ["for each chip, in order: Biscuit\'s short reaction to that answer, <= 50 characters"]},',
   ' "flags": ["any of: grief (death, illness, loss), profanity, person_described (the answer describes a person, not the dog), unclear (not an answer to the question)"]}',
-  "Steps: home = what the dog does when the person comes home. home_follow = more detail on that answer (refine previous_line with it). spot = where the dog's spot is when the person is around. together = what the dog and the person do together. meaning = what the dog is to the person. On home_follow and meaning, follow_up is null.",
+  "Steps: home = what the dog does when the person comes home. home_follow = more detail on that answer (refine previous_line with it). spot = where the dog's spot is when the person is around. together = what the dog and the person do together. meaning = what the dog is to the person. Only step home gets a follow_up; on every other step follow_up is null.",
   "Line shapes: home \"Waits at the door for you.\", spot \"Steals your side of the bed.\", together \"Lives for our morning walks.\", meaning \"Your shadow, always.\"",
-  'Example. Input: step home, typed "she sits in the window from 5pm". Output: {"reaction":"The window watch. Very serious work.","line":"Watches the window for you from 5pm.","follow_up":{"question":"From 5pm sharp? Every day?","chips":["Every single day","Weekdays","Even weekends"]},"flags":[]}'
+  'Example. Input: step home, typed "she sits in the window from 5pm". Output: {"reaction":"The window watch. Very serious work.","line":"Watches the window for you from 5pm.","follow_up":{"question":"From 5pm sharp? Every day?","chips":["Every single day","Weekdays","Even weekends"],"lines":["Watches for you from 5pm, every day.","Watches for you from 5pm on weekdays.","Watches for you from 5pm, weekends too."],"replies":["Every day! Now that is a good dog.","Keeps office hours. Smart dog.","Weekends too. Very loyal."]},"flags":[]}'
 ].join('\n');
 
 const COMPOSE_SYS = VOICE + '\n\n' + [
@@ -115,16 +115,26 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
   const reaction = clean(m.reaction);
   const line = clean(m.line);
   let fu = null;
-  if (m.follow_up && typeof m.follow_up === 'object' && inp.step !== 'home_follow' && inp.step !== 'meaning') {
+  if (m.follow_up && typeof m.follow_up === 'object' && inp.step === 'home') {
     const q = clean(m.follow_up.question);
-    const chips = (Array.isArray(m.follow_up.chips) ? m.follow_up.chips : []).map(clean).filter(c => okText(c, 24)).slice(0, 3);
-    if (okText(q, 70) && chips.length) fu = { question: q, chips: chips };
+    const arr = (k) => (Array.isArray(m.follow_up[k]) ? m.follow_up[k] : []);
+    // each chip keeps its own refined line and reply, so a chip tap needs no second call
+    const f = { question: q, chips: [], lines: [], replies: [] };
+    arr('chips').slice(0, 3).forEach((c, i) => {
+      c = clean(c);
+      if (!okText(c, 24)) return;
+      const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
+      f.chips.push(c);
+      f.lines.push(okLine(l, hay + ' ' + c) ? l : null);
+      f.replies.push(okText(r, 50) ? r : null);
+    });
+    if (okText(q, 70) && f.chips.length) fu = f;
   }
   const goodLine = okLine(line, hay) ? line : (ownWords(inp.typed_text) || inp.previous_line);
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,
-    follow_up: ai ? fu : (inp.step === 'home' || inp.step === 'spot' || inp.step === 'together' ? { question: 'Tell me more?', chips: [] } : null),
+    follow_up: ai ? fu : (inp.step === 'home' ? { question: 'Tell me more?', chips: [] } : null),
     flags: flags
   };
 }
