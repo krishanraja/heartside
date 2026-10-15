@@ -1,9 +1,10 @@
 """The reference render the chat's mug must match (tools/preview/mockup-gate.mjs).
 
 Wraps a real Teeinblue print file (2700x1050) onto the same phone-size photo layers the chat
-uses (shopify/assets/hs-mug-*-base.webp and -shade.webp), with the formula of the approved
-Shopify images (shopify_mug_images.py): arcsin mapping, rim curve, edge fade, the photo's own
-shading through the ink, and the glaze. 2 x 2 supersampled.
+uses (shopify/assets/hs-mug-*-base.webp and -shade.webp): arcsin mapping, each row's curve
+growing from the rim to the base as measured on Printful's photo (RIM_TOP, RIM_BOT; 15 Oct), edge
+fade, the photo's own shading through the ink, and the glaze. 2 x 2 supersampled. The approved
+Shopify images used one curve for every row, which Krish found unrealistic on 15 Oct.
 
   python3 tools/realphoto/golden_reveal_mug.py print.png out_dir
   writes out_dir/golden-note.png and out_dir/golden-dog.png (640 x 549)
@@ -15,7 +16,8 @@ from PIL import Image
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 A = os.path.join(ROOT, 'shopify', 'assets')
 W, H, RPX = 2700, 1050, 487.5
-R, TOP, BAND, RIM, Y0 = 330.0, 260.5714, 742.2857, 30.8571, 150
+R, TOP, BAND, Y0 = 330.0, 260.5714, 742.2857, 150
+RIM_TOP, RIM_BOT = 34.0171, 97.9695   # rise at the edge for the print's top and bottom rows
 CROP, OUT, OUTH = 1060, 640, 549
 FACES = {'note': dict(cx=472.2857, x0=60, centre=2115), 'dog': dict(cx=726.0, x0=80, centre=585)}
 
@@ -35,8 +37,8 @@ def golden(design, face):
             t = (X - g['cx']) / R
             inside = np.abs(t) < 0.995
             u = g['centre'] + np.arcsin(np.clip(t, -0.999, 0.999)) * RPX
-            top = TOP - RIM * (1 - np.sqrt(np.clip(1 - t * t, 0, 1)))
-            v = (Y - top) / BAND * H
+            cv = 1 - np.sqrt(np.clip(1 - t * t, 0, 1))
+            v = (Y - TOP + RIM_TOP * cv) / (BAND - (RIM_BOT - RIM_TOP) * cv) * H
             ok = inside & (v >= 0) & (v < H - 1) & (u >= 0) & (u < W - 1)
             ui = np.clip(u, 0, W - 2); vi = np.clip(v, 0, H - 2); u0 = ui.astype(int); v0 = vi.astype(int)
             fu = (ui - u0)[..., None]; fv = (vi - v0)[..., None]

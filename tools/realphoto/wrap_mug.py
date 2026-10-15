@@ -15,7 +15,8 @@ BASE = Image.open(os.path.join(D, 'src', 'pf-mug-pink.jpg')).convert('RGB')
 B = np.asarray(BASE).astype(float)
 W, H = 2700, 1050
 CX, R = 275.5, 192.5
-TOP_C, BAND, RIM_B = 323, 433, 18
+TOP_C, BAND = 323, 433
+RIM_TOP, RIM_BOT = 19.84, 57.15  # a row's rise at the edge, top of the print to bottom (photo: rim 18, base 59)
 RPX = 487.5
 SS = 2  # supersample for smoother ink edges
 
@@ -31,8 +32,8 @@ def wrap(design, centre, mirror):
     inside = np.abs(t) < 0.995
     th = np.arcsin(np.clip(t, -0.999, 0.999))
     u = centre + th * RPX
-    top = TOP_C - RIM_B * (1 - np.sqrt(np.clip(1 - t * t, 0, 1)))
-    v = (ys - top) / BAND * H
+    cv = 1 - np.sqrt(np.clip(1 - t * t, 0, 1))
+    v = (ys - TOP_C + RIM_TOP * cv) / (BAND - (RIM_BOT - RIM_TOP) * cv) * H
     ok = inside & (v >= 0) & (v < H - 1) & (u >= 0) & (u < W - 1)
     ui = np.clip(u, 0, W - 2); vi = np.clip(v, 0, H - 2)
     u0 = ui.astype(int); v0 = vi.astype(int)
