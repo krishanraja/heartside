@@ -4,7 +4,10 @@ import numpy as np
 from PIL import Image
 D = os.path.dirname(os.path.abspath(__file__)); M = os.path.join(D, 'out', 'mockup')
 OUT = 2048; S = OUT / 700.0; Y0 = 171
-R = 192.5 * S; TOP_C = (323 - Y0) * S; BAND = 433 * S; RIM = 18 * S; RPX = 487.5
+# each row rises at the edge by RIM_TOP (top of the print) growing to RIM_BOT (bottom), as the
+# rim (18 px) and the base (59 px) of Printful's 700 px photo do (measured 15 Oct). Until then
+# one constant (18 px) curved every row alike, which Krish found unrealistic.
+R = 192.5 * S; TOP_C = (323 - Y0) * S; BAND = 433 * S; RIM_TOP = 19.84 * S; RIM_BOT = 57.15 * S; RPX = 487.5
 W, H = 2700, 1050; SS = 2
 def wrap(design, name):
     mirror = name == 'outward'
@@ -17,8 +20,8 @@ def wrap(design, name):
     t = (xs - cx) / R
     inside = np.abs(t) < 0.995
     u = centre + np.arcsin(np.clip(t, -0.999, 0.999)) * RPX
-    top = TOP_C - RIM * (1 - np.sqrt(np.clip(1 - t * t, 0, 1)))
-    v = (ys - top) / BAND * H
+    cv = 1 - np.sqrt(np.clip(1 - t * t, 0, 1))
+    v = (ys - TOP_C + RIM_TOP * cv) / (BAND - (RIM_BOT - RIM_TOP) * cv) * H
     ok = inside & (v >= 0) & (v < H - 1) & (u >= 0) & (u < W - 1)
     ui = np.clip(u, 0, W - 2); vi = np.clip(v, 0, H - 2); u0 = ui.astype(int); v0 = vi.astype(int)
     fu = (ui - u0)[..., None]; fv = (vi - v0)[..., None]

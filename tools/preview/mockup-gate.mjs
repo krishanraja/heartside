@@ -2,8 +2,8 @@
 // Run after render.mjs:   cd tools/preview && node mockup-gate.mjs
 //
 // Truth is Teeinblue's own print files (docs/evidence/cowork-2026-10-15/mug/print-file-*.png),
-// wrapped onto the real mug photo by tools/realphoto/golden_reveal_mug.py with the formula of
-// the Shopify images Krish approved. For each print file it checks, in a real browser:
+// wrapped onto the real mug photo by tools/realphoto/golden_reveal_mug.py (each row's curve
+// growing from the rim to the base, as measured on Printful's photo). For each print file it checks, in a real browser:
 //   1. the wrap: hs3.js wrapping that same print file matches the reference render;
 //   2. the layout: hs3.js laying out the same words itself (fonts, rows, paw, signature)
 //      matches the reference render of Teeinblue's file.

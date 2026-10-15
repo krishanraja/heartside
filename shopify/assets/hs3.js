@@ -526,7 +526,11 @@
      faces side by side at a readable size, so the mug turns. Teeinblue removes the photo's
      background on the product page; here the photo sits whole, with soft edges. If a browser
      can't draw it, the flat layout underneath shows instead. */
-  var MUG = { W: 2700, H: 1050, RPX: 487.5, R: 330, TOP: 260.5714, BAND: 742.2857, RIM: 30.8571, Y0: 150, CROP: 1060, OUT: 640, OUTH: 549, DS: 0.5,
+  // RIM_TOP and RIM_BOT: how far a row rises at the mug's edge, at the top and the bottom of the
+  // print. Measured from Printful's photo (15 Oct): the rim's front edge sags 18 px and the base
+  // 59 px (700 px photo), so lower rows curve about three times as much, as in any photo taken
+  // from slightly above. One constant for every row looked flat and tilted (Krish, 15 Oct).
+  var MUG = { W: 2700, H: 1050, RPX: 487.5, R: 330, TOP: 260.5714, BAND: 742.2857, RIM_TOP: 34.0171, RIM_BOT: 97.9695, Y0: 150, CROP: 1060, OUT: 640, OUTH: 549, DS: 0.5,
     dog: { cx: 726, x0: 80, centre: 585 }, note: { cx: 472.2857, x0: 60, centre: 2115 } };
   var mugCache = {}, mugAssets = null, mugPhoto = { src: '', p: null };
   function mugLineTexts() { return giftKeys('mug').map(function (k) { return evenBreak(lineFor(k) || ''); }); }
@@ -599,11 +603,12 @@
     t.fillStyle = fade(t.createLinearGradient(0, 0, 0, tmp.height), [[0, 0], [0.08, 1], [0.84, 1], [1, 0]]); t.fillRect(0, 0, tmp.width, tmp.height);
     d.drawImage(tmp, L + (BW - w) / 2, T + (BH - h) / 2, w, h);
   }
-  // wrap the print-size design around the mug in the photo: the same arcsin mapping, rim curve,
-  // edge fade, shading and glaze as shopify_mug_images.py, 2 x 2 samples per pixel
+  // wrap the print-size design around the mug in the photo: arcsin mapping, each row's curve
+  // growing from the rim to the base, edge fade, shading and glaze (golden_reveal_mug.py is the
+  // same in Python), 2 x 2 samples per pixel
   function wrapOnto(base, design, g) {
     var bd = base.data, dd = design.data, BW = base.width, BH = base.height, DW = design.width, DH = design.height;
-    var k = MUG.OUT / MUG.CROP, s = MUG.DS, sub = [0.25, 0.75], vk = MUG.H * s / MUG.BAND;
+    var k = MUG.OUT / MUG.CROP, s = MUG.DS, sub = [0.25, 0.75], dA = MUG.RIM_BOT - MUG.RIM_TOP;
     for (var x = 0; x < BW; x++) {
       var cols = [];
       for (var i = 0; i < 2; i++) {
@@ -611,19 +616,21 @@
         if (Math.abs(t) >= 0.995) continue;
         var u = (g.centre + Math.asin(t) * MUG.RPX) * s;
         if (u < 0 || u >= DW - 1) continue;
-        cols.push(u, MUG.TOP - MUG.RIM * (1 - Math.sqrt(1 - t * t)), Math.min(1, (0.995 - Math.abs(t)) / 0.07));
+        var cv = 1 - Math.sqrt(1 - t * t);
+        // a print row v sits at y = TOP + v/H * BAND - (RIM_TOP + dA * v/H) * cv; solved for v
+        cols.push(u, MUG.TOP - MUG.RIM_TOP * cv, MUG.H * s / (MUG.BAND - dA * cv), Math.min(1, (0.995 - Math.abs(t)) / 0.07));
       }
       if (!cols.length) continue;
       for (var y = 0; y < BH; y++) {
         var pr = 0, pg = 0, pb = 0, pa = 0;
-        for (var c = 0; c < cols.length; c += 3) {
+        for (var c = 0; c < cols.length; c += 4) {
           for (var j = 0; j < 2; j++) {
-            var v = ((y + sub[j]) / k + MUG.Y0 - cols[c + 1]) * vk;
+            var v = ((y + sub[j]) / k + MUG.Y0 - cols[c + 1]) * cols[c + 2];
             if (v < 0 || v >= DH - 1) continue;
             var u0 = cols[c] | 0, v0 = v | 0, fx = cols[c] - u0, fy = v - v0;
             var p = (v0 * DW + u0) * 4, q = p + DW * 4;
             var w0 = (1 - fx) * (1 - fy), w1 = fx * (1 - fy), w2 = (1 - fx) * fy, w3 = fx * fy;
-            var a0 = dd[p + 3] * w0, a1 = dd[p + 7] * w1, a2 = dd[q + 3] * w2, a3 = dd[q + 7] * w3, lim = cols[c + 2] / 255;
+            var a0 = dd[p + 3] * w0, a1 = dd[p + 7] * w1, a2 = dd[q + 3] * w2, a3 = dd[q + 7] * w3, lim = cols[c + 3] / 255;
             pr += (dd[p] * a0 + dd[p + 4] * a1 + dd[q] * a2 + dd[q + 4] * a3) * lim;
             pg += (dd[p + 1] * a0 + dd[p + 5] * a1 + dd[q + 1] * a2 + dd[q + 5] * a3) * lim;
             pb += (dd[p + 2] * a0 + dd[p + 6] * a1 + dd[q + 2] * a2 + dd[q + 6] * a3) * lim;
@@ -661,6 +668,28 @@
     wrapOnto(base, d.getImageData(0, 0, dz.width, dz.height), MUG[face]);
     b.putImageData(base, 0, 0);
     return bg;
+  }
+  // the first screen's example mug: the same real-photo mug as the reveal, with Teeinblue's sample
+  // dog and the prototype's words, turning between the dog's face and the note
+  var HERO_MUG = { texts: ['Waits at the door for you, weekends too.', 'Steals your side of the bed.', 'Your shadow, always.'], name: 'Kuku' };
+  function heroMug() {
+    var box = frame && frame.querySelector('[data-hs3-hero-mug]'), m = cfg.mug || {};
+    if (!box || !m.sample) return;
+    Promise.all([loadMugAssets(), loadImg(m.sample)]).then(function (r) {
+      var spec = { texts: HERO_MUG.texts.map(evenBreak), ink: 3, name: HERO_MUG.name };
+      box.querySelectorAll('canvas[data-hs3-heromug]').forEach(function (c) {
+        var face = c.getAttribute('data-hs3-heromug');
+        c.getContext('2d').drawImage(renderFace(face, r[0], face === 'dog' ? r[1] : null, spec), 0, 0);
+        c.classList.add('is-drawn');
+      });
+      var mugs = box.querySelector('.hs3-mugs');
+      if (reduced) { mugs.setAttribute('data-side', 'note'); return; }
+      clearInterval(heroMug.t);
+      heroMug.t = setInterval(function () {
+        if (!mugs.isConnected) { clearInterval(heroMug.t); return; }
+        mugs.setAttribute('data-side', mugs.getAttribute('data-side') === 'dog' ? 'note' : 'dog');
+      }, 3200);
+    }).catch(function () { /* the plain mug photo stays */ });
   }
   function paintMugs() {
     var cvs = frame ? Array.prototype.slice.call(frame.querySelectorAll('canvas[data-hs3-mug]')) : [];
@@ -926,6 +955,7 @@
   /* ------------------------------------------------------------------ binding */
   var heroHTML = '';
   function bindHero() {
+    heroMug();
     var b = frame.querySelector('[data-hs3-start]');
     if (b) b.addEventListener('click', function () {
       track('start', {});
