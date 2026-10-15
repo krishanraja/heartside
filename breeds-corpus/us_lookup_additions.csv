@@ -1,0 +1,32 @@
+query,display_query,canonical_name,canonical_id,entity_type,lookup_priority,dog_type,secondary_dog_type,parent_1,parent_2,confidence,note
+boxer,Boxer,Deutscher Boxer,deutscher-boxer,breed,100,Guardian,Working Goofball,,,medium,
+chihuahua,Chihuahua,Chihuahueño,chihuahue-o,breed,100,Companion Velcro,Working Goofball,,,medium,
+pomeranian,Pomeranian,Deutscher Spitz,deutscher-spitz,breed,100,Spitz Commentator,Working Goofball,,,medium,FCI lists the Pomeranian as the Zwergspitz size of the German Spitz
+pom,Pom,Deutscher Spitz,deutscher-spitz,breed,100,Spitz Commentator,Working Goofball,,,medium,FCI lists the Pomeranian as the Zwergspitz size of the German Spitz
+doberman,Doberman,Dobermann,dobermann,breed,100,Guardian,Working Goofball,,,medium,
+doberman pinscher,Doberman Pinscher,Dobermann,dobermann,breed,100,Guardian,Working Goofball,,,medium,
+dobie,Dobie,Dobermann,dobermann,breed,100,Guardian,Working Goofball,,,medium,
+cane corso,Cane Corso,Cane Corso Italiano,cane-corso-italiano,breed,100,Guardian,Working Goofball,,,medium,
+havanese,Havanese,Bichon Havanais,bichon-havanais,breed,100,Companion Velcro,Working Goofball,,,medium,
+german shorthaired pointer,German Shorthaired Pointer,Deutsch Kurzhaar,deutsch-kurzhaar,breed,100,Working Goofball,Scent Detective,,,medium,
+gsp,Gsp,Deutsch Kurzhaar,deutsch-kurzhaar,breed,100,Working Goofball,Scent Detective,,,medium,
+shorthaired pointer,Shorthaired Pointer,Deutsch Kurzhaar,deutsch-kurzhaar,breed,100,Working Goofball,Scent Detective,,,medium,
+jack russell,Jack Russell,Jack Russell Terrier,jack-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium,
+jrt,Jrt,Jack Russell Terrier,jack-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium,
+malinois,Malinois,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium,FCI lists the Malinois as a variety of the Belgian Shepherd
+belgian malinois,Belgian Malinois,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium,FCI lists the Malinois as a variety of the Belgian Shepherd
+belgian shepherd,Belgian Shepherd,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium,FCI lists the Malinois as a variety of the Belgian Shepherd
+brittany,Brittany,Epagneul Breton,epagneul-breton,breed,100,Working Goofball,Scent Detective,,,medium,
+brittany spaniel,Brittany Spaniel,Epagneul Breton,epagneul-breton,breed,100,Working Goofball,Scent Detective,,,medium,
+vizsla,Vizsla,Rövidszörü Magyar Vizsla,r-vidsz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium,
+hungarian vizsla,Hungarian Vizsla,Rövidszörü Magyar Vizsla,r-vidsz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium,
+standard poodle,Standard Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium,One FCI Poodle row covers toy to standard sizes
+toy poodle,Toy Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium,One FCI Poodle row covers toy to standard sizes
+mini poodle,Mini Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium,One FCI Poodle row covers toy to standard sizes
+miniature poodle,Miniature Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium,One FCI Poodle row covers toy to standard sizes
+amstaff,Amstaff,American Staffordshire Terrier,american-staffordshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium,
+shiba inu,Shiba Inu,Shiba,shiba,breed,100,Spitz Commentator,Working Goofball,,,medium,
+collie,Collie,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium,"In the US, ""collie"" usually means the Rough Collie"
+blue heeler,Blue Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
+heeler,Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
+red heeler,Red Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
