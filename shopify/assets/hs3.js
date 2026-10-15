@@ -370,7 +370,7 @@
   };
   function pills() { return '<div class="hs3-pills" aria-hidden="true">' + GIFTS.map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
   function sign(n) { return '<span class="hs3-sign">Love, ' + esc(n.dog) + ' ' + PAW + '</span>'; }
-  // the blanket, print and ornament print the paw centred under the signature (round two, 14 Oct)
+  // the blanket, print and ornament print the paw centered under the signature (round two, 14 Oct)
   function signUnder(n) { return '<span class="hs3-sign hs3-sign--under">Love, ' + esc(n.dog) + PAW + '</span>'; }
   function img(alt, cls) { var src = photoSrc(); return src ? '<img data-hs3-photo src="' + esc(src) + '" alt="' + esc(alt) + '" class="hs3-photo ' + (cls || '') + '">' : '<span class="hs3-photo hs3-photo--empty ' + (cls || '') + '">' + PAW + '</span>'; }
   function privacy() { var p = root.querySelector('[data-hs3-privacy]'); return p ? '<p class="hs3-privacy">' + esc(p.textContent) + '</p>' : ''; }

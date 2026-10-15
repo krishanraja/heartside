@@ -75,7 +75,7 @@ async function run(label, { withPhoto, dog = 'Biscotti', rec = 'Linda', width = 
       await page.locator('.hs3-mugs').screenshot({ path: path.join(shots, `${label}-mug-closeup.png`) });
     } else {
       const under = await page.locator('.hs3-stage .hs3-sign').evaluate((el) => { const p = el.querySelector('svg').getBoundingClientRect(), r = el.getBoundingClientRect(); return p.top >= r.top + r.height / 2 - 2 && Math.abs((p.left + p.right) / 2 - (r.left + r.right) / 2) < 2; });
-      ok(under, `${label}: ${g} paw centred under the signature`);
+      ok(under, `${label}: ${g} paw centered under the signature`);
     }
     ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${label}: ${g} has no sideways scroll at ${width}px`);
   }
