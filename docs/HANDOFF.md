@@ -140,6 +140,7 @@ Tools needed locally: git, Node 20+, Python 3 with Pillow and NumPy, ffmpeg. The
 2. Run the checks from `tools/preview`. All must pass:
    - `node render.mjs`: renders every template locally with stubbed Shopify data. It fails on schema mistakes Shopify would reject (no `"default": ""`, select option labels of 50 characters or fewer).
    - `node theme-check.mjs`: Shopify Theme Check on our files.
+   - `node mockup-gate.mjs`: the chat's mug against Teeinblue's real print files wrapped by the approved method. It fails a preview that drifts from what prints. Look at the boards in `out/gate-mug/` too: Krish called a preview that passed every other check "ridiculously poor" (15 Oct).
    - `node minify-check.mjs`: **Shopify minifies theme JavaScript on its CDN.** This minifies `hs2.js` the same way and fails on anything that only works unminified. On 6 Oct the minifier turned a dynamic `import()` into a `require()` that broke the live site, while every unminified test passed. Never use `import()` in `hs2.js`.
    - `node shots.mjs`: screenshots of the local render, if you want to look before deploying.
 3. Commit and push to `main`.
