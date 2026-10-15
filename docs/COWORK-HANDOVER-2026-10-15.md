@@ -110,21 +110,21 @@ The round-one design is a circle photo, the dog's name in Fraunces SemiBold and 
 1. **Agree with Krish what launches Sunday.** Cowork's recommendation: launch all four, with the mug as rebuilt and the other three as they are. They print correctly, and the Christmas order cutoff (Dec 10) rewards selling early. Then land the personal idea in launch week. Teeinblue design changes apply without republishing. Counterpoint: Krish called the improved versions "standard", so he may prefer to hold the three until they are better.
 2. **Answer the north-star question with one idea** (section 1). Start from section 4. Show it on real product photos for at least two different dogs. Krish decides.
 3. **Get the breed data where it needs to be:**
-   - **Claude Code:** load `breeds-corpus/us_lookup_additions.csv` as an overlay. Use `us_display_names.csv` for every name a buyer sees. Follow the corpus readme's matching rules.
-   - **Krish:** decide how "Pit Bull" maps.
+   - **Claude Code: done on 15 Oct ([68c67d3](https://github.com/krishanraja/heartside/commit/68c67d3786a8d63b9dba5f64febc9f8e58117743)).** `breeds-corpus/lookup/hs-breeds.js` is the lookup the chat can call. It normalizes names as the corpus readme says, checks `us_lookup_additions.csv` before the corpus lookup, returns the canonical id with the buyer-facing name from `us_display_names.csv`, and falls back to a family or the mixed-breed row, never a near spelling. Size, exercise and the secondary type are left out of it. The theme doesn't load it yet, and the chat has no breed question.
+   - **Krish: decided on 15 Oct.** "Pit bull", "pitbull" and "pittie" show "Pit Bull" to the buyer and use the American Staffordshire Terrier row.
+   - **Gaps for the next data pass** (listed in `breeds-corpus/lookup/README.md`): Bloodhound, Great Pyrenees, Saint Bernard, Samoyed, Dalmatian, Portuguese Water Dog and a few US-only types find no row, and "Papillon" shows its registry name. Most are in the corpus under registry names, like the nine the audit fixed.
    - **Cowork:** write any breed habit content only after step 2, so it serves the agreed idea.
-4. **Claude Code, now (independent of step 2):**
-   - **Even line breaks:** when a line won't fit one row, replace the space at the most even break with `\n`. That's about 24 to 26 characters per row at 70 px in an 860 px box; "Steals your side of the bed." (858 px) still fits one row.
-   - **Mug preview tab:** make the chat's mug tab match the new mug: cut-out dog, Fraunces, paw left of the signature.
-   - **Photo handoff:** re-check it on an Active mug. The photo field now opens Teeinblue's Reposition popup with a Save button.
-   - **Two round-two notes:** where the paw sits, and typed lines that start "He ...".
-   - **The breed overlay** (step 3).
+4. **Claude Code, now (independent of step 2):** done in the repo on 15 Oct ([7f51d53](https://github.com/krishanraja/heartside/commit/7f51d5329bbf392bc72fac45a82e9666993a1d49)), apart from the photo handoff. None of it reaches the store until the next theme push, which needs Krish's go.
+   - **Even line breaks: done.** A mug line wider than one row gets `\n` at its most even break, measured with HS-Fraunces-Text's real widths and kerning at 70 px in an 860 px box. "Steals your side of the bed." stays one row. The chat's mug shows the same rows, and the bridge writes them into the mug's Line fields. **Check at go-live:** a one-line text box can't hold `\n`, so if Teeinblue's Line fields are one-line boxes, the bridge sends the line unbroken and Teeinblue wraps it as before. On the Active mug page, Line 1 showing two rows means the breaks arrived.
+   - **Mug preview tab: done.** The chat's mug tab sits on the live preview's Printful photo. It shows the buyer's photo on the outward face, then turns to the note in Fraunces with the paw left of "Love, [dog]". "Turn the mug" flips it. The chat can't remove a background, so the photo shows whole with soft edges; Teeinblue cuts the dog out on the product page.
+   - **Photo handoff: still to do at go-live.** Re-check it on an Active mug. The photo field now opens Teeinblue's Reposition popup with a Save button.
+   - **Two round-two notes: done.** The blanket, print and ornament tabs put the paw centered under the signature, as the print files do. Typed lines drop a leading He, She, They or the dog's name, so "He howls until you sit on the sofa." prints "Howls until you sit on the sofa.", and the buyer's own words turn I, me and my into you and your. This runs in the theme; the n8n workflows are unchanged.
+   - **The breed overlay: done** (step 3).
 5. **Rebuild the blanket, print and ornament to the agreed idea,** to the mug's standard. Test print files with the longest and shortest words and render them on Printful's photos. Ask before replacing any Shopify image.
 6. **Sunday:** Parts B, C and D of `docs/COWORK-PROMPT-2026-10-14-V3.md`, starting only on Krish's "go live".
 7. **Housekeeping:**
-   - Add the dated decisions below to V3 section 13.
-   - Update V3 section 6: the mug now uses Fraunces, not Courier.
-   - Mirror V3 to Drive as `docs/SYNC.md` describes (upload the new copy, move the old one to Superseded, never delete).
+   - **Done on 15 Oct ([5cc02fe](https://github.com/krishanraja/heartside/commit/5cc02fed14b4a58972ad3ecd6c4f02e5c8450b04)):** the five dated decisions below are in V3 section 13, and V3 section 6 says the mug's lines are in Fraunces.
+   - **Still to do:** mirror V3 to Drive as `docs/SYNC.md` describes (upload the new copy, move the old one to Superseded, never delete).
 
 Decisions to add to V3 section 13:
 
