@@ -4,7 +4,15 @@ Written by the Cowork session that ran 14 to 15 October, at Krish's request, to 
 
 ## Start the next session with this prompt
 
-> Read `docs/COWORK-HANDOVER-2026-10-15.md` in krishanraja/heartside, then `docs/V3-GIFTS-FROM-YOUR-DOG.md` sections 1, 2, 6 and 10. Then work through section 5 of the handover, in order. Bring me one idea at a time: say it in one sentence and show it on real product photos. Ask me before anything that publishes, spends, deletes, or changes prices, discounts, policies, checkout or permissions.
+Updated by Claude Code on 15 Oct, after Krish's evening ask (section 1). The handover branch is merged; read everything on `main`.
+
+> Read `docs/COWORK-HANDOVER-2026-10-15.md` on `main` in krishanraja/heartside, then `docs/V3-GIFTS-FROM-YOUR-DOG.md` sections 1, 2, 6 and 10. Two jobs, in this order.
+>
+> First, Sunday. We launch all four gifts as they are, on my "go live". Get Parts B, C and D of `docs/COWORK-PROMPT-2026-10-14-V3.md` ready, and plan the two go-live checks in handover section 5 item 4. Nothing about the new idea holds the launch.
+>
+> Second, the idea in handover section 5 item 2: Biscuit draws the buyer's dog in the moment they described, and the drawing goes on the gift. Run the five-dog bake-off from V3 section 10 and show me the results on real product photos, mug and ornament first, both faces, at phone size. Tell me the cost before you spend a credit. If four of five don't pass "is that my dog?", say so in one sentence and bring me the next idea in item 2.
+>
+> One idea at a time: say it in one sentence and show it on real product photos. Ask me before anything that publishes, spends, deletes, or changes prices, discounts, policies, checkout or permissions.
 
 ## 1. The north star
 
@@ -24,7 +32,11 @@ He named the tools on hand: Canva, Higgsfield, Runway, ChatGPT and more, plus th
 
 What that asks for: from the first minute, a buyer sees their own dog and their own story turned into a gift that no template shop could have made. It has to feel like one idea, and every AI tool used must have a clear job in it.
 
-This question is open. Nothing in this file answers it. Section 4 lists what is proven possible, so the next proposal starts from facts.
+Krish again, on the evening of 15 Oct, to Claude Code:
+
+> "I feel like we need to make the user flow to creating a product ingenious - we have such a huge edge with AI its unreal and we are currently making bog standard products. But we do need to ship ASAP"
+
+Section 4 lists what is proven possible. Section 5 item 2 holds the one idea Claude Code recommends; Krish decides once he sees it on real product photos.
 
 ## 2. What Krish rejected in this session, and what follows
 
@@ -107,8 +119,17 @@ The round-one design is a circle photo, the dog's name in Fraunces SemiBold and 
 
 ## 5. What's next, in order
 
-1. **Agree with Krish what launches Sunday.** Cowork's recommendation: launch all four, with the mug as rebuilt and the other three as they are. They print correctly, and the Christmas order cutoff (Dec 10) rewards selling early. Then land the personal idea in launch week. Teeinblue design changes apply without republishing. Counterpoint: Krish called the improved versions "standard", so he may prefer to hold the three until they are better.
-2. **Answer the north-star question with one idea** (section 1). Start from section 4. Show it on real product photos for at least two different dogs. Krish decides.
+1. **What launches Sunday: all four, on Krish's "go live".** Krish wants to ship as soon as possible (section 1). Cowork and Claude Code both recommend the mug as rebuilt and the other three as they are. They print correctly, and the Christmas order cutoff (Dec 10) rewards selling early. The idea in item 2 lands in launch week on top of them: Teeinblue design changes apply without republishing, and theme changes deploy in minutes. If Krish would rather hold the three until item 2 is in, the launch is the mug alone.
+2. **The one idea: Biscuit draws the moment.** Claude Code's recommendation (15 Oct), for Krish to judge on real product photos:
+   - **In one sentence:** when the chat ends, Biscuit draws the buyer's dog in the moment they described, from their own photo, and that drawing goes on the gift.
+   - **Why this one:** the chat already learns the moment ("Waits at the door for you, weekends too.", "Steals your side of the bed."), and today the gift only prints it as words beside a photo. A drawing of their dog at their door, or on their side of the bed, is something only this dog and this household could have, which is the test in section 2. V3 section 10 already names it ("the picture comes from their answers ... which pet-portrait sellers can't offer") and parks it for week two. This pulls it into launch week and points it at the moment.
+   - **What each AI does:** an image model draws (the only new job). Gemini already turns typed answers into the moment. Teeinblue already cuts out and places the picture. Test Google's Gemini image model on the existing n8n credential first, since the chat already runs on it, against Higgsfield and Runway as V3 section 10 says.
+   - **The gate, before any build:** V3 section 10's bake-off. Five dogs, three photos each, each drawn in one illustration style in the moment from a real chip answer. Show them on the mug and the ornament on Printful's photos. Krish judges "is that my dog?", and four of five must pass. Krish's credits pay for it, so give him the cost first.
+   - **Rules that carry over from V3 section 10:** illustration, never photo-real; only the dog, never people; a preview before paying; two redraws; the human order check; labeled "An illustration made with AI from your photos". The 12x18 print and the blanket wait until upscaling is proven.
+   - **Two calls only Krish can make:** the buyer's photo would go to an AI service, so the chat's AI privacy note and the privacy policy change first (a policy change, his approval). And each drawing costs money per buyer, so he sets a cap, for example one drawing and two redraws per visit.
+   - **Speed and fallback:** the drawing has about ten seconds at the reveal, shown as Biscuit drawing. If it's slow or fails, the gift is today's version, so nothing breaks.
+   - **What Claude Code builds after Krish's yes (about two to three days):** a draw webhook in n8n beside the two that exist, the drawing moment on the chat's turning mug, and the bridge handing the drawing to Teeinblue in place of the photo, with Teeinblue's background removal off for drawings.
+   - **If the bake-off fails:** the next idea is "Biscuit looks at the photo". One Gemini call reads the photo, and Biscuit's first reaction and one gift line name something only that dog has ("One ear up the second you get home."). It's cheaper and faster, but the gift still looks like today's.
 3. **Get the breed data where it needs to be:**
    - **Claude Code: done on 15 Oct ([68c67d3](https://github.com/krishanraja/heartside/commit/68c67d3786a8d63b9dba5f64febc9f8e58117743)).** `breeds-corpus/lookup/hs-breeds.js` is the lookup the chat can call. It normalizes names as the corpus readme says, checks `us_lookup_additions.csv` before the corpus lookup, returns the canonical id with the buyer-facing name from `us_display_names.csv`, and falls back to a family or the mixed-breed row, never a near spelling. Size, exercise and the secondary type are left out of it. The theme doesn't load it yet, and the chat has no breed question.
    - **Krish: decided on 15 Oct.** "Pit bull", "pitbull" and "pittie" show "Pit Bull" to the buyer and use the American Staffordshire Terrier row.
