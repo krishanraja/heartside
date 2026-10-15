@@ -55,12 +55,18 @@ async function run(label, { withPhoto, dog = 'Biscotti', rec = 'Linda', width = 
       ok(note[0] === 'Waits at the door for\nyou, weekends too.', `${label}: mug line 1 breaks evenly (${JSON.stringify(note[0])})`);
       ok(note[1] === 'Steals your side of the bed.', `${label}: "Steals your side of the bed." stays one row`);
       ok(note[2] === 'Your best friend,\nno contest.', `${label}: mug line 3 breaks evenly`);
-      const sign = await page.locator('.hs3-mugface__sign').evaluate((el) => { const p = el.querySelector('svg').getBoundingClientRect(), t = el.querySelector('span').getBoundingClientRect(); return { pawLeft: p.right <= t.left + 1, font: getComputedStyle(el).fontFamily }; });
-      ok(sign.pawLeft && /Fraunces/.test(sign.font), `${label}: paw left of "Love, ${dog}", in Fraunces`);
-      const fit = await page.locator('.hs3-mugface__sign span').evaluate((el) => el.offsetWidth / el.closest('.hs3-mugface').offsetWidth);
-      ok(fit <= 0.465, `${label}: the signature fits its print box (${(fit * 100).toFixed(1)}% of the photo, box 46.4%)`);
-      const lineFont = await page.locator('.hs3-mugface__line').first().evaluate((el) => getComputedStyle(el).fontFamily);
-      ok(/Fraunces/.test(lineFont) && !/Courier/.test(lineFont), `${label}: the note is in Fraunces`);
+      // the mug is drawn wrapped on the photo (layout and fonts: mockup-gate.mjs), never the flat fallback
+      await page.waitForFunction(() => document.querySelectorAll('canvas[data-hs3-mug].is-drawn').length === 2, null, { timeout: 8000 }).catch(() => {});
+      const drawn = await page.evaluate(() => {
+        const m = document.querySelector('.hs3-mugs'), c = document.querySelector('canvas[data-hs3-mug="note"]');
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        let ink = 0; for (let i = 0; i < d.length; i += 4) if ((d[i] + d[i + 1] + d[i + 2]) / 3 < 120) ink++;
+        return { both: document.querySelectorAll('canvas[data-hs3-mug].is-drawn').length, flat: m.classList.contains('is-flat'), ink, label: c.getAttribute('aria-label') };
+      });
+      ok(drawn.both === 2 && !drawn.flat && drawn.ink > 2000, `${label}: both faces drawn wrapped on the mug photo (${drawn.ink} ink pixels on the note)`);
+      ok(drawn.label.includes('Love, ' + dog) && drawn.label.includes('Steals your side of the bed.'), `${label}: the drawn note is labelled for screen readers`);
+      const said = await page.evaluate(() => ({ top: document.querySelector('.hs3-top .hs3-label').textContent, bubble: document.querySelector('.hs3-says--reveal .hs3-bubble').textContent }));
+      ok(said.top === 'The Morning Mug' && !/walk|coffee/i.test(said.bubble), `${label}: after "Naps", the mug tab says "${said.top}" and "${said.bubble}"`);
       const handed = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review') || '{}').hs3_mug_lines || {});
       ok(handed.home === 'Waits at the door for\nyou, weekends too.' && handed.spot === 'Steals your side of the bed.', `${label}: the chat hands the broken lines to the product page`);
       await page.locator('[data-hs3="turn"]').click();

@@ -37,7 +37,7 @@ def layer(name, kind, out_name):
         im = Image.fromarray(a.clip(0, 255).astype(np.uint8))
     im = im.resize((OUT_W, round(OUT_W * H / W)), Image.LANCZOS)
     path = os.path.join(OUT, out_name)
-    im.save(path, 'WEBP', quality=82, alpha_quality=70, method=6)
+    im.save(path, 'WEBP', quality=90, alpha_quality=100, method=6)  # full alpha: a squeezed shade steps at the mug's edge
     print(f'{out_name}: {im.size[0]}x{im.size[1]}, {os.path.getsize(path) // 1024} KB')
 
 

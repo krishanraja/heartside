@@ -24,7 +24,10 @@
         "dog": {{ 'hs-mug-dog-base.webp' | asset_url | json }},
         "dogShade": {{ 'hs-mug-dog-shade.webp' | asset_url | json }},
         "note": {{ 'hs-mug-note-base.webp' | asset_url | json }},
-        "noteShade": {{ 'hs-mug-note-shade.webp' | asset_url | json }}
+        "noteShade": {{ 'hs-mug-note-shade.webp' | asset_url | json }},
+        "paw": {{ 'hs-mug-paw.png' | asset_url | json }},
+        "fontText": {{ 'hs-note-text.woff2' | asset_url | json }},
+        "fontItalic": {{ 'hs-note-italic.woff2' | asset_url | json }}
       },
       "gifts": {
         {%- assign keys = 'mug,blanket,print,ornament' | split: ',' -%}

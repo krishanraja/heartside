@@ -165,7 +165,8 @@
   function reasonFor(g, n) {
     if (S.composed && S.composed.reason && g === S.composed.gift) return S.composed.reason;
     return {
-      mug: 'Walks start with coffee. I would know. So ' + n.dog + ' gets a spot in ' + n.rec + "'s mug every morning.",
+      // the walks-and-coffee opener only when that's what the buyer said (round three, 15 Oct)
+      mug: (S.together === 'walk' || S.together === 'coffee' ? 'Walks start with coffee. I would know. So ' + n.dog : n.dog) + ' gets a spot in ' + n.rec + "'s mug every morning.",
       blanket: 'For the couch they share. Warm, soft, and ' + n.dog + ' is already on it.',
       print: 'For the wall by the door, so ' + n.rec + ' sees ' + n.dog + ' the minute they get home.',
       ornament: 'For the tree. ' + n.dog + ' comes out every December, right where ' + n.rec + ' will see.'
@@ -489,7 +490,7 @@
     var g = S.gift || recGift();
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">Biscuit\'s pick</span><span class="hs3-spacer"></span></div>';
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Biscuit\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
     if (!ui.editing) {
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + GIFTS.map(function (k) {
@@ -516,34 +517,167 @@
     if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
   }
-  /* The mug as it prints (mug v3, approved 15 Oct), on the same Printful photo as the live
-     Teeinblue preview: the dog on the face others see (handle left), the note on the drinker's
-     face (handle right) in Fraunces with the paw left of "Love, [dog]". Placement and sizes are
-     the print file's, worked out by tools/realphoto/build_reveal_mugs.py. A phone can't show both
-     faces side by side at a readable size, so the mug turns: the dog first, then the note as the
-     lines ink. Teeinblue removes the photo's background on the product page; here the photo
-     sits on the mug whole, with soft edges, and nothing is cropped. */
+  /* The mug as it prints (mug v3, approved 15 Oct). The reveal draws it the way the approved
+     Shopify images were made (tools/realphoto/shopify_mug_images.py): the print file's face is
+     laid out at print size in the fonts Teeinblue prints with, then wrapped around the cylinder
+     of Printful's photo, so rows bow and narrow toward the edge and the glaze shading runs through
+     the ink. tools/preview/mockup-gate.mjs holds it to that render. The dog is on the face others
+     see (handle left) and the note on the drinker's face (handle right). A phone can't show both
+     faces side by side at a readable size, so the mug turns. Teeinblue removes the photo's
+     background on the product page; here the photo sits whole, with soft edges. If a browser
+     can't draw it, the flat layout underneath shows instead. */
+  var MUG = { W: 2700, H: 1050, RPX: 487.5, R: 330, TOP: 260.5714, BAND: 742.2857, RIM: 30.8571, Y0: 150, CROP: 1060, OUT: 640, OUTH: 549, DS: 0.5,
+    dog: { cx: 726, x0: 80, centre: 585 }, note: { cx: 472.2857, x0: 60, centre: 2115 } };
+  var mugCache = {}, mugAssets = null, mugPhoto = { src: '', p: null };
+  function mugLineTexts() { return giftKeys('mug').map(function (k) { return evenBreak(lineFor(k) || ''); }); }
   function mugFaces(n) {
-    var m = cfg.mug || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc();
+    var m = cfg.mug || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc(), texts = mugLineTexts();
     var layer = function (url, cls) { return url ? '<img src="' + esc(url) + '" alt="" width="640" height="549" class="' + cls + '">' : ''; };
-    var dog = src ? '<img data-hs3-photo src="' + esc(src) + '" alt="' + esc(n.dog + ' on the mug') + '" class="hs3-mugface__dog">' : '<span class="hs3-mugface__nodog">' + PAW + '</span>';
-    var lines = giftKeys('mug').map(function (k, i) {
-      return '<span class="hs3-line hs3-mugface__line hs3-mugface__line--' + (i + 1) + ' ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(evenBreak(lineFor(k) || '')) + '</span>';
+    var canvas = function (face, label) { return '<canvas class="hs3-mugface__canvas" width="' + MUG.OUT + '" height="' + MUG.OUTH + '" data-hs3-mug="' + face + '" role="img" aria-label="' + esc(label) + '"></canvas>'; };
+    var dog = src ? '<img data-hs3-photo src="' + esc(src) + '" alt="" class="hs3-mugface__dog">' : '<span class="hs3-mugface__nodog">' + PAW + '</span>';
+    var lines = texts.map(function (t, i) {
+      return '<span class="hs3-line hs3-mugface__line hs3-mugface__line--' + (i + 1) + ' ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(t) + '</span>';
     }).join('');
     var h = '<div class="hs3-mugwrap"><div class="hs3-mugs" data-side="' + side + '">';
-    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(m.dog, 'hs3-mugface__base') + '<span class="hs3-mugface__photo">' + dog + '</span>' + layer(m.dogShade, 'hs3-mugface__shade') + '</div>';
-    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(m.note, 'hs3-mugface__base') + lines + '<span class="hs3-mugface__sign">' + PAW + '<span>Love, ' + esc(n.dog) + '</span></span>' + layer(m.noteShade, 'hs3-mugface__shade') + '</div>';
+    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(m.dog, 'hs3-mugface__base') + layer(m.dogShade, 'hs3-mugface__shade');
+    h += '<span class="hs3-mugface__flat" aria-hidden="true"><span class="hs3-mugface__photo">' + dog + '</span></span>' + canvas('dog', src ? n.dog + ' on the mug' : "Your dog's photo goes here") + '</div>';
+    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(m.note, 'hs3-mugface__base') + layer(m.noteShade, 'hs3-mugface__shade');
+    h += '<span class="hs3-mugface__flat" aria-hidden="true">' + lines + '<span class="hs3-mugface__sign">' + PAW + '<span>Love, ' + esc(n.dog) + '</span></span></span>' + canvas('note', texts.join(' ').replace(/\n/g, ' ') + ' Love, ' + n.dog) + '</div>';
     h += '</div>' + (ui.editing ? '' : '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>') + '</div>';
     return h;
   }
-  // Teeinblue shrinks a long signature to fit its 775 px box ("Love, Bartholomew Jr" prints at
-  // 774 px, not 889), so the reveal does too. offsetWidth ignores the turning transform.
-  function fitSign() {
-    var t = frame && frame.querySelector('.hs3-mugface__sign span');
-    if (!t) return;
-    t.style.fontSize = '';
-    var box = t.parentNode.parentNode.offsetWidth * 0.464, w = t.offsetWidth;
-    if (box && w > box) t.style.fontSize = (5.747 * box / w).toFixed(3) + 'cqw';
+  function loadImg(src) {
+    return new Promise(function (resolve, reject) { var i = new Image(); i.onload = function () { resolve(i); }; i.onerror = reject; i.src = src; });
+  }
+  function loadMugAssets() {
+    if (mugAssets) return mugAssets;
+    var m = cfg.mug || {};
+    var font = function (name, url) {
+      if (!window.FontFace || !document.fonts || !url) return Promise.reject(new Error('no font'));
+      return new window.FontFace(name, 'url(' + url + ')').load().then(function (f) { document.fonts.add(f); });
+    };
+    mugAssets = Promise.all([loadImg(m.dog), loadImg(m.dogShade), loadImg(m.note), loadImg(m.noteShade), loadImg(m.paw), font('HS Note Text', m.fontText), font('HS Note Italic', m.fontItalic)])
+      .then(function (r) { return { dog: { base: r[0], shade: r[1] }, note: { base: r[2], shade: r[3] }, paw: r[4] }; });
+    mugAssets.catch(function () { mugAssets = null; });
+    return mugAssets;
+  }
+  function mugKey(face) {
+    if (face === 'dog') return 'dog|' + photoSrc();
+    return 'note|' + JSON.stringify([mugLineTexts(), Math.min(ui.revealN, 3), names().dog]);
+  }
+  // the note face at print size: lines 1 to 3 (70 px, 84 px rows, centred in 190 px boxes),
+  // the paw, and "Love, [dog]" (96 px, shrunk to fit 775 px as Teeinblue does)
+  function drawNote(d, a, spec) {
+    var texts = spec.texts, ink = spec.ink, sig = 'Love, ' + spec.name;
+    d.textBaseline = 'alphabetic';
+    d.font = '70px "HS Note Text"';
+    [130, 345, 560].forEach(function (top, i) {
+      var rows = String(texts[i] || '').split('\n');
+      d.fillStyle = i < ink ? '#121010' : '#CDC2B9';
+      rows.forEach(function (r, j) { d.fillText(r, 1685, top + 95 + (j - (rows.length - 1) / 2) * 84 + 26); });
+    });
+    d.drawImage(a.paw, 1685, 833, 72, 69);
+    var size = 96;
+    d.font = '96px "HS Note Italic"';
+    var w = d.measureText(sig).width;
+    if (w > 775) { size = 96 * 775 / w; d.font = size.toFixed(2) + 'px "HS Note Italic"'; }
+    d.fillStyle = '#8A4A2B';
+    d.fillText(sig, 1774, 855 + 34 * size / 96); // Teeinblue sets it 4 px into its box at 1770
+  }
+  // the dog face: the photo layer (900 x 1000 at 135, 50), fitted whole ("Contain"), soft edges
+  function drawDog(d, a, photo) {
+    var L = 135, T = 50, BW = 900, BH = 1000;
+    if (!photo) { d.globalAlpha = 0.2; d.drawImage(a.paw, L + BW / 2 - 150, T + BH / 2 - 144, 300, 288); d.globalAlpha = 1; return; }
+    var s = Math.min(BW / photo.width, BH / photo.height), w = photo.width * s, h = photo.height * s;
+    var tmp = document.createElement('canvas');
+    tmp.width = Math.max(1, Math.round(w * MUG.DS)); tmp.height = Math.max(1, Math.round(h * MUG.DS));
+    var t = tmp.getContext('2d');
+    t.drawImage(photo, 0, 0, tmp.width, tmp.height);
+    t.globalCompositeOperation = 'destination-in';
+    var fade = function (g, stops) { stops.forEach(function (st) { g.addColorStop(st[0], st[1] ? '#000' : 'rgba(0,0,0,0)'); }); return g; };
+    t.fillStyle = fade(t.createLinearGradient(0, 0, tmp.width, 0), [[0, 0], [0.1, 1], [0.9, 1], [1, 0]]); t.fillRect(0, 0, tmp.width, tmp.height);
+    t.fillStyle = fade(t.createLinearGradient(0, 0, 0, tmp.height), [[0, 0], [0.08, 1], [0.84, 1], [1, 0]]); t.fillRect(0, 0, tmp.width, tmp.height);
+    d.drawImage(tmp, L + (BW - w) / 2, T + (BH - h) / 2, w, h);
+  }
+  // wrap the print-size design around the mug in the photo: the same arcsin mapping, rim curve,
+  // edge fade, shading and glaze as shopify_mug_images.py, 2 x 2 samples per pixel
+  function wrapOnto(base, design, g) {
+    var bd = base.data, dd = design.data, BW = base.width, BH = base.height, DW = design.width, DH = design.height;
+    var k = MUG.OUT / MUG.CROP, s = MUG.DS, sub = [0.25, 0.75], vk = MUG.H * s / MUG.BAND;
+    for (var x = 0; x < BW; x++) {
+      var cols = [];
+      for (var i = 0; i < 2; i++) {
+        var t = ((x + sub[i]) / k + g.x0 - g.cx) / MUG.R;
+        if (Math.abs(t) >= 0.995) continue;
+        var u = (g.centre + Math.asin(t) * MUG.RPX) * s;
+        if (u < 0 || u >= DW - 1) continue;
+        cols.push(u, MUG.TOP - MUG.RIM * (1 - Math.sqrt(1 - t * t)), Math.min(1, (0.995 - Math.abs(t)) / 0.07));
+      }
+      if (!cols.length) continue;
+      for (var y = 0; y < BH; y++) {
+        var pr = 0, pg = 0, pb = 0, pa = 0;
+        for (var c = 0; c < cols.length; c += 3) {
+          for (var j = 0; j < 2; j++) {
+            var v = ((y + sub[j]) / k + MUG.Y0 - cols[c + 1]) * vk;
+            if (v < 0 || v >= DH - 1) continue;
+            var u0 = cols[c] | 0, v0 = v | 0, fx = cols[c] - u0, fy = v - v0;
+            var p = (v0 * DW + u0) * 4, q = p + DW * 4;
+            var w0 = (1 - fx) * (1 - fy), w1 = fx * (1 - fy), w2 = (1 - fx) * fy, w3 = fx * fy;
+            var a0 = dd[p + 3] * w0, a1 = dd[p + 7] * w1, a2 = dd[q + 3] * w2, a3 = dd[q + 7] * w3, lim = cols[c + 2] / 255;
+            pr += (dd[p] * a0 + dd[p + 4] * a1 + dd[q] * a2 + dd[q + 4] * a3) * lim;
+            pg += (dd[p + 1] * a0 + dd[p + 5] * a1 + dd[q + 1] * a2 + dd[q + 5] * a3) * lim;
+            pb += (dd[p + 2] * a0 + dd[p + 6] * a1 + dd[q + 2] * a2 + dd[q + 6] * a3) * lim;
+            pa += (a0 + a1 + a2 + a3) * lim;
+          }
+        }
+        if (pa <= 0) continue;
+        var A = pa / 4, o = (y * BW + x) * 4, lum = (bd[o] + bd[o + 1] + bd[o + 2]) / 3;
+        var shade = Math.pow(Math.min(Math.max(lum / 250, 0), 1.05), 1.15), spec = Math.min(Math.max((lum - 246) / 9, 0), 1) * 0.35;
+        for (var ch = 0; ch < 3; ch++) {
+          var col = (ch === 0 ? pr : ch === 1 ? pg : pb) / pa * shade, out = bd[o + ch] * (1 - A) + col * A;
+          if (A > 0.01) out = out * (1 - spec) + 255 * spec;
+          bd[o + ch] = out;
+        }
+      }
+    }
+  }
+  // spec (for tools/preview/mockup-gate.mjs): { texts, ink, name } for the note, or { print }, a
+  // whole 2700 x 1050 print file to wrap as it is; otherwise the buyer's own words and photo
+  function renderFace(face, a, photo, spec) {
+    spec = spec || { texts: mugLineTexts(), ink: Math.min(ui.revealN, 3), name: names().dog };
+    var bg = document.createElement('canvas');
+    bg.width = MUG.OUT; bg.height = MUG.OUTH;
+    var b = bg.getContext('2d');
+    b.drawImage(a[face].base, 0, 0, MUG.OUT, MUG.OUTH);
+    b.drawImage(a[face].shade, 0, 0, MUG.OUT, MUG.OUTH);
+    var dz = document.createElement('canvas');
+    dz.width = Math.round(MUG.W * MUG.DS); dz.height = Math.round(MUG.H * MUG.DS);
+    var d = dz.getContext('2d');
+    d.scale(MUG.DS, MUG.DS);
+    if (spec.print) d.drawImage(spec.print, 0, 0, MUG.W, MUG.H);
+    else if (face === 'note') drawNote(d, a, spec);
+    else drawDog(d, a, photo);
+    var base = b.getImageData(0, 0, MUG.OUT, MUG.OUTH);
+    wrapOnto(base, d.getImageData(0, 0, dz.width, dz.height), MUG[face]);
+    b.putImageData(base, 0, 0);
+    return bg;
+  }
+  function paintMugs() {
+    var cvs = frame ? Array.prototype.slice.call(frame.querySelectorAll('canvas[data-hs3-mug]')) : [];
+    if (!cvs.length) return;
+    var src = photoSrc();
+    if (src && mugPhoto.src !== src) mugPhoto = { src: src, p: loadImg(src) };
+    Promise.all([loadMugAssets(), src ? mugPhoto.p : null]).then(function (r) {
+      cvs.forEach(function (c) {
+        if (!c.isConnected) return;
+        var face = c.getAttribute('data-hs3-mug'), key = mugKey(face);
+        if (!mugCache[key]) { if (Object.keys(mugCache).length > 16) mugCache = {}; mugCache[key] = renderFace(face, r[0], r[1]); }
+        var x = c.getContext('2d');
+        x.clearRect(0, 0, c.width, c.height);
+        x.drawImage(mugCache[key], 0, 0);
+        c.classList.add('is-drawn');
+      });
+    }).catch(function () { var m = frame && frame.querySelector('.hs3-mugs'); if (m) m.classList.add('is-flat'); });
   }
   function turnMug(side) {
     ui.mugSide = side;
@@ -568,6 +702,7 @@
   }
   function inkLines() {
     frame.querySelectorAll('.hs3-stage .hs3-line').forEach(function (el, i) { if (i < ui.revealN && !el.classList.contains('hs3-ink')) { el.classList.remove('hs3-pencil'); el.classList.add('hs3-ink', 'hs3-ink--new'); } });
+    paintMugs();
   }
 
   // ---- choose gifts
@@ -834,12 +969,13 @@
         var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (45 - inp.value.length) + ' characters left';
         var g = S.gift || recGift(), i = giftKeys(g).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
         if (l) l.textContent = g === 'mug' ? evenBreak(inp.value) : inp.value;
+        if (g === 'mug') { clearTimeout(ui.paintT); ui.paintT = setTimeout(paintMugs, 120); }
       });
     });
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
-    if (frame.querySelector('.hs3-mugface__sign')) { fitSign(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSign); }
+    if (frame.querySelector('canvas[data-hs3-mug]')) paintMugs();
   }
   function act(a, v) {
     var n = names();
@@ -885,5 +1021,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests
-  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle };
+  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle, mug: { MUG: MUG, drawNote: drawNote, drawDog: drawDog, wrapOnto: wrapOnto, loadMugAssets: loadMugAssets, renderFace: renderFace } };
 })();
