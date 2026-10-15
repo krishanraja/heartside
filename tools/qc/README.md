@@ -27,9 +27,13 @@ Two checks warn without holding: **breaks** (a line leaves one word alone on its
 
 `python3 tools/qc/test_mug_qc.py` runs it on Teeinblue's three real print files (all pass) and on six broken prints made from them, which it must catch: a line missing, no photo, the background left on, one word alone, text past its box, and the wrong name on the signature.
 
-## How it runs on live orders (proposed, needs Krish's yes)
+## How it runs on live orders (approved by Krish, 15 Oct)
 
-Krish approved a twice-daily order check with an AI pre-check on 13 Oct (V3 section 6). The recommendation: a scheduled Claude session at those two times.
+Krish approved a twice-daily order check with an AI pre-check on 13 Oct (V3 section 6), and this way of running it on 15 Oct. It is the scheduled task **Heartside order QC**, a fresh Claude session at 07:56 and 16:56 London time, with a push and an email to Krish when a run has something to say. The morning run catches orders placed overnight in the US before Krish's morning confirm, and the afternoon run catches US daytime orders.
+
+**It can't read orders until Shopify is connected to it.** On 15 Oct the Shopify connector needed signing in again, and a connector can't be added to a scheduled task from a coding session in this organization. Krish's two steps: reconnect Shopify at https://claude.ai/customize/connectors, then add Shopify to "Heartside order QC" in his scheduled tasks. Until then each run stops and says exactly that.
+
+Each run:
 
 1. Lists unfulfilled orders with the Shopify connector, and runs `mug_qc.py` on each mug line item.
 2. Looks at each card for what pixels can't judge: is it a dog, is the face whole, is anything off.
