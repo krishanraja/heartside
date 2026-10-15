@@ -60,10 +60,15 @@
     var lines = state.hs3_lines || {};
     if (k === 'signed') { var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
     if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
-    var order = V3_ORDER[v3Kind()] || V3_ORDER.print;
+    var kind = v3Kind(), order = V3_ORDER[kind] || V3_ORDER.print;
     if (k === 'hs_lines') return order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
     var key = order[Number(k.slice(4)) - 1];
-    return key ? String(lines[key] || '') : '';
+    if (!key) return '';
+    // the mug's note: the same words with "\n" at the most even break where a line won't fit one
+    // row (hs3.js evenBreak, mug v3 spec), as long as they are still the words in hs3_lines
+    var mug = kind === 'mug' && state.hs3_mug_lines ? state.hs3_mug_lines[key] : null;
+    if (mug && String(mug).replace(/\n/g, ' ') === String(lines[key] || '')) return String(mug);
+    return String(lines[key] || '');
   }
   function missingNames() { return NAMES.filter(function (k) { return !answer(k); }); }
   function engaged() { return !!(answer('dog') || answer('person')); }
@@ -748,6 +753,8 @@
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };
       var want = answer(k);
       if (!want) return null; // no name yet: leave the field for the shopper, never a placeholder
+      // a one-line input drops "\n" and would join two words, so it gets the line unbroken
+      if (text.tagName !== 'TEXTAREA') want = want.replace(/\n/g, ' ');
       if (text.value === want) return { name: name, value: want };
       setValue(text, want);
       return { name: name, value: want, changed: true };
@@ -825,7 +832,7 @@
       } else if (/^line[1-4]$/.test(k)) {
         // a v3 line edited in the personalizer flows back to the gift's words
         var key = (V3_ORDER[v3Kind()] || V3_ORDER.print)[Number(k.slice(4)) - 1];
-        if (key) { state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value; }
+        if (key) { state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value.replace(/\s*\n\s*/g, ' '); }
       } else if (k !== 'signed') {
         state[k] = inp.value;
       }

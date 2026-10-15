@@ -22,6 +22,7 @@ Needs Python 3 with Pillow and NumPy. `build_mug_mockups.py` also needs `rembg`.
 | `build_printmasks.py name left top width height` | Builds a print-area mask in print-file space for a Teeinblue print area (960-unit canvas numbers) |
 | `simulate_teeinblue_mockup.py out_dir print.png ...` | Shows what Teeinblue's flat print area will look like on those mockups |
 | `shopify_mug_images.py print.png out_dir` | Renders 2048 px Shopify images with a true cylindrical wrap |
+| `build_reveal_mugs.py` | Builds the chat's mug reveal layers (`shopify/assets/hs-mug-*.webp`) from the mockups in `design/teeinblue/mug-v3/`, and prints where the photo, lines, signature and paw sit for `hs3.css` |
 
 Mug geometry, from Printful's guides:
 

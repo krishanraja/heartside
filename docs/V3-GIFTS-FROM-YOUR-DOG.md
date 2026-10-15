@@ -191,7 +191,7 @@ All three ship in version one, on Sunday.
   - Mug: photo, three lines (home, spot, meaning), signature.
   - Blanket and framed print: photo, dog's name, four lines, signature.
   - Ornament: front photo and dog's name; back the meaning line and "Love, Kuku".
-- Type: Courier Prime for the lines, Fraunces italic in chestnut for the signature, Fraunces for the name (fonts in `tools/fonts/`).
+- Type: the mug's lines are in Fraunces (HS-Fraunces-Text at 70 px, 16.8pt, since mug v3 was approved on 15 Oct; spec in `docs/evidence/cowork-2026-10-15/mug-v3-handoff-for-claude-code.md`). The blanket, print and ornament lines are in Courier Prime. Every gift has Fraunces italic in chestnut for the signature and Fraunces for the name (fonts in `tools/fonts/`).
 - Every template must render a 44-character line without clipping or shrinking below a readable size at its real print size. Test the longest and shortest cases (section 11).
 - The bridge (`shopify/assets/hs2.js`, documented in `shopify/README.md`) already fills Teeinblue fields by label and hands over the photo with one tap. Reuse it. A multi-gift order goes through each gift's product page in turn; the hidden shop-first flow (`?view=shop`, `product.shopgift.json`) already walks a shopper through several gifts and is the starting point.
 - Add the chat answers to each line item as hidden properties (`_hs_answers`, `_hs_lines`) so the person checking the order sees what the buyer said and what the AI wrote.
@@ -267,6 +267,11 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
 - 2026-10-13: The Gemini key is in Krish's n8n as "Google Gemini(PaLM) - Heartside"; the AI runs through n8n webhooks. Sample order #1001 (the old HR-ring ornament) refunded by Krish; he reorders once the v3 page and products are live.
 
 - 2026-10-13: Krish: "Build the two n8n webhooks and the site against section 11, switch everything on and merge everything to main." Built: the two webhooks are live in n8n (`n8n/README.md`), and the chat is in the theme as `hs3-chat` on hidden templates `?view=gifts` and `?view=landing` (`shopify/README.md`, v3). The live homepage is unchanged: the four gift products don't exist in Shopify yet, and section 7 keeps publishing for Sunday.
+- 2026-10-14: Mug direction A chosen ("A"): the dog as a large cut-out on the outward face, the note on the drinker's face in Fraunces at 16pt or larger, and every preview on real product photos.
+- 2026-10-15: Mug v3 approved; Shopify mug images replaced with two real-photo images ("yes to both").
+- 2026-10-15: Cut-out and Fraunces redesign of the other three gifts judged "okay, pretty standard"; not built.
+- 2026-10-15: Every-gift-as-a-letter rejected ("sounds shit").
+- 2026-10-15: Krish asked for "10X personalized delight" from the first moment, using the AI edge and the breed corpus. Open.
 
 ## 14. Next action
 

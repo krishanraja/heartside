@@ -20,6 +20,12 @@
       "ai": {{ s.ai_on | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
       "examplePhoto": {{ example_photo | strip | json }},
+      "mug": {
+        "dog": {{ 'hs-mug-dog-base.webp' | asset_url | json }},
+        "dogShade": {{ 'hs-mug-dog-shade.webp' | asset_url | json }},
+        "note": {{ 'hs-mug-note-base.webp' | asset_url | json }},
+        "noteShade": {{ 'hs-mug-note-shade.webp' | asset_url | json }}
+      },
       "gifts": {
         {%- assign keys = 'mug,blanket,print,ornament' | split: ',' -%}
         {%- for k in keys -%}
