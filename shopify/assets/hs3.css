@@ -107,12 +107,12 @@
 .hs3-ink--new { animation: hs3-ink .7s ease-out; }
 .hs3-sign { font-family: var(--serif); font-style: italic; color: var(--chestnut); display: inline-flex; align-items: center; gap: 6px; font-size: 18px; }
 .hs3-sign svg { width: 16px; height: 16px; fill: currentColor; }
+.hs3-sign--under { flex-direction: column; gap: 3px; }
 .hs3-photo { border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--line); background: #EFE6DD; }
 .hs3-photo--empty { display: inline-flex; align-items: center; justify-content: center; color: #C9B5A6; }
 .hs3-photo--empty svg { width: 40%; height: 40%; fill: currentColor; }
 .hs3-photo--note { width: 60px; height: 60px; }
 .hs3-photo--tiny { width: 34px; height: 34px; box-shadow: none; }
-.hs3-photo--mug { width: 100px; height: 100px; }
 .hs3-photo--blanket { width: 92px; height: 92px; box-shadow: none; }
 .hs3-photo--print { width: 96px; height: 96px; box-shadow: none; }
 .hs3-photo--orn { width: 78px; height: 78px; box-shadow: none; }
@@ -134,6 +134,25 @@
 .hs3-mug--hero .hs3-sign { font-size: 16px; }
 .hs3-mug--hero .hs3-sign svg { width: 15px; height: 15px; }
 .hs3-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px 0; min-height: 300px; }
+/* the reveal's mug: the live Teeinblue preview's photo (hs3.js mugFaces). Positions are the
+   print file's, in % of the photo, from tools/realphoto/build_reveal_mugs.py */
+.hs3-mugwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }
+.hs3-mugs { position: relative; width: min(330px, 90%); aspect-ratio: 1060 / 910; }
+.hs3-mugface { position: absolute; inset: 0; container-type: inline-size; transition: opacity .45s ease, transform .45s ease; }
+.hs3-mugs[data-side="dog"] .hs3-mugface--note, .hs3-mugs[data-side="note"] .hs3-mugface--dog { opacity: 0; transform: scaleX(.86); pointer-events: none; }
+.hs3-mugface__base, .hs3-mugface__shade { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hs3-mugface__shade { pointer-events: none; }
+.hs3-mugface__photo { position: absolute; left: 34%; top: 16.03%; width: 53.88%; height: 77.69%; display: flex; align-items: center; justify-content: center; }
+.hs3-mugface__dog { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 8%, #000 82%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 8%, #000 82%, transparent); mask-composite: intersect; }
+.hs3-mugface__nodog { width: 38%; color: #D9CCC1; display: flex; }
+.hs3-mugface__nodog svg { width: 100%; height: auto; fill: currentColor; }
+.hs3 .hs3-mugface__line { position: absolute; left: 13.15%; width: 51.49%; height: 14.76%; display: flex; align-items: center; font-family: var(--serif); font-weight: 400; font-variation-settings: "opsz" 24; font-size: 12.5px; font-size: 4.191cqw; line-height: 1.337; white-space: pre; overflow-wrap: normal; }
+.hs3-mugface__line--1 { top: 22.25%; }
+.hs3-mugface__line--2 { top: 38.95%; }
+.hs3-mugface__line--3 { top: 55.65%; }
+.hs3-mugface__sign { position: absolute; left: 13.15%; top: 73.52%; height: 10.1%; display: flex; align-items: center; gap: .84cqw; font-family: var(--serif); font-style: italic; font-variation-settings: "opsz" 48; color: var(--chestnut); font-size: 17px; font-size: 5.747cqw; line-height: 1; white-space: nowrap; }
+.hs3-mugface__sign svg { width: 4.31cqw; height: 4.31cqw; min-width: 12px; min-height: 12px; fill: currentColor; flex: none; }
+.hs3-turn { font-size: 13.5px; }
 .hs3-blanket { width: 350px; max-width: 94%; min-height: 282px; border-radius: 28px; background-color: #E3D3BF; background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, .6) 1.2px, transparent 1.7px); background-size: 6px 6px; padding: 14px; box-shadow: 0 26px 38px -22px rgba(30, 23, 20, .55); transform: rotate(-2deg); }
 .hs3-blanket__in { background: var(--paper); border-radius: 18px; min-height: 100%; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; text-align: center; padding: 14px 16px; }
 .hs3-blanket__name { font-family: var(--serif); font-weight: 650; font-size: 18px; }
@@ -203,7 +222,6 @@
 @media (max-width: 380px) {
   .hs3-mug { height: 240px; }
   .hs3-mug__face { gap: 10px; padding: 24px 12px 18px; }
-  .hs3-photo--mug { width: 84px; height: 84px; }
   .hs3-mug--hero { margin-left: 14px; }
 }
 @media (min-width: 900px) { .hs3__frame { border-left: 1px solid #EFE6DD; border-right: 1px solid #EFE6DD; } }

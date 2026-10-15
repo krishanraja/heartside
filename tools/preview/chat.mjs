@@ -175,11 +175,11 @@ for (const mode of ['fail', 'slow']) {
   if (mode === 'slow') {
     await page.waitForTimeout(150);
     const first = (await noteLines(page))[0];
-    ok(first === 'He howls the moment my key turns.', `while the AI writes, the buyer's own words ink at once ("${first}")`);
+    ok(first === 'Howls the moment your key turns in the lock.', `while the AI writes, the buyer's own words ink at once, read like a chip line ("${first}")`);
   }
   await page.waitForSelector('text=Tell me more?', { timeout: 4000 });
   ok(Date.now() - t < 3600, `AI ${mode}: "Tell me more?" fallback in ${Date.now() - t}ms`);
-  ok((await noteLines(page))[0] === 'He howls the moment my key turns.', `AI ${mode}: the buyer's own words become the line ("${(await noteLines(page))[0]}")`);
+  ok((await noteLines(page))[0] === 'Howls the moment your key turns in the lock.', `AI ${mode}: the buyer's own words become the line, read like a chip line ("${(await noteLines(page))[0]}")`);
   ok((await noteLines(page))[0].length <= 44, `AI ${mode}: own-words line fits 44 characters`);
   await tap(page, '[data-hs3="skip"]');
   await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]');

@@ -22,7 +22,7 @@
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, flagged: '', inked: {} };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, flagged: '', inked: {}, mugSide: 'note', mugTurned: false };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
@@ -115,6 +115,40 @@
     return ({ spot: SP, together: TG, meaning: ME })[key][v] || null;
   }
   function allLines() { var o = {}; ['home', 'spot', 'together', 'meaning'].forEach(function (k) { o[k] = lineFor(k) || ''; }); return o; }
+
+  /* The mug's note prints in HS-Fraunces-Text at 70 px in an 860 px box (Cowork's mug v3 spec,
+     15 Oct). Teeinblue wraps greedily and can leave one word alone ("Naps best when you are" /
+     "there."), but it keeps a typed line break. So a line that won't fit one row gets "\n" at
+     its most even break: "Naps best when\nyou are there.". "Steals your side of the bed."
+     (858 px) still fits one row. The same breaks show on the reveal's mug. */
+  /* note-widths:start (tools/fonts/build_note_widths.py, HS-Fraunces-Text, 1/1000 em; do not edit) */
+  var NOTE_ADV = [221,303,331,644,586,730,955,156,343,343,621,550,248,406,238,483,646,443,590,536,592,562,590,503,578,594,244,254,508,550,508,494,876,706,674,692,776,642,591,753,822,378,464,754,610,892,770,790,660,791,709,588,670,738,694,1024,718,676,632,324,482,328,471,468,228,536,586,502,598,515,360,553,610,296,296,588,300,923,610,578,601,586,446,462,359,600,543,802,524,548,470,385,261,385,628];
+  var NOTE_KERN = {"\",":-69,"\".":-69,"\":":-69,"\";":-69,"\"A":-66,"&T":-3,"&V":-4,"&W":-4,"&Y":-4,"',":-69,"'.":-69,"':":-69,"';":-69,"'A":-66,",\"":-69,",'":-69,",T":-71,",U":-14,",V":-71,",W":-71,",Y":-71,",v":-42,",w":-42,",y":-42,".\"":-69,".'":-69,".T":-71,".U":-14,".V":-71,".W":-71,".Y":-71,".v":-42,".w":-42,".y":-42,"47":-16,"70":-20,"72":-19,"74":-74,"78":-12,"79":-8,":\"":-69,":'":-69,":T":-71,":U":-14,":V":-71,":W":-71,":Y":-71,":v":-42,":w":-42,":y":-42,";\"":-69,";'":-69,";T":-71,";U":-14,";V":-71,";W":-71,";Y":-71,";v":-42,";w":-42,";y":-42,"A\"":-74,"A'":-74,"AC":-8,"AG":-8,"AO":-8,"AQ":-8,"AS":-8,"AT":-45,"AU":-8,"AV":-44,"AW":-44,"AY":-54,"Ac":-4,"Ad":-4,"Ae":-4,"Ag":-9,"Ao":-4,"Aq":-4,"As":-4,"Av":-34,"Aw":-34,"Ay":-34,"B\"":-3,"B'":-3,"BV":-18,"BW":-18,"BY":-18,"DA":-8,"DJ":-8,"DX":-14,"DY":-22,"Da":-6,"Db":-6,"Df":-6,"Dg":-14,"Dh":-6,"Di":-6,"Dj":-6,"Dk":-6,"Dl":-6,"Dm":-6,"Dn":-6,"Dr":-6,"EV":-6,"EW":-6,"EY":-6,"F,":-60,"F.":-60,"F:":-60,"F;":-60,"FA":-39,"FJ":-42,"FS":-6,"FV":-6,"FW":-6,"FX":-6,"FY":-6,"FZ":-6,"Fa":-39,"Fc":-28,"Fd":-28,"Fe":-28,"Ff":-14,"Fg":-38,"Fi":-11,"Fm":-11,"Fn":-11,"Fo":-28,"Fp":-20,"Fq":-28,"Fr":-11,"Fs":-24,"Ft":-10,"Fu":-13,"Fv":-8,"Fw":-8,"Fx":-8,"Fy":-8,"Fz":-8,"KT":-10,"Kc":-8,"Kd":-8,"Ke":-8,"Ko":-8,"Kp":-6,"Kq":-8,"Kv":-20,"Kw":-20,"Ky":-20,"L\"":-76,"L'":-76,"LA":-14,"LT":-44,"LV":-58,"LW":-58,"LY":-58,"Lf":-6,"Lv":-20,"Lw":-20,"Ly":-20,"OA":-8,"OJ":-8,"OX":-14,"OY":-22,"Oa":-6,"Ob":-6,"Of":-6,"Og":-14,"Oh":-6,"Oi":-6,"Oj":-6,"Ok":-6,"Ol":-6,"Om":-6,"On":-6,"Or":-6,"P,":-69,"P.":-69,"P:":-69,"P;":-69,"PA":-42,"PJ":-14,"PV":-13,"PW":-13,"PX":-14,"PY":-18,"Pa":-14,"Pc":-23,"Pd":-23,"Pe":-23,"Pg":-18,"Po":-23,"Pq":-23,"Ps":-14,"QA":-8,"QJ":-8,"QX":-14,"QY":-22,"Qa":-6,"Qb":-6,"Qf":-6,"Qg":-14,"Qh":-6,"Qi":-6,"Qj":-6,"Qk":-6,"Ql":-6,"Qm":-6,"Qn":-6,"Qr":-6,"RA":3,"RV":-23,"RW":-23,"RY":-30,"SA":-9,"ST":-8,"SV":-14,"SW":-14,"SY":-22,"Sf":-14,"Sg":-14,"T,":-71,"T.":-71,"T:":-71,"T;":-71,"TA":-45,"TJ":-36,"Ta":-52,"Tc":-52,"Td":-52,"Te":-52,"Tf":-14,"Tg":-50,"Ti":-26,"Tm":-26,"Tn":-26,"To":-52,"Tp":-22,"Tq":-52,"Tr":-26,"Ts":-50,"Tt":-15,"Tu":-22,"Tv":-4,"Tw":-4,"Tx":-17,"Ty":-4,"Tz":-27,"U,":-14,"U.":-14,"U:":-14,"U;":-14,"UA":-10,"UJ":-8,"Ua":-14,"Uf":-14,"Ug":-14,"Up":-6,"Us":-6,"Uv":-6,"Uw":-6,"Uy":-6,"Uz":-6,"V&":-4,"V,":-69,"V.":-69,"V:":-69,"V;":-69,"VA":-45,"VJ":-36,"VS":-14,"VZ":-14,"Va":-54,"Vc":-54,"Vd":-54,"Ve":-54,"Vf":-14,"Vg":-54,"Vi":-42,"Vj":-16,"Vm":-42,"Vn":-42,"Vo":-54,"Vp":-38,"Vq":-54,"Vr":-42,"Vs":-52,"Vt":-30,"Vu":-30,"Vv":-30,"Vw":-30,"Vx":-31,"Vy":-30,"Vz":-45,"W&":-4,"W,":-69,"W.":-69,"W:":-69,"W;":-69,"WA":-45,"WJ":-36,"WS":-14,"WZ":-14,"Wa":-54,"Wc":-54,"Wd":-54,"We":-54,"Wf":-14,"Wg":-54,"Wi":-42,"Wj":-16,"Wm":-42,"Wn":-42,"Wo":-54,"Wp":-38,"Wq":-54,"Wr":-42,"Ws":-52,"Wt":-30,"Wu":-30,"Wv":-30,"Ww":-30,"Wx":-31,"Wy":-30,"Wz":-45,"XC":-14,"XG":-14,"XO":-14,"XQ":-14,"Xc":-23,"Xd":-23,"Xe":-23,"Xg":-6,"Xo":-23,"Xq":-23,"Xt":-4,"Xu":-10,"Xv":-25,"Xw":-25,"Xy":-25,"Y&":-4,"Y,":-71,"Y.":-71,"Y:":-71,"Y;":-71,"YA":-54,"YC":-22,"YG":-22,"YJ":-36,"YO":-22,"YQ":-22,"YS":-22,"YZ":-14,"Ya":-57,"Yc":-59,"Yd":-59,"Ye":-59,"Yf":-14,"Yg":-60,"Yi":-38,"Yj":-18,"Ym":-38,"Yn":-38,"Yo":-59,"Yp":-50,"Yq":-59,"Yr":-38,"Ys":-60,"Yt":-32,"Yu":-32,"Yv":-38,"Yw":-38,"Yx":-38,"Yy":-38,"Yz":-43,"Zv":-14,"Zw":-14,"Zy":-14,"aT":-39,"aV":-44,"aW":-44,"aY":-52,"av":-14,"aw":-14,"ay":-14,"b\"":-3,"b'":-3,"bT":-48,"bV":-52,"bW":-52,"bX":-25,"bY":-59,"bv":-14,"bw":-14,"by":-14,"cT":-25,"cV":-28,"cW":-28,"cY":-36,"db":16,"dh":16,"dk":16,"dl":16,"eT":-25,"eV":-28,"eW":-28,"eY":-36,"f\"":14,"f'":14,"g,":-14,"g.":-14,"g:":-14,"g;":-14,"gT":8,"gX":-6,"gY":-29,"gZ":4,"h\"":-16,"h'":-16,"hT":-25,"hV":-38,"hW":-38,"hY":-38,"iV":-16,"iW":-16,"iY":-6,"jV":-14,"jW":-14,"jY":-15,"kC":-14,"kG":-14,"kO":-14,"kQ":-14,"kV":-28,"kW":-28,"kY":-32,"kZ":4,"lb":16,"lh":16,"lk":16,"ll":16,"m\"":-16,"m'":-16,"mT":-25,"mV":-38,"mW":-38,"mY":-38,"n\"":-16,"n'":-16,"nT":-25,"nV":-38,"nW":-38,"nY":-38,"o\"":-3,"o'":-3,"oT":-48,"oV":-52,"oW":-52,"oX":-25,"oY":-59,"ov":-14,"ow":-14,"oy":-14,"p\"":-3,"p'":-3,"pT":-48,"pV":-52,"pW":-52,"pX":-25,"pY":-59,"pv":-14,"pw":-14,"py":-14,"qT":-17,"qV":-36,"qW":-36,"qY":-48,"r,":-28,"r.":-28,"r:":-28,"r;":-28,"rA":-11,"rJ":-16,"rV":-32,"rW":-32,"rX":-25,"rY":-48,"sV":-34,"sW":-34,"sY":-48,"tV":-29,"tW":-29,"tY":-30,"uV":-16,"uW":-16,"uY":-6,"v,":-42,"v.":-42,"v:":-42,"v;":-42,"vA":-34,"vJ":-14,"vV":-28,"vW":-28,"vX":-23,"vY":-36,"va":-14,"vc":-14,"vd":-14,"ve":-14,"vo":-14,"vq":-14,"w,":-42,"w.":-42,"w:":-42,"w;":-42,"wA":-34,"wJ":-14,"wV":-28,"wW":-28,"wX":-23,"wY":-36,"wa":-14,"wc":-14,"wd":-14,"we":-14,"wo":-14,"wq":-14,"x\"":-3,"x'":-3,"xT":-16,"xV":-30,"xW":-30,"xY":-36,"y,":-42,"y.":-42,"y:":-42,"y;":-42,"yA":-34,"yJ":-14,"yV":-28,"yW":-28,"yX":-23,"yY":-36,"ya":-14,"yc":-14,"yd":-14,"ye":-14,"yo":-14,"yq":-14,"zT":-14,"zV":-36,"zW":-36,"zY":-36};
+  /* note-widths:end */
+  var NOTE_ROW = 860, NOTE_ALIAS = { '‘': "'", '’': "'", '“': '"', '”': '"' };
+  function noteWidth(t) {
+    var w = 0, prev = '';
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charAt(i);
+      if (c.charCodeAt(0) > 126) c = NOTE_ALIAS[c] || (c.normalize ? c.normalize('NFD').charAt(0) : c);
+      var code = c.charCodeAt(0);
+      w += code >= 32 && code < 127 ? NOTE_ADV[code - 32] : NOTE_ADV[78]; // anything else: as wide as "n"
+      if (prev) w += NOTE_KERN[prev + c] || 0;
+      prev = c;
+    }
+    return w * 0.07;
+  }
+  function evenBreak(line) {
+    var t = String(line || '');
+    if (t.indexOf('\n') !== -1 || noteWidth(t) <= NOTE_ROW) return t;
+    var best = -1, bestW = Infinity;
+    for (var i = t.indexOf(' '); i !== -1; i = t.indexOf(' ', i + 1)) {
+      var w = Math.max(noteWidth(t.slice(0, i)), noteWidth(t.slice(i + 1)));
+      if (w < bestW) { bestW = w; best = i; }
+    }
+    return best === -1 ? t : t.slice(0, best) + '\n' + t.slice(best + 1);
+  }
+  function mugLines() { var o = {}; giftKeys('mug').forEach(function (k) { o[k] = evenBreak(lineFor(k) || ''); }); return o; }
   function recGift() {
     if (S.composed && GIFTS.indexOf(S.composed.gift) !== -1) return S.composed.gift;
     var t = S.together;
@@ -171,6 +205,27 @@
     if (!t) return '';
     return t.charAt(0).toUpperCase() + t.slice(1) + '.';
   }
+  /* A typed line reads like the chip lines (Cowork round two, 15 Oct): no leading He, She, They
+     or the dog's name, so "He howls until you sit on the sofa." prints "Howls until you sit on
+     the sofa.". Gift lines never say I, me or my (V3 section 2), and the gift speaks to the
+     person, so the buyer's own words (the line when the AI is off) turn my into your, as the AI
+     does: "he howls the moment my key turns" prints "Howls the moment your key turns". A line
+     that still says I after that prints the step's "Not sure" line. */
+  var LEAD = /^(?:(?:he|she)(?:\s+is|\s+was|'s)?|they(?:\s+are|\s+were|'re)?)\s+/i;
+  var FIRST = /(^|[^A-Za-z'])(I|I'm|I've|I'd|I'll|me|my|mine|myself)(?=$|[^A-Za-z'])/;
+  var MINE = /(^|[^A-Za-z'])(I am|I was|I'm|I've|I'd|I'll|I|me|my|mine|myself)(?=$|[^A-Za-z'])/gi;
+  var YOURS = { 'i am': 'you are', 'i was': 'you were', "i'm": "you're", "i've": "you've", "i'd": "you'd", "i'll": "you'll", i: 'you', me: 'you', my: 'your', mine: 'yours', myself: 'yourself' };
+  var PLAIN = { home: 'Always happy to see you.', spot: SP.skip, together: TG.skip, meaning: ME.skip };
+  function chipStyle(line, key) {
+    var t = String(line || '').replace(/[‘’]/g, "'").trim();
+    if (!t) return t;
+    var dog = String(S.dog || '').trim(), rest = t.replace(LEAD, '');
+    if (rest === t && dog && t.toLowerCase().indexOf(dog.toLowerCase() + ' ') === 0) rest = t.slice(dog.length + 1).replace(/^(is|was)\s+/i, '');
+    if (rest !== t && /[A-Za-z]/.test(rest)) t = rest;
+    t = t.replace(MINE, function (m, pre, w) { return pre + YOURS[w.toLowerCase()]; });
+    t = t.charAt(0).toUpperCase() + t.slice(1);
+    return FIRST.test(t) ? (PLAIN[key] || '') : t;
+  }
   function clip(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n) : t; }
   var GRIEF = /\b(died|dead|death|passed away|put down|put to sleep|rainbow bridge|cancer|funeral|in heaven)\b/i;
   var PROFANE = /\b(fuck|shit|bitch|cunt|asshole|bastard|whore|slut)\w*/i;
@@ -178,14 +233,15 @@
   function typedAnswer(step, question, text, previous) {
     var n = names();
     var body = { step: step, question: question, typed_text: clip(text, 140), previous_line: previous || '', dog: { name: n.dog, pronoun: n.she }, recipient: { name: S.rec ? n.rec : '', relation: S.rel } };
+    var key = step === 'home_follow' ? 'home' : step;
     return callAI(cfg.typedUrl, body, TYPED_MS).then(function (r) {
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
         return {
-          reaction: clip(r.reaction, 70), line: clip(r.line, 44),
+          reaction: clip(r.reaction, 70), line: chipStyle(clip(r.line, 44), key),
           follow_up: r.follow_up && r.follow_up.question ? {
             question: clip(r.follow_up.question, 70),
             chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }),
-            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' && l.length <= 44 ? l : null; }),
+            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' && l.length <= 44 ? chipStyle(l, 'home') || null : null; }),
             replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? x : null; })
           } : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
@@ -193,7 +249,7 @@
       }
       // no AI (off, slow, failed or over budget): the buyer's own words, and the scripted "Tell me more?"
       var flags = GRIEF.test(text) ? ['grief'] : PROFANE.test(text) ? ['profanity'] : [];
-      return { reaction: 'Tell me more?', line: ownWords(text) || previous || '', follow_up: step === 'home' ? { question: 'Tell me more?', chips: [] } : null, flags: flags, ai: false };
+      return { reaction: 'Tell me more?', line: ownWords(chipStyle(text, key)) || previous || '', follow_up: step === 'home' ? { question: 'Tell me more?', chips: [] } : null, flags: flags, ai: false };
     });
   }
   /* While the buyer types, a pause of 600 ms sends what they have so far. If they press Done
@@ -234,7 +290,7 @@
     callAI(cfg.composeUrl, { dog: { name: n.dog, pronoun: n.she }, recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
       if (!r || !r.lines || asked !== S.composeAsked) return;
       var lines = {};
-      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines[k]; if (typeof l === 'string' && l && l.length <= 44) lines[k] = l; });
+      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines[k]; if (typeof l === 'string' && l && l.length <= 44) lines[k] = chipStyle(l, k); });
       S.composed = { lines: lines, gift: GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null, reason: typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '' };
       if (S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
       save();
@@ -283,6 +339,7 @@
     st.dog = S.dog ? n.dog : '';
     st.person = S.rec ? n.rec : '';
     st.hs3_lines = allLines();
+    st.hs3_mug_lines = mugLines();
     var kinds = {};
     GIFTS.forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) kinds[x.handle] = g; });
     st.hs3_kinds = kinds;
@@ -313,6 +370,8 @@
   };
   function pills() { return '<div class="hs3-pills" aria-hidden="true">' + GIFTS.map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
   function sign(n) { return '<span class="hs3-sign">Love, ' + esc(n.dog) + ' ' + PAW + '</span>'; }
+  // the blanket, print and ornament print the paw centred under the signature (round two, 14 Oct)
+  function signUnder(n) { return '<span class="hs3-sign hs3-sign--under">Love, ' + esc(n.dog) + PAW + '</span>'; }
   function img(alt, cls) { var src = photoSrc(); return src ? '<img data-hs3-photo src="' + esc(src) + '" alt="' + esc(alt) + '" class="hs3-photo ' + (cls || '') + '">' : '<span class="hs3-photo hs3-photo--empty ' + (cls || '') + '">' + PAW + '</span>'; }
   function privacy() { var p = root.querySelector('[data-hs3-privacy]'); return p ? '<p class="hs3-privacy">' + esc(p.textContent) + '</p>' : ''; }
 
@@ -452,18 +511,60 @@
   }
   function mockup(g, n, lines) {
     // laid out like the real print files (Cowork's fit test, 14 Oct): the name in normal case, signed with a paw
-    if (g === 'mug') return '<div class="hs3-mug"><span class="hs3-mug__handle"></span><span class="hs3-mug__body"><span class="hs3-mug__rim"></span><span class="hs3-mug__face">' + img('Your dog on the mug', 'hs3-photo--mug') + '<span class="hs3-mug__words">' + lines + sign(n) + '</span></span></span></div>';
-    if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
-    if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
-    return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + sign(n) + '</div></div>';
+    if (g === 'mug') return mugFaces(n);
+    if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
+    if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
+    return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
+  }
+  /* The mug as it prints (mug v3, approved 15 Oct), on the same Printful photo as the live
+     Teeinblue preview: the dog on the face others see (handle left), the note on the drinker's
+     face (handle right) in Fraunces with the paw left of "Love, [dog]". Placement and sizes are
+     the print file's, worked out by tools/realphoto/build_reveal_mugs.py. A phone can't show both
+     faces side by side at a readable size, so the mug turns: the dog first, then the note as the
+     lines ink. Teeinblue removes the photo's background on the product page; here the photo
+     sits on the mug whole, with soft edges, and nothing is cropped. */
+  function mugFaces(n) {
+    var m = cfg.mug || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc();
+    var layer = function (url, cls) { return url ? '<img src="' + esc(url) + '" alt="" width="640" height="549" class="' + cls + '">' : ''; };
+    var dog = src ? '<img data-hs3-photo src="' + esc(src) + '" alt="' + esc(n.dog + ' on the mug') + '" class="hs3-mugface__dog">' : '<span class="hs3-mugface__nodog">' + PAW + '</span>';
+    var lines = giftKeys('mug').map(function (k, i) {
+      return '<span class="hs3-line hs3-mugface__line hs3-mugface__line--' + (i + 1) + ' ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(evenBreak(lineFor(k) || '')) + '</span>';
+    }).join('');
+    var h = '<div class="hs3-mugwrap"><div class="hs3-mugs" data-side="' + side + '">';
+    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(m.dog, 'hs3-mugface__base') + '<span class="hs3-mugface__photo">' + dog + '</span>' + layer(m.dogShade, 'hs3-mugface__shade') + '</div>';
+    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(m.note, 'hs3-mugface__base') + lines + '<span class="hs3-mugface__sign">' + PAW + '<span>Love, ' + esc(n.dog) + '</span></span>' + layer(m.noteShade, 'hs3-mugface__shade') + '</div>';
+    h += '</div>' + (ui.editing ? '' : '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>') + '</div>';
+    return h;
+  }
+  // Teeinblue shrinks a long signature to fit its 775 px box ("Love, Bartholomew Jr" prints at
+  // 774 px, not 889), so the reveal does too. offsetWidth ignores the turning transform.
+  function fitSign() {
+    var t = frame && frame.querySelector('.hs3-mugface__sign span');
+    if (!t) return;
+    t.style.fontSize = '';
+    var box = t.parentNode.parentNode.offsetWidth * 0.464, w = t.offsetWidth;
+    if (box && w > box) t.style.fontSize = (5.747 * box / w).toFixed(3) + 'cqw';
+  }
+  function turnMug(side) {
+    ui.mugSide = side;
+    var m = frame && frame.querySelector('.hs3-mugs');
+    if (!m) return;
+    m.setAttribute('data-side', side);
+    var dog = m.querySelector('.hs3-mugface--dog'), note = m.querySelector('.hs3-mugface--note');
+    if (side === 'dog') { dog.removeAttribute('aria-hidden'); note.setAttribute('aria-hidden', 'true'); } else { note.removeAttribute('aria-hidden'); dog.setAttribute('aria-hidden', 'true'); }
   }
   function startReveal(g) {
     clearTimers();
     ui.editing = false; ui.revealN = reduced ? 9 : 0;
+    // the mug opens on the buyer's dog, then turns to the note; with no photo yet, on the note
+    var turn = g === 'mug' && !reduced && !!photoSrc();
+    ui.mugSide = turn ? 'dog' : 'note'; ui.mugTurned = false;
     S.screen = 'reveal'; S.gift = g; save(); render();
     if (reduced) return;
+    var lag = turn ? 1400 : 0;
+    if (turn) later(function () { if (!ui.mugTurned) turnMug('note'); }, lag - 250);
     var k = giftKeys(g).length;
-    for (var i = 1; i <= k; i++) (function (x) { later(function () { ui.revealN = x; inkLines(); }, 450 + x * 650); })(i);
+    for (var i = 1; i <= k; i++) (function (x) { later(function () { ui.revealN = x; inkLines(); }, lag + 450 + x * 650); })(i);
   }
   function inkLines() {
     frame.querySelectorAll('.hs3-stage .hs3-line').forEach(function (el, i) { if (i < ui.revealN && !el.classList.contains('hs3-ink')) { el.classList.remove('hs3-pencil'); el.classList.add('hs3-ink', 'hs3-ink--new'); } });
@@ -617,7 +718,7 @@
     if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
     // the buyer's own words ink at once; Biscuit's version replaces them when it lands
-    ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(text) };
+    ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key)) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';
     answerFor(key, q, text, '').then(function (r) {
@@ -731,13 +832,14 @@
       inp.addEventListener('input', function () {
         S.edits[k] = inp.value.slice(0, 45); save();
         var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (45 - inp.value.length) + ' characters left';
-        var i = giftKeys(S.gift || recGift()).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
-        if (l) l.textContent = inp.value;
+        var g = S.gift || recGift(), i = giftKeys(g).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
+        if (l) l.textContent = g === 'mug' ? evenBreak(inp.value) : inp.value;
       });
     });
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
+    if (frame.querySelector('.hs3-mugface__sign')) { fitSign(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSign); }
   }
   function act(a, v) {
     var n = names();
@@ -752,7 +854,8 @@
       case 'untype': ui.typing = false; if (S.fu && !S.fu.chips.length) { skip(); return; } render(); break;
       case 'send': var t = frame.querySelector('#hs3-typed'); sendTyped(t ? t.value : ''); break;
       case 'tab': S.tabbed = true; track('gift_tab', { gift: v }); startReveal(v); break;
-      case 'edit': ui.editing = !ui.editing; ui.revealN = 9; render(); if (ui.editing) track('edit', {}); break;
+      case 'edit': ui.editing = !ui.editing; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) track('edit', {}); break;
+      case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'dog' ? 'note' : 'dog'); track('mug_turn', { side: ui.mugSide }); break;
       case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; S.sel[g] = true; ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
       case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
       case 'sel': S.sel[v] = !S.sel[v]; save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
@@ -782,5 +885,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests
-  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names };
+  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle };
 })();
