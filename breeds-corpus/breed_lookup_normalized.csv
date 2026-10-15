@@ -1,0 +1,828 @@
+﻿query,display_query,canonical_name,canonical_id,entity_type,lookup_priority,dog_type,secondary_dog_type,parent_1,parent_2,confidence
+affenpinscher,Affenpinscher,Affenpinscher,affenpinscher,breed,100,Guardian,Working Goofball,,,medium
+afghan hound,Afghan Hound,Afghan Hound,afghan-hound,breed,100,Scent Detective,Companion Velcro,,,medium
+afghanhound,AfghanHound,Afghan Hound,afghan-hound,breed,100,Scent Detective,Companion Velcro,,,medium
+aidi,Aïdi,Aïdi (chien de Montagne de L'atlas),a-di-chien-de-montagne-de-l-atlas,breed,100,Guardian,Working Goofball,,,medium
+aidi chien de montagne de latlas,Aïdi (chien de Montagne de L'atlas),Aïdi (chien de Montagne de L'atlas),a-di-chien-de-montagne-de-l-atlas,breed,100,Guardian,Working Goofball,,,medium
+aidi chiendemontagnedelatlas,Aidi(chiendeMontagnedeL'atlas),Aïdi (chien de Montagne de L'atlas),a-di-chien-de-montagne-de-l-atlas,breed,100,Guardian,Working Goofball,,,medium
+airedale terrier,Airedale Terrier,Airedale Terrier,airedale-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+airedaleterrier,AiredaleTerrier,Airedale Terrier,airedale-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+akita,Akita,Akita,akita,breed,100,Spitz Commentator,Working Goofball,,,medium
+alaskan malamute,Alaskan Malamute,Alaskan Malamute,alaskan-malamute,breed,100,Spitz Commentator,Working Goofball,,,medium
+alaskanmalamute,AlaskanMalamute,Alaskan Malamute,alaskan-malamute,breed,100,Spitz Commentator,Working Goofball,,,medium
+alpenlandische dachsbracke,Alpenländische Dachsbracke,Alpenländische Dachsbracke,alpenl-ndische-dachsbracke,breed,100,Scent Detective,Working Goofball,,,medium
+alpenlandischedachsbracke,AlpenlandischeDachsbracke,Alpenländische Dachsbracke,alpenl-ndische-dachsbracke,breed,100,Scent Detective,Working Goofball,,,medium
+alsatian,Alsatian,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+american akita,American Akita,American Akita,american-akita,breed,100,Spitz Commentator,Working Goofball,,,medium
+american cocker spaniel,American Cocker Spaniel,American Cocker Spaniel,american-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+american foxhound,American Foxhound,American Foxhound,american-foxhound,breed,100,Scent Detective,Working Goofball,,,medium
+american staffordshire terrier,American Staffordshire Terrier,American Staffordshire Terrier,american-staffordshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+american water spaniel,American Water Spaniel,American Water Spaniel,american-water-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+americanakita,AmericanAkita,American Akita,american-akita,breed,100,Spitz Commentator,Working Goofball,,,medium
+americancockerspaniel,AmericanCockerSpaniel,American Cocker Spaniel,american-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+americanfoxhound,AmericanFoxhound,American Foxhound,american-foxhound,breed,100,Scent Detective,Working Goofball,,,medium
+americanstaffordshireterrier,AmericanStaffordshireTerrier,American Staffordshire Terrier,american-staffordshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+americanwaterspaniel,AmericanWaterSpaniel,American Water Spaniel,american-water-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+anglo francais de petite venerie,Anglo-français de Petite Venerie,Anglo-français de Petite Venerie,anglo-fran-ais-de-petite-venerie,breed,100,Scent Detective,Working Goofball,,,medium
+anglofrancaisdepetitevenerie,AnglofrancaisdePetiteVenerie,Anglo-français de Petite Venerie,anglo-fran-ais-de-petite-venerie,breed,100,Scent Detective,Working Goofball,,,medium
+appenzeller sennenhund,Appenzeller Sennenhund,Appenzeller Sennenhund,appenzeller-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+appenzellersennenhund,AppenzellerSennenhund,Appenzeller Sennenhund,appenzeller-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+ariegeois,Ariegeois,Ariegeois,ariegeois,breed,100,Scent Detective,Working Goofball,,,medium
+aussie,Aussie,Australian Shepherd,australian-shepherd,breed,100,Herding Manager,Working Goofball,,,medium
+aussiedoodle,Aussiedoodle,Aussiedoodle,aussiedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Australian Shepherd,Poodle,low
+aussiepoo,Aussiepoo,Aussiedoodle,aussiedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Australian Shepherd,Poodle,low
+australian cattle dog,Australian Cattle Dog,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium
+australian kelpie,Australian Kelpie,Australian Kelpie,australian-kelpie,breed,100,Herding Manager,Working Goofball,,,medium
+australian sheepdog,Australian Sheepdog,Australian Shepherd,australian-shepherd,breed,100,Herding Manager,Working Goofball,,,medium
+australian shepherd,Australian Shepherd,Australian Shepherd,australian-shepherd,breed,100,Herding Manager,Working Goofball,,,medium
+australian shepherd poodle cross,Australian Shepherd Poodle Cross,Aussiedoodle,aussiedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Australian Shepherd,Poodle,low
+australian silky terrier,Australian Silky Terrier,Australian Silky Terrier,australian-silky-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+australian terrier,Australian Terrier,Australian Terrier,australian-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+australiancattledog,AustralianCattleDog,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium
+australiankelpie,AustralianKelpie,Australian Kelpie,australian-kelpie,breed,100,Herding Manager,Working Goofball,,,medium
+australiansheepdog,AustralianSheepdog,Australian Shepherd,australian-shepherd,breed,100,Herding Manager,Working Goofball,,,medium
+australianshepherd,AustralianShepherd,Australian Shepherd,australian-shepherd,breed,100,Herding Manager,Working Goofball,,,medium
+australianshepherdpoodlecross,AustralianShepherdPoodleCross,Aussiedoodle,aussiedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Australian Shepherd,Poodle,low
+australiansilkyterrier,AustralianSilkyTerrier,Australian Silky Terrier,australian-silky-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+australianterrier,AustralianTerrier,Australian Terrier,australian-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+azawakh,Azawakh,Azawakh,azawakh,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+barbet,Barbet,Barbet,barbet,breed,100,Retriever,Working Goofball,,,medium
+basenji,Basenji,Basenji,basenji,breed,100,Spitz Commentator,Working Goofball,,,medium
+basset artesien normand,Basset Artesien Normand,Basset Artesien Normand,basset-artesien-normand,breed,100,Scent Detective,Working Goofball,,,medium
+basset bleu de gascogne,Basset Bleu de Gascogne,Basset Bleu de Gascogne,basset-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+basset fauve de bretagne,Basset Fauve de Bretagne,Basset Fauve de Bretagne,basset-fauve-de-bretagne,breed,100,Scent Detective,Working Goofball,,,medium
+basset hound,Basset Hound,Basset Hound,basset-hound,breed,100,Scent Detective,Working Goofball,,,medium
+bassetartesiennormand,BassetArtesienNormand,Basset Artesien Normand,basset-artesien-normand,breed,100,Scent Detective,Working Goofball,,,medium
+bassetbleudegascogne,BassetBleudeGascogne,Basset Bleu de Gascogne,basset-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+bassetfauvedebretagne,BassetFauvedeBretagne,Basset Fauve de Bretagne,basset-fauve-de-bretagne,breed,100,Scent Detective,Working Goofball,,,medium
+bassethound,BassetHound,Basset Hound,basset-hound,breed,100,Scent Detective,Working Goofball,,,medium
+bayerischer gebirgsschweisshund,Bayerischer Gebirgsschweisshund,Bayerischer Gebirgsschweisshund,bayerischer-gebirgsschweisshund,breed,100,Scent Detective,Working Goofball,,,medium
+bayerischergebirgsschweisshund,BayerischerGebirgsschweisshund,Bayerischer Gebirgsschweisshund,bayerischer-gebirgsschweisshund,breed,100,Scent Detective,Working Goofball,,,medium
+beagle,Beagle,Beagle,beagle,breed,100,Scent Detective,Working Goofball,,,medium
+beagle harrier,Beagle-harrier,Beagle-harrier,beagle-harrier,breed,100,Scent Detective,Working Goofball,,,medium
+beagleharrier,Beagleharrier,Beagle-harrier,beagle-harrier,breed,100,Scent Detective,Working Goofball,,,medium
+bearded collie,Bearded Collie,Bearded Collie,bearded-collie,breed,100,Herding Manager,Working Goofball,,,medium
+beardedcollie,BeardedCollie,Bearded Collie,bearded-collie,breed,100,Herding Manager,Working Goofball,,,medium
+bedlington terrier,Bedlington Terrier,Bedlington Terrier,bedlington-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bedlingtonterrier,BedlingtonTerrier,Bedlington Terrier,bedlington-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+belgian sheepdog,Belgian Sheepdog,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+belgian shepherd dog,Belgian Shepherd Dog,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+belgiansheepdog,BelgianSheepdog,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+belgianshepherddog,BelgianShepherdDog,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+berger blanc suisse,Berger Blanc Suisse,Berger Blanc Suisse,berger-blanc-suisse,breed,100,Herding Manager,Working Goofball,,,medium
+berger de beauce,Berger de Beauce,Berger de Beauce,berger-de-beauce,breed,100,Herding Manager,Working Goofball,,,medium
+berger de brie,Berger de Brie,Berger de Brie,berger-de-brie,breed,100,Herding Manager,Working Goofball,,,medium
+berger de picardie,Berger de Picardie,Berger de Picardie,berger-de-picardie,breed,100,Herding Manager,Working Goofball,,,medium
+bergerblancsuisse,BergerBlancSuisse,Berger Blanc Suisse,berger-blanc-suisse,breed,100,Herding Manager,Working Goofball,,,medium
+bergerdebeauce,BergerdeBeauce,Berger de Beauce,berger-de-beauce,breed,100,Herding Manager,Working Goofball,,,medium
+bergerdebrie,BergerdeBrie,Berger de Brie,berger-de-brie,breed,100,Herding Manager,Working Goofball,,,medium
+bergerdepicardie,BergerdePicardie,Berger de Picardie,berger-de-picardie,breed,100,Herding Manager,Working Goofball,,,medium
+bernedoodle,Bernedoodle,Bernedoodle,bernedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Bernese Mountain Dog,Poodle,low
+berner,Berner,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+berner sennenhund,Berner Sennenhund,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+bernersennenhund,BernerSennenhund,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+bernese,Bernese,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+bernese mountain dog,Bernese Mountain Dog,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+bernese poodle cross,Bernese Poodle Cross,Bernedoodle,bernedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Bernese Mountain Dog,Poodle,low
+bernesemountaindog,BerneseMountainDog,Berner Sennenhund,berner-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+bernesepoodlecross,BernesePoodleCross,Bernedoodle,bernedoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Bernese Mountain Dog,Poodle,low
+bichon,Bichon,Bichon A Poil Frise,bichon-a-poil-frise,breed,100,Companion Velcro,Working Goofball,,,medium
+bichon a poil frise,Bichon A Poil Frise,Bichon A Poil Frise,bichon-a-poil-frise,breed,100,Companion Velcro,Working Goofball,,,medium
+bichon frise,Bichon Frise,Bichon A Poil Frise,bichon-a-poil-frise,breed,100,Companion Velcro,Working Goofball,,,medium
+bichon havanais,Bichon Havanais,Bichon Havanais,bichon-havanais,breed,100,Companion Velcro,Working Goofball,,,medium
+bichonapoilfrise,BichonAPoilFrise,Bichon A Poil Frise,bichon-a-poil-frise,breed,100,Companion Velcro,Working Goofball,,,medium
+bichonfrise,BichonFrise,Bichon A Poil Frise,bichon-a-poil-frise,breed,100,Companion Velcro,Working Goofball,,,medium
+bichonhavanais,BichonHavanais,Bichon Havanais,bichon-havanais,breed,100,Companion Velcro,Working Goofball,,,medium
+billy,Billy,Billy,billy,breed,100,Scent Detective,Working Goofball,,,medium
+black and tan coonhound,Black and Tan Coonhound,Black and Tan Coonhound,black-and-tan-coonhound,breed,100,Scent Detective,Working Goofball,,,medium
+blackandtancoonhound,BlackandTanCoonhound,Black and Tan Coonhound,black-and-tan-coonhound,breed,100,Scent Detective,Working Goofball,,,medium
+bolognese,Bolognese,Bolognese,bolognese,breed,100,Companion Velcro,Working Goofball,,,medium
+border,Border,Border Collie,border-collie,breed,100,Herding Manager,Working Goofball,,,medium
+border collie,Border Collie,Border Collie,border-collie,breed,100,Herding Manager,Working Goofball,,,medium
+border terrier,Border Terrier,Border Terrier,border-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bordercollie,BorderCollie,Border Collie,border-collie,breed,100,Herding Manager,Working Goofball,,,medium
+borderterrier,BorderTerrier,Border Terrier,border-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bosanski ostrodlaki gonic barak,Bosanski Ostrodlaki Gonic-barak,Bosanski Ostrodlaki Gonic-barak,bosanski-ostrodlaki-gonic-barak,breed,100,Scent Detective,Working Goofball,,,medium
+bosanskiostrodlakigonicbarak,BosanskiOstrodlakiGonicbarak,Bosanski Ostrodlaki Gonic-barak,bosanski-ostrodlaki-gonic-barak,breed,100,Scent Detective,Working Goofball,,,medium
+boston terrier,Boston Terrier,Boston Terrier,boston-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bostonterrier,BostonTerrier,Boston Terrier,boston-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bouledogue francais,Bouledogue Français,Bouledogue Français,bouledogue-fran-ais,breed,100,Companion Velcro,Working Goofball,,,medium
+bouledoguefrancais,BouledogueFrancais,Bouledogue Français,bouledogue-fran-ais,breed,100,Companion Velcro,Working Goofball,,,medium
+bouvier des ardennes,Bouvier des Ardennes,Bouvier des Ardennes,bouvier-des-ardennes,breed,100,Herding Manager,Working Goofball,,,medium
+bouvier des flandres vlaamse koehond,Bouvier des Flandres-vlaamse Koehond,Bouvier des Flandres-vlaamse Koehond,bouvier-des-flandres-vlaamse-koehond,breed,100,Herding Manager,Working Goofball,,,medium
+bouvierdesardennes,BouvierdesArdennes,Bouvier des Ardennes,bouvier-des-ardennes,breed,100,Herding Manager,Working Goofball,,,medium
+bouvierdesflandresvlaamsekoehond,BouvierdesFlandresvlaamseKoehond,Bouvier des Flandres-vlaamse Koehond,bouvier-des-flandres-vlaamse-koehond,breed,100,Herding Manager,Working Goofball,,,medium
+bracco italiano,Bracco Italiano,Bracco Italiano,bracco-italiano,breed,100,Working Goofball,Scent Detective,,,medium
+braccoitaliano,BraccoItaliano,Bracco Italiano,bracco-italiano,breed,100,Working Goofball,Scent Detective,,,medium
+brandlbracke,Brandlbracke -,Brandlbracke - (vieräugl),brandlbracke-vier-ugl,breed,100,Scent Detective,Working Goofball,,,medium
+brandlbracke vieraugl,Brandlbracke - (vieräugl),Brandlbracke - (vieräugl),brandlbracke-vier-ugl,breed,100,Scent Detective,Working Goofball,,,medium
+braque dauvergne,Braque D'auvergne,Braque D'auvergne,braque-d-auvergne,breed,100,Working Goofball,Scent Detective,,,medium
+braque de lariege,Braque de L'ariège,Braque de L'ariège,braque-de-l-ari-ge,breed,100,Working Goofball,Scent Detective,,,medium
+braque du bourbonnais,Braque du Bourbonnais,Braque du Bourbonnais,braque-du-bourbonnais,breed,100,Working Goofball,Scent Detective,,,medium
+braque francais type gascogne,Braque Français - Type Gascogne,Braque Français - Type Gascogne,braque-fran-ais-type-gascogne,breed,100,Working Goofball,Scent Detective,,,medium
+braque francais type pyrenees,Braque Français - Type Pyrenees,Braque Français - Type Pyrenees,braque-fran-ais-type-pyrenees,breed,100,Working Goofball,Scent Detective,,,medium
+braque saint germain,Braque Saint-germain,Braque Saint-germain,braque-saint-germain,breed,100,Working Goofball,Scent Detective,,,medium
+braquedauvergne,BraqueD'auvergne,Braque D'auvergne,braque-d-auvergne,breed,100,Working Goofball,Scent Detective,,,medium
+braquedelariege,BraquedeL'ariege,Braque de L'ariège,braque-de-l-ari-ge,breed,100,Working Goofball,Scent Detective,,,medium
+braquedubourbonnais,BraqueduBourbonnais,Braque du Bourbonnais,braque-du-bourbonnais,breed,100,Working Goofball,Scent Detective,,,medium
+braquefrancaistypegascogne,BraqueFrancaisTypeGascogne,Braque Français - Type Gascogne,braque-fran-ais-type-gascogne,breed,100,Working Goofball,Scent Detective,,,medium
+braquefrancaistypepyrenees,BraqueFrancaisTypePyrenees,Braque Français - Type Pyrenees,braque-fran-ais-type-pyrenees,breed,100,Working Goofball,Scent Detective,,,medium
+braquesaintgermain,BraqueSaintgermain,Braque Saint-germain,braque-saint-germain,breed,100,Working Goofball,Scent Detective,,,medium
+briquet griffon vendeen,Briquet Griffon Vendeen,Briquet Griffon Vendeen,briquet-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+briquetgriffonvendeen,BriquetGriffonVendeen,Briquet Griffon Vendeen,briquet-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+broholmer,Broholmer,Broholmer,broholmer,breed,100,Guardian,Working Goofball,,,medium
+bull terrier,Bull Terrier,Bull Terrier,bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+bulldog,Bulldog,Bulldog,bulldog,breed,100,Guardian,Working Goofball,,,medium
+bulldog chihuahua cross,Bulldog Chihuahua Cross,Bullhuahua,bullhuahua,crossbreed,80,Parent Envelope,Parent Envelope,Bulldog,Chihuahua,low
+bulldog family,Bulldog Family,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bulldog type,Bulldog type,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bulldog unknown,Bulldog unknown,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bulldogchihuahuacross,BulldogChihuahuaCross,Bullhuahua,bullhuahua,crossbreed,80,Parent Envelope,Parent Envelope,Bulldog,Chihuahua,low
+bulldogfamily,BulldogFamily,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bulldogtype,Bulldogtype,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bulldogunknown,Bulldogunknown,Bulldog family,family-bulldog,breed-family,50,Guardian,Companion Velcro,,,low
+bullhuahua,Bullhuahua,Bullhuahua,bullhuahua,crossbreed,80,Parent Envelope,Parent Envelope,Bulldog,Chihuahua,low
+bullmastiff,Bullmastiff,Bullmastiff,bullmastiff,breed,100,Guardian,Working Goofball,,,medium
+bullterrier,BullTerrier,Bull Terrier,bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+ca de bestiar,Ca de Bestiar,Ca de Bestiar,ca-de-bestiar,breed,100,Herding Manager,Working Goofball,,,medium
+cadebestiar,CadeBestiar,Ca de Bestiar,ca-de-bestiar,breed,100,Herding Manager,Working Goofball,,,medium
+cairn terrier,Cairn Terrier,Cairn Terrier,cairn-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+cairnterrier,CairnTerrier,Cairn Terrier,cairn-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+canaan dog,Canaan Dog,Canaan Dog,canaan-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+canaandog,CanaanDog,Canaan Dog,canaan-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+canadian eskimo dog,Canadian Eskimo Dog,Canadian Eskimo Dog,canadian-eskimo-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+canadianeskimodog,CanadianEskimoDog,Canadian Eskimo Dog,canadian-eskimo-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+cane corso italiano,Cane Corso Italiano,Cane Corso Italiano,cane-corso-italiano,breed,100,Guardian,Working Goofball,,,medium
+cane da pastore abruzzese maremmano,Cane da Pastore Abruzzese Maremmano,Cane da Pastore Abruzzese Maremmano,cane-da-pastore-abruzzese-maremmano,breed,100,Herding Manager,Working Goofball,,,medium
+cane da pastore bergamasco,Cane da Pastore Bergamasco,Cane da Pastore Bergamasco,cane-da-pastore-bergamasco,breed,100,Herding Manager,Working Goofball,,,medium
+canecorsoitaliano,CaneCorsoItaliano,Cane Corso Italiano,cane-corso-italiano,breed,100,Guardian,Working Goofball,,,medium
+canedapastoreabruzzesemaremmano,CanedaPastoreAbruzzeseMaremmano,Cane da Pastore Abruzzese Maremmano,cane-da-pastore-abruzzese-maremmano,breed,100,Herding Manager,Working Goofball,,,medium
+canedapastorebergamasco,CanedaPastoreBergamasco,Cane da Pastore Bergamasco,cane-da-pastore-bergamasco,breed,100,Herding Manager,Working Goofball,,,medium
+caniche,Caniche,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium
+caniche family,Caniche family,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+canichefamily,Canichefamily,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+cao da serra da estrela,Cão da Serra da Estrela,Cão da Serra da Estrela,c-o-da-serra-da-estrela,breed,100,Guardian,Working Goofball,,,medium
+cao da serra de aires,Cão da Serra de Aires,Cão da Serra de Aires,c-o-da-serra-de-aires,breed,100,Herding Manager,Working Goofball,,,medium
+cao de agua portugues,Cão de Água Português,Cão de Água Português,c-o-de-gua-portugu-s,breed,100,Retriever,Working Goofball,,,medium
+cao de castro laboreiro,Cão de Castro Laboreiro,Cão de Castro Laboreiro,c-o-de-castro-laboreiro,breed,100,Guardian,Working Goofball,,,medium
+cao fila de sao miguel,Cão Fila de São Miguel,Cão Fila de São Miguel,c-o-fila-de-s-o-miguel,breed,100,Guardian,Working Goofball,,,medium
+caodaserradaestrela,CaodaSerradaEstrela,Cão da Serra da Estrela,c-o-da-serra-da-estrela,breed,100,Guardian,Working Goofball,,,medium
+caodaserradeaires,CaodaSerradeAires,Cão da Serra de Aires,c-o-da-serra-de-aires,breed,100,Herding Manager,Working Goofball,,,medium
+caodeaguaportugues,CaodeAguaPortugues,Cão de Água Português,c-o-de-gua-portugu-s,breed,100,Retriever,Working Goofball,,,medium
+caodecastrolaboreiro,CaodeCastroLaboreiro,Cão de Castro Laboreiro,c-o-de-castro-laboreiro,breed,100,Guardian,Working Goofball,,,medium
+caofiladesaomiguel,CaoFiladeSaoMiguel,Cão Fila de São Miguel,c-o-fila-de-s-o-miguel,breed,100,Guardian,Working Goofball,,,medium
+cardi,Cardi,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+cardigan,Cardigan,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+cardigan welsh corgi,Cardigan Welsh Corgi,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+cardiganwelshcorgi,CardiganWelshCorgi,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+cav,Cav,Cavalier King Charles Spaniel,cavalier-king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+cavachon,Cavachon,Cavachon,cavachon,crossbreed,80,Parent Envelope,Parent Envelope,Cavalier King Charles Spaniel,Bichon Frise,low
+cavalier,Cavalier,Cavalier King Charles Spaniel,cavalier-king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+cavalier bichon cross,Cavalier Bichon Cross,Cavachon,cavachon,crossbreed,80,Parent Envelope,Parent Envelope,Cavalier King Charles Spaniel,Bichon Frise,low
+cavalier king charles spaniel,Cavalier King Charles Spaniel,Cavalier King Charles Spaniel,cavalier-king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+cavalier poodle cross,Cavalier Poodle Cross,Cavapoo,cavapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cavalier King Charles Spaniel,Poodle,low
+cavalierbichoncross,CavalierBichonCross,Cavachon,cavachon,crossbreed,80,Parent Envelope,Parent Envelope,Cavalier King Charles Spaniel,Bichon Frise,low
+cavalierkingcharlesspaniel,CavalierKingCharlesSpaniel,Cavalier King Charles Spaniel,cavalier-king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+cavalierpoodlecross,CavalierPoodleCross,Cavapoo,cavapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cavalier King Charles Spaniel,Poodle,low
+cavapoo,Cavapoo,Cavapoo,cavapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cavalier King Charles Spaniel,Poodle,low
+cavoodle,Cavoodle,Cavapoo,cavapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cavalier King Charles Spaniel,Poodle,low
+ceskoslovensky vlciak,Ceskoslovenský Vlciak,Ceskoslovenský Vlciak,ceskoslovensk-vlciak,breed,100,Herding Manager,Working Goofball,,,medium
+ceskoslovenskyvlciak,CeskoslovenskyVlciak,Ceskoslovenský Vlciak,ceskoslovensk-vlciak,breed,100,Herding Manager,Working Goofball,,,medium
+cesky fousek,Ceský Fousek,Ceský Fousek,cesk-fousek,breed,100,Working Goofball,Scent Detective,,,medium
+cesky terier,Ceský Terier,Ceský Terier,cesk-terier,breed,100,Terrier Menace,Working Goofball,,,medium
+ceskyfousek,CeskyFousek,Ceský Fousek,cesk-fousek,breed,100,Working Goofball,Scent Detective,,,medium
+ceskyterier,CeskyTerier,Ceský Terier,cesk-terier,breed,100,Terrier Menace,Working Goofball,,,medium
+chart polski,Chart Polski,Chart Polski,chart-polski,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+chartpolski,ChartPolski,Chart Polski,chart-polski,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+chesapeake bay retriever,Chesapeake Bay Retriever,Chesapeake Bay Retriever,chesapeake-bay-retriever,breed,100,Retriever,Working Goofball,,,medium
+chesapeakebayretriever,ChesapeakeBayRetriever,Chesapeake Bay Retriever,chesapeake-bay-retriever,breed,100,Retriever,Working Goofball,,,medium
+chien dartois,Chien D'artois,Chien D'artois,chien-d-artois,breed,100,Scent Detective,Working Goofball,,,medium
+chien de berger belge,Chien de Berger Belge,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+chien de berger des pyrenees a face rase,Chien de Berger des Pyrenees A Face Rase,Chien de Berger des Pyrenees A Face Rase,chien-de-berger-des-pyrenees-a-face-rase,breed,100,Herding Manager,Working Goofball,,,medium
+chien de berger des pyrenees a poil long,Chien de Berger des Pyrenees A Poil Long,Chien de Berger des Pyrenees A Poil Long,chien-de-berger-des-pyrenees-a-poil-long,breed,100,Herding Manager,Working Goofball,,,medium
+chien de montagne de latlas,Chien de Montagne de L'atlas,Aïdi (chien de Montagne de L'atlas),a-di-chien-de-montagne-de-l-atlas,breed,100,Guardian,Working Goofball,,,medium
+chien de montagne des pyrenees,Chien de Montagne des Pyrenees,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium
+chien de saint hubert,Chien de Saint Hubert,Chien de Saint Hubert,chien-de-saint-hubert,breed,100,Scent Detective,Working Goofball,,,medium
+chiendartois,ChienD'artois,Chien D'artois,chien-d-artois,breed,100,Scent Detective,Working Goofball,,,medium
+chiendebergerbelge,ChiendeBergerBelge,Chien de Berger Belge,chien-de-berger-belge,breed,100,Herding Manager,Working Goofball,,,medium
+chiendebergerdespyreneesafacerase,ChiendeBergerdesPyreneesAFaceRase,Chien de Berger des Pyrenees A Face Rase,chien-de-berger-des-pyrenees-a-face-rase,breed,100,Herding Manager,Working Goofball,,,medium
+chiendebergerdespyreneesapoillong,ChiendeBergerdesPyreneesAPoilLong,Chien de Berger des Pyrenees A Poil Long,chien-de-berger-des-pyrenees-a-poil-long,breed,100,Herding Manager,Working Goofball,,,medium
+chiendemontagnedelatlas,ChiendeMontagnedeL'atlas,Aïdi (chien de Montagne de L'atlas),a-di-chien-de-montagne-de-l-atlas,breed,100,Guardian,Working Goofball,,,medium
+chiendemontagnedespyrenees,ChiendeMontagnedesPyrenees,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium
+chiendesainthubert,ChiendeSaintHubert,Chien de Saint Hubert,chien-de-saint-hubert,breed,100,Scent Detective,Working Goofball,,,medium
+chihuahua dachshund cross,Chihuahua Dachshund Cross,Chiweenie,chiweenie,crossbreed,80,Parent Envelope,Parent Envelope,Chihuahua,Dachshund,low
+chihuahuadachshundcross,ChihuahuaDachshundCross,Chiweenie,chiweenie,crossbreed,80,Parent Envelope,Parent Envelope,Chihuahua,Dachshund,low
+chihuahueno,Chihuahueño,Chihuahueño,chihuahue-o,breed,100,Companion Velcro,Working Goofball,,,medium
+chin,Chin,Chin,chin,breed,100,Companion Velcro,Working Goofball,,,medium
+chinese crested dog,Chinese Crested Dog,Chinese Crested Dog,chinese-crested-dog,breed,100,Companion Velcro,Working Goofball,,,medium
+chinesecresteddog,ChineseCrestedDog,Chinese Crested Dog,chinese-crested-dog,breed,100,Companion Velcro,Working Goofball,,,medium
+chiweenie,Chiweenie,Chiweenie,chiweenie,crossbreed,80,Parent Envelope,Parent Envelope,Chihuahua,Dachshund,low
+chow chow,Chow Chow,Chow Chow,chow-chow,breed,100,Spitz Commentator,Working Goofball,,,medium
+chowchow,ChowChow,Chow Chow,chow-chow,breed,100,Spitz Commentator,Working Goofball,,,medium
+cimarron uruguayo,Cimarrón Uruguayo,Cimarrón Uruguayo,cimarr-n-uruguayo,breed,100,Guardian,Working Goofball,,,medium
+cimarronuruguayo,CimarronUruguayo,Cimarrón Uruguayo,cimarr-n-uruguayo,breed,100,Guardian,Working Goofball,,,medium
+ciobanesc romanesc carpatin,Ciobanesc Românesc Carpatin,Ciobanesc Românesc Carpatin,ciobanesc-rom-nesc-carpatin,breed,100,Herding Manager,Working Goofball,,,medium
+ciobanesc romanesc de bucovina,Ciobanesc Românesc de Bucovina,Ciobanesc Românesc de Bucovina,ciobanesc-rom-nesc-de-bucovina,breed,100,Guardian,Working Goofball,,,medium
+ciobanesc romanesc mioritic,Ciobanesc Românesc Mioritic,Ciobanesc Românesc Mioritic,ciobanesc-rom-nesc-mioritic,breed,100,Herding Manager,Working Goofball,,,medium
+ciobanescromanesccarpatin,CiobanescRomanescCarpatin,Ciobanesc Românesc Carpatin,ciobanesc-rom-nesc-carpatin,breed,100,Herding Manager,Working Goofball,,,medium
+ciobanescromanescdebucovina,CiobanescRomanescdeBucovina,Ciobanesc Românesc de Bucovina,ciobanesc-rom-nesc-de-bucovina,breed,100,Guardian,Working Goofball,,,medium
+ciobanescromanescmioritic,CiobanescRomanescMioritic,Ciobanesc Românesc Mioritic,ciobanesc-rom-nesc-mioritic,breed,100,Herding Manager,Working Goofball,,,medium
+cirneco delletna,Cirneco Dell'etna,Cirneco Dell'etna,cirneco-dell-etna,breed,100,Spitz Commentator,Working Goofball,,,medium
+cirnecodelletna,CirnecoDell'etna,Cirneco Dell'etna,cirneco-dell-etna,breed,100,Spitz Commentator,Working Goofball,,,medium
+ckcs,Ckcs,Cavalier King Charles Spaniel,cavalier-king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+clumber spaniel,Clumber Spaniel,Clumber Spaniel,clumber-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+clumberspaniel,ClumberSpaniel,Clumber Spaniel,clumber-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+cockapoo,Cockapoo,Cockapoo,cockapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cocker Spaniel,Poodle,low
+cocker,Cocker,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cocker poodle cross,Cocker Poodle Cross,Cockapoo,cockapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cocker Spaniel,Poodle,low
+cocker spaniel,Cocker Spaniel,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cocker spaniel family,Cocker Spaniel Family,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cocker spaniel unknown,Cocker Spaniel unknown,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cocker type,Cocker type,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cockerpoo,Cockerpoo,Cockapoo,cockapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cocker Spaniel,Poodle,low
+cockerpoodlecross,CockerPoodleCross,Cockapoo,cockapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Cocker Spaniel,Poodle,low
+cockerspaniel,CockerSpaniel,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cockerspanielfamily,CockerSpanielFamily,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cockerspanielunknown,CockerSpanielunknown,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+cockertype,Cockertype,Cocker Spaniel family,family-cocker-spaniel,breed-family,50,Working Goofball,Companion Velcro,,,low
+collie rough,Collie Rough,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+collie smooth,Collie Smooth,Collie Smooth,collie-smooth,breed,100,Herding Manager,Working Goofball,,,medium
+collierough,CollieRough,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+colliesmooth,CollieSmooth,Collie Smooth,collie-smooth,breed,100,Herding Manager,Working Goofball,,,medium
+continental toy spaniel,Continental Toy Spaniel,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+continentaltoyspaniel,ContinentalToySpaniel,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+corgi,Corgi,Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+coton de tulear,Coton de Tulear,Coton de Tulear,coton-de-tulear,breed,100,Companion Velcro,Working Goofball,,,medium
+cotondetulear,CotondeTulear,Coton de Tulear,coton-de-tulear,breed,100,Companion Velcro,Working Goofball,,,medium
+crnogorski planinski gonic,Crnogorski Planinski Gonic,Crnogorski Planinski Gonic,crnogorski-planinski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+crnogorskiplaninskigonic,CrnogorskiPlaninskiGonic,Crnogorski Planinski Gonic,crnogorski-planinski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+crossbreed,Crossbreed,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+curly coated retriever,Curly Coated Retriever,Curly Coated Retriever,curly-coated-retriever,breed,100,Retriever,Working Goofball,,,medium
+curlycoatedretriever,CurlyCoatedRetriever,Curly Coated Retriever,curly-coated-retriever,breed,100,Retriever,Working Goofball,,,medium
+dachshund,Dachshund,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+dalmatinski pas,Dalmatinski Pas,Dalmatinski Pas,dalmatinski-pas,breed,100,Scent Detective,Working Goofball,,,medium
+dalmatinskipas,DalmatinskiPas,Dalmatinski Pas,dalmatinski-pas,breed,100,Scent Detective,Working Goofball,,,medium
+dandie dinmont terrier,Dandie Dinmont Terrier,Dandie Dinmont Terrier,dandie-dinmont-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+dandiedinmontterrier,DandieDinmontTerrier,Dandie Dinmont Terrier,dandie-dinmont-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+dane,Dane,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+dansk svensk gardshund,Dansk-svensk Gårdshund,Dansk-svensk Gårdshund,dansk-svensk-g-rdshund,breed,100,Guardian,Working Goofball,,,medium
+dansksvenskgardshund,DansksvenskGardshund,Dansk-svensk Gårdshund,dansk-svensk-g-rdshund,breed,100,Guardian,Working Goofball,,,medium
+deerhound,Deerhound,Deerhound,deerhound,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+deutsch drahthaar,Deutsch Drahthaar,Deutsch Drahthaar,deutsch-drahthaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutsch kurzhaar,Deutsch Kurzhaar,Deutsch Kurzhaar,deutsch-kurzhaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutsch langhaar,Deutsch Langhaar,Deutsch Langhaar,deutsch-langhaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutsch stichelhaar,Deutsch Stichelhaar,Deutsch Stichelhaar,deutsch-stichelhaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutschdrahthaar,DeutschDrahthaar,Deutsch Drahthaar,deutsch-drahthaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutsche bracke,Deutsche Bracke,Deutsche Bracke,deutsche-bracke,breed,100,Scent Detective,Working Goofball,,,medium
+deutsche dogge,Deutsche Dogge,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+deutschebracke,DeutscheBracke,Deutsche Bracke,deutsche-bracke,breed,100,Scent Detective,Working Goofball,,,medium
+deutschedogge,DeutscheDogge,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+deutscher boxer,Deutscher Boxer,Deutscher Boxer,deutscher-boxer,breed,100,Guardian,Working Goofball,,,medium
+deutscher jagdterrier,Deutscher Jagdterrier,Deutscher Jagdterrier,deutscher-jagdterrier,breed,100,Terrier Menace,Working Goofball,,,medium
+deutscher pinscher,Deutscher Pinscher,Deutscher Pinscher,deutscher-pinscher,breed,100,Guardian,Working Goofball,,,medium
+deutscher schaferhund,Deutscher Schäferhund,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+deutscher spitz,Deutscher Spitz,Deutscher Spitz,deutscher-spitz,breed,100,Spitz Commentator,Working Goofball,,,medium
+deutscher wachtelhund,Deutscher Wachtelhund,Deutscher Wachtelhund,deutscher-wachtelhund,breed,100,Retriever,Working Goofball,,,medium
+deutscherboxer,DeutscherBoxer,Deutscher Boxer,deutscher-boxer,breed,100,Guardian,Working Goofball,,,medium
+deutscherjagdterrier,DeutscherJagdterrier,Deutscher Jagdterrier,deutscher-jagdterrier,breed,100,Terrier Menace,Working Goofball,,,medium
+deutscherpinscher,DeutscherPinscher,Deutscher Pinscher,deutscher-pinscher,breed,100,Guardian,Working Goofball,,,medium
+deutscherschaferhund,DeutscherSchaferhund,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+deutscherspitz,DeutscherSpitz,Deutscher Spitz,deutscher-spitz,breed,100,Spitz Commentator,Working Goofball,,,medium
+deutscherwachtelhund,DeutscherWachtelhund,Deutscher Wachtelhund,deutscher-wachtelhund,breed,100,Retriever,Working Goofball,,,medium
+deutschkurzhaar,DeutschKurzhaar,Deutsch Kurzhaar,deutsch-kurzhaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutschlanghaar,DeutschLanghaar,Deutsch Langhaar,deutsch-langhaar,breed,100,Working Goofball,Scent Detective,,,medium
+deutschstichelhaar,DeutschStichelhaar,Deutsch Stichelhaar,deutsch-stichelhaar,breed,100,Working Goofball,Scent Detective,,,medium
+do khyi,Do-khyi,Do-khyi,do-khyi,breed,100,Guardian,Working Goofball,,,medium
+dobermann,Dobermann,Dobermann,dobermann,breed,100,Guardian,Working Goofball,,,medium
+dogo argentino,Dogo Argentino,Dogo Argentino,dogo-argentino,breed,100,Guardian,Working Goofball,,,medium
+dogoargentino,DogoArgentino,Dogo Argentino,dogo-argentino,breed,100,Guardian,Working Goofball,,,medium
+dogue de bordeaux,Dogue de Bordeaux,Dogue de Bordeaux,dogue-de-bordeaux,breed,100,Guardian,Working Goofball,,,medium
+doguedebordeaux,DoguedeBordeaux,Dogue de Bordeaux,dogue-de-bordeaux,breed,100,Guardian,Working Goofball,,,medium
+dokhyi,Dokhyi,Do-khyi,do-khyi,breed,100,Guardian,Working Goofball,,,medium
+doxie,Doxie,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+drentsche patrijshond,Drentsche Patrijshond,Drentsche Patrijshond,drentsche-patrijshond,breed,100,Working Goofball,Scent Detective,,,medium
+drentschepatrijshond,DrentschePatrijshond,Drentsche Patrijshond,drentsche-patrijshond,breed,100,Working Goofball,Scent Detective,,,medium
+drever,Drever,Drever,drever,breed,100,Scent Detective,Working Goofball,,,medium
+drotzoru magyar vizsla,Drótzörü Magyar Vizsla,Drótzörü Magyar Vizsla,dr-tz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium
+drotzorumagyarvizsla,DrotzoruMagyarVizsla,Drótzörü Magyar Vizsla,dr-tz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium
+dulux dog,Dulux Dog,Old English Sheepdog,old-english-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+duluxdog,DuluxDog,Old English Sheepdog,old-english-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+dunker,Dunker,Dunker,dunker,breed,100,Scent Detective,Working Goofball,,,medium
+english cocker,English Cocker,English Cocker Spaniel,english-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+english cocker spaniel,English Cocker Spaniel,English Cocker Spaniel,english-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+english foxhound,English Foxhound,English Foxhound,english-foxhound,breed,100,Scent Detective,Working Goofball,,,medium
+english pointer,English Pointer,English Pointer,english-pointer,breed,100,Working Goofball,Scent Detective,,,medium
+english setter,English Setter,English Setter,english-setter,breed,100,Working Goofball,Scent Detective,,,medium
+english springer spaniel,English Springer Spaniel,English Springer Spaniel,english-springer-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+english toy terrier,English Toy Terrier,English Toy Terrier,english-toy-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+englishcocker,EnglishCocker,English Cocker Spaniel,english-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+englishcockerspaniel,EnglishCockerSpaniel,English Cocker Spaniel,english-cocker-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+englishfoxhound,EnglishFoxhound,English Foxhound,english-foxhound,breed,100,Scent Detective,Working Goofball,,,medium
+englishpointer,EnglishPointer,English Pointer,english-pointer,breed,100,Working Goofball,Scent Detective,,,medium
+englishsetter,EnglishSetter,English Setter,english-setter,breed,100,Working Goofball,Scent Detective,,,medium
+englishspringerspaniel,EnglishSpringerSpaniel,English Springer Spaniel,english-springer-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+englishtoyterrier,EnglishToyTerrier,English Toy Terrier,english-toy-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+entlebucher sennenhund,Entlebucher Sennenhund,Entlebucher Sennenhund,entlebucher-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+entlebuchersennenhund,EntlebucherSennenhund,Entlebucher Sennenhund,entlebucher-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+epagneul bleu de picardie,Epagneul Bleu de Picardie,Epagneul Bleu de Picardie,epagneul-bleu-de-picardie,breed,100,Working Goofball,Scent Detective,,,medium
+epagneul breton,Epagneul Breton,Epagneul Breton,epagneul-breton,breed,100,Working Goofball,Scent Detective,,,medium
+epagneul de pont audemer,Epagneul de Pont-audemer,Epagneul de Pont-audemer,epagneul-de-pont-audemer,breed,100,Working Goofball,Scent Detective,,,medium
+epagneul francais,Epagneul Français,Epagneul Français,epagneul-fran-ais,breed,100,Working Goofball,Scent Detective,,,medium
+epagneul nain continental,Epagneul Nain Continental,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+epagneul picard,Epagneul Picard,Epagneul Picard,epagneul-picard,breed,100,Working Goofball,Scent Detective,,,medium
+epagneulbleudepicardie,EpagneulBleudePicardie,Epagneul Bleu de Picardie,epagneul-bleu-de-picardie,breed,100,Working Goofball,Scent Detective,,,medium
+epagneulbreton,EpagneulBreton,Epagneul Breton,epagneul-breton,breed,100,Working Goofball,Scent Detective,,,medium
+epagneuldepontaudemer,EpagneuldePontaudemer,Epagneul de Pont-audemer,epagneul-de-pont-audemer,breed,100,Working Goofball,Scent Detective,,,medium
+epagneulfrancais,EpagneulFrancais,Epagneul Français,epagneul-fran-ais,breed,100,Working Goofball,Scent Detective,,,medium
+epagneulnaincontinental,EpagneulNainContinental,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+epagneulpicard,EpagneulPicard,Epagneul Picard,epagneul-picard,breed,100,Working Goofball,Scent Detective,,,medium
+erdelyi kopo,Erdélyi Kopó,Erdélyi Kopó,erd-lyi-kop,breed,100,Scent Detective,Working Goofball,,,medium
+erdelyikopo,ErdelyiKopo,Erdélyi Kopó,erd-lyi-kop,breed,100,Scent Detective,Working Goofball,,,medium
+eurasier,Eurasier,Eurasier,eurasier,breed,100,Spitz Commentator,Working Goofball,,,medium
+europaisch kontinentaler typ,Europäisch-kontinentaler Typ,Landseer (europäisch-kontinentaler Typ),landseer-europ-isch-kontinentaler-typ,breed,100,Guardian,Working Goofball,,,medium
+europaischkontinentalertyp,EuropaischkontinentalerTyp,Landseer (europäisch-kontinentaler Typ),landseer-europ-isch-kontinentaler-typ,breed,100,Guardian,Working Goofball,,,medium
+field spaniel,Field Spaniel,Field Spaniel,field-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+fieldspaniel,FieldSpaniel,Field Spaniel,field-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+fila brasileiro,Fila Brasileiro,Fila Brasileiro,fila-brasileiro,breed,100,Guardian,Working Goofball,,,medium
+filabrasileiro,FilaBrasileiro,Fila Brasileiro,fila-brasileiro,breed,100,Guardian,Working Goofball,,,medium
+flat coated retriever,Flat Coated Retriever,Flat Coated Retriever,flat-coated-retriever,breed,100,Retriever,Working Goofball,,,medium
+flatcoatedretriever,FlatCoatedRetriever,Flat Coated Retriever,flat-coated-retriever,breed,100,Retriever,Working Goofball,,,medium
+fox terrier,Fox Terrier,Fox Terrier (smooth),fox-terrier-smooth,breed,100,Terrier Menace,Working Goofball,,,medium
+fox terrier smooth,Fox Terrier (smooth),Fox Terrier (smooth),fox-terrier-smooth,breed,100,Terrier Menace,Working Goofball,,,medium
+fox terrier wire,Fox Terrier (wire),Fox Terrier (wire),fox-terrier-wire,breed,100,Terrier Menace,Working Goofball,,,medium
+foxterrier,FoxTerrier,Fox Terrier (smooth),fox-terrier-smooth,breed,100,Terrier Menace,Working Goofball,,,medium
+foxterrier smooth,FoxTerrier(smooth),Fox Terrier (smooth),fox-terrier-smooth,breed,100,Terrier Menace,Working Goofball,,,medium
+foxterrier wire,FoxTerrier(wire),Fox Terrier (wire),fox-terrier-wire,breed,100,Terrier Menace,Working Goofball,,,medium
+francais blanc et noir,Français Blanc Et Noir,Français Blanc Et Noir,fran-ais-blanc-et-noir,breed,100,Scent Detective,Working Goofball,,,medium
+francais blanc et orange,Français Blanc Et Orange,Français Blanc Et Orange,fran-ais-blanc-et-orange,breed,100,Scent Detective,Working Goofball,,,medium
+francais tricolore,Français Tricolore,Français Tricolore,fran-ais-tricolore,breed,100,Scent Detective,Working Goofball,,,medium
+francaisblancetnoir,FrancaisBlancEtNoir,Français Blanc Et Noir,fran-ais-blanc-et-noir,breed,100,Scent Detective,Working Goofball,,,medium
+francaisblancetorange,FrancaisBlancEtOrange,Français Blanc Et Orange,fran-ais-blanc-et-orange,breed,100,Scent Detective,Working Goofball,,,medium
+francaistricolore,FrancaisTricolore,Français Tricolore,fran-ais-tricolore,breed,100,Scent Detective,Working Goofball,,,medium
+french bulldog,French Bulldog,Bouledogue Français,bouledogue-fran-ais,breed,100,Companion Velcro,Working Goofball,,,medium
+french poodle,French Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium
+frenchbulldog,FrenchBulldog,Bouledogue Français,bouledogue-fran-ais,breed,100,Companion Velcro,Working Goofball,,,medium
+frenchie,Frenchie,Bouledogue Français,bouledogue-fran-ais,breed,100,Companion Velcro,Working Goofball,,,medium
+frenchpoodle,FrenchPoodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium
+galgo espanol,Galgo Español,Galgo Español,galgo-espa-ol,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+galgoespanol,GalgoEspanol,Galgo Español,galgo-espa-ol,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+gammel dansk hnsehund,Gammel Dansk Hønsehund,Gammel Dansk Hønsehund,gammel-dansk-h-nsehund,breed,100,Working Goofball,Scent Detective,,,medium
+gammeldanskhnsehund,GammelDanskHnsehund,Gammel Dansk Hønsehund,gammel-dansk-h-nsehund,breed,100,Working Goofball,Scent Detective,,,medium
+gascon saintongeois,Gascon Saintongeois,Gascon Saintongeois,gascon-saintongeois,breed,100,Scent Detective,Working Goofball,,,medium
+gasconsaintongeois,GasconSaintongeois,Gascon Saintongeois,gascon-saintongeois,breed,100,Scent Detective,Working Goofball,,,medium
+german mastiff,German Mastiff,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+german shepherd,German Shepherd,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+german shepherd dog,German Shepherd Dog,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+german shepherd poodle cross,German Shepherd Poodle Cross,Shepadoodle,shepadoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,German Shepherd Dog,Poodle,low
+germanmastiff,GermanMastiff,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+germanshepherd,GermanShepherd,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+germanshepherddog,GermanShepherdDog,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+germanshepherdpoodlecross,GermanShepherdPoodleCross,Shepadoodle,shepadoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,German Shepherd Dog,Poodle,low
+giant schnauzer,Giant Schnauzer,Riesenschnauzer,riesenschnauzer,breed,100,Guardian,Working Goofball,,,medium
+giantschnauzer,GiantSchnauzer,Riesenschnauzer,riesenschnauzer,breed,100,Guardian,Working Goofball,,,medium
+golden,Golden,Golden Retriever,golden-retriever,breed,100,Retriever,Working Goofball,,,medium
+golden doodle,Golden Doodle,Goldendoodle,goldendoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Golden Retriever,Poodle,low
+golden retriever,Golden Retriever,Golden Retriever,golden-retriever,breed,100,Retriever,Working Goofball,,,medium
+golden retriever poodle cross,Golden Retriever Poodle Cross,Goldendoodle,goldendoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Golden Retriever,Poodle,low
+goldendoodle,Goldendoodle,Goldendoodle,goldendoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Golden Retriever,Poodle,low
+goldenretriever,GoldenRetriever,Golden Retriever,golden-retriever,breed,100,Retriever,Working Goofball,,,medium
+goldenretrieverpoodlecross,GoldenRetrieverPoodleCross,Goldendoodle,goldendoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Golden Retriever,Poodle,low
+gonczy polski,Gonczy Polski,Gonczy Polski,gonczy-polski,breed,100,Scent Detective,Working Goofball,,,medium
+gonczypolski,GonczyPolski,Gonczy Polski,gonczy-polski,breed,100,Scent Detective,Working Goofball,,,medium
+gordon setter,Gordon Setter,Gordon Setter,gordon-setter,breed,100,Working Goofball,Scent Detective,,,medium
+gordonsetter,GordonSetter,Gordon Setter,gordon-setter,breed,100,Working Goofball,Scent Detective,,,medium
+gos datura catala,Gos D'atura Català,Gos D'atura Català,gos-d-atura-catal,breed,100,Herding Manager,Working Goofball,,,medium
+gosdaturacatala,GosD'aturaCatala,Gos D'atura Català,gos-d-atura-catal,breed,100,Herding Manager,Working Goofball,,,medium
+grand anglo francais blanc et noir,Grand Anglo-français Blanc Et Noir,Grand Anglo-français Blanc Et Noir,grand-anglo-fran-ais-blanc-et-noir,breed,100,Scent Detective,Working Goofball,,,medium
+grand anglo francais blanc et orange,Grand Anglo-français Blanc Et Orange,Grand Anglo-français Blanc Et Orange,grand-anglo-fran-ais-blanc-et-orange,breed,100,Scent Detective,Working Goofball,,,medium
+grand anglo francais tricolore,Grand Anglo-français Tricolore,Grand Anglo-français Tricolore,grand-anglo-fran-ais-tricolore,breed,100,Scent Detective,Working Goofball,,,medium
+grand basset griffon vendeen,Grand Basset Griffon Vendeen,Grand Basset Griffon Vendeen,grand-basset-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+grand bleu de gascogne,Grand Bleu de Gascogne,Grand Bleu de Gascogne,grand-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+grand griffon vendeen,Grand Griffon Vendeen,Grand Griffon Vendeen,grand-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+grandanglofrancaisblancetnoir,GrandAnglofrancaisBlancEtNoir,Grand Anglo-français Blanc Et Noir,grand-anglo-fran-ais-blanc-et-noir,breed,100,Scent Detective,Working Goofball,,,medium
+grandanglofrancaisblancetorange,GrandAnglofrancaisBlancEtOrange,Grand Anglo-français Blanc Et Orange,grand-anglo-fran-ais-blanc-et-orange,breed,100,Scent Detective,Working Goofball,,,medium
+grandanglofrancaistricolore,GrandAnglofrancaisTricolore,Grand Anglo-français Tricolore,grand-anglo-fran-ais-tricolore,breed,100,Scent Detective,Working Goofball,,,medium
+grandbassetgriffonvendeen,GrandBassetGriffonVendeen,Grand Basset Griffon Vendeen,grand-basset-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+grandbleudegascogne,GrandBleudeGascogne,Grand Bleu de Gascogne,grand-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+grandgriffonvendeen,GrandGriffonVendeen,Grand Griffon Vendeen,grand-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+great dane,Great Dane,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+greatdane,GreatDane,Deutsche Dogge,deutsche-dogge,breed,100,Guardian,Working Goofball,,,medium
+greyhound,Greyhound,Greyhound,greyhound,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+griffon a poil dur korthals,Griffon A Poil Dur Korthals,Griffon A Poil Dur Korthals,griffon-a-poil-dur-korthals,breed,100,Working Goofball,Scent Detective,,,medium
+griffon belge,Griffon Belge,Griffon Belge,griffon-belge,breed,100,Companion Velcro,Working Goofball,,,medium
+griffon bleu de gascogne,Griffon Bleu de Gascogne,Griffon Bleu de Gascogne,griffon-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+griffon bruxellois,Griffon Bruxellois,Griffon Bruxellois,griffon-bruxellois,breed,100,Companion Velcro,Working Goofball,,,medium
+griffon fauve de bretagne,Griffon Fauve de Bretagne,Griffon Fauve de Bretagne,griffon-fauve-de-bretagne,breed,100,Scent Detective,Working Goofball,,,medium
+griffon nivernais,Griffon Nivernais,Griffon Nivernais,griffon-nivernais,breed,100,Scent Detective,Working Goofball,,,medium
+griffonapoildurkorthals,GriffonAPoilDurKorthals,Griffon A Poil Dur Korthals,griffon-a-poil-dur-korthals,breed,100,Working Goofball,Scent Detective,,,medium
+griffonbelge,GriffonBelge,Griffon Belge,griffon-belge,breed,100,Companion Velcro,Working Goofball,,,medium
+griffonbleudegascogne,GriffonBleudeGascogne,Griffon Bleu de Gascogne,griffon-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+griffonbruxellois,GriffonBruxellois,Griffon Bruxellois,griffon-bruxellois,breed,100,Companion Velcro,Working Goofball,,,medium
+griffonfauvedebretagne,GriffonFauvedeBretagne,Griffon Fauve de Bretagne,griffon-fauve-de-bretagne,breed,100,Scent Detective,Working Goofball,,,medium
+griffonnivernais,GriffonNivernais,Griffon Nivernais,griffon-nivernais,breed,100,Scent Detective,Working Goofball,,,medium
+grnlandshund,Grønlandshund,Grønlandshund,gr-nlandshund,breed,100,Spitz Commentator,Working Goofball,,,medium
+groodle,Groodle,Goldendoodle,goldendoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Golden Retriever,Poodle,low
+grosser munsterlander vorstehhund,Grosser Münsterländer Vorstehhund,Grosser Münsterländer Vorstehhund,grosser-m-nsterl-nder-vorstehhund,breed,100,Working Goofball,Scent Detective,,,medium
+grosser schweizer sennenhund,Grosser Schweizer Sennenhund,Grosser Schweizer Sennenhund,grosser-schweizer-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+grossermunsterlandervorstehhund,GrosserMunsterlanderVorstehhund,Grosser Münsterländer Vorstehhund,grosser-m-nsterl-nder-vorstehhund,breed,100,Working Goofball,Scent Detective,,,medium
+grosserschweizersennenhund,GrosserSchweizerSennenhund,Grosser Schweizer Sennenhund,grosser-schweizer-sennenhund,breed,100,Guardian,Working Goofball,,,medium
+gsd,Gsd,Deutscher Schäferhund,deutscher-sch-ferhund,breed,100,Herding Manager,Working Goofball,,,medium
+haldenstver,Haldenstøver,Haldenstøver,haldenst-ver,breed,100,Scent Detective,Working Goofball,,,medium
+hamiltonstovare,Hamiltonstövare,Hamiltonstövare,hamiltonst-vare,breed,100,Scent Detective,Working Goofball,,,medium
+hannoverscher schweisshund,Hannoverscher Schweisshund,Hannoverscher Schweisshund,hannoverscher-schweisshund,breed,100,Scent Detective,Working Goofball,,,medium
+hannoverscherschweisshund,HannoverscherSchweisshund,Hannoverscher Schweisshund,hannoverscher-schweisshund,breed,100,Scent Detective,Working Goofball,,,medium
+harrier,Harrier,Harrier,harrier,breed,100,Scent Detective,Working Goofball,,,medium
+hellinikos ichnilatis,Hellinikos Ichnilatis,Hellinikos Ichnilatis,hellinikos-ichnilatis,breed,100,Scent Detective,Working Goofball,,,medium
+hellinikosichnilatis,HellinikosIchnilatis,Hellinikos Ichnilatis,hellinikos-ichnilatis,breed,100,Scent Detective,Working Goofball,,,medium
+hokkaido,Hokkaido,Hokkaido,hokkaido,breed,100,Spitz Commentator,Working Goofball,,,medium
+hollandse herdershond,Hollandse Herdershond,Hollandse Herdershond,hollandse-herdershond,breed,100,Herding Manager,Working Goofball,,,medium
+hollandse smoushond,Hollandse Smoushond,Hollandse Smoushond,hollandse-smoushond,breed,100,Guardian,Working Goofball,,,medium
+hollandseherdershond,HollandseHerdershond,Hollandse Herdershond,hollandse-herdershond,breed,100,Herding Manager,Working Goofball,,,medium
+hollandsesmoushond,HollandseSmoushond,Hollandse Smoushond,hollandse-smoushond,breed,100,Guardian,Working Goofball,,,medium
+hovawart,Hovawart,Hovawart,hovawart,breed,100,Guardian,Working Goofball,,,medium
+hrvatski ovcar,Hrvatski Ovcar,Hrvatski Ovcar,hrvatski-ovcar,breed,100,Herding Manager,Working Goofball,,,medium
+hrvatskiovcar,HrvatskiOvcar,Hrvatski Ovcar,hrvatski-ovcar,breed,100,Herding Manager,Working Goofball,,,medium
+husky,Husky,Siberian Husky,siberian-husky,breed,100,Spitz Commentator,Working Goofball,,,medium
+hygenhund,Hygenhund,Hygenhund,hygenhund,breed,100,Scent Detective,Working Goofball,,,medium
+iggy,Iggy,Piccolo Levriero Italiano,piccolo-levriero-italiano,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+irish glen of imaal terrier,Irish Glen of Imaal Terrier,Irish Glen of Imaal Terrier,irish-glen-of-imaal-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irish red and white setter,Irish Red and White Setter,Irish Red and White Setter,irish-red-and-white-setter,breed,100,Working Goofball,Scent Detective,,,medium
+irish red setter,Irish Red Setter,Irish Red Setter,irish-red-setter,breed,100,Working Goofball,Scent Detective,,,medium
+irish soft coated wheaten terrier,Irish Soft Coated Wheaten Terrier,Irish Soft Coated Wheaten Terrier,irish-soft-coated-wheaten-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irish terrier,Irish Terrier,Irish Terrier,irish-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irish water spaniel,Irish Water Spaniel,Irish Water Spaniel,irish-water-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+irish wolfhound,Irish Wolfhound,Irish Wolfhound,irish-wolfhound,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+irishglenofimaalterrier,IrishGlenofImaalTerrier,Irish Glen of Imaal Terrier,irish-glen-of-imaal-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irishredandwhitesetter,IrishRedandWhiteSetter,Irish Red and White Setter,irish-red-and-white-setter,breed,100,Working Goofball,Scent Detective,,,medium
+irishredsetter,IrishRedSetter,Irish Red Setter,irish-red-setter,breed,100,Working Goofball,Scent Detective,,,medium
+irishsoftcoatedwheatenterrier,IrishSoftCoatedWheatenTerrier,Irish Soft Coated Wheaten Terrier,irish-soft-coated-wheaten-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irishterrier,IrishTerrier,Irish Terrier,irish-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+irishwaterspaniel,IrishWaterSpaniel,Irish Water Spaniel,irish-water-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+irishwolfhound,IrishWolfhound,Irish Wolfhound,irish-wolfhound,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+islenskur fjarhundur,Íslenskur Fjárhundur,Íslenskur Fjárhundur,slenskur-fj-rhundur,breed,100,Spitz Commentator,Working Goofball,,,medium
+islenskurfjarhundur,IslenskurFjarhundur,Íslenskur Fjárhundur,slenskur-fj-rhundur,breed,100,Spitz Commentator,Working Goofball,,,medium
+istarski kratkodlaki gonic,Istarski Kratkodlaki Gonic,Istarski Kratkodlaki Gonic,istarski-kratkodlaki-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+istarski ostrodlaki gonic,Istarski Ostrodlaki Gonic,Istarski Ostrodlaki Gonic,istarski-ostrodlaki-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+istarskikratkodlakigonic,IstarskiKratkodlakiGonic,Istarski Kratkodlaki Gonic,istarski-kratkodlaki-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+istarskiostrodlakigonic,IstarskiOstrodlakiGonic,Istarski Ostrodlaki Gonic,istarski-ostrodlaki-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+italian greyhound,Italian Greyhound,Piccolo Levriero Italiano,piccolo-levriero-italiano,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+italiangreyhound,ItalianGreyhound,Piccolo Levriero Italiano,piccolo-levriero-italiano,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+jack russell terrier,Jack Russell Terrier,Jack Russell Terrier,jack-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+jackrussellterrier,JackRussellTerrier,Jack Russell Terrier,jack-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+jamthund,Jämthund,Jämthund,j-mthund,breed,100,Spitz Commentator,Working Goofball,,,medium
+jugoslovenski ovcarski pas sarplaninac,Jugoslovenski Ovcarski Pas-sarplaninac,Jugoslovenski Ovcarski Pas-sarplaninac,jugoslovenski-ovcarski-pas-sarplaninac,breed,100,Guardian,Working Goofball,,,medium
+jugoslovenskiovcarskipassarplaninac,JugoslovenskiOvcarskiPassarplaninac,Jugoslovenski Ovcarski Pas-sarplaninac,jugoslovenski-ovcarski-pas-sarplaninac,breed,100,Guardian,Working Goofball,,,medium
+kai,Kai,Kai,kai,breed,100,Spitz Commentator,Working Goofball,,,medium
+kangal coban kopegi,Kangal Çoban Köpegi,Kangal Çoban Köpegi,kangal-oban-k-pegi,breed,100,Guardian,Working Goofball,,,medium
+kangalcobankopegi,KangalCobanKopegi,Kangal Çoban Köpegi,kangal-oban-k-pegi,breed,100,Guardian,Working Goofball,,,medium
+karjalankarhukoira,Karjalankarhukoira,Karjalankarhukoira,karjalankarhukoira,breed,100,Spitz Commentator,Working Goofball,,,medium
+kavkazskaia ovtcharka,Kavkazskaïa Ovtcharka,Kavkazskaïa Ovtcharka,kavkazska-a-ovtcharka,breed,100,Guardian,Working Goofball,,,medium
+kavkazskaiaovtcharka,KavkazskaiaOvtcharka,Kavkazskaïa Ovtcharka,kavkazska-a-ovtcharka,breed,100,Guardian,Working Goofball,,,medium
+kerry blue terrier,Kerry Blue Terrier,Kerry Blue Terrier,kerry-blue-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+kerryblueterrier,KerryBlueTerrier,Kerry Blue Terrier,kerry-blue-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+king charles spaniel,King Charles Spaniel,King Charles Spaniel,king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+kingcharlesspaniel,KingCharlesSpaniel,King Charles Spaniel,king-charles-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+kishu,Kishu,Kishu,kishu,breed,100,Spitz Commentator,Working Goofball,,,medium
+kleiner munsterlander,Kleiner Münsterländer,Kleiner Münsterländer,kleiner-m-nsterl-nder,breed,100,Working Goofball,Scent Detective,,,medium
+kleinermunsterlander,KleinerMunsterlander,Kleiner Münsterländer,kleiner-m-nsterl-nder,breed,100,Working Goofball,Scent Detective,,,medium
+komondor,Komondor,Komondor,komondor,breed,100,Herding Manager,Working Goofball,,,medium
+korea jindo dog,Korea Jindo Dog,Korea Jindo Dog,korea-jindo-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+koreajindodog,KoreaJindoDog,Korea Jindo Dog,korea-jindo-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+kraski ovcar,Kraski Ovcar,Kraski Ovcar,kraski-ovcar,breed,100,Guardian,Working Goofball,,,medium
+kraskiovcar,KraskiOvcar,Kraski Ovcar,kraski-ovcar,breed,100,Guardian,Working Goofball,,,medium
+kromfohrlander,Kromfohrländer,Kromfohrländer,kromfohrl-nder,breed,100,Companion Velcro,Working Goofball,,,medium
+kuvasz,Kuvasz,Kuvasz,kuvasz,breed,100,Herding Manager,Working Goofball,,,medium
+lab,Lab,Labrador Retriever,labrador-retriever,breed,100,Retriever,Working Goofball,,,medium
+labradoodle,Labradoodle,Labradoodle,labradoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Labrador Retriever,Poodle,low
+labrador,Labrador,Labrador Retriever,labrador-retriever,breed,100,Retriever,Working Goofball,,,medium
+labrador poodle cross,Labrador Poodle Cross,Labradoodle,labradoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Labrador Retriever,Poodle,low
+labrador retriever,Labrador Retriever,Labrador Retriever,labrador-retriever,breed,100,Retriever,Working Goofball,,,medium
+labradorpoodlecross,LabradorPoodleCross,Labradoodle,labradoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Labrador Retriever,Poodle,low
+labradorretriever,LabradorRetriever,Labrador Retriever,labrador-retriever,breed,100,Retriever,Working Goofball,,,medium
+labrapoodle,Labrapoodle,Labradoodle,labradoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Labrador Retriever,Poodle,low
+lagotto romagnolo,Lagotto Romagnolo,Lagotto Romagnolo,lagotto-romagnolo,breed,100,Retriever,Working Goofball,,,medium
+lagottoromagnolo,LagottoRomagnolo,Lagotto Romagnolo,lagotto-romagnolo,breed,100,Retriever,Working Goofball,,,medium
+lakeland terrier,Lakeland Terrier,Lakeland Terrier,lakeland-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+lakelandterrier,LakelandTerrier,Lakeland Terrier,lakeland-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+landseer,Landseer,Landseer (europäisch-kontinentaler Typ),landseer-europ-isch-kontinentaler-typ,breed,100,Guardian,Working Goofball,,,medium
+landseer europaisch kontinentaler typ,Landseer (europäisch-kontinentaler Typ),Landseer (europäisch-kontinentaler Typ),landseer-europ-isch-kontinentaler-typ,breed,100,Guardian,Working Goofball,,,medium
+landseer europaischkontinentalertyp,Landseer(europaischkontinentalerTyp),Landseer (europäisch-kontinentaler Typ),landseer-europ-isch-kontinentaler-typ,breed,100,Guardian,Working Goofball,,,medium
+lapinporokoira,Lapinporokoira,Lapinporokoira,lapinporokoira,breed,100,Spitz Commentator,Working Goofball,,,medium
+lassie dog,Lassie Dog,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+lassiedog,LassieDog,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+leonberger,Leonberger,Leonberger,leonberger,breed,100,Guardian,Working Goofball,,,medium
+lhasa apso,Lhasa Apso,Lhasa Apso,lhasa-apso,breed,100,Companion Velcro,Working Goofball,,,medium
+lhasaapso,LhasaApso,Lhasa Apso,lhasa-apso,breed,100,Companion Velcro,Working Goofball,,,medium
+longdog,Longdog,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+lurcher,Lurcher,Lurcher,lurcher,crossbreed,80,Parent Envelope,Parent Envelope,Sighthound,Other breed type,low
+magyar agar,Magyar Agar,Magyar Agar,magyar-agar,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+magyaragar,MagyarAgar,Magyar Agar,magyar-agar,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+maltese,Maltese,Maltese,maltese,breed,100,Companion Velcro,Working Goofball,,,medium
+maltese poodle cross,Maltese Poodle Cross,Maltipoo,maltipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Maltese,Poodle,low
+maltesepoodlecross,MaltesePoodleCross,Maltipoo,maltipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Maltese,Poodle,low
+maltipoo,Maltipoo,Maltipoo,maltipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Maltese,Poodle,low
+manchester terrier,Manchester Terrier,Manchester Terrier,manchester-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+manchesterterrier,ManchesterTerrier,Manchester Terrier,manchester-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+mastiff,Mastiff,Mastiff,mastiff,breed,100,Guardian,Working Goofball,,,medium
+mastin del pirineo,Mastín del Pirineo,Mastín del Pirineo,mast-n-del-pirineo,breed,100,Guardian,Working Goofball,,,medium
+mastin espanol,Mastín Español,Mastín Español,mast-n-espa-ol,breed,100,Guardian,Working Goofball,,,medium
+mastindelpirineo,MastindelPirineo,Mastín del Pirineo,mast-n-del-pirineo,breed,100,Guardian,Working Goofball,,,medium
+mastinespanol,MastinEspanol,Mastín Español,mast-n-espa-ol,breed,100,Guardian,Working Goofball,,,medium
+mastino napoletano,Mastino Napoletano,Mastino Napoletano,mastino-napoletano,breed,100,Guardian,Working Goofball,,,medium
+mastinonapoletano,MastinoNapoletano,Mastino Napoletano,mastino-napoletano,breed,100,Guardian,Working Goofball,,,medium
+mini schnauzer,Mini Schnauzer,Zwergschnauzer,zwergschnauzer,breed,100,Guardian,Working Goofball,,,medium
+miniature bull terrier,Miniature Bull Terrier,Miniature Bull Terrier,miniature-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+miniature schnauzer,Miniature Schnauzer,Zwergschnauzer,zwergschnauzer,breed,100,Guardian,Working Goofball,,,medium
+miniaturebullterrier,MiniatureBullTerrier,Miniature Bull Terrier,miniature-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+miniatureschnauzer,MiniatureSchnauzer,Zwergschnauzer,zwergschnauzer,breed,100,Guardian,Working Goofball,,,medium
+minischnauzer,MiniSchnauzer,Zwergschnauzer,zwergschnauzer,breed,100,Guardian,Working Goofball,,,medium
+mixed breed,Mixed Breed,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+mixedbreed,MixedBreed,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+moodle,Moodle,Maltipoo,maltipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Maltese,Poodle,low
+morkie,Morkie,Morkie,morkie,crossbreed,80,Parent Envelope,Parent Envelope,Maltese,Yorkshire Terrier,low
+morkshire terrier,Morkshire Terrier,Morkie,morkie,crossbreed,80,Parent Envelope,Parent Envelope,Maltese,Yorkshire Terrier,low
+morkshireterrier,MorkshireTerrier,Morkie,morkie,crossbreed,80,Parent Envelope,Parent Envelope,Maltese,Yorkshire Terrier,low
+mudi,Mudi,Mudi,mudi,breed,100,Herding Manager,Working Goofball,,,medium
+mutt,Mutt,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+nederlandse kooikerhondje,Nederlandse Kooikerhondje,Nederlandse Kooikerhondje,nederlandse-kooikerhondje,breed,100,Retriever,Working Goofball,,,medium
+nederlandse schapendoes,Nederlandse Schapendoes,Nederlandse Schapendoes,nederlandse-schapendoes,breed,100,Herding Manager,Working Goofball,,,medium
+nederlandsekooikerhondje,NederlandseKooikerhondje,Nederlandse Kooikerhondje,nederlandse-kooikerhondje,breed,100,Retriever,Working Goofball,,,medium
+nederlandseschapendoes,NederlandseSchapendoes,Nederlandse Schapendoes,nederlandse-schapendoes,breed,100,Herding Manager,Working Goofball,,,medium
+newfoundland,Newfoundland,Newfoundland,newfoundland,breed,100,Guardian,Working Goofball,,,medium
+nihon supittsu,Nihon Supittsu,Nihon Supittsu,nihon-supittsu,breed,100,Spitz Commentator,Working Goofball,,,medium
+nihon teria,Nihon Teria,Nihon Teria,nihon-teria,breed,100,Terrier Menace,Working Goofball,,,medium
+nihonsupittsu,NihonSupittsu,Nihon Supittsu,nihon-supittsu,breed,100,Spitz Commentator,Working Goofball,,,medium
+nihonteria,NihonTeria,Nihon Teria,nihon-teria,breed,100,Terrier Menace,Working Goofball,,,medium
+norfolk terrier,Norfolk Terrier,Norfolk Terrier,norfolk-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+norfolkterrier,NorfolkTerrier,Norfolk Terrier,norfolk-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+norrbottenspets,Norrbottenspets,Norrbottenspets,norrbottenspets,breed,100,Spitz Commentator,Working Goofball,,,medium
+norsk buhund,Norsk Buhund,Norsk Buhund,norsk-buhund,breed,100,Spitz Commentator,Working Goofball,,,medium
+norsk elghund gra,Norsk Elghund Grå,Norsk Elghund Grå,norsk-elghund-gr,breed,100,Spitz Commentator,Working Goofball,,,medium
+norsk elghund sort,Norsk Elghund Sort,Norsk Elghund Sort,norsk-elghund-sort,breed,100,Spitz Commentator,Working Goofball,,,medium
+norsk lundehund,Norsk Lundehund,Norsk Lundehund,norsk-lundehund,breed,100,Spitz Commentator,Working Goofball,,,medium
+norskbuhund,NorskBuhund,Norsk Buhund,norsk-buhund,breed,100,Spitz Commentator,Working Goofball,,,medium
+norskelghundgra,NorskElghundGra,Norsk Elghund Grå,norsk-elghund-gr,breed,100,Spitz Commentator,Working Goofball,,,medium
+norskelghundsort,NorskElghundSort,Norsk Elghund Sort,norsk-elghund-sort,breed,100,Spitz Commentator,Working Goofball,,,medium
+norsklundehund,NorskLundehund,Norsk Lundehund,norsk-lundehund,breed,100,Spitz Commentator,Working Goofball,,,medium
+norwich terrier,Norwich Terrier,Norwich Terrier,norwich-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+norwichterrier,NorwichTerrier,Norwich Terrier,norwich-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+nova scotia duck tolling retriever,Nova Scotia Duck Tolling Retriever,Nova Scotia Duck Tolling Retriever,nova-scotia-duck-tolling-retriever,breed,100,Retriever,Working Goofball,,,medium
+novascotiaducktollingretriever,NovaScotiaDuckTollingRetriever,Nova Scotia Duck Tolling Retriever,nova-scotia-duck-tolling-retriever,breed,100,Retriever,Working Goofball,,,medium
+oes,Oes,Old English Sheepdog,old-english-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+ogar polski,Ogar Polski,Ogar Polski,ogar-polski,breed,100,Scent Detective,Working Goofball,,,medium
+ogarpolski,OgarPolski,Ogar Polski,ogar-polski,breed,100,Scent Detective,Working Goofball,,,medium
+ohar,Ohar,Slovenský Hrubosrstý Stavac (ohar),slovensk-hrubosrst-stavac-ohar,breed,100,Working Goofball,Scent Detective,,,medium
+old english sheepdog,Old English Sheepdog,Old English Sheepdog,old-english-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+oldenglishsheepdog,OldEnglishSheepdog,Old English Sheepdog,old-english-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+osterreichischer pinscher,Österreichischer Pinscher,Österreichischer Pinscher,sterreichischer-pinscher,breed,100,Guardian,Working Goofball,,,medium
+osterreichischerpinscher,OsterreichischerPinscher,Österreichischer Pinscher,sterreichischer-pinscher,breed,100,Guardian,Working Goofball,,,medium
+otterhound,Otterhound,Otterhound,otterhound,breed,100,Scent Detective,Working Goofball,,,medium
+papillon,Papillon,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+parson russell terrier,Parson Russell Terrier,Parson Russell Terrier,parson-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+parsonrussellterrier,ParsonRussellTerrier,Parson Russell Terrier,parson-russell-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+peekapoo,Peekapoo,Peekapoo,peekapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Pekingese,Poodle,low
+pekeapoo,Pekeapoo,Peekapoo,peekapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Pekingese,Poodle,low
+pekingese,Pekingese,Pekingese,pekingese,breed,100,Companion Velcro,Working Goofball,,,medium
+pekingese poodle cross,Pekingese Poodle Cross,Peekapoo,peekapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Pekingese,Poodle,low
+pekingesepoodlecross,PekingesePoodleCross,Peekapoo,peekapoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Pekingese,Poodle,low
+pembroke,Pembroke,Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+pembroke welsh corgi,Pembroke Welsh Corgi,Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+pembrokewelshcorgi,PembrokeWelshCorgi,Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+perdigueiro portugues,Perdigueiro Português,Perdigueiro Português,perdigueiro-portugu-s,breed,100,Working Goofball,Scent Detective,,,medium
+perdigueiroportugues,PerdigueiroPortugues,Perdigueiro Português,perdigueiro-portugu-s,breed,100,Working Goofball,Scent Detective,,,medium
+perdiguero de burgos,Perdiguero de Burgos,Perdiguero de Burgos,perdiguero-de-burgos,breed,100,Working Goofball,Scent Detective,,,medium
+perdiguerodeburgos,PerdiguerodeBurgos,Perdiguero de Burgos,perdiguero-de-burgos,breed,100,Working Goofball,Scent Detective,,,medium
+perro de agua espanol,Perro de Agua Español,Perro de Agua Español,perro-de-agua-espa-ol,breed,100,Retriever,Working Goofball,,,medium
+perro dogo mallorquin,Perro Dogo Mallorquín,Perro Dogo Mallorquín,perro-dogo-mallorqu-n,breed,100,Guardian,Working Goofball,,,medium
+perro sin pelo del peru,Perro Sin Pelo del Perú,Perro Sin Pelo del Perú,perro-sin-pelo-del-per,breed,100,Spitz Commentator,Working Goofball,,,medium
+perrodeaguaespanol,PerrodeAguaEspanol,Perro de Agua Español,perro-de-agua-espa-ol,breed,100,Retriever,Working Goofball,,,medium
+perrodogomallorquin,PerroDogoMallorquin,Perro Dogo Mallorquín,perro-dogo-mallorqu-n,breed,100,Guardian,Working Goofball,,,medium
+perrosinpelodelperu,PerroSinPelodelPeru,Perro Sin Pelo del Perú,perro-sin-pelo-del-per,breed,100,Spitz Commentator,Working Goofball,,,medium
+petit basset griffon vendeen,Petit Basset Griffon Vendeen,Petit Basset Griffon Vendeen,petit-basset-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+petit bleu de gascogne,Petit Bleu de Gascogne,Petit Bleu de Gascogne,petit-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+petit brabancon,Petit Brabançon,Petit Brabançon,petit-braban-on,breed,100,Companion Velcro,Working Goofball,,,medium
+petit chien lion,Petit Chien Lion,Petit Chien Lion,petit-chien-lion,breed,100,Companion Velcro,Working Goofball,,,medium
+petitbassetgriffonvendeen,PetitBassetGriffonVendeen,Petit Basset Griffon Vendeen,petit-basset-griffon-vendeen,breed,100,Scent Detective,Working Goofball,,,medium
+petitbleudegascogne,PetitBleudeGascogne,Petit Bleu de Gascogne,petit-bleu-de-gascogne,breed,100,Scent Detective,Working Goofball,,,medium
+petitbrabancon,PetitBrabancon,Petit Brabançon,petit-braban-on,breed,100,Companion Velcro,Working Goofball,,,medium
+petitchienlion,PetitChienLion,Petit Chien Lion,petit-chien-lion,breed,100,Companion Velcro,Working Goofball,,,medium
+phalene,Phalene,Epagneul Nain Continental,epagneul-nain-continental,breed,100,Companion Velcro,Working Goofball,,,medium
+pharaoh hound,Pharaoh Hound,Pharaoh Hound,pharaoh-hound,breed,100,Scent Detective,Working Goofball,,,medium
+pharaohhound,PharaohHound,Pharaoh Hound,pharaoh-hound,breed,100,Scent Detective,Working Goofball,,,medium
+piccolo levriero italiano,Piccolo Levriero Italiano,Piccolo Levriero Italiano,piccolo-levriero-italiano,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+piccololevrieroitaliano,PiccoloLevrieroItaliano,Piccolo Levriero Italiano,piccolo-levriero-italiano,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+podenco canario,Podenco Canario,Podenco Canario,podenco-canario,breed,100,Spitz Commentator,Working Goofball,,,medium
+podenco ibicenco,Podenco Ibicenco,Podenco Ibicenco,podenco-ibicenco,breed,100,Spitz Commentator,Working Goofball,,,medium
+podencocanario,PodencoCanario,Podenco Canario,podenco-canario,breed,100,Spitz Commentator,Working Goofball,,,medium
+podencoibicenco,PodencoIbicenco,Podenco Ibicenco,podenco-ibicenco,breed,100,Spitz Commentator,Working Goofball,,,medium
+podengo portugues,Podengo Português,Podengo Português,podengo-portugu-s,breed,100,Spitz Commentator,Working Goofball,,,medium
+podengoportugues,PodengoPortugues,Podengo Português,podengo-portugu-s,breed,100,Spitz Commentator,Working Goofball,,,medium
+poitevin,Poitevin,Poitevin,poitevin,breed,100,Scent Detective,Working Goofball,,,medium
+polski owczarek nizinny,Polski Owczarek Nizinny,Polski Owczarek Nizinny,polski-owczarek-nizinny,breed,100,Herding Manager,Working Goofball,,,medium
+polski owczarek podhalanski,Polski Owczarek Podhalanski,Polski Owczarek Podhalanski,polski-owczarek-podhalanski,breed,100,Herding Manager,Working Goofball,,,medium
+polskiowczareknizinny,PolskiOwczarekNizinny,Polski Owczarek Nizinny,polski-owczarek-nizinny,breed,100,Herding Manager,Working Goofball,,,medium
+polskiowczarekpodhalanski,PolskiOwczarekPodhalanski,Polski Owczarek Podhalanski,polski-owczarek-podhalanski,breed,100,Herding Manager,Working Goofball,,,medium
+pomeranian husky cross,Pomeranian Husky Cross,Pomsky,pomsky,crossbreed,80,Parent Envelope,Parent Envelope,Pomeranian,Siberian Husky,low
+pomeranianhuskycross,PomeranianHuskyCross,Pomsky,pomsky,crossbreed,80,Parent Envelope,Parent Envelope,Pomeranian,Siberian Husky,low
+pomsky,Pomsky,Pomsky,pomsky,crossbreed,80,Parent Envelope,Parent Envelope,Pomeranian,Siberian Husky,low
+poodle,Poodle,Caniche,caniche,breed,100,Companion Velcro,Working Goofball,,,medium
+poodle family,Poodle Family,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+poodle type,Poodle type,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+poodlefamily,PoodleFamily,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+poodletype,Poodletype,Poodle family,family-poodle,breed-family,50,Doodle Wildcard,Parent Envelope,,,low
+porcelaine,Porcelaine,Porcelaine,porcelaine,breed,100,Scent Detective,Working Goofball,,,medium
+posavski gonic,Posavski Gonic,Posavski Gonic,posavski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+posavskigonic,PosavskiGonic,Posavski Gonic,posavski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+presa canario,Presa Canario,Presa Canario,presa-canario,breed,100,Guardian,Working Goofball,,,medium
+presacanario,PresaCanario,Presa Canario,presa-canario,breed,100,Guardian,Working Goofball,,,medium
+pudelpointer,Pudelpointer,Pudelpointer,pudelpointer,breed,100,Working Goofball,Scent Detective,,,medium
+pug,Pug,Pug,pug,breed,100,Companion Velcro,Working Goofball,,,medium
+pug beagle cross,Pug Beagle Cross,Puggle,puggle,crossbreed,80,Parent Envelope,Parent Envelope,Pug,Beagle,low
+pug dog,Pug Dog,Pug,pug,breed,100,Companion Velcro,Working Goofball,,,medium
+pugbeaglecross,PugBeagleCross,Puggle,puggle,crossbreed,80,Parent Envelope,Parent Envelope,Pug,Beagle,low
+pugdog,PugDog,Pug,pug,breed,100,Companion Velcro,Working Goofball,,,medium
+puggle,Puggle,Puggle,puggle,crossbreed,80,Parent Envelope,Parent Envelope,Pug,Beagle,low
+puli,Puli,Puli,puli,breed,100,Herding Manager,Working Goofball,,,medium
+pumi,Pumi,Pumi,pumi,breed,100,Herding Manager,Working Goofball,,,medium
+rafeiro do alentejo,Rafeiro do Alentejo,Rafeiro do Alentejo,rafeiro-do-alentejo,breed,100,Guardian,Working Goofball,,,medium
+rafeirodoalentejo,RafeirodoAlentejo,Rafeiro do Alentejo,rafeiro-do-alentejo,breed,100,Guardian,Working Goofball,,,medium
+rastreador brasileiro,Rastreador Brasileiro,Rastreador Brasileiro,rastreador-brasileiro,breed,100,Scent Detective,Working Goofball,,,medium
+rastreadorbrasileiro,RastreadorBrasileiro,Rastreador Brasileiro,rastreador-brasileiro,breed,100,Scent Detective,Working Goofball,,,medium
+rescue dog,Rescue Dog,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+rescuedog,RescueDog,Mixed Breed,mixed-breed,mixed,10,Rescue Mystery,Parent Envelope,,,low
+rhodesian ridgeback,Rhodesian Ridgeback,Rhodesian Ridgeback,rhodesian-ridgeback,breed,100,Scent Detective,Working Goofball,,,medium
+rhodesianridgeback,RhodesianRidgeback,Rhodesian Ridgeback,rhodesian-ridgeback,breed,100,Scent Detective,Working Goofball,,,medium
+riesenschnauzer,Riesenschnauzer,Riesenschnauzer,riesenschnauzer,breed,100,Guardian,Working Goofball,,,medium
+rottie,Rottie,Rottweiler,rottweiler,breed,100,Guardian,Working Goofball,,,medium
+rottweiler,Rottweiler,Rottweiler,rottweiler,breed,100,Guardian,Working Goofball,,,medium
+rough collie,Rough Collie,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+roughcollie,RoughCollie,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofball,,,medium
+rovidszoru magyar vizsla,Rövidszörü Magyar Vizsla,Rövidszörü Magyar Vizsla,r-vidsz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium
+rovidszorumagyarvizsla,RovidszoruMagyarVizsla,Rövidszörü Magyar Vizsla,r-vidsz-r-magyar-vizsla,breed,100,Working Goofball,Scent Detective,,,medium
+russkaya psovaya borzaya,Russkaya Psovaya Borzaya,Russkaya Psovaya Borzaya,russkaya-psovaya-borzaya,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+russkayapsovayaborzaya,RusskayaPsovayaBorzaya,Russkaya Psovaya Borzaya,russkaya-psovaya-borzaya,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+russkiy tchiorny terrier,Russkiy Tchiorny Terrier,Russkiy Tchiorny Terrier,russkiy-tchiorny-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+russkiy toy,Russkiy Toy,Russkiy Toy,russkiy-toy,breed,100,Companion Velcro,Working Goofball,,,medium
+russkiytchiornyterrier,RusskiyTchiornyTerrier,Russkiy Tchiorny Terrier,russkiy-tchiorny-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+russkiytoy,RusskiyToy,Russkiy Toy,russkiy-toy,breed,100,Companion Velcro,Working Goofball,,,medium
+russko evropeiskaia laika,Russko-evropeïskaïa Laïka,Russko-evropeïskaïa Laïka,russko-evrope-ska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+russkoevropeiskaialaika,RusskoevropeiskaiaLaika,Russko-evropeïskaïa Laïka,russko-evrope-ska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+saarlooswolfhond,Saarlooswolfhond,Saarlooswolfhond,saarlooswolfhond,breed,100,Herding Manager,Working Goofball,,,medium
+sabueso espanol,Sabueso Español,Sabueso Español,sabueso-espa-ol,breed,100,Scent Detective,Working Goofball,,,medium
+sabuesoespanol,SabuesoEspanol,Sabueso Español,sabueso-espa-ol,breed,100,Scent Detective,Working Goofball,,,medium
+saluki,Saluki,Saluki,saluki,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+samoiedskaia sabaka,Samoiedskaïa Sabaka,Samoiedskaïa Sabaka,samoiedska-a-sabaka,breed,100,Spitz Commentator,Working Goofball,,,medium
+samoiedskaiasabaka,SamoiedskaiaSabaka,Samoiedskaïa Sabaka,samoiedska-a-sabaka,breed,100,Spitz Commentator,Working Goofball,,,medium
+sausage dog,Sausage Dog,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+sausagedog,SausageDog,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+schillerstovare,Schillerstövare,Schillerstövare,schillerst-vare,breed,100,Scent Detective,Working Goofball,,,medium
+schipperke,Schipperke,Schipperke,schipperke,breed,100,Herding Manager,Working Goofball,,,medium
+schnauzer,Schnauzer,Schnauzer,schnauzer,breed,100,Guardian,Working Goofball,,,medium
+schnauzer family,Schnauzer Family,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnauzer poodle cross,Schnauzer Poodle Cross,Schnoodle,schnoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Schnauzer,Poodle,low
+schnauzer type,Schnauzer type,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnauzer unknown,Schnauzer unknown,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnauzerfamily,SchnauzerFamily,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnauzerpoodlecross,SchnauzerPoodleCross,Schnoodle,schnoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Schnauzer,Poodle,low
+schnauzertype,Schnauzertype,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnauzerunknown,Schnauzerunknown,Schnauzer family,family-schnauzer,breed-family,50,Guardian,Terrier Menace,,,low
+schnoodle,Schnoodle,Schnoodle,schnoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Schnauzer,Poodle,low
+schweizer laufhund chien courant suisse,Schweizer Laufhund - Chien Courant Suisse,Schweizer Laufhund - Chien Courant Suisse,schweizer-laufhund-chien-courant-suisse,breed,100,Scent Detective,Working Goofball,,,medium
+schweizer niederlaufhund,Schweizer Niederlaufhund,Schweizer Niederlaufhund,schweizer-niederlaufhund,breed,100,Scent Detective,Working Goofball,,,medium
+schweizerlaufhundchiencourantsuisse,SchweizerLaufhundChienCourantSuisse,Schweizer Laufhund - Chien Courant Suisse,schweizer-laufhund-chien-courant-suisse,breed,100,Scent Detective,Working Goofball,,,medium
+schweizerniederlaufhund,SchweizerNiederlaufhund,Schweizer Niederlaufhund,schweizer-niederlaufhund,breed,100,Scent Detective,Working Goofball,,,medium
+scottish terrier,Scottish Terrier,Scottish Terrier,scottish-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+scottishterrier,ScottishTerrier,Scottish Terrier,scottish-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+sealyham terrier,Sealyham Terrier,Sealyham Terrier,sealyham-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+sealyhamterrier,SealyhamTerrier,Sealyham Terrier,sealyham-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+segugio italiano a pelo forte,Segugio Italiano A Pelo Forte,Segugio Italiano A Pelo Forte,segugio-italiano-a-pelo-forte,breed,100,Scent Detective,Working Goofball,,,medium
+segugio italiano a pelo raso,Segugio Italiano A Pelo Raso,Segugio Italiano A Pelo Raso,segugio-italiano-a-pelo-raso,breed,100,Scent Detective,Working Goofball,,,medium
+segugioitalianoapeloforte,SegugioItalianoAPeloForte,Segugio Italiano A Pelo Forte,segugio-italiano-a-pelo-forte,breed,100,Scent Detective,Working Goofball,,,medium
+segugioitalianoapeloraso,SegugioItalianoAPeloRaso,Segugio Italiano A Pelo Raso,segugio-italiano-a-pelo-raso,breed,100,Scent Detective,Working Goofball,,,medium
+shar pei,Shar Pei,Shar Pei,shar-pei,breed,100,Guardian,Working Goofball,,,medium
+sharpei,SharPei,Shar Pei,shar-pei,breed,100,Guardian,Working Goofball,,,medium
+sheltie,Sheltie,Shetland Sheepdog,shetland-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+shepadoodle,Shepadoodle,Shepadoodle,shepadoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,German Shepherd Dog,Poodle,low
+shetland sheepdog,Shetland Sheepdog,Shetland Sheepdog,shetland-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+shetlandsheepdog,ShetlandSheepdog,Shetland Sheepdog,shetland-sheepdog,breed,100,Herding Manager,Working Goofball,,,medium
+shiba,Shiba,Shiba,shiba,breed,100,Spitz Commentator,Working Goofball,,,medium
+shih tzu,Shih Tzu,Shih Tzu,shih-tzu,breed,100,Companion Velcro,Working Goofball,,,medium
+shih tzu yorkie cross,Shih Tzu Yorkie Cross,Shorkie,shorkie,crossbreed,80,Parent Envelope,Parent Envelope,Shih Tzu,Yorkshire Terrier,low
+shihtzu,ShihTzu,Shih Tzu,shih-tzu,breed,100,Companion Velcro,Working Goofball,,,medium
+shihtzuyorkiecross,ShihTzuYorkieCross,Shorkie,shorkie,crossbreed,80,Parent Envelope,Parent Envelope,Shih Tzu,Yorkshire Terrier,low
+shikoku,Shikoku,Shikoku,shikoku,breed,100,Spitz Commentator,Working Goofball,,,medium
+shitzu,Shitzu,Shih Tzu,shih-tzu,breed,100,Companion Velcro,Working Goofball,,,medium
+shorkie,Shorkie,Shorkie,shorkie,crossbreed,80,Parent Envelope,Parent Envelope,Shih Tzu,Yorkshire Terrier,low
+sibe,Sibe,Siberian Husky,siberian-husky,breed,100,Spitz Commentator,Working Goofball,,,medium
+siberian husky,Siberian Husky,Siberian Husky,siberian-husky,breed,100,Spitz Commentator,Working Goofball,,,medium
+siberianhusky,SiberianHusky,Siberian Husky,siberian-husky,breed,100,Spitz Commentator,Working Goofball,,,medium
+sight hound,Sight hound,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+sighthound,Sighthound,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+sighthound family,Sighthound Family,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+sighthound type,Sighthound type,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+sighthoundfamily,SighthoundFamily,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+sighthoundtype,Sighthoundtype,Sighthound family,family-sighthound,breed-family,50,Sighthound Sofa Missile,Parent Envelope,,,low
+skye terrier,Skye Terrier,Skye Terrier,skye-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+skyeterrier,SkyeTerrier,Skye Terrier,skye-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+sloughi,Sloughi,Sloughi,sloughi,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+slovensky cuvac,Slovenský Cuvac,Slovenský Cuvac,slovensk-cuvac,breed,100,Herding Manager,Working Goofball,,,medium
+slovensky hrubosrsty stavac,Slovenský Hrubosrstý Stavac,Slovenský Hrubosrstý Stavac (ohar),slovensk-hrubosrst-stavac-ohar,breed,100,Working Goofball,Scent Detective,,,medium
+slovensky hrubosrsty stavac ohar,Slovenský Hrubosrstý Stavac (ohar),Slovenský Hrubosrstý Stavac (ohar),slovensk-hrubosrst-stavac-ohar,breed,100,Working Goofball,Scent Detective,,,medium
+slovensky kopov,Slovenský Kopov,Slovenský Kopov,slovensk-kopov,breed,100,Scent Detective,Working Goofball,,,medium
+slovenskycuvac,SlovenskyCuvac,Slovenský Cuvac,slovensk-cuvac,breed,100,Herding Manager,Working Goofball,,,medium
+slovenskyhrubosrstystavac,SlovenskyHrubosrstyStavac,Slovenský Hrubosrstý Stavac (ohar),slovensk-hrubosrst-stavac-ohar,breed,100,Working Goofball,Scent Detective,,,medium
+slovenskyhrubosrstystavac ohar,SlovenskyHrubosrstyStavac(ohar),Slovenský Hrubosrstý Stavac (ohar),slovensk-hrubosrst-stavac-ohar,breed,100,Working Goofball,Scent Detective,,,medium
+slovenskykopov,SlovenskyKopov,Slovenský Kopov,slovensk-kopov,breed,100,Scent Detective,Working Goofball,,,medium
+smalandsstovare,Smålandsstövare,Smålandsstövare,sm-landsst-vare,breed,100,Scent Detective,Working Goofball,,,medium
+smooth,Smooth,Fox Terrier (smooth),fox-terrier-smooth,breed,100,Terrier Menace,Working Goofball,,,medium
+smooth collie,Smooth Collie,Collie Smooth,collie-smooth,breed,100,Herding Manager,Working Goofball,,,medium
+smoothcollie,SmoothCollie,Collie Smooth,collie-smooth,breed,100,Herding Manager,Working Goofball,,,medium
+spinone italiano,Spinone Italiano,Spinone Italiano,spinone-italiano,breed,100,Working Goofball,Scent Detective,,,medium
+spinoneitaliano,SpinoneItaliano,Spinone Italiano,spinone-italiano,breed,100,Working Goofball,Scent Detective,,,medium
+sredneasiatskaya ovtcharka,Sredneasiatskaya Ovtcharka,Sredneasiatskaya Ovtcharka,sredneasiatskaya-ovtcharka,breed,100,Guardian,Working Goofball,,,medium
+sredneasiatskayaovtcharka,SredneasiatskayaOvtcharka,Sredneasiatskaya Ovtcharka,sredneasiatskaya-ovtcharka,breed,100,Guardian,Working Goofball,,,medium
+srpski gonic,Srpski Gonic,Srpski Gonic,srpski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+srpski trobojni gonic,Srpski Trobojni Gonic,Srpski Trobojni Gonic,srpski-trobojni-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+srpskigonic,SrpskiGonic,Srpski Gonic,srpski-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+srpskitrobojnigonic,SrpskiTrobojniGonic,Srpski Trobojni Gonic,srpski-trobojni-gonic,breed,100,Scent Detective,Working Goofball,,,medium
+st bernhardshund bernhardiner,St.bernhardshund - Bernhardiner,St.bernhardshund - Bernhardiner,st-bernhardshund-bernhardiner,breed,100,Guardian,Working Goofball,,,medium
+st bernhardshundbernhardiner,St.bernhardshundBernhardiner,St.bernhardshund - Bernhardiner,st-bernhardshund-bernhardiner,breed,100,Guardian,Working Goofball,,,medium
+stabijhoun,Stabijhoun,Stabijhoun,stabijhoun,breed,100,Working Goofball,Scent Detective,,,medium
+staffie,Staffie,Staffordshire Bull Terrier,staffordshire-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+stafford,Stafford,Staffordshire Bull Terrier,staffordshire-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+staffordshire bull terrier,Staffordshire Bull Terrier,Staffordshire Bull Terrier,staffordshire-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+staffordshirebullterrier,StaffordshireBullTerrier,Staffordshire Bull Terrier,staffordshire-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+staffy,Staffy,Staffordshire Bull Terrier,staffordshire-bull-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+standard schnauzer,Standard Schnauzer,Schnauzer,schnauzer,breed,100,Guardian,Working Goofball,,,medium
+standardschnauzer,StandardSchnauzer,Schnauzer,schnauzer,breed,100,Guardian,Working Goofball,,,medium
+steirische rauhhaarbracke,Steirische Rauhhaarbracke,Steirische Rauhhaarbracke,steirische-rauhhaarbracke,breed,100,Scent Detective,Working Goofball,,,medium
+steirischerauhhaarbracke,SteirischeRauhhaarbracke,Steirische Rauhhaarbracke,steirische-rauhhaarbracke,breed,100,Scent Detective,Working Goofball,,,medium
+suomenajokoira,Suomenajokoira,Suomenajokoira,suomenajokoira,breed,100,Scent Detective,Working Goofball,,,medium
+suomenlapinkoira,Suomenlapinkoira,Suomenlapinkoira,suomenlapinkoira,breed,100,Spitz Commentator,Working Goofball,,,medium
+suomenpystykorva,Suomenpystykorva,Suomenpystykorva,suomenpystykorva,breed,100,Spitz Commentator,Working Goofball,,,medium
+sussex spaniel,Sussex Spaniel,Sussex Spaniel,sussex-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+sussexspaniel,SussexSpaniel,Sussex Spaniel,sussex-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+svensk lapphund,Svensk Lapphund,Svensk Lapphund,svensk-lapphund,breed,100,Spitz Commentator,Working Goofball,,,medium
+svensklapphund,SvenskLapphund,Svensk Lapphund,svensk-lapphund,breed,100,Spitz Commentator,Working Goofball,,,medium
+taiwan dog,Taiwan Dog,Taiwan Dog,taiwan-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+taiwandog,TaiwanDog,Taiwan Dog,taiwan-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+terrier brasileiro,Terrier Brasileiro,Terrier Brasileiro,terrier-brasileiro,breed,100,Terrier Menace,Working Goofball,,,medium
+terrierbrasileiro,TerrierBrasileiro,Terrier Brasileiro,terrier-brasileiro,breed,100,Terrier Menace,Working Goofball,,,medium
+thai bangkaew dog,Thai Bangkaew Dog,Thai Bangkaew Dog,thai-bangkaew-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+thai ridgeback dog,Thai Ridgeback Dog,Thai Ridgeback Dog,thai-ridgeback-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+thaibangkaewdog,ThaiBangkaewDog,Thai Bangkaew Dog,thai-bangkaew-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+thairidgebackdog,ThaiRidgebackDog,Thai Ridgeback Dog,thai-ridgeback-dog,breed,100,Spitz Commentator,Working Goofball,,,medium
+tibetan spaniel,Tibetan Spaniel,Tibetan Spaniel,tibetan-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+tibetan terrier,Tibetan Terrier,Tibetan Terrier,tibetan-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+tibetanspaniel,TibetanSpaniel,Tibetan Spaniel,tibetan-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+tibetanterrier,TibetanTerrier,Tibetan Terrier,tibetan-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+tiroler bracke,Tiroler Bracke,Tiroler Bracke,tiroler-bracke,breed,100,Scent Detective,Working Goofball,,,medium
+tirolerbracke,TirolerBracke,Tiroler Bracke,tiroler-bracke,breed,100,Scent Detective,Working Goofball,,,medium
+tornjak,Tornjak,Tornjak,tornjak,breed,100,Guardian,Working Goofball,,,medium
+tosa,Tosa,Tosa,tosa,breed,100,Guardian,Working Goofball,,,medium
+vastgotaspets,Västgötaspets,Västgötaspets,v-stg-taspets,breed,100,Spitz Commentator,Working Goofball,,,medium
+vieraugl,Vieräugl,Brandlbracke - (vieräugl),brandlbracke-vier-ugl,breed,100,Scent Detective,Working Goofball,,,medium
+volpino italiano,Volpino Italiano,Volpino Italiano,volpino-italiano,breed,100,Spitz Commentator,Working Goofball,,,medium
+volpinoitaliano,VolpinoItaliano,Volpino Italiano,volpino-italiano,breed,100,Spitz Commentator,Working Goofball,,,medium
+vostotchno sibirskaia laika,Vostotchno-sibirskaïa Laïka,Vostotchno-sibirskaïa Laïka,vostotchno-sibirska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+vostotchnosibirskaialaika,VostotchnosibirskaiaLaika,Vostotchno-sibirskaïa Laïka,vostotchno-sibirska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+weimaraner,Weimaraner,Weimaraner,weimaraner,breed,100,Working Goofball,Scent Detective,,,medium
+welsh corgi,Welsh Corgi,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+welsh corgi cardigan,Welsh Corgi (cardigan),Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+welsh corgi pembroke,Welsh Corgi (pembroke),Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+welsh springer spaniel,Welsh Springer Spaniel,Welsh Springer Spaniel,welsh-springer-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+welsh terrier,Welsh Terrier,Welsh Terrier,welsh-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+welshcorgi,WelshCorgi,Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+welshcorgi cardigan,WelshCorgi(cardigan),Welsh Corgi (cardigan),welsh-corgi-cardigan,breed,100,Herding Manager,Working Goofball,,,medium
+welshcorgi pembroke,WelshCorgi(pembroke),Welsh Corgi (pembroke),welsh-corgi-pembroke,breed,100,Herding Manager,Working Goofball,,,medium
+welshspringerspaniel,WelshSpringerSpaniel,Welsh Springer Spaniel,welsh-springer-spaniel,breed,100,Working Goofball,Working Goofball,,,medium
+welshterrier,WelshTerrier,Welsh Terrier,welsh-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+west highland white terrier,West Highland White Terrier,West Highland White Terrier,west-highland-white-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+westfalische dachsbracke,Westfälische Dachsbracke,Westfälische Dachsbracke,westf-lische-dachsbracke,breed,100,Scent Detective,Working Goofball,,,medium
+westfalischedachsbracke,WestfalischeDachsbracke,Westfälische Dachsbracke,westf-lische-dachsbracke,breed,100,Scent Detective,Working Goofball,,,medium
+westhighlandwhiteterrier,WestHighlandWhiteTerrier,West Highland White Terrier,west-highland-white-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+westie,Westie,West Highland White Terrier,west-highland-white-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+wetterhoun,Wetterhoun,Wetterhoun,wetterhoun,breed,100,Retriever,Working Goofball,,,medium
+wheaten terrier poodle cross,Wheaten Terrier Poodle Cross,Whoodle,whoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Soft Coated Wheaten Terrier,Poodle,low
+wheatenpoo,Wheatenpoo,Whoodle,whoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Soft Coated Wheaten Terrier,Poodle,low
+wheatenterrierpoodlecross,WheatenTerrierPoodleCross,Whoodle,whoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Soft Coated Wheaten Terrier,Poodle,low
+whippet,Whippet,Whippet,whippet,breed,100,Sighthound Sofa Missile,Companion Velcro,,,medium
+whoodle,Whoodle,Whoodle,whoodle,crossbreed,80,Doodle Wildcard,Parent Envelope,Soft Coated Wheaten Terrier,Poodle,low
+wiener dog,Wiener Dog,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+wienerdog,WienerDog,Dachshund,dachshund,breed,100,Scent Detective,Companion Velcro,,,medium
+wire,Wire,Fox Terrier (wire),fox-terrier-wire,breed,100,Terrier Menace,Working Goofball,,,medium
+xoloitzcuintle,Xoloitzcuintle,Xoloitzcuintle,xoloitzcuintle,breed,100,Spitz Commentator,Working Goofball,,,medium
+yorkie,Yorkie,Yorkshire Terrier,yorkshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+yorkie poo,Yorkie Poo,Yorkipoo,yorkipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Yorkshire Terrier,Poodle,low
+yorkiepoo,Yorkiepoo,Yorkipoo,yorkipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Yorkshire Terrier,Poodle,low
+yorkipoo,Yorkipoo,Yorkipoo,yorkipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Yorkshire Terrier,Poodle,low
+yorkshire terrier,Yorkshire Terrier,Yorkshire Terrier,yorkshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+yorkshire terrier poodle cross,Yorkshire Terrier Poodle Cross,Yorkipoo,yorkipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Yorkshire Terrier,Poodle,low
+yorkshireterrier,YorkshireTerrier,Yorkshire Terrier,yorkshire-terrier,breed,100,Terrier Menace,Working Goofball,,,medium
+yorkshireterrierpoodlecross,YorkshireTerrierPoodleCross,Yorkipoo,yorkipoo,crossbreed,80,Doodle Wildcard,Parent Envelope,Yorkshire Terrier,Poodle,low
+yuzhnorusskaya ovcharka,Yuzhnorusskaya Ovcharka,Yuzhnorusskaya Ovcharka,yuzhnorusskaya-ovcharka,breed,100,Herding Manager,Working Goofball,,,medium
+yuzhnorusskayaovcharka,YuzhnorusskayaOvcharka,Yuzhnorusskaya Ovcharka,yuzhnorusskaya-ovcharka,breed,100,Herding Manager,Working Goofball,,,medium
+zapadno sibirskaia laika,Zapadno-sibirskaïa Laïka,Zapadno-sibirskaïa Laïka,zapadno-sibirska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+zapadnosibirskaialaika,ZapadnosibirskaiaLaika,Zapadno-sibirskaïa Laïka,zapadno-sibirska-a-la-ka,breed,100,Spitz Commentator,Working Goofball,,,medium
+zwergpinscher,Zwergpinscher,Zwergpinscher,zwergpinscher,breed,100,Guardian,Working Goofball,,,medium
+zwergschnauzer,Zwergschnauzer,Zwergschnauzer,zwergschnauzer,breed,100,Guardian,Working Goofball,,,medium
