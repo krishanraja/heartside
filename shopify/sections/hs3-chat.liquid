@@ -27,7 +27,8 @@
         "noteShade": {{ 'hs-mug-note-shade.webp' | asset_url | json }},
         "paw": {{ 'hs-mug-paw.png' | asset_url | json }},
         "fontText": {{ 'hs-note-text.woff2' | asset_url | json }},
-        "fontItalic": {{ 'hs-note-italic.woff2' | asset_url | json }}
+        "fontItalic": {{ 'hs-note-italic.woff2' | asset_url | json }},
+        "sample": {% if s.example_photo != blank %}{{ example_photo | strip | json }}{% else %}{{ 'hs-mug-sample.webp' | asset_url | json }}{% endif %}
       },
       "gifts": {
         {%- assign keys = 'mug,blanket,print,ornament' | split: ',' -%}
@@ -53,20 +54,13 @@
         <p class="hs3-hero__p">{{ s.intro }}</p>
       </div>
       <div class="hs3-hero__art">
-        <div class="hs3-mug hs3-mug--hero" aria-hidden="true">
+        {%- comment -%} the example mug: the reveal's real-photo mug (hs3.js heroMug), turning between the dog and the note {%- endcomment -%}
+        <div class="hs3-mugwrap hs3-mugwrap--hero" data-hs3-hero-mug aria-hidden="true">
           <span class="hs3-example">EXAMPLE</span>
-          <span class="hs3-mug__handle"></span>
-          <span class="hs3-mug__body">
-            <span class="hs3-mug__rim"></span>
-            <span class="hs3-mug__face">
-              <img src="{{ example_photo | strip }}" alt="" width="86" height="86" class="hs3-photo" loading="eager">
-              <span class="hs3-mug__words">
-                <span class="hs3-line">Waits at the door for you, weekends too.</span>
-                <span class="hs3-line">Your shadow, always.</span>
-                <span class="hs3-sign">Love, Kuku {% render 'hs2-paw' %}</span>
-              </span>
-            </span>
-          </span>
+          <div class="hs3-mugs" data-side="dog">
+            <div class="hs3-mugface hs3-mugface--dog"><img src="{{ 'hs-mug-dog-base.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-dog-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="dog"></canvas></div>
+            <div class="hs3-mugface hs3-mugface--note"><img src="{{ 'hs-mug-note-base.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-note-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="note"></canvas></div>
+          </div>
         </div>
         <div class="hs3-peek">
           <span class="hs3-biscuit hs3-biscuit--peek" aria-hidden="true"></span>
@@ -102,7 +96,7 @@
     { "type": "text", "id": "peek", "label": "Biscuit's first bubble", "default": "Psst. Who does your dog love most?" },
     { "type": "text", "id": "gifts_note", "label": "Under the gift pills", "default": "Chat for a minute, then put your words on any of these. Pick one, or a few." },
     { "type": "text", "id": "start", "label": "Button", "default": "Start with your dog" },
-    { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. Empty uses Biscuit's headshot." },
+    { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. A cut-out PNG looks best. Empty uses the sample dog." },
     { "type": "header", "content": "Biscuit's AI (n8n)" },
     { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
     { "type": "text", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },

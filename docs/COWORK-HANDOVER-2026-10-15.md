@@ -4,13 +4,16 @@ Written by the Cowork session that ran 14 to 15 October, at Krish's request, to 
 
 ## Start the next session with this prompt
 
-Updated by Claude Code on 15 Oct, after Krish's evening ask (section 1). The handover branch is merged; read everything on `main`.
+Updated by Claude Code on 15 Oct, when its list was done. Everything is on `main`.
 
-> Read `docs/COWORK-HANDOVER-2026-10-15.md` on `main` in krishanraja/heartside, then `docs/V3-GIFTS-FROM-YOUR-DOG.md` sections 1, 2, 6 and 10. Two jobs, in this order.
+> Read `docs/COWORK-HANDOVER-2026-10-15.md` on `main` in krishanraja/heartside, then `docs/V3-GIFTS-FROM-YOUR-DOG.md` sections 1, 2, 6 and 10. Claude Code finished its list on 15 Oct (handover section 5, items 3, 4 and 7); don't redo it. Your jobs, in this order.
 >
-> First, Sunday. We launch all four gifts as they are, on my "go live". Get Parts B, C and D of `docs/COWORK-PROMPT-2026-10-14-V3.md` ready, and plan the two go-live checks in handover section 5 item 4. Nothing about the new idea holds the launch.
->
-> Second, the idea in handover section 5 item 2: Biscuit draws the buyer's dog in the moment they described, and the drawing goes on the gift. Run the five-dog bake-off from V3 section 10 and show me the results on real product photos, mug and ornament first, both faces, at phone size. Tell me the cost before you spend a credit. If four of five don't pass "is that my dog?", say so in one sentence and bring me the next idea in item 2.
+> 1. Sunday. We launch all four gifts as they are, on my "go live". Get Parts B, C and D of `docs/COWORK-PROMPT-2026-10-14-V3.md` ready. At go-live, check on the Active mug that the photo handoff works and that Line 1 shows two rows (the even breaks arrived). Then place my own order (Part C); the next "Heartside order QC" run should tag it `qc-pass`. Making the gifts page the homepage is Claude Code's job, on my go.
+> 2. The idea in handover section 5 item 2: Biscuit draws the buyer's dog in the moment they described. Run the five-dog bake-off from V3 section 10 and show me the results on real product photos, mug and ornament first, both faces, at phone size. Tell me the cost before you spend a credit. If four of five don't pass "is that my dog?", say so in one sentence and bring me the next idea in item 2.
+> 3. Biscuit's reasons: one mug reason for each "together" answer (walk, coffee, movie, naps, car, not sure), in Biscuit's voice, so the reveal never claims something the buyer didn't say. Claude Code wires them in.
+> 4. The two Shopify mug images: re-render them with `tools/realphoto/shopify_mug_images.py`, which now curves each row as the real photo does, and show me before you replace them.
+> 5. The breed gaps listed in `breeds-corpus/lookup/README.md`: write the rows for `us_lookup_additions.csv` and `us_display_names.csv`. Claude Code rebuilds the lookup.
+> 6. Mirror V3 to Drive as `docs/SYNC.md` describes.
 >
 > One idea at a time: say it in one sentence and show it on real product photos. Ask me before anything that publishes, spends, deletes, or changes prices, discounts, policies, checkout or permissions.
 
@@ -143,6 +146,7 @@ The round-one design is a circle photo, the dog's name in Fraunces SemiBold and 
    - **Two round-two notes: done.** The blanket, print and ornament tabs put the paw centered under the signature, as the print files do. Typed lines drop a leading He, She, They or the dog's name, so "He howls until you sit on the sofa." prints "Howls until you sit on the sofa.", and the buyer's own words turn I, me and my into you and your. This runs in the theme; the n8n workflows are unchanged.
    - **The breed overlay: done** (step 3).
    - **The mug tab, redrawn the same evening.** Krish on the live screenshot: "this screenshot is ridiculously poor, look at it! this is unacceptable". The first rebuild laid flat text over the mockup photo. The tab now draws the mug the way the approved Shopify images were made, and `tools/preview/mockup-gate.mjs` holds it to Teeinblue's own print files (ink match 0.98 on the three real files; a print moved 12 px scores 0.45 and fails). The header now names the gift on screen. The mug's reason drops "Walks start with coffee. I would know." unless the buyer picked walks or coffee; one reason per answer in Biscuit's voice is still Cowork's copy to write.
+   - **The first screen's example mug, replaced (15 Oct).** The gifts page (the homepage from launch) still showed the drawn mug with a circle photo and Courier that Krish rejected on 14 Oct. It now shows the reveal's real-photo mug with Teeinblue's sample dog, turning between the dog and the note in Fraunces. Checked in `tools/preview/reveal.mjs`.
    - **Order QC, approved by Krish on 15 Oct and scheduled; it runs once Shopify is connected to it.** `tools/qc/mug_qc.py` checks an order's real mug print file (words, signature, breaks, ink inside the boxes, photo there and cut out) and makes a card of it on the real mug. It passes Teeinblue's three real print files and catches all six broken ones in `tools/qc/test_mug_qc.py`. It runs as the scheduled task "Heartside order QC" at 07:56 and 16:56 London. It tags orders `qc-pass` or `qc-hold`, adds one note line, and pushes and emails Krish the holds. It never confirms an order; a person still does. It can't read orders until Krish reconnects Shopify at https://claude.ai/customize/connectors and adds Shopify to that task (`tools/qc/README.md`).
 5. **Rebuild the blanket, print and ornament to the agreed idea,** to the mug's standard. Test print files with the longest and shortest words and render them on Printful's photos. Ask before replacing any Shopify image.
 6. **Sunday:** Parts B, C and D of `docs/COWORK-PROMPT-2026-10-14-V3.md`, starting only on Krish's "go live".

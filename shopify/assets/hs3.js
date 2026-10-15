@@ -669,6 +669,28 @@
     b.putImageData(base, 0, 0);
     return bg;
   }
+  // the first screen's example mug: the same real-photo mug as the reveal, with Teeinblue's sample
+  // dog and the prototype's words, turning between the dog's face and the note
+  var HERO_MUG = { texts: ['Waits at the door for you, weekends too.', 'Steals your side of the bed.', 'Your shadow, always.'], name: 'Kuku' };
+  function heroMug() {
+    var box = frame && frame.querySelector('[data-hs3-hero-mug]'), m = cfg.mug || {};
+    if (!box || !m.sample) return;
+    Promise.all([loadMugAssets(), loadImg(m.sample)]).then(function (r) {
+      var spec = { texts: HERO_MUG.texts.map(evenBreak), ink: 3, name: HERO_MUG.name };
+      box.querySelectorAll('canvas[data-hs3-heromug]').forEach(function (c) {
+        var face = c.getAttribute('data-hs3-heromug');
+        c.getContext('2d').drawImage(renderFace(face, r[0], face === 'dog' ? r[1] : null, spec), 0, 0);
+        c.classList.add('is-drawn');
+      });
+      var mugs = box.querySelector('.hs3-mugs');
+      if (reduced) { mugs.setAttribute('data-side', 'note'); return; }
+      clearInterval(heroMug.t);
+      heroMug.t = setInterval(function () {
+        if (!mugs.isConnected) { clearInterval(heroMug.t); return; }
+        mugs.setAttribute('data-side', mugs.getAttribute('data-side') === 'dog' ? 'note' : 'dog');
+      }, 3200);
+    }).catch(function () { /* the plain mug photo stays */ });
+  }
   function paintMugs() {
     var cvs = frame ? Array.prototype.slice.call(frame.querySelectorAll('canvas[data-hs3-mug]')) : [];
     if (!cvs.length) return;
@@ -933,6 +955,7 @@
   /* ------------------------------------------------------------------ binding */
   var heroHTML = '';
   function bindHero() {
+    heroMug();
     var b = frame.querySelector('[data-hs3-start]');
     if (b) b.addEventListener('click', function () {
       track('start', {});

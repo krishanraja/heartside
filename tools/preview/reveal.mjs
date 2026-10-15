@@ -88,6 +88,20 @@ async function run(label, { withPhoto, dog = 'Biscotti', rec = 'Linda', width = 
   ok(!errors.length, `${label}: no script errors ${errors.join(' ')}`);
   await ctx.close();
 }
+// the first screen's example mug: the real-photo mug, drawn, turning (never the old drawn mug)
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const page = await ctx.newPage();
+  await page.route(/n8n\.cloud/, (r) => r.fulfill({ status: 503, body: '' }));
+  await page.goto(`${base}/index-gifts.html`);
+  await page.waitForFunction(() => document.querySelectorAll('canvas[data-hs3-heromug].is-drawn').length === 2, null, { timeout: 10000 }).catch(() => {});
+  ok(await page.locator('canvas[data-hs3-heromug].is-drawn').count() === 2 && await page.locator('.hs3-hero .hs3-photo').count() === 0, 'home: the example mug is the real-photo mug, both faces drawn, no circle photo');
+  await page.screenshot({ path: path.join(shots, 'home-dog.png') });
+  await page.waitForTimeout(3500);
+  ok(await page.locator('[data-hs3-hero-mug] .hs3-mugs').getAttribute('data-side') === 'note', 'home: the example mug turns to the note');
+  await page.screenshot({ path: path.join(shots, 'home-note.png') });
+  await ctx.close();
+}
 // with motion: the mug opens on the dog, turns to the note, then the lines ink one by one
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
