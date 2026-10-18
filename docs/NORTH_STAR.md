@@ -4,7 +4,7 @@ Status: Current
 Owner: Krish Raja
 Last verified: 2026-10-18
 
-> By Christmas 2027, Heartside is the gift US dog owners reach for first when they want something that sounds like their dog. $10,000 is an ordinary month, not a Christmas peak, and most orders come from people who saw someone else's.
+> By February 2027, Heartside is the gift US dog owners reach for first when they want something that sounds like their dog. $10,000 is an ordinary month, not a Christmas peak, and most orders come from people who saw someone else's.
 
 Set by Krish on 18 October 2026. It is not reached yet. It is what every session in this repository works toward.
 
