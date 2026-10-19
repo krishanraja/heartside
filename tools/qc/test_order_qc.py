@@ -23,11 +23,13 @@ def ok(cond, msg):
 TITLES = {'the-morning-mug': 'The Morning Mug', 'the-tree-ornament': 'The Tree Ornament', 'the-couch-blanket': 'The Couch Blanket'}
 
 
-def item(handle, link=GOOD, l1=L1, signed='Love, Biscuit'):
+def item(handle, link=GOOD, l1=L1, signed='Love, Biscuit', color='Pink', sku='12578'):
     attrs = [{'key': 'Line 1', 'value': l1}, {'key': 'Line 2', 'value': L2}, {'key': 'Line 3', 'value': L3}, {'key': 'Signed', 'value': signed}]
     if link:
         attrs.append({'key': '_tib_design_link_1', 'value': link})
-    return {'id': 'li', 'title': TITLES[handle], 'customAttributes': attrs}
+    if sku:
+        attrs.append({'key': '_tib_fulfilled_sku', 'value': sku})
+    return {'id': 'li', 'title': TITLES[handle], 'variantTitle': f'White Ceramic Mug with Color Inside / {color} / 11 oz', 'customAttributes': attrs}
 
 
 class Fake:
@@ -149,6 +151,28 @@ with tempfile.TemporaryDirectory() as out:
         code = order_qc.main([out, '--dry-run'], env=env, opener=opener_ok([]), shop=Denied([]))
     logged = open(os.path.join(out, 'log.txt')).read()
     ok(code == 3 and 'ACCESS_DENIED' in logged and TOKEN not in logged + buf.getvalue().split('\n', 1)[1], 'a refused query after sign-in fails the run with Shopify\'s error in the summary, never the token')
+
+# the mug color (19 Oct: more than one color, after Mowgli's pink mug)
+with tempfile.TemporaryDirectory() as out:
+    orders = [
+        order('2001', item('the-morning-mug', color='Black', sku='11051')),
+        order('2002', item('the-morning-mug', color='Black', sku='12578')),        # Black chosen, pink would print
+        order('2003', item('the-morning-mug', color='Dark Blue', sku='17362')),    # never read as plain Blue
+        order('2004', item('the-morning-mug', color='Dark Blue', sku='11050')),    # light blue would print
+        order('2005', item('the-morning-mug', color='Dark Green', sku='')),        # no Printful variant on the line
+        order('2006', item('the-morning-mug', color='Purple', sku='12578')),       # a color we do not sell
+    ]
+    shop = Fake(orders)
+    s = order_qc.run(shop, out, dry=False, now=now)
+    v = {e['order']: e for e in s['checked']}
+    ok(v['#2001']['verdict'] == 'pass' and 'Color: Black (Printful 11051)' in v['#2001']['note'], 'a Black mug with the Black Printful variant passes, and the note records the color')
+    ok(v['#2002']['verdict'] == 'hold' and 'Black chosen (Printful 11051), but Teeinblue will make Printful 12578' in v['#2002']['note'], 'a Black mug that would print pink holds, and says so')
+    ok(v['#2003']['verdict'] == 'pass', 'Dark Blue is matched as Dark Blue, not Blue')
+    ok(v['#2004']['verdict'] == 'hold', 'Dark Blue chosen with the light Blue variant holds')
+    ok(v['#2005']['verdict'] == 'hold' and 'no Printful variant' in v['#2005']['note'], 'a mug with no Printful variant on the line item holds')
+    ok(v['#2006']['verdict'] == 'hold' and 'no known mug color' in v['#2006']['note'], 'an unknown color holds')
+    ok(json.load(open(os.path.join(out, '2002-mug1', 'report.json')))['checks'][-1]['check'] == 'color', 'the color check is on the card and in the report')
+    ok('variantTitle' in order_qc.ORDERS, 'the order query reads the variant, which read_orders covers')
 
 print('all passed' if not failures else f'{failures} failed')
 sys.exit(1 if failures else 0)
