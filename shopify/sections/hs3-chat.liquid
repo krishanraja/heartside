@@ -11,6 +11,35 @@
 {{ 'hs3.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs3.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
+{%- comment -%} The mug's colors, Black first (Krish, 19 Oct): only those the picked product has as a
+  variant, each with its recolored photo layers (tools/realphoto/recolor_mug.py). Hex from
+  Printful's catalog. The first one is the example mug's color too. {%- endcomment -%}
+{%- assign mug_hex = '#050505,#1b1b51,#226653,#e32a2d,#f6a1b1' | split: ',' -%}
+{%- assign mug_order = 'Black,Dark Blue,Dark Green,Red,Pink' | split: ',' -%}
+{%- assign mug_n = 0 -%}
+{%- assign mug_first = '' -%}
+{%- capture mug_colors -%}
+  {%- if s.product_mug != blank -%}
+    {%- for c in mug_order -%}
+      {%- assign ci = forloop.index0 -%}
+      {%- for v in s.product_mug.variants -%}
+        {%- if v.options contains c -%}
+          {%- assign suffix = '' -%}
+          {%- unless c == 'Pink' -%}{%- assign suffix = c | handleize | prepend: '-' -%}{%- endunless -%}
+          {%- if mug_n == 0 -%}{%- assign mug_first = suffix -%}{%- endif -%}
+          {%- if mug_n > 0 -%},{%- endif -%}
+          {%- assign dog_f = 'hs-mug-dog-base' | append: suffix | append: '.webp' -%}
+          {%- assign note_f = 'hs-mug-note-base' | append: suffix | append: '.webp' -%}
+          { "name": {{ c | json }}, "hex": {{ mug_hex[ci] | json }}, "id": {{ v.id | json }}, "dog": {{ dog_f | asset_url | json }}, "note": {{ note_f | asset_url | json }} }
+          {%- assign mug_n = mug_n | plus: 1 -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+{%- assign hero_dog = 'hs-mug-dog-base' | append: mug_first | append: '.webp' -%}
+{%- assign hero_note = 'hs-mug-note-base' | append: mug_first | append: '.webp' -%}
 {%- capture example_photo -%}{%- if s.example_photo != blank -%}{{ s.example_photo | image_url: width: 400 }}{%- else -%}{{ 'hs-photo-headshot-480.webp' | asset_url }}{%- endif -%}{%- endcapture -%}
 <div class="hs3" data-hs3 id="gift-{{ section.id }}">
   <script type="application/json" data-hs3-config>
@@ -21,6 +50,7 @@
       "ornamentBundle": {{ s.ornament_bundle | json }},
       "examplePhoto": {{ example_photo | strip | json }},
       "mug": {
+        "colors": [{{ mug_colors | strip }}],
         "dog": {{ 'hs-mug-dog-base.webp' | asset_url | json }},
         "dogShade": {{ 'hs-mug-dog-shade.webp' | asset_url | json }},
         "note": {{ 'hs-mug-note-base.webp' | asset_url | json }},
@@ -58,8 +88,8 @@
         <div class="hs3-mugwrap hs3-mugwrap--hero" data-hs3-hero-mug aria-hidden="true">
           <span class="hs3-example">EXAMPLE</span>
           <div class="hs3-mugs" data-side="dog">
-            <div class="hs3-mugface hs3-mugface--dog"><img src="{{ 'hs-mug-dog-base.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-dog-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="dog"></canvas></div>
-            <div class="hs3-mugface hs3-mugface--note"><img src="{{ 'hs-mug-note-base.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-note-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="note"></canvas></div>
+            <div class="hs3-mugface hs3-mugface--dog"><img src="{{ hero_dog | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-dog-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="dog"></canvas></div>
+            <div class="hs3-mugface hs3-mugface--note"><img src="{{ hero_note | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-note-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="note"></canvas></div>
           </div>
         </div>
         <div class="hs3-peek">

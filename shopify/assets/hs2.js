@@ -645,13 +645,35 @@
         if (price && price.textContent !== prices[id]) price.textContent = prices[id];
         var idIn = buy.querySelector('[data-hs2-variant-id]');
         if (idIn) idIn.value = id;
+        // the variant's own photo (the mug in that color) becomes the product picture
+        var img = json('script[data-hs2-vimages]')[id], main = document.querySelector('[data-hs2-main]');
+        if (img && main && main.getAttribute('src') !== img.src) {
+          main.src = img.src; main.removeAttribute('srcset'); main.alt = img.alt || '';
+          var th = document.querySelector('[data-hs2-thumb="' + img.src + '"]');
+          if (th && document.querySelector('[data-hs2-media]').getAttribute('data-show') === 'photo') {
+            document.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === th ? 'true' : 'false'); });
+          }
+        }
+        swatchTib();
       };
+      swatchTib();
       buy.addEventListener('change', function (e) {
         if (!e.target.closest || !e.target.closest('.tee-variants')) return;
         setTimeout(follow, 80); setTimeout(follow, 500);
       });
       document.addEventListener('teeinblue-event-variant-changed', function () { setTimeout(follow, 80); });
     }
+  }
+
+  /* Teeinblue draws the mug's Color choice as plain text buttons. A dot of each color goes in
+     front of its name (Printful's hex), so the choice reads at a glance; the name stays for
+     screen readers and for anyone who can't tell the colors apart. */
+  var MUG_HEX = { 'black': '#050505', 'dark blue': '#1b1b51', 'dark green': '#226653', 'red': '#e32a2d', 'pink': '#f6a1b1' };
+  function swatchTib() {
+    document.querySelectorAll('#buy .tee-variants .tee-radio').forEach(function (r) {
+      var hex = MUG_HEX[(r.textContent || '').trim().toLowerCase()];
+      if (hex && r.getAttribute('data-hs2-swatch') !== hex) { r.setAttribute('data-hs2-swatch', hex); r.style.setProperty('--hs2-sw', hex); }
+    });
   }
 
   /* ------------------------------------------------------------ Teeinblue bridge
@@ -1110,7 +1132,7 @@
     editDetails();
     var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); unfoldInvalid(); };
     ['teeinblue-event-component-injected', 'teeinblue-event-campaign-loaded', 'teeinblue-event-variant-changed', 'teeinblue-event-customization-changed'].forEach(function (ev) {
-      document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); });
+      document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); setTimeout(swatchTib, 120); });
     });
     tick();
     if ('MutationObserver' in window) {
