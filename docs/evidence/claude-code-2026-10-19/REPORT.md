@@ -63,7 +63,7 @@ Kept as it is in the choose screen. Why: Printful's 2026 guide gives Dec 11 stan
 
 - **"pit" on its own** is not in `KRISH_CALLS`. Cowork recommends adding it beside "pit bull", "pitbull" and "pittie". It is your call and you have not ruled, so "pit" still falls back to "we don't know the breed".
 - **Blanket Christmas cutoff:** waiting on Cowork (item 5).
-- The breed gap list in `breeds-corpus/lookup/README.md` still lists the six breeds Cowork fixed; it is out of date but changes nothing a buyer sees.
+- The breed gap list in `breeds-corpus/lookup/README.md` is updated (19 Oct): fixed, still open on purpose, and "pit" waiting on Krish. Checked by running each name through `hs-breeds.js`.
 
 ## What moved
 
