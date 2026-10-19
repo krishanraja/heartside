@@ -27,7 +27,11 @@ Two checks warn without holding: **breaks** (a line leaves one word alone on its
 
 `python3 tools/qc/test_mug_qc.py` runs it on Teeinblue's three real print files (all pass) and on six broken prints made from them, which it must catch: a line missing, no photo, the background left on, one word alone, text past its box, and the wrong name on the signature.
 
-## How it runs on live orders (approved by Krish, 15 Oct)
+## How it runs on live orders
+
+**From 19 Oct: GitHub Actions** (`.github/workflows/order-qc.yml`, run by `order_qc.py`, tested by `test_order_qc.py`). Krish moved the check off Claude so it needs no connector or scheduled task. It tags `qc-pass` or `qc-hold`, adds one note line and opens a GitHub issue for Krish on any hold. The schedule stays off until Krish has done `ORDER-QC-SETUP.md` and a dry run looks right; then the Claude task below is switched off so the two never tag the same order.
+
+### Before 19 Oct: the Claude scheduled task (approved by Krish, 15 Oct)
 
 Krish approved a twice-daily order check with an AI pre-check on 13 Oct (V3 section 6), and this way of running it on 15 Oct. It is the scheduled task **Heartside order QC**, a fresh Claude session at 07:56 and 16:56 London time, with a push and an email to Krish when a run has something to say. The morning run catches orders placed overnight in the US before Krish's morning confirm, and the afternoon run catches US daytime orders.
 

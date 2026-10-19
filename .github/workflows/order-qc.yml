@@ -1,0 +1,126 @@
+# Order QC for The Morning Mug, twice a day at 07:56 and 16:56 London time (Krish, 19 Oct: off
+# Claude and onto GitHub Actions, so it needs no Claude connector or scheduled task).
+#
+# Each run checks every recent, unfulfilled, untagged mug order's print file with
+# tools/qc/mug_qc.py, tags the order qc-pass or qc-hold, adds one note line, and opens a GitHub
+# issue for Krish on any hold, with the cards attached as a run artifact. It never confirms an
+# order in Teeinblue or Printful, and its token can only read and write orders.
+#
+# One-time setup, by Krish: tools/qc/ORDER-QC-SETUP.md (the Shopify custom app and the
+# SHOPIFY_ORDERS_TOKEN repository secret). Until the secret exists every run stops at the first step.
+#
+# THE SCHEDULE IS OFF. Run it by hand first (Actions > "Order QC" > Run workflow, dry run ticked),
+# then switch it on by uncommenting the four cron lines below.
+
+name: Order QC
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Check and report only: tag nothing, write no notes, open no issue"
+        required: false
+        default: true
+        type: boolean
+  # London is UTC+0 in winter and UTC+1 in summer, so each London time has two UTC slots. The
+  # "London time" step runs only the slot that matches today's offset, even if GitHub starts it late.
+  # schedule:
+  #   - cron: "56 6 * * *"    # 07:56 London in summer (BST)
+  #   - cron: "56 7 * * *"    # 07:56 London in winter (GMT)
+  #   - cron: "56 15 * * *"   # 16:56 London in summer
+  #   - cron: "56 16 * * *"   # 16:56 London in winter
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: order-qc
+  cancel-in-progress: false
+
+jobs:
+  qc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SHOPIFY_STORE: bnf1em-ge.myshopify.com
+      SHOPIFY_ORDERS_TOKEN: ${{ secrets.SHOPIFY_ORDERS_TOKEN }}
+    steps:
+      - name: London time
+        id: when
+        env:
+          SLOT: ${{ github.event.schedule }}
+        run: |
+          offset=$(TZ=Europe/London date +%z)   # +0000 in winter, +0100 in summer
+          run=yes
+          case "$SLOT" in
+            "56 6 * * *"|"56 15 * * *") [ "$offset" = "+0100" ] || run=no ;;
+            "56 7 * * *"|"56 16 * * *") [ "$offset" = "+0000" ] || run=no ;;
+          esac
+          echo "London offset $offset, slot '${SLOT:-manual}': run=$run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - name: Check the secret
+        if: steps.when.outputs.run == 'yes'
+        run: |
+          if [ -z "$SHOPIFY_ORDERS_TOKEN" ]; then
+            echo "::error::Repository secret SHOPIFY_ORDERS_TOKEN is missing. See tools/qc/ORDER-QC-SETUP.md."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.when.outputs.run == 'yes'
+
+      - uses: actions/setup-python@v5
+        if: steps.when.outputs.run == 'yes'
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        if: steps.when.outputs.run == 'yes'
+        run: |
+          sudo apt-get install -y -qq libfribidi0 libharfbuzz0b   # Pillow's text layout (RAQM), as mug_qc draws it
+          pip install -q "pillow>=10" numpy
+          python3 -c "from PIL import features; assert features.check('raqm'), 'Pillow has no RAQM'"
+
+      - name: Check the orders
+        if: steps.when.outputs.run == 'yes'
+        run: |
+          dry=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then dry="--dry-run"; fi
+          mkdir -p qc-out
+          set -o pipefail
+          python3 tools/qc/order_qc.py qc-out $dry | tee qc-out/log.txt
+          {
+            echo "### Order QC"
+            echo '```'
+            cat qc-out/log.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.when.outputs.run == 'yes' && always()
+        with:
+          name: order-qc-cards-run-${{ github.run_number }}
+          path: qc-out
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Tell Krish about holds
+        if: steps.when.outputs.run == 'yes' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          n=$(python3 -c "import json;print(len(json.load(open('qc-out/holds.json'))))")
+          if [ "$n" = "0" ]; then echo "No holds."; exit 0; fi
+          python3 - > body.md <<'EOF'
+          import json, os
+          holds = json.load(open('qc-out/holds.json'))
+          print('Order QC held these orders. Do not confirm them in Teeinblue until the print file is fixed.\n')
+          for h in holds:
+              print(f"- **{h['order']}**: {h['note']}")
+          print(f"\nCards (both faces of the mug, every check): the order-qc-cards artifact on {os.environ['RUN_URL']}")
+          EOF
+          gh issue create --repo "${{ github.repository }}" --assignee krishanraja \
+            --title "Order QC: $n order(s) on hold" --body-file body.md
