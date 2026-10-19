@@ -30,3 +30,16 @@ collie,Collie,Collie Rough,collie-rough,breed,100,Herding Manager,Working Goofba
 blue heeler,Blue Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
 heeler,Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
 red heeler,Red Heeler,Australian Cattle Dog,australian-cattle-dog,breed,100,Herding Manager,Working Goofball,,,medium,
+bloodhound,Bloodhound,Chien de Saint Hubert,chien-de-saint-hubert,breed,100,Scent Detective,Working Goofball,,,medium,FCI lists the Bloodhound as the Chien de Saint-Hubert
+great pyrenees,Great Pyrenees,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium,FCI lists the Great Pyrenees as the Pyrenean Mountain Dog
+pyrenees,Pyrenees,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium,FCI lists the Great Pyrenees as the Pyrenean Mountain Dog
+pyrenean mountain dog,Pyrenean Mountain Dog,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium,FCI lists the Great Pyrenees as the Pyrenean Mountain Dog
+pyr,Pyr,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium,US owners' short name for the Great Pyrenees
+great pyr,Great Pyr,Chien de Montagne des Pyrenees,chien-de-montagne-des-pyrenees,breed,100,Guardian,Working Goofball,,,medium,US owners' short name for the Great Pyrenees
+saint bernard,Saint Bernard,St.bernhardshund - Bernhardiner,st-bernhardshund-bernhardiner,breed,100,Guardian,Working Goofball,,,medium,
+st bernard,St Bernard,St.bernhardshund - Bernhardiner,st-bernhardshund-bernhardiner,breed,100,Guardian,Working Goofball,,,medium,
+samoyed,Samoyed,Samoiedskaïa Sabaka,samoiedska-a-sabaka,breed,100,Spitz Commentator,Working Goofball,,,medium,
+sammy,Sammy,Samoiedskaïa Sabaka,samoiedska-a-sabaka,breed,100,Spitz Commentator,Working Goofball,,,medium,US owners' short name for the Samoyed
+dalmatian,Dalmatian,Dalmatinski Pas,dalmatinski-pas,breed,100,Scent Detective,Working Goofball,,,medium,
+portuguese water dog,Portuguese Water Dog,Cão de Água Português,c-o-de-gua-portugu-s,breed,100,Retriever,Working Goofball,,,medium,
+pwd,Pwd,Cão de Água Português,c-o-de-gua-portugu-s,breed,100,Retriever,Working Goofball,,,medium,

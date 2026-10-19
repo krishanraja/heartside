@@ -1,6 +1,6 @@
 # Repo and Drive: what lives where
 
-Last synced: **13 October 2026**, by a Cowork session at Krish's request ("everything in sync").
+Last synced: **15 October 2026**, by a Cowork session (V3 only, at Krish's request). Before that: 13 October 2026 ("everything in sync").
 
 ## The rule
 
