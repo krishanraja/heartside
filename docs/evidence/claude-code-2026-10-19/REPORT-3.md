@@ -56,3 +56,13 @@ Fix (this PR):
 - Any error after sign-in now writes a one-line `log.txt`, so it shows in the run summary instead of only a traceback. The token is replaced with `[token]` if it ever appears.
 - New tests: the query has no product field, and a refused query fails with Shopify's error and no token.
 - The corrected query was run read-only against the store and validated. The only untagged, unfulfilled order since 5 Oct is #1001 (Tiny Me, For The Tree, no mug), so a dry run should check nothing and pass.
+
+## Second dry run: green
+
+Run 2 (https://github.com/krishanraja/heartside/actions/runs/39222627566), from this PR's branch at 399dd88, dry run:
+
+- Every step was green. Signed in, queried, and wrote the summary: "DRY RUN: nothing tagged. 0 checked, 0 held, 0 waiting for a print file, 1 without a mug." That matches the store: #1001 is the only untagged, unfulfilled order, and it has no mug.
+- The log shows the client ID and secret only as `***`, and no token line. The artifact holds log.txt, summary.json and holds.json (506 bytes); the tests already show no file holds the token.
+- Neither issue step ran: no holds, and the sign-in worked.
+
+Still to do: merge this PR, so main runs the fixed query. Then one real run once a mug order exists, switch the schedule on (Claude Code), and turn off the Claude task "Heartside order QC" (Krish).
