@@ -840,6 +840,9 @@ html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
 .hs2-upsell__go { flex: 0 0 auto; color: var(--muted); }
 #buy .tee-variants .tee-option:not(:has(.tee-radio + .tee-radio)):not(:has(option + option)) { display: none; }
 #buy .tee-option__title { font-size: 14px; font-weight: 700; text-transform: none !important; }
+/* the mug's Color choice: a dot of the color before its name (hs2.js swatchTib) */
+#buy .tee-radio[data-hs2-swatch] .tee-radio-label { display: inline-flex !important; align-items: center; gap: 8px; }
+#buy .tee-radio[data-hs2-swatch] .tee-radio-label::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--hs2-sw); box-shadow: inset 0 0 0 1px rgba(18, 16, 16, .2); }
 #buy .tee-btn.tee-btn--atc {
   min-height: 56px; width: 100%; border: 0; border-radius: 14px; background: var(--ink); color: var(--cream);
   font-family: var(--sans); font-size: 17px; font-weight: 700; letter-spacing: 0; text-transform: none; cursor: pointer;

@@ -29,7 +29,7 @@
     return { screen: 'hero', step: 1, dog: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
       typed: {}, ai: {}, fu: null, edits: {}, composed: null, gift: null, tabbed: false,
-      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false };
+      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, mugColor: '' };
   }
   function load() {
     var s = null;
@@ -509,6 +509,7 @@
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
+    if (g === 'mug' && !ui.editing) h += mugSwatches();
     if (ui.editing) {
       h += '<div class="hs3-edit">' + keys.map(function (k) {
         var t = lineFor(k) || '';
@@ -542,10 +543,34 @@
   // from slightly above. One constant for every row looked flat and tilted (Krish, 15 Oct).
   var MUG = { W: 2700, H: 1050, RPX: 487.5, R: 330, TOP: 260.5714, BAND: 742.2857, RIM_TOP: 34.0171, RIM_BOT: 97.9695, Y0: 150, CROP: 1060, OUT: 640, OUTH: 549, DS: 0.5,
     dog: { cx: 726, x0: 80, centre: 585 }, note: { cx: 472.2857, x0: 60, centre: 2115 } };
-  var mugCache = {}, mugAssets = null, mugPhoto = { src: '', p: null };
+  var mugCache = {}, mugAssets = {}, mugPhoto = { src: '', p: null };
+  /* The mug's colors (inside and handle), one Shopify variant each, Black first (Krish, 19 Oct,
+     after Mowgli's pink mug). The section lists only the colors the product has, with each
+     one's variant and its recolored photo layers (tools/realphoto/recolor_mug.py). */
+  function mugColors() { return (cfg.mug && cfg.mug.colors) || []; }
+  function mugColor() {
+    var cs = mugColors();
+    for (var i = 0; i < cs.length; i++) if (cs[i].name === S.mugColor) return cs[i];
+    return cs[0] || null;
+  }
+  function mugSwatches() {
+    var cs = mugColors(), cur = mugColor();
+    if (cs.length < 2) return '';
+    return '<div class="hs3-swatches"><span class="hs3-small" id="hs3-mugcolor">Mug color: <strong>' + esc(cur.name) + '</strong></span><span class="hs3-swatches__row" role="radiogroup" aria-labelledby="hs3-mugcolor">' + cs.map(function (c) {
+      var on = c === cur;
+      return '<button type="button" class="hs3-swatch' + (on ? ' is-on' : '') + '" role="radio" aria-checked="' + on + '" aria-label="' + esc(c.name) + '" title="' + esc(c.name) + '" data-hs3="mugColor" data-v="' + esc(c.name) + '" style="--sw:' + esc(c.hex) + '"></button>';
+    }).join('') + '</span></div>';
+  }
+  function setMugColor(v) {
+    if (!mugColors().some(function (c) { return c.name === v; })) return;
+    S.mugColor = v; save(); render();
+    var b = frame.querySelector('[data-hs3="mugColor"][data-v="' + v + '"]');
+    if (b) b.focus();
+    track('mug_color', { color: v });
+  }
   function mugLineTexts() { return giftKeys('mug').map(function (k) { return evenBreak(lineFor(k) || ''); }); }
   function mugFaces(n) {
-    var m = cfg.mug || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc(), texts = mugLineTexts();
+    var m = cfg.mug || {}, c = mugColor() || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc(), texts = mugLineTexts();
     var layer = function (url, cls) { return url ? '<img src="' + esc(url) + '" alt="" width="640" height="549" class="' + cls + '">' : ''; };
     var canvas = function (face, label) { return '<canvas class="hs3-mugface__canvas" width="' + MUG.OUT + '" height="' + MUG.OUTH + '" data-hs3-mug="' + face + '" role="img" aria-label="' + esc(label) + '"></canvas>'; };
     var dog = src ? '<img data-hs3-photo src="' + esc(src) + '" alt="" class="hs3-mugface__dog">' : '<span class="hs3-mugface__nodog">' + PAW + '</span>';
@@ -553,9 +578,9 @@
       return '<span class="hs3-line hs3-mugface__line hs3-mugface__line--' + (i + 1) + ' ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(t) + '</span>';
     }).join('');
     var h = '<div class="hs3-mugwrap"><div class="hs3-mugs" data-side="' + side + '">';
-    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(m.dog, 'hs3-mugface__base') + layer(m.dogShade, 'hs3-mugface__shade');
+    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(c.dog || m.dog, 'hs3-mugface__base') + layer(m.dogShade, 'hs3-mugface__shade');
     h += '<span class="hs3-mugface__flat" aria-hidden="true"><span class="hs3-mugface__photo">' + dog + '</span></span>' + canvas('dog', src ? n.dog + ' on the mug' : "Your dog's photo goes here") + '</div>';
-    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(m.note, 'hs3-mugface__base') + layer(m.noteShade, 'hs3-mugface__shade');
+    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(c.note || m.note, 'hs3-mugface__base') + layer(m.noteShade, 'hs3-mugface__shade');
     h += '<span class="hs3-mugface__flat" aria-hidden="true">' + lines + '<span class="hs3-mugface__sign">' + PAW + '<span>Love, ' + esc(n.dog) + '</span></span></span>' + canvas('note', texts.join(' ').replace(/\n/g, ' ') + ' Love, ' + n.dog) + '</div>';
     h += '</div>' + (ui.editing ? '' : '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>') + '</div>';
     return h;
@@ -563,21 +588,24 @@
   function loadImg(src) {
     return new Promise(function (resolve, reject) { var i = new Image(); i.onload = function () { resolve(i); }; i.onerror = reject; i.src = src; });
   }
-  function loadMugAssets() {
-    if (mugAssets) return mugAssets;
+  function loadMugAssets(color) {
+    var c = color || mugColor() || {}, key = c.name || '';
+    if (mugAssets[key]) return mugAssets[key];
     var m = cfg.mug || {};
     var font = function (name, url) {
       if (!window.FontFace || !document.fonts || !url) return Promise.reject(new Error('no font'));
       return new window.FontFace(name, 'url(' + url + ')').load().then(function (f) { document.fonts.add(f); });
     };
-    mugAssets = Promise.all([loadImg(m.dog), loadImg(m.dogShade), loadImg(m.note), loadImg(m.noteShade), loadImg(m.paw), font('HS Note Text', m.fontText), font('HS Note Italic', m.fontItalic)])
+    var p = Promise.all([loadImg(c.dog || m.dog), loadImg(m.dogShade), loadImg(c.note || m.note), loadImg(m.noteShade), loadImg(m.paw), font('HS Note Text', m.fontText), font('HS Note Italic', m.fontItalic)])
       .then(function (r) { return { dog: { base: r[0], shade: r[1] }, note: { base: r[2], shade: r[3] }, paw: r[4] }; });
-    mugAssets.catch(function () { mugAssets = null; });
-    return mugAssets;
+    mugAssets[key] = p;
+    p.catch(function () { delete mugAssets[key]; });
+    return p;
   }
   function mugKey(face) {
-    if (face === 'dog') return 'dog|' + photoSrc();
-    return 'note|' + JSON.stringify([mugLineTexts(), Math.min(ui.revealN, 3), names().dog]);
+    var c = (mugColor() || {}).name || '';
+    if (face === 'dog') return c + '|dog|' + photoSrc();
+    return c + '|note|' + JSON.stringify([mugLineTexts(), Math.min(ui.revealN, 3), names().dog]);
   }
   // the note face at print size: lines 1 to 3 (70 px, 84 px rows, centred in 190 px boxes),
   // the paw, and "Love, [dog]" (96 px, shrunk to fit 775 px as Teeinblue does)
@@ -685,7 +713,7 @@
   function heroMug() {
     var box = frame && frame.querySelector('[data-hs3-hero-mug]'), m = cfg.mug || {};
     if (!box || !m.sample) return;
-    Promise.all([loadMugAssets(), loadImg(m.sample)]).then(function (r) {
+    Promise.all([loadMugAssets(mugColors()[0]), loadImg(m.sample)]).then(function (r) {
       var spec = { texts: HERO_MUG.texts.map(evenBreak), ink: 3, name: HERO_MUG.name };
       box.querySelectorAll('canvas[data-hs3-heromug]').forEach(function (c) {
         var face = c.getAttribute('data-hs3-heromug');
@@ -765,9 +793,10 @@
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('home') || lineFor('meaning') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
     h += '<div class="hs3-opts">' + GIFTS.map(function (k) {
       var on = !!S.sel[k];
-      var desc = k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
+      var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
       return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BISCUIT\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
     }).join('') + '</div>';
+    if (S.sel.mug) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
     // Dec 10 holds for every gift (Krish, 19 Oct). Printful's 2026 guide: Dec 11 for US-made home
     // items to the US, Nov 26 for anything made outside the US. The sherpa blanket can come from
@@ -785,7 +814,13 @@
     var c = chooseModel();
     if (!c.count || c.missing.length) return;
     shareWithBridge();
-    var q = GIFTS.filter(function (k) { return S.sel[k]; }).map(function (k) { return { url: cfg.gifts[k].url, title: GN[k] }; });
+    // the mug opens on the color picked here; Teeinblue follows the variant in the link
+    var mc = mugColor();
+    var q = GIFTS.filter(function (k) { return S.sel[k]; }).map(function (k) {
+      var u = cfg.gifts[k].url;
+      if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
+      return { url: u, title: GN[k] };
+    });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
     track('add_to_cart', { gifts: q.length, picks: GIFTS.filter(function (k) { return S.sel[k]; }).join(',') });
     window.location.href = q[0].url;
@@ -1039,6 +1074,7 @@
       case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; S.sel[g] = true; ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
       case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
       case 'sel': S.sel[v] = !S.sel[v]; save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
+      case 'mugColor': setMugColor(v); break;
       case 'ship': S.shipTo = v === 'me' ? 'me' : 'rec'; save(); render(); break;
       case 'add': addToCart(); break;
       case 'toReveal': ui.revealN = 9; S.screen = 'reveal'; save(); render(); break;
@@ -1065,5 +1101,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests
-  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle, mug: { MUG: MUG, drawNote: drawNote, drawDog: drawDog, wrapOnto: wrapOnto, loadMugAssets: loadMugAssets, renderFace: renderFace } };
+  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle, mug: { MUG: MUG, drawNote: drawNote, drawDog: drawDog, wrapOnto: wrapOnto, loadMugAssets: loadMugAssets, renderFace: renderFace, mugColors: mugColors, mugColor: mugColor } };
 })();

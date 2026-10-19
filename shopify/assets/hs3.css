@@ -188,6 +188,13 @@
 .hs3-strip { margin: 12px 16px 0; background: var(--paper); border-radius: 12px; padding: 10px 12px; display: flex; gap: 12px; align-items: center; box-shadow: 0 0 0 1px #EFE6DD; }
 .hs3-strip .hs3-line { font-size: 13.5px; }
 .hs3-strip .hs3-sign { font-size: 15px; }
+/* the mug's color: round swatches, named for screen readers, under the reveal's mug and the choose list */
+.hs3-swatches { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 14px; padding: 12px 16px 0; }
+.hs3-swatches__row { display: flex; gap: 8px; }
+.hs3-swatch { appearance: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; display: grid; place-items: center; }
+.hs3-swatch::before { content: ""; width: 30px; height: 30px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 1px rgba(18, 16, 16, .18); }
+.hs3-swatch.is-on::before { box-shadow: 0 0 0 2px var(--cream, #FBF6F1), 0 0 0 4px var(--ink, #121010); }
+.hs3-swatch:focus-visible { outline: 3px solid var(--ink, #121010); outline-offset: 0; }
 .hs3-opts { padding: 14px 16px 0; display: flex; flex-direction: column; gap: 8px; }
 .hs3-opt { appearance: none; display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 1.5px solid var(--line); border-radius: 14px; padding: 11px 14px; min-height: 64px; cursor: pointer; }
 .hs3-opt.is-on { background: #fff; border: 2px solid var(--ink); }
@@ -255,7 +262,8 @@
   /* the reveal: the gift large on the left, its name, the tabs, Biscuit's reason and the
      buttons on the right */
   .hs3--app .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-content: start; padding: 0 40px 40px; }
-  .hs3__frame[data-hs3-screen="reveal"] { grid-template-areas: "top top" "stage h2" "stage tabs" "stage note" "stage says" "stage dock" "stage ."; grid-template-rows: auto auto auto auto auto auto 1fr; }
+  .hs3__frame[data-hs3-screen="reveal"] { grid-template-areas: "top top" "stage h2" "stage tabs" "stage note" "stage color" "stage says" "stage dock" "stage ."; grid-template-rows: auto auto auto auto auto auto auto 1fr; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-swatches { grid-area: color; padding: 18px 0 0; justify-content: flex-start; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-top { grid-area: top; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-h2 { grid-area: h2; padding: 28px 0 0; font-size: 44px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs { grid-area: tabs; padding: 18px 0 8px; }
@@ -266,7 +274,8 @@
   .hs3__frame[data-hs3-screen="reveal"] .hs3-bubble { max-width: 460px; font-size: 17px; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-dock { grid-area: dock; padding: 22px 0 0; }
   /* choosing: the words and photo on the left, the gifts, ship-to and the cart button on the right */
-  .hs3__frame[data-hs3-screen="choose"] { grid-template-areas: "top top" "h2 opts" "sub opts" "strip opts" "strip ship" "strip dock" "strip ."; grid-template-rows: auto auto auto auto auto auto 1fr; }
+  .hs3__frame[data-hs3-screen="choose"] { grid-template-areas: "top top" "h2 opts" "sub opts" "strip opts" "strip color" "strip ship" "strip dock" "strip ."; grid-template-rows: auto auto auto auto auto auto auto 1fr; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-swatches { grid-area: color; padding: 12px 0 0; justify-content: flex-start; }
   .hs3__frame[data-hs3-screen="choose"] .hs3-sub { grid-area: sub; padding: 8px 0 0; font-size: 17px; }
   .hs3__frame[data-hs3-screen="choose"] .hs3-strip { grid-area: strip; align-self: start; margin: 28px 0 0; padding: 32px 30px; gap: 26px; transform: rotate(-0.8deg); box-shadow: 0 22px 36px -24px rgba(30, 23, 20, .5), 0 0 0 1px #EFE6DD; }
   .hs3__frame[data-hs3-screen="choose"] .hs3-photo--strip { width: 112px; height: 112px; flex: none; }

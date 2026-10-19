@@ -55,6 +55,33 @@ The brighter ones (Blue, Orange, Yellow, Golden Yellow, Green) fight with a dog'
 
 `tools/qc/order_qc.py` reads each mug line item's Shopify variant ("White Ceramic Mug with Color Inside / Black / 11 oz") and its `_tib_fulfilled_sku`. It checks that the Printful variant Teeinblue will make is the color the buyer chose. A mismatch, a missing Printful variant or an unknown color is a `qc-hold`, and the reason goes in the order note and on the card. A pass records the color in the note line ("Color: Black (Printful 11051)"). The order query only adds `variantTitle`, which the app's `read_orders` scope covers. Tests: `python3 tools/qc/test_order_qc.py` passes all checks, including 8 new color ones.
 
+## Status after Krish's yes (19 Oct: "those five colors, yes to steps 2, 3, and 4")
+
+**One change of plan.** The new variants have to come from Teeinblue, not from Shopify. The live variant's SKU is `bnf_1043122_9161262`, which is Teeinblue's campaign 1043122. Teeinblue sends Printful the right mug only for variants it pushed itself, so a color added by hand in Shopify could print pink. The Teeinblue steps are in `MUG-COLORS-TEEINBLUE.md`, for Cowork or Krish, since Claude Code can't reach Teeinblue's admin. The Shopify product is unchanged.
+
+**Built and tested in this PR:**
+- **`tools/realphoto/recolor_mug.py`** recolors a plain pink mug base to each Printful hex. The pink is found by hue on the unprinted base, the shading is kept, and the white band stays as it is. It's used for every pink base:
+  - **Teeinblue mockup bases:** `design/teeinblue/mug-v3/colors/mk-{outward,drinker}-base-<color>.png`, ready to upload. The shade and mask layers carry no pink, so they stay the same.
+  - **Shopify images:** `design/teeinblue/mug-v3/shopify-images/colors/the-morning-mug-{outward,drinker}-<color>.jpg`, rendered with `shopify_mug_images.py` on the recolored bases with the same print file as the approved pink pair. See `mug-colors/shopify-images-board.jpg`.
+  - **The chat's mug layers:** `shopify/assets/hs-mug-{dog,note}-base-<color>.webp`. See `mug-colors/chat-mug-layers.jpg`.
+- **Chat (`hs3-chat.liquid`, `hs3.js`, `hs3.css`):**
+  - The section lists the mug colors the picked product really has, Black first. Each color carries its variant ID and its layers.
+  - With two or more colors there are round, named swatches ("Mug color: Black") under the reveal's mug and under the choose list when the mug is picked. Picking one recolors the mug drawing live, the choose row reads "11 oz ceramic, black inside", and the mug's link carries `&variant=<id>`. On desktop the swatches have their own grid row on both screens.
+  - The first screen's example mug takes the first color, which is Black once Black exists.
+  - With one color, as today, nothing changes. On phones, the new code without colors matches the live site pixel for pixel on the reveal and choose screens; the only differences were 823 header pixels of anti-aliasing noise, at most 8 out of 255.
+- **Product page (`hs2-product.liquid`, `hs2.js`, `hs2.css`):**
+  - The page opens on the chosen variant's own photo.
+  - When the color is changed in Teeinblue, the photo follows it.
+  - Teeinblue's Color choices get a dot of each color in front of the name. The theme already hides an option with one value, so the Color choice appears by itself with five.
+- **Tested on the live homepage**, with the new files swapped in and five test colors in the config, at 1440, 1024, 390 and 360 px:
+  - each swatch switches the layer, the checked state and the focus, and the mug redraws;
+  - the choose row and the link are right (`/products/the-morning-mug?view=gift&variant=<id>`);
+  - there's no sideways scroll.
+
+  Screens: `mug-colors/desktop-reveal-choose.jpg`, `mug-colors/phone-reveal-choose.jpg`. The section's Liquid was rendered with liquidjs for one color (no swatches), three colors (Black first, plain Blue left out) and no product.
+
+**What I couldn't verify yet:** Teeinblue's Preview per color, the cart lines per color and the sample orders. All three need the Teeinblue steps first.
+
 ## 6. Verification once 2 to 4 are live (Krish pays for the samples)
 
 - Preview for each color on desktop and phone.
