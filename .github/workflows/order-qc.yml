@@ -4,10 +4,12 @@
 # Each run checks every recent, unfulfilled, untagged mug order's print file with
 # tools/qc/mug_qc.py, tags the order qc-pass or qc-hold, adds one note line, and opens a GitHub
 # issue for Krish on any hold, with the cards attached as a run artifact. It never confirms an
-# order in Teeinblue or Printful, and its token can only read and write orders.
+# order in Teeinblue or Printful, and the app it signs in as can only read and write orders.
 #
-# One-time setup, by Krish: tools/qc/ORDER-QC-SETUP.md (the Shopify custom app and the
-# SHOPIFY_ORDERS_TOKEN repository secret). Until the secret exists every run stops at the first step.
+# Signing in (Krish, 19 Oct): the Dev Dashboard app "Heartside order QC" and its client
+# credentials. Each run trades SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET for a short-lived access
+# token inside order_qc.py, masks it at once, and keeps it in memory. It is never printed, logged,
+# summarized or written to a file. Setup: tools/qc/ORDER-QC-SETUP.md.
 #
 # THE SCHEDULE IS OFF. Run it by hand first (Actions > "Order QC" > Run workflow, dry run ticked),
 # then switch it on by uncommenting the four cron lines below.
@@ -44,7 +46,8 @@ jobs:
     timeout-minutes: 20
     env:
       SHOPIFY_STORE: bnf1em-ge.myshopify.com
-      SHOPIFY_ORDERS_TOKEN: ${{ secrets.SHOPIFY_ORDERS_TOKEN }}
+      SHOPIFY_CLIENT_ID: ${{ secrets.SHOPIFY_CLIENT_ID }}
+      SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
     steps:
       - name: London time
         id: when
@@ -60,11 +63,11 @@ jobs:
           echo "London offset $offset, slot '${SLOT:-manual}': run=$run"
           echo "run=$run" >> "$GITHUB_OUTPUT"
 
-      - name: Check the secret
+      - name: Check the secrets
         if: steps.when.outputs.run == 'yes'
         run: |
-          if [ -z "$SHOPIFY_ORDERS_TOKEN" ]; then
-            echo "::error::Repository secret SHOPIFY_ORDERS_TOKEN is missing. See tools/qc/ORDER-QC-SETUP.md."
+          if [ -z "$SHOPIFY_CLIENT_ID" ] || [ -z "$SHOPIFY_CLIENT_SECRET" ]; then
+            echo "::error::Repository secrets SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are both needed. See tools/qc/ORDER-QC-SETUP.md."
             exit 1
           fi
 
@@ -88,15 +91,21 @@ jobs:
         run: |
           dry=""
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then dry="--dry-run"; fi
-          mkdir -p qc-out
-          set -o pipefail
-          python3 tools/qc/order_qc.py qc-out $dry | tee qc-out/log.txt
-          {
-            echo "### Order QC"
-            echo '```'
-            cat qc-out/log.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          # no tee: stdout carries the ::add-mask:: line, which must never reach a file.
+          # order_qc.py writes its own log.txt for the summary.
+          python3 tools/qc/order_qc.py qc-out $dry
+
+      - name: Summary
+        if: steps.when.outputs.run == 'yes' && always()
+        run: |
+          if [ -f qc-out/log.txt ]; then
+            {
+              echo "### Order QC"
+              echo '```'
+              cat qc-out/log.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - uses: actions/upload-artifact@v4
         if: steps.when.outputs.run == 'yes' && always()
@@ -124,3 +133,19 @@ jobs:
           EOF
           gh issue create --repo "${{ github.repository }}" --assignee krishanraja \
             --title "Order QC: $n order(s) on hold" --body-file body.md
+
+      - name: Tell Krish the sign-in failed
+        if: failure() && steps.when.outputs.run == 'yes' && hashFiles('qc-out/auth-error.txt') != '' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "Order QC could not sign in to Shopify, so no order was checked or tagged on this run."
+            echo
+            cat qc-out/auth-error.txt
+            echo
+            echo "Check that the Dev Dashboard app \"Heartside order QC\" is still installed and that SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET match it (tools/qc/ORDER-QC-SETUP.md). Run: $RUN_URL"
+          } > body.md
+          gh issue create --repo "${{ github.repository }}" --assignee krishanraja \
+            --title "Order QC: Shopify sign-in failed" --body-file body.md

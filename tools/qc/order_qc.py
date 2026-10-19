@@ -11,11 +11,17 @@ For each recent unfulfilled order with no qc tag yet:
 
 Orders with no mug are left untagged, as the scheduled task did. A mug whose print file isn't
 there yet is skipped and tried again on the next run. It never touches Teeinblue or Printful,
-and the token it uses can only read and write orders.
+and the app it signs in as can only read and write orders.
 
-  SHOPIFY_STORE=bnf1em-ge.myshopify.com SHOPIFY_ORDERS_TOKEN=... python3 tools/qc/order_qc.py out_dir [--dry-run]
+It signs in with the Dev Dashboard app's client credentials (Krish, 19 Oct): each run trades
+SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET for an access token (good for about 24 hours) and
+keeps it in memory only. On GitHub Actions the token is masked the moment it arrives. It is
+never printed, and never written to the log, the summary, an issue or a file.
+
+  SHOPIFY_STORE=bnf1em-ge.myshopify.com SHOPIFY_CLIENT_ID=... SHOPIFY_CLIENT_SECRET=... \
+    python3 tools/qc/order_qc.py out_dir [--dry-run]
 """
-import argparse, datetime, json, os, re, sys, urllib.request
+import argparse, datetime, json, os, re, sys, urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -34,6 +40,50 @@ query($q: String!) {
 }"""
 TAG = 'mutation($id: ID!, $tags: [String!]!) { tagsAdd(id: $id, tags: $tags) { userErrors { field message } } }'
 NOTE = 'mutation($input: OrderInput!) { orderUpdate(input: $input) { userErrors { field message } } }'
+
+
+class AuthError(Exception):
+    """the token exchange failed: Shopify's HTTP status and its error text, never a secret"""
+    def __init__(self, status, text):
+        super().__init__(f'HTTP {status}: {text}' if status else text)
+
+
+def shopify_error(raw):
+    """Shopify's own words from an error reply: error and error_description, or the start of the body"""
+    try:
+        j = json.loads(raw)
+        parts = [str(j.get(k)) for k in ('error', 'error_description', 'errors') if j.get(k)]
+        if parts:
+            return ': '.join(parts)
+    except (ValueError, AttributeError):
+        pass
+    return ' '.join(raw.split())[:300] or 'no error text'
+
+
+def access_token(store, client_id, client_secret, opener=urllib.request.urlopen):
+    """the client credentials grant: one POST, one access token for this run"""
+    scrub = lambda t: t.replace(client_secret, '[secret]').replace(client_id, '[client id]')
+    req = urllib.request.Request(f'https://{store}/admin/oauth/access_token',
+                                 data=urllib.parse.urlencode({'grant_type': 'client_credentials', 'client_id': client_id, 'client_secret': client_secret}).encode(),
+                                 headers={'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'})
+    try:
+        with opener(req, timeout=30) as r:
+            raw = r.read().decode('utf-8', 'replace')
+            status = getattr(r, 'status', 200)
+    except urllib.error.HTTPError as e:
+        raise AuthError(e.code, scrub(shopify_error(e.read().decode('utf-8', 'replace')))) from None
+    except urllib.error.URLError as e:
+        raise AuthError(0, scrub(f'could not reach Shopify ({e.reason})')) from None
+    try:
+        token = json.loads(raw).get('access_token')
+    except ValueError:
+        token = None
+    if not token:
+        raise AuthError(status, scrub('the reply has no access_token: ' + shopify_error(raw)))
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        sys.stdout.write(f'::add-mask::{token}\n')  # the runner hides it from here on; this line is never shown
+        sys.stdout.flush()
+    return token
 
 
 class Shopify:
@@ -121,17 +171,36 @@ def run(shop, out, dry, now=None):
     return summary
 
 
-if __name__ == '__main__':
+def report(s, dry):
+    lines = [f"{'DRY RUN: nothing tagged. ' if dry else ''}{len(s['checked'])} checked, {len(s['holds'])} held, "
+             f"{len(s['waiting'])} waiting for a print file, {s['no_mug']} without a mug."]
+    lines += [f"  {e['order']}: {e['verdict']}. {e['note']}" for e in s['checked']]
+    return lines
+
+
+def main(argv=None, env=None, opener=urllib.request.urlopen, shop=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('out')
     ap.add_argument('--dry-run', action='store_true', help='check and report, but tag nothing and write no notes')
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
+    env = os.environ if env is None else env
     os.makedirs(a.out, exist_ok=True)
-    store, token = os.environ.get('SHOPIFY_STORE'), os.environ.get('SHOPIFY_ORDERS_TOKEN')
-    if not store or not token:
-        sys.exit('SHOPIFY_STORE and SHOPIFY_ORDERS_TOKEN must be set (tools/qc/ORDER-QC-SETUP.md).')
-    s = run(Shopify(store, token), a.out, a.dry_run)
-    print(f"{'DRY RUN: nothing tagged. ' if a.dry_run else ''}{len(s['checked'])} checked, {len(s['holds'])} held, "
-          f"{len(s['waiting'])} waiting for a print file, {s['no_mug']} without a mug.")
-    for e in s['checked']:
-        print(f"  {e['order']}: {e['verdict']}. {e['note']}")
+    log = lambda lines: open(os.path.join(a.out, 'log.txt'), 'w').write('\n'.join(lines) + '\n')
+    store, cid, secret = env.get('SHOPIFY_STORE'), env.get('SHOPIFY_CLIENT_ID'), env.get('SHOPIFY_CLIENT_SECRET')
+    if not (store and cid and secret):
+        msg = 'SHOPIFY_STORE, SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET must be set (tools/qc/ORDER-QC-SETUP.md).'
+        log([msg]); print(msg); return 1
+    try:
+        token = access_token(store, cid, secret, opener)
+    except AuthError as e:
+        msg = f'Shopify token exchange failed, so no order was checked. {e}'
+        open(os.path.join(a.out, 'auth-error.txt'), 'w').write(msg + '\n')
+        log([msg]); print(f'::error::{msg}'); return 2
+    s = run(shop or Shopify(store, token), a.out, a.dry_run)
+    lines = report(s, a.dry_run)
+    log(lines); print('\n'.join(lines))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
