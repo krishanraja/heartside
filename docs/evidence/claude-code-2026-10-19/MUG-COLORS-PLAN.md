@@ -87,3 +87,24 @@ The brighter ones (Blue, Orange, Yellow, Golden Yellow, Green) fight with a dog'
 - Preview for each color on desktop and phone.
 - A cart line per color, showing the right variant, `_tib_fulfilled_sku` and the order properties.
 - One sample order for each new color: Black, Dark Blue, Dark Green and Red. Each must get `qc-pass` with its color in the note, and the mug that arrives must match.
+
+## Live (19 Oct, evening)
+
+Teeinblue pushed the five colors, with Images ticked. Then Claude Code (step 3, approved):
+- **Variants, as Teeinblue made them:**
+  - Black 58264192418174 (SKU `bnf_1043122_9161256`)
+  - Dark Blue 58264192450942 (`..._9161267`)
+  - Dark Green 58264192483710 (`..._9161268`)
+  - Pink 58215128727934 (`..._9161262`, unchanged)
+  - Red 58264192516478 (`..._9161263`)
+
+  All are $29.00, and Black is first.
+- **Images.** I uploaded the approved pair (dog face, note face) for all five colors, the pink pair included, because Teeinblue's push had removed it. Each variant's image is its own dog face, and the 10 approved images lead the gallery. Teeinblue's 10 mockups (sample words, "Love, Bartholomew Jr") are still on the product, after the approved ones. Removing them needs Krish's yes.
+- **Checked live at 1440 and 390 px:**
+  - The chat lists the five colors with their real variant IDs, Black first.
+  - The product page opens on the variant's photo.
+  - Teeinblue's Color choice shows a dot for each color.
+  - Picking a color changes the URL, the form's variant, the price ($29.00), the photo and Teeinblue's Preview (Dark Green checked in the Preview).
+- **Open:**
+  - The mug's description is Printful's stock text, with an exclamation mark and 15 oz sizes, and it shows on the page, because the gift template's description block has no text of its own. Fixing it is a product data or theme change, so it waits for Krish's yes.
+  - Cart lines and `_tib_fulfilled_sku` per color get checked on Krish's sample orders, through order QC.
