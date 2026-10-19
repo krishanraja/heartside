@@ -11,8 +11,8 @@
 # token inside order_qc.py, masks it at once, and keeps it in memory. It is never printed, logged,
 # summarized or written to a file. Setup: tools/qc/ORDER-QC-SETUP.md.
 #
-# THE SCHEDULE IS OFF. Run it by hand first (Actions > "Order QC" > Run workflow, dry run ticked),
-# then switch it on by uncommenting the four cron lines below.
+# THE SCHEDULE IS ON (Krish, 19 Oct, after green dry runs 2 and 3 and a real run). A manual run
+# still defaults to dry run.
 
 name: Order QC
 
@@ -26,11 +26,11 @@ on:
         type: boolean
   # London is UTC+0 in winter and UTC+1 in summer, so each London time has two UTC slots. The
   # "London time" step runs only the slot that matches today's offset, even if GitHub starts it late.
-  # schedule:
-  #   - cron: "56 6 * * *"    # 07:56 London in summer (BST)
-  #   - cron: "56 7 * * *"    # 07:56 London in winter (GMT)
-  #   - cron: "56 15 * * *"   # 16:56 London in summer
-  #   - cron: "56 16 * * *"   # 16:56 London in winter
+  schedule:
+    - cron: "56 6 * * *"    # 07:56 London in summer (BST)
+    - cron: "56 7 * * *"    # 07:56 London in winter (GMT)
+    - cron: "56 15 * * *"   # 16:56 London in summer
+    - cron: "56 16 * * *"   # 16:56 London in winter
 
 permissions:
   contents: read
