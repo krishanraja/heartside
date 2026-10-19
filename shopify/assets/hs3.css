@@ -219,13 +219,16 @@
 @media (prefers-reduced-motion: reduce) { .hs3 *, .hs3 *::before, .hs3 *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 380px) {
 }
-@media (min-width: 900px) { .hs3__frame { border-left: 1px solid #EFE6DD; border-right: 1px solid #EFE6DD; } }
+/* the space cleared under the header is the page's own cream, not the theme's grey */
+.hs3-section { background: #FBF6F1; }
+@media (min-width: 900px) and (max-width: 999px) { .hs3__frame { border-left: 1px solid #EFE6DD; border-right: 1px solid #EFE6DD; } }
 /* Desktop (Krish, 19 Oct: "there is no desktop experience"). The first screen becomes a real
    wide page: the words and the button on the left, the turning mug large on the right, all in
    one screen. The chat, reveal and gift picker keep their single column, as a roomier panel. */
 @media (min-width: 1000px) {
   .hs3__frame[data-hs3-screen="hero"] { max-width: 1200px; min-height: calc(100svh - var(--hs2-clear, 120px)); border: 0; padding: 0 56px 40px; }
-  .hs3__frame[data-hs3-screen="hero"] .hs3-ribbon { margin: 0 -56px; }
+  .hs3 { overflow-x: clip; }
+  .hs3__frame[data-hs3-screen="hero"] .hs3-ribbon { margin: 0 calc(50% - 50vw); }
   .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art"; grid-template-rows: 1fr 1fr; column-gap: 64px; align-items: center; }
   .hs3-hero__copy { grid-area: copy; align-self: end; padding: 32px 0 0; gap: 18px; }
   .hs3-hero__h { font-size: clamp(56px, 5.4vw, 84px); }
