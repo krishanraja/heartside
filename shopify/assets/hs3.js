@@ -769,6 +769,10 @@
       return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BISCUIT\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
     }).join('') + '</div>';
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
+    // Dec 10 holds for every gift (Krish, 19 Oct). Printful's 2026 guide: Dec 11 for US-made home
+    // items to the US, Nov 26 for anything made outside the US. The sherpa blanket can come from
+    // the US, Europe or Latvia. TODO: on the first blanket order, check which facility Printful
+    // routes it to; if it is not the US, the blanket needs an earlier date here.
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. Order by Dec 10 for Christmas. A real person checks every order before it prints. Misprints are remade free.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Add to cart · ' + fmt(c.total) : 'Add ' + c.count + ' gifts to cart · ' + fmt(c.total));
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
