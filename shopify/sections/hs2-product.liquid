@@ -91,6 +91,14 @@
       {%- if product.media.size > 0 -%}
         {%- comment -%} the chosen variant's own photo first (the mug's color), else the product's {%- endcomment -%}
         {%- assign first = current.featured_media | default: product.featured_media -%}
+        {%- comment -%} A gift sold in colors (the mug) has a pair of photos per color, alt "…, black inside: …".
+          Only the chosen color's pair is shown; hs2.js swaps the pair when the color changes. {%- endcomment -%}
+        {%- assign color_key = '' -%}
+        {%- for opt in product.options_with_values -%}
+          {%- if opt.name == 'Color' and opt.values.size > 1 -%}
+            {%- assign color_key = current.options[forloop.index0] | downcase | prepend: ', ' | append: ' inside' -%}
+          {%- endif -%}
+        {%- endfor -%}
         <div class="hs2-product__main">
           <img data-hs2-main src="{{ first | image_url: width: 1200 }}"
             srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
@@ -107,8 +115,9 @@
                 <span>Yours</span>
               </button>
             {%- endif -%}
-            {%- for m in product.media limit: 8 -%}
-              <button type="button" data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
+            {%- for m in product.media limit: 12 -%}
+              {%- assign m_alt = m.alt | downcase -%}
+              <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
                 <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
               </button>
             {%- endfor -%}
