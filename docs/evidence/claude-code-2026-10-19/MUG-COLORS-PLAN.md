@@ -29,6 +29,8 @@ Product 403 is the "White Ceramic Mug with Color Inside", sublimation, with 16 v
 
 The brighter ones (Blue, Orange, Yellow, Golden Yellow, Green) fight with a dog's photo on the other side, so they're left out. Every one is in stock at a US facility. Dark Blue and Dark Green have no EU stock, which doesn't matter for a US store.
 
+**First look:** `mug-colors-board.jpg` shows the approved render with the pink inside and handle recolored to each Printful hex. The mask comes from the plain shaded mug base, so the dog and the note are untouched. It's a preview to choose colors from, not a final image: the real per-color images get rendered the approved way after Krish's yes.
+
 ## 2. Teeinblue (proposal)
 
 - **One campaign, one artwork.** The mug stays on artwork #1353995 and campaign 1043122. Only the mug's color changes, never the print, so the print file stays byte-for-byte the same layout for every color. Teeinblue's print area is the white wrap; the color is the inside and the handle, which aren't printed.
