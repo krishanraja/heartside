@@ -30,7 +30,7 @@ ok('normalize follows readme B.1 for every corpus query', () => {
 });
 
 ok('every query in us_lookup_additions.csv returns its id and US name', () => {
-  assert.equal(src.additions.length, 31);
+  assert.equal(src.additions.length, 44);
   for (const a of src.additions) {
     const r = lookup(a.display_query);
     assert.equal(r.id, a.canonical_id, a.query);
