@@ -7,7 +7,7 @@ North Star: "Heartside is the gift US dog owners reach for first when they want 
 - The order QC supports "$10,000 is an ordinary month". Every mug is checked with no dependence on a connector.
 - The footer note moves no part of the North Star. It carries out Krish's ruling on naming the companies.
 
-Nothing is deployed and nothing on Shopify changed. The theme deploy and the mug image swap each wait for Krish's yes.
+Krish said yes to the deploy and the mug images in this session; both are done (see "Done on Krish's yes" at the end).
 
 ## 0. "pit" shows Pit Bull
 
@@ -82,3 +82,14 @@ Why this fix and not the one asked for: the asked-for fix (firing events) was al
 1. Yes to deploy the theme (`hs2.js` preview fix, `hs3.js` TODO comment, the footer note with `footer_company_note` ticked).
 2. Yes to replace the two Shopify mug images.
 3. The Shopify custom app and the `SHOPIFY_ORDERS_TOKEN` secret, then a dry run, then switching the schedule on and the Claude task off.
+
+## Done on Krish's yes (19 Oct, same session)
+
+**Theme deploy:** "Push homepage to a Shopify theme" run 50 (https://github.com/krishanraja/heartside/actions/runs/39216613271) ran from `claude/adoring-cerf-ybph82` at 64369c4, because main was not to be pushed. It went to "Heartside launch" (#197492998526) with `allow_live_theme` and `footer_company_note` ticked, and every step was green. Observed afterward:
+
+- The footer note "Heartside is a Mindmaker LLC company. Mindmaker Ltd in the UK." is on heartside.io and on `/policies/privacy-policy`.
+- The live `hs2.js` has the gallery fix. The real chat as Biscuit, with no patched files, opened the ornament page on the buyer's preview: "Biscuit / Your shadow, always. / Love, Biscuit" (`data-show` = preview).
+
+**Mug images:** I uploaded the two new images through a Shopify staged upload, then attached them with the same alt text. The new dog face (MediaImage 71759779692926) is first, the featured image, and the variant image. The new note face (71759779725694) is second. MediaImage 71718546637182 and 71718546669950 are deleted. `/products/the-morning-mug.json` now lists only the two new images. When anyone next presses Update in Teeinblue for the mug, untick Images so Teeinblue does not put its own back.
+
+**Note:** main does not have this branch yet, so the live theme is ahead of main. Merge the PR before the next deploy from main, or that deploy would undo the preview fix.
