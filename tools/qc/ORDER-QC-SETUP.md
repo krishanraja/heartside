@@ -32,6 +32,7 @@ The Admin API version is `2026-07`. If a run fails on the version, Claude Code m
 
 At 07:56 and 16:56 London time it looks at unfulfilled orders from the last 14 days that have no `qc-pass` or `qc-hold` tag. For each Morning Mug on them it runs `tools/qc/mug_qc.py` on the print file (`_tib_design_link_1`) with that mug's Line 1 to Line 3 and Signed. Then it:
 
+- checks the mug's color: the Printful variant Teeinblue will make (`_tib_fulfilled_sku`) must be the color the buyer chose (the Shopify variant). A mismatch is a hold;
 - tags the order `qc-pass`, or `qc-hold` if any mug on it fails;
 - adds one line to the order note;
 - opens a GitHub issue assigned to Krish when anything is on hold (GitHub emails him and notifies the GitHub app), with the cards in the run's artifact.

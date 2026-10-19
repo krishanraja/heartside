@@ -37,7 +37,7 @@ ORDERS = """
 query($q: String!) {
   orders(first: 50, query: $q, sortKey: CREATED_AT, reverse: true) {
     nodes { id name note tags
-      lineItems(first: 20) { nodes { id title customAttributes { key value } } } }
+      lineItems(first: 20) { nodes { id title variantTitle customAttributes { key value } } } }
   }
 }"""
 TAG = 'mutation($id: ID!, $tags: [String!]!) { tagsAdd(id: $id, tags: $tags) { userErrors { field message } } }'
@@ -112,6 +112,35 @@ def prop(item, *names):
     return ''
 
 
+# The 11 oz White Ceramic Mug with Color Inside (Printful catalog product 403), read from Printful's
+# catalog on 19 Oct: the color inside and on the handle, and its Printful variant. Teeinblue puts the
+# variant it will fulfill on the line item as _tib_fulfilled_sku. Longest names first, so "Dark Blue"
+# is never read as "Blue".
+MUG_COLORS = {'Golden Yellow': '17358', 'Dark Blue': '17362', 'Dark Green': '17359', 'Black': '11051', 'Blue': '11050',
+              'Green': '17361', 'Orange': '12579', 'Pink': '12578', 'Red': '11049', 'Yellow': '11048'}
+
+
+def mug_color(item):
+    """the color the buyer chose, from the Shopify variant ("White Ceramic Mug with Color Inside / Black / 11 oz")"""
+    parts = [p.strip().lower() for p in str(item.get('variantTitle') or '').split('/')]
+    for name in MUG_COLORS:
+        if name.lower() in parts:
+            return name
+    return None
+
+
+def color_check(item):
+    """(ok, detail): the Printful variant Teeinblue will make is the color the buyer chose"""
+    color, sku = mug_color(item), prop(item, '_tib_fulfilled_sku').strip()
+    if not color:
+        return False, f'color: no known mug color in the variant "{item.get("variantTitle") or ""}"'
+    if not sku:
+        return False, f'color: {color} chosen, but the line item has no Printful variant (_tib_fulfilled_sku)'
+    if sku != MUG_COLORS[color]:
+        return False, f'color: {color} chosen (Printful {MUG_COLORS[color]}), but Teeinblue will make Printful {sku}'
+    return True, f'color: {color}, Printful {sku}'
+
+
 def is_mug(item):
     return ' '.join(str(item.get('title') or '').split()).lower() == MUG.lower()
 
@@ -130,10 +159,14 @@ def check_order(order, out):
         res, im = mug_qc.check(link, lines, signed)
         d = os.path.join(out, order['name'].lstrip('#') + f'-mug{n}')
         os.makedirs(d, exist_ok=True)
+        cok, cdetail = color_check(item)
+        res['checks'].append({'check': 'color', 'ok': cok, 'detail': cdetail})
+        if not cok:
+            res['verdict'] = 'hold'
         mug_qc.card(im, res, d)
         json.dump(res, open(os.path.join(d, 'report.json'), 'w'), indent=1)
         failed = [c['check'] + ': ' + c['detail'] for c in res['checks'] if not c['ok']]
-        results.append({'item': item['title'], 'verdict': res['verdict'], 'failed': failed, 'card': os.path.relpath(os.path.join(d, 'card.png'), out)})
+        results.append({'item': item['title'], 'color': mug_color(item), 'sku': prop(item, '_tib_fulfilled_sku').strip(), 'verdict': res['verdict'], 'failed': failed, 'card': os.path.relpath(os.path.join(d, 'card.png'), out)})
     if not results or waiting:
         return None, results
     return ('hold' if any(r['verdict'] == 'hold' for r in results) else 'pass'), results
@@ -141,7 +174,8 @@ def check_order(order, out):
 
 def note_line(verdict, results, when):
     if verdict == 'pass':
-        return f'QC {when}: pass, {len(results)} mug print file{"s" if len(results) > 1 else ""} checked.'
+        colors = ', '.join(f"{r['color']} (Printful {r['sku']})" for r in results)
+        return f'QC {when}: pass, {len(results)} mug print file{"s" if len(results) > 1 else ""} checked. Color: {colors}.'
     why = '; '.join(f for r in results for f in r['failed'] if r['verdict'] == 'hold')
     return f'QC {when}: hold, do not confirm in Teeinblue until fixed. {why}'
 
