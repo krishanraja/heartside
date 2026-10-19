@@ -613,7 +613,7 @@
         if (!main) return;
         main.src = b.getAttribute('data-hs2-thumb'); main.removeAttribute('srcset');
         main.alt = b.getAttribute('data-alt') || '';
-        if (media) media.setAttribute('data-show', 'photo');
+        if (media) { media.setAttribute('data-show', 'photo'); media.__hs2picked = true; }
         current(b);
       });
     });
@@ -1001,8 +1001,14 @@
     var on = box.children.length ? 'on' : 'off';
     if (media.getAttribute('data-tib') === on) return;
     media.setAttribute('data-tib', on);
-    // the preview arrived: it is the picture on show, so its thumbnail is the current one
     var pv = media.querySelector('[data-hs2-thumb-preview]');
+    /* A gift page opens on the product photo until the shopper adds their own (open_on photo).
+       After the chat, though, the words are already in the preview, and the product photo
+       shows Teeinblue's sample dog and lines ("Bartholomew Jr"), so the buyer could not see
+       their own words before Add to cart (Krish, 19 Oct). So when the chat handed this gift
+       its words, the preview is the picture on show, unless the shopper picked a photo. */
+    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked) media.removeAttribute('data-show');
+    // the preview arrived: it is the picture on show, so its thumbnail is the current one
     if (on === 'on' && pv && !media.hasAttribute('data-show')) {
       media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
     }

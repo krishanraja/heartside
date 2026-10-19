@@ -55,14 +55,14 @@ ok('the US additions are checked before the corpus lookup', () => {
   assert.equal(lookup('german shepherd').name, 'German Shepherd');
 });
 
-ok('Pit Bull: three spellings show "Pit Bull" on the AmStaff row', () => {
-  for (const q of ['pit bull', 'Pitbull', 'PITTIE', 'Pit-Bull']) {
+ok('Pit Bull: four spellings show "Pit Bull" on the AmStaff row', () => {
+  for (const q of ['pit bull', 'Pitbull', 'PITTIE', 'Pit-Bull', 'pit', 'Pit']) {
     const r = lookup(q);
     assert.equal(r.id, 'american-staffordshire-terrier', q);
     assert.equal(r.name, 'Pit Bull', q);
     assert.equal(r.exact, true, q);
   }
-  assert.equal(KRISH_CALLS.length, 3);
+  assert.equal(KRISH_CALLS.length, 4);
 });
 
 ok('"mutt" is the mixed-breed row', () => {

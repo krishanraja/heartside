@@ -10,11 +10,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const corpus = path.join(here, '..');
 const OUT = path.join(here, 'hs-breeds.js');
 
-// Krish's call, 15 Oct 2026: these show "Pit Bull" and use the American Staffordshire Terrier row
+// Krish's call, 15 Oct 2026 ("pit" added on his ruling of 19 Oct): these show "Pit Bull" and
+// use the American Staffordshire Terrier row
 export const KRISH_CALLS = [
   { query: 'pit bull', id: 'american-staffordshire-terrier', name: 'Pit Bull' },
   { query: 'pitbull', id: 'american-staffordshire-terrier', name: 'Pit Bull' },
-  { query: 'pittie', id: 'american-staffordshire-terrier', name: 'Pit Bull' }
+  { query: 'pittie', id: 'american-staffordshire-terrier', name: 'Pit Bull' },
+  { query: 'pit', id: 'american-staffordshire-terrier', name: 'Pit Bull' }
 ];
 
 // a small CSV reader: quoted fields, doubled quotes, UTF-8 BOM

@@ -12,6 +12,8 @@
 # artifact ("theme-backup-..."), because pushing templates/*.json replaces any
 # theme-editor changes to them. Tick "header_memo_bar" to put the HS memo bar at
 # the top of the header and retire the v1 offer bar (.github/scripts/header-memo.mjs).
+# Tick "footer_company_note" to put the company note last in the footer group
+# (.github/scripts/footer-note.mjs).
 #
 # One-time setup (see docs/COWORK-PROMPT.md):
 #   Repository secret SHOPIFY_CLI_THEME_TOKEN = a password from Shopify's free
@@ -33,6 +35,11 @@ on:
         type: string
       header_memo_bar:
         description: "Also put the HS memo bar at the top of the header and remove the v1 offer bar"
+        required: false
+        default: false
+        type: boolean
+      footer_company_note:
+        description: "Also put the company note (Mindmaker LLC, Mindmaker Ltd) at the bottom of the footer"
         required: false
         default: false
         type: boolean
@@ -143,6 +150,16 @@ jobs:
           fi
           cp backup/sections/header-group.json shopify/sections/header-group.json
           node .github/scripts/header-memo.mjs shopify/sections/header-group.json
+
+      - name: Put the company note at the bottom of the footer
+        if: ${{ inputs.footer_company_note && !inputs.pull_only }}
+        run: |
+          if [ ! -f backup/sections/footer-group.json ]; then
+            echo "::error::The theme has no sections/footer-group.json, so the footer was left alone."
+            exit 1
+          fi
+          cp backup/sections/footer-group.json shopify/sections/footer-group.json
+          node .github/scripts/footer-note.mjs shopify/sections/footer-group.json
 
       - name: Push Heartside files into the copy
         if: ${{ !inputs.pull_only }}
