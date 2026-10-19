@@ -61,3 +61,17 @@ Deployed in run 51, Krish's screen at 1914x798 still showed three problems:
 - No side borders from 1000 px up.
 
 Evidence: `desktop/after2-1914-home.jpg` (with the injected element) and `desktop/after2-1914-chat.jpg`. The chat, minify and theme-check gates pass. Phones are unchanged.
+
+## Third pass: reveal and choose in two columns (Krish: "make the reveal and choose screens two-column too ... 11/10")
+
+**Desktop (1000 px and wider, `hs3.css`):**
+- **Reveal:** the gift drawn large on the left at 1.35x, staying in view as the page moves. On the right: the title, the four gift tabs, Biscuit's reason (or the Change a word fields), and the buttons. Checked on all four gifts and in edit mode.
+- **Choose:** your words and your dog's photo on the left, as a tilted note card. On the right: the gift list with prices, ship-to, the delivery promise and the cart button. Checked with the mug and ornament ticked: the ornament shows $19 and the button reads "Add 2 gifts to cart · $48".
+- Checked at 1914x798, 1440x900 and 1024x768. No sideways scroll, and the cart button is in the first screen (bottom edge at 688 px) at every size.
+
+**Phones:**
+- The new rules sit behind `min-width: 1000px`. I ran the same journey at 390x844 and 360x740 with the live CSS and with the new CSS, and compared every screen pixel by pixel: the four reveal tabs, edit mode, choose, and choose full page.
+- Every screen was identical, apart from antialiasing and the sticky header's sub-pixel offset in edit mode.
+- **One phone fix:** the top bar broke as "Free US shipping on every / order. · Christmas morning in 66 days". On screens up to 600 px it now shows the message and the countdown on two deliberate lines at 12 px (`hs2.css`). Checked at 360, 390 and 430 px; desktop keeps one line.
+
+**Evidence:** `desktop/reveal-*.jpg`, `desktop/choose-*.jpg`, `desktop/phone-390-reveal-choose-unchanged.jpg` and `desktop/phone-memo-bar.jpg`. Gates pass: chat, minify-check, mug-bridge, reveal, mockup-gate and theme-check.

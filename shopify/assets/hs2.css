@@ -126,6 +126,13 @@ html.hs2-js .is-in .hs2-anim-drift img, html.hs2-js .hs2-anim-drift.is-on img { 
 .hs2-memo__viewport { padding: 10px 16px; text-align: center; }
 .hs2-memo__count { margin-left: 14px; color: var(--blush); font-weight: 700; white-space: nowrap; }
 .hs2-memo__count::before { content: "· "; color: var(--cream); font-weight: 400; }
+/* phones: the message and the countdown each get their own line, so neither breaks mid-sentence */
+@media (max-width: 600px) {
+  .hs2-memo:not(.is-ticker) { font-size: 12px; letter-spacing: 0.01em; }
+  .hs2-memo:not(.is-ticker) .hs2-memo__viewport { padding: 7px 12px; }
+  .hs2-memo:not(.is-ticker) .hs2-memo__count { display: block; margin-left: 0; }
+  .hs2-memo:not(.is-ticker) .hs2-memo__count::before { content: none; }
+}
 .hs2-memo.is-ticker .hs2-memo__viewport { padding: 9px 0; text-align: left; }
 .hs2-memo.is-ticker .hs2-memo__track { display: flex; width: max-content; animation: hs2-ticker var(--ticker-s, 28s) linear infinite; }
 .hs2-memo.is-ticker .hs2-memo__item { white-space: nowrap; padding-right: 64px; }

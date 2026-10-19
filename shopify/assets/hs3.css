@@ -252,4 +252,26 @@
   .hs3__frame[data-hs3-screen="chat"] .hs3-talk { grid-area: talk; align-self: end; padding: 56px 0 8px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-dock { grid-area: dock; padding: 6px 0 10px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-bubble { max-width: 420px; font-size: 17px; }
+  /* the reveal: the gift large on the left, its name, the tabs, Biscuit's reason and the
+     buttons on the right */
+  .hs3--app .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-content: start; padding: 0 40px 40px; }
+  .hs3__frame[data-hs3-screen="reveal"] { grid-template-areas: "top top" "stage h2" "stage tabs" "stage note" "stage says" "stage dock" "stage ."; grid-template-rows: auto auto auto auto auto auto 1fr; }
+  .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-top { grid-area: top; }
+  .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-h2 { grid-area: h2; padding: 28px 0 0; font-size: 44px; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs { grid-area: tabs; padding: 18px 0 8px; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs + .hs3-small { grid-area: note; padding: 0; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-stage { grid-area: stage; align-self: start; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); min-height: min(640px, calc(100svh - var(--hs2-head, 66px) - 120px)); padding: 24px 0; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-stage > * { zoom: 1.35; }
+  .hs3__frame[data-hs3-screen="reveal"] :is(.hs3-says, .hs3-edit) { grid-area: says; padding: 22px 0 0; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-bubble { max-width: 460px; font-size: 17px; }
+  .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-dock { grid-area: dock; padding: 22px 0 0; }
+  /* choosing: the words and photo on the left, the gifts, ship-to and the cart button on the right */
+  .hs3__frame[data-hs3-screen="choose"] { grid-template-areas: "top top" "h2 opts" "sub opts" "strip opts" "strip ship" "strip dock" "strip ."; grid-template-rows: auto auto auto auto auto auto 1fr; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-sub { grid-area: sub; padding: 8px 0 0; font-size: 17px; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-strip { grid-area: strip; align-self: start; margin: 28px 0 0; padding: 32px 30px; gap: 26px; transform: rotate(-0.8deg); box-shadow: 0 22px 36px -24px rgba(30, 23, 20, .5), 0 0 0 1px #EFE6DD; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-photo--strip { width: 112px; height: 112px; flex: none; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-strip .hs3-line { font-size: 19px; line-height: 1.4; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-strip .hs3-sign { font-size: 23px; display: inline-block; margin-top: 8px; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-opts { grid-area: opts; padding: 28px 0 0; }
+  .hs3__frame[data-hs3-screen="choose"] .hs3-ship { grid-area: ship; padding: 14px 0 0; }
 }
