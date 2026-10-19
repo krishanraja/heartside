@@ -25,6 +25,14 @@ HSBreeds.lookup('Labradoor')
 
 Edit the CSVs or `build.mjs`, then `node build.mjs && node test.mjs`. `node build.mjs --check` fails if `hs-breeds.js` is stale. To wire it into the chat later, copy `hs-breeds.js` to `shopify/assets/` and load it before `hs3.js`.
 
-## Gaps found on 15 Oct (for the next data pass)
+## Gaps (found 15 Oct, updated 19 Oct)
 
-Of 93 names US owners commonly type, these find no exact row: Bloodhound, Great Pyrenees, Saint Bernard (and "st bernard"), Samoyed, Dalmatian, Portuguese Water Dog, Miniature American Shepherd, American Bully, "bully", "pit", Catahoula, Plott Hound, Treeing Walker Coonhound, Black Mouth Cur, Mountain Cur and "doodle". The first six are in the corpus under registry names, like the nine the audit fixed. "Papillon" matches but shows "Epagneul Nain Continental". Mixes such as "lab mix" fall back to the mixed-breed row by design.
+Of 93 names US owners commonly type, 16 found no exact row on 15 Oct.
+
+**Fixed 19 Oct** (Cowork's rows in `us_lookup_additions.csv` and `us_display_names.csv`, merged in https://github.com/krishanraja/heartside/pull/14): Bloodhound, Great Pyrenees ("pyrenees", "great pyr", "pyr", "pyrenean mountain dog"), Saint Bernard ("st bernard", "St. Bernard"), Samoyed ("sammy"), Dalmatian and Portuguese Water Dog ("pwd"). They were in the corpus under registry names. "Papillon" now shows "Papillon" instead of "Epagneul Nain Continental".
+
+**Still open, on purpose** (`exact: false`, so the chat treats the breed as unknown): Miniature American Shepherd, American Bully, "bully", Catahoula, Plott Hound, Treeing Walker Coonhound, Black Mouth Cur, Mountain Cur and "doodle". The corpus has no row for any of them, and pointing one at a near breed would show the buyer the wrong name.
+
+**Waiting on Krish:** "pit" on its own. Cowork recommends adding it to `KRISH_CALLS` beside "pit bull", "pitbull" and "pittie". Krish has not ruled, so it still falls back.
+
+Mixes such as "lab mix" fall back to the mixed-breed row by design.
