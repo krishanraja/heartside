@@ -24,7 +24,7 @@ There is no `SHOPIFY_ORDERS_TOKEN`, and the workflow no longer reads one.
 
 1. **Actions > Order QC > Run workflow**, with **dry run** ticked (the default). It signs in, checks the orders and shows the result in the run's summary, but tags nothing and opens no issue.
 2. If the summary looks right, run it once more with dry run unticked. It tags the orders and writes the note lines.
-3. Ask Claude Code to switch the schedule on (it uncomments four cron lines in the workflow), then turn off the Claude scheduled task "Heartside order QC", so the two never tag the same order.
+3. Done 19 Oct: the schedule is on (07:56 and 16:56 London). Still Krish's: turn off the Claude scheduled task "Heartside order QC" in the Cowork app, so the two never tag the same order.
 
 The Admin API version is `2026-07`. If a run fails on the version, Claude Code moves it.
 

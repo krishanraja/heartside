@@ -29,7 +29,7 @@ Two checks warn without holding: **breaks** (a line leaves one word alone on its
 
 ## How it runs on live orders
 
-**From 19 Oct: GitHub Actions** (`.github/workflows/order-qc.yml`, run by `order_qc.py`, tested by `test_order_qc.py`). Krish moved the check off Claude so it needs no connector or scheduled task. It tags `qc-pass` or `qc-hold`, adds one note line and opens a GitHub issue for Krish on any hold. The schedule stays off until Krish has done `ORDER-QC-SETUP.md` and a dry run looks right; then the Claude task below is switched off so the two never tag the same order.
+**From 19 Oct: GitHub Actions** (`.github/workflows/order-qc.yml`, run by `order_qc.py`, tested by `test_order_qc.py`). Krish moved the check off Claude so it needs no connector or scheduled task. It tags `qc-pass` or `qc-hold`, adds one note line and opens a GitHub issue for Krish on any hold. It signs in as the Dev Dashboard app "Heartside order QC" (orders only). The schedule went on on 19 Oct after green dry runs; the Claude task below should be switched off so the two never tag the same order.
 
 ### Before 19 Oct: the Claude scheduled task (approved by Krish, 15 Oct)
 

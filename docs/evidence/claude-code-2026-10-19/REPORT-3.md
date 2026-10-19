@@ -66,3 +66,12 @@ Run 2 (https://github.com/krishanraja/heartside/actions/runs/39222627566), from 
 - Neither issue step ran: no holds, and the sign-in worked.
 
 Still to do: merge this PR, so main runs the fixed query. Then one real run once a mug order exists, switch the schedule on (Claude Code), and turn off the Claude task "Heartside order QC" (Krish).
+
+## On main, and switched on (Krish: "merge 21, and do the rest")
+
+- PR #21 merged (f75f7f0).
+- Dry run 3 from main (https://github.com/krishanraja/heartside/actions/runs/39223283688): green.
+- Real run 4 from main, dry run off (https://github.com/krishanraja/heartside/actions/runs/39223346430): green. "0 checked, 0 held, 0 waiting for a print file, 1 without a mug." The holds step ran and said "No holds." Nothing was tagged, because no mug order exists yet.
+- The schedule is switched on in this PR: 07:56 and 16:56 London time.
+- **Still Krish's:** the Claude scheduled task "Heartside order QC" is not among the account's cloud scheduled tasks (checked with the scheduled-task listing), so it lives in the Cowork desktop app and can't be turned off from Claude Code. Turn it off there, so the two never tag the same order.
+- The first real tag comes with the first Morning Mug order. Check that order for `qc-pass` or `qc-hold` and one note line.
