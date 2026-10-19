@@ -164,9 +164,19 @@
   }
   function reasonFor(g, n) {
     if (S.composed && S.composed.reason && g === S.composed.gift) return S.composed.reason;
+    // Biscuit's mug reason repeats only the "together" answer the buyer picked; a typed answer
+    // or "Not sure" gets skip (Cowork report 15 Oct, section 3; 140 characters at most)
+    var d = n.dog, r = n.rec;
+    var MUG = {
+      walk: d + ' lives for the morning walk. Good dog. The mug keeps ' + d + ' with ' + r + ' for the rest of the morning.',
+      coffee: d + ' already keeps ' + r + ' company over coffee. Now ' + d + ' gets to be on the cup too.',
+      movie: d + ' has movie night covered. The mug is for mornings, so ' + r + ' gets ' + d + ' with every cup.',
+      naps: d + ' naps best with ' + r + ' around. The mug keeps ' + d + ' close for the awake parts.',
+      car: d + ' would ride anywhere with ' + r + '. With the mug, ' + d + ' comes along to every morning cup too.',
+      skip: d + ' goes on one side, the note on the other. So ' + r + ' starts every morning with both.'
+    };
     return {
-      // the walks-and-coffee opener only when that's what the buyer said (round three, 15 Oct)
-      mug: (S.together === 'walk' || S.together === 'coffee' ? 'Walks start with coffee. I would know. So ' + n.dog : n.dog) + ' gets a spot in ' + n.rec + "'s mug every morning.",
+      mug: MUG[S.together] || MUG.skip,
       blanket: 'For the couch they share. Warm, soft, and ' + n.dog + ' is already on it.',
       print: 'For the wall by the door, so ' + n.rec + ' sees ' + n.dog + ' the minute they get home.',
       ornament: 'For the tree. ' + n.dog + ' comes out every December, right where ' + n.rec + ' will see.'

@@ -250,9 +250,9 @@ const HERO_A = {
   text: "They love you too, and they'd like it on the record. A 12 × 18 inch poster with their photo, your name and three notes you pick.",
 };
 const written = [
-  await page('index.html', 'index.json', { template: { name: 'index', suffix: null } }),
+  await page('index.html', 'index.classic.json', { template: { name: 'index', suffix: null } }),
   // the homepage once Tiny Me's own section is switched on
-  await page('index-ornament.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.ornament.settings.show = true; return t; }),
+  await page('index-ornament.html', 'index.classic.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.ornament.settings.show = true; return t; }),
   await page('product-review.html', 'product.review.json', { product: products.poster, template: { name: 'product', suffix: 'review' } }),
   await page('product-framed.html', 'product.review.json', { product: products.framed, template: { name: 'product', suffix: 'review' } }),
   // the same page if Teeinblue's block were removed: the theme's own picker and button come back
@@ -271,7 +271,7 @@ const written = [
   await page('product-landing.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }),
   // the hero Krish proposed on 5 October (B) and the colder-traffic fallback (A), for him to see
   // before either goes live
-  await page('index-hero-b.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B }; return t; }),
+  await page('index-hero-b.html', 'index.classic.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B }; return t; }),
   await page('landing-hero-b.html', 'product.landing.json', { product: products.poster, template: { name: 'product', suffix: 'landing' } }, (t) => { t.sections.hero.settings = { ...t.sections.hero.settings, ...HERO_B }; return t; }),
   // the shop-first homepage and its product pages (hidden ?view=shop templates), for Krish to judge
   await page('index-shop.html', 'index.shop.json', { template: { name: 'index', suffix: 'shop' } }),
@@ -289,7 +289,7 @@ const written = [
     return t;
   }),
   await page('product-gift.html', 'product.gift.json', { product: products.mug, template: { name: 'product', suffix: 'gift' } }),
-  await page('index-hero-a.html', 'index.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
+  await page('index-hero-a.html', 'index.classic.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];
 // Helio's cart drawer, as the live store rendered it on 5 October with a framed poster in it
 // (one row per line, the variant options in a list, Teeinblue's visible properties under
