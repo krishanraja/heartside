@@ -647,6 +647,9 @@
         if (idIn) idIn.value = id;
         // the variant's own photo (the mug in that color) becomes the product picture
         var img = json('script[data-hs2-vimages]')[id], main = document.querySelector('[data-hs2-main]');
+        // a gift sold in colors shows only that color's pair of photos
+        var col = img && /, (.+?) inside/i.exec(img.alt || '');
+        if (col) document.querySelectorAll('[data-hs2-thumb][data-hs2-color]').forEach(function (b) { b.hidden = b.getAttribute('data-hs2-color') !== col[1].toLowerCase(); });
         if (img && main && main.getAttribute('src') !== img.src) {
           main.src = img.src; main.removeAttribute('srcset'); main.alt = img.alt || '';
           var th = document.querySelector('[data-hs2-thumb="' + img.src + '"]');
@@ -1068,21 +1071,34 @@
       markHanded(usePhoto.t);
       if (box) box.hidden = true;
       bridge.photoReady = false; if (bridge.folded) fold(true);
-      if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent to the personalizer. Crop it there and press Select.'; st.hidden = false; }
+      if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent below. Place it in the frame and press Save.'; st.hidden = false; }
       if (!attempt) track('photo_handoff');
       var t0 = Date.now(), file = usePhoto.file;
       clearInterval(doHandoff.watch);
       doHandoff.watch = setInterval(function () {
-        if (tibTookPhoto() || usePhoto.file !== file) { clearInterval(doHandoff.watch); return; }
-        if (Date.now() - t0 < 1200) return;
+        if (usePhoto.file !== file) { clearInterval(doHandoff.watch); return; }
+        if (tibTookPhoto()) { clearInterval(doHandoff.watch); placed(st); return; }
+        // Teeinblue takes about 6.6 s to show it has the photo (19 Oct); retrying at 1.2 s sent
+        // the same headshot five times. Only a field that never answers gets it again.
+        if (Date.now() - t0 < 10000) return;
         clearInterval(doHandoff.watch);
-        if (attempt < 4) doHandoff(box, attempt + 1);
+        if (attempt < 2) doHandoff(box, attempt + 1);
         else if (box) box.hidden = false; // Teeinblue never took it: the button lets the shopper try
       }, 150);
     } catch (e) {
       if (box) box.hidden = false; // let the shopper send it themselves
       if (st) { st.__hs2photo = true; st.textContent = 'Upload the headshot again in the personalizer below.'; st.hidden = false; }
     }
+  }
+  // once Teeinblue's placement dialog closes with the photo in, the box says so (Krish, 19 Oct:
+  // it kept asking to crop after Save)
+  function placed(st) {
+    clearInterval(placed.t);
+    placed.t = setInterval(function () {
+      if (document.querySelector('.vm--container')) return;
+      clearInterval(placed.t);
+      if (st && st.__hs2photo) st.textContent = 'Headshot in place. Check the preview, then add it to the cart.';
+    }, 300);
   }
   /* The headshot now hands itself to Teeinblue's upload as soon as its photo field appears,
      instead of waiting for a tap on "Use [Dog]'s headshot". A phone test on 5 October found

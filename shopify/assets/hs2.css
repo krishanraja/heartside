@@ -795,6 +795,9 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
    narrow window: a blank gap under the preview). The section's own column keeps the
    preview in view, so the box is only as tall as the preview. */
 #buy .tee-gallery-content { height: auto !important; }
+/* Teeinblue's own thumbnail strip lists every mockup it holds (all five mug colors, sample words);
+   ours below (Yours, then the chosen color's photos) does that job, and its arrows still turn the mug */
+#buy .tee-thumbnails { display: none !important; }
 /* Teeinblue's copy of Printful's description: the section shows ours */
 #buy .tee-description { display: none !important; }
 /* once the review's answers are in, Teeinblue's copies of them fold (hs2.js lists them by id) */
@@ -920,7 +923,8 @@ html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
 .cart-items__variant.hs2-cart-opt dt { margin-right: 0.3em; }
 /* Helio sets a display on these rows, which would beat the hidden attribute */
 .cart-items__variant[hidden], .cart-items__property[hidden] { display: none !important; }
-.cart-items__media img.hs2-cart-preview { object-fit: cover; }
+/* the shopper's own preview is a whole mug on cream: show all of it, handle included */
+.cart-items__media img.hs2-cart-preview { object-fit: contain; background: #F3EEE8; padding: 4%; box-sizing: border-box; }
 
 /* ------------------------------------------------------------------ HS shop
    Every gift on one screen: a 2-up grid on a phone, 4-up on a desktop. Cards are equal height
