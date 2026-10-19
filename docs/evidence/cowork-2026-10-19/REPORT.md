@@ -52,3 +52,24 @@ Not started: it needs orders. First blanket order, check the Printful facility. 
 
 1. The Teeinblue sample thumbnails ("Bartholomew Jr") under the gift pictures (Part A, 1).
 2. Optionally, move the footer note directly under the copyright line (Part A, 3).
+
+## Desktop check and Order QC handover (19 Oct, later session)
+
+North Star part: launch readiness. A desktop visitor has to reach the gifts, and every mug order has to get a QC verdict before anyone confirms it in Teeinblue.
+
+**Desktop check: passes.** Run on the live site (heartside.io) in a clean desktop-size browser at 1440x900 and at 1896x762, the size of Krish's own screen. Nothing was bought or changed.
+
+- First screen: the headline and the "Start with your dog" button on the left, the mug on the right. Not blank. The button's bottom edge is at 692 px (1440x900) and 672 px (1896x762), inside the screen. No sideways scroll.
+- Chat step 3: the note ("For Sam", "Waits at the door for you.", "Love, Biscuit") on the left, Biscuit's reply and the answer chips on the right.
+- Screenshots: `desktop-1896x762-first-screen.jpg`, `desktop-1896x762-chat-step3.jpg`, `desktop-1440x900-first-screen.jpg`, `desktop-1440x900-chat-step3.jpg`.
+- Limit: this is a clean browser, so it cannot show a menu or search box left open in Krish's own session. If his own screen is still blank, open the page in a private window and screenshot it with the browser's width and height.
+- For Claude Code (cosmetic): at 1896x762 the Biscuit mascot and its "Psst" bubble are cut off at the bottom edge of the first screen. The button is fully visible.
+
+**Cowork task "Heartside order QC": paused** (Krish confirmed, 19 Oct). Order QC now runs only on GitHub Actions at 07:56 and 16:56 London, so the two cannot tag the same order. It is not visible from this session, so this is Krish's word, not something checked here.
+
+**Still waiting:**
+- The 07:56 London run on 20 Oct: confirm it ran on schedule, was green, and the summary line makes sense.
+- The first Morning Mug order: confirm `qc-pass` or `qc-hold` and exactly one new note line with the buyer's note kept. On a hold, confirm a GitHub issue assigned to krishanraja. Never confirm a `qc-hold` order in Teeinblue until it is fixed.
+- Watch items: untick Images on any Teeinblue Update for the mug; check the first blanket order's Printful facility (not in the US means an earlier Dec 10 date for the blanket); daily share of "Heartside AI calls" with fallback or slow, report above 1 in 10.
+
+**Social names (same day):** Instagram @yourdoghasnotes display name changed to "Heartside: Personalized Dog Gifts" on Krish's yes (username unchanged). TikTok is locked until after 19 Oct and is pending Krish's yes on the name tomorrow. No phone-size Instagram screenshot: Instagram returned a blank page to the cloud browser.
