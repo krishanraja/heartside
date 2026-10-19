@@ -45,7 +45,15 @@ Checks before deploy, all in `tools/preview`:
 | `node mockup-gate.mjs` | all passed |
 | `node theme-check.mjs` | 0 offenses in Heartside files |
 
-Deploy: see "Deploy" below.
+**Deploy:** merged as https://github.com/krishanraja/heartside/pull/15 (b307cc1), then pushed by "Push homepage to a Shopify theme" run 49 (https://github.com/krishanraja/heartside/actions/runs/39209036407) to the live theme "Heartside launch" (#197492998526) with allow_live_theme ticked. Every step was green, including the backup artifact and the theme-editor guard. It finished at 06:17:52 UTC on 19 October.
+
+Observed on the live site right after the run:
+
+- `https://heartside.io/` returns 200 and serves the chat (`data-hs3-start`, `hs3.js`). None of the v2 hero is in it.
+- `https://heartside.io/?view=classic` returns 200 and serves the v2 homepage (`hs2-hero`).
+- The live `hs3.js` (`/cdn/shop/t/2/assets/hs3.js`) contains "lives for the morning walk" and no longer contains "Walks start with coffee".
+
+**For Cowork:** the deploy has finished. Run the cart tests (Mug + Ornament shows the ornament at $19; Ornament alone $24; line titles clean; empty the cart afterward) and the chat-to-product-page checks (Part B steps 4 and 5).
 
 ## 5. "Order by Dec 10 for Christmas"
 
