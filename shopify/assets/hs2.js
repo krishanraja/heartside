@@ -1218,8 +1218,14 @@
       if (!r.width || !r.height || r.bottom <= bottom) return;
       if (r.right <= 0 || r.left >= window.innerWidth || r.top > top + 200) return; // off-screen drawers
       if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
+      // a closed or hover menu, drawer, popover or dialog is not the header row
+      if (el.closest('dialog, [popover], details:not([open]), [aria-hidden="true"], [hidden], [class*="drawer"], [class*="mega"], [class*="submenu"], [class*="dropdown"], predictive-search-component')) return;
       bottom = r.bottom;
     });
+    /* Never pad more than a header can be tall. On a wide screen (Krish, 19 Oct) the first
+       screen came up blank, as if a menu or drawer had been counted as header and pushed the
+       chat a screen down. The header row here is about 110 px. */
+    bottom = Math.min(bottom, top + 200);
     var overlap = bottom - top;
     if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
     // a sticky gallery has to stop below the same line, or it slides back under the logo on scroll
