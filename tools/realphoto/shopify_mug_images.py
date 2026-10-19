@@ -3,6 +3,10 @@ import os, sys
 import numpy as np
 from PIL import Image
 D = os.path.dirname(os.path.abspath(__file__)); M = os.path.join(D, 'out', 'mockup')
+# without build_mug_mockups.py's output (it needs Printful's photo), use the committed rebuild
+# from build_shopify_mug_inputs.py
+if not os.path.exists(os.path.join(M, 'mk-outward-shaded.png')):
+    M = os.path.join(D, '..', '..', 'design', 'teeinblue', 'mug-v3', 'shopify-images')
 OUT = 2048; S = OUT / 700.0; Y0 = 171
 # each row rises at the edge by RIM_TOP (top of the print) growing to RIM_BOT (bottom), as the
 # rim (18 px) and the base (59 px) of Printful's 700 px photo do (measured 15 Oct). Until then
