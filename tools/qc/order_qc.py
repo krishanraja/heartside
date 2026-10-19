@@ -27,7 +27,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import mug_qc  # noqa: E402
 
-MUG = 'the-morning-mug'
+# the line item's own title, which read_orders covers. Asking for its product needs read_products,
+# which the app does not have (first dry run, 19 Oct: ACCESS_DENIED on lineItems.product).
+MUG = 'The Morning Mug'
 API = os.environ.get('SHOPIFY_API_VERSION', '2026-07')
 DAYS = 14  # how far back to look for untagged orders
 
@@ -35,7 +37,7 @@ ORDERS = """
 query($q: String!) {
   orders(first: 50, query: $q, sortKey: CREATED_AT, reverse: true) {
     nodes { id name note tags
-      lineItems(first: 20) { nodes { id title product { handle } customAttributes { key value } } } }
+      lineItems(first: 20) { nodes { id title customAttributes { key value } } } }
   }
 }"""
 TAG = 'mutation($id: ID!, $tags: [String!]!) { tagsAdd(id: $id, tags: $tags) { userErrors { field message } } }'
@@ -110,9 +112,13 @@ def prop(item, *names):
     return ''
 
 
+def is_mug(item):
+    return ' '.join(str(item.get('title') or '').split()).lower() == MUG.lower()
+
+
 def check_order(order, out):
     """returns ('pass' | 'hold' | None, [per-mug results]); None when nothing could be checked yet"""
-    mugs = [i for i in order['lineItems']['nodes'] if (i.get('product') or {}).get('handle') == MUG]
+    mugs = [i for i in order['lineItems']['nodes'] if is_mug(i)]
     results, waiting = [], False
     for n, item in enumerate(mugs, 1):
         link = prop(item, '_tib_design_link_1')
@@ -147,7 +153,7 @@ def run(shop, out, dry, now=None):
     orders = shop.gql(ORDERS, {'q': q})['orders']['nodes']
     summary = {'checked': [], 'holds': [], 'waiting': [], 'no_mug': 0, 'dry_run': dry}
     for o in orders:
-        has_mug = any((i.get('product') or {}).get('handle') == MUG for i in o['lineItems']['nodes'])
+        has_mug = any(is_mug(i) for i in o['lineItems']['nodes'])
         if not has_mug:
             summary['no_mug'] += 1
             continue
@@ -196,7 +202,11 @@ def main(argv=None, env=None, opener=urllib.request.urlopen, shop=None):
         msg = f'Shopify token exchange failed, so no order was checked. {e}'
         open(os.path.join(a.out, 'auth-error.txt'), 'w').write(msg + '\n')
         log([msg]); print(f'::error::{msg}'); return 2
-    s = run(shop or Shopify(store, token), a.out, a.dry_run)
+    try:
+        s = run(shop or Shopify(store, token), a.out, a.dry_run)
+    except Exception as e:  # Shopify refused a query, or a print file could not be read: say so in the summary
+        msg = f'Order QC stopped after signing in: {type(e).__name__}: {e}'.replace(token, '[token]')
+        log([msg]); print(f'::error::{msg}'); return 3
     lines = report(s, a.dry_run)
     log(lines); print('\n'.join(lines))
     return 0

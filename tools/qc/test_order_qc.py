@@ -20,11 +20,14 @@ def ok(cond, msg):
     failures += 0 if cond else 1
 
 
+TITLES = {'the-morning-mug': 'The Morning Mug', 'the-tree-ornament': 'The Tree Ornament', 'the-couch-blanket': 'The Couch Blanket'}
+
+
 def item(handle, link=GOOD, l1=L1, signed='Love, Biscuit'):
     attrs = [{'key': 'Line 1', 'value': l1}, {'key': 'Line 2', 'value': L2}, {'key': 'Line 3', 'value': L3}, {'key': 'Signed', 'value': signed}]
     if link:
         attrs.append({'key': '_tib_design_link_1', 'value': link})
-    return {'id': 'li', 'title': handle, 'product': {'handle': handle}, 'customAttributes': attrs}
+    return {'id': 'li', 'title': TITLES[handle], 'customAttributes': attrs}
 
 
 class Fake:
@@ -133,6 +136,19 @@ with tempfile.TemporaryDirectory() as out:
 with tempfile.TemporaryDirectory() as out, contextlib.redirect_stdout(io.StringIO()):
     code = order_qc.main([out], env={'SHOPIFY_STORE': 'x'}, opener=opener_ok([]), shop=Fake([]))
     ok(code == 1, 'missing secrets stop the run before any call')
+
+ok('product' not in order_qc.ORDERS, 'the order query asks for nothing beyond read_orders (no product field)')
+
+class Denied(Fake):
+    def gql(self, query, v):
+        raise RuntimeError('[{"message": "Access denied for product field.", "extensions": {"code": "ACCESS_DENIED"}}]')
+
+with tempfile.TemporaryDirectory() as out:
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = order_qc.main([out, '--dry-run'], env=env, opener=opener_ok([]), shop=Denied([]))
+    logged = open(os.path.join(out, 'log.txt')).read()
+    ok(code == 3 and 'ACCESS_DENIED' in logged and TOKEN not in logged + buf.getvalue().split('\n', 1)[1], 'a refused query after sign-in fails the run with Shopify\'s error in the summary, never the token')
 
 print('all passed' if not failures else f'{failures} failed')
 sys.exit(1 if failures else 0)
