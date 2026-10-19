@@ -41,3 +41,23 @@ The branch `cowork-handover-2026-10-15` no longer exists; its doc is on main.
 
 - Not deployed. The theme push needs Krish's yes.
 - The reveal, choose and share screens are a wider single column, not a full desktop redesign. They are the next step if Krish wants them two-column too.
+
+## Second pass (19 Oct, after Krish's live screenshot: "still looks like a window within a window")
+
+Deployed in run 51, Krish's screen at 1914x798 still showed three problems:
+- a grey band of about 135 px between the header and the page;
+- a black ribbon boxed inside the page;
+- thin side borders.
+
+**Cause of the band, proven:**
+- `clearHeader()` walked every element inside the header. Helio draws the header row as an overlay, so its section measures 0 px.
+- Anything taller inside it (a menu, or a browser extension's overlay) set the padding.
+- With a 300 px element injected into the header, the live code padded 212 px and pushed the button to y=765, which matches the screenshot. The new code holds at 119 px.
+
+**Fixes:**
+- `clearHeader()` measures only the header row (`header-component`, `.header__row`, `.header__underlay`), still capped at 200 px.
+- The cleared space is the page's cream, so the header sits on the same color as the page.
+- The ribbon runs the full width.
+- No side borders from 1000 px up.
+
+Evidence: `desktop/after2-1914-home.jpg` (with the injected element) and `desktop/after2-1914-chat.jpg`. The chat, minify and theme-check gates pass. Phones are unchanged.

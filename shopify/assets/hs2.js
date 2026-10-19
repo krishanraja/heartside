@@ -1211,21 +1211,18 @@
     var box = hero.closest('.shopify-section') || hero;
     box.style.paddingTop = '';
     var top = box.getBoundingClientRect().top;
-    // the drawn header can extend past its section box, so take the lowest visible part
+    /* The drawn header can extend past its section box (Helio draws the row as an overlay, so
+       the section measures 0 px). Measure the row itself, never what hangs off it: walking every
+       element inside the header counted menus and overlays, and on Krish's screen (19 Oct) pushed
+       the chat down a grey band of about 135 px, or a whole screen. */
     var bottom = header.getBoundingClientRect().bottom;
-    header.querySelectorAll('*').forEach(function (el) {
+    var rows = header.querySelectorAll('header-component, .header__row, .header__underlay');
+    if (!rows.length) rows = header.querySelectorAll('header, .header');
+    Array.prototype.forEach.call(rows, function (el) {
       var r = el.getBoundingClientRect();
-      if (!r.width || !r.height || r.bottom <= bottom) return;
-      if (r.right <= 0 || r.left >= window.innerWidth || r.top > top + 200) return; // off-screen drawers
-      if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
-      // a closed or hover menu, drawer, popover or dialog is not the header row
-      if (el.closest('dialog, [popover], details:not([open]), [aria-hidden="true"], [hidden], [class*="drawer"], [class*="mega"], [class*="submenu"], [class*="dropdown"], predictive-search-component')) return;
-      bottom = r.bottom;
+      if (r.width && r.height) bottom = Math.max(bottom, r.bottom);
     });
-    /* Never pad more than a header can be tall. On a wide screen (Krish, 19 Oct) the first
-       screen came up blank, as if a menu or drawer had been counted as header and pushed the
-       chat a screen down. The header row here is about 110 px. */
-    bottom = Math.min(bottom, top + 200);
+    bottom = Math.min(bottom, top + 200); // never more than a header can be tall
     var overlap = bottom - top;
     if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
     // a sticky gallery has to stop below the same line, or it slides back under the logo on scroll
