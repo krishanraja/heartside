@@ -2,7 +2,7 @@
 
   python3 tools/qc/test_order_qc.py
 """
-import datetime, os, sys, tempfile
+import datetime, os, sys, tempfile, urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -70,6 +70,69 @@ with tempfile.TemporaryDirectory() as out:
     dry = Fake([order('1006', item('the-morning-mug'))])
     s = order_qc.run(dry, out, dry=True, now=now)
     ok(len(dry.calls) == 1 and s['checked'][0]['verdict'] == 'pass', 'a dry run checks but writes nothing')
+
+# signing in: the client credentials grant (Dev Dashboard app, 19 Oct)
+import contextlib, io, json, urllib.error  # noqa: E402
+
+CID, SECRET, TOKEN = 'cid-123', 'shpss_SECRET', 'shpat_TOKEN'
+
+
+class Reply(io.BytesIO):
+    status = 200
+    def __enter__(self): return self
+    def __exit__(self, *a): self.close()
+
+
+def opener_ok(sent):
+    def op(req, timeout=None):
+        sent.append(req)
+        return Reply(json.dumps({'access_token': TOKEN, 'scope': 'read_orders,write_orders', 'expires_in': 86399}).encode())
+    return op
+
+
+def opener_fail(code, body):
+    def op(req, timeout=None):
+        raise urllib.error.HTTPError(req.full_url, code, 'err', {}, io.BytesIO(body.encode()))
+    return op
+
+
+env = {'SHOPIFY_STORE': 'bnf1em-ge.myshopify.com', 'SHOPIFY_CLIENT_ID': CID, 'SHOPIFY_CLIENT_SECRET': SECRET, 'GITHUB_ACTIONS': 'true'}
+sent = []
+os.environ['GITHUB_ACTIONS'] = 'true'
+with tempfile.TemporaryDirectory() as out:
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = order_qc.main([out, '--dry-run'], env=env, opener=opener_ok(sent), shop=Fake([order('1007', item('the-morning-mug'))]))
+    body = urllib.parse.parse_qs(sent[0].data.decode())
+    ok(code == 0 and sent[0].full_url == 'https://bnf1em-ge.myshopify.com/admin/oauth/access_token' and sent[0].get_method() == 'POST'
+       and body == {'grant_type': ['client_credentials'], 'client_id': [CID], 'client_secret': [SECRET]}, 'trades the client id and secret for a token with one POST')
+    printed = buf.getvalue().splitlines()
+    ok(printed[0] == '::add-mask::' + TOKEN and sum(TOKEN in l for l in printed) == 1, 'masks the token first, and prints it nowhere else')
+    files = [open(os.path.join(r, f), 'rb').read() for r, _, fs in os.walk(out) for f in fs]
+    ok(files and not any(TOKEN.encode() in b or SECRET.encode() in b for b in files), 'no file it writes holds the token or the secret')
+    ok('1 checked' in open(os.path.join(out, 'log.txt')).read(), 'writes its own log for the summary')
+    seen = []
+    real = order_qc.urllib.request.urlopen
+    order_qc.urllib.request.urlopen = lambda req, timeout=None: (seen.append(req), Reply(b'{"data": {}}'))[1]
+    try:
+        order_qc.Shopify('bnf1em-ge.myshopify.com', TOKEN).gql('{ shop { id } }', {})
+    finally:
+        order_qc.urllib.request.urlopen = real
+    ok(seen[0].get_header('X-shopify-access-token') == TOKEN and '/admin/api/2026-07/graphql.json' in seen[0].full_url, 'the Admin API calls carry the token as X-Shopify-Access-Token, on API 2026-07')
+
+with tempfile.TemporaryDirectory() as out:
+    buf = io.StringIO()
+    reply = json.dumps({'error': 'invalid_client', 'error_description': f'Client {CID} with secret {SECRET} is not valid'})
+    with contextlib.redirect_stdout(buf):
+        code = order_qc.main([out], env=env, opener=opener_fail(401, reply), shop=Fake([]))
+    err = open(os.path.join(out, 'auth-error.txt')).read()
+    ok(code == 2 and 'HTTP 401' in err and 'invalid_client' in err, f'a refused exchange fails the run with the status and Shopify\'s words ({err.strip()})')
+    ok(SECRET not in err + buf.getvalue() and CID not in err + buf.getvalue(), 'the error never repeats the secret or the client id, even when Shopify does')
+    ok(buf.getvalue().startswith('::error::'), 'shows as an error on the run')
+
+with tempfile.TemporaryDirectory() as out, contextlib.redirect_stdout(io.StringIO()):
+    code = order_qc.main([out], env={'SHOPIFY_STORE': 'x'}, opener=opener_ok([]), shop=Fake([]))
+    ok(code == 1, 'missing secrets stop the run before any call')
 
 print('all passed' if not failures else f'{failures} failed')
 sys.exit(1 if failures else 0)

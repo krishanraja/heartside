@@ -1,24 +1,32 @@
-# Order QC on GitHub Actions: Krish's one-time setup
+# Order QC on GitHub Actions: setup
 
-The order check (`.github/workflows/order-qc.yml`) needs one Shopify token that can read and write orders and nothing else. Only Krish can make it. It takes about five minutes. Never paste the token into a chat, a document or a commit. It only goes into the GitHub secret in step 2.
+The order check (`.github/workflows/order-qc.yml`) signs in to Shopify as the Dev Dashboard app **Heartside order QC**, installed on bnf1em-ge.myshopify.com with only `read_orders` and `write_orders`. It uses the app's client credentials: there is no long-lived token to make, copy or store.
 
-## 1. Make the Shopify app (Shopify admin)
+## How it signs in
 
-1. **Settings > Apps and sales channels > Develop apps.** If asked, allow custom app development.
-2. **Create an app.** Name it `Heartside order QC`.
-3. **Configuration > Admin API integration > Configure.** Tick only **`read_orders`** and **`write_orders`**. Save.
-4. **API credentials > Install app**, then **Reveal token once** under Admin API access token. Copy it.
+At the start of every run, `tools/qc/order_qc.py` sends one request to `https://bnf1em-ge.myshopify.com/admin/oauth/access_token` with `grant_type=client_credentials` and the app's client ID and secret. Shopify answers with an access token that lasts about 24 hours. The run uses it for its order calls as `X-Shopify-Access-Token`, then forgets it.
 
-## 2. Add the secret (GitHub)
+- The token is masked in the run's log the moment it arrives. It is never printed, and never written to the log, the job summary, an issue or a file.
+- If Shopify refuses, the run fails with Shopify's HTTP status and its error text only, with the client ID and secret blanked out even if Shopify repeats them. A scheduled run, or a manual run with dry run off, also opens a GitHub issue assigned to Krish.
 
-1. Open https://github.com/krishanraja/heartside/settings/secrets/actions.
-2. **New repository secret.** Name: `SHOPIFY_ORDERS_TOKEN`. Value: the token from step 1. Save.
+## Setup (done by Krish, 19 Oct)
 
-## 3. Try it, then switch it on
+1. **Dev Dashboard app.** "Heartside order QC", with only `read_orders` and `write_orders`, installed on bnf1em-ge.myshopify.com.
+2. **Two repository secrets** at https://github.com/krishanraja/heartside/settings/secrets/actions:
+   - `SHOPIFY_CLIENT_ID`: the app's client ID.
+   - `SHOPIFY_CLIENT_SECRET`: the app's client secret.
 
-1. **Actions > Order QC > Run workflow**, with **dry run** ticked. It checks the orders and shows the result in the run's summary, but tags nothing.
+   Both go only into GitHub's secret fields, never into a chat, a document or a commit. If the secret is ever rotated in the Dev Dashboard, update `SHOPIFY_CLIENT_SECRET` the same day, or the next run fails to sign in.
+
+There is no `SHOPIFY_ORDERS_TOKEN`, and the workflow no longer reads one.
+
+## Try it, then switch it on
+
+1. **Actions > Order QC > Run workflow**, with **dry run** ticked (the default). It signs in, checks the orders and shows the result in the run's summary, but tags nothing and opens no issue.
 2. If the summary looks right, run it once more with dry run unticked. It tags the orders and writes the note lines.
-3. Ask Claude Code to switch the schedule on (it uncomments four lines in the workflow) and to turn off the Claude scheduled task "Heartside order QC", so the two never tag the same order.
+3. Ask Claude Code to switch the schedule on (it uncomments four cron lines in the workflow), then turn off the Claude scheduled task "Heartside order QC", so the two never tag the same order.
+
+The Admin API version is `2026-07`. If a run fails on the version, Claude Code moves it.
 
 ## What it does on each run
 
