@@ -1,6 +1,6 @@
 # Breed lookup for the chat
 
-`hs-breeds.js` turns whatever a buyer types as their dog's breed into one corpus row and the name to show them. It is built from the CSVs one folder up and is not loaded by the theme yet: the chat has no breed question (Krish, 15 Oct: don't add one yet).
+`hs-breeds.js` turns whatever a buyer types as their dog's breed into one corpus row and the name to show them. It is built from the CSVs one folder up. Since 20 Oct the theme loads a copy (`shopify/assets/hs-breeds.js`, re-copy it after a rebuild) for the optional "Breed, if you know it" field on the chat's first step; an exact match's `tone` goes to the AI so the gift lines sound like that kind of dog.
 
 ```js
 HSBreeds.lookup('Pittie')

@@ -20,7 +20,11 @@ if (!reject) {
   sd.ip[ip] = (sd.ip[ip] || 0) + 1;
   if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';
 }
+const TONES = ["Companion Velcro","Doodle Wildcard","Guardian","Herding Manager","Retriever","Scent Detective","Sighthound Sofa Missile","Spitz Commentator","Terrier Menace","Working Goofball"];
 const dog = { name: str(b.dog && b.dog.name, 14), pronoun: (b.dog && b.dog.pronoun) === 'he' ? 'he' : 'she' };
+const breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');
+if (breed) dog.breed = breed;
+if (TONES.indexOf(tone) !== -1) dog.tone = tone;
 const recipient = { name: str(b.recipient && b.recipient.name, 14), relation: str(b.recipient && b.recipient.relation, 20) };
 
 const STEPS = ['home', 'home_follow', 'spot', 'together', 'meaning'];

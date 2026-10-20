@@ -26,7 +26,7 @@
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
-    return { screen: 'hero', step: 1, dog: '', pro: 'she', rec: '', rel: 'partner',
+    return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
       typed: {}, ai: {}, fu: null, edits: {}, composed: null, gift: null, tabbed: false,
       sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, mugColor: '' };
@@ -59,6 +59,16 @@
   function names() {
     return { dog: cap(S.dog, 'Your dog'), rec: cap(S.rec, 'them'), she: S.pro === 'he' ? 'he' : 'she', her: S.pro === 'he' ? 'him' : 'her' };
   }
+  /* The breed, if the buyer gave one, through the corpus lookup (breeds-corpus/lookup). Only an
+     exact match counts; its archetype (tone) is a light signal for the dog's voice, never shown. */
+  function breedInfo() {
+    var b = String(S.breed || '').trim();
+    if (!b || !window.HSBreeds) return null;
+    var r = null;
+    try { r = window.HSBreeds.lookup(b); } catch (e) { r = null; }
+    return r && r.exact ? { name: r.name, tone: r.tone } : null;
+  }
+  function dogFor() { var n = names(), d = { name: n.dog, pronoun: n.she }, b = breedInfo(); if (b) { d.breed = b.name; d.tone = b.tone; } return d; }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clearTimers() { timers.forEach(function (t) { clearTimeout(t); }); timers = []; }
   function track(name, data) {
@@ -81,16 +91,18 @@
       cool: { q: 'Plays it cool? I could never. And then?', chips: [['follows', 'Follows ' + n.rec + ' everywhere'], ['lap', 'Climbs onto ' + n.rec + "'s lap"], ['sighs', 'Sighs until ' + n.rec + ' looks']] }
     };
   }
+  /* The gift lines are the dog talking to the person (Krish, 20 Oct): I is the dog, you is the
+     person, warm with a dog's logic and a little humour. Never the dog's name, he or she. */
   var H = {
-    door: { weekends: 'Waits at the door for you, weekends too.', weekdays: 'Waits at the door for you every weekday.', hears: 'Hears your car before anyone else does.' },
-    toy: { same: 'Brings you the same toy every time.', closest: 'Brings you a present every time you get home.', shoe: 'Greets you at the door with one of your shoes.' },
-    spin: { few: 'Does a happy little spin when you get home.', many: 'Spins in circles every time you get home.', dizzy: 'Spins until dizzy every time you get home.' },
-    cool: { follows: 'Plays it cool, then follows you everywhere.', lap: 'Plays it cool, then climbs onto your lap.', sighs: 'Plays it cool, then sighs until you look.' }
+    door: { weekends: 'I wait by the door. Weekends too. Obviously.', weekdays: 'I wait by the door every weekday. On duty.', hears: 'I hear your car first. Every single time.' },
+    toy: { same: 'Same toy, every time. It is our thing.', closest: "I bring you whatever's closest. It's love.", shoe: "I bring you a shoe. You're welcome." },
+    spin: { few: "You're home, so I do a little spin.", many: 'You come home. I spin. I lose count.', dizzy: "I spin till I'm dizzy. Worth it for you." },
+    cool: { follows: 'I act cool. Then follow you everywhere.', lap: "I act cool. Then I'm in your lap.", sighs: 'I act cool. Then I sigh until you look.' }
   };
-  var BASE = { door: 'Waits at the door for you.', toy: 'Brings you a toy when you get home.', spin: 'Spins in circles when you get home.', cool: 'Plays it cool when you get home.' };
-  var SP = { feet: 'Sleeps on your feet.', bed: 'Steals your side of the bed.', couch: 'Saves your spot on the couch.', anywhere: 'Goes wherever you go.', skip: 'Never far from you.' };
-  var TG = { walk: 'Lives for our morning walks.', coffee: 'Keeps you company over coffee.', movie: 'Saves you a seat for movie night.', naps: 'Naps best when you are there.', car: "Will ride anywhere, as long as it's with you.", skip: 'Likes any time with you best.' };
-  var ME = { shadow: 'Your shadow, always.', best: 'Your best friend, no contest.', hard: 'Here for every hard day.', boss: 'Runs the house. Loves you most.', skip: 'Yours, always.' };
+  var BASE = { door: "I wait by the door. It's my whole job.", toy: "I bring you a toy. You're welcome.", spin: "You walk in, I spin. It's the law.", cool: 'I play it cool. For about four seconds.' };
+  var SP = { feet: 'Your feet are my pillow. Non-negotiable.', bed: 'I took your side of the bed. Not sorry.', couch: 'I guard your couch spot. Nobody gets it.', anywhere: 'Where you go, I go. Bathroom included.', skip: "I'm never far from you." };
+  var TG = { walk: 'Our walks are the best part of my day.', coffee: 'You have coffee. I have hope of toast.', movie: 'Movie night is our thing. I pick the seat.', naps: 'My best naps are the ones next to you.', car: "Car ride? Yes. Where? Don't care. With you.", skip: 'Any time with you is my favorite time.' };
+  var ME = { shadow: "I'm your shadow. Where else would I be?", best: "You're my best friend. Not even close.", hard: "On the hard days, I've got you.", boss: 'I run this house. I love you most.', skip: "I'm yours. Always." };
   var REACT4 = { weekends: "Weekends too. Now that's a good dog.", weekdays: 'Keeps office hours. Smart dog.', hears: 'Hears the car first. We always do.', same: 'A signature toy. Very classy.', closest: 'Any present counts. Every dog knows this.', shoe: 'A shoe is a great present. Ask any dog.', few: 'A tasteful spin. Respect.', many: 'Full spin cycle! My kind of dog.', dizzy: 'Spins till dizzy. Total commitment.', follows: 'Too cool, then can’t stay away. Classic dog.', lap: 'The slow lap move. A classic.', sighs: 'The big sigh. Works every time.' };
   var REACT5 = { feet: 'A built-in foot warmer. Good work.', bed: "Their side of the bed? Bold. I'd do the same.", couch: 'The couch is sacred. Every dog knows.', anywhere: 'A true shadow. Very good dog.', skip: "That's okay. On we go." };
   var REACT6 = { walk: 'Walks! Best part of the day. Ask any dog.', coffee: 'Coffee time. Is there toast? Asking for a friend.', movie: 'Couch and a movie. The dream.', naps: "Naps! Now we're talking.", car: 'Car rides! Ears out the window, I hope.', skip: 'No worries at all.' };
@@ -104,7 +116,7 @@
     if (S.composed && S.composed.lines && S.composed.lines[key]) return S.composed.lines[key];
     if (key === 'home') {
       if (!S.home) return null;
-      if (S.home === 'skip') return 'Always happy to see you.';
+      if (S.home === 'skip') return PLAIN.home;
       if (S.home === 'typed') return (S.ai.home_follow && S.ai.home_follow.line) || (S.ai.home && S.ai.home.line) || '';
       if (!S.follow) return BASE[S.home];
       return H[S.home][S.follow] || BASE[S.home];
@@ -226,7 +238,7 @@
   var FIRST = /(^|[^A-Za-z'])(I|I'm|I've|I'd|I'll|me|my|mine|myself)(?=$|[^A-Za-z'])/;
   var MINE = /(^|[^A-Za-z'])(I am|I was|I'm|I've|I'd|I'll|I|me|my|mine|myself)(?=$|[^A-Za-z'])/gi;
   var YOURS = { 'i am': 'you are', 'i was': 'you were', "i'm": "you're", "i've": "you've", "i'd": "you'd", "i'll": "you'll", i: 'you', me: 'you', my: 'your', mine: 'yours', myself: 'yourself' };
-  var PLAIN = { home: 'Always happy to see you.', spot: SP.skip, together: TG.skip, meaning: ME.skip };
+  var PLAIN = { home: 'Best part of my day? You walking in.', spot: SP.skip, together: TG.skip, meaning: ME.skip };
   function chipStyle(line, key) {
     var t = String(line || '').replace(/[‘’]/g, "'").trim();
     if (!t) return t;
@@ -237,22 +249,32 @@
     t = t.charAt(0).toUpperCase() + t.slice(1);
     return FIRST.test(t) ? (PLAIN[key] || '') : t;
   }
+  /* A line from the AI is the dog talking (I, me, my) to the person (you). One that talks about
+     the dog instead (he, she, its name: "Pretends he doesn't.") is the wrong voice and is dropped. */
+  var THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
+  function dogStyle(line) {
+    var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').trim();
+    if (!t || t.length > 44 || THIRD.test(t)) return '';
+    var dog = String(S.dog || '').trim().toLowerCase();
+    if (dog && t.toLowerCase().indexOf(dog) !== -1) return '';
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
   function clip(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n) : t; }
   var GRIEF = /\b(died|dead|death|passed away|put down|put to sleep|rainbow bridge|cancer|funeral|in heaven)\b/i;
   var PROFANE = /\b(fuck|shit|bitch|cunt|asshole|bastard|whore|slut)\w*/i;
   // the typed-answer call (5.2); resolves to { reaction, line, follow_up, flags } or a fallback
   function typedAnswer(step, question, text, previous) {
     var n = names();
-    var body = { step: step, question: question, typed_text: clip(text, 140), previous_line: previous || '', dog: { name: n.dog, pronoun: n.she }, recipient: { name: S.rec ? n.rec : '', relation: S.rel } };
+    var body = { step: step, question: question, typed_text: clip(text, 140), previous_line: previous || '', dog: dogFor(), recipient: { name: S.rec ? n.rec : '', relation: S.rel } };
     var key = step === 'home_follow' ? 'home' : step;
     return callAI(cfg.typedUrl, body, TYPED_MS).then(function (r) {
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
         return {
-          reaction: clip(r.reaction, 70), line: chipStyle(clip(r.line, 44), key),
+          reaction: clip(r.reaction, 70), line: r.line ? dogStyle(r.line) || ownWords(chipStyle(text, key)) || previous || '' : '',
           follow_up: r.follow_up && r.follow_up.question ? {
             question: clip(r.follow_up.question, 70),
             chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }),
-            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' && l.length <= 44 ? chipStyle(l, 'home') || null : null; }),
+            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' ? dogStyle(l) || null : null; }),
             replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? x : null; })
           } : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
@@ -291,17 +313,18 @@
     return typedAnswer(step, question, text, prev);
   }
   function anyTyped() { return Object.keys(S.typed).some(function (k) { return !!S.typed[k]; }); }
+  /* Compose runs for every buyer now (Krish, 20 Oct: every gift a warm message with personality),
+     not only after a typed answer. The scripted lines show at once; the AI's arrive within 6 s. */
   function compose() {
-    if (!anyTyped()) return;
     var n = names();
     var answers = [];
     var push = function (id, chip, label) { answers.push({ id: id, chip: chip && chip !== 'typed' && chip !== 'skip' ? chip : null, label: label || '', typed: S.typed[id] || null }); };
     push('home', S.home, ''); push('home_follow', S.follow, ''); push('spot', S.spot, ''); push('together', S.together, ''); push('meaning', S.meaning, '');
     var asked = S.composeAsked = (S.composeAsked || 0) + 1;
-    callAI(cfg.composeUrl, { dog: { name: n.dog, pronoun: n.she }, recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
+    callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
       if (!r || !r.lines || asked !== S.composeAsked) return;
       var lines = {};
-      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines[k]; if (typeof l === 'string' && l && l.length <= 44) lines[k] = chipStyle(l, k); });
+      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k]); if (l) lines[k] = l; });
       S.composed = { lines: lines, gift: GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null, reason: typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '' };
       if (S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
       save();
@@ -472,6 +495,7 @@
     if (!ui.thinking) {
       if (m.input === 'dog') {
         h += '<label class="hs3-small" for="hs3-dog">Your dog\'s name</label><input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.dog) + '" data-hs3-in="dog">';
+        h += '<label class="hs3-small" for="hs3-breed">Breed, if you know it</label><input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="Optional" value="' + esc(S.breed) + '" data-hs3-in="breed">';
         h += '<div class="hs3-row"><button type="button" class="hs3-chip' + (S.pro === 'she' ? ' is-on' : '') + '" data-hs3="pro" data-v="she" aria-pressed="' + (S.pro === 'she') + '">She</button><button type="button" class="hs3-chip' + (S.pro === 'he' ? ' is-on' : '') + '" data-hs3="pro" data-v="he" aria-pressed="' + (S.pro === 'he') + '">He</button>';
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
@@ -708,8 +732,8 @@
     return bg;
   }
   // the first screen's example mug: the same real-photo mug as the reveal, with Teeinblue's sample
-  // dog and the prototype's words, turning between the dog's face and the note
-  var HERO_MUG = { texts: ['Waits at the door for you, weekends too.', 'Steals your side of the bed.', 'Your shadow, always.'], name: 'Kuku' };
+  // dog and the dog's own words (the chip lines), turning between the dog's face and the note
+  var HERO_MUG = { texts: [H.door.weekends, SP.bed, ME.shadow], name: 'Kuku' };
   function heroMug() {
     var box = frame && frame.querySelector('[data-hs3-hero-mug]'), m = cfg.mug || {};
     if (!box || !m.sample) return;
@@ -908,7 +932,7 @@
     if (S.step === 3) { S.follow = id; ui.prefix = REACT4[id] || ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
     if (S.step === 4) { S.spot = id; ui.prefix = REACT5[id] || ''; S.step = 5; save(); render(); stepEvent('shown'); return; }
     if (S.step === 5) { S.together = id; ui.prefix = REACT6[id] || ''; S.step = 6; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 6) { S.meaning = id; ui.prefix = ''; save(); render(); if (anyTyped()) warm(cfg.composeUrl); return; }
+    if (S.step === 6) { S.meaning = id; ui.prefix = ''; save(); render(); warm(cfg.composeUrl); return; }
     void n;
   }
   function skip() {
@@ -1024,6 +1048,7 @@
         inp.classList.remove('is-need');
         if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, 14); save(); }
+        if (k === 'breed') { S.breed = inp.value.slice(0, 40); save(); }
       });
       inp.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;

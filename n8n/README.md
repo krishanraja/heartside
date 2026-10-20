@@ -25,6 +25,8 @@ Webhook (POST) > **Stamp** > **Warm?** > **Guard** > **Allowed?** > **Gemini** (
 - **Enforce rules** never trusts the model (spec 5.3): lengths (reaction 70, line 44, follow-up 70, chips 24, reason 140); no I, me or my in a line; no em dashes or banned words; every number, time, place and name in a line must appear in the buyer's input, or the line becomes the buyer's own trimmed words. Grief or profanity in the typed words is caught by pattern too, whatever the model says, and returns "I didn't quite catch that one. Try again, or pick one of these?" with no line. With no usable model answer it returns "Tell me more?" and the buyer's own words, marked `"source": "fallback"`.
 - The theme times out at 3 s (typed) and 6 s (compose) and falls back to the scripted lines, so a slow or switched-off webhook never blocks a buyer. The AI can be switched off without n8n in the theme editor: **HS3 gift chat > Use the AI for typed answers**.
 
+- **The dog's voice (20 Oct, Krish).** Gift lines are the buyer's dog talking to the person: I is the dog, you is the person, warm with a little humour. Enforce rules now allows I, me and my in a line and rejects he, she, his, her, the dog's name, the person's name and "!". Compose runs for every buyer and rewrites all four lines as one message. Both calls accept `dog.breed` and `dog.tone` (the corpus archetype, checked against the list in `build.mjs`). Tests: `node test-voice.mjs`.
+
 ## Change them
 
 The source is here. `shared.js` holds the rule helpers, `build.mjs` the prompts, the Guard and the Enforce code, and writes `typed.js` and `compose.js` (n8n Workflow SDK code, what is live) plus the node code on its own for `test-rules.mjs`.

@@ -9,6 +9,7 @@
 {%- assign ai_host = section.settings.typed_url | split: '/webhook' | first -%}
 {%- if section.settings.ai_on and ai_host contains 'https://' -%}<link rel="preconnect" href="{{ ai_host }}" crossorigin>{%- endif -%}
 {{ 'hs3.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs3.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
 {%- comment -%} The mug's colors, Black first (Krish, 19 Oct): only those the picked product has as a
