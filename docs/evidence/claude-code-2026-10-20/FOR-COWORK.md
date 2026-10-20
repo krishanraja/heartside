@@ -41,3 +41,18 @@ The 13 Oct rule "gift lines never use I" forced every line to describe the dog f
 1. **Publish the two n8n workflows from `n8n/compose.js` and `n8n/typed.js`.** This is urgent: compose now runs for every buyer, but the old compose prompt still forbids "I". Its dog-voice lines fail the old rules and fall back to the new scripted lines, which is safe. But if the old model rewrites a chip line without "I" ("Waits by the door for you."), that older-style line can show. Steps are in `n8n/README.md` > "Change them". Afterwards, run one live compose call and confirm the lines say I.
 2. Watch the "Heartside AI calls" table for a day. Compose rows should now arrive for every buyer, and the fallback rate should stay under about 1 in 10.
 3. Krish to judge 5 real reveals: does each read as that dog talking?
+
+## The mug page after "Teeinblue has the five mug colors" (checked live, 20 Oct, 390 px)
+
+| Check | Result |
+|---|---|
+| Shopify images | **Fine, nothing to restore.** The product holds exactly the 10 approved images (dog face and note face per color). Each matches the repo's approved file (mean pixel difference under 0.5/255, JPEG only). There are no Teeinblue mockups. Each variant's image is its own dog face. Black is the first variant. |
+| Gallery | **Fine.** Each color opens on its own dog face, with only its own pair as thumbnails. |
+| Description and Your Words | **Fine.** Heartside's description shows. Your Words reads "From Mowgli to Sam / Copied into the preview", and Teeinblue's fields hold the three dog-voice lines and "Love, Mowgli". |
+| Cart thumbnail | **Fine.** A Black line shows the whole black mug, handle included, with Color: Black, the three lines and "Love, Mowgli". The Printful SKU on the line wasn't read; order QC checks it on every order. |
+| Teeinblue Preview, per color | **Still wrong.** Every color shows all 10 slides, all five mugs. With Red picked it opened on a black mug. |
+| Teeinblue Preview, note-face curve | **Still flat.** The rows run straight across the mug; they don't bow with it as in the approved image. |
+
+The last two are the two Teeinblue settings in `docs/evidence/claude-code-2026-10-19/COWORK-MUG-PREVIEW-FIX.md`: each mockup pair assigned to its own color only, and perspective on for every mockup. Neither has taken effect yet. When saving, untick Images and Description.
+
+**New, from today's voice change:** the 10 approved Shopify images still show the old third-person lines ("Waits at the door for you, weekends too."), while every buyer's Preview and print now use the dog's own voice. Re-rendering them with the new lines is a change to approved images, so it waits for Krish.
