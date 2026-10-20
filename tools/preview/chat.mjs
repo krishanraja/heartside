@@ -46,7 +46,7 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
     if (ai === 'fail') return route.fulfill({ status: 403, contentType: 'application/json', body: '{"error":"origin"}' });
     if (ai === 'slow') { await new Promise((r) => setTimeout(r, 4000)); return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }).catch(() => {}); }
     if (route.request().url().includes('compose')) {
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: 'mug', reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: body.answers.some((a) => a.typed) ? 'mug' : body.default_gift, reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
     }
     if (/passed away/.test(body.typed_text)) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: "I didn't quite catch that one. Try again, or pick one of these?", line: '', follow_up: null, flags: ['grief'] }) });
     const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps office hours. Smart dog.', 'Weekends too. Very loyal.'] } : null;
@@ -80,14 +80,14 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok((await bubble(page)).includes('What does Kuku do when Sam comes home?'), 'step 3: home question names both');
   await page.screenshot({ path: path.join(shots, '1-chat-step3.png') });
   await chipNamed(page, 'Waits at the door');
-  ok((await noteLines(page))[0] === 'Waits at the door for you.', 'step 3: a first draft line inks straight away');
+  ok((await noteLines(page))[0] === "I wait by the door. It's my whole job.", 'step 3: a first draft line inks straight away');
   await page.waitForSelector('text=At the door! Every day? Even weekends? (I would.)', { timeout: 3000 });
   await chipNamed(page, 'Even weekends');
   ok((await bubble(page)).startsWith("Weekends too. Now that's a good dog."), 'step 3b: follow-up reaction');
   await chipNamed(page, "Sam's side of the bed");
   await chipNamed(page, 'The morning walk');
   await chipNamed(page, "Sam's shadow");
-  ok((await noteLines(page)).join('|') === "Waits at the door for you, weekends too.|Steals your side of the bed.|Lives for our morning walks.|Your shadow, always.", 'chat: four lines, word for word from the prototype');
+  ok((await noteLines(page)).join('|') === "I wait by the door. Weekends too. Obviously.|I took your side of the bed. Not sorry.|Our walks are the best part of my day.|I'm your shadow. Where else would I be?", 'chat: four lines in the dog\'s own voice');
   await page.screenshot({ path: path.join(shots, '2-chat-done.png') });
   await tap(page, '[data-hs3="next"]');
   await page.waitForTimeout(3300);
@@ -121,8 +121,8 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   const props = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value])));
   ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /as long as it's with you/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
   ok(!('properties[_Manager]' in props), 'order: no v2 review properties on a v3 gift');
-  ok(calls.length === 0, `chips only made no AI call (${calls.length})`);
-  ok(warms.length === 1 && warms[0].includes('typed-answer'), `one warm-up ping when the chat starts (${warms.length})`);
+  ok(calls.length === 1 && !!calls[0].current_lines, `chips only made one AI call, compose at the reveal (${calls.length})`);
+  ok(warms.length === 2 && warms[0].includes('typed-answer') && warms[1].includes('compose'), `a warm-up ping as the chat starts and one before compose (${warms.length})`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
@@ -183,7 +183,7 @@ for (const mode of ['fail', 'slow']) {
   ok((await noteLines(page))[0].length <= 44, `AI ${mode}: own-words line fits 44 characters`);
   await tap(page, '[data-hs3="skip"]');
   await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).slice(1).join('|') === 'Never far from you.|Likes any time with you best.|Yours, always.', `AI ${mode}: "Not sure" uses the calm lines`);
+  ok((await noteLines(page)).slice(1).join('|') === "I'm never far from you.|Any time with you is my favorite time.|I'm yours. Always.", `AI ${mode}: "Not sure" uses the calm lines`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
@@ -193,7 +193,7 @@ for (const mode of ['fail', 'slow']) {
   await page.fill('#hs3-dog', 'Moose'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Ana'); await tap(page, '[data-hs3="next"]');
   for (let i = 0; i < 4; i++) await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).join('|') === 'Always happy to see you.|Never far from you.|Likes any time with you best.|Yours, always.', 'all "Not sure": a warm, complete set of lines');
+  ok((await noteLines(page)).join('|') === "Best part of my day? You walking in.|I'm never far from you.|Any time with you is my favorite time.|I'm yours. Always.", 'all "Not sure": a warm, complete set of lines');
   await tap(page, '[data-hs3="next"]');
   await page.waitForTimeout(3300);
   await page.screenshot({ path: path.join(shots, '7-not-sure-reveal.png') });

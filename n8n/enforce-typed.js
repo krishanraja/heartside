@@ -6,6 +6,8 @@ const GRIEF = /\b(died|dead|death|dying|passed away|passed on|put down|put to sl
 const PROFANE = /\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|cock\w*|piss\w*|asshole\w*|bastard\w*|whore\w*|slut\w*|nigg\w*|fag\w*|retard\w*)/i;
 const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
 // Biscuit talks to the buyer; only gift lines may say you (to the person)
+// Gift lines are the dog talking (Krish, 20 Oct): I is the dog, so he, she or the dog's name is the wrong voice
+const THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
 const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
 function clean(s) {
@@ -45,7 +47,8 @@ function groundedProse(text, hay) {
   }
   return true;
 }
-function okLine(s, hay) { return okText(s, 44) && !FIRST_PERSON.test(s) && grounded(s, hay); }
+// a gift line: the dog's own words to the person, a sentence may start anywhere, no shouting
+function okLine(s, hay) { return okText(s, 44) && !THIRD.test(s) && s.indexOf('!') === -1 && groundedProse(s, hay); }
 // the buyer's own trimmed words, as a gift line
 function ownWords(t) {
   t = clean(t).replace(/[.!?]+$/, '');
@@ -75,7 +78,9 @@ const raw = $input.first().json;
 const m = findJson(raw, 'reaction') || findJson(raw, 'line') || {};
 const hay = [inp.typed_text, inp.previous_line, inp.dog.name, inp.recipient.name, inp.recipient.relation, inp.question].join(' ');
 // gift lines speak to the person as you, so their name never appears in one
-const named = (t) => !!inp.recipient.name && new RegExp('(^|[^A-Za-z])' + inp.recipient.name.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
+// and the dog is I, so its own name never appears in one either
+const hasName = (t, nm) => !!nm && !!nm.replace(/[^A-Za-z]/g, '') && new RegExp('(^|[^A-Za-z])' + nm.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
+const named = (t) => hasName(t, inp.recipient.name) || hasName(t, inp.dog.name);
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(inp.typed_text) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(inp.typed_text) && flags.indexOf('profanity') === -1) flags.push('profanity');

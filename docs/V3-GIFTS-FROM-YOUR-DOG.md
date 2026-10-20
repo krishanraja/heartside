@@ -42,7 +42,7 @@ These were rejected on 12 and 13 October. Treat each as a hard rule.
 |---|---|---|
 | The HR "annual review" builder ("Area for improvement", "Known enemy of the company") | "I don't think anyone will understand what the areas for improvement actually mean, nor how to answer them." "Zero actual empathy for how a user wants to use a website, or thinks about their dog." | Every question must be answerable instantly from lived experience, by any owner, including owners of shy, old, quiet or brand-new dogs. |
 | Making the buyer do the comedy | "Why is that even funny? Why would I spend $40 on that?" | The buyer never has to be clever. Chips for everything. Humour comes from Biscuit and from the truth of their answers. |
-| "Gifts written by your dog" as a headline | "Dogs can't write." | Gifts are FROM the dog (signed "Love, Kuku" with a paw). The words come from what the buyer told us. Gift lines never use "I" in the dog's voice. "Our" is fine ("Lives for our morning walks."). |
+| "Gifts written by your dog" as a headline | "Dogs can't write." | Gifts are FROM the dog (signed "Love, Kuku" with a paw). The words come from what the buyer told us. ~~Gift lines never use "I" in the dog's voice.~~ Superseded 20 Oct: the gift lines are the dog talking to the person (see section 13). |
 | Lame or dumb business headlines | 12 Oct | Headlines stay plain, warm and true. |
 | One gift, take it or leave it | 13 Oct | Show from the first screen that the words go on any of four gifts, and let them pick several. |
 
@@ -272,6 +272,7 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
 - 2026-10-15: Cut-out and Fraunces redesign of the other three gifts judged "okay, pretty standard"; not built.
 - 2026-10-15: Every-gift-as-a-letter rejected ("sounds shit").
 - 2026-10-15: Krish asked for "10X personalized delight" from the first moment, using the AI edge and the breed corpus. Open.
+- 2026-10-20: Krish, on a cart showing "Understands every word. Pretends he doesn't.": "It should be a message from your dog in their personality style... capture their demeanour, cross reference the corpus, and create literally a humanized warm message from the dog to the person with some humour and dog anthropomorphisms. Make sure all products create a warm message." So, on every gift: I, me and my are the dog, you is the person, never he, she or the dog's name, never the person's name, no exclamation marks, no "Dear" (the 15 Oct letter stays rejected; "Love, [dog]" is the only sign-off). Every scripted chip line was rewritten in that voice ("I took your side of the bed. Not sorry."). Compose now runs for every buyer, not only after a typed answer, so the AI writes all four lines as one message; the scripted lines show first and are the fallback. The chat has an optional "Breed, if you know it" field on step 1 (no new step); an exact corpus match sends its archetype to the AI as a light tone signal, never shown. This replaces the 13 Oct "no I" rule and the 15 Oct "no breed question yet".
 
 ## 14. Next action
 
