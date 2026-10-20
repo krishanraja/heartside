@@ -33,12 +33,12 @@ The 13 Oct rule "gift lines never use I" forced every line to describe the dog f
 | Piece | State | Evidence |
 |---|---|---|
 | Theme | **Live.** Merged as https://github.com/krishanraja/heartside/pull/31, pushed to "Heartside launch" (#197492998526) by run 56 (https://github.com/krishanraja/heartside/actions/runs/39411910260), green, 11:01 UTC | heartside.io serves `hs-breeds.js` and the new `hs3.js` (contains "I took your side of the bed. Not sorry." and the voice check) |
-| n8n webhooks | **Not yet updated.** The session's safety check blocked the n8n API call as a production deploy. | The live workflows still run the 13 Oct prompts |
+| n8n webhooks | **Live** (published 20 Oct through the n8n connector). Typed answer version `1a4ae334`, compose `e8f540d4`. Rollback: publish typed `5f1ba99b` and compose `f014b5be` from each workflow's history. | Live calls for Mowgli (Border Collie): typed line "I bring the stick back. Every single time."; compose "I bring the stick back. Every time." / "Your feet are my pillow. It is the law." / "Our walks are the best part of my day." / "You are my best friend. Not even close.", pick mug, about 1.3 s each |
 | Tests | Pass | `tools/preview` chat, reveal and hs3-lines: all passed. `n8n/test-voice.mjs`: 9 of 9. Theme check: 0 offenses |
 
 ## Open, in order
 
-1. **Publish the two n8n workflows from `n8n/compose.js` and `n8n/typed.js`.** This is urgent: compose now runs for every buyer, but the old compose prompt still forbids "I". Its dog-voice lines fail the old rules and fall back to the new scripted lines, which is safe. But if the old model rewrites a chip line without "I" ("Waits by the door for you."), that older-style line can show. Steps are in `n8n/README.md` > "Change them". Afterwards, run one live compose call and confirm the lines say I.
+1. ~~Publish the two n8n workflows.~~ Done 20 Oct, checked live. One note: Biscuit's chat reaction once leaned on the breed type ("a very important tool for a manager", from Herding Manager). It never reaches a gift. Tightening the prompt so reactions don't use the type is a small follow-up.
 2. Watch the "Heartside AI calls" table for a day. Compose rows should now arrive for every buyer, and the fallback rate should stay under about 1 in 10.
 3. Krish to judge 5 real reveals: does each read as that dog talking?
 
