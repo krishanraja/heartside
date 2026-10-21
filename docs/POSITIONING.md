@@ -1,76 +1,88 @@
-# Heartside positioning and social plan (12 October 2026)
+# Heartside positioning
 
-Decided by Krish on 12 October 2026 in a Cowork session. **Where this file disagrees with older docs on positioning, headlines or brand copy, this file wins.** That includes `V2-FROM-THE-DOG.md`, `BRIEF.md`, `HANDOFF.md` and the Drive `Brand-system.md`. Facts in `HANDOFF.md` (products, prices, fulfilment, hard rules) still stand. This repo copy is canonical; Drive holds a mirror at `Heartside/POSITIONING.md` (see [`SYNC.md`](SYNC.md)).
+Status: current, rewritten 21 October 2026 so every doc says the same thing. It covers the positioning Krish set on 12 October, the product reframe of 13 October (`V3-GIFTS-FROM-YOUR-DOG.md`), and the dog's own voice on the gifts (20 October).
+
+Order of authority:
+- `NORTH_STAR.md` sets the ambition.
+- `V3-GIFTS-FROM-YOUR-DOG.md` wins on the product, the journey, the AI and the words on the gifts.
+- This file wins on how the business describes itself: names, headlines, bios and the brand line.
+- Acquisition, campaigns and social measurement live in the growth repository, `krishanraja/growth-heartside` (`STRATEGY.md`, `PLAYBOOK.md`), which reads this repo as its source of truth.
+
+This repo copy is canonical. Drive mirrors it (see [`SYNC.md`](SYNC.md)).
 
 ## 1. The positioning
 
 | Element | Decided wording |
 |---|---|
-| What the business is | Personalized dog gifts |
+| What the business is | Personalized dog gifts, given on behalf of the dog |
 | Display name on every platform | **Heartside: Personalized Dog Gifts** |
-| Lead line | **Your dog loves you too.** (Krish's own line) |
-| What we sell, in one line | Personalized posters, ornaments and pillows made from their photo. |
-| Standing promise | Free US shipping. A person checks every order. |
+| Lead line | **Your dog loves you too.** (Krish's own line, 12 Oct; since 13 Oct it reads literally: the gift tells the person the dog loves them) |
+| Christmas campaign line | **This year, the dog's buying.** |
+| What we sell, in one line | Gifts from your dog: a mug, a blanket, a framed print and a tree ornament, each carrying a short message from your dog to the person it loves most. |
+| How it works, in one line | Tell Biscuit about your dog in a minute-long chat, then put your dog's words on any gift you like. |
+| Standing promise | Free US shipping. A person checks every order before it prints. Misprints are remade free. |
+
+**The gifts speak as the dog (Krish, 20 Oct).**
+- Every gift line is the dog talking to the person it loves: I is the dog, you is the person. The lines read as one warm message signed "Love, [dog]" with a paw: "I wait by the door. Weekends too. Obviously." "I took your side of the bed. Not sorry." "I'm your shadow. Where else would I be?"
+- Warm first, funny second, with a dog's logic told straight.
+- Never he, she or the dog's name in a gift line, never the person's name, no exclamation marks, no "Dear".
+- Full rules: V3 sections 4.2 and 13.
+
+**Who speaks where:**
+- The dog speaks on the gifts.
+- Biscuit, the brand's chestnut miniature dachshund host, speaks in the chat and in content. He talks to the buyer about their dog, a bit like a dog, with one dog-ism per message at most (V3 4.6).
+- The brand speaks plainly everywhere else: labels, prices, promises, shipping, bios, page names and headlines.
 
 ## 2. Why (keep this intent; do not lose it in later briefs)
 
-- Krish found the old business headline, "a poster of your dog reviewing you", lame. It reads as one cheap gag, and a stranger needs it explained.
-- He rejected "gifts written by your dog". Dogs can't write, and half the range is photo products (the ornament and the pillow now; the sweatshirt, bandana and socks when they return).
-- His rule: **business headlines must never be lame or dumb.** Bios, page names, the site hero, meta titles and descriptions stay plain, warm and true for every product.
-- The Annual Review poster is still the hero product. Its HR joke ("Leaving. Please stop leaving.", "Contract renewed. For life.") lives inside the product and inside posts and ads, where a specific joke stops thumbs. It is the poster's joke, not the brand's headline.
-- The intended feeling, unchanged: a laugh first, then "that is exactly my dog", then the tender turn, then the urge to send it to someone.
+- **12 Oct.** Krish found the old business headline, "a poster of your dog reviewing you", lame: one cheap gag a stranger needs explained. His rule since then: **business headlines must never be lame or dumb.** Bios, page names, the site hero, meta titles and descriptions stay plain, warm and true.
+- **12 to 13 Oct.** He rejected "gifts written by your dog": dogs can't write. Gifts are **from** the dog, and the words come from what the buyer told Biscuit. The 20 Oct voice keeps this: the dog speaks in the gift's words; nobody claims the dog wrote them.
+- **13 Oct.** He reframed the product from words about the dog to gifts given on behalf of the dog to someone it loves: everyday things people use (the mug every morning, the blanket on the couch, the ornament every December). The HR "annual review" builder was rejected for having "zero actual empathy for how a user wants to use a website, or thinks about their dog". The HR poster and the pillow were retired from sale.
+- **15 Oct.** "Every gift as a letter" ("Dear Linda,") was rejected ("sounds shit"). The dog's voice on the gifts is short lines with a signature, never a letter.
+- **20 Oct.** Krish saw a cart that read "Understands every word. Pretends he doesn't." and asked for "a humanized warm message from the dog to the person with some humour and dog anthropomorphisms", on every product. That replaced the 13 Oct rule that gift lines never say I.
+- **The feeling, in order:**
+  1. "Oh, that's fun" (Biscuit greets them).
+  2. "It's actually listening."
+  3. "That's exactly them."
+  4. "I want all of these."
+  5. "I have to show someone."
+
+  The recipient should feel the dog chose this for them (V3 section 1).
 
 ## 3. Retire from headlines
 
-- "Your dog has notes" as a business headline or brand description. The handle @yourdoghasnotes stays; handles are not headlines.
-- "Written by your dog" and "Now it's in writing".
-- "Your dog's annual review of you" as the description of the business. It is fine as the description of the poster.
-- Not yet decided: whether "Your dog has notes." survives as an end-card sign-off on ads. Ask Krish before using it.
+- "Written by your dog", "gifts written by your dog" and "Now it's in writing". Dogs can't write; the gifts are from the dog.
+- "Your dog has notes" as a business headline or brand description. The handle @yourdoghasnotes stays; handles are not headlines. Not yet decided: whether "Your dog has notes." survives as an end-card sign-off on content. Ask Krish before using it.
+- "Your dog's annual review of you", the HR joke and every product name from it (The Annual Review, The Body Double, "areas for improvement"). They were retired from sale at the v3 launch; don't use them in headlines, bios, ads or posts.
+- **Third-person gift lines as examples of what the gifts say.** The pre-20 Oct lines ("Waits at the door for you.", "Steals your side of the bed.", "Your shadow, always.") no longer print. Show the dog's own voice instead.
+- "Posters, ornaments and pillows made from their photo" as the one-line offer. It describes the retired range.
 
-## 4. The A/B test (agreed by Krish)
+## 4. Positioning tests
 
-For the first two weeks of posting, alternate two angles in the posts themselves:
+- Judge content by **sends per reach**. Adam Mosseri said in January 2025 that sends are Instagram's most important signal for reaching non-followers.
+- The 12 Oct A/B test (the HR "review roast" against the "love letter") ended with the HR range. The warm, true, funny dog's-own-voice angle is now the only product angle.
+- Which hooks and formats to test, and how, is the growth repository's job (`growth-heartside/PLAYBOOK.md`). It must stay inside sections 1 to 3.
 
-- **A, the review roast:** the poster's HR joke.
-- **B, the love letter:** the warm "your dog loves you too" angle.
-
-Judge them by **sends per reach** on Instagram. Adam Mosseri said in January 2025 that sends are the most important signal for reaching people who don't follow you. The winner sets the lead ad and can inform the site hero. Neither angle changes the business headline in section 1.
-
-## 5. Where it is applied (state on 12 Oct)
+## 5. Where it is applied
 
 | Surface | State | Still to do |
 |---|---|---|
-| Facebook Page facebook.com/yourdoghasnotes | Name "Heartside: Personalized Dog Gifts" (Facebook locks it for 60 days). Bio, cover, Learn more button to heartside.io (UTM tagged), links to Instagram and TikTok, krish@heartside.io, Biscuit profile photo | Nothing |
-| Instagram @yourdoghasnotes | Bio: "Your dog loves you too. / Personalized posters, ornaments and pillows made from their photo. / Free US shipping. Preview yours free ↓". Biscuit profile photo. Connected to the Facebook Page | Display name is still "Heartside: Your Dog Has Notes" because Instagram allows two name changes per 14 days; change it when allowed. Add the bio link in the phone app (the website can't edit links): `https://heartside.io/?utm_source=instagram&utm_medium=social&utm_campaign=bio#review`, titled heartside.io. Set the email contact button to krish@heartside.io |
-| TikTok @yourdoghasnotes | Bio: "Your dog loves you too. Personalized dog gifts. heartside.io". Biscuit profile photo. Personal account; switching to Business asked for a US EIN, and it isn't needed for organic posting | Display name locked until 19 Oct; change it then. A clickable link comes at 1,000 followers |
-| Shopify home page title and meta (Online Store > Preferences) | Title: "Heartside &#124; Personalized Dog Gifts. Your dog loves you too." Description: "Your dog loves you too. Personalized posters, ornaments and pillows made from your dog's photo. A person checks every order. Free US shipping." | Nothing |
-| The site (theme code, deploy through the GitHub workflow only) | Hero still reads "Your dog loves you too. Now it's in writing." | For the site session, with Krish's sign-off on exact words: drop "Now it's in writing"; keep the HR voice inside the poster and its builder rather than across the whole site (Krish said on 5 Oct it is too much everywhere); fix the Teeinblue labels "Employee name (you)" and "Who is your manager?" to "Your name" and "Your dog's name"; replace Printful's stock product descriptions |
+| The site (theme code; deploy only through the GitHub workflow, `HANDOFF.md` 5b) | Since 19 Oct heartside.io opens on the v3 chat with Biscuit: "Your dog *loves you too.*", the four gifts as pills and "Start with your dog". The gift lines are in the dog's own voice since 20 Oct. The four gifts are the only active products. The v2 homepage is kept as `index.classic.json` (`?view=classic`). | Nothing on positioning |
+| Product pages | `product.gift.json` (`?view=gift`): title, price, Heartside's description, "Your Words", then Teeinblue | The four products' Shopify images still show pre-20 Oct third-person lines; re-rendering them waits for Krish (`evidence/claude-code-2026-10-20/COWORK-PROMPT.md`) |
+| Shopify home page title and meta (Online Store > Preferences) | Last recorded 12 Oct: "Heartside &#124; Personalized Dog Gifts. Your dog loves you too." and a description naming posters, ornaments and pillows | Rewrite the description to the section 1 one-liner. It's a live change, so ask Krish first |
+| Facebook Page facebook.com/yourdoghasnotes | Name "Heartside: Personalized Dog Gifts" | Check the bio still describes the v3 gifts, not posters and pillows |
+| Instagram @yourdoghasnotes | Last recorded bio (12 Oct): "Your dog loves you too. / Personalized posters, ornaments and pillows made from their photo. / Free US shipping. Preview yours free ↓" | Rewrite the middle line to the section 1 one-liner; set the display name to "Heartside: Personalized Dog Gifts" if it still reads "Your Dog Has Notes"; point the bio link at heartside.io with UTM tags |
+| TikTok @yourdoghasnotes | Bio: "Your dog loves you too. Personalized dog gifts. heartside.io" | Display name, once TikTok allows it |
 
-Profile and cover images: the Biscuit avatar (`assets/v2/biscuit-headshot.jpg` cropped to a 1080 square) and the 1640x624 Facebook cover built from `design/mockups/poster-biscuit.png` with the site fonts. Keep any text on the cover clear of the profile photo, which sits bottom left on wide screens and bottom centre on narrow ones.
+Profile images: the Biscuit avatar (`assets/heartside-avatar-biscuit-1080.jpg`) and the Facebook cover (`assets/heartside-fb-cover-1640x624.jpg`). The cover was built from the retired poster, so replace it with a v3 gift image when the profiles are next touched.
 
-## 6. The $10k social plan (Krish approved 12 Oct)
+## 6. Goal and the growth plan
 
-Goal: about $10,000 (roughly 220 orders at about $45) by the 10 December order-by date, with as little paid media as possible.
-
-**Why Meta first.** TikTok uses the poster's location when recommending videos, and practitioners report that accounts posting from outside the US mostly reach their own country. Krish posts from London and the store sells only to the US. No source shows Instagram or Facebook limiting reach to the poster's country. Facebook reaches 80% of US adults aged 30 to 49 (Pew, 2025), which is the gift buyer. TikTok gets copies of the same videos, with low expectations.
-
-**The four parts.**
-
-1. **US creators (approved: 20).** Gift each a poster of their own dog (about $17 landed) plus a 15 to 20% Shopify Collabs affiliate link. US phones reach US feeds, and the posts give real photos of real posters in real homes. Gifts must be disclosed in the post itself (FTC). Nothing is sent or ordered without Krish's yes.
-2. **The comment loop.** Every post ends with "Comment your dog's name". A comment-to-DM tool (Meta's built-in option, or Inrō free for up to 100 contacts a month) sends the review builder link. The site's free "Leak [Dog]'s review" story card is the share loop.
-3. **Content made to be sent.** One Reel a day on Instagram and Facebook, copied to TikTok, made with AI (Krish's Higgsfield credits). AI never draws the product; composite the real print. Never show AI "customers" holding or reviewing the product, which would be a fabricated testimonial. Biscuit as an openly fictional, AI-labelled character is fine.
-4. **The deadline push.** Add "email me my card and remind me before Dec 10" to the story-card download (site session). Push to the email and DM lists on Black Friday (27 Nov) and before 10 Dec. Paid only here: about $10 a day retargeting site visitors from mid-November, plus boosting the best creator post. Every spend needs Krish's yes.
-
-**Checkpoints:** 15 orders by 1 Nov, 80 by 22 Nov, 220 by 10 Dec. If 1 Nov is missed, put money behind the best creator post rather than making more of our own posts.
-
-**Assumptions that could change the plan.**
-
-- Instagram reaches US viewers from a London account (medium confidence). After 10 Reels, check the top country in Instagram's audience stats; if the UK is over half, consider opening the UK for posters (Printful prints them in Birmingham). Krish chose to stay US-only for now.
-- Gifted creators post (low confidence; surveys say under half do). Pass mark: 8 of 20 within two weeks of delivery.
-- The order chain works end to end. Unproven until Krish's real sample order goes through.
-
-## 7. Next, in order
-
-1. Krish's real sample order from inside Instagram. Then check the Shopify order, the Teeinblue print file and the Printful draft; Krish confirms in Printful.
-2. Shortlist 20 US dog creators and draft the outreach and Collabs offer for Krish's review.
-3. Pick the AI video style from two or three short test clips, then make the first two weeks of A/B posts.
+- **The ambition (`NORTH_STAR.md`, set 18 Oct):** by February 2027, Heartside is the gift US dog owners reach for first when they want something that sounds like their dog. $10,000 is an ordinary month, not a Christmas peak, and most orders come from people who saw someone else's.
+- **The plan to get there lives in `krishanraja/growth-heartside`.** It holds the creators, the comment loop, the daily content packs, the share loop and the paid tests. That repo checks every pack against sections 1 to 3 of this file, V3 section 2 and `HANDOFF.md` section 2. When those sections change, its sync stops every pack until a person updates its rules.
+- **Standing rules from the 12 Oct plan that still hold:**
+  - US-only selling.
+  - Gifts to creators disclosed in the post (FTC).
+  - AI never draws the product: composite the real print.
+  - Never show AI "customers" holding or reviewing the product. Biscuit as an openly fictional, AI-labelled character is fine.
+  - Every spend needs Krish's yes.
