@@ -4,7 +4,7 @@ Paste everything below into Claude Cowork.
 
 ---
 
-You're working for Krish Raja on **Heartside** (heartside.io, Shopify store `bnf1em-ge`): gifts given on behalf of a dog to the person it loves most. You work in the admin tools Claude Code can't reach: **Shopify admin, Teeinblue, Printful, Meta and TikTok**, with Krish logged in.
+You're working for Krish Raja on **Heartside** (heartside.io, Shopify store `bnf1em-ge`): gifts given on behalf of a dog to the person it loves most. You work in the admin tools Claude Code can't reach, with Krish logged in: **Shopify admin, Teeinblue, Printful, Meta, TikTok, Google Search Console, Bing Webmaster Tools, Google and Microsoft Merchant Center, and Pinterest**.
 
 **Krish's goal:** place a real test order as soon as the business is ready to launch.
 
@@ -12,6 +12,7 @@ Your job:
 1. Finish part 3, in order, so everything a buyer sees and everything that prints is right.
 2. Run the checks in part 4.
 3. Hand Krish the test order in part 5.
+4. Set up the search and AI listings in part 6. These don't block the test order; do them while you wait on Krish.
 
 Everything is documented in the GitHub repo **krishanraja/heartside** (public, branch `main`). Read these first:
 - `docs/V3-GIFTS-FROM-YOUR-DOG.md`: the product, the journey, the AI and the words on the gifts.
@@ -34,9 +35,17 @@ Everything is documented in the GitHub repo **krishanraja/heartside** (public, b
   - Teeinblue holds each order until a person presses **"Confirm & Send to fulfill"**.
   - An order check runs twice a day on GitHub Actions (07:56 and 16:56 London). It tags each order `qc-pass` or `qc-hold`, and never confirms anything.
 
-**Done by Claude Code today (21 Oct):**
+**Done by Claude Code (20 and 21 Oct), all live:**
+- **The gift lines are the dog talking** on every gift (Krish, 20 Oct): I is the dog, you is the person. Never he, she or a name in a line, no exclamation marks, no "Dear". The AI writes them for every buyer, and an optional breed field shades the tone.
 - **New product images in the dog's voice.** All four products in Shopify now show them: the mug's five note faces, the blanket, four framed-print images and two ornament images. Don't replace them.
-- **Repo updated:** the docs, the growth engine and the AI prompts all match the dog's voice.
+- **A new favicon** (Biscuit on cream) and **a new share card** ("Your dog loves you too." with a mug showing a dog's photo and a mug showing the dog's message).
+- **Search and AI:**
+  - structured data on every page;
+  - a brand-first `/llms.txt`;
+  - the Answers library at heartside.io/blogs/answers (three answers), linked from a small "Answers" link at the bottom of every page.
+
+  Every AI crawler tested can read the site.
+- **The docs and the growth engine** (`krishanraja/growth-heartside`) match all of this.
 
 ## 2. Rules
 
@@ -89,11 +98,12 @@ Everything is documented in the GitHub repo **krishanraja/heartside** (public, b
    - Products: only the four gifts are Active. The retired HR poster, framed poster and pillow are Draft or Archived.
    - The four product pages each show Heartside's own description, not Printful's stock text.
    - Store contact email: krish@heartside.io. Refund, privacy and shipping policies exist.
-   - **Home page title and meta description** (Online Store > Preferences): if the description still names posters, ornaments or pillows, change it to: "Your dog loves you too. Gifts from your dog: a mug, a blanket, a framed print or an ornament, with a message from your dog to the person it loves. A person checks every order. Free US shipping." (Approved wording: `docs/POSITIONING.md` section 1.)
+   - **Home page title and meta description** (Online Store > Preferences): the live site already shows the approved description, "Your dog loves you too. Gifts from your dog: a mug, a blanket, a framed print or an ornament, with a message from your dog to the person it loves. A person checks every order. Free US shipping." Confirm Preferences says the same, and that the social sharing image is `heartside-share-1200x630.jpg`: two mugs, one with a dog's photo and one with the message. Don't upload a different one.
 6. **Social profiles** (Krish logged in):
    - **Instagram @yourdoghasnotes:** set the bio's middle line to "Gifts from your dog, in your dog's own words." and keep "Your dog loves you too." and "Free US shipping." Set the display name to "Heartside: Personalized Dog Gifts" if Instagram allows it. Set the bio link to `https://heartside.io/?utm_source=instagram&utm_medium=social&utm_campaign=bio`.
    - **Facebook Page:** make the intro say the same.
    - **TikTok:** check the bio still reads "Your dog loves you too. Personalized dog gifts. heartside.io".
+   - **Refresh the share card's cache:** paste https://heartside.io into Facebook's Sharing Debugger (developers.facebook.com/tools/debug) and press "Scrape Again", so Facebook and Instagram show the new card instead of the retired HR poster.
    - Report the before and after for each.
 7. **Cowork scheduled tasks:** confirm the old task "Heartside order QC" is **off**. GitHub Actions now runs the order check, and the two must never tag the same order. If it's still on, ask Krish before turning it off.
 
@@ -161,4 +171,10 @@ Check afterwards: Search Console's sitemap status reads "Success", and the URL I
   - the profile wording.
 - **Part 4:** the screenshots, and anything that failed.
 - **After the order:** the Shopify order number, the Teeinblue print files (screenshots), the QC tag and note, and the Printful order number.
+- **Part 6:** each listing's state, with a screenshot:
+  - Search Console sitemap status and the indexing requests;
+  - Bing Webmaster import and sitemap;
+  - Merchant Center product status and any disapprovals;
+  - the Pinterest account and catalog;
+  - the AI sales channels Shopify offers (not turned on).
 - **Anything a tool wouldn't allow:** stop at that step, and say what it offered instead.
