@@ -126,7 +126,32 @@ When parts 3 and 4 pass, tell Krish he can order. He places and pays for it hims
    - **Printful:** the order waits as a draft with both products, the mug as Black 11 oz (11051).
 3. **Confirm:** only when every check above passes, Krish (or you, on his explicit yes in the session) presses **"Confirm & Send to fulfill"** in Teeinblue. Note the Printful order number and its estimated delivery.
 
-## 6. Report back to Krish
+## 6. Search and AI listings (approved by Krish, 21 Oct: "yes to all four")
+
+Claude Code put the site side live on 21 Oct:
+- the Biscuit favicon and the new share card;
+- structured data on every page;
+- a brand-first `/llms.txt`;
+- the Answers library at heartside.io/blogs/answers, with three answers and a small footer link.
+
+Strategy: `krishanraja/growth-heartside`, `docs/GEO-AEO.md`. With Krish logged in, do these, and report each with a screenshot:
+
+1. **Google Search Console:** add the domain property heartside.io (verify by DNS or the Shopify-friendly HTML tag method Search Console offers), submit `https://heartside.io/sitemap.xml`, then use URL Inspection to request indexing for the homepage, the four product pages and the three answers.
+2. **Bing Webmaster Tools:** sign in and import the site from Search Console (the quickest way), or verify heartside.io. Submit the sitemap. If Bing offers an AI or Copilot citations report, note where it is.
+3. **Google Merchant Center** (through Shopify's Google & YouTube channel; installing it is Krish's yes):
+   - free listings on for the US;
+   - the four products approved;
+   - shipping is free to the US;
+   - the products are marked as custom.
+
+   Report any disapproval and its reason. Don't change prices or titles without Krish's yes.
+4. **Bing Merchant Center** (Microsoft Merchant Center): connect the same catalog if Shopify's Microsoft channel offers it; otherwise report what it needs.
+5. **Pinterest:** a business account for Heartside (hello@krishraja.com or krish@heartside.io, never a personal Gmail). Claim heartside.io and connect the catalog if Shopify's Pinterest channel is installed (installing it is Krish's yes).
+6. **Shopify's AI sales channels:** in Shopify admin > Sales channels, list any AI or agentic channel Shopify offers (ChatGPT, Perplexity, Copilot or similar). Don't turn one on; report what's offered so Krish can decide.
+
+Check afterwards: Search Console's sitemap status reads "Success", and the URL Inspection of one answer page shows "URL is available to Google" once crawled.
+
+## 7. Report back to Krish
 
 - **Part 3:** what you changed, with before and after screenshots, and what you only checked, with its state:
   - auto confirm off or on;
