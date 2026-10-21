@@ -102,8 +102,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 ### Known gaps right now
 
 - **The mug's Teeinblue Preview:** every color shows all ten slides, and the note face prints flat instead of curving with the mug. The fix is two Teeinblue settings (`evidence/claude-code-2026-10-19/COWORK-MUG-PREVIEW-FIX.md`).
-- **Shopify product images** still show the pre-20 Oct third-person lines. Re-rendering them waits for Krish.
-- **No real order through the v3 journey yet.** Krish's mock order is next; the checklist before it is `evidence/claude-code-2026-10-20/COWORK-PROMPT.md`.
+- **No real order through the v3 journey yet.** Krish's test order is next. The launch checklist and the order steps are in `evidence/claude-code-2026-10-21/COWORK-LAUNCH-AND-TEST-ORDER.md`.
 - **Christmas order-by dates** are not confirmed per product. The choose screen's December promise must be checked or gated before it's relied on.
 - **Social bios** may still describe the retired range (`POSITIONING.md` section 5).
 - **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared, and `hs3_add_to_cart` fires on the hand-off to the product page, not a confirmed add (`HANDOVER-2026-10-17.md`).
@@ -112,7 +111,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 
 Owner in brackets. "Krish" means only he can do it (his logins, his money, his taste).
 
-1. **Run `evidence/claude-code-2026-10-20/COWORK-PROMPT.md`** (Cowork, with Krish logged in):
+1. **Run `evidence/claude-code-2026-10-21/COWORK-LAUNCH-AND-TEST-ORDER.md`** (Cowork, with Krish logged in). It replaces the 20 Oct prompt and covers:
    - fix the mug Preview (mockups per color, perspective on);
    - check the other three gifts take the dog-voice lines;
    - list product images with old wording;
@@ -125,11 +124,10 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
    - press "Confirm & Send to fulfill" in Teeinblue.
 
    This is the proof that Shopify > Teeinblue > Printful works for the v3 range.
-3. **Re-render the Shopify product images in the dog's voice** (Claude Code, on Krish's yes), mug first, with `tools/realphoto/`.
-4. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
-5. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
-6. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
-7. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
+3. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
+4. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
+5. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
+6. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
 
 Acquisition (creators, content, the comment loop, paid tests) is planned and drafted in `growth-heartside`, which reads this repo daily.
 
@@ -258,10 +256,10 @@ The full log, in Krish's words, is V3 section 13. The ones that shape day-to-day
 - **18 Oct: the North Star.** The gift US dog owners reach for first, with $10,000 an ordinary month by February 2027.
 - **19 Oct: five mug colors** (Black, Dark Blue, Dark Green, Red, Pink), Black first. The chat became the homepage. Order QC moved to GitHub Actions.
 - **20 Oct: the dog's own voice.** Gift lines are the dog talking to the person it loves. The AI writes all four lines for every buyer, and an optional breed shades the tone.
+- **21 Oct: product images in the dog's voice** (Krish: "yes, re-render the product images in the dog's voice"). All four products' Shopify images now show the new lines (`design/shopify-images/gifts-2026-10-21/README.md`).
 
 ### Open questions for Krish (carry these forward)
 
-1. Re-render the product images in the dog's voice: yes or no.
-2. Whether "Your dog has notes." survives as an end-card line on content.
-3. The phase-two AI illustration: run the five-dog bake-off, and when.
-4. A bundle discount beyond the $19 ornament: yes or no, and what.
+1. Whether "Your dog has notes." survives as an end-card line on content.
+2. The phase-two AI illustration: run the five-dog bake-off, and when.
+3. A bundle discount beyond the $19 ornament: yes or no, and what.

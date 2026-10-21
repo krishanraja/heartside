@@ -275,6 +275,10 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
 - 2026-10-15: Every-gift-as-a-letter rejected ("sounds shit").
 - 2026-10-15: Krish asked for "10X personalized delight" from the first moment, using the AI edge and the breed corpus. Open.
 - 2026-10-20: Krish, on a cart showing "Understands every word. Pretends he doesn't.": "It should be a message from your dog in their personality style... capture their demeanour, cross reference the corpus, and create literally a humanized warm message from the dog to the person with some humour and dog anthropomorphisms. Make sure all products create a warm message." So, on every gift: I, me and my are the dog, you is the person, never he, she or the dog's name, never the person's name, no exclamation marks, no "Dear" (the 15 Oct letter stays rejected; "Love, [dog]" is the only sign-off). Every scripted chip line was rewritten in that voice ("I took your side of the bed. Not sorry."). Compose now runs for every buyer, not only after a typed answer, so the AI writes all four lines as one message; the scripted lines show first and are the fallback. The chat has an optional "Breed, if you know it" field on step 1 (no new step); an exact corpus match sends its archetype to the AI as a light tone signal, never shown. This replaces the 13 Oct "no I" rule and the 15 Oct "no breed question yet".
+- 2026-10-21: Krish: "yes, re-render the product images in the dog's voice". Done the same day:
+  - the mug's five note faces were re-rendered the approved way (the print file passes order QC's check);
+  - the blanket, the four framed-print images and the two ornament images had only their lines replaced;
+  - all are live in Shopify, with each variant on its own image.
 
 ## 14. Next action
 
