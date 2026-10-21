@@ -5,9 +5,12 @@
   in smaller, muted type than the copyright line above it. The words are fixed: the exact company
   names only, no numbers, addresses or jurisdictions. Placed by the theme push's
   "footer_company_note" option (.github/scripts/footer-note.mjs).
+  Since 21 Oct it also carries the one small "Answers" link Krish approved: Helio's footer renders
+  no menu, and the Answers library is unlisted elsewhere (growth-heartside docs/GEO-AEO.md).
 {%- endcomment -%}
 <style>
   .hs-company-note { background: {{ section.settings.background }}; margin-top: -12px; padding: 0 20px 20px; }
+  .hs-company-note a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
   .hs-company-note p {
     margin: 0 auto; max-width: 1200px; text-align: center;
     font-size: 0.6875rem; line-height: 1.5; letter-spacing: 0.01em;
@@ -15,7 +18,7 @@
   }
 </style>
 <div class="hs-company-note">
-  <p>Heartside is a Mindmaker LLC company. Mindmaker Ltd in the UK.</p>
+  <p>{%- if section.settings.answers_url != blank -%}<a href="{{ section.settings.answers_url }}">{{ section.settings.answers_label }}</a> · {% endif -%}Heartside is a Mindmaker LLC company. Mindmaker Ltd in the UK.</p>
 </div>
 
 {% schema %}
@@ -23,7 +26,9 @@
   "name": "HS company note",
   "class": "hs-company-note-section",
   "settings": [
-    { "type": "color", "id": "background", "label": "Background (match the footer)", "default": "#0f0f0f" }
+    { "type": "color", "id": "background", "label": "Background (match the footer)", "default": "#0f0f0f" },
+    { "type": "text", "id": "answers_label", "label": "Answers link text", "default": "Answers" },
+    { "type": "text", "id": "answers_url", "label": "Answers link (a path on this store)", "default": "/blogs/answers" }
   ],
   "enabled_on": { "groups": ["footer"] }
 }

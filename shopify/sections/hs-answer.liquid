@@ -1,0 +1,56 @@
+{%- comment -%}
+  One answer in the Answers library (/blogs/answers), used by templates/article.answers.json.
+  The library is unlisted, never hidden: it stays out of the menu and the gift journey, but every
+  page is public, the same for people and crawlers, in the sitemap and in /llms.txt
+  (growth-heartside docs/GEO-AEO.md). The question is the title; the excerpt is the short answer,
+  shown first; the body expands it. Structured data: hs-schema, kind 'article'.
+{%- endcomment -%}
+{%- render 'hs2-head' -%}
+{%- render 'hs-schema', kind: 'article', article: article, blog: blog -%}
+<style>
+  .hs-answer { --ink: #121010; --cream: #FBF6F1; --muted: #5A4A44; --rule: #E8DCD3; --chestnut: #8A4A2B; --red: #A8284E;
+    background: var(--cream); color: var(--ink); padding: 48px 16px 72px; font-family: "HS DM Sans", system-ui, sans-serif; }
+  .hs-answer__in { max-width: 680px; margin: 0 auto; }
+  .hs-answer__eyebrow { margin: 0 0 14px; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
+  .hs-answer__eyebrow a { color: var(--chestnut); text-decoration: none; }
+  .hs-answer h1 { font-family: "HS Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(32px, 6vw, 46px); line-height: 1.1; margin: 0 0 24px; }
+  .hs-answer__short { background: #fff; border: 1px solid var(--rule); border-radius: 16px; padding: 20px 22px; margin: 0 0 32px; font-size: 19px; line-height: 1.5; }
+  .hs-answer__short h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+  .hs-answer__short p { margin: 0; }
+  .hs-answer__body { font-size: 18px; line-height: 1.65; }
+  .hs-answer__body h2 { font-family: "HS Fraunces", Georgia, serif; font-weight: 600; font-size: 26px; line-height: 1.2; margin: 36px 0 12px; }
+  .hs-answer__body h3 { font-size: 19px; margin: 24px 0 8px; }
+  .hs-answer__body blockquote { margin: 16px 0; padding: 0 0 0 16px; border-left: 3px solid var(--chestnut); font-family: "HS Fraunces", Georgia, serif; font-size: 20px; }
+  .hs-answer__body a { color: var(--ink); }
+  .hs-answer__meta { color: var(--muted); font-size: 15px; margin: 36px 0 0; }
+  .hs-answer__cta { margin: 28px 0 0; padding: 24px 0 0; border-top: 1px solid var(--rule); }
+  .hs-answer__cta p { margin: 0 0 14px; font-size: 18px; }
+  .hs-answer__btn { display: inline-block; min-height: 48px; line-height: 48px; padding: 0 24px; border-radius: 999px; background: var(--ink); color: #fff; text-decoration: none; font-weight: 600; }
+  .hs-answer__btn:focus-visible { outline: 3px solid #E49CB4; outline-offset: 3px; }
+</style>
+<article class="hs-answer">
+  <div class="hs-answer__in">
+    <p class="hs-answer__eyebrow"><a href="{{ blog.url }}">{{ section.settings.eyebrow }}</a></p>
+    <h1>{{ article.title }}</h1>
+    {%- if article.excerpt != blank -%}
+      <div class="hs-answer__short"><h2>{{ section.settings.short_label }}</h2>{{ article.excerpt }}</div>
+    {%- endif -%}
+    <div class="hs-answer__body">{{ article.content }}</div>
+    <p class="hs-answer__meta">Updated <time datetime="{{ article.updated_at | date: '%Y-%m-%d' }}">{{ article.updated_at | date: '%B %-d, %Y' }}</time> by Heartside</p>
+    <div class="hs-answer__cta">
+      <p>{{ section.settings.cta_text }}</p>
+      <a class="hs-answer__btn" href="{{ routes.root_url }}?utm_source=web&amp;utm_medium=organic_search&amp;utm_campaign=answers&amp;utm_content={{ article.handle }}">{{ section.settings.cta_label }}</a>
+    </div>
+  </div>
+</article>
+{% schema %}
+{
+  "name": "HS answer",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (links to the library)", "default": "Answers from Heartside" },
+    { "type": "text", "id": "short_label", "label": "Label over the short answer", "default": "The short answer" },
+    { "type": "text", "id": "cta_text", "label": "Line above the button", "default": "Tell Biscuit about your dog, and see the message your dog would send." },
+    { "type": "text", "id": "cta_label", "label": "Button", "default": "Start with your dog" }
+  ]
+}
+{% endschema %}

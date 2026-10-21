@@ -1,4 +1,5 @@
 {%- render 'hs2-head' -%}
+{%- render 'hs-schema', kind: 'product', product: product -%}
 {%- liquid
   assign s = section.settings
   assign current = product.selected_or_first_available_variant
