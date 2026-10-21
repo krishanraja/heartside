@@ -91,14 +91,16 @@ Every question offers chips, a "Not sure" skip, and (to build, not in the protot
 |---|---|---|---|
 | 1 | "Hi! I'm Biscuit. I sniff out gifts from dogs to the people they love. Who's your dog?" | Dog's name (max 14), She/He, photo (allow "Add later") | name and photo |
 | 2 | "Kuku! Great name. My tail is going. So who does Kuku love most?" | My partner / Mom / Dad / Our kid / A friend, then their first name (max 14) | "For Sam" |
-| 3 | "Sam! Lucky human. What does Kuku do when Sam comes home?" | Waits at the door / Brings Sam a toy / Spins in circles / Plays it cool | a first draft line inks straight away ("Waits at the door for you.") |
-| 3b | One follow-up that proves it listened, e.g. "At the door! Every day? Even weekends? (I would.)" | Even weekends / Weekdays / Hears the car first | refined line ("Waits at the door for you, weekends too.") |
-| 4 | "Weekends too. Now that's a good dog. Where's Kuku's spot when Sam's around?" | On Sam's feet / Sam's side of the bed / Next to Sam on the couch / Wherever Sam is | "Steals your side of the bed." |
-| 5 | "Their side of the bed? Bold. I'd do the same. What do Kuku and Sam do together, just the two of them?" | The morning walk / Coffee time / Couch and a movie / Naps / Car rides | "Lives for our morning walks." |
-| 6 | "Walks! Best part of the day. Ask any dog. Last one. What is Kuku to Sam?" | Sam's shadow / Sam's best friend / There on the hard days / The boss of the house | "Your shadow, always." |
+| 3 | "Sam! Lucky human. What does Kuku do when Sam comes home?" | Waits at the door / Brings Sam a toy / Spins in circles / Plays it cool | a first draft line inks straight away ("I wait by the door. It's my whole job.") |
+| 3b | One follow-up that proves it listened, e.g. "At the door! Every day? Even weekends? (I would.)" | Even weekends / Weekdays / Hears the car first | refined line ("I wait by the door. Weekends too. Obviously.") |
+| 4 | "Weekends too. Now that's a good dog. Where's Kuku's spot when Sam's around?" | On Sam's feet / Sam's side of the bed / Next to Sam on the couch / Wherever Sam is | "I took your side of the bed. Not sorry." |
+| 5 | "Their side of the bed? Bold. I'd do the same. What do Kuku and Sam do together, just the two of them?" | The morning walk / Coffee time / Couch and a movie / Naps / Car rides | "Our walks are the best part of my day." |
+| 6 | "Walks! Best part of the day. Ask any dog. Last one. What is Kuku to Sam?" | Sam's shadow / Sam's best friend / There on the hard days / The boss of the house | "I'm your shadow. Where else would I be?" |
 | End | "Oh. That one got me right in the ears. I've sniffed it out. I know what Kuku would get Sam." | Button: "Show me" | |
 
-All of Biscuit's reactions and every line for the chip answers are in `design/prototype-v3/Main.dc.html` (the `lineFor`, `homeQ` and step blocks). Use them word for word. "Not sure" uses calm lines: "Always happy to see you.", "Never far from you.", "Likes any time with you best.", "Yours, always." A buyer who skips everything still gets a warm, true gift.
+Biscuit's reactions are in `design/prototype-v3/Main.dc.html` (the step blocks); use them word for word. The gift lines for the chip answers were rewritten in the dog's own voice on 20 Oct (section 13) and live in `shopify/assets/hs3.js` (`H`, `BASE`, `SP`, `TG`, `ME`, `PLAIN`); the prototype's `lineFor` lines are retired. "Not sure" uses calm lines: "Best part of my day? You walking in.", "I'm never far from you.", "Any time with you is my favorite time.", "I'm yours. Always." A buyer who skips everything still gets a warm, true gift.
+
+**The gift lines' voice (Krish, 20 Oct).** Every line is the dog talking to the person it loves: I, me and my are the dog; you is the person. Together the lines read as one warm message from the dog, signed "Love, [dog]": warm first, funny second, with a dog's logic and a straight face. Never he, she or the dog's name (that is writing about the dog from outside), never the person's name, no exclamation marks, no "Dear". Biscuit's own voice (4.6) is unchanged: he talks to the buyer.
 
 ### 4.3 The reveal
 
@@ -148,16 +150,16 @@ All three ship in version one, on Sunday.
 
 ### 5.2 Contract
 
-**Typed answer call.** In: `{ step, question, typed_text, dog: {name, pronoun}, recipient: {name, relation} }`. Out:
+**Typed answer call.** In: `{ step, question, typed_text, dog: {name, pronoun, breed?, tone?}, recipient: {name, relation} }` (breed and tone only for an exact match in the breed corpus; tone is a light signal, never shown). Out:
 
 ```json
 { "reaction": "≤ 70 chars, Biscuit's voice",
-  "line": "≤ 44 chars, second person to the recipient, no 'I'",
+  "line": "≤ 44 chars, the dog talking to the recipient (I is the dog, you is the person)",
   "follow_up": { "question": "≤ 70 chars", "chips": ["≤ 24 chars", "...", "..."] },
   "flags": ["grief" | "profanity" | "person_described" | "unclear"] }
 ```
 
-**Compose call.** In: dog, recipient, every answer with its chip id or typed text. Out:
+**Compose call.** Runs at every reveal (since 20 Oct, not only after a typed answer). In: dog (with breed and tone when known), recipient, every answer with its chip id or typed text, and the current lines as a draft. It rewrites the four lines as one message from the dog. Out:
 
 ```json
 { "lines": { "home": "≤ 44", "spot": "≤ 44", "together": "≤ 44", "meaning": "≤ 44" },
@@ -172,7 +174,7 @@ All three ship in version one, on Sunday.
 
 - Lengths as above. The gift templates must fit the longest allowed line.
 - Every number, time, place and name in an output line must appear in the buyer's input; otherwise use the buyer's own trimmed words.
-- No first person "I" in gift lines; no em dashes; the banned word list in section 2.
+- Gift lines are the dog talking (20 Oct): I is allowed and means the dog; a line with he, she, his, her, the dog's name or the person's name is rejected, as is an exclamation mark; no em dashes; the banned word list in section 2. The theme applies the same voice check to every AI line it receives.
 - A flag of grief, profanity or unclear: Biscuit says "I didn't quite catch that one. Try again, or pick one of these?" and shows the chips.
 - Timeouts: typed answer 3 seconds, then a scripted "Tell me more?" and the buyer's own words as the line; compose 6 seconds (it runs while the reveal animates), then the scripted lines.
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
