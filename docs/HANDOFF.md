@@ -1,10 +1,15 @@
 # Heartside: handoff manual
 
-> **13 October 2026: the product and the journey changed. Read [`V3-GIFTS-FROM-YOUR-DOG.md`](V3-GIFTS-FROM-YOUR-DOG.md) first.** Heartside now sells gifts given on behalf of the dog (mug, blanket, framed print, ornament) through a chat with Biscuit. That file wins on product, journey, AI and copy; this one still holds for systems, deploys and hard rules. Launch is Sunday 18 October.
+Status: current, rewritten 21 October 2026 for the v3 product and the dog's own voice on the gifts. It replaces the 7 October manual for the v2 poster store, which is in this file's git history; the 4 October v1 manual is in `docs/archive/HANDOFF-2026-10-04.md`.
 
-> **12 October 2026: read [`POSITIONING.md`](POSITIONING.md) first.** Krish changed the positioning and approved the $10k social plan. Where this file and `POSITIONING.md` disagree on headlines, brand copy or social, `POSITIONING.md` wins. What lives in this repo, what lives in Google Drive, and which copy is canonical: [`SYNC.md`](SYNC.md). Facts below were refreshed on 12 Oct where marked.
+This file lets anyone (a person, Cowork, another Claude) pick the business up with nothing but this repo and Krish's logins. It holds the systems, the hard rules, the state, the work left and how to do each job. Read in this order:
 
-Written 7 October 2026 by the Claude Code session that built the site, so that anyone (a person, Cowork, ChatGPT, another Claude) can pick the business up with nothing but this repo and Krish's logins. It replaces the 4 October hand-off, which described the v1 store (sling, tag, 30% off) and is now in `docs/archive/HANDOFF-2026-10-04.md`.
+1. `NORTH_STAR.md`: the ambition, every session.
+2. `V3-GIFTS-FROM-YOUR-DOG.md`: the product, the journey, the AI and the words on the gifts. It wins over this file on those.
+3. `POSITIONING.md`: how the business describes itself.
+4. This file.
+
+What lives in this repo and what lives in Drive: [`SYNC.md`](SYNC.md). Acquisition, content and campaigns live in the growth repository, `krishanraja/growth-heartside`.
 
 Read sections 1 to 3 before touching anything. Section 4 is the work left, in order. Section 5 is how to do each kind of job. Sections 6 to 9 are reference.
 
@@ -12,196 +17,200 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 
 ## 1. What this is and why it matters
 
-**Heartside** (heartside.io) sells personalized dog gifts to US customers, made to order by Printful. The lead line is "Your dog loves you too." (12 Oct; see `POSITIONING.md`). The joke: the dog is Head of Household at "Heartside Household Inc." and has written your annual performance review. The hero product is **The Annual Review**, a 12×18 poster printed with the customer's dog photo, their names and HR-style lines the customer picks ("Areas for improvement: Leaving. Please stop leaving."). It ends "Contract renewed. For life." and carries an APPROVED stamp.
+**Heartside** (heartside.io) sells gifts given on behalf of a dog to the person it loves most, made to order by Printful for US customers. A buyer tells Biscuit about their dog in a minute-long chat. Biscuit is the brand's AI host, a chestnut miniature dachshund. The answers become a short message from the dog, in its own voice, printed on any of four gifts and signed "Love, [dog]" with a paw:
 
-**Dates and the goal.** The site is live now. Launch (ads and posting) is **20 October 2026**. Krish's target is **$10,000 in sales by Christmas**, roughly 180 to 250 orders depending on the mix. The last order date for Christmas delivery is about **10 December** (Printful's US cutoff is 11 December; confirm per product in the Printful dashboard before publishing any date).
+> I wait by the door. Weekends too. Obviously.
+> I took your side of the bed. Not sorry.
+> I'm your shadow. Where else would I be?
 
-**The feeling every page, post and ad must create, in this order:** a laugh in the first two seconds, then "that is exactly my dog", then a tender turn ("Contract renewed. For life."), then the urge to send it to someone. The comedy is the delivery system and the tenderness is the payload. The full voice guide (the "comedy bible") is `docs/V2-FROM-THE-DOG.md` section 2. Read it before writing a word of copy.
+| Gift | Price | Notes |
+|---|---|---|
+| **The Morning Mug** | $29 | 11 oz; Black, Dark Blue, Dark Green, Red or Pink inside; the dog's photo on one face, three lines on the other |
+| **The Couch Blanket** | $89 | 50 x 60 in sherpa; photo, name, four lines |
+| **The Framed Print** | $89 | 12 x 18 in; photo, name, four lines |
+| **The Tree Ornament** | $24, or $19 with another gift | Ceramic circle; photo, name, the meaning line |
 
-**How Krish works (he is the owner and decides everything material).**
+All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONING.md`).
+
+**The ambition** (`NORTH_STAR.md`, 18 Oct): by February 2027, Heartside is the gift US dog owners reach for first when they want something that sounds like their dog. $10,000 is an ordinary month, not a Christmas peak, and most orders come from people who saw someone else's. Christmas order-by dates must be confirmed per product in Printful before any is shown.
+
+**How Krish works (he owns the business and decides everything material).**
 - He moves fast and decides by reacting to something concrete. Bring him finished options with your recommendation, never open questions he has to answer from a blank page.
 - Fewer round trips per decision. Each message should leave him something he can say yes or no to in one pass.
 - Plain declarative writing. No "it's not X, it's Y", no staccato false binaries, no hype words.
-- Push back once, clearly, if a request has a weaker path baked in, then do what he decides.
-- He is frustrated by UI that looks amateur (misaligned text, overlaps, things off the edge). Check every visual change at desktop, phone and Instagram in-app sizes on the real store before showing him (section 5c).
+- Push back once, clearly, if a request has a weaker path baked in, then do what he decides. Record his rulings in V3 section 13 in his words, with the date.
+- He is frustrated by UI that looks amateur (misaligned text, overlaps, things off the edge, previews that don't match what prints). Check every visual change at desktop, phone and Instagram in-app sizes, on the real product photos, before showing him (section 5c).
 
 ## 2. Hard rules (these have been broken before; don't)
 
-1. **Deploy theme code only through the GitHub workflow** (section 5b). Never edit theme code in Shopify's code editor or settings in the theme editor without writing them back to the repo; the next deploy would overwrite them.
-2. **Never publish or unpublish a theme, place an order, or spend money.** Ask Krish first before spending (ads, apps, Higgsfield top-ups), deleting anything, installing an app, or changing checkout, payments, markets, taxes, domains or DNS. Carts are fine for testing; empty them afterwards.
-3. **Honesty.** No invented reviews, ratings, customer counts, "sold out", fake countdowns or strike-through "was" prices. Every product claim must be true of the real Printful product. Dates go on the site only once confirmed.
-4. **The product on screen is always the real design.** AI can make dogs and rooms; it never draws the poster, ornament or pillow (image models garble text). Composite the real print files (section 5d).
-5. **Contact details.** Customer-facing email is **krish@heartside.io**, site is **heartside.io**. Krish's personal email never appears on anything customers, partners or platforms see.
-6. **Copy style.** US spelling. No em dashes. No exclamation marks in body copy. No jokes about a dog dying, ageing, illness or abandonment, and none that mock the customer.
-7. **Secrets.** The theme deploy token lives only in the GitHub repository secret `SHOPIFY_CLI_THEME_TOKEN`. Never paste credentials into the repo, a doc or a chat.
+1. **Deploy theme code only through the GitHub workflow** (section 5b). Never edit theme code in Shopify's code editor, or settings in the theme editor, without writing them back to the repo; the next deploy would overwrite them.
+2. **Never publish or unpublish a theme, place an order, or spend money without Krish's yes.** Ask Krish first before spending (ads, apps, AI generation credits, test orders), deleting anything, installing an app, publishing an n8n workflow, or changing checkout, payments, markets, taxes, domains or DNS. Carts are fine for testing; empty them afterwards.
+3. **Honesty.** No invented reviews, ratings, customer counts, "sold out", fake countdowns or strike-through "was" prices. No AI "customers". Every product claim must be true of the real Printful product. Dates go on the site only once confirmed.
+4. **The product on screen is always the real design.** AI can make dogs and rooms; it never draws the mug, blanket, print or ornament. Show the real print on the real product photo (section 5d).
+5. **Contact details.** Customer-facing email is **krish@heartside.io**, site is **heartside.io**. Krish's personal email never appears on anything customers, partners or platforms see; use hello@krishraja.com where a personal contact is needed.
+6. **Copy style.**
+   - US spelling. No em dashes. No exclamation marks in body copy (Biscuit may use one per chat message).
+   - No jokes about a dog dying, ageing, illness or abandonment, and none that mock the buyer or the recipient.
+   - **Gift lines are the dog talking to the person it loves:** I is the dog, you is the person. Never he, she, the dog's name or the person's name in a line, no "Dear" (V3 2 and 13).
+   - None of the retired headlines in `POSITIONING.md` section 3.
+7. **Secrets.** Theme deploy, order QC and the AI key live only in GitHub repository secrets and in n8n's credential store. Never paste credentials into the repo, a doc or a chat.
 8. **Payments stay on Shopify Payments.**
-9. **Every order is checked by a human before it prints.** Printful is set to manual confirm; the site promises "A human checks it before anything prints". Keep that true.
+9. **Every order is checked by a person before it prints.**
+   - Teeinblue's "Auto confirm order" stays off, so Printful holds each order as a draft until someone presses "Confirm & Send to fulfill" in Teeinblue.
+   - The twice-daily order QC (section 3) only tags orders; it never confirms one.
+   - The site promises "A real person checks every order before it prints." Keep that true.
+10. **Teeinblue's Update / Push to store overwrites Shopify.** It replaces the product's images, description, title and tags unless each is unticked. Untick them every time.
 
-## 3. Where things stand (verified 6 to 7 October)
+## 3. Where things stand (21 October)
 
 ### Systems
 
 | What | Where | Notes |
 |---|---|---|
-| Code and docs | GitHub `krishanraja/heartside`, branch `main` | Everything referenced here is in the repo except the people-only items in section 4 |
-| Store | Shopify store `bnf1em-ge` (admin.shopify.com/store/bnf1em-ge), theme **Helio** | Live theme is **"Heartside launch"**, ID **197492998526** (published by Krish on 5 Oct) |
-| Personaliser | **Teeinblue** app ($49/month) | Builds the live preview and print file, sends the order to Printful |
-| Printing | **Printful** app | Manual confirm is ON: each order waits as a draft until someone confirms it |
-| Products | The Annual Review $39 (`/products/the-annual-review`), The Annual Review Framed $89 (`/products/the-annual-review-framed`), Tiny Me For The Tree ornament $24 (`/products/tiny-me-for-the-tree`), The Body Double 16″ pillow $59 (`/products/the-body-double`) | Free US shipping on all. Margins: `docs/V2-FROM-THE-DOG.md` section 4. Break-even ad cost per poster sale is about $21 |
-| Meta | Facebook Page "Heartside: Personalized Dog Gifts" (facebook.com/yourdoghasnotes), Instagram @yourdoghasnotes (connected to the Page, checked 12 Oct), an ad account, the Facebook & Instagram Shopify channel | See open items: pixel, payment method, catalog. Profile state: `POSITIONING.md` section 5 |
-| TikTok | @yourdoghasnotes, personal account (checked 12 Oct) | Switching to a Business account asked for a US EIN; not needed for organic posting. A clickable bio link comes at 1,000 followers |
-| Video tools | **Higgsfield** (Ultra plan, 2,319 credits on 6 Oct, none spent on Heartside yet); Runway not set up | Krish's own "video engine" repo (`krishanraja/content-engine`) is built for Mindmake and is not used here |
+| Code and docs | GitHub `krishanraja/heartside`, branch `main` | Product, theme, AI source, QC and docs. Growth work is in `krishanraja/growth-heartside` |
+| Store | Shopify `bnf1em-ge` (admin.shopify.com/store/bnf1em-ge), theme **Helio** | Live theme **"Heartside launch"**, ID **197492998526** |
+| Personalizer | **Teeinblue** | One campaign per gift: Mug 1043122, Blanket 1043153, Print 1043167, Ornament 1043174. It builds the preview and the print file, and holds each order for a person to confirm |
+| Printing | **Printful** | Product 403 (mug, five colors), 711 (blanket), 2 (framed print), 900 (ornament) |
+| The AI | Krish's **n8n**, two webhooks running Google Gemini | "Heartside: typed answer" and "Heartside: compose gift lines"; source and rules in `n8n/` (`n8n/README.md`). The key stays in n8n. Every call is logged in the n8n data table "Heartside AI calls" |
+| Order QC | GitHub Actions, `.github/workflows/order-qc.yml` | 07:56 and 16:56 London. Checks each mug's print file and color, tags `qc-pass` or `qc-hold`, and opens an issue for Krish on a hold (`tools/qc/`) |
+| Breed lookup | `breeds-corpus/` | Turns a typed breed into a corpus row; its archetype is a light tone signal for the AI, never shown |
+| Meta | Facebook Page "Heartside: Personalized Dog Gifts" (facebook.com/yourdoghasnotes), Instagram @yourdoghasnotes, an ad account, the Facebook & Instagram Shopify channel | Profile wording: `POSITIONING.md` section 5 |
+| TikTok | @yourdoghasnotes, personal account | A clickable bio link comes at 1,000 followers |
 | Email | krish@heartside.io | |
 
-### The site, as live
+### The buyer's journey, as live
 
-- **Homepage** (`shopify/templates/index.json`): hero ("HEARTSIDE HOUSEHOLD / All-Access Pass"), the review builder (the visitor types names and picks lines, and a live poster updates), the ornament, benefits, FAQ, the "leak" story cards, sign-off, sticky bar. Title, meta description and share image were rewritten on 6 Oct and are live.
-- **Product pages** use `product.review.json` (both posters, with the live poster) and `product.heartside.json` (ornament, pillow). Teeinblue's form sits inside our buy box, restyled to the brand (no Teeinblue blue, no sticky button bar). The ad landing page is any product with `?view=landing`.
-- **Fixed 6 Oct and verified on the live site:**
-  - Product pages no longer scroll themselves to the footer on phones.
-  - Content clears the header.
-  - **After Add To Cart, Helio's cart drawer opens on Check out and the cart count updates.** Before this, Teeinblue's Add To Cart told the theme nothing.
-  - **On a gift list, the photo carries to the next gift.**
-  - Proof: the purchase path passed every step in emulated Instagram, Facebook and TikTok browsers, from photo upload to a real Shopify checkout. Screenshots are in `docs/evidence/inapp-2026-10-06/`.
-- **Hidden preview, waiting for Krish's verdict:** a shop-first redesign at **heartside.io/?view=shop**. It shows a grid of all four gifts with tick boxes, a running total and "Personalize them", then walks the shopper through each gift in turn with a "Next: ..." bar. Templates: `index.shop.json`, `product.shop.json` (posters), `product.shopgift.json` (ornament, pillow). It came from Krish's 6 Oct ask: "one menu of things I can just add to cart". How to ship it is in section 4, item 3.
+- **Home** (`shopify/sections/hs3-chat.liquid`, `shopify/assets/hs3.js`, live since 19 Oct): "Your dog *loves you too.*", the example mug, the four gifts as pills, "Start with your dog". The v2 homepage is kept as `index.classic.json` (`heartside.io/?view=classic`).
+- **The chat** (V3 4.2), six short steps with chips, "Not sure" and "Something else":
+  - The dog's name, She/He and an optional breed.
+  - Who it loves most.
+  - What it does when they come home.
+  - Its spot.
+  - What they do together.
+  - What the dog is to them.
+
+  Each answer inks a line in the dog's own voice.
+- **The reveal:**
+  - The AI's compose call rewrites the four lines as one message in that dog's personality; the scripted lines show first and are the fallback.
+  - Biscuit picks a gift.
+  - The mug is drawn on Printful's real photo, in the chosen color, with "Turn the mug".
+  - "Change a word" allows 45 characters per line.
+- **Choose gifts:** tick any of the four, then "Ship to: them / me". The ornament is $19 with another gift.
+- **Product pages** (`product.gift.json`, `?view=gift`): title, price, Heartside's description, "Your Words", then Teeinblue. The bridge in `shopify/assets/hs2.js` fills Teeinblue's fields by label: "Dog's name", "Line 1" to "Line 4" and "Signed", plus the photo. It also adds the hidden properties `_hs_answers` and `_hs_lines` so the person checking the order sees what the buyer said.
+- **The share card:** a 9:16 card, "Kuku got Sam something.", made on the phone for stories.
 
 ### Known gaps right now
 
-- **Teeinblue field labels** still say "Employee name (you)" and "Who is your manager? (Your dog's name)". They show in the form, the cart drawer and the order. They should be "Your name" and "Your dog's name".
-- **Product descriptions** are Printful's stock text, and Meta's catalog shows the same text in ads.
-- **Meta:**
-  - The pixel isn't connected to the ad account.
-  - The ad account has no payment method.
-  - Only 2 of 4 products are in the catalog (the ornament and pillow are missing).
-- **Old store leftovers:** a "Dropshipper-AI Shipping" profile still holds 31 old products.
-- **No real order has gone through yet.** Emulation can't prove the phone's photo picker, HEIC photos, Apple Pay, or that Teeinblue makes the print file for a paid order. One Teeinblue request (`PUT .../customization/<id>/cart-token`) is cut off in every test run; it is probably harmless, and only a real order will tell.
-- **Order-by dates** show as placeholders (`[DATE]`) in the closure section settings, and the memo bar hides its date line until a date is set. The memo bar also has a "free video offer" window (default ends 1 Nov). The per-order video process (`docs/V2-FROM-THE-DOG.md` section 5) is **not built**. Check the live site and don't promise a video nobody is set up to make.
-- **Funnel pixel** `shopify/pixels/hs2-funnel.js`: install status not verified. Installation steps are in `shopify/README.md`, under "Funnel pixel".
+- **The mug's Teeinblue Preview:** every color shows all ten slides, and the note face prints flat instead of curving with the mug. The fix is two Teeinblue settings (`evidence/claude-code-2026-10-19/COWORK-MUG-PREVIEW-FIX.md`).
+- **Shopify product images** still show the pre-20 Oct third-person lines. Re-rendering them waits for Krish.
+- **No real order through the v3 journey yet.** Krish's mock order is next; the checklist before it is `evidence/claude-code-2026-10-20/COWORK-PROMPT.md`.
+- **Christmas order-by dates** are not confirmed per product. The choose screen's December promise must be checked or gated before it's relied on.
+- **Social bios** may still describe the retired range (`POSITIONING.md` section 5).
+- **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared, and `hs3_add_to_cart` fires on the hand-off to the product page, not a confirmed add (`HANDOVER-2026-10-17.md`).
 
 ## 4. The work left, in order
 
 Owner in brackets. "Krish" means only he can do it (his logins, his money, his taste).
 
-**Before launch (20 October)**
+1. **Run `evidence/claude-code-2026-10-20/COWORK-PROMPT.md`** (Cowork, with Krish logged in):
+   - fix the mug Preview (mockups per color, perspective on);
+   - check the other three gifts take the dog-voice lines;
+   - list product images with old wording;
+   - run the real-phone journeys;
+   - watch the AI fallback rate;
+   - confirm the old Cowork order-QC task is off.
+2. **The mock order** (Krish): one Black mug and one Couch Blanket in a single order, with a real dog photo, a typed breed and one typed answer. Then:
+   - order QC should tag it `qc-pass` with "Color: Black (Printful 11051)";
+   - check both print files;
+   - press "Confirm & Send to fulfill" in Teeinblue.
 
-1. **A real sample order from inside Instagram** (Krish). DM himself `heartside.io/products/the-annual-review`, open it inside Instagram, and order with a real dog photo. Then, in Printful > Orders, check the draft's print file (crop, names, spelling) and confirm it. This is the only proof that the whole chain works (Shopify > Teeinblue print file > Printful > shipping), and it is the physical sample the content needs. Note anything awkward on the phone; each one is a bug.
-2. **Run `docs/COWORK-PROMPT-2026-10-07.md` in a browser session with Krish** (Cowork or any browser agent; Krish logs in). It covers:
-   - Teeinblue labels and product descriptions (via the 6 Oct prompt).
-   - Meta: catalog 4/4, pixel connected to the ad account. Instagram is already linked to the Page (12 Oct). Krish adds the card himself.
-   - The shipping profiles.
-   - Asking Krish about the test order and a bundle discount.
+   This is the proof that Shopify > Teeinblue > Printful works for the v3 range.
+3. **Re-render the Shopify product images in the dog's voice** (Claude Code, on Krish's yes), mug first, with `tools/realphoto/`.
+4. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
+5. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
+6. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
+7. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
 
-   Teeinblue's "Update" button overwrites Shopify's description, images, title and tags unless all four are unticked, every time.
-3. **Ship or reject the shop-first redesign** (Krish decides, then anyone deploys). If "ship it":
-   1. Rename the current homepage template to `index.classic.json`, so rollback is one rename, and make `index.json` the contents of `index.shop.json`.
-   2. In Shopify admin, set the posters' theme template to `shop` and the ornament's and pillow's to `shopgift`. The alternative is to copy those settings into `product.review.json` and `product.heartside.json`.
-   3. Run the checks, deploy and verify (section 5).
-   4. The grid shows a total for several gifts but **no bundle discount exists**. Add one only if Krish names it.
-4. **Confirm the Christmas last-order date** in the Printful dashboard for each product. Then set it in the theme (memo bar and closure section settings, in the repo's templates) and deploy.
-5. **Card on the Meta ad account** (Krish).
-6. **Content ready to post from 13 October** (section 4, content).
-
-**Content (the plan Krish agreed on 6 October, with an open question on style)**
-
-- **12 Oct update:** the social plan in `POSITIONING.md` section 6 now governs content: Meta first, 20 US creators, the comment loop, AI-made daily Reels, and a two-week A/B test of the review roast against the love letter. The style question below is still open.
-- Volume: 2 posts a day from 13 Oct, each cut posted to Instagram Reels, TikTok and Facebook Reels. 15 ad versions ready by 20 Oct.
-- Five series:
-  1. **Line of the day:** one real poster line over a dog shot. The daily volume.
-  2. **POV: your dog filed your review:** the hero ad.
-  3. **Every Christmas:** the emotional angle.
-  4. **60 seconds to make yours:** a real screen recording of the site on a phone. Do it after the Teeinblue labels are fixed.
-  5. **The reveal:** a real person opening the real poster. It needs the sample from item 1.
-- **Status: 7 videos exist** (`content/v1-2026-10-06/`, with a README). **Krish is "not sure about the visual style at all".** Treat them as a working proof of the pipeline, not an approved look.
-- **The next person's first content job is to find a style Krish likes before making volume.** Show him two or three clearly different directions as single frames or 3-second clips, take his pick, then produce.
-- Keep in any style: real print on screen, sound-off readable captions inside the safe zone, the dog's flat corporate voice.
-- Free to change: everything about the look, pacing, type, cards, and whether a voice or real dog motion leads. `docs/V2-FROM-THE-DOG.md` section 6 holds the original ad ideas (Biscuit as a recurring character with one consistent voice).
-- Label AI-generated video with each platform's AI label.
-
-**Paid (only on Krish's yes, and only after the card, pixel and catalog are fixed)**
-
-- Start a Meta test at about $30 a day from launch. Put money only behind the posts with the best share and save rates from organic.
-- Send ads to the product page or `?view=landing` with UTM tags; the links are in `shopify/README.md` under "The ad landing page".
-- Kill anything with click-through under about 0.8% after 1,000 impressions, or with cost per purchase well above the $21 poster break-even. Scale the winners until the last order date.
-- TikTok ads come after organic shows which hooks work.
-- Before spending, re-read the Printful base and shipping costs, especially the pillow's, which is still marked "re-check" in `docs/V2-FROM-THE-DOG.md` section 4.
-
-**Later**
-- US sales tax (Krish's accountant).
-- Delete the 31 old products (only on Krish's yes).
-- The paused products (Uniform, Socks) return when Teeinblue background removal is set up.
+Acquisition (creators, content, the comment loop, paid tests) is planned and drafted in `growth-heartside`, which reads this repo daily.
 
 ## 5. How to do each kind of job
 
-Tools needed locally: git, Node 20+, Python 3 with Pillow and NumPy, ffmpeg. Then run `cd tools/preview && npm install` once. The tests use Playwright's Chromium.
+Tools needed locally: git, Node 20+, Python 3 with Pillow and NumPy, ffmpeg. Then run `cd tools/preview && npm install` once. The tests use Playwright's Chromium (in cloud sessions, `executablePath: '/opt/pw-browsers/chromium'`).
 
 ### 5a. Change the site
 
-1. Edit files under `shopify/` (sections, snippets, templates, `assets/hs2.js`, `assets/hs2.css`). `shopify/README.md` explains every section and setting.
+1. Edit files under `shopify/`. The chat is `sections/hs3-chat.liquid` with `assets/hs3.js` and `hs3.css`. Product pages and the Teeinblue bridge are `sections/hs2-product.liquid` with `assets/hs2.js` and `hs2.css`. `shopify/README.md` explains every section and setting.
 2. Run the checks from `tools/preview`. All must pass:
-   - `node render.mjs`: renders every template locally with stubbed Shopify data. It fails on schema mistakes Shopify would reject (no `"default": ""`, select option labels of 50 characters or fewer).
+   - `node render.mjs`: renders every template locally with stubbed Shopify data. It fails on schema mistakes Shopify would reject (no `"default": ""`, select option labels of 50 characters or fewer). Run it first; the others use its output.
+   - `node chat.mjs`: the whole chat with mocked AI. Covers chips only, a typed answer, AI failure, AI slow and all "Not sure", through to the product page hand-off.
+   - `node reveal.mjs`: every gift tab, with and without a photo, at phone sizes; the mug's even line breaks and its drawn faces.
+   - `node hs3-lines.mjs`: the mug's line breaks and the typed-line rule, run on the real `hs3.js`.
+   - `node mug-bridge.mjs`: the mug's line breaks survive into Teeinblue's fields.
+   - `node mockup-gate.mjs`: the chat's mug against Teeinblue's real print files wrapped by the approved method. Look at the boards in `out/gate-mug/` too. Krish called a preview that passed every other check "ridiculously poor" (15 Oct).
    - `node theme-check.mjs`: Shopify Theme Check on our files.
-   - `node mockup-gate.mjs`: the chat's mug against Teeinblue's real print files wrapped by the approved method. It fails a preview that drifts from what prints. Look at the boards in `out/gate-mug/` too: Krish called a preview that passed every other check "ridiculously poor" (15 Oct).
-   - `node minify-check.mjs`: **Shopify minifies theme JavaScript on its CDN.** This minifies `hs2.js` the same way and fails on anything that only works unminified. On 6 Oct the minifier turned a dynamic `import()` into a `require()` that broke the live site, while every unminified test passed. Never use `import()` in `hs2.js`.
-   - `node shots.mjs`: screenshots of the local render, if you want to look before deploying.
-3. Commit and push to `main`.
+   - `node minify-check.mjs`: **Shopify minifies theme JavaScript on its CDN.** This minifies `hs2.js` and `hs3.js` the same way and fails on anything that only works unminified. Never use `import()` in them.
+3. Commit on a branch, open a pull request, merge to `main`.
 
 ### 5b. Deploy to the live theme
 
 GitHub > Actions > **"Push homepage to a Shopify theme"** > Run workflow, on `main`, with:
 - `theme_id` **197492998526**
 - `theme_name` **Heartside launch**
-- tick **allow_live_theme**
+- tick **allow_live_theme** (only with Krish's yes for that change)
 
 The workflow backs up the theme's templates first (as a run artifact), pushes only Heartside files (`--nodelete`, so Helio's own files stay), and never pushes `pixels/`. If it stops on its **editor-edit guard** (someone changed a template in the theme editor), work out whether that edit should be kept. If so, copy it into the repo first. Otherwise rerun with `overwrite_editor_edits` ticked; the backup is still taken.
 
-Check that the run's commit is the one you pushed. A live check that the new code is being served: load a product page and look for a string you just added in the served `hs2.js`.
+Check that the run's commit is the one you merged. Then check the live site serves the new code: fetch heartside.io and look for a string you just added in the served `hs3.js` or `hs2.js`.
 
 ### 5c. Verify on the real store (do this before showing Krish anything)
 
 From `tools/preview`:
-- `node live-gate.mjs`: loads the real store at desktop 1440, iPhone 390×844 and Instagram in-app 390×664, and fails on:
-  - content under the header
-  - sideways overflow or text off the edge
-  - text on text
-  - any of Teeinblue's blue
-  - a sticky Teeinblue button bar
-  - a page that scrolls itself
+- `node live-gate.mjs`: loads the real store at desktop 1440, iPhone 390x844 and Instagram in-app 390x664, and fails on:
+  - content under the header;
+  - sideways overflow or text off the edge;
+  - text on text;
+  - any of Teeinblue's blue;
+  - a sticky Teeinblue button bar;
+  - a page that scrolls itself.
+- `node inapp/flow.mjs ig product` (or `fb`, `tt`, `iga`): the purchase path in an emulated in-app browser, up to Shopify's payment form, then it empties the cart. Add `--swap` to test your local `hs2.js`, minified, before deploying it.
+- On the mug, also check:
+  - each color's gallery and Teeinblue Preview;
+  - the cart line (color, the three lines, "Love, [dog]", the whole mug as the thumbnail).
+- Cloudflare in front of heartside.io blocks plain headless browsers; the scripts carry the flags that get through. Shopify starts answering 429 after a dozen runs in a row. **Wait ten minutes before trusting a failure that follows a burst of runs.**
 
-  Use `--query view=shop` for the preview, and `--pages`/`--views` for a subset. Screenshots go to `out/gate/`.
-- `node inapp/flow.mjs ig product` (or `fb`, `tt`, `iga`; `shop` for the gift grid): the full purchase path in an emulated in-app browser, up to Shopify's payment form, then it empties the cart. Add `--swap` to test your local `hs2.js`, minified, before deploying it.
-- Cloudflare in front of heartside.io blocks plain headless browsers; the scripts carry the flags that get through. Shopify starts answering 429 (Too Many Requests) after a dozen runs in a row. **Wait ten minutes before trusting a failure that follows a burst of runs.**
+### 5d. Change the AI
 
-### 5d. Make videos
+The source is `n8n/build.mjs` (prompts, guard, rules) and `n8n/shared.js`. Then:
+1. Run `node build.mjs && node test-rules.mjs && node test-voice.mjs`.
+2. Update the live workflows through the n8n connector (`update_workflow`, then `publish_workflow`) with Krish's yes. Note the previous version IDs for rollback.
+3. Check each webhook with one real call (the curl in `n8n/README.md`).
 
-`python3 tools/content/reel.py tools/content/specs/<spec>.json` writes a 9:16 1080×1920 MP4 with sound to `content/out/` (not committed; copy approved finals into a dated `content/` folder).
-- A spec is a list of scenes:
-  - `photo`: a library photo with a slow push-in, a hook card and a form card whose poster line types itself out.
-  - `poster`: the real poster, composed from the print layers, with the stamp slamming on.
-  - `end`: a staged scene holding the reel's own poster, plus the end card.
-- Every line is read from `shopify/snippets/hs2-lines.liquid`, the same source the site and the print use, so a video can only show a line that really prints. The header of `reel.py` documents every option.
-- Real-print scenes: `tools/preview/mockups.py` places the real print on the blank surfaces in `assets/v2/scenes/` (hands holding a sheet, frames on walls, an ornament on a tree, a pillow on a sofa).
-- Higgsfield (if used) is for dog and room motion only, never for the product. Get Krish's yes on the style before spending credits at volume.
+The theme applies the same voice check to whatever the AI returns. Change both together.
 
-### 5e. Admin work in Shopify, Teeinblue, Printful or Meta
+### 5e. Product images and print files
 
-This needs a browser session with Krish logged in. Write a prompt in the style of `docs/COWORK-PROMPT-2026-10-07.md`:
-- the context
-- the hard rules
-- numbered tasks with exact clicks
-- a report format to paste back
+- The approved mug images are rendered from Teeinblue's real print file wrapped onto Printful's photo (`tools/realphoto/`, `design/teeinblue/mug-v3/`). Colors are recolored from the pink base by hue (`tools/realphoto/recolor_mug.py`).
+- New images replace approved ones only on Krish's yes. When uploading to Shopify, keep the alt text pattern "The Morning Mug, black inside: ..."; the product page groups the gallery by color from it.
 
-Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md`, under "Browser-automation lessons".
+### 5f. Admin work in Shopify, Teeinblue, Printful or Meta
+
+This needs a browser session with Krish logged in. Write a prompt in the style of `evidence/claude-code-2026-10-20/COWORK-PROMPT.md`:
+- the context;
+- the hard rules;
+- numbered tasks with exact clicks;
+- a report format to paste back.
 
 ## 6. Technical traps learned the hard way
 
-- **Shopify minifies `hs2.js`** (see 5a). Test the minified build (`minify-check.mjs`, `inapp/flow.mjs --swap`).
+- **Shopify minifies theme JavaScript** (5a). Test the minified build.
 - **Helio scrolls inside `.page-wrapper` on desktop**, not the window, and smooth-scrolls. Its predictive search focuses its own hidden input on every reset, which once dragged phones to the footer. `hs2.js` guards that (`guardSearchFocus`), and undoes scripted scroll jumps for a moment after the bridge clicks Teeinblue's options (`holdScroll`).
 - **Helio's header is transparent and overlays the first section**; `hs2.js` pads our first section down by the overlap (`clearHeader`).
-- **Teeinblue's Add To Cart doesn't tell the theme.** `hs2.js` watches `/cart/add` and dispatches Shopify's `shopify:cart:lines-update` event, built by hand to match `standard-events.js`. That event updates Helio's count and drawer. It uses action `add` for a single gift (the drawer opens) and `update` on a gift list (the drawer stays shut; the next-gift bar leads). If the theme can't hear it, a fallback bar offers checkout.
-- **Teeinblue draws its photo field a beat before it listens to it.** Handing it a photo too early is ignored, so `doHandoff` checks for the crop dialog and retries up to 4 times.
-- **Photo memory:** a photo picked in the review box or in Teeinblue's own field is saved in IndexedDB for 3 days (`savePhoto`), so later gifts can use it. Names live in sessionStorage.
-- **Teeinblue "Update" overwrites Shopify** description, images, title and tags unless unticked.
-- **Teeinblue classes** we restyle: `.tee-form-actions`, `.tee-btn--atc`, `.tee-btn--preview`, `.tee-field--photo`, `.tee-radio`, `.tee-btn-wrapper--personalize`, the cropper `.vm--container`. All styling is scoped under `#buy` in `hs2.css`.
+- **Teeinblue's Add To Cart doesn't tell the theme.** `hs2.js` watches `/cart/add` and dispatches Shopify's `shopify:cart:lines-update` event, so Helio's count and drawer update.
+- **Teeinblue takes about 6.6 s to show it has the photo.** The bridge waits 10 s before resending the headshot, at most twice (an early retry sent it five times).
+- **Teeinblue keeps a typed line break but wraps greedily.** The mug's lines carry `\n` at their most even break (measured with HS-Fraunces-Text's real widths), so one word never sits alone on a row.
+- **Teeinblue only knows which Printful product to make for variants it created.** Add colors or sizes in Teeinblue and push them; never add variants by hand in Shopify.
+- **n8n's code runner sleeps when the site is quiet.** The theme sends `{"warm":true}` as a chat starts and before compose, so the first real call isn't slow.
+- **The webhooks ignore bots.** Test with a browser user agent and an allowed `Origin`.
 - **Shopify schema rules that fail a deploy halfway:** no `"default": ""`, and select option labels of 50 characters or fewer. `render.mjs` guards both.
 - **Alternate templates** (`?view=name`) work on the live theme without being assigned, which is how previews are shown before Krish approves.
 
@@ -209,55 +218,50 @@ Browser lessons from earlier sessions are in `docs/archive/HANDOFF-2026-10-04.md
 
 | File | Status |
 |---|---|
-| `docs/POSITIONING.md` | **Current. Read first.** Positioning, Krish's reasons, social profile state and the $10k social plan (12 Oct). Wins over older docs on headlines and brand copy |
-| `docs/SYNC.md` | **Current.** What lives in the repo, what lives in Drive, and which copy is canonical |
-| `docs/HANDOFF.md` (this) | **Current.** State, hard rules, work left, how-tos |
-| `docs/V2-FROM-THE-DOG.md` | Range, prices, margins, fulfilment and ad ideas still current. Its positioning and headline copy are superseded by `POSITIONING.md` (12 Oct). Its "launch offer" and "order bump" ideas are not all built; check the live site |
-| `docs/BRIEF.md` | Guardrails section still applies (honesty, claims). The product content is v1 |
-| `shopify/README.md` | **Current** reference for every theme section, the Teeinblue bridge, the ad landing links and the funnel pixel |
-| `docs/COWORK-PROMPT-2026-10-07.md` | **Current** browser-session prompt (open admin work) |
-| `docs/COWORK-PROMPT-2026-10-06.md` | **Current** spec for the Teeinblue tasks the 7 Oct prompt points at |
-| `docs/TEEINBLUE-SETUP.md` | Reference for how the Teeinblue templates were set up |
-| `content/v1-2026-10-06/README.md` | The first 7 videos and their status |
-| `assets/IMAGE-BRIEF.md`, `assets/README.md` | Reference for the photo library |
-| `docs/COWORK-PROMPT.md` | History (the v1 ornament plan). It stays in place because the deploy workflow's setup note links to it |
-| `docs/archive/*` | History: the 4 Oct hand-off and store state, the v1 ad brief, prompts already run, the Teeinblue setup log. See `docs/archive/README.md`. Do not act on these |
+| `docs/NORTH_STAR.md` | **Current.** The ambition. Only Krish changes it |
+| `docs/V3-GIFTS-FROM-YOUR-DOG.md` | **Current. The product spec.** Product, journey, AI, words on the gifts, and the decision log (section 13) |
+| `docs/POSITIONING.md` | **Current.** How the business describes itself, what's retired, where it's applied |
+| `docs/HANDOFF.md` (this) | **Current.** Systems, hard rules, state, work left, how-tos |
+| `docs/HANDOVER-2026-10-17.md` | **Current** product recommendations and acceptance criteria |
+| `docs/COWORK-HANDOVER-2026-10-15.md` | **Current** record of the approved mug and the rejected directions |
+| `docs/evidence/claude-code-2026-10-20/` | **Current.** The dog-voice change (`FOR-COWORK.md`) and the Cowork prompt before the mock order (`COWORK-PROMPT.md`) |
+| `docs/SYNC.md` | **Current.** What lives in the repo and what lives in Drive |
+| `shopify/README.md`, `n8n/README.md`, `tools/qc/README.md`, `breeds-corpus/lookup/README.md` | **Current** references for the theme, the AI, the order check and the breed lookup |
+| `design/BRAND-SYSTEM.md` | Look and type current; its gift voice section is current; the poster voice is marked retired |
+| `docs/V2-FROM-THE-DOG.md`, `docs/BRIEF.md`, `docs/TEEINBLUE-SETUP.md`, `docs/COWORK-PROMPT*.md` before 20 Oct | History of the v1 and v2 stores. The honesty guardrails in `BRIEF.md` still apply; everything else is superseded by V3 |
+| `content/v1-2026-10-06/` | The first seven videos, for the retired HR poster. Don't post them |
+| `docs/archive/*` | History. Do not act on these |
 
 ## 8. Asset index
 
 | Asset | Where |
 |---|---|
-| Logo, favicon, watercolour heart | `assets/heartside-logo.png`, `assets/favicon-512.png`, `assets/heartside-heart-watercolor.png` |
+| Logo, favicon, watercolor heart | `assets/heartside-logo.png`, `assets/favicon-512.png`, `assets/heartside-heart-watercolor.png` |
 | Dog and room photo library (licensed, confirmed by Krish on 5 Oct) | `assets/v2/` (Biscuit the dachshund is `biscuit-headshot.jpg`) |
-| Blank staged scenes for real-print compositing | `assets/v2/scenes/` |
-| Real-print product photos | `design/mockups/` (built by `tools/preview/mockups.py`) |
-| Poster print template (what Teeinblue prints) | `design/poster-template/`: background, stamp, 15 line images, `layers.json` with every layer's position |
+| Biscuit, the illustrated host | In the theme (`hs3.js`) and `design/prototype-v3/` |
+| The approved v3 prototype | `design/prototype-v3/Main.dc.html` (flow and Biscuit's lines; its gift lines are retired) |
+| Mug v3: Teeinblue mockups, print file, approved Shopify images, colors | `design/teeinblue/mug-v3/` |
+| Mug layers for the chat (five colors) | `shopify/assets/hs-mug-*.webp` |
 | Ornament artwork | `ornament/` |
-| Approved design canvas source | `design/Main.dc.html` (landing copy, approved word for word), `design/Poster.dc.html` |
-| Redesign preview screenshots | `design/redesign-2026-10-06/` |
-| Social share image (live) | `design/share-image/heartside-share-1200x630.jpg` |
-| Social profile images (12 Oct) | `assets/heartside-avatar-biscuit-1080.jpg` (Biscuit, all three platforms), `assets/heartside-fb-cover-1640x624.jpg` (Facebook cover) |
+| Social profile images | `assets/heartside-avatar-biscuit-1080.jpg`, `assets/heartside-fb-cover-1640x624.jpg` (the cover shows the retired poster) |
 | Brand system and Canva links | `design/BRAND-SYSTEM.md`, `design/CANVA-SOURCES.md` |
-| Fonts | `shopify/assets/*.woff2` (site), `tools/fonts/` and `tools/content/fonts/` (TTF for images and video); all OFL |
-| First videos | `content/v1-2026-10-06/` |
-| In-app purchase proof | `docs/evidence/inapp-2026-10-06/` |
-| Video specs | `tools/content/specs/` |
+| Fonts | `shopify/assets/*.woff2` (site), `tools/fonts/` (print: Fraunces Text, Fraunces Italic, Courier Prime); all OFL |
+| Evidence from earlier checks | `docs/evidence/` |
 
 ## 9. Recent decisions and why
 
-- **Positioning changed (12 Oct, Krish).** Display name "Heartside: Personalized Dog Gifts", lead line "Your dog loves you too." Krish found "a poster of your dog reviewing you" lame as the business headline and rejected "gifts written by your dog". Business headlines must never be lame or dumb; the HR joke stays inside the poster and in content. Full reasoning: `POSITIONING.md`.
-- **$10k social plan approved (12 Oct, Krish).** Meta first, 20 gifted US creators with Collabs commission, US-only for now. `POSITIONING.md` section 6.
-- **Poster first, ornament second, pillow third; framed is an upsell on the poster page** (5 Oct). The $39 poster is the funny thing people send; an $89 framed joke is a big ask from a stranger. The ornament has the thinnest margin, so it rides along.
-- **No 30% off on the new range.** At 30% off the poster's contribution falls to about $9. Free US shipping is priced in.
-- **The cart drawer opens after a single gift is added** (6 Oct). The test found ad shoppers left with no next step. On a gift list the drawer stays shut, so the next-gift bar can lead.
-- **The shop-first redesign is a hidden preview, not live,** because Krish approves material visual changes first.
-- **Product strategy is closed for now** (6 Oct, Krish). A fur-keepsake product seen in a Facebook reel was looked at and not pursued; the range stays as in section 3.
-- **Krish's video engine is not used for Heartside.** It is set up for Mindmake, never publishes, and only starts from a new chat whose first message is exactly "Video engine".
+The full log, in Krish's words, is V3 section 13. The ones that shape day-to-day work:
+
+- **12 Oct: positioning.** "Heartside: Personalized Dog Gifts", "Your dog loves you too." Business headlines are never lame or dumb.
+- **13 Oct: gifts from the dog.** The four everyday gifts replaced the HR poster range. The chat with Biscuit replaced the review builder. Live AI runs on Gemini through Krish's n8n.
+- **15 Oct: mug v3 approved.** The dog as a large cut-out on one face, the note in Fraunces on the other, every preview on real product photos. "Every gift as a letter" rejected.
+- **18 Oct: the North Star.** The gift US dog owners reach for first, with $10,000 an ordinary month by February 2027.
+- **19 Oct: five mug colors** (Black, Dark Blue, Dark Green, Red, Pink), Black first. The chat became the homepage. Order QC moved to GitHub Actions.
+- **20 Oct: the dog's own voice.** Gift lines are the dog talking to the person it loves. The AI writes all four lines for every buyer, and an optional breed shades the tone.
 
 ### Open questions for Krish (carry these forward)
 
-1. Verdict on heartside.io/?view=shop.
-2. Which content style, after seeing two or three directions.
-3. A bundle discount: yes or no, and what (for example 15% off two or more).
-4. Settled: Krish is in London (Europe/London time).
-5. Whether "Your dog has notes." stays as the end-card line on ads.
+1. Re-render the product images in the dog's voice: yes or no.
+2. Whether "Your dog has notes." survives as an end-card line on content.
+3. The phase-two AI illustration: run the five-dog bake-off, and when.
+4. A bundle discount beyond the $19 ornament: yes or no, and what.

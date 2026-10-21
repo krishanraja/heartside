@@ -59,4 +59,4 @@ The rest of `docs/` (HANDOFF, V2, BRIEF, browser prompts, archive), `shopify/` t
 
 ## Not covered by either
 
-Live platform settings (Shopify, Teeinblue, Printful, Meta, TikTok) live in those platforms. `POSITIONING.md` section 5 records the social profile state as of 12 Oct, and `HANDOFF.md` section 3 records the store state.
+Live platform settings (Shopify, Teeinblue, Printful, Meta, TikTok) live in those platforms. `POSITIONING.md` section 5 records the profile wording and what still needs changing (rewritten 21 Oct), and `HANDOFF.md` section 3 records the store state.
