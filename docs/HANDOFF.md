@@ -1,6 +1,6 @@
 # Heartside: handoff manual
 
-Status: current, rewritten 21 October 2026 for the v3 product and the dog's own voice on the gifts. It replaces the 7 October manual for the v2 poster store, which is in this file's git history; the 4 October v1 manual is in `docs/archive/HANDOFF-2026-10-04.md`.
+Status: current, rewritten 21 October 2026 for the v3 product and the dog's own voice on the gifts, and updated the same day for the one-screen homepage and gift page. It replaces the 7 October manual for the v2 poster store, which is in this file's git history; the 4 October v1 manual is in `docs/archive/HANDOFF-2026-10-04.md`.
 
 This file lets anyone (a person, Cowork, another Claude) pick the business up with nothing but this repo and Krish's logins. It holds the systems, the hard rules, the state, the work left and how to do each job. Read in this order:
 
@@ -81,6 +81,18 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 ### The buyer's journey, as live
 
 - **Home** (`shopify/sections/hs3-chat.liquid`, `shopify/assets/hs3.js`, live since 19 Oct): "Your dog *loves you too.*", the example mug, the four gifts as pills, "Start with your dog". The v2 homepage is kept as `index.classic.json` (`heartside.io/?view=classic`).
+- **One screen, no scroll, on every device** (since 21 Oct). Every screen of the journey fits the window under the header on phones and desktop, and the page can't scroll:
+  - the first screen
+  - the six questions
+  - the reveal
+  - choose gifts
+  - the share card
+
+  `hs3.js` `fit()` scales each screen's picture into the room left. If the rest still doesn't fit, it zooms the screen's content to the largest size that fits.
+  - The footer is replaced by one line under Start: "Privacy · Terms · Shipping · Refunds · Heartside is a Mindmaker LLC company."
+  - On phones the memo bar is hidden.
+  - On phones the gift pills under the note, the "No photo handy?" hint and the words strip on the choose screen are dropped.
+  - Question 1's field names sit inside the fields.
 - **The chat** (V3 4.2), six short steps with chips, "Not sure" and "Something else":
   - The dog's name, She/He and an optional breed.
   - Who it loves most.
@@ -96,7 +108,21 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
   - The mug is drawn on Printful's real photo, in the chosen color, with "Turn the mug".
   - "Change a word" allows 45 characters per line.
 - **Choose gifts:** tick any of the four, then "Ship to: them / me". The ornament is $19 with another gift.
-- **Product pages** (`product.gift.json`, `?view=gift`): title, price, Heartside's description, "Your Words", then Teeinblue. The bridge in `shopify/assets/hs2.js` fills Teeinblue's fields by label: "Dog's name", "Line 1" to "Line 4" and "Signed", plus the photo. It also adds the hidden properties `_hs_answers` and `_hs_lines` so the person checking the order sees what the buyer said.
+- **Product pages** (`product.gift.json`, `?view=gift`) are one screen too (since 21 Oct). Top to bottom:
+  - the preview of their gift
+  - title and price on one line, then "Free US shipping. Order by Dec 10 for Christmas."
+  - "From Mowgli to Sam" with **Change a word**
+  - the mug color as round swatches
+  - the photo as one row: "Add Mowgli's photo", then "Change photo" and "Crop"
+  - Add To Cart, with "A person checks every order before it prints." and the policy links under it
+
+  The description, Teeinblue's Preview button and quantity, the footer, and (on phones) the memo bar are gone.
+- **The bridge** in `shopify/assets/hs2.js` fills Teeinblue's fields by label: "Dog's name", "Line 1" to "Line 4" and "Signed", plus the photo.
+  - Those fields fold behind **Change a word**, which opens them in a panel that scrolls on its own; Done folds them again.
+  - A field Teeinblue rejects at Add To Cart opens the panel by itself.
+  - `hs2.js` `giftFit` keeps the page to one screen, leaving room for the next-gift bar.
+- **The hidden answers** `_hs_answers`, `_hs_lines` and `_hs_ship_to` let the person checking the order see what the buyer said. Since 21 Oct they ride on Teeinblue's own add request (`withHsProps`). Before that they never reached an order.
+- **Footer signup:** Helio's "Keep an eye on us" signup is switched off sitewide (21 Oct, workflow box `footer_remove_signup`).
 - **The share card:** a 9:16 card, "Kuku got Sam something.", made on the phone for stories.
 
 ### Known gaps right now
@@ -105,6 +131,8 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 - **No real order through the v3 journey yet.** Krish's test order is next. The launch checklist and the order steps are in `evidence/claude-code-2026-10-21/COWORK-LAUNCH-AND-TEST-ORDER.md`.
 - **Christmas order-by dates** are not confirmed per product. The choose screen's December promise must be checked or gated before it's relied on.
 - **Social bios** may still describe the retired range (`POSITIONING.md` section 5).
+- **Orders placed before 21 Oct have no hidden answers** (`_hs_answers`, `_hs_lines`, `_hs_ship_to`). For those, the words are only in Teeinblue's Line fields.
+- **The smallest phones (360×640)** zoom the gift page's details to about 78% and the homepage's busiest screens to about 85% to keep them on one screen. Any copy added to those screens shrinks them further.
 - **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared, and `hs3_add_to_cart` fires on the hand-off to the product page, not a confirmed add (`HANDOVER-2026-10-17.md`).
 
 ## 4. The work left, in order
@@ -120,6 +148,7 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
    - confirm the old Cowork order-QC task is off.
 2. **The mock order** (Krish): one Black mug and one Couch Blanket in a single order, with a real dog photo, a typed breed and one typed answer. Then:
    - order QC should tag it `qc-pass` with "Color: Black (Printful 11051)";
+   - the order should show `_hs_answers`, `_hs_lines` and `_hs_ship_to` on each line;
    - check both print files;
    - press "Confirm & Send to fulfill" in Teeinblue.
 
@@ -156,6 +185,14 @@ GitHub > Actions > **"Push homepage to a Shopify theme"** > Run workflow, on `ma
 - `theme_name` **Heartside launch**
 - tick **allow_live_theme** (only with Krish's yes for that change)
 
+**Deploy from `main`, or from a branch with main merged in.** The push overwrites every Heartside file with the branch's copy. On 21 Oct a branch behind main rolled back main's `hs-schema` lines (search structured data) until main was redeployed.
+
+The other boxes are each a one-off:
+- `header_memo_bar`
+- `footer_company_note`
+- `footer_remove_signup`: switches off Helio's "Keep an eye on us" email signup, disabled not deleted (`.github/scripts/footer-signup.mjs`). Run on 21 Oct.
+- `favicon`
+
 The workflow backs up the theme's templates first (as a run artifact), pushes only Heartside files (`--nodelete`, so Helio's own files stay), and never pushes `pixels/`. If it stops on its **editor-edit guard** (someone changed a template in the theme editor), work out whether that edit should be kept. If so, copy it into the repo first. Otherwise rerun with `overwrite_editor_edits` ticked; the backup is still taken.
 
 Check that the run's commit is the one you merged. Then check the live site serves the new code: fetch heartside.io and look for a string you just added in the served `hs3.js` or `hs2.js`.
@@ -170,6 +207,11 @@ From `tools/preview`:
   - any of Teeinblue's blue;
   - a sticky Teeinblue button bar;
   - a page that scrolls itself.
+- `node render.mjs && node chat.mjs && node mug-bridge.mjs` (local, no store):
+  - `chat.mjs` holds every homepage screen to one screen at 360×640 up to 1440×900.
+  - `mug-bridge.mjs` does the same for the gift page, and checks Change a word and the next-gift bar.
+
+  Any layout or copy change must keep both passing.
 - `node inapp/flow.mjs ig product` (or `fb`, `tt`, `iga`): the purchase path in an emulated in-app browser, up to Shopify's payment form, then it empties the cart. Add `--swap` to test your local `hs2.js`, minified, before deploying it.
 - On the mug, also check:
   - each color's gallery and Teeinblue Preview;
@@ -203,6 +245,8 @@ This needs a browser session with Krish logged in. Write a prompt in the style o
 - **Shopify minifies theme JavaScript** (5a). Test the minified build.
 - **Helio scrolls inside `.page-wrapper` on desktop**, not the window, and smooth-scrolls. Its predictive search focuses its own hidden input on every reset, which once dragged phones to the footer. `hs2.js` guards that (`guardSearchFocus`), and undoes scripted scroll jumps for a moment after the bridge clicks Teeinblue's options (`holdScroll`).
 - **Helio's header is transparent and overlays the first section**; `hs2.js` pads our first section down by the overlap (`clearHeader`).
+- **Teeinblue's Add To Cart posts its own JSON to `/cart/add` and ignores the product form.** Hidden inputs in the form never reach the cart, so `hs2.js` `withHsProps` adds our properties to Teeinblue's request on its way out. Check `/cart.js` after any change to the add flow.
+- **Teeinblue lays its preview slider out once, at its own width.** Resizing its box leaves the slider at the old size, overlapping the page. The gift page scales it with CSS `zoom` instead (`giftFit`).
 - **Teeinblue's Add To Cart doesn't tell the theme.** `hs2.js` watches `/cart/add` and dispatches Shopify's `shopify:cart:lines-update` event, so Helio's count and drawer update.
 - **Teeinblue takes about 6.6 s to show it has the photo.** The bridge waits 10 s before resending the headshot, at most twice (an early retry sent it five times).
 - **Teeinblue keeps a typed line break but wraps greedily.** The mug's lines carry `\n` at their most even break (measured with HS-Fraunces-Text's real widths), so one word never sits alone on a row.
@@ -257,6 +301,10 @@ The full log, in Krish's words, is V3 section 13. The ones that shape day-to-day
 - **19 Oct: five mug colors** (Black, Dark Blue, Dark Green, Red, Pink), Black first. The chat became the homepage. Order QC moved to GitHub Actions.
 - **20 Oct: the dog's own voice.** Gift lines are the dog talking to the person it loves. The AI writes all four lines for every buyer, and an optional breed shades the tone.
 - **21 Oct: product images in the dog's voice** (Krish: "yes, re-render the product images in the dog's voice"). All four products' Shopify images now show the new lines (`design/shopify-images/gifts-2026-10-21/README.md`).
+
+- **21 Oct: one screen, radical simplicity.** Krish: "this needs to be a guaranteed no scroll experience on mobile", "get rid of the Keep an eye on us section", then "the overall UX on desktop should be no scroll too ... We need radical simplicity of the UI and UX on all devices!"
+  - On the homepage and the gift page, the footer became one policy line and the memo bar was hidden on phones.
+  - The gift page's Teeinblue fields moved behind Change a word.
 
 ### Open questions for Krish (carry these forward)
 
