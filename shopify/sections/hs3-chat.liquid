@@ -105,6 +105,14 @@
         </div>
         <p class="hs3-small">{{ s.gifts_note }}</p>
         <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
+        {%- comment -%} the page is one screen (no footer), so the policies and the company note live here (Krish, 21 Oct) {%- endcomment -%}
+        <p class="hs3-legal">
+          {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
+          {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
+          {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
+          {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a> · {% endif -%}
+          {{ s.legal_note }}
+        </p>
       </div>
     </div>
   </div>
@@ -133,6 +141,7 @@
     { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
     { "type": "text", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },
     { "type": "text", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" },
+    { "type": "text", "id": "legal_note", "label": "Company note under the first screen", "info": "The homepage is one screen with no footer, so this line carries the policies and the company note.", "default": "Heartside is a Mindmaker LLC company." },
     { "type": "textarea", "id": "privacy", "label": "AI privacy note", "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.", "default": "Answers you type are read by an AI service (Google Gemini) to write the words. Your email and address never are." },
     { "type": "header", "content": "The gifts" },
     { "type": "text", "id": "product_view", "label": "Product template for the gifts", "info": "Opens each gift with ?view= this.", "default": "gift" },

@@ -420,7 +420,50 @@
     else if (S.screen === 'choose') frame.innerHTML = chooseView(n);
     else if (S.screen === 'share') frame.innerHTML = shareView(n);
     bind();
+    fit();
   }
+
+  /* One screen, no scroll (Krish, 21 Oct): every screen fits the window under the header on
+     every device. hs3.css locks the page and gives each screen one flexible area (ART); this
+     sizes the frame to the window, scales that area's picture to the room it gets, and if the
+     rest still doesn't fit, zooms the screen's content down until it does. Not while the
+     keyboard is up: the browser moves the page to the field, and fit runs again on blur. */
+  var ART = { hero: '.hs3-hero__art > .hs3-mugwrap', chat: null, reveal: '.hs3-stage > *', choose: null, share: '.hs3-share__card > *' };
+  function typing_() { var a = document.activeElement; return !!(a && frame && frame.contains(a) && /^(INPUT|TEXTAREA)$/.test(a.tagName)); }
+  function fit() {
+    if (!frame || typing_()) return;
+    var de = document.documentElement;
+    try { window.scrollTo(0, 0); } catch (e) { /* old browser */ }
+    var top = frame.getBoundingClientRect().top;
+    de.style.setProperty('--hs3-h', Math.max(320, Math.floor(window.innerHeight - top)) + 'px');
+    var kids = Array.prototype.slice.call(frame.children);
+    kids.forEach(function (k) { k.style.zoom = ''; });
+    var sel = ART[frame.getAttribute('data-hs3-screen')], art = sel ? frame.querySelector(sel) : null;
+    var artFit = function () {
+      if (!art) return;
+      art.style.zoom = '';
+      var box = art.parentNode, cs = window.getComputedStyle(box);
+      var h = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var w = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var z = Math.min(cfgZoom(art), h / (art.offsetHeight || 1), w / (art.offsetWidth || 1));
+      if (z > 0 && Math.abs(z - 1) > 0.01) art.style.zoom = Math.max(0.3, z).toFixed(3);
+    };
+    var fits = function (z) {
+      kids.forEach(function (k) { k.style.zoom = z === 1 ? '' : z.toFixed(3); });
+      artFit();
+      return frame.scrollHeight <= frame.clientHeight + 1;
+    };
+    // zoomed content also wraps less, so search for the largest zoom that fits
+    var z = 1;
+    if (!fits(1)) {
+      var lo = 0.4, hi = 1;
+      for (var i = 0; i < 7; i++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+      z = lo; fits(z);
+    }
+    frame.setAttribute('data-hs3-fit', z.toFixed(2));
+  }
+  // the picture may grow up to this much on a roomy screen (the desktop reveal draws large)
+  function cfgZoom(art) { return art.closest('.hs3-stage') && window.innerWidth >= 1000 ? 1.35 : 1; }
 
   // ---- the chat
   var chatQ = null; // the current question: { prefix, question, chips, skip, next, input }
@@ -494,8 +537,9 @@
     h += '<div class="hs3-dock">';
     if (!ui.thinking) {
       if (m.input === 'dog') {
-        h += '<label class="hs3-small" for="hs3-dog">Your dog\'s name</label><input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.dog) + '" data-hs3-in="dog">';
-        h += '<label class="hs3-small" for="hs3-breed">Breed, if you know it</label><input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="Optional" value="' + esc(S.breed) + '" data-hs3-in="breed">';
+        // the field names sit inside the fields, so the first question is two boxes and a button
+        h += '<input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Your dog\'s name" aria-label="Your dog\'s name" value="' + esc(S.dog) + '" data-hs3-in="dog">';
+        h += '<input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="Breed, if you know it" aria-label="Breed, if you know it (optional)" value="' + esc(S.breed) + '" data-hs3-in="breed">';
         h += '<div class="hs3-row"><button type="button" class="hs3-chip' + (S.pro === 'she' ? ' is-on' : '') + '" data-hs3="pro" data-v="she" aria-pressed="' + (S.pro === 'she') + '">She</button><button type="button" class="hs3-chip' + (S.pro === 'he' ? ' is-on' : '') + '" data-hs3="pro" data-v="he" aria-pressed="' + (S.pro === 'he') + '">He</button>';
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
@@ -826,11 +870,10 @@
     // items to the US, Nov 26 for anything made outside the US. The sherpa blanket can come from
     // the US, Europe or Latvia. TODO: on the first blanket order, check which facility Printful
     // routes it to; if it is not the US, the blanket needs an earlier date here.
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. Order by Dec 10 for Christmas. A real person checks every order before it prints. Misprints are remade free.</p>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. Order by Dec 10 for Christmas. A person checks every order before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Add to cart · ' + fmt(c.total) : 'Add ' + c.count + ' gifts to cart · ' + fmt(c.total));
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
-    if (c.count > 0 && !c.missing.length) h += '<p class="hs3-small hs3-center">Next, each gift opens with your words and photo filled in. Check it, then add it to the cart.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
     return h;
   }
@@ -1037,7 +1080,8 @@
       scrollTop();
     });
   }
-  function scrollTop() { try { var r = root.getBoundingClientRect(); if (r.top < -2 || r.top > window.innerHeight / 3) root.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' }); } catch (e) { /* old browser */ } }
+  // the page is locked to one screen (fit), so going to the top is all a new screen needs
+  function scrollTop() { try { window.scrollTo(0, 0); } catch (e) { /* old browser */ } }
   function bind() {
     frame.querySelectorAll('[data-hs3]').forEach(function (el) {
       el.addEventListener('click', function () { act(el.getAttribute('data-hs3'), el.getAttribute('data-v')); });
@@ -1120,6 +1164,16 @@
     if (S.screen === 'chat') warm(cfg.typedUrl);
     render();
     restorePhoto().then(function () { if (S.screen !== 'hero') render(); });
+    var refit = function () { clearTimeout(fit.t); fit.t = setTimeout(fit, 80); };
+    window.addEventListener('resize', refit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', refit);
+    window.addEventListener('load', refit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+    document.addEventListener('focusout', function () { setTimeout(fit, 150); });
+    frame.addEventListener('load', refit, true); // images that arrive after the first fit
+    // hs2.js moves the section under Helio's header after this runs; follow the frame's top
+    if (window.ResizeObserver) new ResizeObserver(refit).observe(root.parentNode || root);
+    [300, 1200].forEach(function (t) { setTimeout(fit, t); });
     var q = null;
     try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
     if (q && q.get('hs3') === 'reset') { S = fresh(); save(); render(); }

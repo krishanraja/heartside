@@ -252,6 +252,37 @@ for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
   ok(await noOverflow(page), `${w}x${h}: chat has no sideways scroll with 14-character names`);
   await ctx.close();
 }
+// 6. one screen, no scroll (Krish, 21 Oct): every screen at every size fits the window, the
+//    page can't scroll, and nothing has to shrink below 75%
+{
+  const done = { dog: 'Bartholomew', rec: 'Maximiliana', pro: 'she', rel: 'partner', home: 'door', follow: 'weekends', spot: 'bed', together: 'walk', meaning: 'shadow' };
+  const states = {
+    hero: { screen: 'hero' }, 'question 1': { screen: 'chat', step: 1 }, 'question 2': { ...done, home: null, follow: null, spot: null, together: null, meaning: null, screen: 'chat', step: 2 },
+    'question 3': { ...done, home: null, follow: null, spot: null, together: null, meaning: null, screen: 'chat', step: 3 },
+    'question 6': { ...done, meaning: null, screen: 'chat', step: 6 },
+    'reveal mug': { ...done, screen: 'reveal', step: 7, gift: 'mug', tabbed: true }, 'reveal blanket': { ...done, screen: 'reveal', step: 7, gift: 'blanket', tabbed: true },
+    'reveal print': { ...done, screen: 'reveal', step: 7, gift: 'print', tabbed: true }, 'reveal ornament': { ...done, screen: 'reveal', step: 7, gift: 'ornament', tabbed: true },
+    'choose all four': { ...done, screen: 'choose', step: 7, sel: { mug: true, blanket: true, print: true, ornament: true } }, share: { ...done, screen: 'share', step: 7 },
+  };
+  for (const [w, h] of [[360, 640], [375, 667], [390, 664], [390, 844], [430, 932], [1280, 720], [1440, 900]]) {
+    const { ctx, page } = await session('index-gifts.html', { width: w, height: h });
+    const bad = [];
+    let least = 1;
+    for (const [name, st] of Object.entries(states)) {
+      await page.evaluate((s) => sessionStorage.setItem('hs3-gift', JSON.stringify(s)), st);
+      await page.reload(); await page.waitForTimeout(700);
+      const m = await page.evaluate(() => {
+        const f = document.querySelector('.hs3__frame'), r = f.getBoundingClientRect();
+        window.scrollTo(0, 5000); const sy = window.scrollY; window.scrollTo(0, 0);
+        return { sy, bottom: r.bottom, over: f.scrollHeight - f.clientHeight, z: +f.getAttribute('data-hs3-fit'), wide: document.documentElement.scrollWidth - innerWidth };
+      });
+      least = Math.min(least, m.z);
+      if (m.sy > 0 || m.bottom > h + 1 || m.over > 1 || m.wide > 0 || m.z < 0.75) bad.push(`${name} (scroll ${m.sy}, bottom ${Math.round(m.bottom)}, over ${m.over}, zoom ${m.z})`);
+    }
+    ok(!bad.length, `${w}x${h}: every screen fits one screen with no scroll (smallest zoom ${least.toFixed(2)})${bad.length ? ': ' + bad.join('; ') : ''}`);
+    await ctx.close();
+  }
+}
 await browser.close();
 server.close();
 console.log(failures ? `${failures} failed` : 'all passed');

@@ -966,3 +966,81 @@ html.hs2-tib-folded .tee-btn-wrapper--personalize { display: none !important; }
 .hs2-next__x { flex: 0 0 auto; width: 36px; height: 36px; border: 0; background: transparent; color: #fbf6f1; font-size: 22px; line-height: 1; cursor: pointer; opacity: 0.7; }
 html.hs2-has-next .tee-btn-wrapper--personalize { display: none !important; }
 .hs2-next-inline { display: block; margin: 10px 0; padding: 12px 14px; border-radius: 12px; background: #fbf6f1; color: #121010; font-weight: 700; text-decoration: none; text-align: center; border: 1.5px solid #121010; }
+
+/* ======================================================= the gift view (product.gift, v3)
+   One screen, no scroll, on every device (Krish, 21 Oct: "radical simplicity of the UI and UX
+   on all devices"). The page reads: the gift as it will print, its name and price, who it is
+   from and to, the color, the dog's photo, Add to cart. Teeinblue's word fields stay on the
+   page (they make the print file) but live behind "Change a word", which turns the details
+   column into a panel that scrolls on its own. hs2.js giftFit sizes the screen to the window,
+   the preview to the room left, and zooms the details down if they still don't fit. */
+html:has(#buy[data-hs2-v3]):not(.hs2-v3-editing), html:has(#buy[data-hs2-v3]):not(.hs2-v3-editing) body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+html:has(#buy[data-hs2-v3]) .shopify-section-group-footer-group { display: none !important; }
+#buy[data-hs2-v3] { height: var(--hs2-v3-h, calc(100svh - var(--hs2-clear, 72px))); padding: 10px 16px 12px; gap: 12px; flex-wrap: nowrap; flex-direction: column; align-items: stretch; overflow: hidden; }
+#buy[data-hs2-v3] .hs2-product__media { flex: 1 1 0; min-height: 0; position: relative; top: auto; align-items: center; justify-content: center; gap: 0; }
+#buy[data-hs2-v3] .hs2-product__thumbs { display: none !important; }
+#buy[data-hs2-v3] .hs2-product__media { overflow: hidden; }
+#buy[data-hs2-v3] .hs2-product__tib, #buy[data-hs2-v3] .hs2-product__main { width: 100%; flex: none; margin: 0 auto; }
+#buy[data-hs2-v3] .hs2-product__media[data-tib="on"] .hs2-product__tib { background: transparent; }
+/* scaled down (giftFit), the preview keeps the width Teeinblue laid its slider out at */
+#buy[data-hs2-v3] .hs2-product__tib[style*="zoom"] { width: max-content; }
+@media (min-width: 900px) { #buy[data-hs2-v3] .hs2-product__tib, #buy[data-hs2-v3] .hs2-product__main { width: min(100%, 640px); } }
+#buy[data-hs2-v3] .hs2-product__info { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 10px; align-items: baseline; }
+#buy[data-hs2-v3] .hs2-product__info > * { grid-column: 1 / -1; min-width: 0; }
+#buy[data-hs2-v3] .hs2-product__info > h1 { grid-column: 1; grid-row: 1; font-size: 26px; line-height: 1.1; margin: 0; }
+#buy[data-hs2-v3] .hs2-product__price { font-size: 24px; line-height: 1.1; }
+#buy[data-hs2-v3] .hs2-product__ship { grid-column: 1 / -1; }
+#buy[data-hs2-v3] .hs2-product__info > h1 + div { display: contents; }
+#buy[data-hs2-v3] .hs2-product__price { grid-column: 2; grid-row: 1; text-align: right; }
+#buy[data-hs2-v3] .hs2-product__ship { font-size: 14px; margin-top: -4px; }
+#buy[data-hs2-v3] .hs2-product__when { display: none !important; }
+/* who it's from, with "Change a word" */
+#buy[data-hs2-v3] .hs2-answers { background: transparent; border: 0; border-radius: 0; padding: 0; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+#buy[data-hs2-v3] .hs2-answers__top { order: 2; flex: none; }
+#buy[data-hs2-v3] .hs2-answers__title, #buy[data-hs2-v3] .hs2-answers__status, #buy[data-hs2-v3] .hs2-answers__note { display: none !important; }
+#buy[data-hs2-v3] .hs2-answers__who { order: 1; margin: 0; font-size: 16px; }
+#buy[data-hs2-v3] .hs2-answers__edit { background: transparent; border: 0; padding: 0 2px; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--ink); cursor: pointer; }
+/* Teeinblue: color as a row of round swatches, the photo as one row, no Preview or quantity */
+#buy[data-hs2-v3] .tee-option__title, #buy[data-hs2-v3] .tee-form-header { display: none !important; }
+#buy[data-hs2-v3] .tee-btn--recustomize { background: transparent !important; color: var(--ink) !important; text-decoration: underline; text-underline-offset: 3px; padding: 0 4px !important; min-height: 44px; font-size: 14px !important; }
+#buy[data-hs2-v3] .tee-option-inner { display: flex !important; flex-wrap: nowrap !important; gap: 10px !important; margin: 0 !important; }
+#buy[data-hs2-v3] .tee-radio { flex: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+#buy[data-hs2-v3] .tee-radio .tee-radio-label { width: 40px !important; height: 40px !important; min-height: 0 !important; padding: 0 !important; border-radius: 50% !important; border: 0 !important; background: transparent !important; justify-content: center !important; font-size: 0 !important; }
+#buy[data-hs2-v3] .tee-radio .tee-radio-label span { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; }
+#buy[data-hs2-v3] .tee-radio[data-hs2-swatch] .tee-radio-label::before { width: 30px; height: 30px; }
+#buy[data-hs2-v3] .tee-radio.active .tee-radio-label, #buy[data-hs2-v3] .tee-radio:has(input:checked) .tee-radio-label { box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--ink) !important; border: 0 !important; background: transparent !important; }
+#buy[data-hs2-v3] .tee-variants { margin: 0 !important; padding: 0 !important; }
+#buy[data-hs2-v3] .tee-customization-wrapper { display: flex !important; flex-direction: column; gap: 12px; }
+#buy[data-hs2-v3] .tee-field { margin-bottom: 12px !important; }
+#buy[data-hs2-v3] .tee-field--photo { margin: 0 !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-field__header { display: none !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-photo { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 12px !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-photo-head { width: 56px !important; height: 56px !important; min-height: 0 !important; flex: none !important; overflow: hidden !important; border-radius: 12px !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-photo-head * { max-width: 100% !important; max-height: 100% !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-photo-placeholder { width: 56px !important; height: 56px !important; min-height: 0 !important; padding: 0 !important; }
+#buy[data-hs2-v3] .tee-field--photo .tee-photo-action { display: flex !important; align-items: center; gap: 10px; margin: 0 !important; padding: 0 !important; }
+#buy[data-hs2-v3] .tee-form-action:has(.tee-btn--preview), #buy[data-hs2-v3] .tee-quantity { display: none !important; }
+#buy[data-hs2-v3] .tee-form-actions { padding: 0 !important; margin: 0 !important; }
+#buy[data-hs2-v3] .tee-form-atc-wrapper { margin: 0 !important; }
+#buy[data-hs2-v3] .hs2-product__fine { font-size: 12.5px; line-height: 1.4; text-align: center; color: var(--muted); display: block; padding: 0; margin: -4px 0 0; border: 0; }
+#buy[data-hs2-v3] .hs2-product__fine > div { display: inline; }
+#buy[data-hs2-v3] .hs2-product__fine > div + div::before { content: " "; }
+#buy[data-hs2-v3] .hs2-product__legal { display: block !important; margin-top: 2px; font-size: 11.5px; }
+#buy[data-hs2-v3] .hs2-product__legal a { color: inherit; }
+#buy[data-hs2-v3] form { gap: 0; }
+/* "Change a word": the details become a panel that scrolls on its own; Done closes it */
+html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__media { display: none; }
+html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__info { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; zoom: 1 !important; align-content: start; padding-bottom: 12px; }
+html.hs2-v3-editing #buy[data-hs2-v3] .hs2-answers { position: sticky; top: 0; z-index: 2; background: var(--cream); }
+@media (max-width: 899px) {
+  html:has(#buy[data-hs2-v3]) [id$="__hs2_memo"] { display: none !important; }
+}
+@media (min-width: 900px) {
+  #buy[data-hs2-v3] { flex-direction: row; align-items: stretch; gap: 56px; padding: 16px 40px 20px; max-width: 1200px; }
+  #buy[data-hs2-v3] .hs2-product__media { flex: 1 1 0; height: 100%; }
+  #buy[data-hs2-v3] .hs2-product__info { flex: 0 0 480px; align-self: center; max-height: 100%; }
+  #buy[data-hs2-v3] .hs2-product__info > h1 { font-size: 36px; }
+  #buy[data-hs2-v3] .hs2-product__price { font-size: 30px; }
+  html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__media { display: flex; }
+  html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__info { flex: 0 0 440px; height: 100%; align-self: stretch; }
+}

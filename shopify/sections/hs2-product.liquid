@@ -13,9 +13,14 @@
   assign desc_pick = 0
   assign desc_any = 0
   assign desc_first = 0
+  # v3 gifts (the buy block's v3 setting) get the one-screen gift page (hs2.css "gift view")
+  assign v3 = false
   for b in section.blocks
     if b.type == '@app'
       assign tib = true
+    endif
+    if b.type == 'buy' and b.settings.v3
+      assign v3 = true
     endif
     if b.type == 'description'
       if desc_first == 0
@@ -82,7 +87,7 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy" data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
 
     <div class="hs2-product__media" data-hs2-media{% if s.open_on == 'photo' and product.media.size > 0 %} data-open="photo" data-show="photo"{% endif %}>
       <div class="hs2-product__tib" data-hs2-tib-gallery></div>
@@ -243,6 +248,15 @@
               {%- if block.settings.line_1 != blank -%}<div>{{ block.settings.line_1 }}</div>{%- endif -%}
               {%- if block.settings.line_2 != blank -%}<div>{{ block.settings.line_2 }}</div>{%- endif -%}
               {%- if block.settings.link_label != blank -%}<div><a href="{{ routes.root_url }}#closure">{{ block.settings.link_label }}</a></div>{%- endif -%}
+              {%- comment -%} the gift view is one screen with no footer, so the policies live here (Krish, 21 Oct) {%- endcomment -%}
+              {%- if v3 -%}
+                <div class="hs2-product__legal">
+                  {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
+                  {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
+                  {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
+                  {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a>{% endif -%}
+                </div>
+              {%- endif -%}
             </div>
         {%- endcase -%}
       {%- endfor -%}
