@@ -124,10 +124,10 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
    - press "Confirm & Send to fulfill" in Teeinblue.
 
    This is the proof that Shopify > Teeinblue > Printful works for the v3 range.
-4. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
-5. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
-6. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
-7. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
+3. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
+4. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
+5. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
+6. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
 
 Acquisition (creators, content, the comment loop, paid tests) is planned and drafted in `growth-heartside`, which reads this repo daily.
 
@@ -260,6 +260,6 @@ The full log, in Krish's words, is V3 section 13. The ones that shape day-to-day
 
 ### Open questions for Krish (carry these forward)
 
-2. Whether "Your dog has notes." survives as an end-card line on content.
-3. The phase-two AI illustration: run the five-dog bake-off, and when.
-4. A bundle discount beyond the $19 ornament: yes or no, and what.
+1. Whether "Your dog has notes." survives as an end-card line on content.
+2. The phase-two AI illustration: run the five-dog bake-off, and when.
+3. A bundle discount beyond the $19 ornament: yes or no, and what.
