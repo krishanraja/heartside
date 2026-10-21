@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "main": { "type": "hs-answer", "settings": {} }
+  },
+  "order": ["main"]
+}

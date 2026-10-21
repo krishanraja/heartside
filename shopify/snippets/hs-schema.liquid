@@ -1,0 +1,152 @@
+{%- comment -%}
+  Structured data (schema.org JSON-LD) for search and answer engines (21 Oct 2026; strategy in
+  growth-heartside docs/GEO-AEO.md). Helio only emits a bare Organization, so:
+  - kind: 'home' adds Heartside's Organization, the WebSite and the four gifts as an ItemList;
+  - kind: 'product' adds the Product with one Offer per variant (price, availability, free US
+    shipping, the made-to-order return terms from /policies/refund-policy) and a BreadcrumbList.
+  Every claim here must be true on the page and in the policies: no ratings or reviews until real
+  ones exist (HANDOFF 2.3). Rendered once per page by hs3-chat (home) and hs2-product (product).
+{%- endcomment -%}
+{%- assign hs_site = 'https://heartside.io' -%}{%- comment -%} the canonical domain, also on preview themes {%- endcomment -%}
+{%- assign hs_org = hs_site | append: '/#organization' -%}
+{%- if kind == 'home' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": {{ hs_org | json }},
+      "name": "Heartside",
+      "alternateName": "Heartside: Personalized Dog Gifts",
+      "url": {{ hs_site | json }},
+      "logo": {{ 'hs-logo.png' | asset_url | prepend: 'https:' | json }},
+      "email": "krish@heartside.io",
+      "slogan": "Your dog loves you too.",
+      "description": "Heartside makes gifts given on behalf of a dog to the person it loves most: a mug, a blanket, a framed print and a tree ornament, each carrying a short message in the dog's own voice, written from the owner's answers in a one-minute chat with Biscuit, Heartside's dachshund host. Made to order by Printful for US customers. A person checks every order before it prints. Free US shipping.",
+      "areaServed": { "@type": "Country", "name": "United States" },
+      "sameAs": ["https://www.instagram.com/yourdoghasnotes", "https://www.facebook.com/yourdoghasnotes", "https://www.tiktok.com/@yourdoghasnotes"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": {{ hs_site | append: '/#website' | json }},
+      "url": {{ hs_site | json }},
+      "name": "Heartside",
+      "inLanguage": "en-US",
+      "publisher": { "@id": {{ hs_org | json }} }
+    },
+    {
+      "@type": "ItemList",
+      "name": "Gifts from your dog",
+      "itemListElement": [
+        {%- assign hs_n = 0 -%}
+        {%- assign hs_handles = 'the-morning-mug,the-couch-blanket,the-framed-print,the-tree-ornament' | split: ',' -%}
+        {%- for handle in hs_handles -%}
+          {%- assign p = all_products[handle] -%}
+          {%- if p and p.available -%}
+            {%- if hs_n > 0 -%},{%- endif -%}
+            {%- assign hs_n = hs_n | plus: 1 -%}
+            { "@type": "ListItem", "position": {{ hs_n }}, "name": {{ p.title | json }}, "url": {{ hs_site | append: p.url | json }} }
+          {%- endif -%}
+        {%- endfor -%}
+      ]
+    }
+  ]
+}
+</script>
+{%- elsif kind == 'product' and product -%}
+{%- assign hs_url = hs_site | append: product.url -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      "@id": {{ hs_url | append: '#product' | json }},
+      "name": {{ product.title | json }},
+      "url": {{ hs_url | json }},
+      "description": {{ product.description | strip_html | strip_newlines | strip | truncate: 1500 | json }},
+      "image": [
+        {%- for m in product.images limit: 10 -%}
+          {{ m | image_url: width: 1200 | prepend: 'https:' | json }}{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ],
+      "brand": { "@type": "Brand", "name": "Heartside" },
+      "manufacturer": { "@id": {{ hs_org | json }} },
+      "offers": [
+        {%- for v in product.variants -%}
+        {
+          "@type": "Offer",
+          "name": {{ v.title | json }},
+          {%- if v.sku != blank %}"sku": {{ v.sku | json }},{% endif %}
+          "url": {{ hs_url | append: '?variant=' | append: v.id | json }},
+          "price": {{ v.price | divided_by: 100.0 | json }},
+          "priceCurrency": {{ cart.currency.iso_code | default: 'USD' | json }},
+          "availability": "{% if v.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
+          "itemCondition": "https://schema.org/NewCondition",
+          "seller": { "@id": {{ hs_org | json }} },
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": { "@type": "MonetaryAmount", "value": 0, "currency": "USD" },
+            "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "US" }
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": "US",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+            "merchantReturnLink": {{ hs_site | append: '/policies/refund-policy' | json }}
+          }
+        }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Heartside", "item": {{ hs_site | json }} },
+        { "@type": "ListItem", "position": 2, "name": {{ product.title | json }}, "item": {{ hs_url | json }} }
+      ]
+    }
+  ]
+}
+</script>
+{%- elsif kind == 'article' and article -%}
+{%- assign hs_url = hs_site | append: article.url -%}
+{%- assign hs_answer = article.excerpt | strip_html | strip_newlines | strip -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": {{ hs_url | append: '#article' | json }},
+      "headline": {{ article.title | json }},
+      "description": {{ hs_answer | json }},
+      "url": {{ hs_url | json }},
+      "mainEntityOfPage": {{ hs_url | json }},
+      "datePublished": {{ article.published_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},
+      "dateModified": {{ article.updated_at | date: '%Y-%m-%dT%H:%M:%S%z' | json }},
+      "inLanguage": "en-US",
+      {%- if article.image %}"image": {{ article.image | image_url: width: 1200 | prepend: 'https:' | json }},{% endif %}
+      "author": { "@id": {{ hs_org | json }} },
+      "publisher": { "@id": {{ hs_org | json }} },
+      "isPartOf": { "@type": "Blog", "name": {{ blog.title | json }}, "url": {{ hs_site | append: blog.url | json }} }
+    }
+    {%- if hs_answer != blank -%},
+    {
+      "@type": "FAQPage",
+      "mainEntity": [{ "@type": "Question", "name": {{ article.title | json }}, "acceptedAnswer": { "@type": "Answer", "text": {{ hs_answer | json }} } }]
+    }
+    {%- endif -%},
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Heartside", "item": {{ hs_site | json }} },
+        { "@type": "ListItem", "position": 2, "name": {{ blog.title | json }}, "item": {{ hs_site | append: blog.url | json }} },
+        { "@type": "ListItem", "position": 3, "name": {{ article.title | json }}, "item": {{ hs_url | json }} }
+      ]
+    }
+  ]
+}
+</script>
+{%- endif -%}
