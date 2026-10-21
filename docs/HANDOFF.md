@@ -139,7 +139,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 
 Owner in brackets. "Krish" means only he can do it (his logins, his money, his taste).
 
-1. **Run `evidence/claude-code-2026-10-21/COWORK-LAUNCH-AND-TEST-ORDER.md`** (Cowork, with Krish logged in). It replaces the 20 Oct prompt and covers:
+1. **Run `evidence/claude-code-2026-10-21/COWORK-FIRST-MOCK-ORDER.md`** (Cowork, with Krish logged in). It is the current prompt for the path to the first order (written the evening of 21 Oct, after the one-screen pages and the hidden-answers fix): step zero, the launch blockers, the journey check on today's screens, then the mock order in item 2 and its checks through Printful. It replaces the morning's `COWORK-LAUNCH-AND-TEST-ORDER.md` for the order path; that file's part 6 (search and AI listings) runs after the order. The morning prompt covered:
    - fix the mug Preview (mockups per color, perspective on);
    - check the other three gifts take the dog-voice lines;
    - list product images with old wording;
