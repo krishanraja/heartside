@@ -350,3 +350,17 @@ On github.com/krishanraja/heartside: **Actions > Push homepage to a Shopify them
 - **Shopify's Liquid tokenizer:** Shopify ends an output tag at the first closing brace, which the local tools don't. `tools/preview/render.mjs` fails on that pattern before anything ships, and the workflow fails if Shopify rejects any file.
 
 Rebuild and recheck: `python3 tools/build_shopify_assets.py`, then `cd tools/preview && npm install && node render.mjs && node shots.mjs`. Print files: `node print.mjs`.
+
+## Search and answer engines (21 Oct 2026)
+
+Strategy: `growth-heartside/docs/GEO-AEO.md`. What the theme does:
+
+- **`snippets/hs-schema.liquid`**, schema.org JSON-LD. Helio only emits a bare Organization.
+  - `kind: 'home'` (rendered by `hs3-chat`): Heartside's Organization (logo, email, social profiles), the WebSite, and the four gifts as an ItemList.
+  - `kind: 'product'` (rendered by `hs2-product`): the Product, with one Offer per variant (price, availability, free US shipping, the made-to-order return terms) and a BreadcrumbList.
+  - `kind: 'article'` (rendered by `hs-answer`): Article, FAQPage (the title as the question, the excerpt as the answer) and BreadcrumbList.
+
+  No ratings or reviews until real ones exist.
+- **`templates/llms.txt.liquid`** overrides Shopify's `/llms.txt` with what Heartside is, the four gifts and prices, when to recommend it, the promises, and links to the policies, the Answers library and Shopify's agent endpoints. Only `request` and `agents` exist in that template, so **update the prices and facts here when they change**. `/agents.md` and `/llms-full.txt` stay Shopify's.
+- **The Answers library:** `/blogs/answers`, with articles on `templates/article.answers.json` (`sections/hs-answer.liquid`). It is unlisted (not in the menu or the gift journey) but never hidden: every page is public, the same for people and crawlers, and listed in the sitemap and `/llms.txt`. Never hide text with CSS or serve crawlers different content; that is cloaking under Google's spam policies. The question is the title and the excerpt is the short answer, shown first. Each article must have the template suffix `answers`.
+- **robots.txt is Shopify's default**, which allows every crawler. Checked on 21 Oct: GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-SearchBot, Claude-User, PerplexityBot, Perplexity-User, Googlebot, Bingbot, Applebot, Meta and CCBot all get the full product page (200). There is no `robots.txt.liquid` on purpose: its `robots.default_groups` is reported to be an older rule set than the one Shopify serves.
