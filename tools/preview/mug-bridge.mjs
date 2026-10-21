@@ -34,8 +34,8 @@ const state = {
   hs3_kinds: { 'the-morning-mug': 'mug', 'the-couch-blanket': 'blanket' }
 };
 
-async function run(kind, handle) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+async function run(kind, handle, size = [390, 844], check = null) {
+  const ctx = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -61,8 +61,9 @@ async function run(kind, handle) {
   const vals = await page.evaluate(() => ['layer-1', 'layer-2', 'layer-3', 'layer-4'].map((id) => document.getElementById(id).value));
   const rec = await page.evaluate(() => window.teeinblue.getCurrentCustomization());
   const lines = await page.evaluate(() => (document.querySelector('[data-hs2-prop="hs_lines"]') || {}).value || '');
+  const extra = check ? await check(page) : null;
   await ctx.close();
-  return { vals, rec, lines, errors };
+  return { vals, rec, lines, errors, extra };
 }
 
 {
@@ -85,6 +86,36 @@ async function run(kind, handle) {
   const r = await run('textarea', 'the-couch-blanket');
   ok(r.vals[0] === 'Naps best when you are there.', `blanket: no breaks, Courier lines as before (${JSON.stringify(r.vals[0])})`);
   ok(r.vals[2] === 'Lives for our morning walks.', 'blanket: Line 3 is the together line');
+}
+// the gift view is one screen (Krish, 21 Oct): nothing scrolls, the words fold behind
+// "Change a word", which opens them in a panel and folds them again on Done
+const screen = (page) => page.evaluate(() => {
+  const b = document.querySelector('#buy[data-hs2-v3]');
+  window.scrollTo(0, 5000); const sy = window.scrollY; window.scrollTo(0, 0);
+  const shown = ['layer-1', 'layer-2', 'layer-3', 'layer-4'].filter((id) => document.getElementById('tee-field--' + id).offsetHeight > 0).length;
+  return { v3: !!b, sy, over: b ? b.scrollHeight - b.clientHeight : 99, bottom: b ? b.getBoundingClientRect().bottom : 0, z: b ? +b.getAttribute('data-hs2-fit') : 0, shown, edit: (document.querySelector('[data-hs2-tib-edit]') || {}).textContent, editing: document.documentElement.classList.contains('hs2-v3-editing') };
+});
+for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]]) {
+  const r = await run('textarea', 'the-morning-mug', size, async (page) => {
+    const before = await screen(page);
+    await page.click('[data-hs2-tib-edit]'); await page.waitForTimeout(200);
+    const open = await screen(page);
+    await page.click('[data-hs2-tib-edit]'); await page.waitForTimeout(200);
+    const closed = await screen(page);
+    // the next-gift bar takes the bottom of the screen
+    await page.evaluate(() => { const n = document.createElement('div'); n.className = 'hs2-next'; n.setAttribute('data-hs2-next', ''); n.style.height = '72px'; document.body.appendChild(n); document.documentElement.classList.add('hs2-has-next'); window.dispatchEvent(new Event('resize')); });
+    await page.waitForTimeout(400);
+    const bar = await page.evaluate(() => ({ b: document.querySelector('#buy').getBoundingClientRect().bottom, t: document.querySelector('.hs2-next').getBoundingClientRect().top }));
+    return { before, open, closed, bar };
+  });
+  const { before: b, open: o, closed: c, bar } = r.extra;
+  const tag = `${size[0]}x${size[1]}`;
+  ok(b.v3 && b.sy === 0 && b.over <= 1 && b.bottom <= size[1] + 1 && b.z >= 0.75, `${tag} gift view: one screen, no scroll (zoom ${b.z}, scroll ${b.sy}, over ${b.over})`);
+  ok(b.shown === 0 && b.edit === 'Change a word', `${tag} gift view: the words fold behind "Change a word"`);
+  ok(o.editing && o.shown === 4 && o.edit === 'Done', `${tag} gift view: "Change a word" opens the four fields, then says Done`);
+  ok(!c.editing && c.shown === 0 && c.sy === 0, `${tag} gift view: Done folds them again`);
+  ok(bar.b <= bar.t + 1, `${tag} gift view: the next-gift bar doesn't cover the page (page ends ${Math.round(bar.b)}, bar starts ${Math.round(bar.t)})`);
+  ok(!r.errors.length, `${tag} no script errors ` + r.errors.join(' '));
 }
 await browser.close();
 server.close();

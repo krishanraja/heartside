@@ -949,6 +949,12 @@
     fold((complete || reviewHere()) && !bridge.opened);
     var edit = card.querySelector('[data-hs2-tib-edit]');
     if (edit) edit.hidden = !complete;
+    if (giftView()) {
+      // the gift view always offers "Change a word"; with words missing (no chat, say), the
+      // fields open in the panel so the shopper can fill them
+      if (edit) edit.hidden = !bridge.fields;
+      if (!complete && bridge.fields && !bridge.autoOpened && !document.documentElement.classList.contains('hs2-v3-editing')) { bridge.autoOpened = true; editing(true); }
+    }
   }
   function fold(on) {
     var buy = document.getElementById('buy');
@@ -971,12 +977,83 @@
     document.documentElement.classList.toggle('hs2-tib-folded', on);
     bridge.folded = on;
     var edit = document.querySelector('[data-hs2-tib-edit]');
-    if (edit) { edit.textContent = on ? 'Edit details' : 'Hide details'; edit.setAttribute('aria-expanded', on ? 'false' : 'true'); }
+    if (edit && giftView()) { var ed = document.documentElement.classList.contains('hs2-v3-editing'); edit.textContent = ed ? 'Done' : 'Change a word'; edit.setAttribute('aria-expanded', ed ? 'true' : 'false'); }
+    else if (edit) { edit.textContent = on ? 'Edit details' : 'Hide details'; edit.setAttribute('aria-expanded', on ? 'false' : 'true'); }
+  }
+
+  /* ------------------------------------------------------------ the gift view (v3)
+     product.gift is one screen (hs2.css "the gift view"). Teeinblue's word fields are folded
+     away; "Change a word" opens them in a panel (the details column scrolls on its own) and
+     Done folds them again. giftFit sizes the screen to the window, the preview to the room
+     left, and zooms the details down to the largest size that fits. */
+  function giftView() { return !!document.querySelector('#buy[data-hs2-v3]'); }
+  function editing(on) {
+    var html = document.documentElement;
+    html.classList.toggle('hs2-v3-editing', on);
+    bridge.opened = on;
+    fold(!on);
+    if (!on) { try { window.scrollTo(0, 0); } catch (e) { /* old browser */ } }
+    giftFit();
+  }
+  function giftFit() {
+    var buy = document.querySelector('#buy[data-hs2-v3]');
+    if (!buy) return;
+    var a = document.activeElement;
+    if (a && buy.contains(a) && /^(INPUT|TEXTAREA)$/.test(a.tagName) && a.type !== 'file') return; // keyboard up
+    var html = document.documentElement, info = buy.querySelector('.hs2-product__info'), media = buy.querySelector('.hs2-product__media');
+    if (!info || !media) return;
+    if (!html.classList.contains('hs2-v3-editing')) { try { window.scrollTo(0, 0); } catch (e) { /* old browser */ } }
+    var bar = html.classList.contains('hs2-has-next') && document.querySelector('.hs2-next');
+    var under = bar ? Math.ceil(window.innerHeight - bar.getBoundingClientRect().top) + 4 : 0;
+    var top = buy.getBoundingClientRect().top + (window.scrollY || 0);
+    html.style.setProperty('--hs2-v3-h', Math.max(320, Math.floor(window.innerHeight - top - under)) + 'px');
+    info.style.zoom = '';
+    var wide = window.innerWidth >= 900;
+    // the preview is scaled, not resized: Teeinblue lays its slider out once, at its own width
+    var art = function () {
+      var cs = window.getComputedStyle(media);
+      var w = media.clientWidth, h = media.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      media.querySelectorAll('.hs2-product__tib, .hs2-product__main').forEach(function (el) {
+        el.style.zoom = '';
+        if (!el.offsetHeight) return;
+        var z = Math.min(1, h / el.offsetHeight, w / el.offsetWidth);
+        if (z < 0.995) el.style.zoom = Math.max(0.2, z).toFixed(3);
+      });
+      return h;
+    };
+    if (html.classList.contains('hs2-v3-editing')) { art(); return; }
+    // the preview keeps at least 38% of a phone screen; the details zoom down until it does
+    var minArt = wide ? 0 : buy.clientHeight * 0.38;
+    var fits = function (z) {
+      info.style.zoom = z === 1 ? '' : z.toFixed(3);
+      var h = art();
+      if (wide) return info.scrollHeight * z <= buy.clientHeight - 36 + 1;
+      return buy.scrollHeight <= buy.clientHeight + 1 && h >= minArt;
+    };
+    var z = 1;
+    if (!fits(1)) {
+      var lo = 0.5, hi = 1;
+      for (var i = 0; i < 7; i++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
+      z = lo; fits(z);
+    }
+    buy.setAttribute('data-hs2-fit', z.toFixed(2));
+  }
+  // Teeinblue names its photo buttons for a generic image; on the gift view they name the dog
+  function giftLabels() {
+    if (!giftView()) return;
+    var d = (state.dog == null ? '' : String(state.dog)).trim();
+    var has = !!document.querySelector('#buy .tee-field--photo .tee-photo-head img');
+    document.querySelectorAll('#buy .tee-field--photo .tee-btn--upload, #buy .tee-field--photo .tee-btn--recustomize').forEach(function (b) {
+      var want = /recustomize/.test(b.className) ? 'Crop' : has ? 'Change photo' : (d ? 'Add ' + d + '\'s photo' : 'Add your dog\'s photo');
+      var t = b.querySelector('span') || b;
+      if (t.textContent.trim() !== want && !t.children.length) t.textContent = want;
+    });
   }
   function editDetails() {
     var edit = document.querySelector('[data-hs2-tib-edit]');
     if (!edit || edit.__hs2) return; edit.__hs2 = true;
     edit.addEventListener('click', function () {
+      if (giftView()) { editing(!document.documentElement.classList.contains('hs2-v3-editing')); return; }
       bridge.opened = bridge.folded;
       fold(!bridge.opened);
       if (bridge.opened) {
@@ -987,7 +1064,10 @@
   }
   // a field Teeinblue marks invalid (at Add To Cart) never stays folded away
   function unfoldInvalid() {
-    if (bridge.folded && document.querySelector('#buy .tee-field--invalid')) { bridge.opened = true; fold(false); }
+    if (bridge.folded && document.querySelector('#buy .tee-field--invalid')) {
+      if (giftView()) { editing(true); return; }
+      bridge.opened = true; fold(false);
+    }
   }
   /* Teeinblue titles its own picker with its raw option key ("color"), set inside its block,
      not from the Shopify option name. The section's "Plain names for product options" map
@@ -1146,7 +1226,7 @@
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;
     editDetails();
-    var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); unfoldInvalid(); };
+    var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); unfoldInvalid(); giftLabels(); giftFit(); };
     ['teeinblue-event-component-injected', 'teeinblue-event-campaign-loaded', 'teeinblue-event-variant-changed', 'teeinblue-event-customization-changed'].forEach(function (ev) {
       document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); setTimeout(swatchTib, 120); });
     });
@@ -1834,6 +1914,7 @@
     var bar = document.querySelector('[data-hs2-next]');
     if (bar) bar.remove();
     document.documentElement.classList.remove('hs2-has-next');
+    giftFit();
   }
   function showNext(title, sub, href, label) {
     var onCart = /^\/cart\/?$/.test(location.pathname);
@@ -1860,6 +1941,7 @@
     var go = bar.querySelector('.hs2-next__go');
     go.textContent = label; go.href = href;
     document.documentElement.classList.add('hs2-has-next');
+    giftFit(); // the bar takes the bottom of a one-screen gift page
   }
   function queueBar() {
     var q = queueGet();
@@ -1946,8 +2028,9 @@
     cartTidy();
   }
   var resizeT;
-  window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); }, 120); });
-  window.addEventListener('load', function () { guardSearchFocus(); clearHeader(); layout(); setTimeout(function () { clearHeader(); layout(); }, 600); });
+  window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); giftFit(); }, 120); });
+  document.addEventListener('focusout', function () { setTimeout(giftFit, 150); });
+  window.addEventListener('load', function () { guardSearchFocus(); clearHeader(); layout(); giftFit(); setTimeout(function () { clearHeader(); layout(); giftFit(); }, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests

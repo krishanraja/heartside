@@ -12,7 +12,10 @@
           "type": "title"
         },
         "price": {
-          "type": "price"
+          "type": "price",
+          "settings": {
+            "note": "Free US shipping. Order by Dec 10 for Christmas."
+          }
         },
         "answers": {
           "type": "answers",
@@ -42,7 +45,10 @@
           }
         },
         "fine": {
-          "type": "fine"
+          "type": "fine",
+          "settings": {
+            "line_1": "A person checks every order before it prints."
+          }
         },
         "description": {
           "type": "description"
@@ -51,7 +57,6 @@
       "block_order": [
         "title",
         "price",
-        "description",
         "answers",
         "teeinblue_product_personalizer_product_app_block_UBn6nK",
         "buy",
