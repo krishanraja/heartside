@@ -21,7 +21,9 @@ OUT = os.path.join(SRC, 'shopify-images')
 sys.path.insert(0, os.path.join(ROOT, 'tools', 'qc'))
 import mug_qc as q  # noqa: E402
 
-LINES = ['Waits at the door for\nyou, weekends too.', 'Steals your side of the bed.', "Will ride anywhere, as\nlong as it's with you."]
+# the dog's own voice (Krish, 20 Oct): the chip lines for "waits at the door, weekends too", "their side
+# of the bed" and "their shadow", broken where hs3.js's evenBreak breaks them
+LINES = ['I wait by the door.\nWeekends too. Obviously.', 'I took your side of\nthe bed. Not sorry.', "I'm your shadow.\nWhere else would I be?"]
 SIGNED = 'Love, Biscuit'
 INK, CHESTNUT = (18, 16, 16, 255), (138, 74, 43, 255)  # #121010 and #8A4A2B, as hs3.js draws the note
 
