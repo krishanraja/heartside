@@ -226,6 +226,45 @@
 @media (prefers-reduced-motion: reduce) { .hs3 *, .hs3 *::before, .hs3 *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 380px) {
 }
+/* One screen, no scroll, on every device (Krish, 21 Oct). The page is locked and the frame is
+   exactly the window under the header (--hs3-h, set by hs3.js fit). Each screen has one flexible
+   area that takes the room left over; fit scales its picture to that room and, if the rest still
+   doesn't fit, zooms the screen down. The footer is replaced by one quiet line on the first
+   screen; on phones the memo bar goes too. */
+html:has(.hs3), html:has(.hs3) body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
+.hs3 .hs3__frame { height: var(--hs3-h, calc(100svh - var(--hs2-clear, 72px) - 12px)); min-height: 0; overflow: hidden; }
+.hs3__frame > * { flex-shrink: 0; }
+.hs3-hero__art, .hs3-stage, .hs3-share__card { flex: 1 1 0; min-height: 0; overflow: hidden; }
+.hs3-share { min-height: 0; }
+.hs3-legal { margin: 0; padding: 4px 16px 0; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.hs3-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 999px) {
+  html:has(.hs3) [id$="__hs2_memo"] { display: none !important; }
+  .hs3-top { min-height: 48px; padding: 6px 14px 4px 8px; }
+  .hs3-hero__copy { padding-top: 18px; gap: 8px; }
+  .hs3-hero__art, .hs3-hero__art:has(.hs3-mugwrap--hero) { padding: 28px 0 64px; }
+  .hs3-bubble--peek { margin-bottom: 30px; }
+  .hs3-note-wrap .hs3-label { margin-bottom: 6px; }
+  .hs3-note { padding: 13px 16px 11px; }
+  .hs3-note__lines { gap: 5px; margin-top: 6px; }
+  .hs3-note .hs3-sign { margin-top: 6px; }
+  .hs3-onany { margin-top: 10px; gap: 5px; }
+  .hs3-talk { flex: 1 0 auto; min-height: 0; padding: 10px 16px 4px; }
+  /* radical simplicity on a phone: the gift pills, the photo-later hint and the words strip on
+     the gift list repeat what the screen already says */
+  .hs3-onany, .hs3-later, .hs3-strip { display: none; }
+  .hs3-stage { padding: 6px 0; }
+  .hs3-tabs { padding: 8px 16px 4px; }
+  .hs3-tab { min-height: 52px; padding: 6px 2px 4px; }
+  .hs3-opts { padding-top: 10px; gap: 6px; }
+  .hs3-opt { min-height: 54px; padding: 7px 12px; }
+  .hs3-strip { margin-top: 10px; padding: 8px 12px; }
+  .hs3-swatches { padding-top: 6px; }
+  .hs3-ship { padding-top: 6px; }
+  [data-hs3-screen="choose"] .hs3-dock { padding-top: 8px; }
+  .hs3-dock { gap: 8px; }
+}
 /* the space cleared under the header is the page's own cream, not the theme's grey */
 .hs3-section { background: #FBF6F1; }
 @media (min-width: 900px) and (max-width: 999px) { .hs3__frame { border-left: 1px solid #EFE6DD; border-right: 1px solid #EFE6DD; } }
@@ -233,7 +272,7 @@
    wide page: the words and the button on the left, the turning mug large on the right, all in
    one screen. The chat, reveal and gift picker keep their single column, as a roomier panel. */
 @media (min-width: 1000px) {
-  .hs3__frame[data-hs3-screen="hero"] { max-width: 1200px; min-height: calc(100svh - var(--hs2-clear, 120px)); border: 0; padding: 0 56px 40px; }
+  .hs3__frame[data-hs3-screen="hero"] { max-width: 1200px; border: 0; padding: 0 56px 40px; }
   .hs3 { overflow-x: clip; }
   .hs3__frame[data-hs3-screen="hero"] .hs3-ribbon { margin: 0 calc(50% - 50vw); }
   .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art"; grid-template-rows: 1fr 1fr; column-gap: 64px; align-items: center; }
@@ -251,7 +290,6 @@
   .hs3--app .hs3__frame { max-width: 600px; }
   /* the chat: the note the dog is writing on the left, Biscuit and the answers on the right */
   .hs3 { scroll-margin-top: var(--hs2-head, 66px); }
-  .hs3--app .hs3__frame { min-height: calc(100svh - var(--hs2-head, 66px)); }
   .hs3--app .hs3__frame[data-hs3-screen="chat"] { max-width: 1120px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "top top" "note talk" "note dock" "note ."; grid-template-rows: auto auto auto 1fr; align-content: start; column-gap: 56px; padding: 0 40px 32px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-top { grid-area: top; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-note-wrap { grid-area: note; align-self: start; padding: 24px 0 0; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); }
@@ -269,7 +307,6 @@
   .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs { grid-area: tabs; padding: 18px 0 8px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs + .hs3-small { grid-area: note; padding: 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-stage { grid-area: stage; align-self: start; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); min-height: min(640px, calc(100svh - var(--hs2-head, 66px) - 120px)); padding: 24px 0; }
-  .hs3__frame[data-hs3-screen="reveal"] .hs3-stage > * { zoom: 1.35; }
   .hs3__frame[data-hs3-screen="reveal"] :is(.hs3-says, .hs3-edit) { grid-area: says; padding: 22px 0 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-bubble { max-width: 460px; font-size: 17px; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-dock { grid-area: dock; padding: 22px 0 0; }

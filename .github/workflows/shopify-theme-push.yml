@@ -13,7 +13,8 @@
 # theme-editor changes to them. Tick "header_memo_bar" to put the HS memo bar at
 # the top of the header and retire the v1 offer bar (.github/scripts/header-memo.mjs).
 # Tick "footer_company_note" to put the company note last in the footer group
-# (.github/scripts/footer-note.mjs).
+# (.github/scripts/footer-note.mjs). Tick "footer_remove_signup" to switch off Helio's email
+# signup ("Keep an eye on us") in the footer (.github/scripts/footer-signup.mjs).
 #
 # One-time setup (see docs/COWORK-PROMPT.md):
 #   Repository secret SHOPIFY_CLI_THEME_TOKEN = a password from Shopify's free
@@ -40,6 +41,11 @@ on:
         type: boolean
       footer_company_note:
         description: "Also put the company note (Mindmaker LLC, Mindmaker Ltd) at the bottom of the footer"
+        required: false
+        default: false
+        type: boolean
+      footer_remove_signup:
+        description: "Also switch off the footer's email signup (\"Keep an eye on us\")"
         required: false
         default: false
         type: boolean
@@ -160,6 +166,17 @@ jobs:
           fi
           cp backup/sections/footer-group.json shopify/sections/footer-group.json
           node .github/scripts/footer-note.mjs shopify/sections/footer-group.json
+
+      - name: Switch off the footer's email signup
+        if: ${{ inputs.footer_remove_signup && !inputs.pull_only }}
+        run: |
+          if [ ! -f backup/sections/footer-group.json ]; then
+            echo "::error::The theme has no sections/footer-group.json, so the footer was left alone."
+            exit 1
+          fi
+          # build on the company-note step's copy when both are ticked
+          [ -f shopify/sections/footer-group.json ] || cp backup/sections/footer-group.json shopify/sections/footer-group.json
+          node .github/scripts/footer-signup.mjs shopify/sections/footer-group.json
 
       - name: Push Heartside files into the copy
         if: ${{ !inputs.pull_only }}

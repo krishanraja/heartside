@@ -204,7 +204,7 @@ const header = `
   <img src="assets/heartside-logo.png" alt="Heartside" class="mock-logo">
   <nav><a href="#review">Your review</a><a href="#benefits">More gifts</a><a href="#faq">Questions</a></nav>
 </header>`;
-const footer = `<footer class="mock-footer"><p>Helio footer (policies, contact) renders here.</p></footer>`;
+const footer = `<footer class="mock-footer shopify-section-group-footer-group"><p>Helio footer (policies, contact) renders here.</p></footer>`;
 
 async function page(file, templateName, ctx = {}, edit = (t) => t) {
   const tpl = edit(JSON.parse(fs.readFileSync(path.join(theme, 'templates', templateName), 'utf8')));
