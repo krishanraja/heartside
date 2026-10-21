@@ -1826,6 +1826,31 @@
   }
   /* Teeinblue adds to the cart with its own request; watch for any successful /cart/add.
      Each callback gets the added lines as /cart/add answers them (null if unreadable). */
+  /* Teeinblue's Add To Cart posts its own JSON to /cart/add and never reads our form, so the
+     hidden answers (_hs_answers, _hs_lines, _hs_ship_to) never reached an order (found in the
+     live cart test, 21 Oct). They are added to that request on its way out; a property
+     Teeinblue already sends is left as it is. */
+  function hsProps() {
+    var o = {}, n = 0;
+    document.querySelectorAll('#hs2-product-form [data-hs2-prop]').forEach(function (inp) {
+      var m = /^properties\[(.+)\]$/.exec(inp.name || '');
+      if (m && inp.value) { o[m[1]] = inp.value; n++; }
+    });
+    return n ? o : null;
+  }
+  function withHsProps(body) {
+    var add = hsProps();
+    if (!add || typeof body !== 'string') return body;
+    try {
+      var j = JSON.parse(body);
+      (Array.isArray(j.items) ? j.items : [j]).forEach(function (it) {
+        if (!it || !it.id) return;
+        it.properties = it.properties || {};
+        Object.keys(add).forEach(function (k) { if (!(k in it.properties)) it.properties[k] = add[k]; });
+      });
+      return JSON.stringify(j);
+    } catch (e) { return body; }
+  }
   function onCartAdd(cb) {
     (onCartAdd.cbs = onCartAdd.cbs || []).push(cb);
     if (onCartAdd.hooked) return;
@@ -1839,7 +1864,9 @@
       var f0 = window.fetch;
       window.fetch = function (input) {
         var u = typeof input === 'string' ? input : (input && input.url);
-        var pr = f0.apply(this, arguments);
+        var args = arguments;
+        if (isAdd(u) && args[1] && typeof args[1].body === 'string') { args = [input, Object.assign({}, args[1], { body: withHsProps(args[1].body) })]; }
+        var pr = f0.apply(this, args);
         if (isAdd(u)) pr.then(function (r) {
           if (!r || !r.ok) return;
           var copy = null;
@@ -1852,7 +1879,8 @@
     if (window.XMLHttpRequest) {
       var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send;
       X.open = function (m, u) { this.__hs2add = isAdd(u); return open0.apply(this, arguments); };
-      X.send = function () {
+      X.send = function (b) {
+        if (this.__hs2add && typeof b === 'string') arguments[0] = withHsProps(b);
         if (this.__hs2add) this.addEventListener('load', function () {
           if (this.status < 200 || this.status >= 300) return;
           var body = null;
