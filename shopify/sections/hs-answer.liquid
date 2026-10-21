@@ -39,7 +39,7 @@
     <p class="hs-answer__meta">Updated <time datetime="{{ article.updated_at | date: '%Y-%m-%d' }}">{{ article.updated_at | date: '%B %-d, %Y' }}</time> by Heartside</p>
     <div class="hs-answer__cta">
       <p>{{ section.settings.cta_text }}</p>
-      <a class="hs-answer__btn" href="{{ routes.root_url }}?utm_source=answers&amp;utm_medium=organic&amp;utm_campaign={{ article.handle }}">{{ section.settings.cta_label }}</a>
+      <a class="hs-answer__btn" href="{{ routes.root_url }}?utm_source=web&amp;utm_medium=organic_search&amp;utm_campaign=answers&amp;utm_content={{ article.handle }}">{{ section.settings.cta_label }}</a>
     </div>
   </div>
 </article>
