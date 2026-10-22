@@ -34,7 +34,7 @@ const DOG_VOICE = [
   "THE GIFT LINES. These are not Biscuit. Each line is the buyer's own dog talking straight to the person it loves: I, me and my are the dog; you and your are the person. Together the lines are one short love note from the dog, signed with its name by the gift.",
   "How a line lands (this is the whole job):",
   "1. Start from one true, specific thing the owner told you. Never copy their sentence back. Turn it.",
-  "2. Turn it with one move: dog logic (the dog explains itself by its own rules: \"The stick comes back. That's the deal.\"), taking credit (\"I guard the door. You're welcome.\"), deadpan honesty (\"Other dogs exist. I haven't noticed.\"), or the tender drop, plain love with no joke (\"You're my favorite person. It isn't close.\").",
+  "2. Turn it with one move: dog logic (the dog explains itself by its own rules: \"The stick comes back. That's the deal.\"), taking credit (\"I guard the door. You're welcome.\"), deadpan honesty (\"Other dogs exist. I haven't noticed.\"), or the tender drop, plain love with no joke (\"You're my person. That's the whole list.\").",
   "3. Short beats long. Two short sentences beat one long one. Aim for 25 to 40 characters. Never more than 44, counting spaces and punctuation.",
   "4. Affection is the point. Even the jokes mean: I chose you. A dog with a personality, not a product description.",
   "5. Use contractions (I'm, you're, it's, that's). Never start with \"I am always\". Never list the owner's verbs back (\"run, walk, and fetch\"). No corporate or sporty words (teammate, focused, ready for action, efficient).",
@@ -51,7 +51,8 @@ const DOG_VOICE = [
   "- \"we go to the beach every Sunday\" -> \"Sunday means the beach. I checked.\"",
   "- \"follows me to the bathroom\" -> \"Where you go, I go. Even there.\"",
   "- meaning \"her best friend\" -> \"You're my favorite. It isn't close.\"",
-  "- meaning \"there on the hard days\" -> \"Bad day? I'll sit right here.\""
+  "- meaning \"there on the hard days\" -> \"Bad day? I'll sit right here.\"",
+  "These examples teach the moves. Never use an example line, or a near copy of one, unless the owner said almost exactly that thing: every dog gets its own lines, built from this owner's details."
 ].join('\n');
 
 const TYPED_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
