@@ -222,10 +222,17 @@
     warmed[url] = now;
     try { window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"warm":true}', credentials: 'omit', mode: 'cors', keepalive: true }).catch(function () {}); } catch (e) { /* old browser */ }
   }
+  // the buyer's own words, cut only where a sentence or clause ends (22 Oct: a cut at 43 characters
+  // printed "Always ready to run, walk and fetch. Not."); the same rule as n8n/shared.js
   function ownWords(t) {
     t = String(t || '').replace(/[\u2014\u2013]/g, ', ').replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
-    if (t.length > 43) t = t.slice(0, 43).replace(/[\s,]+\S*$/, '').replace(/(\s+(the|a|an|and|or|but|of|to|in|on|at|by|for|from|with|near|under|over|into|onto|is|was|my|your|our|his|her|their))+$/i, '');
     if (!t) return '';
+    if (t.length > 43) {
+      var fit = function (parts, join) { var out = ''; for (var i = 0; i < parts.length; i++) { var next = out ? out + join + parts[i] : parts[i]; if (next.length > 43) break; out = next; } return out; };
+      var sentences = t.split(/([.!?;])\s+/).reduce(function (a, x, i, all) { if (i % 2 === 0) a.push(x); return a; }, []);
+      t = fit(sentences, '. ') || fit(sentences[0].split(/,\s+/), ', ');
+      if (t.length < 12) return '';
+    }
     return t.charAt(0).toUpperCase() + t.slice(1) + '.';
   }
   /* A typed line reads like the chip lines (Cowork round two, 15 Oct): no leading He, She, They
