@@ -23,7 +23,8 @@ This repo copy is canonical. Drive mirrors it (see [`SYNC.md`](SYNC.md)).
 | Standing promise | Free US shipping. A person checks every order before it prints. Misprints are remade free. |
 
 **The gifts speak as the dog (Krish, 20 Oct).**
-- Every gift line is the dog talking to the person it loves: I is the dog, you is the person. The lines read as one warm message signed "Love, [dog]" with a paw: "I wait by the door. Weekends too. Obviously." "I took your side of the bed. Not sorry." "I'm your shadow. Where else would I be?"
+- Every gift line is the dog talking to the person it loves: I is the dog, you is the person. The lines read as one warm message signed "Love, [dog]" with a paw: "I hear your car long before anyone else." "I took your side of the bed to keep it warm." "I'm your shadow, and I like it that way."
+- Each dog sounds like its own kind of person (Krish, 22 Oct: "A border collie would sound different to a poodle if they were human"). The breed corpus archetype sets the voice; the owner's details set what it says. Real sentences, never stacked two- and three-word fragments.
 - Warm first, funny second, with a dog's logic told straight.
 - Never he, she or the dog's name in a gift line, never the person's name, no exclamation marks, no "Dear".
 - Full rules: V3 sections 4.2 and 13.

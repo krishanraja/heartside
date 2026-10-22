@@ -19,43 +19,50 @@ const api = window.__hs3api;
 let failures = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) failures++; };
 
-// 1. the width table agrees with the shaped font
+// 1. the width table agrees with the shaped font (measured at 70 px; the mug prints at 58 px
+// since 22 Oct, Krish's option A for 60-character lines, so widths scale by 58/70)
 const measured = {
   'Steals your side of the bed.': 857.5, 'Naps best when you are there.': 967.6,
   'Guards your slippers on the bottom stair.': 1324.6, 'Your best friend, no contest.': 905.2,
   'Waits at the door for you, weekends too.': 1290.2, "Will ride anywhere, as long as it's with you.": 1376.8,
   'Lives for our morning walks.': 927.2
 };
-for (const [t, w] of Object.entries(measured)) ok(Math.abs(api.noteWidth(t) - w) < 1.5, `width ${api.noteWidth(t).toFixed(1)} px vs ${w} px: "${t}"`);
+for (const [t, w70] of Object.entries(measured)) { const w = w70 * 58 / 70; ok(Math.abs(api.noteWidth(t) - w) < 1.5, `width ${api.noteWidth(t).toFixed(1)} px vs ${w.toFixed(1)} px: "${t}"`); }
 
-// 2. even breaks: Cowork's examples, and one row where it fits
+// 2. even breaks: one row where it fits, two balanced rows for a 60-character line
 const breaks = {
-  'Naps best when you are there.': 'Naps best when\nyou are there.',
-  'Guards your slippers on the bottom stair.': 'Guards your slippers\non the bottom stair.',
-  'Your best friend, no contest.': 'Your best friend,\nno contest.',
   'Steals your side of the bed.': 'Steals your side of the bed.',
-  'Sleeps on your feet.': 'Sleeps on your feet.'
+  'Sleeps on your feet.': 'Sleeps on your feet.',
+  "I'm at the door before your key is even out of your pocket.": "I'm at the door before your\nkey is even out of your pocket.",
+  "We walk till I've had my three throws, and not before, okay.": "We walk till I've had my three\nthrows, and not before, okay."
 };
 for (const [t, want] of Object.entries(breaks)) ok(api.evenBreak(t) === want, `break: ${JSON.stringify(api.evenBreak(t))}`);
 
-// 3. every chip line on the mug, and the 45-character limit: each row fits 860 px, no lone word
-const chipLines = [
-  'Waits at the door for you, weekends too.', 'Waits at the door for you every weekday.', 'Hears your car before anyone else does.',
-  'Brings you the same toy every time.', 'Brings you a present every time you get home.', 'Greets you at the door with one of your shoes.',
-  'Does a happy little spin when you get home.', 'Spins in circles every time you get home.', 'Spins until dizzy every time you get home.',
-  'Plays it cool, then follows you everywhere.', 'Plays it cool, then climbs onto your lap.', 'Plays it cool, then sighs until you look.',
-  'Waits at the door for you.', 'Brings you a toy when you get home.', 'Spins in circles when you get home.', 'Plays it cool when you get home.',
-  'Always happy to see you.', 'Sleeps on your feet.', 'Steals your side of the bed.', 'Saves your spot on the couch.', 'Goes wherever you go.',
-  'Never far from you.', 'Your shadow, always.', 'Your best friend, no contest.', 'Here for every hard day.', 'Runs the house. Loves you most.', 'Yours, always.',
-  "Will ride anywhere, as long as it's with you.", 'Wwwwwwwwwwwwwwwwwwwwww wwwwwwwwwwwwwwwwwwwwww'
+// 3. the mug's lines up to 60 characters: every row fits 860 px, at most two rows, no lone word
+const mugLines = [
+  'I wait by the door for you, weekends too.', "I'm at the door every weekday, waiting.", 'I hear your car long before anyone else.',
+  "I bring you the same toy, because it's ours.", 'I bring you whatever I can find, with love.', 'I bring you a shoe so you know I missed you.',
+  "When you come home, I can't help a spin.", 'You come home and I spin until I lose count.', "I spin until I'm dizzy because you're home.",
+  'I act cool, then follow you everywhere.', "I play it cool until I'm in your lap.", 'I act cool, then sigh until you look at me.',
+  'Your feet make the best pillow I know.', 'I took your side of the bed to keep it warm.', 'I keep your spot on the couch warm for you.',
+  'Wherever you go, I go, even the bathroom.', "I'm your shadow, and I like it that way.", "You're my best friend, and I'm yours.",
+  "I'm at the door before your key is even out of your pocket.", 'I took the couch beside you because I have good taste, dear.',
+  "We walk till I've had my three throws, and not before, okay.", "I've sniffed a lot of dogs, and I'd still pick you, always.",
+  "I've met other dogs, and you're still my whole job, KJ's dog."
 ];
-for (const t of chipLines) {
+for (const t of mugLines) {
   const rows = api.evenBreak(t).split('\n');
   const widths = rows.map((r) => api.noteWidth(r));
-  const fits = rows.length <= 2 && (widths.every((w) => w <= 860) || t.startsWith('Wwww'));
+  const fits = rows.length <= 2 && widths.every((w) => w <= 860);
   const noOrphan = rows.length === 1 || rows.every((r) => r.includes(' ') || r.length > 8);
-  ok(fits && noOrphan && api.evenBreak(t).replace('\n', ' ') === t, `${rows.join(' / ')}  (${widths.map((w) => Math.round(w)).join(' + ')} px)`);
+  ok(fits && noOrphan && api.evenBreak(t).replace(/\n/g, ' ') === t, `${rows.join(' / ')}  (${widths.map((w) => Math.round(w)).join(' + ')} px)`);
 }
+// the widest possible 60-character line
+const wide = 'WWWWW WWWWW WWWWW WWWWW WWWWW WWWWW WWWWW WWWWW WWWWW WWWWW.';
+const wr = api.evenBreak(wide).split('\n');
+// no real sentence is this wide; Teeinblue shrinks it to fit, so this only reports
+console.log(`note stress line: ${wr.length} rows, widest ${Math.round(Math.max(...wr.map((r) => api.noteWidth(r))))} px (Teeinblue shrinks to fit)`);
+ok(wr.length <= 3, 'stress line breaks into at most three rows');
 
 // 4. typed lines read like the chip lines (five typed answers), never "I"
 api.state().dog = 'Biscotti';

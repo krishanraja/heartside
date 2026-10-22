@@ -8,6 +8,8 @@ const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
 // Biscuit talks to the buyer; only gift lines may say you (to the person)
 // Gift lines are the dog talking (Krish, 20 Oct): I is the dog, so he, she or the dog's name is the wrong voice
 const THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
+// Biscuit's reaction slipping into an HR review (22 Oct: "Mowgli is a focused teammate for KJ.")
+const STIFF = /\b(teammate|focused|efficient|manager|managers|professional|productivity|ready for action|in action)\b/i;
 const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
 function clean(s) {
@@ -42,18 +44,36 @@ function groundedProse(text, hay) {
     const bare = mm[0].replace(/[:']+$/, '').replace(/'s$/i, '');
     const before = text.slice(0, mm.index).trim();
     const start = !before || /[.!?]$/.test(before);
-    if (/\d/.test(bare) || (NUMWORDS.test(bare) && !/^(may|am)$/i.test(bare))) { if (h.indexOf(bare.toLowerCase()) === -1) return false; continue; }
+    // "one" is a pronoun far more often than a count ("the one plan", "no one"), so only two and up are checked (22 Oct)
+    if (/\d/.test(bare) || (NUMWORDS.test(bare) && !/^(may|am|one)$/i.test(bare))) { if (h.indexOf(bare.toLowerCase()) === -1) return false; continue; }
     if (/^[A-Z]/.test(bare) && !start && !OK.test(bare) && h.indexOf(bare.toLowerCase()) === -1) return false;
   }
   return true;
 }
 // a gift line: the dog's own words to the person, a sentence may start anywhere, no shouting
-function okLine(s, hay) { return okText(s, 44) && !THIRD.test(s) && s.indexOf('!') === -1 && groundedProse(s, hay); }
-// the buyer's own trimmed words, as a gift line
-function ownWords(t) {
+// Krish, 22 Oct: "two-word sentences stacked against two- or three-word sentences are just a clear tell".
+// A line is one natural sentence: reject stacked fragments and the worn lines every model reaches for.
+const WORN = /\b(you're welcome|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
+function staccato(s) {
+  const parts = s.split(/[.?;:]+/).map(x => x.trim()).filter(Boolean);
+  return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
+}
+// Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
+const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
+function okLine(s, hay, max) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay); }
+// the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
+// 43 characters printed "Always ready to run, walk and fetch. Not.")
+function ownWords(t, max) {
+  const cap = (max || 44) - 1;
   t = clean(t).replace(/[.!?]+$/, '');
-  if (t.length > 43) t = t.slice(0, 43).replace(/[\s,]+\S*$/, '').replace(/(\s+(the|a|an|and|or|but|of|to|in|on|at|by|for|from|with|near|under|over|into|onto|is|was|my|your|our|his|her|their))+$/i, '');
   if (!t) return '';
+  if (t.length > cap) {
+    // whole sentences first; only a first sentence that is too long is cut at a clause
+    const fit = (parts, join) => { let out = ''; for (const p of parts) { const next = out ? out + join + p : p; if (next.length > cap) break; out = next; } return out; };
+    const sentences = t.split(/(?<=[.!?;])\s+/).map(x => x.replace(/[.!?;]+$/, ''));
+    t = fit(sentences, '. ') || fit(sentences[0].split(/,\s+/), ', ');
+    if (t.length < 12) return '';
+  }
   return t.charAt(0).toUpperCase() + t.slice(1) + '.';
 }
 // the model's JSON, wherever the node put it
@@ -92,8 +112,9 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   const cur = inp.current_lines[k];
   const l = clean(m.lines && m.lines[k]);
-  lines[k] = (!blocked && okLine(l, hay) && !named(l)) ? l : cur;
-  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay) && !named(a)).slice(0, 2);
+  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay, MAX_LINE[k]) && !named(a)).slice(0, 2);
+  // the first line that passes, then its alternates, then the draft the buyer saw (22 Oct)
+  lines[k] = blocked ? cur : ((okLine(l, hay, MAX_LINE[k]) && !named(l)) ? l : (alts[0] || cur));
   if (alts.length && !blocked) alternates[k] = alts;
   const src = m.sources && Array.isArray(m.sources[k]) ? m.sources[k].map(String).filter(s => /^[a-z_]{2,20}$/.test(s)).slice(0, 4) : [];
   if (src.length) sources[k] = src;
