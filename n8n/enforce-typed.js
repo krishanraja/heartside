@@ -57,15 +57,18 @@ function staccato(s) {
   const parts = s.split(/[.?;:]+/).map(x => x.trim()).filter(Boolean);
   return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
 }
-function okLine(s, hay) { return okText(s, 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay); }
+// Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
+const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
+function okLine(s, hay, max) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
 // 43 characters printed "Always ready to run, walk and fetch. Not.")
-function ownWords(t) {
+function ownWords(t, max) {
+  const cap = (max || 44) - 1;
   t = clean(t).replace(/[.!?]+$/, '');
   if (!t) return '';
-  if (t.length > 43) {
+  if (t.length > cap) {
     // whole sentences first; only a first sentence that is too long is cut at a clause
-    const fit = (parts, join) => { let out = ''; for (const p of parts) { const next = out ? out + join + p : p; if (next.length > 43) break; out = next; } return out; };
+    const fit = (parts, join) => { let out = ''; for (const p of parts) { const next = out ? out + join + p : p; if (next.length > cap) break; out = next; } return out; };
     const sentences = t.split(/(?<=[.!?;])\s+/).map(x => x.replace(/[.!?;]+$/, ''));
     t = fit(sentences, '. ') || fit(sentences[0].split(/,\s+/), ', ');
     if (t.length < 12) return '';
@@ -110,7 +113,8 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
   const reaction = STIFF.test(reaction0) ? '' : reaction0;
   // three candidate lines, best first: the first that passes every rule wins (22 Oct)
   const cands = (Array.isArray(m.lines) ? m.lines : []).concat(m.line ? [m.line] : []).map(clean).filter(Boolean);
-  const line = cands.find(l => okLine(l, hay) && !named(l)) || '';
+  const MAX = MAX_LINE[inp.step] || 44;
+  const line = cands.find(l => okLine(l, hay, MAX) && !named(l)) || '';
   let fu = null;
   if (m.follow_up && typeof m.follow_up === 'object' && inp.step === 'home') {
     const q = clean(m.follow_up.question);
@@ -122,7 +126,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       if (!okText(c, 24)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
-      f.lines.push(okLine(l, hay + ' ' + c) && !named(l) ? l : null);
+      f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow) && !named(l) ? l : null);
       f.replies.push(okText(r, 50) ? r : null);
     });
     // the buyer is not the person: a question or chip that says you, I or my is about the wrong one
@@ -130,7 +134,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
     f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
     if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong)) fu = f;
   }
-  const goodLine = line || ownWords(inp.typed_text) || inp.previous_line;
+  const goodLine = line || ownWords(inp.typed_text, MAX) || inp.previous_line;
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,

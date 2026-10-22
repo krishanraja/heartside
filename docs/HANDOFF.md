@@ -19,9 +19,9 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 
 **Heartside** (heartside.io) sells gifts given on behalf of a dog to the person it loves most, made to order by Printful for US customers. A buyer tells Biscuit about their dog in a minute-long chat. Biscuit is the brand's AI host, a chestnut miniature dachshund. The answers become a short message from the dog, in its own voice, printed on any of four gifts and signed "Love, [dog]" with a paw:
 
-> I wait by the door. Weekends too. Obviously.
-> I took your side of the bed. Not sorry.
-> I'm your shadow. Where else would I be?
+> I hear your car long before anyone else.
+> I took your side of the bed to keep it warm.
+> I'm your shadow, and I like it that way.
 
 | Gift | Price | Notes |
 |---|---|---|

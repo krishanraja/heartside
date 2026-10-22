@@ -3,7 +3,10 @@ import fs from 'node:fs';
 const dir = new URL('.', import.meta.url).pathname;
 const shared = fs.readFileSync(dir + 'shared.js', 'utf8');
 const CRED = { id: 'LtlmaVHoTQdTTngQ', name: 'Google Gemini(PaLM) - Heartside' };
-const MODEL = process.env.HS_MODEL || 'models/gemini-3.1-flash-lite';
+// 22 Oct (Krish): Claude Sonnet writes the whole note; Gemini 3.5 Flash answers typed replies and backs Claude up.
+const MODEL = process.env.HS_MODEL || 'models/gemini-3.5-flash';
+const CLAUDE = process.env.HS_CLAUDE || 'claude-sonnet-5-5';
+const CLAUDE_CRED = { id: 'NqmXYF7Q7sJg5Iog', name: 'Anthropic account' };
 const ORIGINS = ['https://heartside.io', 'https://www.heartside.io', 'https://bnf1em-ge.myshopify.com'];
 
 const STEP_EXPR = 'expr("{{ $(\'Guard\').first().json.input.step || \'\' }}")';
@@ -50,7 +53,7 @@ const DOG_VOICE = [
   "- Parent Envelope (crosses): a blend of both parents. Rescue Mystery or no breed: let the owner's details alone decide the personality.",
   "Two dogs with identical answers but different breeds must come out sounding like two different people. If your lines would fit any dog, rewrite them in this dog's voice.",
   "Never name the breed or the archetype in a line, and never use the archetype's words (manager, menace, detective, missile, velcro).",
-  "Length: every line fits in 44 characters, counting spaces and punctuation, because it is printed on the gift. Aim for 32 to 44. One sentence per line. If a sentence runs long, cut words, not meaning: contractions, drop that, really, just, very. Never chop it into fragments.",
+  "Length, counting spaces and punctuation, because every line is printed on the gift: the home, spot and together lines fit in 60 characters (aim for 40 to 60); the meaning line fits in 44, because the ornament prints it alone (aim for 30 to 44). One sentence per line. If a sentence runs long, cut words, not meaning: contractions, drop that, really, just, very. Never chop it into fragments.",
   "Never write: stacked fragments or two- and three-word sentences (\"Same stick. Every time.\", \"Window. Shift. Mine.\"), lists of the owner's verbs, or these worn lines: you're welcome, it isn't close, not sorry, obviously, that's the deal, that's the rule, the whole list, in this economy.",
   "Never write about the dog from outside: no he, she, his, her and never the dog's own name in a line. Never the person's name either. No \"Dear\", no sign-off (the gift adds \"Love, [dog]\"), no exclamation marks, no emoji, no woof, no baby talk, no em dashes. Never add a number, time, place or name the owner did not give.",
   "Examples. The same owner details (waits at the door, sleeps on the couch with them, the morning walk, best friend) from two different dogs:",
@@ -63,8 +66,8 @@ const TYPED_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   "The buyer has typed an answer in their own words instead of picking a chip. Reply with JSON only, exactly this shape:",
   '{"voice": "<= 120 characters, decided first: who this dog would be as a person and how they talk",',
   ' "reaction": "<= 70 characters. Biscuit reacting, delighted, to the specific thing they said.",',
-  ' "lines": ["three different gift lines for this step, best first, each one natural sentence <= 44 characters in this dog\'s own voice; at least one tender"],',
-  ' "follow_up": {"question": "<= 70 characters. One question in Biscuit\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"], "lines": ["for each chip, in order: the best gift line refined with that answer, <= 44 characters"], "replies": ["for each chip, in order: Biscuit\'s short reaction to that answer, <= 50 characters"]},',
+  ' "lines": ["three different gift lines for this step, best first, each one natural sentence in this dog\'s own voice, <= 60 characters (<= 44 on step meaning); at least one tender"],',
+  ' "follow_up": {"question": "<= 70 characters. One question in Biscuit\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"], "lines": ["for each chip, in order: the best gift line refined with that answer, <= 60 characters"], "replies": ["for each chip, in order: Biscuit\'s short reaction to that answer, <= 50 characters"]},',
   ' "flags": ["any of: grief (death, illness, loss), profanity, person_described (the answer describes a person, not the dog), unclear (not about the dog at all)"]}',
   "Who is who: Biscuit talks to the buyer. The person is someone else, the recipient, named in the input. Only the gift lines speak to the person as you. In reaction, question, chips and replies, call the person by their name (or he, she, they), never you, and never I, me or my: chips are the buyer's answers about the dog and the person, like \"Follows Sam everywhere\".",
   "Steps: home = what the dog does when the person comes home. home_follow = more detail on that answer (refine previous_line with it). spot = where the dog's spot is when the person is around. together = what the dog and the person do together. meaning = what the dog is to the person. If the owner's answer doesn't fit the question, still write a line for this step from what they said (a meaning line can be about devotion). Only step home gets a follow_up; on every other step follow_up is null.",
@@ -74,13 +77,12 @@ const TYPED_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
 const COMPOSE_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   "The chat is done. Write the dog's whole note: four gift lines that read as one warm, funny little love note from this dog, and pick the gift. Reply with JSON only, exactly this shape:",
   '{"voice": "<= 120 characters, decided first: who this dog would be as a person and how they talk",',
-  ' "lines": {"home": "<= 44", "spot": "<= 44", "together": "<= 44", "meaning": "<= 44"},',
-  ' "alternates": {"home": ["<= 44", "<= 44"], "spot": ["<= 44", "<= 44"], "together": ["<= 44", "<= 44"], "meaning": ["<= 44", "<= 44"]},',
+  ' "lines": {"home": "<= 60", "spot": "<= 60", "together": "<= 60", "meaning": "<= 44"},',
+  ' "alternates": {"home": ["<= 60"], "spot": ["<= 60"], "together": ["<= 60"], "meaning": ["<= 44"]},',
   ' "recommended_gift": "mug | blanket | print | ornament",',
   ' "reason": "<= 140 characters. Biscuit explaining the pick from what the dog and the person do together, warmly and a little funny.",',
-  ' "sources": {"home": ["answer ids each line came from"]},',
   ' "flags": []}',
-  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must be the most tender and stand on its own, because the ornament prints it alone. alternates holds two more options per line, in the same voice, in case the first breaks a rule. Every line <= 44 characters.",
+  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must be the most tender and stand on its own, because the ornament prints it alone. alternates holds one more option per line, in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters; meaning <= 44.",
   "In reason, Biscuit talks to the buyer about the person: use the person's name, never you, and never address the person directly (no \"KJ,\").",
   "Pick: the morning walk or coffee means mug; couch and a movie or naps means blanket; car rides or anything else means print. Never pick ornament unless the buyer asked for the tree.",
   'Reason example: "Kuku\'s mornings start with Sam and a coffee, so a mug puts her right there in every one of them."'
@@ -161,7 +163,8 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
   const reaction = STIFF.test(reaction0) ? '' : reaction0;
   // three candidate lines, best first: the first that passes every rule wins (22 Oct)
   const cands = (Array.isArray(m.lines) ? m.lines : []).concat(m.line ? [m.line] : []).map(clean).filter(Boolean);
-  const line = cands.find(l => okLine(l, hay) && !named(l)) || '';
+  const MAX = MAX_LINE[inp.step] || 44;
+  const line = cands.find(l => okLine(l, hay, MAX) && !named(l)) || '';
   let fu = null;
   if (m.follow_up && typeof m.follow_up === 'object' && inp.step === 'home') {
     const q = clean(m.follow_up.question);
@@ -173,7 +176,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       if (!okText(c, 24)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
-      f.lines.push(okLine(l, hay + ' ' + c) && !named(l) ? l : null);
+      f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow) && !named(l) ? l : null);
       f.replies.push(okText(r, 50) ? r : null);
     });
     // the buyer is not the person: a question or chip that says you, I or my is about the wrong one
@@ -181,7 +184,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
     f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
     if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong)) fu = f;
   }
-  const goodLine = line || ownWords(inp.typed_text) || inp.previous_line;
+  const goodLine = line || ownWords(inp.typed_text, MAX) || inp.previous_line;
   out = {
     reaction: okText(reaction, 70) ? reaction : 'Tell me more?',
     line: goodLine,
@@ -214,9 +217,9 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   const cur = inp.current_lines[k];
   const l = clean(m.lines && m.lines[k]);
-  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay) && !named(a)).slice(0, 2);
+  const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay, MAX_LINE[k]) && !named(a)).slice(0, 2);
   // the first line that passes, then its alternates, then the draft the buyer saw (22 Oct)
-  lines[k] = blocked ? cur : ((okLine(l, hay) && !named(l)) ? l : (alts[0] || cur));
+  lines[k] = blocked ? cur : ((okLine(l, hay, MAX_LINE[k]) && !named(l)) ? l : (alts[0] || cur));
   if (alts.length && !blocked) alternates[k] = alts;
   const src = m.sources && Array.isArray(m.sources[k]) ? m.sources[k].map(String).filter(s => /^[a-z_]{2,20}$/.test(s)).slice(0, 4) : [];
   if (src.length) sources[k] = src;
@@ -277,7 +280,29 @@ const allowed = ifElse({
   }
 });
 
+${kind === 'compose' ? `// The whole note: Claude Sonnet (Krish, 22 Oct). The instructions are cached; at 7.5 s it hands over to Gemini.
 const gemini = node({
+  type: 'n8n-nodes-base.httpRequest',
+  version: 4.2,
+  config: {
+    name: 'Claude',
+    onError: 'continueErrorOutput',
+    parameters: {
+      method: 'POST',
+      url: 'https://api.anthropic.com/v1/messages',
+      authentication: 'predefinedCredentialType',
+      nodeCredentialType: 'anthropicApi',
+      sendHeaders: true,
+      headerParameters: { parameters: [{ name: 'anthropic-version', value: '2023-06-01' }] },
+      sendBody: true,
+      specifyBody: 'json',
+      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: " + JSON.stringify(CLAUDE) + ", max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: " + JSON.stringify(sys) + ", cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
+      options: { timeout: 7500 }
+    },
+    credentials: { anthropicApi: ${JSON.stringify(CLAUDE_CRED)} }
+  }
+});
+` : `const gemini = node({
   type: '@n8n/n8n-nodes-langchain.googleGemini',
   version: 1.2,
   config: {
@@ -286,16 +311,17 @@ const gemini = node({
     parameters: {
       resource: 'text',
       operation: 'message',
-      modelId: { __rl: true, mode: 'list', value: ${JSON.stringify(MODEL)}, cachedResultName: ${JSON.stringify(MODEL)} },
+      modelId: { __rl: true, mode: 'list', value: \${JSON.stringify(MODEL)}, cachedResultName: \${JSON.stringify(MODEL)} },
       messages: { values: [{ content: expr('{{ $json.prompt }}'), role: 'user' }] },
       simplify: true,
       jsonOutput: true,
-      options: { systemMessage: ${JSON.stringify(sys)}, maxOutputTokens: ${kind === 'typed' ? 400 : 700}, temperature: 0.9, thinkingBudget: 0 }
+      options: { systemMessage: \${JSON.stringify(sys)}, maxOutputTokens: \${kind === 'typed' ? 400 : 700}, temperature: 0.9, thinkingBudget: 0 }
     },
-    credentials: { googlePalmApi: ${JSON.stringify(CRED)} }
+    credentials: { googlePalmApi: \${JSON.stringify(CRED)} }
   }
 });
 
+`}
 const enforce = node({
   type: 'n8n-nodes-base.code',
   version: 2,

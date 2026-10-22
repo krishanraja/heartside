@@ -17,7 +17,7 @@
   var HS2 = 'hs2-review';
   var QKEY = 'hs2-queue';
   var MAX_CALLS = 8;
-  var TYPED_MS = 3000, COMPOSE_MS = 6000;
+  var TYPED_MS = 3000, COMPOSE_MS = 11000; // 22 Oct: Claude writes the note; n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -137,7 +137,8 @@
   var NOTE_ADV = [221,303,331,644,586,730,955,156,343,343,621,550,248,406,238,483,646,443,590,536,592,562,590,503,578,594,244,254,508,550,508,494,876,706,674,692,776,642,591,753,822,378,464,754,610,892,770,790,660,791,709,588,670,738,694,1024,718,676,632,324,482,328,471,468,228,536,586,502,598,515,360,553,610,296,296,588,300,923,610,578,601,586,446,462,359,600,543,802,524,548,470,385,261,385,628];
   var NOTE_KERN = {"\",":-69,"\".":-69,"\":":-69,"\";":-69,"\"A":-66,"&T":-3,"&V":-4,"&W":-4,"&Y":-4,"',":-69,"'.":-69,"':":-69,"';":-69,"'A":-66,",\"":-69,",'":-69,",T":-71,",U":-14,",V":-71,",W":-71,",Y":-71,",v":-42,",w":-42,",y":-42,".\"":-69,".'":-69,".T":-71,".U":-14,".V":-71,".W":-71,".Y":-71,".v":-42,".w":-42,".y":-42,"47":-16,"70":-20,"72":-19,"74":-74,"78":-12,"79":-8,":\"":-69,":'":-69,":T":-71,":U":-14,":V":-71,":W":-71,":Y":-71,":v":-42,":w":-42,":y":-42,";\"":-69,";'":-69,";T":-71,";U":-14,";V":-71,";W":-71,";Y":-71,";v":-42,";w":-42,";y":-42,"A\"":-74,"A'":-74,"AC":-8,"AG":-8,"AO":-8,"AQ":-8,"AS":-8,"AT":-45,"AU":-8,"AV":-44,"AW":-44,"AY":-54,"Ac":-4,"Ad":-4,"Ae":-4,"Ag":-9,"Ao":-4,"Aq":-4,"As":-4,"Av":-34,"Aw":-34,"Ay":-34,"B\"":-3,"B'":-3,"BV":-18,"BW":-18,"BY":-18,"DA":-8,"DJ":-8,"DX":-14,"DY":-22,"Da":-6,"Db":-6,"Df":-6,"Dg":-14,"Dh":-6,"Di":-6,"Dj":-6,"Dk":-6,"Dl":-6,"Dm":-6,"Dn":-6,"Dr":-6,"EV":-6,"EW":-6,"EY":-6,"F,":-60,"F.":-60,"F:":-60,"F;":-60,"FA":-39,"FJ":-42,"FS":-6,"FV":-6,"FW":-6,"FX":-6,"FY":-6,"FZ":-6,"Fa":-39,"Fc":-28,"Fd":-28,"Fe":-28,"Ff":-14,"Fg":-38,"Fi":-11,"Fm":-11,"Fn":-11,"Fo":-28,"Fp":-20,"Fq":-28,"Fr":-11,"Fs":-24,"Ft":-10,"Fu":-13,"Fv":-8,"Fw":-8,"Fx":-8,"Fy":-8,"Fz":-8,"KT":-10,"Kc":-8,"Kd":-8,"Ke":-8,"Ko":-8,"Kp":-6,"Kq":-8,"Kv":-20,"Kw":-20,"Ky":-20,"L\"":-76,"L'":-76,"LA":-14,"LT":-44,"LV":-58,"LW":-58,"LY":-58,"Lf":-6,"Lv":-20,"Lw":-20,"Ly":-20,"OA":-8,"OJ":-8,"OX":-14,"OY":-22,"Oa":-6,"Ob":-6,"Of":-6,"Og":-14,"Oh":-6,"Oi":-6,"Oj":-6,"Ok":-6,"Ol":-6,"Om":-6,"On":-6,"Or":-6,"P,":-69,"P.":-69,"P:":-69,"P;":-69,"PA":-42,"PJ":-14,"PV":-13,"PW":-13,"PX":-14,"PY":-18,"Pa":-14,"Pc":-23,"Pd":-23,"Pe":-23,"Pg":-18,"Po":-23,"Pq":-23,"Ps":-14,"QA":-8,"QJ":-8,"QX":-14,"QY":-22,"Qa":-6,"Qb":-6,"Qf":-6,"Qg":-14,"Qh":-6,"Qi":-6,"Qj":-6,"Qk":-6,"Ql":-6,"Qm":-6,"Qn":-6,"Qr":-6,"RA":3,"RV":-23,"RW":-23,"RY":-30,"SA":-9,"ST":-8,"SV":-14,"SW":-14,"SY":-22,"Sf":-14,"Sg":-14,"T,":-71,"T.":-71,"T:":-71,"T;":-71,"TA":-45,"TJ":-36,"Ta":-52,"Tc":-52,"Td":-52,"Te":-52,"Tf":-14,"Tg":-50,"Ti":-26,"Tm":-26,"Tn":-26,"To":-52,"Tp":-22,"Tq":-52,"Tr":-26,"Ts":-50,"Tt":-15,"Tu":-22,"Tv":-4,"Tw":-4,"Tx":-17,"Ty":-4,"Tz":-27,"U,":-14,"U.":-14,"U:":-14,"U;":-14,"UA":-10,"UJ":-8,"Ua":-14,"Uf":-14,"Ug":-14,"Up":-6,"Us":-6,"Uv":-6,"Uw":-6,"Uy":-6,"Uz":-6,"V&":-4,"V,":-69,"V.":-69,"V:":-69,"V;":-69,"VA":-45,"VJ":-36,"VS":-14,"VZ":-14,"Va":-54,"Vc":-54,"Vd":-54,"Ve":-54,"Vf":-14,"Vg":-54,"Vi":-42,"Vj":-16,"Vm":-42,"Vn":-42,"Vo":-54,"Vp":-38,"Vq":-54,"Vr":-42,"Vs":-52,"Vt":-30,"Vu":-30,"Vv":-30,"Vw":-30,"Vx":-31,"Vy":-30,"Vz":-45,"W&":-4,"W,":-69,"W.":-69,"W:":-69,"W;":-69,"WA":-45,"WJ":-36,"WS":-14,"WZ":-14,"Wa":-54,"Wc":-54,"Wd":-54,"We":-54,"Wf":-14,"Wg":-54,"Wi":-42,"Wj":-16,"Wm":-42,"Wn":-42,"Wo":-54,"Wp":-38,"Wq":-54,"Wr":-42,"Ws":-52,"Wt":-30,"Wu":-30,"Wv":-30,"Ww":-30,"Wx":-31,"Wy":-30,"Wz":-45,"XC":-14,"XG":-14,"XO":-14,"XQ":-14,"Xc":-23,"Xd":-23,"Xe":-23,"Xg":-6,"Xo":-23,"Xq":-23,"Xt":-4,"Xu":-10,"Xv":-25,"Xw":-25,"Xy":-25,"Y&":-4,"Y,":-71,"Y.":-71,"Y:":-71,"Y;":-71,"YA":-54,"YC":-22,"YG":-22,"YJ":-36,"YO":-22,"YQ":-22,"YS":-22,"YZ":-14,"Ya":-57,"Yc":-59,"Yd":-59,"Ye":-59,"Yf":-14,"Yg":-60,"Yi":-38,"Yj":-18,"Ym":-38,"Yn":-38,"Yo":-59,"Yp":-50,"Yq":-59,"Yr":-38,"Ys":-60,"Yt":-32,"Yu":-32,"Yv":-38,"Yw":-38,"Yx":-38,"Yy":-38,"Yz":-43,"Zv":-14,"Zw":-14,"Zy":-14,"aT":-39,"aV":-44,"aW":-44,"aY":-52,"av":-14,"aw":-14,"ay":-14,"b\"":-3,"b'":-3,"bT":-48,"bV":-52,"bW":-52,"bX":-25,"bY":-59,"bv":-14,"bw":-14,"by":-14,"cT":-25,"cV":-28,"cW":-28,"cY":-36,"db":16,"dh":16,"dk":16,"dl":16,"eT":-25,"eV":-28,"eW":-28,"eY":-36,"f\"":14,"f'":14,"g,":-14,"g.":-14,"g:":-14,"g;":-14,"gT":8,"gX":-6,"gY":-29,"gZ":4,"h\"":-16,"h'":-16,"hT":-25,"hV":-38,"hW":-38,"hY":-38,"iV":-16,"iW":-16,"iY":-6,"jV":-14,"jW":-14,"jY":-15,"kC":-14,"kG":-14,"kO":-14,"kQ":-14,"kV":-28,"kW":-28,"kY":-32,"kZ":4,"lb":16,"lh":16,"lk":16,"ll":16,"m\"":-16,"m'":-16,"mT":-25,"mV":-38,"mW":-38,"mY":-38,"n\"":-16,"n'":-16,"nT":-25,"nV":-38,"nW":-38,"nY":-38,"o\"":-3,"o'":-3,"oT":-48,"oV":-52,"oW":-52,"oX":-25,"oY":-59,"ov":-14,"ow":-14,"oy":-14,"p\"":-3,"p'":-3,"pT":-48,"pV":-52,"pW":-52,"pX":-25,"pY":-59,"pv":-14,"pw":-14,"py":-14,"qT":-17,"qV":-36,"qW":-36,"qY":-48,"r,":-28,"r.":-28,"r:":-28,"r;":-28,"rA":-11,"rJ":-16,"rV":-32,"rW":-32,"rX":-25,"rY":-48,"sV":-34,"sW":-34,"sY":-48,"tV":-29,"tW":-29,"tY":-30,"uV":-16,"uW":-16,"uY":-6,"v,":-42,"v.":-42,"v:":-42,"v;":-42,"vA":-34,"vJ":-14,"vV":-28,"vW":-28,"vX":-23,"vY":-36,"va":-14,"vc":-14,"vd":-14,"ve":-14,"vo":-14,"vq":-14,"w,":-42,"w.":-42,"w:":-42,"w;":-42,"wA":-34,"wJ":-14,"wV":-28,"wW":-28,"wX":-23,"wY":-36,"wa":-14,"wc":-14,"wd":-14,"we":-14,"wo":-14,"wq":-14,"x\"":-3,"x'":-3,"xT":-16,"xV":-30,"xW":-30,"xY":-36,"y,":-42,"y.":-42,"y:":-42,"y;":-42,"yA":-34,"yJ":-14,"yV":-28,"yW":-28,"yX":-23,"yY":-36,"ya":-14,"yc":-14,"yd":-14,"ye":-14,"yo":-14,"yq":-14,"zT":-14,"zV":-36,"zW":-36,"zY":-36};
   /* note-widths:end */
-  var NOTE_ROW = 860, NOTE_ALIAS = { '‘': "'", '’': "'", '“': '"', '”': '"' };
+  // mug note: Fraunces at 58 px since 22 Oct (Krish picked option A for 60-character lines), 70 px rows
+  var NOTE_PX = 58, NOTE_LH = 70, NOTE_ROW = 860, NOTE_ALIAS = { '‘': "'", '’': "'", '“': '"', '”': '"' };
   function noteWidth(t) {
     var w = 0, prev = '';
     for (var i = 0; i < t.length; i++) {
@@ -148,17 +149,21 @@
       if (prev) w += NOTE_KERN[prev + c] || 0;
       prev = c;
     }
-    return w * 0.07;
+    return w * NOTE_PX / 1000;
   }
   function evenBreak(line) {
     var t = String(line || '');
     if (t.indexOf('\n') !== -1 || noteWidth(t) <= NOTE_ROW) return t;
-    var best = -1, bestW = Infinity;
-    for (var i = t.indexOf(' '); i !== -1; i = t.indexOf(' ', i + 1)) {
-      var w = Math.max(noteWidth(t.slice(0, i)), noteWidth(t.slice(i + 1)));
-      if (w < bestW) { bestW = w; best = i; }
-    }
-    return best === -1 ? t : t.slice(0, best) + '\n' + t.slice(best + 1);
+    var sp = [];
+    for (var i = t.indexOf(' '); i !== -1; i = t.indexOf(' ', i + 1)) sp.push(i);
+    var best = null, bestW = Infinity;
+    // two rows at the most even break; three only if no two-row break fits (a very wide line)
+    sp.forEach(function (a) { var w = Math.max(noteWidth(t.slice(0, a)), noteWidth(t.slice(a + 1))); if (w < bestW) { bestW = w; best = [a]; } });
+    if (bestW > NOTE_ROW) sp.forEach(function (a) { sp.forEach(function (b) { if (b <= a) return; var w = Math.max(noteWidth(t.slice(0, a)), noteWidth(t.slice(a + 1, b)), noteWidth(t.slice(b + 1))); if (w < bestW) { bestW = w; best = [a, b]; } }); });
+    if (!best) return t;
+    var out = t.split('');
+    best.forEach(function (i) { out[i] = '\n'; });
+    return out.join('');
   }
   function mugLines() { var o = {}; giftKeys('mug').forEach(function (k) { o[k] = evenBreak(lineFor(k) || ''); }); return o; }
   function recGift() {
@@ -224,11 +229,15 @@
   }
   // the buyer's own words, cut only where a sentence or clause ends (22 Oct: a cut at 43 characters
   // printed "Always ready to run, walk and fetch. Not."); the same rule as n8n/shared.js
-  function ownWords(t) {
+  // 22 Oct: lines print up to 60 characters; the meaning line stays at 44 (the ornament prints it alone)
+  var MAX_LINE = { home: 60, spot: 60, together: 60, meaning: 44 };
+  function maxFor(key) { return MAX_LINE[key] || 44; }
+  function ownWords(t, key) {
+    var cap = maxFor(key) - 1;
     t = String(t || '').replace(/[\u2014\u2013]/g, ', ').replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
     if (!t) return '';
-    if (t.length > 43) {
-      var fit = function (parts, join) { var out = ''; for (var i = 0; i < parts.length; i++) { var next = out ? out + join + parts[i] : parts[i]; if (next.length > 43) break; out = next; } return out; };
+    if (t.length > cap) {
+      var fit = function (parts, join) { var out = ''; for (var i = 0; i < parts.length; i++) { var next = out ? out + join + parts[i] : parts[i]; if (next.length > cap) break; out = next; } return out; };
       var sentences = t.split(/([.!?;])\s+/).reduce(function (a, x, i, all) { if (i % 2 === 0) a.push(x); return a; }, []);
       t = fit(sentences, '. ') || fit(sentences[0].split(/,\s+/), ', ');
       if (t.length < 12) return '';
@@ -259,9 +268,9 @@
   /* A line from the AI is the dog talking (I, me, my) to the person (you). One that talks about
      the dog instead (he, she, its name: "Pretends he doesn't.") is the wrong voice and is dropped. */
   var THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
-  function dogStyle(line) {
+  function dogStyle(line, key) {
     var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').trim();
-    if (!t || t.length > 44 || THIRD.test(t)) return '';
+    if (!t || t.length > maxFor(key) || THIRD.test(t)) return '';
     var dog = String(S.dog || '').trim().toLowerCase();
     if (dog && t.toLowerCase().indexOf(dog) !== -1) return '';
     return t.charAt(0).toUpperCase() + t.slice(1);
@@ -277,11 +286,11 @@
     return callAI(cfg.typedUrl, body, TYPED_MS).then(function (r) {
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
         return {
-          reaction: clip(r.reaction, 70), line: r.line ? dogStyle(r.line) || ownWords(chipStyle(text, key)) || previous || '' : '',
+          reaction: clip(r.reaction, 70), line: r.line ? dogStyle(r.line, key) || ownWords(chipStyle(text, key), key) || previous || '' : '',
           follow_up: r.follow_up && r.follow_up.question ? {
             question: clip(r.follow_up.question, 70),
             chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }),
-            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' ? dogStyle(l) || null : null; }),
+            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' ? dogStyle(l, 'home') || null : null; }),
             replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? x : null; })
           } : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
@@ -289,7 +298,7 @@
       }
       // no AI (off, slow, failed or over budget): the buyer's own words, and the scripted "Tell me more?"
       var flags = GRIEF.test(text) ? ['grief'] : PROFANE.test(text) ? ['profanity'] : [];
-      return { reaction: 'Tell me more?', line: ownWords(chipStyle(text, key)) || previous || '', follow_up: step === 'home' ? { question: 'Tell me more?', chips: [] } : null, flags: flags, ai: false };
+      return { reaction: 'Tell me more?', line: ownWords(chipStyle(text, key), key) || previous || '', follow_up: step === 'home' ? { question: 'Tell me more?', chips: [] } : null, flags: flags, ai: false };
     });
   }
   /* While the buyer types, a pause of 600 ms sends what they have so far. If they press Done
@@ -331,7 +340,7 @@
     callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
       if (!r || !r.lines || asked !== S.composeAsked) return;
       var lines = {};
-      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k]); if (l) lines[k] = l; });
+      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k], k); if (l) lines[k] = l; });
       S.composed = { lines: lines, gift: GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null, reason: typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '' };
       if (S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
       save();
@@ -588,7 +597,7 @@
     if (ui.editing) {
       h += '<div class="hs3-edit">' + keys.map(function (k) {
         var t = lineFor(k) || '';
-        return '<label class="hs3-edit__row"><span class="hs3-sr">Edit line</span><input class="hs3-field hs3-field--mono" type="text" maxlength="45" value="' + esc(t) + '" data-hs3-edit="' + k + '"><span class="hs3-small hs3-right" data-hs3-left="' + k + '">' + (45 - t.length) + ' characters left</span></label>';
+        return '<label class="hs3-edit__row"><span class="hs3-sr">Edit line</span><input class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(k) + '" value="' + esc(t) + '" data-hs3-edit="' + k + '"><span class="hs3-small hs3-right" data-hs3-left="' + k + '">' + (maxFor(k) - t.length) + ' characters left</span></label>';
       }).join('') + '</div>';
     } else {
       h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BISCUIT + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
@@ -682,16 +691,16 @@
     if (face === 'dog') return c + '|dog|' + photoSrc();
     return c + '|note|' + JSON.stringify([mugLineTexts(), Math.min(ui.revealN, 3), names().dog]);
   }
-  // the note face at print size: lines 1 to 3 (70 px, 84 px rows, centred in 190 px boxes),
+  // the note face at print size: lines 1 to 3 (58 px, 70 px rows, centred in 190 px boxes),
   // the paw, and "Love, [dog]" (96 px, shrunk to fit 775 px as Teeinblue does)
   function drawNote(d, a, spec) {
     var texts = spec.texts, ink = spec.ink, sig = 'Love, ' + spec.name;
     d.textBaseline = 'alphabetic';
-    d.font = '70px "HS Note Text"';
+    d.font = NOTE_PX + 'px "HS Note Text"';
     [130, 345, 560].forEach(function (top, i) {
       var rows = String(texts[i] || '').split('\n');
       d.fillStyle = i < ink ? '#121010' : '#CDC2B9';
-      rows.forEach(function (r, j) { d.fillText(r, 1685, top + 95 + (j - (rows.length - 1) / 2) * 84 + 26); });
+      rows.forEach(function (r, j) { d.fillText(r, 1685, top + 95 + (j - (rows.length - 1) / 2) * NOTE_LH + 22); });
     });
     d.drawImage(a.paw, 1685, 833, 72, 69);
     var size = 96;
@@ -1005,7 +1014,7 @@
     if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
     // the buyer's own words ink at once; Biscuit's version replaces them when it lands
-    ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key)) };
+    ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key), key) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';
     answerFor(key, q, text, '').then(function (r) {
@@ -1120,8 +1129,8 @@
     frame.querySelectorAll('[data-hs3-edit]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-edit');
       inp.addEventListener('input', function () {
-        S.edits[k] = inp.value.slice(0, 45); save();
-        var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (45 - inp.value.length) + ' characters left';
+        S.edits[k] = inp.value.slice(0, maxFor(k)); save();
+        var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (maxFor(k) - inp.value.length) + ' characters left';
         var g = S.gift || recGift(), i = giftKeys(g).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
         if (l) l.textContent = g === 'mug' ? evenBreak(inp.value) : inp.value;
         if (g === 'mug') { clearTimeout(ui.paintT); ui.paintT = setTimeout(paintMugs, 120); }

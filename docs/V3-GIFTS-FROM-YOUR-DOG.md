@@ -154,7 +154,7 @@ All three ship in version one, on Sunday.
 
 ```json
 { "reaction": "≤ 70 chars, Biscuit's voice",
-  "line": "≤ 44 chars, the dog talking to the recipient (I is the dog, you is the person)",
+  "line": "≤ 60 chars (≤ 44 on step meaning), the dog talking to the recipient (I is the dog, you is the person)",
   "follow_up": { "question": "≤ 70 chars", "chips": ["≤ 24 chars", "...", "..."] },
   "flags": ["grief" | "profanity" | "person_described" | "unclear"] }
 ```
@@ -162,8 +162,8 @@ All three ship in version one, on Sunday.
 **Compose call.** Runs at every reveal (since 20 Oct, not only after a typed answer). In: dog (with breed and tone when known), recipient, every answer with its chip id or typed text, and the current lines as a draft. It rewrites the four lines as one message from the dog. Out:
 
 ```json
-{ "lines": { "home": "≤ 44", "spot": "≤ 44", "together": "≤ 44", "meaning": "≤ 44" },
-  "alternates": { "home": ["≤ 44", "≤ 44"] },
+{ "lines": { "home": "≤ 60", "spot": "≤ 60", "together": "≤ 60", "meaning": "≤ 44" },
+  "alternates": { "home": ["≤ 60"] },
   "recommended_gift": "mug" | "blanket" | "print" | "ornament",
   "reason": "≤ 140 chars, Biscuit's voice",
   "sources": { "home": ["answer ids"] },
@@ -176,7 +176,7 @@ All three ship in version one, on Sunday.
 - Every number, time, place and name in an output line must appear in the buyer's input; otherwise use the buyer's own trimmed words.
 - Gift lines are the dog talking (20 Oct): I is allowed and means the dog; a line with he, she, his, her, the dog's name or the person's name is rejected, as is an exclamation mark; no em dashes; the banned word list in section 2. The theme applies the same voice check to every AI line it receives.
 - A flag of grief, profanity or unclear: Biscuit says "I didn't quite catch that one. Try again, or pick one of these?" and shows the chips.
-- Timeouts: typed answer 3 seconds, then a scripted "Tell me more?" and the buyer's own words as the line; compose 6 seconds (it runs while the reveal animates), then the scripted lines.
+- Timeouts: typed answer 3 seconds, then a scripted "Tell me more?" and the buyer's own words as the line; compose 11 seconds (since 22 Oct: Claude Sonnet writes the note and n8n hands over to Gemini 3.5 Flash at 7.5 s; the scripted lines show at once and the AI's replace them when they land).
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
 - The model is never asked to draw. No per-visitor image generation in version one (see section 10).
 
@@ -194,7 +194,7 @@ All three ship in version one, on Sunday.
   - Blanket and framed print: photo, dog's name, four lines, signature.
   - Ornament: front photo and dog's name; back the meaning line and "Love, Kuku".
 - Type: the mug's lines are in Fraunces (HS-Fraunces-Text at 70 px, 16.8pt, since mug v3 was approved on 15 Oct; spec in `docs/evidence/cowork-2026-10-15/mug-v3-handoff-for-claude-code.md`). The blanket, print and ornament lines are in Courier Prime. Every gift has Fraunces italic in chestnut for the signature and Fraunces for the name (fonts in `tools/fonts/`).
-- Every template must render a 44-character line without clipping or shrinking below a readable size at its real print size. Test the longest and shortest cases (section 11).
+- Every template must render a 60-character line (44 for the meaning line, which the ornament prints alone) without clipping or shrinking below a readable size at its real print size. Since 22 Oct the mug's lines are Fraunces at 58 px (about 14 pt), two rows each (Krish, option A; Cowork report `docs/evidence/cowork-2026-10-22/REPORT.md`). Test the longest and shortest cases (section 11).
 - The bridge (`shopify/assets/hs2.js`, documented in `shopify/README.md`) already fills Teeinblue fields by label and hands over the photo with one tap. Reuse it. A multi-gift order goes through each gift's product page in turn; the hidden shop-first flow (`?view=shop`, `product.shopgift.json`) already walks a shopper through several gifts and is the starting point.
 - Add the chat answers to each line item as hidden properties (`_hs_answers`, `_hs_lines`) so the person checking the order sees what the buyer said and what the AI wrote.
 - Fulfilment: Teeinblue does not send orders to Printful by itself. Each order needs "Confirm & Send to fulfill" in Teeinblue, and Teeinblue's "Auto confirm order" is off, so Printful holds it as a draft until confirmed. That two-step check is the "a person checks every order" promise. Krish approved (13 Oct) a twice-daily batch check with an AI pre-check; Cowork sets it up separately.
@@ -239,7 +239,7 @@ Recommended: offer it from week two, as an illustration rather than a photo, sta
 
 1. On a real iPhone inside the Instagram app and a real Android phone inside the Facebook app, a new visitor completes the chat with chips only in under 90 seconds and reaches the cart with two gifts.
 2. "Something else" with a typed answer returns a reaction and a line within 3 seconds, or falls back cleanly.
-3. Each of the four gift templates prints the longest allowed lines (44 characters, 14-character names, apostrophes) without clipping, checked on Teeinblue's real print file at full size.
+3. Each of the four gift templates prints the longest allowed lines (60 characters, 44 for the meaning line, 14-character names, apostrophes) without clipping, checked on Teeinblue's real print file at full size.
 4. The all-"Not sure" path produces a warm, complete gift.
 5. One real order with at least two gifts goes Shopify > Teeinblue > Printful draft with correct print files (Krish approves the spend). Krish will place it himself once the new page and products are live; it replaces sample order #1001, which he refunded.
 6. No em dashes, banned words or HR copy on any page a buyer can reach; the old builder is gone from the live journey; retired products are hidden.
@@ -275,6 +275,7 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
 - 2026-10-15: Every-gift-as-a-letter rejected ("sounds shit").
 - 2026-10-15: Krish asked for "10X personalized delight" from the first moment, using the AI edge and the breed corpus. Open.
 - 2026-10-20: Krish, on a cart showing "Understands every word. Pretends he doesn't.": "It should be a message from your dog in their personality style... capture their demeanour, cross reference the corpus, and create literally a humanized warm message from the dog to the person with some humour and dog anthropomorphisms. Make sure all products create a warm message." So, on every gift: I, me and my are the dog, you is the person, never he, she or the dog's name, never the person's name, no exclamation marks, no "Dear" (the 15 Oct letter stays rejected; "Love, [dog]" is the only sign-off). Every scripted chip line was rewritten in that voice ("I took your side of the bed. Not sorry."). Compose now runs for every buyer, not only after a typed answer, so the AI writes all four lines as one message; the scripted lines show first and are the fallback. The chat has an optional "Breed, if you know it" field on step 1 (no new step); an exact corpus match sends its archetype to the AI as a light tone signal, never shown. This replaces the 13 Oct "no I" rule and the 15 Oct "no breed question yet".
+- 2026-10-22: Krish on the AI's lines: "They all sound like Claude... Two-word sentences stacked against two- or three-word sentences are just a clear tell. It needs to feel heartfelt, real, humanized, but each dog's personality, based on the corpus, shines through in bringing all of the details the users put in into life. A border collie would sound different to a poodle if they were human." The prompt had taught the staccato; it now writes in three layers (who the dog is as a person, from the corpus archetype; what the owner said; one natural sentence per line), and code rejects stacked fragments and worn lines. A blind test of six models on held-out dogs, then a Border Collie, Poodle and Beagle with identical answers, showed the 44-character line left no room for personality. Krish approved: lines up to 60 characters (the meaning line stays at 44 for the ornament), Claude Sonnet writes the whole note, Gemini 3.5 Flash answers typed replies and backs Sonnet up, and the mug prints three lines at 58 px (option A). Cowork raised the Teeinblue Line fields to 61.
 - 2026-10-21: Krish: "yes, re-render the product images in the dog's voice". Done the same day:
   - the mug's five note faces were re-rendered the approved way (the print file passes order QC's check);
   - the blanket, the four framed-print images and the two ornament images had only their lines replaced;

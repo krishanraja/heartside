@@ -112,3 +112,28 @@ Save the files and a short `REPORT.md` under `docs/evidence/cowork-2026-10-22/`.
 - Deploys through the usual pull request and theme workflow, with Krish's yes on the day.
 
 Until then the live site keeps writing 44-character lines, so nothing a customer orders changes.
+
+---
+
+## Round 2 (after Cowork's report, 22 Oct)
+
+Krish picked **mug option A** (58 px, three lines, two rows each) and **kept the meaning line at 44 characters**. The ornament prints only the meaning line, so it stays exactly as it is today. Claude Code has made the site and the AI match. Please do the following:
+
+1. **Mug 1043122, live campaign:** set Line 1 to 3 to HS-Fraunces-Text **58 px**. Leave the boxes (860 x 190 at tops 130, 345, 560), the signature and the paw where they are. Today's 44-character lines also fit at 58 px, so this is safe to save now. Save. If Teeinblue asks to update Shopify, untick Images, Description, Title and Tags.
+2. **Mug mockups:** generate the note-face mockup with Line 1 to 3 set to these lines, so Krish can see the real Preview:
+   - `I'm at the door before your\nkey is even out of your pocket.`
+   - `I took the couch beside you\nbecause I have good taste, dear.`
+   - `I've sniffed a lot of dogs,\nand I'd still pick you, always.`
+
+   These are the breaks the site sends.
+3. **Blanket and framed print: one row or two?** The site sends their lines without `\n`, as today. In a duplicate, render Line 1 = `I'm at the door before your key is even out of your pocket.` with no `\n`, and report what Teeinblue does:
+   - does it keep one row and shrink it, or wrap it greedily?
+   - what is the type size?
+   - does a single word end up alone on a second row?
+
+   If wrapping greedily leaves a lone word, say so. Claude Code will then send balanced breaks for those gifts too.
+4. **Real print files:** run "Generate test design" once for each gift with the four long test lines (the mug with Lines 1 to 3, the ornament with `I've sniffed a lot of dogs, and I'd still pick you.`), and save the full-size files. Your round 1 sizes came from the editor preview, so this confirms them.
+5. **Sample text** on all four campaigns, as in step 5 above.
+6. **Storefront check:** on each product page, confirm the personalizer's Line fields accept 60 characters.
+
+Save the files and `REPORT-2.md` under `docs/evidence/cowork-2026-10-22/`, or send them to Krish.

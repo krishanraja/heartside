@@ -19,4 +19,17 @@ const gc = {input:{dog:{name:'Kuku',tone:'Terrier Menace'},recipient:{name:'Sam'
 const lines={home:"I wait by the door, even on weekends.",spot:"I took your side of the bed to keep it warm.",together:"Our walks are the best part of my day.",meaning:"I'm your shadow, and I like it that way."};
 const c=run('enforce-compose.js', gc, {text: JSON.stringify({lines,recommended_gift:'mug',reason:'Walks start with coffee. So Kuku gets a spot in Sam\'s mug.',flags:[]})});
 ok(JSON.stringify(c.lines)===JSON.stringify(lines),'compose keeps dog-voice lines with sentence starts');
+// 22 Oct: home, spot and together print up to 60 characters; meaning stays at 44 (the ornament)
+const long = "I hear your car long before anyone else does, every night.";
+ok(long.length > 44 && long.length <= 60 && L(long) === long, 'home line up to 60 passes');
+const gm = guard('guard-typed.js',{headers:{origin:'https://heartside.io'},body:{session:'abcdefgh14',step:'meaning',question:'What is Mowgli to Sam?',typed_text:'my best friend',dog:{name:'Mowgli',pronoun:'he'},recipient:{name:'Sam',relation:'partner'}}});
+const LM=(line)=>run('enforce-typed.js', gm, {reaction:'Best friends.',lines:[line],follow_up:null,flags:[]}).line;
+ok(LM("You're my best friend, and I'd pick you again and again.") !== "You're my best friend, and I'd pick you again and again.", 'meaning line over 44 rejected');
+ok(LM("You're my best friend, and I'd pick you.") === "You're my best friend, and I'd pick you.", 'meaning line at 44 passes');
+// 22 Oct: Claude writes the note; Enforce reads the Messages API body. Lines up to 60, meaning up to 44.
+const cl = { home: "I hear your car long before anyone else does, every night.", spot: "I took your side of the bed to keep it warm.", together: "Our walks are the best part of my day.", meaning: "I'm your shadow, and I like it that way." };
+const cc = run('enforce-compose.js', gc, { model: 'claude-sonnet-5-5', content: [{ type: 'text', text: JSON.stringify({ voice: 'x', lines: cl, alternates: { home: ['I wait by the door, even on weekends.'] }, recommended_gift: 'mug', reason: 'Walks and coffee, so Kuku gets a mug.', flags: [] }) }], stop_reason: 'end_turn' });
+ok(JSON.stringify(cc.lines) === JSON.stringify(cl), 'compose reads a Claude response, 60-character home line kept');
+const cc2 = run('enforce-compose.js', gc, { content: [{ type: 'text', text: JSON.stringify({ lines: Object.assign({}, cl, { meaning: "You're my best friend, and I'd pick you again and again." }), recommended_gift: 'mug', reason: 'x', flags: [] }) }] });
+ok(cc2.lines.meaning === gc.input.current_lines.meaning, 'compose meaning over 44 falls back to the draft');
 console.log(fails?fails+' failed':'all passed');
