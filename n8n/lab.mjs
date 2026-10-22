@@ -48,7 +48,10 @@ const cases = [];
 TYPED.forEach(([step, typed_text, d, recipient], i) => cases.push({ kind: 'typed', case: i, prompt: JSON.stringify({ step, question: Q[step](d.name).replace('%R', recipient.name), typed_text, previous_line: '', dog: d, recipient }) }));
 COMPOSE.forEach((c, i) => cases.push({ kind: 'compose', case: i, prompt: JSON.stringify(c) }));
 // The lab reads lab-cases.json from the branch on GitHub, so a prompt change is: build, commit, push, run.
-fs.writeFileSync(dir + 'lab-cases.json', JSON.stringify({ typed: P.typed, compose: P.compose, cases, models: MODELS }, null, 1) + '\n');
+// HS_LAB_LIMIT tries a longer printed line (Krish's call, needs the Teeinblue fields and templates to match).
+const LIMIT = Number(process.env.HS_LAB_LIMIT || 44);
+const widen = t => LIMIT === 44 ? t : t.replace(/32 to 44/g, `40 to ${LIMIT}`).replace(/\b44\b/g, String(LIMIT)).replace(/\b45\b/g, String(LIMIT + 1));
+fs.writeFileSync(dir + 'lab-cases.json', JSON.stringify({ limit: LIMIT, typed: widen(P.typed), compose: widen(P.compose), cases, models: MODELS }, null, 1) + '\n');
 const BRANCH = process.env.HS_LAB_BRANCH || 'main';
 const shared = `const raw = $('Fetch').first().json; const P = typeof raw.data === 'string' ? JSON.parse(raw.data) : (raw.typed ? raw : JSON.parse(JSON.stringify(raw)));\nconst body = ${body.toString()};`;
 const casesNode = (provider, name) => `node({ type: 'n8n-nodes-base.code', version: 2, config: { name: '${name}', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: ${JSON.stringify(shared + `\nconst provider = '${provider}';\nreturn P.models.filter(m => m.provider === provider).flatMap(({ model }) => P.cases.map(c => ({ json: { provider, model, ...c, sys: P[c.kind], body: body(provider, model, P[c.kind], c.prompt) } })));`)} } } })`;
