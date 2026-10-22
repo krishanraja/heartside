@@ -50,7 +50,14 @@ function groundedProse(text, hay) {
   return true;
 }
 // a gift line: the dog's own words to the person, a sentence may start anywhere, no shouting
-function okLine(s, hay) { return okText(s, 44) && !THIRD.test(s) && s.indexOf('!') === -1 && groundedProse(s, hay); }
+// Krish, 22 Oct: "two-word sentences stacked against two- or three-word sentences are just a clear tell".
+// A line is one natural sentence: reject stacked fragments and the worn lines every model reaches for.
+const WORN = /\b(you're welcome|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
+function staccato(s) {
+  const parts = s.split(/[.?;:]+/).map(x => x.trim()).filter(Boolean);
+  return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
+}
+function okLine(s, hay) { return okText(s, 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
 // 43 characters printed "Always ready to run, walk and fetch. Not.")
 function ownWords(t) {
