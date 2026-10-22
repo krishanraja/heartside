@@ -32,4 +32,5 @@ const cc = run('enforce-compose.js', gc, { model: 'claude-sonnet-5-5', content: 
 ok(JSON.stringify(cc.lines) === JSON.stringify(cl), 'compose reads a Claude response, 60-character home line kept');
 const cc2 = run('enforce-compose.js', gc, { content: [{ type: 'text', text: JSON.stringify({ lines: Object.assign({}, cl, { meaning: "You're my best friend, and I'd pick you again and again." }), recommended_gift: 'mug', reason: 'x', flags: [] }) }] });
 ok(cc2.lines.meaning === gc.input.current_lines.meaning, 'compose meaning over 44 falls back to the draft');
+ok(L("Our walk is the one plan I never let us miss.") === "Our walk is the one plan I never let us miss.", 'one as a pronoun passes');
 console.log(fails?fails+' failed':'all passed');

@@ -44,7 +44,8 @@ function groundedProse(text, hay) {
     const bare = mm[0].replace(/[:']+$/, '').replace(/'s$/i, '');
     const before = text.slice(0, mm.index).trim();
     const start = !before || /[.!?]$/.test(before);
-    if (/\d/.test(bare) || (NUMWORDS.test(bare) && !/^(may|am)$/i.test(bare))) { if (h.indexOf(bare.toLowerCase()) === -1) return false; continue; }
+    // "one" is a pronoun far more often than a count ("the one plan", "no one"), so only two and up are checked (22 Oct)
+    if (/\d/.test(bare) || (NUMWORDS.test(bare) && !/^(may|am|one)$/i.test(bare))) { if (h.indexOf(bare.toLowerCase()) === -1) return false; continue; }
     if (/^[A-Z]/.test(bare) && !start && !OK.test(bare) && h.indexOf(bare.toLowerCase()) === -1) return false;
   }
   return true;

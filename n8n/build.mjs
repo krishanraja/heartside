@@ -78,11 +78,11 @@ const COMPOSE_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   "The chat is done. Write the dog's whole note: four gift lines that read as one warm, funny little love note from this dog, and pick the gift. Reply with JSON only, exactly this shape:",
   '{"voice": "<= 120 characters, decided first: who this dog would be as a person and how they talk",',
   ' "lines": {"home": "<= 60", "spot": "<= 60", "together": "<= 60", "meaning": "<= 44"},',
-  ' "alternates": {"home": ["<= 60"], "spot": ["<= 60"], "together": ["<= 60"], "meaning": ["<= 44"]},',
+  ' "alternates": {"home": ["<= 60"], "spot": ["<= 60"], "together": ["<= 60"], "meaning": ["<= 44", "<= 44"]},',
   ' "recommended_gift": "mug | blanket | print | ornament",',
   ' "reason": "<= 140 characters. Biscuit explaining the pick from what the dog and the person do together, warmly and a little funny.",',
   ' "flags": []}',
-  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must be the most tender and stand on its own, because the ornament prints it alone. alternates holds one more option per line, in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters; meaning <= 44.",
+  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must be the most tender and stand on its own, because the ornament prints it alone. alternates holds one more option per line (two for meaning), in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters. The meaning line is the hardest: at most 44 characters, so count it, and shorten it if it runs over.",
   "In reason, Biscuit talks to the buyer about the person: use the person's name, never you, and never address the person directly (no \"KJ,\").",
   "Pick: the morning walk or coffee means mug; couch and a movie or naps means blanket; car rides or anything else means print. Never pick ornament unless the buyer asked for the tree.",
   'Reason example: "Kuku\'s mornings start with Sam and a coffee, so a mug puts her right there in every one of them."'
@@ -296,7 +296,8 @@ const gemini = node({
       headerParameters: { parameters: [{ name: 'anthropic-version', value: '2023-06-01' }] },
       sendBody: true,
       specifyBody: 'json',
-      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: " + JSON.stringify(CLAUDE) + ", max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: " + JSON.stringify(sys) + ", cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
+      // the instructions live once, on Gemini backup, and are read from there
+      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: '" + CLAUDE + "', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Gemini backup').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
       options: { timeout: 7500 }
     },
     credentials: { anthropicApi: ${JSON.stringify(CLAUDE_CRED)} }
@@ -315,7 +316,7 @@ const gemini = node({
       messages: { values: [{ content: expr('{{ $json.prompt }}'), role: 'user' }] },
       simplify: true,
       jsonOutput: true,
-      options: { systemMessage: \${JSON.stringify(sys)}, maxOutputTokens: \${kind === 'typed' ? 400 : 700}, temperature: 0.9, thinkingBudget: 0 }
+      options: { systemMessage: expr("{{ $('Gemini backup').params.options.systemMessage }}"), maxOutputTokens: \${kind === 'typed' ? 600 : 700}, temperature: 0.9, thinkingBudget: 0 }
     },
     credentials: { googlePalmApi: \${JSON.stringify(CRED)} }
   }
@@ -375,7 +376,7 @@ const geminiBackup = node({
       messages: { values: [{ content: expr("{{ $('Guard').first().json.prompt }}"), role: 'user' }] },
       simplify: true,
       jsonOutput: true,
-      options: { systemMessage: ${JSON.stringify(sys)}, maxOutputTokens: ${kind === 'typed' ? 400 : 700}, temperature: 0.9, thinkingBudget: 0 }
+      options: { systemMessage: ${JSON.stringify(sys)}, maxOutputTokens: ${kind === 'typed' ? 600 : 700}, temperature: 0.9, thinkingBudget: 0 }
     },
     credentials: { googlePalmApi: ${JSON.stringify(CRED)} }
   }
@@ -406,7 +407,7 @@ const log = node({
           source: expr('{{ $json.source }}'),
           model: expr('{{ $json.model }}'),
           ms: expr('{{ $json.ms }}'),
-          slow: expr('{{ $json.ms > ${kind === 'typed' ? 2700 : 5700} }}'),
+          slow: expr('{{ $json.ms > ${kind === 'typed' ? 4500 : 10000} }}'),
           flags: expr("{{ ($json.flags || []).join(',') }}")
         },
         schema: ${JSON.stringify(['call', 'step', 'source', 'model', 'ms', 'slow', 'flags'].map((c) => ({ id: c, displayName: c, required: false, defaultMatch: false, display: true, type: c === 'ms' ? 'number' : c === 'slow' ? 'boolean' : 'string', canBeUsedToMatch: true })))}

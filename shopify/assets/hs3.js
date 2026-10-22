@@ -17,7 +17,7 @@
   var HS2 = 'hs2-review';
   var QKEY = 'hs2-queue';
   var MAX_CALLS = 8;
-  var TYPED_MS = 3000, COMPOSE_MS = 11000; // 22 Oct: Claude writes the note; n8n hands over to Gemini at 7.5 s
+  var TYPED_MS = 5000, COMPOSE_MS = 11000; // 22 Oct: Gemini 3.5 Flash answers typed replies (about 3 s); Claude writes the note and n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
