@@ -28,8 +28,8 @@ The hilarious setting is connected but the observed backup result is only mildly
 ## Native Teeinblue trial
 
 - The MCP resolved the existing Heartside Shopify store successfully.
-- Unpublished campaign: `1053873`, Heartside City Screenprint - DRAFT 2026-10-23. Its store-instance list is empty.
-- Isolated artwork: `1378371`, Heartside City Screenprint - DRAFT v1. Current verified artwork version: `3057472`. The live framed-print campaign still uses original artwork `1354014`.
+- Isolated campaign: `1053873`, Heartside City Screenprint - DRAFT 2026-10-23. It now has a Shopify product, held in DRAFT. See the publication incident below.
+- Isolated artwork: `1378371`, Heartside City Screenprint - DRAFT v1. Current verified artwork version: `3057612`. The live framed-print campaign still uses original artwork `1354014`.
 - Canvas: 3600 x 5400, PNG sRGB. This is the output canvas, not proof of native AI source resolution or physical print quality.
 - Photo layer: GPT image filter, layer-ratio option enabled, requested 3840 resolution, identity-preserving screenprint prompt, no second reference-image charge. The selected provider settings read back as gpt-image-2.5-sunburst / High. Auto fallback is enabled in the account; do not assume every future output came from that model without provider evidence.
 - City uses a buyer-supplied value. The optional default is Somewhere quiet, explicitly mapped to an unidentified residential neighborhood. No address-derived city. The default is actually autofilled so a skipped city does not leave the AI variable empty.
@@ -49,8 +49,22 @@ The first changed-copy proof failed because paragraph metadata did not match the
 
 Teeinblue reports all three 12 x 18 variants available: Black and White have a stored base cost of $34.50; Red Oak $32.77; all sell for $89. This is current Teeinblue catalog data, not a fresh Printful route-specific stock guarantee or a delivered-margin calculation. Shipping, provider usage, fees, tax and remake allowance still apply.
 
+## Native generation and storefront work, later on October 23
+
+- Krish uploaded the prepared reference photo and reported generation complete. Saved placement and generated the native final print file, proof `bb1c2a98-2ef6-4616-9449-87f600005ea6`, printarea `1049669`. Downloaded PNG is 3600 x 5400, 30,531,565 bytes. The Teeinblue output canvas is verified; native AI source dimensions and actual provider cost are not.
+- Visual result preserves the reference pug's general facial mask, ears, coloring and curled tail. This is an agent visual assessment, not an owner likeness acceptance or physical print test. The exact separate note and signature render correctly: "I'd choose you every time." and "Love, Milo".
+- Output shows Seattle's Space Needle while the current form says San Francisco. Krish is unsure which city was selected at generation time. Treat this as unresolved input/output association, not a proven model failure. Aligned the option title to `City`, matching the prompt's `{{City}}`, to remove a documented mapping ambiguity. This change alone does not prove a fix. A controlled new generation must begin with a recorded city.
+- Draft integration adds `product.city-art-preview.json`, opt-in only. The bridge fills the existing meaning line and dog name, supplies a generic optional city, and retains one-field editing. The note alone is carried into order metadata for this route.
+- Native AI submission is deliberate, with an attempt marker saved before dispatch. Slow responses are not automatically retried at ten seconds. The marker survives refresh in the same browser session. A changed city needs a new explicit creation action. This is not an account-wide billing cap and does not control direct provider uploads.
+- The draft template blocks cart submission until real provider completion, fallback behavior, exact saved source and output checks are accepted. Existing products keep their original flow. Local stand-in tests prove optional city, exact copy, one-field editing, one upload despite a slow response, duplicate-click and refresh protection, stale-city notice and cart blocking. They do not prove Teeinblue's live AI behavior.
+- Existing mug/blanket and direct-arrival regressions pass across five screen sizes. JavaScript minification and theme checks pass.
+
+### Publication incident and mitigation
+
+The agent clicked Teeinblue's Launch control expecting a store-selection dialog. It published immediately and created Shopify product `16151384260990` at 16:24:30 UTC. This was an error, not an approved release. The agent promptly changed that exact product to DRAFT, then independently queried Shopify: DRAFT, no onlineStoreUrl, and no orders since 16:24:00 UTC. Removed its gifts-v3 tag and assigned the isolated city-art-preview template. Original framed campaign `1043167` still maps to artwork `1354014` and product `16132988535166`. The initial direct HTTP check was rate-limited. A subsequent in-app browser check displayed 404 Not Found and Page not found for the test product URL. The private Shopify product preview remains available. Do not click Launch or Update as exploratory navigation, and do not sync this campaign without checking whether the operation reactivates the Shopify product.
+
 ## Next action
 
-Run one native upload of the existing public-reference pug photo in the unpublished campaign. The controllable in-app browser exposes no file-input setter or file-chooser capability, and clicking Choose an image does not expose a controllable dialog. Krish must select that file. Then inspect the result, actual dimensions, timing, provider usage if available, likeness and exact final print. Keep live campaign publication, live theme deployment and physical sample behind their remaining gates. Sample order remains last.
+Deploy the isolated template to the existing unpublished theme, verify the private draft preview, and run one controlled photo generation with San Francisco recorded before upload. The in-app browser's native file picker still needs Krish to select the prepared photo. Verify the actual saved generation and final print against that city, then source resolution, cost, fallback behavior and the complete private storefront journey. Live theme/product release and the physical sample remain gated. Sample order remains last.
 
 Sources checked: n8n's official generated update/publish API schemas and Teeinblue's connected artwork schema; [Teeinblue AI effects, variables and upload limits](https://support.teeinblue.com/en/article/how-to-use-gen-ai-effect-feature-to-create-custom-image-effects-l8mqej/).

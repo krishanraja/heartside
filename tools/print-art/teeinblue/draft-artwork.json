@@ -1,9 +1,9 @@
 {
-  "status": "unpublished_draft",
+  "status": "shopify_draft_not_for_sale",
   "verified_on": "2026-10-23",
   "campaign_id": 1053873,
   "artwork_id": 1378371,
-  "artwork_version_id": 3057472,
+  "artwork_version_id": 3057612,
   "width": 3600,
   "height": 5400,
   "design_format": "png_srgb",
@@ -349,7 +349,7 @@
           "visible": true,
           "group_id": "layer-927410",
           "required": false,
-          "form_label": "City (optional)",
+          "form_label": "City",
           "max_length": 60,
           "typography": {
             "size": 108,

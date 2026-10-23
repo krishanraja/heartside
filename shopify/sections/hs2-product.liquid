@@ -87,7 +87,7 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %}{% if s.city_art_preview %} data-hs2-city-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
 
     <div class="hs2-product__media" data-hs2-media{% if v3 %} data-hs2-sample{% endif %}{% if s.open_on == 'photo' and product.media.size > 0 %} data-open="photo" data-show="photo"{% endif %}>
       {%- if v3 -%}<span class="hs2-product__example">Example artwork. Add your dog's photo to see yours.</span>{%- endif -%}
@@ -178,6 +178,10 @@
               {%- endif -%}
               {%- if block.settings.note != blank -%}<div class="hs2-answers__note" data-hs2-bridge-note>{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-answers__status" data-hs2-bridge-status role="status" aria-live="polite" hidden></div>
+              {% if s.city_art_preview %}
+                <p><span data-hs2-artwork-city>Somewhere quiet</span> · <button type="button" class="hs2-answers__edit" data-hs2-artwork-edit-city>Change place</button></p>
+                <p data-hs2-artwork-status role="status">Preview only. Check your dog, city and note before release.</p>
+              {% endif %}
               <div class="hs2-answers__photo" data-hs2-handoff hidden>
                 <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy" data-hs2-handoff-img>
                 <button type="button" data-hs2-handoff-btn>{% render 'hs2-t', text: block.settings.photo_button %}</button>
@@ -271,6 +275,7 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
+    { "type": "checkbox", "id": "city_art_preview", "label": "City artwork acceptance preview", "info": "Isolated draft only. Disables ordering and automatic photo submission while artwork checks are pending.", "default": false },
     { "type": "checkbox", "id": "show_poster", "label": "Show the live review poster", "info": "On for the Annual Review products. It fills in from the shopper's homepage answers.", "default": false },
     {
       "type": "select", "id": "open_on", "label": "Gallery opens on", "default": "preview",

@@ -45,6 +45,7 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
+    if (k === 'city' && cityArtPreview()) return String(state.city || '').trim() || 'Somewhere quiet';
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
     return v || (NAMES.indexOf(k) === -1 ? DEFAULTS[k] : '');
@@ -57,12 +58,23 @@
   var V3_ORDER = { mug: ['home', 'spot', 'meaning'], ornament: ['meaning'], blanket: ['home', 'spot', 'together', 'meaning'], print: ['home', 'spot', 'together', 'meaning'] };
   function v3Kind() { var kinds = state.hs3_kinds || {}; return kinds[handleOf(window.location.pathname)] || ''; }
   function mugProduct() { return v3Kind() === 'mug' || handleOf(window.location.pathname) === 'the-morning-mug'; }
+  // Opt-in preview only. Existing products retain their approved photo flow.
+  function cityArtPreview() { return !!document.querySelector('#buy[data-hs2-city-art-preview]'); }
+  function artRequestKey() { return 'hs2-art-request:' + productId() + ':' + usePhoto.t + ':' + answer('city'); }
+  function artRequested() {
+    if (doHandoff.artPhoto === usePhoto.t && doHandoff.artCity === answer('city')) return true;
+    try { return window.sessionStorage.getItem(artRequestKey()) === 'sent'; } catch (e) { return false; }
+  }
+  function markArtRequested() {
+    doHandoff.artCity = answer('city'); doHandoff.artPhoto = usePhoto.t;
+    try { window.sessionStorage.setItem(artRequestKey(), 'sent'); } catch (e) { /* memory guard remains */ }
+  }
   function v3Answer(k) {
     var lines = state.hs3_lines || {};
     if (k === 'signed') { var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
     if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
     var kind = v3Kind(), order = V3_ORDER[kind] || V3_ORDER.print;
-    if (k === 'hs_lines') return order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
+    if (k === 'hs_lines') return cityArtPreview() ? String(lines.meaning || '') : order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
     var key = order[Number(k.slice(4)) - 1];
     if (!key) return '';
     // the mug's note: the same words with "\n" at the most even break where a line won't fit one
@@ -699,6 +711,7 @@
     { k: 'line3', re: /^\s*line\s*3\b/i },
     { k: 'line4', re: /^\s*line\s*4\b/i },
     { k: 'signed', re: /^\s*sign(ed|ature)\b/i },
+    { k: 'city', re: /^\s*city\b/i },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
     { k: 'cupboard', re: /cupboard|treat/i },
@@ -791,6 +804,14 @@
     document.addEventListener('click', function (e) {
       var button = e.target.closest && e.target.closest('#teeAtcButton');
       if (!button || !giftView()) return;
+      // This isolated template is for acceptance testing. AI completion, raw-photo
+      // fallback and source resolution still need provider-backed verification.
+      if (cityArtPreview()) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        var previewNote = document.querySelector('[data-hs2-artwork-status]');
+        if (previewNote) previewNote.textContent = 'Preview only. Ordering opens after the final artwork checks.';
+        return;
+      }
       // Dispatching a file is not proof that Teeinblue accepted it. The upload
       // field must acknowledge the image, and its crop dialog must be closed.
       var ready = !!(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container'));
@@ -948,6 +969,11 @@
     };
     inp.addEventListener('input', handler);
     inp.addEventListener('change', handler);
+    if (k === 'city') inp.addEventListener('blur', function () {
+      if (cityArtPreview() && !inp.value.trim()) {
+        state.city = ''; save(); setValue(inp, 'Somewhere quiet');
+      }
+    });
   }
   function productId() {
     var c = window.teeinblueCampaign, m = window.ShopifyAnalytics && window.ShopifyAnalytics.meta;
@@ -1078,10 +1104,12 @@
   function giftView() { return !!document.querySelector('#buy[data-hs2-v3]'); }
   var giftEditKey = '';
   function giftEditFields() {
-    return tibFields().filter(function (f) { return /^(dog|line[1-4]|signed)$/.test(f.rule.k); });
+    return tibFields().filter(function (f) { return /^(dog|line[1-4]|signed)$/.test(f.rule.k) || cityArtPreview() && f.rule.k === 'city'; });
   }
   function giftEditLabel(k) {
     if (k === 'dog') return "Dog's name";
+    if (k === 'city') return 'City (optional)';
+    if (k === 'line4' && cityArtPreview()) return 'Your note';
     if (k === 'signed') return 'Signature';
     return 'Sentence ' + k.slice(4);
   }
@@ -1173,7 +1201,16 @@
     var d = (state.dog == null ? '' : String(state.dog)).trim();
     var has = !!document.querySelector('#buy .tee-field--photo .tee-photo-head img');
     var media = document.querySelector('#buy [data-hs2-media]');
-    if (media) media.toggleAttribute('data-hs2-sample', !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
+    if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() || !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
+    if (cityArtPreview()) {
+      var place = document.querySelector('[data-hs2-artwork-city]');
+      if (place) place.textContent = answer('city');
+      var editPlace = document.querySelector('[data-hs2-artwork-edit-city]');
+      if (editPlace && !editPlace.__hs2) {
+        editPlace.__hs2 = true;
+        editPlace.addEventListener('click', function () { giftEditKey = 'city'; editing(true); });
+      }
+    }
     document.querySelectorAll('#buy .tee-field--photo .tee-btn--upload, #buy .tee-field--photo .tee-btn--recustomize').forEach(function (b) {
       var want = /recustomize/.test(b.className) ? 'Crop' : has ? 'Change photo' : (d ? 'Add ' + d + '\'s photo' : 'Add your dog\'s photo');
       var t = b.querySelector('span') || b;
@@ -1277,12 +1314,17 @@
      checks that Teeinblue took it and tries again, a few times, if it didn't. */
   function doHandoff(box, attempt) {
     attempt = attempt || 0;
+    if (cityArtPreview() && artRequested()) return;
     var target = photoInput();
     var st = document.querySelector('[data-hs2-bridge-status]');
     try {
       var dt = new DataTransfer();
       dt.items.add(new File([usePhoto.file], usePhoto.file.name || 'headshot.jpg', { type: usePhoto.file.type || 'image/jpeg' }));
       target.files = dt.files;
+      if (cityArtPreview()) {
+        // An uncertain request is never retried automatically: AI can take minutes.
+        markArtRequested();
+      }
       doHandoff.busy = true;
       try { target.dispatchEvent(new Event('change', { bubbles: true })); } finally { doHandoff.busy = false; }
       markHanded(usePhoto.t);
@@ -1290,6 +1332,10 @@
       bridge.photoReady = false; if (bridge.folded) fold(true);
       if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent below. Place it in the frame and press Save.'; st.hidden = false; }
       if (!attempt) track('photo_handoff');
+      if (cityArtPreview()) {
+        if (st) st.textContent = 'Creating your artwork. Save its placement when it appears, then check your dog and city.';
+        return;
+      }
       var t0 = Date.now(), file = usePhoto.file;
       clearInterval(doHandoff.watch);
       doHandoff.watch = setInterval(function () {
@@ -1331,9 +1377,24 @@
     var btn = box.querySelector('[data-hs2-handoff-btn]');
     if (btn && !btn.__hs2) {
       btn.__hs2 = true;
-      btn.addEventListener('click', function () { doHandoff(box); });
+      btn.addEventListener('click', function () {
+        if (cityArtPreview() && artRequested()) return;
+        doHandoff(box);
+      });
     }
     var inp = photoInput(), file = usePhoto.file;
+    if (cityArtPreview()) {
+      var sent = artRequested();
+      if (sent) { doHandoff.artPhoto = usePhoto.t; doHandoff.artCity = answer('city'); }
+      box.hidden = !(inp && file);
+      if (btn) {
+        btn.disabled = !!sent;
+        btn.textContent = sent ? 'Artwork requested' : doHandoff.artPhoto ? 'Create new artwork' : 'Create artwork';
+      }
+      var artStatus = document.querySelector('[data-hs2-artwork-status]');
+      if (artStatus && doHandoff.artPhoto && !sent) artStatus.textContent = 'Your photo or city changed. Create new artwork to use it.';
+      return;
+    }
     var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');
     if (bridge.photoReady !== can) { bridge.photoReady = can; if (bridge.folded) fold(true); }
     if (can) { doHandoff(box); return; }
@@ -1356,6 +1417,7 @@
       var t = Date.now();
       markHanded(t);
       usePhoto(f, t);
+      if (cityArtPreview()) markArtRequested();
       state.hs3_photo_t = t; save();
       savePhoto(f, t);
       track('photo_attached', { where: 'personalizer' });
