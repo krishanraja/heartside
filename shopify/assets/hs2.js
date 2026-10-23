@@ -45,6 +45,7 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
+    if (k === 'personality' && blanketArtPreview()) return artworkFacts();
     if (k === 'city' && cityArtPreview()) return String(state.city || '').trim() || 'Somewhere quiet';
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
@@ -60,14 +61,43 @@
   function mugProduct() { return v3Kind() === 'mug' || handleOf(window.location.pathname) === 'the-morning-mug'; }
   // Opt-in preview only. Existing products retain their approved photo flow.
   function cityArtPreview() { return !!document.querySelector('#buy[data-hs2-city-art-preview]'); }
-  function artRequestKey() { return 'hs2-art-request:' + productId() + ':' + usePhoto.t + ':' + answer('city'); }
+  function blanketArtPreview() { return !!document.querySelector('#buy[data-hs2-blanket-art-preview]'); }
+  function artworkFacts() {
+    var profile = state.hs3_art_profile;
+    // Existing chat sessions can migrate without making the buyer answer again.
+    if (!profile && window.HSArtworkProfile) {
+      try { profile = window.HSArtworkProfile.fromChat(JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}')); } catch (e) { /* portrait-only fallback */ }
+    }
+    return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
+  }
+  function artRequestKey() { return 'hs2-art-request:' + productId() + ':' + usePhoto.t + ':' + (blanketArtPreview() ? 'blanket-v2:' + artworkFacts() : answer('city')); }
+  function latestArtRequest() {
+    if (doHandoff.artKey) return doHandoff.artKey;
+    try {
+      var prefix = 'hs2-art-request:' + productId() + ':', latest = window.sessionStorage.getItem(prefix + 'latest');
+      if (latest) return latest;
+      // Preserve an existing single-request draft session. Multiple old requests
+      // have no reliable ordering, so none can certify the displayed image.
+      var legacy = [];
+      for (var i = 0; i < window.sessionStorage.length; i++) {
+        var key = window.sessionStorage.key(i);
+        if (key.indexOf(prefix) === 0 && window.sessionStorage.getItem(key) === 'sent') legacy.push(key);
+      }
+      if (legacy.length === 1) {
+        window.sessionStorage.setItem(prefix + 'latest', legacy[0]);
+        return legacy[0];
+      }
+    } catch (e) { /* memory guard remains */ }
+    return '';
+  }
   function artRequested() {
-    if (doHandoff.artPhoto === usePhoto.t && doHandoff.artCity === answer('city')) return true;
-    try { return window.sessionStorage.getItem(artRequestKey()) === 'sent'; } catch (e) { return false; }
+    return latestArtRequest() === artRequestKey();
   }
   function markArtRequested() {
     doHandoff.artCity = answer('city'); doHandoff.artPhoto = usePhoto.t;
+    doHandoff.artKey = artRequestKey();
     try {
+      window.sessionStorage.setItem('hs2-art-request:' + productId() + ':latest', doHandoff.artKey);
       window.sessionStorage.setItem(artRequestKey(), 'sent');
       window.sessionStorage.setItem(artRequestKey() + ':before', cityArtSource());
     } catch (e) { /* memory guard remains */ }
@@ -733,6 +763,7 @@
     { k: 'line4', re: /^\s*line\s*4\b/i },
     { k: 'signed', re: /^\s*sign(ed|ature)\b/i },
     { k: 'city', re: /^\s*city\b/i },
+    { k: 'personality', re: /^\s*personality\b/i },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
     { k: 'cupboard', re: /cupboard|treat/i },
@@ -822,8 +853,11 @@
   // Every v3 gift prints a dog photo. Teeinblue can otherwise submit its sample image
   // when the chat's optional photo step was skipped or an earlier photo was restored.
   function guardGiftPhoto() {
+    document.addEventListener('submit', function (e) {
+      if (cityArtPreview() && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
+    }, true);
     document.addEventListener('click', function (e) {
-      var button = e.target.closest && e.target.closest('#teeAtcButton');
+      var button = e.target.closest && e.target.closest(cityArtPreview() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
       if (!button || !giftView()) return;
       // This isolated template is for acceptance testing. AI completion, raw-photo
       // fallback and source resolution still need provider-backed verification.
@@ -897,6 +931,12 @@
     var select = el.querySelector('select');
     if (text) {
       var name = text.name || text.id;
+      if (k === 'personality' && blanketArtPreview()) {
+        el.setAttribute('data-hs2-art-personality', '');
+        var facts = artworkFacts();
+        if (text.value !== facts) setValue(text, facts);
+        return { name: name, value: facts };
+      }
       watchField(text, k);
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };
       var want = answer(k);
@@ -1229,9 +1269,8 @@
     if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() ? !cityArtSaved() : !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
     if (cityArtPreview()) {
       var previewLabel = media && media.querySelector('.hs2-product__example');
-      if (previewLabel) previewLabel.textContent = artRequested() ? 'Waiting for your saved artwork.' : doHandoff.artPhoto ? 'Earlier artwork. Create a new preview for this place.' : "Example artwork. Add your dog's photo to see yours.";
-      var orderButton = document.getElementById('teeAtcButton');
-      if (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; }
+      if (previewLabel) previewLabel.textContent = artRequested() ? 'Waiting for your saved artwork.' : doHandoff.artPhoto ? 'Earlier artwork. Create a new preview for your changes.' : "Add your dog's photo to see your artwork.";
+      document.querySelectorAll('#buy #teeAtcButton, #buy .tee-btn--atc, #buy [data-hs2-add]').forEach(function (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; });
       var place = document.querySelector('[data-hs2-artwork-city]');
       if (place) place.textContent = answer('city');
       var editPlace = document.querySelector('[data-hs2-artwork-edit-city]');
@@ -1362,7 +1401,7 @@
       if (st) { st.__hs2photo = true; st.textContent = 'Headshot sent below. Place it in the frame and press Save.'; st.hidden = false; }
       if (!attempt) track('photo_handoff');
       if (cityArtPreview()) {
-        if (st) st.textContent = 'Creating your artwork. Save its placement when it appears, then check your dog and city.';
+        if (st) st.textContent = 'Creating your artwork. Save its placement when it appears, then check your dog' + (blanketArtPreview() ? ' and their personality.' : ' and city.');
         return;
       }
       var t0 = Date.now(), file = usePhoto.file;
@@ -1422,7 +1461,7 @@
         btn.textContent = sent ? 'Artwork requested' : doHandoff.artPhoto ? 'Create new artwork' : 'Create artwork';
       }
       var artStatus = document.querySelector('[data-hs2-artwork-status]');
-      if (artStatus) artStatus.textContent = saved ? 'Check the saved image for your dog and ' + answer('city') + '. Preview only.' : doHandoff.artPhoto && !sent ? 'Your photo or city changed. Create new artwork to use it.' : sent ? 'Your artwork is being prepared. Save its placement when it appears.' : 'Preview only. Check your dog, city and note before release.';
+      if (artStatus) artStatus.textContent = saved ? 'Check the saved image for your dog and ' + (blanketArtPreview() ? 'their actual habits' : answer('city')) + '. Preview only.' : doHandoff.artPhoto && !sent ? 'Your photo or ' + (blanketArtPreview() ? 'answers' : 'city') + ' changed. Create new artwork to use it.' : sent ? 'Your artwork is being prepared. Save its placement when it appears.' : blanketArtPreview() ? 'Preview only. Check their face, markings and personality.' : 'Preview only. Check your dog, city and note before release.';
       var sourceLink = document.querySelector('[data-hs2-artwork-source]');
       if (sourceLink) { sourceLink.hidden = !saved; if (saved) sourceLink.href = cityArtSource(); else sourceLink.removeAttribute('href'); }
       return;

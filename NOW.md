@@ -85,7 +85,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** finish native full-resolution source and failure-path acceptance for the saved customer-generated San Francisco artwork. Customer upload, saved placement, reload persistence and the corrected saved-image UI pass on unpublished theme commit ae0808e, run 39995750143. Both Buddy-only live AI changes are published and independently verified; the approved tone update remains active. All products must be upgraded before the site mockup refresh, then the physical sample last.
+- **Next action:** complete the private Shopify handoff for the approved personality blanket campaign, then run controlled likeness checks after resolving native production-source quality with Teeinblue. The isolated artwork, unpublished campaign with one 50 x 60 variant, and local storefront handoff are prepared; actual photo generation and supplier output remain unverified. The support question was emailed, with a Monday October 26 follow-up scheduled. All products first, website mockups next, physical sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
@@ -124,4 +124,6 @@ Blocked or waiting:
 
 - Approved Buddy-only publication completed: compose e4fb43e3-41ef-47f5-850d-6edb6c10b2fe and typed-answer 28e20399-3c26-4d4c-b140-4429dd9f42af. Saved/active definitions match exactly; only the three approved fields per workflow changed. Runtime limiter state and all other behavior are preserved. No new model execution or theme release was made.
 
-- Provider usage now verified for the dedicated artwork integration: October 17 to 23 shows $0.37 across three requests, with gpt-image-2_5-sunburst usage. This is about $0.123 per recorded request, not a fixed per-order charge or delivered margin. Original AI dimensions and production-source selection remain unresolved. See docs/evidence/2026-10-23-native-artwork-cost-and-resolution.md for evidence and the prepared, unsent provider question.
+- Provider usage now verified for the dedicated artwork integration: October 17 to 23 shows $0.37 across three requests, with gpt-image-2_5-sunburst usage. This is about $0.123 per recorded request, not a fixed per-order charge or delivered margin. Original AI dimensions and production-source selection remain unresolved. See docs/evidence/2026-10-23-native-artwork-cost-and-resolution.md for the verified usage and sent support question. A Monday October 26, 9 AM London follow-up is scheduled.
+
+- Krish approved the all-over wordless personality blanket on October 23. The isolated native artwork uses the photo as identity authority and customer answer facts for motifs, with no default dog. The draft theme exports source facts separately from generated gift copy, hides internal data, binds request identity to photo and facts, and blocks orders. Local tests pass; not merged, not live, no paid generation or sample. Details: docs/evidence/2026-10-23-personality-blanket.md.

@@ -1,0 +1,24 @@
+{
+  "status": "unpublished_not_for_sale",
+  "approved_direction": "design/blanket/approved-direction-v2.png",
+  "approved_on": "2026-10-23",
+  "source_prompt": "tools/print-art/blanket-prompt.txt",
+  "width": 5300,
+  "height": 6300,
+  "design_format": "png_srgb",
+  "selected_product": "Tan sherpa blanket, 50 x 60 inches",
+  "supplier_canvas": {
+    "width": 15900,
+    "height": 18900
+  },
+  "private_readbacks": "Full native artwork and campaign identifiers are retained privately outside this public repository.",
+  "acceptance": {
+    "likeness": "not_tested_with_customer_photo",
+    "storefront": "local_browser_fixture_passed_including_actual_chat_export",
+    "personality_generation": "not_tested",
+    "original_resolution": "awaiting_Teeinblue_support",
+    "schema": "passed_zero_errors_and_warnings",
+    "orders": "blocked",
+    "campaign": "unpublished_single_50x60_variant_and_print_placement_verified"
+  }
+}

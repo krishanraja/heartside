@@ -292,3 +292,7 @@ Finish the product revamp before the sample order: prove the approved print dire
 ### 23 October: host name and mockup follow-through
 
 Ruling (Krish): change Biscuit to Buddy everywhere. This is a name change, preserving the approved character, voice, chat and gift behavior. Historical artifacts and legacy asset filenames can retain their original names for provenance and compatibility. New customer-facing copy uses Buddy. Refresh the storefront mockups after all product upgrades, using the new native frame mockups as the quality benchmark. The physical sample remains last.
+
+### 23 October: blanket direction supersedes the rectangular print adaptation
+
+Ruling (Krish): use the approved all-over pattern of the customer's recognizable dog and visual representations of its actual personality, with soft rough edges and no words on the blanket. The approved concept is design/blanket/approved-direction-v2.png. This changes the blanket direction only; the framed print retains its approved city artwork and small note. Generated likeness and print quality still require acceptance. Implementation and open checks: docs/evidence/2026-10-23-personality-blanket.md. Physical sample last.

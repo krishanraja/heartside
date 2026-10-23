@@ -85,6 +85,9 @@ try {
   assert.equal(await page.locator('#teeAtcButton').isDisabled(), true, 'preview ordering is visibly disabled');
   await page.locator('#teeAtcButton').dispatchEvent('click');
   assert.equal(await page.evaluate(() => window.cartAdds), 0, 'unfinished artwork preview cannot enter cart');
+  await page.evaluate(() => {
+    for (const key of Object.keys(sessionStorage)) if (key.startsWith('hs2-art-request:') && key.endsWith(':latest')) sessionStorage.removeItem(key);
+  });
   await page.reload();
   await page.waitForTimeout(1000);
   await page.evaluate(() => { window.__hs2api.usePhoto(new File(['synthetic fixture'], 'fixture.png', {type:'image/png'}), 123456); document.dispatchEvent(new Event('teeinblue-event-component-injected')); });
@@ -98,6 +101,22 @@ try {
   assert.equal(await page.evaluate(() => window.uploads), 0, 'changing city never triggers a paid call');
   assert.match(await page.textContent('[data-hs2-artwork-status]'), /changed/);
   assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'a changed city cannot reuse the prior preview link');
+  await page.click('[data-hs2-handoff-btn]');
+  assert.equal(await page.evaluate(() => window.uploads), 1, 'new city needs exactly one deliberate request');
+  await page.evaluate(() => {
+    document.querySelector('.tee-field--photo').insertAdjacentHTML('beforeend', '<img class="tee-photo-image" src="https://example.test/customer-boston.png">');
+    document.querySelector('#artwork-layer--layer-747218 image').setAttribute('href', 'https://example.test/customer-boston.png');
+    document.dispatchEvent(new Event('teeinblue-event-component-injected'));
+  });
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('[data-hs2-artwork-source]').getAttribute('href'), 'https://example.test/customer-boston.png');
+  await page.click('[data-hs2-artwork-edit-city]');
+  await page.fill('#layer-city', 'San Francisco');
+  await page.click('[data-hs2-tib-edit]');
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'returning to an earlier city cannot relabel the latest image');
+  assert.equal(await page.locator('[data-hs2-handoff-btn]').isEnabled(), true, 'an earlier city needs a new deliberate request, not a stale success');
+  assert.equal(await page.evaluate(() => window.uploads), 1, 'returning to an earlier city never auto-generates');
   await page.screenshot({ path: path.join(here, 'out/city-art-bridge.png') });
   assert.deepEqual(errors, []);
   console.log('PASS: optional city, exact single note, one-field editor, deliberate generation, no duplicate retries, stale city notice and draft cart block. Provider is a fixture.');
