@@ -58,6 +58,7 @@ Teeinblue reports all three 12 x 18 variants available: Black and White have a s
 - Native AI submission is deliberate, with an attempt marker saved before dispatch. Slow responses are not automatically retried at ten seconds. The marker survives refresh in the same browser session. A changed city needs a new explicit creation action. This is not an account-wide billing cap and does not control direct provider uploads.
 - The draft template blocks cart submission until real provider completion, fallback behavior, exact saved source and output checks are accepted. Existing products keep their original flow. Local stand-in tests prove optional city, exact copy, one-field editing, one upload despite a slow response, duplicate-click and refresh protection, stale-city notice and cart blocking. They do not prove Teeinblue's live AI behavior.
 - Existing mug/blanket and direct-arrival regressions pass across five screen sizes. JavaScript minification and theme checks pass.
+- Commit `cef53a7` deployed only to the existing unpublished theme in run `39988093530`, with the live-theme override false. The private draft-product URL on the primary domain shows that theme and the new template. Teeinblue's personalization form does not populate on this draft-product preview, so real storefront bridge acceptance is still blocked; the local provider stand-in is not a substitute. The draft product remains unavailable for sale. The latest PR head has no GitHub check results yet; do not reuse the previous head's green checks.
 
 ### Publication incident and mitigation
 
@@ -65,6 +66,6 @@ The agent clicked Teeinblue's Launch control expecting a store-selection dialog.
 
 ## Next action
 
-Deploy the isolated template to the existing unpublished theme, verify the private draft preview, and run one controlled photo generation with San Francisco recorded before upload. The in-app browser's native file picker still needs Krish to select the prepared photo. Verify the actual saved generation and final print against that city, then source resolution, cost, fallback behavior and the complete private storefront journey. Live theme/product release and the physical sample remain gated. Sample order remains last.
+Run one controlled photo generation with San Francisco recorded before upload. The in-app browser's native file picker still needs Krish to select the prepared photo. Verify the actual saved generation and final print against that city, then source resolution, cost, fallback behavior and the complete private storefront journey. Live theme/product release and the physical sample remain gated. Sample order remains last.
 
 Sources checked: n8n's official generated update/publish API schemas and Teeinblue's connected artwork schema; [Teeinblue AI effects, variables and upload limits](https://support.teeinblue.com/en/article/how-to-use-gen-ai-effect-feature-to-create-custom-image-effects-l8mqej/).
