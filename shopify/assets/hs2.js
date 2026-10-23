@@ -904,6 +904,10 @@
       // so that reaches the answers card, the live poster and the framed-poster upsell link.
       fields.forEach(function (f) { fillField(f); });
       if (reviewHere()) { bridge.fields = fields.length; bridge.filled = 0; bridge.wanted = []; fold(!bridge.opened); }
+      if (giftView() && !reviewHere()) {
+        document.documentElement.classList.add('hs2-v3-direct');
+        showGiftEdit();
+      }
       return;
     }
     var wanted = [], changed = false;
@@ -954,6 +958,7 @@
       // fields open in the panel so the shopper can fill them
       if (edit) edit.hidden = !bridge.fields;
       if (!complete && bridge.fields && !bridge.autoOpened && !document.documentElement.classList.contains('hs2-v3-editing')) { bridge.autoOpened = true; editing(true); }
+      else if (document.documentElement.classList.contains('hs2-v3-editing')) showGiftEdit();
     }
   }
   function fold(on) {
@@ -987,11 +992,51 @@
      Done folds them again. giftFit sizes the screen to the window, the preview to the room
      left, and zooms the details down to the largest size that fits. */
   function giftView() { return !!document.querySelector('#buy[data-hs2-v3]'); }
+  var giftEditKey = '';
+  function giftEditFields() {
+    return tibFields().filter(function (f) { return /^(dog|line[1-4]|signed)$/.test(f.rule.k); });
+  }
+  function giftEditLabel(k) {
+    if (k === 'dog') return "Dog's name";
+    if (k === 'signed') return 'Signature';
+    return 'Sentence ' + k.slice(4);
+  }
+  function showGiftEdit() {
+    if (!giftView() || !document.documentElement.classList.contains('hs2-v3-editing') && !document.documentElement.classList.contains('hs2-v3-direct')) return;
+    var fields = giftEditFields();
+    if (!fields.length) return;
+    var i = fields.findIndex(function (f) { return f.rule.k === giftEditKey; });
+    if (i < 0) { i = 0; giftEditKey = fields[0].rule.k; }
+    fields.forEach(function (f) { f.el.classList.toggle('hs2-v3-active', f.rule.k === giftEditKey); });
+    var wrap = fields[0].el.parentElement;
+    if (!wrap) return;
+    var nav = wrap.querySelector('[data-hs2-gift-edit-nav]');
+    if (!nav) {
+      nav = document.createElement('div'); nav.className = 'hs2-gift-edit-nav'; nav.setAttribute('data-hs2-gift-edit-nav', '');
+      nav.innerHTML = '<button type="button" data-hs2-gift-edit-prev aria-label="Previous field">‹</button><span data-hs2-gift-edit-label></span><button type="button" data-hs2-gift-edit-next aria-label="Next field">›</button>';
+      wrap.insertBefore(nav, fields[0].el);
+      nav.querySelector('[data-hs2-gift-edit-prev]').addEventListener('click', function () { moveGiftEdit(-1); });
+      nav.querySelector('[data-hs2-gift-edit-next]').addEventListener('click', function () { moveGiftEdit(1); });
+    }
+    nav.querySelector('[data-hs2-gift-edit-label]').textContent = giftEditLabel(giftEditKey) + ' · ' + (i + 1) + ' of ' + fields.length;
+    nav.querySelector('[data-hs2-gift-edit-prev]').disabled = i === 0;
+    nav.querySelector('[data-hs2-gift-edit-next]').disabled = i === fields.length - 1;
+  }
+  function moveGiftEdit(delta) {
+    var fields = giftEditFields(), i = fields.findIndex(function (f) { return f.rule.k === giftEditKey; });
+    if (!fields.length) return;
+    giftEditKey = fields[Math.max(0, Math.min(fields.length - 1, i + delta))].rule.k;
+    showGiftEdit();
+    var active = fields.find(function (f) { return f.rule.k === giftEditKey; });
+    var inp = active && active.el.querySelector('input:not([type="hidden"]), textarea');
+    if (inp) inp.focus();
+  }
   function editing(on) {
     var html = document.documentElement;
     html.classList.toggle('hs2-v3-editing', on);
     bridge.opened = on;
     fold(!on);
+    if (on) showGiftEdit();
     if (!on) { try { window.scrollTo(0, 0); } catch (e) { /* old browser */ } }
     giftFit();
   }
@@ -1064,8 +1109,14 @@
   }
   // a field Teeinblue marks invalid (at Add To Cart) never stays folded away
   function unfoldInvalid() {
-    if (bridge.folded && document.querySelector('#buy .tee-field--invalid')) {
-      if (giftView()) { editing(true); return; }
+    if ((bridge.folded || document.documentElement.classList.contains('hs2-v3-direct')) && document.querySelector('#buy .tee-field--invalid')) {
+      if (giftView()) {
+        var invalid = document.querySelector('#buy .tee-field--invalid');
+        var field = tibFields().find(function (f) { return f.el === invalid; });
+        if (field) giftEditKey = field.rule.k;
+        if (document.documentElement.classList.contains('hs2-v3-direct')) { showGiftEdit(); return; }
+        editing(true); return;
+      }
       bridge.opened = true; fold(false);
     }
   }

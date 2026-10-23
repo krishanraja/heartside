@@ -22,7 +22,7 @@
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, flagged: '', inked: {}, mugSide: 'note', mugTurned: false };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
@@ -595,14 +595,15 @@
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
     if (g === 'mug' && !ui.editing) h += mugSwatches();
     if (ui.editing) {
-      h += '<div class="hs3-edit">' + keys.map(function (k) {
-        var t = lineFor(k) || '';
-        return '<label class="hs3-edit__row"><span class="hs3-sr">Edit line</span><input class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(k) + '" value="' + esc(t) + '" data-hs3-edit="' + k + '"><span class="hs3-small hs3-right" data-hs3-left="' + k + '">' + (maxFor(k) - t.length) + ' characters left</span></label>';
-      }).join('') + '</div>';
+      var editIndex = keys.indexOf(ui.editKey);
+      if (editIndex < 0) { editIndex = 0; ui.editKey = keys[0]; }
+      var editText = lineFor(ui.editKey) || '';
+      h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
+      h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
       h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BISCUIT + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
     }
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">Written from your answers. Change any word.</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button><button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button></div>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button><button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button></div>';
     return h;
   }
   function mockup(g, n, lines) {
@@ -882,11 +883,9 @@
     }).join('') + '</div>';
     if (S.sel.mug) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
-    // Dec 10 holds for every gift (Krish, 19 Oct). Printful's 2026 guide: Dec 11 for US-made home
-    // items to the US, Nov 26 for anything made outside the US. The sherpa blanket can come from
-    // the US, Europe or Latvia. TODO: on the first blanket order, check which facility Printful
-    // routes it to; if it is not the US, the blanket needs an earlier date here.
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. Order by Dec 10 for Christmas. A person checks every order before it prints.</p>';
+    // Publish an order-by date only after Printful confirms the current year's cutoff for
+    // every selected variant and fulfillment route, including any gift bundle.
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. A person checks every order before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Add to cart · ' + fmt(c.total) : 'Add ' + c.count + ' gifts to cart · ' + fmt(c.total));
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
@@ -1135,11 +1134,27 @@
         if (l) l.textContent = g === 'mug' ? evenBreak(inp.value) : inp.value;
         if (g === 'mug') { clearTimeout(ui.paintT); ui.paintT = setTimeout(paintMugs, 120); }
       });
+      inp.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (giftKeys(S.gift || recGift()).indexOf(k) < giftKeys(S.gift || recGift()).length - 1) moveEdit(1);
+        else { ui.editing = false; render(); }
+      });
     });
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
     if (frame.querySelector('canvas[data-hs3-mug]')) paintMugs();
+  }
+  function focusEdit() {
+    var inp = frame.querySelector('[data-hs3-edit]');
+    if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) { /* input may not support selection */ } }
+  }
+  function moveEdit(delta) {
+    var keys = giftKeys(S.gift || recGift());
+    var nextIndex = Math.max(0, Math.min(keys.length - 1, keys.indexOf(ui.editKey) + delta));
+    ui.editKey = keys[nextIndex];
+    render(); focusEdit();
   }
   function act(a, v) {
     var n = names();
@@ -1154,7 +1169,9 @@
       case 'untype': ui.typing = false; if (S.fu && !S.fu.chips.length) { skip(); return; } render(); break;
       case 'send': var t = frame.querySelector('#hs3-typed'); sendTyped(t ? t.value : ''); break;
       case 'tab': S.tabbed = true; track('gift_tab', { gift: v }); startReveal(v); break;
-      case 'edit': ui.editing = !ui.editing; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) track('edit', {}); break;
+      case 'edit': ui.editing = !ui.editing; ui.editKey = giftKeys(S.gift || recGift())[0]; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) { track('edit', {}); focusEdit(); } break;
+      case 'editPrev': moveEdit(-1); break;
+      case 'editNext': moveEdit(1); break;
       case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'dog' ? 'note' : 'dog'); track('mug_turn', { side: ui.mugSide }); break;
       case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; S.sel[g] = true; ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
       case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
