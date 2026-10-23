@@ -103,5 +103,3 @@ Blocked or waiting:
 - `docs/archive/*`: history, do not act on it (`docs/archive/README.md`).
 - `content/v1-2026-10-06/`: the first videos, for the retired HR poster. Do not post them.
 - `design/BRAND-SYSTEM.md` on the poster voice (marked retired), `design/prototype-v3/Main.dc.html` on its gift lines (retired), and `assets/heartside-fb-cover-1640x624.jpg`, which shows the retired poster (`docs/HANDOFF.md` sections 7 and 8).
-
-
