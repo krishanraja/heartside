@@ -45,6 +45,6 @@ The request identity includes photo timestamp, product, blanket prompt revision 
 
 ## Scope and rollback
 
-No live theme release, live blanket artwork replacement, paid generation, sample order or fulfillment occurred. The new isolated artwork can remain unused. Theme changes are reversible on the existing draft branch; the prior preview deployment remains the known-good remote state until a new deployment is explicitly recorded.
+No live theme release, live blanket artwork replacement, paid generation, sample order or fulfillment occurred. The new isolated artwork can remain unused. The later private theme deployment and Shopify connection incident are recorded in `2026-10-23-private-blanket-connection.md`; that record supersedes the earlier statement that the template existed only locally.
 
 Private campaign screenshot and supplier readback were retained outside the public repository. Supplier readback on October 23: the selected variant is available, base cost 35.76 USD, retail 89 USD. This excludes shipping, fees, generation and remakes and is not delivered margin.

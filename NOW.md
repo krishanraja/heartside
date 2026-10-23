@@ -53,6 +53,7 @@ Live and recorded as verified in the repo:
 
 Blocked or waiting:
 
+- The personality blanket template is deployed to the unpublished theme and renders against an isolated Draft test product. Native Teeinblue binding is blocked on clearing its saved sales-channel assignment. Two Active transitions unexpectedly republished the test product; each was recovered to Draft. Final readback shows no public URL, published channels or test-SKU orders. Details and the focused queue are in `docs/evidence/2026-10-23-private-blanket-connection.md`.
 - **No real order through the v3 journey yet.** Krish moved the physical sample to the last step after the full product revamp.
 - The mug's Teeinblue Preview shows all ten slides per colour and prints flat; funnel events fire at the wrong moment (`docs/HANDOFF.md` section 3, "Known gaps right now").
 - No dated Christmas order-by promise is live. The accessible detailed Printful cutoff was for Christmas 2025; the 2026 cutoff and fulfillment location are not verified per product.
@@ -85,7 +86,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** complete the private Shopify handoff for the approved personality blanket campaign, then run controlled likeness checks after resolving native production-source quality with Teeinblue. The isolated artwork, unpublished campaign with one 50 x 60 variant, and local storefront handoff are prepared; actual photo generation and supplier output remain unverified. The support question was emailed, with a Monday October 26 follow-up scheduled. All products first, website mockups next, physical sample last.
+- **Next action:** finish the private blanket connection after Krish clears the acceptance product's sales-channel assignment in Shopify. The new blanket template is deployed to the unpublished theme and renders against the isolated Draft product, but Teeinblue will not connect a Draft. Active transitions unexpectedly restored sales channels; both were recovered to Draft, and final readback shows no public URL, published channels or matching test-SKU orders. The connector blocked explicit channel removal, so no further Active transition is allowed until the owner clears the assignment. See `docs/evidence/2026-10-23-private-blanket-connection.md`. Native generation, likeness and production-source quality remain unverified. Monday support follow-up is scheduled. All products first, website mockups next, physical sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
