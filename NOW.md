@@ -85,7 +85,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** complete one customer-path photo upload and saved print proof in the prepared private Shopify theme-editor preview. The repaired mobile layout, all three frame choices and disabled ordering were read back after draft push 39991340971. The merchant-editor San Francisco case passes. Provider source resolution/cost, likeness and failure behavior remain open before live release. The compose publication is complete; its hilarious backup quality still needs tuning. Sample order remains last.
+- **Next action:** finish native full-resolution source, usage cost and failure-path acceptance for the saved customer-generated San Francisco artwork. Customer upload, saved placement, reload persistence and the corrected saved-image UI pass on unpublished theme commit ae0808e, run 39995750143. Buddy-only live AI changes are prepared pending action-time approval; the approved tone update remains active. All products must be upgraded before the site mockup refresh, then the physical sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
@@ -112,11 +112,12 @@ Blocked or waiting:
 - `content/v1-2026-10-06/`: the first videos, for the retired HR poster. Do not post them.
 - `design/BRAND-SYSTEM.md` on the poster voice (marked retired), `design/prototype-v3/Main.dc.html` on its gift lines (retired), and `assets/heartside-fb-cover-1640x624.jpg`, which shows the retired poster (`docs/HANDOFF.md` sections 7 and 8).
 
-North Star check, 2026-10-23: holds. Controlled city-to-artwork proof now passes and the private native storefront form works; no new sales claim. Sample remains last.
-
 ## October 23 continuation: Buddy and customer artwork
 
 - Krish uploaded the same reference photo through the actual Shopify draft preview with San Francisco unchanged. The saved customer placement shows the pug, Golden Gate Bridge and the exact note/signature. This verifies the visible customer generation and placement, not its final order print file or native source dimensions.
-- The draft now distinguishes a saved image from a pending request, hides the redundant request control after save, and offers View artwork for full-size inspection. Ordering remains disabled.
+- The draft now distinguishes a saved image from a pending request, hides the redundant request control after save, and offers View artwork for inspecting the web preview. Ordering remains disabled.
 - Ruling (Krish, 2026-10-23): change Biscuit to Buddy everywhere. The character is unchanged. Active storefront copy, accessible labels, structured data, AI source prompts and current brand guidance now use Buddy in the draft. Live theme and AI publication remain separate release steps. Existing asset filenames remain compatible; imagery with the old printed name is queued for refresh.
 - Ruling (Krish, 2026-10-23): these mockups are better than the current site; improve the site mockups after all products are upgraded. Physical sample order remains last.
+
+- Native saved-image readback passes after fixing the provider image-placement suffix and using the matching uploaded thumbnail instead of translated button copy. Live Shopify descriptions now say Buddy; Teeinblue source descriptions and form placeholders are renamed without campaign sync. Source layout comparison confirms only placeholders changed. The live theme is unchanged.
+- The displayed customer artwork is a 680 x 1024 web derivative. A layout proof made from that derivative is not evidence of native AI resolution or an acceptable production source. The final customer order print file remains unverified.

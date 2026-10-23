@@ -292,4 +292,3 @@ Finish the product revamp before the sample order: prove the approved print dire
 ### 23 October: host name and mockup follow-through
 
 Ruling (Krish): change Biscuit to Buddy everywhere. This is a name change, preserving the approved character, voice, chat and gift behavior. Historical artifacts and legacy asset filenames can retain their original names for provenance and compatibility. New customer-facing copy uses Buddy. Refresh the storefront mockups after all product upgrades, using the new native frame mockups as the quality benchmark. The physical sample remains last.
-
