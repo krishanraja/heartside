@@ -282,6 +282,14 @@ for (const mode of ['fail', 'slow']) {
   });
   await page.locator('#teeAtcButton').click();
   ok(await page.locator('[data-hs2-photo-wait]').innerText() === "Add your dog's photo before adding this gift." && !(await page.evaluate(() => window.__testAdded)), 'product: no-photo order is blocked before Teeinblue can add its sample');
+  await page.evaluate(() => {
+    const field = document.createElement('div'); field.className = 'tee-field--photo';
+    field.innerHTML = '<span>Choose another image</span><input type="file" id="tee-photo-test">';
+    document.querySelector('#buy').appendChild(field);
+  });
+  await page.locator('#tee-photo-test').setInputFiles({ name: 'pip.png', mimeType: 'image/png', buffer: png });
+  await page.waitForFunction(() => !document.querySelector('#buy [data-hs2-media]').hasAttribute('data-hs2-sample'));
+  ok(!(await page.locator('#buy [data-hs2-media]').getAttribute('data-hs2-sample')), 'product: example label clears only after Teeinblue acknowledges this dog photo');
   await ctx.close();
 }
 for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
