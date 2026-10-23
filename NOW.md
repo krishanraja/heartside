@@ -43,6 +43,7 @@ Live and recorded as verified in the repo:
 - The mug's note at Fraunces 58 px in the live Teeinblue mug artwork, and 61-character Line fields on the storefront mug page (`docs/evidence/cowork-2026-10-22/REPORT-2.md`).
 - On 23 Oct, all four live storefront gift forms displayed 61-character Line fields. The signed-in Teeinblue product bases mapped all four active gifts to Printful, and Check stock reported all variants in stock. Shopify's active variants are available for sale, with inventory untracked because they are made on demand. This is a current stock indication, not proof of a completed order.
 - Shopify Payments showed "Accepting payments" on 23 Oct. A separate notice said payouts are pending until 25 Oct after a bank-detail update; the account owner should verify that update was expected.
+- A synthetic ornament with an uploaded test image and custom dog name, line and signature reached the live cart and checkout. For a New York ZIP, checkout quoted $5.99 standard US shipping with a $5.99 automatic discount, a $24 total and 5 to 9 Nov standard delivery. No payment was submitted; the test cart item was removed afterward.
 - The compose call (the whole note) on Claude Sonnet with a hand-over to Gemini 3.5 Flash at 7.5 s, and the typed answer on Gemini 3.5 Flash, as `n8n/README.md` records since 22 Oct.
 
 Merged to `main` but not recorded as deployed:
@@ -54,7 +55,7 @@ Blocked or waiting:
 - **No real order through the v3 journey yet.** The mock order is the first item of work left (`docs/HANDOFF.md` section 4).
 - The mug's Teeinblue Preview shows all ten slides per colour and prints flat; funnel events fire at the wrong moment (`docs/HANDOFF.md` section 3, "Known gaps right now").
 - The live gift pages promise "Order by Dec 10 for Christmas," but the accessible detailed Printful cutoff was for Christmas 2025. The 2026 cutoff and fulfillment location are not verified per product. A prepared theme change removes the dated promise until they are confirmed.
-- Shopify-to-Teeinblue-to-Printful fulfillment, actual combined-order shipping charges, product quality and exact live checkout total still need a full mock order.
+- Shopify-to-Teeinblue-to-Printful fulfillment, actual combined-order supplier shipping charges, product quality and a completed paid checkout still need a full mock order.
 - `docs/HANDOFF.md` section 3 still says the AI runs on Google Gemini and that "Change a word" allows 45 characters; `n8n/README.md` and `docs/V3-GIFTS-FROM-YOUR-DOG.md` section 5 carry the 22 Oct values.
 
 ## What changed recently
