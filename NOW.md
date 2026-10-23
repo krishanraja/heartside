@@ -87,10 +87,12 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** resolve the ornament's unbroken-text fitting case in the isolated draft and verify its actual print path while the blanket awaits Teeinblue's supported private connection route. Online Store is cleared; the remaining automatic Microsoft Copilot publication is not another owner checkbox request. Monday October 26 at 9 AM London, the scheduled support follow-up covers private binding and original AI production resolution, checking for a reply before resending. Native blanket generation and actual-dog likeness remain unverified. No live release or sample is authorized by this checkpoint. All products first, website mockups next, physical sample last.
+- **Next action:** get Krish's visual reaction to the first mug panorama concept, then develop the ornament at the same creative standard. His latest request prioritizes material creative upgrades over the isolated ornament typography repair. The mug concept is a flat artwork using the public reference pug and clearly illustrative habits; it is not a production file, supplier mockup or likeness acceptance. See `design/product-upgrade-2026-10-23/README.md`. Monday's support follow-up still covers private blanket binding and original AI production resolution. All products first, website mockups next, physical sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
+
+- Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 
 ## Read next
 
