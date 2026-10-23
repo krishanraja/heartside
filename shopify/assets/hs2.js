@@ -128,6 +128,8 @@
     document.querySelectorAll('[data-hs2-names-nudge]').forEach(function (n) { if (!n.hidden && !missingNames().length) n.hidden = true; });
     var answers = document.querySelector('[data-hs2-answers]');
     if (answers && engaged()) answers.hidden = false;
+    var personWrap = document.querySelector('[data-hs2-person-wrap]');
+    if (personWrap) personWrap.hidden = !answer('person');
     bridgeSoon();
     exhibits();
     leakUI();
