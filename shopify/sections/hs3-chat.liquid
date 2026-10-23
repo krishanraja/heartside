@@ -1,6 +1,6 @@
 {%- comment -%}
   Heartside v3: gifts from your dog. The whole journey on one screen, phone first:
-  home, the chat with Biscuit, the reveal, choose gifts and the share card.
+  home, the chat with Buddy, the reveal, choose gifts and the share card.
   Built from the approved prototype (design/prototype-v3/Main.dc.html) against
   docs/V3-GIFTS-FROM-YOUR-DOG.md. Behaviour lives in assets/hs3.js; this file holds the
   first screen (so it shows before the script runs) and the settings.
@@ -116,7 +116,7 @@
       </div>
     </div>
   </div>
-  <noscript><p class="hs3-small">Biscuit needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
+  <noscript><p class="hs3-small">Buddy needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
   <p class="hs3-privacy" data-hs3-privacy hidden>{{ s.privacy }}</p>
 </div>
 
@@ -126,18 +126,18 @@
   "tag": "section",
   "class": "hs3-section",
   "settings": [
-    { "type": "paragraph", "content": "Gifts from your dog: the chat with Biscuit, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Biscuit's lines are in assets/hs3.js, word for word from the approved prototype." },
+    { "type": "paragraph", "content": "Gifts from your dog: the chat with Buddy, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Buddy's lines are in assets/hs3.js, word for word from the approved prototype." },
     { "type": "header", "content": "First screen" },
     { "type": "text", "id": "ribbon", "label": "Ribbon", "default": "This year, the dog's buying." },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Biscuit about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
-    { "type": "text", "id": "peek", "label": "Biscuit's first bubble", "default": "Psst. Who does your dog love most?" },
+    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Buddy about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
+    { "type": "text", "id": "peek", "label": "Buddy's first bubble", "default": "Psst. Who does your dog love most?" },
     { "type": "text", "id": "gifts_note", "label": "Under the gift pills", "default": "Chat for a minute, then put your words on any of these. Pick one, or a few." },
     { "type": "text", "id": "start", "label": "Button", "default": "Start with your dog" },
     { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. A cut-out PNG looks best. Empty uses the sample dog." },
-    { "type": "header", "content": "Biscuit's AI (n8n)" },
+    { "type": "header", "content": "Buddy's AI (n8n)" },
     { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
     { "type": "text", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },
     { "type": "text", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" },

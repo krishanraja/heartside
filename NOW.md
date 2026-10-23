@@ -16,7 +16,7 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 
 ## What it is
 
-Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and a tree ornament carrying a short message from the dog to the person it loves, in the dog's own voice, signed "Love, [dog]". A buyer answers six short questions in a chat with Biscuit, the brand's AI dachshund host; an AI writes the note from those answers, and Printful makes the gift to order for US customers, with a person checking every order before it prints. A Shopify store (theme code in `shopify/`, deployed by GitHub workflow), Teeinblue for the personalised print file, and two n8n webhooks for the AI (`n8n/`). Lead line: "Your dog loves you too." (`docs/POSITIONING.md`). Heartside is a Mindmaker LLC company (`docs/HANDOFF.md` section 3).
+Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and a tree ornament carrying a short message from the dog to the person it loves, in the dog's own voice, signed "Love, [dog]". A buyer answers six short questions in a chat with Buddy, the brand's AI dachshund host; an AI writes the note from those answers, and Printful makes the gift to order for US customers, with a person checking every order before it prints. A Shopify store (theme code in `shopify/`, deployed by GitHub workflow), Teeinblue for the personalised print file, and two n8n webhooks for the AI (`n8n/`). Lead line: "Your dog loves you too." (`docs/POSITIONING.md`). Heartside is a Mindmaker LLC company (`docs/HANDOFF.md` section 3).
 
 ## Who it is for and why it matters for Mindmake
 
@@ -79,7 +79,7 @@ Blocked or waiting:
 - **2026-10-19: the chat became the homepage** (`9ea7e34`), the mug went to five colours with Black first, and order QC moved to GitHub Actions with its schedule switched on (`5075902`).
 - **2026-10-18: the North Star was set** (`dfafcf0`): the gift US dog owners reach for first by February 2027, with $10,000 an ordinary month.
 - **2026-10-15: mug v3 approved** on real product photos, and an order check that reads each order's real print file before it prints (`ffe773f`; `docs/COWORK-HANDOVER-2026-10-15.md`).
-- **2026-10-13: v3, gifts from your dog** (`5f25e34`, `52caa44`): the four everyday gifts replaced the HR poster range, and the chat with Biscuit, with live AI through n8n, replaced the review builder.
+- **2026-10-13: v3, gifts from your dog** (`5f25e34`, `52caa44`): the four everyday gifts replaced the HR poster range, and the chat with Buddy, with live AI through n8n, replaced the review builder.
 - **2026-10-12: positioning set** (`35f0070`): "Heartside: Personalized Dog Gifts" and "Your dog loves you too."
 - **2026-10-04 to 07: the v1 and v2 stores** (the ornament, then the "Your dog has notes" poster), now history (`docs/archive/README.md`).
 
@@ -113,3 +113,10 @@ Blocked or waiting:
 - `design/BRAND-SYSTEM.md` on the poster voice (marked retired), `design/prototype-v3/Main.dc.html` on its gift lines (retired), and `assets/heartside-fb-cover-1640x624.jpg`, which shows the retired poster (`docs/HANDOFF.md` sections 7 and 8).
 
 North Star check, 2026-10-23: holds. Controlled city-to-artwork proof now passes and the private native storefront form works; no new sales claim. Sample remains last.
+
+## October 23 continuation: Buddy and customer artwork
+
+- Krish uploaded the same reference photo through the actual Shopify draft preview with San Francisco unchanged. The saved customer placement shows the pug, Golden Gate Bridge and the exact note/signature. This verifies the visible customer generation and placement, not its final order print file or native source dimensions.
+- The draft now distinguishes a saved image from a pending request, hides the redundant request control after save, and offers View artwork for full-size inspection. Ordering remains disabled.
+- Ruling (Krish, 2026-10-23): change Biscuit to Buddy everywhere. The character is unchanged. Active storefront copy, accessible labels, structured data, AI source prompts and current brand guidance now use Buddy in the draft. Live theme and AI publication remain separate release steps. Existing asset filenames remain compatible; imagery with the old printed name is queued for refresh.
+- Ruling (Krish, 2026-10-23): these mockups are better than the current site; improve the site mockups after all products are upgraded. Physical sample order remains last.

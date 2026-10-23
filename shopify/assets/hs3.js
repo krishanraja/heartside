@@ -1,7 +1,7 @@
 /* Heartside v3: gifts from your dog. Loaded (deferred) by sections/hs3-chat.liquid.
-   The chat with Biscuit, the reveal, choose gifts and the share card, from the approved
+   The chat with Buddy, the reveal, choose gifts and the share card, from the approved
    prototype (design/prototype-v3/Main.dc.html) and docs/V3-GIFTS-FROM-YOUR-DOG.md.
-   Biscuit's lines and every gift line for a chip answer are the prototype's, word for word.
+   Buddy's lines and every gift line for a chip answer are the prototype's, word for word.
    Chip answers never call the AI. "Something else" sends the typed words to Krish's n8n
    (two webhooks, section 5.4), which answers in the JSON of section 5.2 or not at all; any
    slow or failed call falls back to the buyer's own words, so the chat never waits long.
@@ -181,7 +181,7 @@
   }
   function reasonFor(g, n) {
     if (S.composed && S.composed.reason && g === S.composed.gift) return S.composed.reason;
-    // Biscuit's mug reason repeats only the "together" answer the buyer picked; a typed answer
+    // Buddy's mug reason repeats only the "together" answer the buyer picked; a typed answer
     // or "Not sure" gets skip (Cowork report 15 Oct, section 3; 140 characters at most)
     var d = n.dog, r = n.rec;
     var MUG = {
@@ -302,7 +302,7 @@
     });
   }
   /* While the buyer types, a pause of 600 ms sends what they have so far. If they press Done
-     on the same words, that answer is already back (or on its way), so Biscuit replies at once.
+     on the same words, that answer is already back (or on its way), so Buddy replies at once.
      It spends from the same 8-call budget, so it never runs with fewer than 3 calls left. */
   var spec = null, specTimer = null;
   function typedParams(text) {
@@ -424,7 +424,7 @@
   }
 
   /* ------------------------------------------------------------------ views */
-  var BISCUIT = '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g class="hs3-head"><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs3-ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>';
+  var BUDDY = '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g class="hs3-head"><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs3-ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>';
   var PAW = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><ellipse cx="6" cy="9" rx="2.4" ry="3.1"/><ellipse cx="10.5" cy="5.5" rx="2.4" ry="3.1"/><ellipse cx="15.5" cy="5.5" rx="2.4" ry="3.1"/><ellipse cx="20" cy="9" rx="2.4" ry="3.1"/><path d="M13 11c-4 0-7 4-7 7 0 2 1.6 3 3.4 3 1.6 0 2.4-.8 3.6-.8s2 .8 3.6.8c1.8 0 3.4-1 3.4-3 0-3-3-7-7-7z"/></svg>';
   var ICON = {
     mug: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/></svg>',
@@ -501,7 +501,7 @@
     var m = { prefix: ui.prefix, question: '', chips: [], skip: false, next: null, nextLabel: 'Next', input: null, other: false };
     var step = S.step;
     if (step === 1) {
-      m.question = "Hi! I'm Biscuit. I sniff out gifts from dogs to the people they love. Who's your dog?";
+      m.question = "Hi! I'm Buddy. I sniff out gifts from dogs to the people they love. Who's your dog?";
       m.input = 'dog'; m.next = 'dog'; m.nextLabel = "That's my dog";
     } else if (step === 2) {
       m.prefix = m.prefix || n.dog + '! Great name. My tail is going.';
@@ -560,8 +560,8 @@
     h += '<div class="hs3-onany"><div class="hs3-small">At the end, put these words on any gift you like:</div>' + pills() + '</div></div>';
     h += '<div class="hs3-talk">';
     if (ui.echo && !ui.thinking) h += '<div class="hs3-echo">' + esc(ui.echo) + '</div>';
-    h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BISCUIT + '</span>';
-    if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Biscuit is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
+    h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BUDDY + '</span>';
+    if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Buddy is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
     else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + esc(m.prefix) + ' </span>' : '')) + esc(m.question) + '</div>';
     h += '</div></div>';
     h += '<div class="hs3-dock">';
@@ -598,11 +598,11 @@
     var g = S.gift || recGift();
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Biscuit\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
     if (!ui.editing) {
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + GIFTS.map(function (k) {
-        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Biscuit's pick" : '') + '</span></button>';
+        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : '') + '</span></button>';
       }).join('') + '</div>';
       var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
       var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
@@ -618,7 +618,7 @@
       h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
       h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
-      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BISCUIT + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
+      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
     }
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button><button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button></div>';
     return h;
@@ -896,7 +896,7 @@
     h += '<div class="hs3-opts">' + GIFTS.map(function (k) {
       var on = !!S.sel[k];
       var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BISCUIT\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
     }).join('') + '</div>';
     if (S.sel.mug) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
@@ -1021,7 +1021,7 @@
     save(); render();
     if (S.step <= 6 && !S.meaning) stepEvent('shown');
   }
-  // a typed answer: Biscuit reacts, a line inks, and on the home question one follow-up
+  // a typed answer: Buddy reacts, a line inks, and on the home question one follow-up
   function sendTyped(text) {
     text = String(text || '').trim();
     if (!text) return;
@@ -1029,7 +1029,7 @@
     var key = ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step];
     if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
-    // the buyer's own words ink at once; Biscuit's version replaces them when it lands
+    // the buyer's own words ink at once; Buddy's version replaces them when it lands
     ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key), key) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';

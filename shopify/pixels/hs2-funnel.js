@@ -29,7 +29,7 @@ const EVENTS = [
   'hs2_caption_copied',   // copied the story caption ({ card })
   'hs2_link_shared',      // shared the review link ({ card })
   'hs2_faq_open',         // opened an FAQ ticket ({ question })
-  // v3, the chat with Biscuit (shopify/assets/hs3.js). Typed words and names never leave the store.
+  // v3, the chat with Buddy (shopify/assets/hs3.js). Typed words and names never leave the store.
   'hs3_start',            // pressed "Start with your dog"
   'hs3_step',             // a question shown, answered or skipped ({ step, action, kind, value, sub })
   'hs3_photo_attached',   // added the dog's photo

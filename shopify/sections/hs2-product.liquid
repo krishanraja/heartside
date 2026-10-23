@@ -172,7 +172,7 @@
                 <div class="hs2-answers__title">{{ block.settings.title }}</div>
                 <button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>
               </div>
-              <p class="hs2-answers__who">From <strong data-hs2="dog">Biscuit</strong><span data-hs2-person-wrap hidden> to <strong data-hs2="person">Sarah</strong></span></p>
+              <p class="hs2-answers__who">From <strong data-hs2="dog">Buddy</strong><span data-hs2-person-wrap hidden> to <strong data-hs2="person">Sarah</strong></span></p>
               {%- if block.settings.picks -%}
                 <p class="hs2-answers__picks"><span data-hs2="improvement">Leaving</span> · <span data-hs2="incident">The sock</span> · <span data-hs2="enemy">The mailman</span> · <span data-hs2="cupboard">1,412</span> treats</p>
               {%- endif -%}
@@ -181,6 +181,7 @@
               {% if s.city_art_preview %}
                 <p><span data-hs2-artwork-city>Somewhere quiet</span> · <button type="button" class="hs2-answers__edit" data-hs2-artwork-edit-city>Change place</button></p>
                 <p data-hs2-artwork-status role="status">Preview only. Check your dog, city and note before release.</p>
+                <a data-hs2-artwork-source data-hs2-artwork-layer="layer-747218" target="_blank" rel="noopener noreferrer" hidden>View artwork</a>
               {% endif %}
               <div class="hs2-answers__photo" data-hs2-handoff hidden>
                 <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy" data-hs2-handoff-img>
@@ -213,7 +214,7 @@
                   </div>
                 {%- endif -%}
                 {%- if block.settings.v3 -%}
-                  {%- comment -%} v3 gifts: what the buyer told Biscuit and the words on the gift, for the person who checks the order {%- endcomment -%}
+                  {%- comment -%} v3 gifts: what the buyer told Buddy and the words on the gift, for the person who checks the order {%- endcomment -%}
                   <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
                   <input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">
                   <input type="hidden" name="properties[_hs_ship_to]" data-hs2-prop="hs_ship_to" value="">

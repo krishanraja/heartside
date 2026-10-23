@@ -59,7 +59,7 @@
 .hs3-peek { position: absolute; left: 10px; bottom: 0; display: flex; align-items: flex-end; gap: 6px; animation: hs3-peek 4s ease-in-out infinite; }
 .hs3-bubble--peek { margin-bottom: 44px; font-size: 13.5px; padding: 8px 11px; }
 
-/* Biscuit */
+/* Buddy */
 .hs3-biscuit { display: inline-block; width: 54px; height: 54px; flex: none; }
 .hs3-biscuit--peek { width: 78px; height: 78px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z' fill='%237A4027'/%3E%3Crect x='44' y='84' width='40' height='7' rx='3.5' fill='%23F0C0C0'/%3E%3Cellipse cx='58' cy='58' rx='30' ry='27' fill='%238A4A2B'/%3E%3Cellipse cx='90' cy='66' rx='22' ry='13' fill='%2395553A'/%3E%3Cellipse cx='95' cy='70' rx='15' ry='8.5' fill='%23CFC4BA'/%3E%3Cellipse cx='110' cy='62' rx='6.5' ry='5.5' fill='%23121010'/%3E%3Ccircle cx='70' cy='50' r='4' fill='%23121010'/%3E%3Ccircle cx='71.3' cy='48.6' r='1.2' fill='%23FFFDF9'/%3E%3Cpath d='M64 42 Q 70 38 76 42' fill='none' stroke='%23CFC4BA' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M96 76 Q 102 79 107 75' fill='none' stroke='%235A2E1C' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z' fill='%236A3520'/%3E%3C/svg%3E"); }
 .hs3-biscuit svg { width: 100%; height: 100%; display: block; }
@@ -298,7 +298,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3-peek { left: 4%; }
   .hs3-bubble--peek { font-size: 15px; }
   .hs3--app .hs3__frame { max-width: 600px; }
-  /* the chat: the note the dog is writing on the left, Biscuit and the answers on the right */
+  /* the chat: the note the dog is writing on the left, Buddy and the answers on the right */
   .hs3 { scroll-margin-top: var(--hs2-head, 66px); }
   .hs3--app .hs3__frame[data-hs3-screen="chat"] { max-width: 1120px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "top top" "note talk" "note dock" "note ."; grid-template-rows: auto auto auto 1fr; align-content: start; column-gap: 56px; padding: 0 40px 32px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-top { grid-area: top; }
@@ -307,7 +307,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-talk { grid-area: talk; align-self: end; padding: 56px 0 8px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-dock { grid-area: dock; padding: 6px 0 10px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-bubble { max-width: 420px; font-size: 17px; }
-  /* the reveal: the gift large on the left, its name, the tabs, Biscuit's reason and the
+  /* the reveal: the gift large on the left, its name, the tabs, Buddy's reason and the
      buttons on the right */
   .hs3--app .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-content: start; padding: 0 40px 40px; }
   .hs3__frame[data-hs3-screen="reveal"] { grid-template-areas: "top top" "stage h2" "stage tabs" "stage note" "stage color" "stage says" "stage dock" "stage ."; grid-template-rows: auto auto auto auto auto auto auto 1fr; }

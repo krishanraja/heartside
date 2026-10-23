@@ -12,7 +12,7 @@
 
   var KEY = 'hs2-review';
   var ANSWERS = ['dog', 'person', 'cupboard', 'improvement', 'incident', 'enemy'];
-  var DEFAULTS = { dog: 'Biscuit', person: 'Sarah', cupboard: '1,412', improvement: 'Leaving', incident: 'The sock', enemy: 'The mailman', voice: false, leak: 'rating' };
+  var DEFAULTS = { dog: 'Buddy', person: 'Sarah', cupboard: '1,412', improvement: 'Leaving', incident: 'The sock', enemy: 'The mailman', voice: false, leak: 'rating' };
   var LEAKS = ['rating', 'incident', 'threat', 'memo'];
   var state = load();
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -39,7 +39,7 @@
     v = (v == null ? '' : String(v)).trim();
     return v || DEFAULTS[k];
   }
-  /* What the shopper actually gave us. The names have no default: "Biscuit" and "Sarah"
+  /* What the shopper actually gave us. The names have no default: "Buddy" and "Sarah"
      only fill the page until they type. They never go into a link, an order or the
      personalizer, or the poster would print a stranger's name. The treat count and the
      chips keep their defaults, because those print sensibly as they are. */
@@ -67,7 +67,26 @@
   }
   function markArtRequested() {
     doHandoff.artCity = answer('city'); doHandoff.artPhoto = usePhoto.t;
-    try { window.sessionStorage.setItem(artRequestKey(), 'sent'); } catch (e) { /* memory guard remains */ }
+    try {
+      window.sessionStorage.setItem(artRequestKey(), 'sent');
+      window.sessionStorage.setItem(artRequestKey() + ':before', cityArtSource());
+    } catch (e) { /* memory guard remains */ }
+  }
+  // A saved provider image is a preview to inspect, not proof of AI success or print readiness.
+  function cityArtSource() {
+    var link = document.querySelector('[data-hs2-artwork-source]');
+    var id = link && link.getAttribute('data-hs2-artwork-layer');
+    var layer = id && document.getElementById('artwork-layer--' + id);
+    var image = layer && (layer.matches('image') ? layer : layer.querySelector('image'));
+    var src = image && (image.getAttribute('href') || image.getAttribute('xlink:href')) || '';
+    if (!src || src.indexOf('6adb83e021733') !== -1) return ''; // approved concept placeholder
+    try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
+  }
+  function cityArtSaved() {
+    if (!cityArtPreview() || !artRequested() || !tibTookPhoto() || document.querySelector('.vm--container')) return false;
+    var src = cityArtSource(), before = '';
+    try { before = window.sessionStorage.getItem(artRequestKey() + ':before') || ''; } catch (e) { /* no storage */ }
+    return !!src && src !== before;
   }
   function v3Answer(k) {
     var lines = state.hs3_lines || {};
@@ -1205,8 +1224,10 @@
     var d = (state.dog == null ? '' : String(state.dog)).trim();
     var has = !!document.querySelector('#buy .tee-field--photo .tee-photo-head img');
     var media = document.querySelector('#buy [data-hs2-media]');
-    if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() || !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
+    if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() ? !cityArtSaved() : !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
     if (cityArtPreview()) {
+      var previewLabel = media && media.querySelector('.hs2-product__example');
+      if (previewLabel) previewLabel.textContent = artRequested() ? 'Waiting for your saved artwork.' : doHandoff.artPhoto ? 'Earlier artwork. Create a new preview for this place.' : "Example artwork. Add your dog's photo to see yours.";
       var orderButton = document.getElementById('teeAtcButton');
       if (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; }
       var place = document.querySelector('[data-hs2-artwork-city]');
@@ -1392,13 +1413,16 @@
     if (cityArtPreview()) {
       var sent = artRequested();
       if (sent) { doHandoff.artPhoto = usePhoto.t; doHandoff.artCity = answer('city'); }
-      box.hidden = !(inp && file);
+      var saved = cityArtSaved();
+      box.hidden = saved || !(inp && file);
       if (btn) {
         btn.disabled = !!sent;
         btn.textContent = sent ? 'Artwork requested' : doHandoff.artPhoto ? 'Create new artwork' : 'Create artwork';
       }
       var artStatus = document.querySelector('[data-hs2-artwork-status]');
-      if (artStatus && doHandoff.artPhoto && !sent) artStatus.textContent = 'Your photo or city changed. Create new artwork to use it.';
+      if (artStatus) artStatus.textContent = saved ? 'Check the saved image for your dog and ' + answer('city') + '. Preview only.' : doHandoff.artPhoto && !sent ? 'Your photo or city changed. Create new artwork to use it.' : sent ? 'Your artwork is being prepared. Save its placement when it appears.' : 'Preview only. Check your dog, city and note before release.';
+      var sourceLink = document.querySelector('[data-hs2-artwork-source]');
+      if (sourceLink) { sourceLink.hidden = !saved; if (saved) sourceLink.href = cityArtSource(); else sourceLink.removeAttribute('href'); }
       return;
     }
     var can = !!(inp && file && !handed() && typeof DataTransfer === 'function');

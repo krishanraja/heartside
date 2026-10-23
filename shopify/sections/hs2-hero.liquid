@@ -16,8 +16,8 @@
       <div class="hs2-namecard hs2-anim-rise" style="--d: .42s">
         <label for="dogname-{{ section.id }}">{{ s.name_label }}</label>
         <div class="hs2-namecard__row">
-          <input id="dogname-{{ section.id }}" type="text" maxlength="14" placeholder="Biscuit"
-            autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog" data-hs2-cycle="Biscuit,Gerald,Pickle,Waffles,Moose,Duchess">
+          <input id="dogname-{{ section.id }}" type="text" maxlength="14" placeholder="Buddy"
+            autocomplete="off" autocapitalize="words" spellcheck="false" data-hs2-input="dog" data-hs2-cycle="Buddy,Gerald,Pickle,Waffles,Moose,Duchess">
           <a class="hs2-btn" href="{{ s.link | default: '#review' }}">{% render 'hs2-t', text: s.button %}</a>
         </div>
         {%- if s.note != blank -%}<div class="hs2-namecard__note">{% render 'hs2-t', text: s.note %}</div>{%- endif -%}
@@ -43,7 +43,7 @@
       <div class="hs2-badge hs2-anim-badge" aria-hidden="true">
         <div class="hs2-badge__top">HEARTSIDE HOUSEHOLD</div>
         <div class="hs2-badge__body">
-          <div class="hs2-badge__name" data-hs2="dog">Biscuit</div>
+          <div class="hs2-badge__name" data-hs2="dog">Buddy</div>
           <div class="hs2-badge__role">All-Access Pass</div>
           <div class="hs2-badge__access">Access: all areas, including your side of the bed</div>
           <div class="hs2-badge__code"></div>

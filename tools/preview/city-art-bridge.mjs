@@ -30,6 +30,7 @@ try {
       const field = (id, label, max) => `<div class="tee-field" id="tee-field--${id}"><div class="tee-field__heading"><span>${label}</span></div><input type="text" name="${id}" id="${id}" maxlength="${max}"></div>`;
       form.innerHTML = field('layer-city', 'City', 60) + field('layer-dog', "Dog's name", 14) + field('layer-note', 'Line 4', 44) + '<div class="tee-field tee-field--photo"><span>Upload photo</span><input type="file" id="tee-photo-test"></div><button id="teeAtcButton">Add to cart</button>';
       form.insertAdjacentHTML('afterbegin', '<div class="tee-variants"><div class="tee-option-inner">' + ['Black', 'Red Oak', 'White'].map((name, i) => `<div class="tee-radio"><label class="tee-radio-label"><input type="radio" name="frame" ${i ? '' : 'checked'}><span>${name}</span></label></div>`).join('') + '</div></div>');
+      form.insertAdjacentHTML('beforeend', '<svg><g id="artwork-layer--layer-747218"><image href="https://example.test/6adb83e021733-placeholder.png"/></g></svg>');
       form.addEventListener('input', e => { data[e.target.name] = e.target.value; });
       form.addEventListener('change', e => { if(e.target.type === 'file') window.uploads++; });
       form.querySelector('#teeAtcButton').addEventListener('click', () => window.cartAdds++);
@@ -69,6 +70,16 @@ try {
   assert.equal(await page.evaluate(() => window.uploads), 1, 'slow or uncertain AI request does not retry after ten seconds');
   await page.evaluate(() => document.querySelector('[data-hs2-handoff-btn]').click());
   assert.equal(await page.evaluate(() => window.uploads), 1, 'repeated click does not submit twice');
+  assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'placeholder never becomes a customer preview');
+  await page.evaluate(() => {
+    document.querySelector('.tee-field--photo').insertAdjacentHTML('beforeend', '<span>Choose another image</span>');
+    document.querySelector('#artwork-layer--layer-747218 image').setAttribute('href', 'https://example.test/customer-sf.png');
+    document.dispatchEvent(new Event('teeinblue-event-component-injected'));
+  });
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('[data-hs2-artwork-source]').getAttribute('href'), 'https://example.test/customer-sf.png');
+  assert.equal(await page.locator('[data-hs2-handoff]').isVisible(), false, 'saved image removes redundant request control');
+  assert.match(await page.textContent('[data-hs2-artwork-status]'), /Check the saved image/);
   assert.equal(await page.locator('#teeAtcButton').isDisabled(), true, 'preview ordering is visibly disabled');
   await page.locator('#teeAtcButton').dispatchEvent('click');
   assert.equal(await page.evaluate(() => window.cartAdds), 0, 'unfinished artwork preview cannot enter cart');
@@ -83,6 +94,7 @@ try {
   await page.click('[data-hs2-tib-edit]');
   assert.equal(await page.evaluate(() => window.uploads), 0, 'changing city never triggers a paid call');
   assert.match(await page.textContent('[data-hs2-artwork-status]'), /changed/);
+  assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'a changed city cannot reuse the prior preview link');
   await page.screenshot({ path: path.join(here, 'out/city-art-bridge.png') });
   assert.deepEqual(errors, []);
   console.log('PASS: optional city, exact single note, one-field editor, deliberate generation, no duplicate retries, stale city notice and draft cart block. Provider is a fixture.');

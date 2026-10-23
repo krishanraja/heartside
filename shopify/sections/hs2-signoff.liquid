@@ -2,7 +2,7 @@
 {%- assign parts = section.settings.text | split: ' · ' -%}
 <div class="hs2">
   <div class="hs2-signoff{% if section.settings.compact %} hs2-signoff--compact{% endif %}" data-hs2-reveal data-hs2-group>
-    <div class="hs2-signoff__paw" style="--i: 0">{% render 'hs2-paw' %}<span data-hs2="dog">Biscuit</span></div>
+    <div class="hs2-signoff__paw" style="--i: 0">{% render 'hs2-paw' %}<span data-hs2="dog">Buddy</span></div>
     {%- if parts.size == 3 -%}
       {%- comment -%} The approved line, laid out as a lockup. The hidden separators keep it one line for screen readers. {%- endcomment -%}
       <p class="hs2-signoff__lockup" style="--i: 1">
