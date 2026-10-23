@@ -4,6 +4,9 @@ This is the deterministic part of the approved city-screenprint print route. It
 is a **trial**, not an automatic order fulfiller or a live product promise.
 The upstream image model still needs an approved, metered order-time route,
 and the final file still needs a person's print-proof review.
+The exploratory edits used built-in ChatGPT Images. Runway and Higgsfield are
+reserved for acquisition artwork and video unless a later production test
+shows a concrete advantage for order fulfillment.
 
 Inputs: the buyer's original dog photo; their four approved gift lines and dog
 name; an optional place explicitly supplied by the buyer; and a generated
@@ -55,6 +58,15 @@ profile, and 32.5 MB. That proves
 the file dimensions and note placement, **not** true photographic detail,
 identity preservation across many dogs, or physical print quality.
 
+For paid-order production, the preferred image trial is a direct ChatGPT Images
+edit after payment. Current OpenAI API guidance supports a 2560 x 3840 portrait
+request on GPT Image 2 and the newer 2.5 models. That is a 2:3 source needing
+only a 1.406× resize to the print canvas, but resolutions above 2560 x 1440
+are experimental. The built-in trial images here came back at 1024 x 1536;
+they cannot establish the larger API route's quality, time or billed cost.
+Test a real metered request and inspect its usage before selecting a model or
+quoting unit economics.
+
 Before launch, test at least five varied dog photos and places with the same
 prompt and output route. Reject changed markings, distorted anatomy, wrong
 landmarks, unreadable note, missing words, trim conflicts, more than 60 MiB,
@@ -88,3 +100,4 @@ Primary supplier instructions, checked 23 October 2026:
 - [Printful print-file and color-profile guidance](https://help.printful.com/hc/en-us/articles/50264019148177-How-should-I-prepare-my-print-file-for-the-best-results)
 - [Printful wall-art safe-area guidance](https://help.printful.com/hc/en-us/articles/50264024409233-What-is-the-safe-print-area)
 - [Caveat font](https://github.com/google/fonts/blob/main/ofl/caveat/METADATA.pb), OFL license in `fonts/`.
+- [OpenAI image model dimensions and cost guidance](https://developers.openai.com/api/docs/guides/image-generation)
