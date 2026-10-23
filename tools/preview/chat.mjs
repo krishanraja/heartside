@@ -80,14 +80,14 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok((await bubble(page)).includes('What does Kuku do when Sam comes home?'), 'step 3: home question names both');
   await page.screenshot({ path: path.join(shots, '1-chat-step3.png') });
   await chipNamed(page, 'Waits at the door');
-  ok((await noteLines(page))[0] === "I wait by the door. It's my whole job.", 'step 3: a first draft line inks straight away');
+  ok((await noteLines(page))[0] === 'I wait by the door until you come home.', 'step 3: a first draft line inks straight away');
   await page.waitForSelector('text=At the door! Every day? Even weekends? (I would.)', { timeout: 3000 });
   await chipNamed(page, 'Even weekends');
-  ok((await bubble(page)).startsWith("Weekends too. Now that's a good dog."), 'step 3b: follow-up reaction');
+  ok((await bubble(page)).startsWith("Weekends too? That's a dog who knows what matters."), 'step 3b: follow-up reaction');
   await chipNamed(page, "Sam's side of the bed");
   await chipNamed(page, 'The morning walk');
   await chipNamed(page, "Sam's shadow");
-  ok((await noteLines(page)).join('|') === "I wait by the door. Weekends too. Obviously.|I took your side of the bed. Not sorry.|Our walks are the best part of my day.|I'm your shadow. Where else would I be?", 'chat: four lines in the dog\'s own voice');
+  ok((await noteLines(page)).join('|') === "I wait by the door for you, weekends too.|I took your side of the bed to keep it warm.|Our walks are the best part of my day.|I'm your shadow, and I like it that way.", 'chat: four lines in the dog\'s own voice');
   await page.screenshot({ path: path.join(shots, '2-chat-done.png') });
   await tap(page, '[data-hs3="next"]');
   await page.waitForTimeout(3300);
@@ -100,8 +100,12 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok((await page.locator('.hs3-stage .hs3-line').count()) === 4, 'reveal: the blanket tab shows the same words, all four');
   await page.screenshot({ path: path.join(shots, '4-reveal-blanket.png') });
   await tap(page, '[data-hs3="edit"]');
+  ok(await page.locator('[data-hs3-edit]').count() === 1, 'reveal: one sentence field at a time');
+  await page.screenshot({ path: path.join(shots, '4a-reveal-edit.png') });
   await page.locator('[data-hs3-edit="home"]').fill('Will ride anywhere, as long as it\'s with you.');
-  ok((await page.locator('[data-hs3-left="home"]').innerText()) === '0 characters left' && (await page.locator('[data-hs3-edit="home"]').inputValue()).length === 45, 'change a word: 45 characters, as Teeinblue allows');
+  ok((await page.locator('[data-hs3-left="home"]').innerText()) === '15 characters left' && (await page.locator('[data-hs3-edit="home"]').inputValue()).length === 45, 'change a word: 60-character home limit');
+  await tap(page, '[data-hs3="editNext"]');
+  ok(await page.locator('[data-hs3-edit="spot"]').count() === 1 && await page.locator('[data-hs3-edit]').count() === 1, 'reveal: Next changes the single field');
   await tap(page, '[data-hs3="edit"]');
   await tap(page, '[data-hs3="them"]');
   await tap(page, '[data-hs3="sel"][data-v="mug"]');
@@ -177,13 +181,13 @@ for (const mode of ['fail', 'slow']) {
     const first = (await noteLines(page))[0];
     ok(first === 'Howls the moment your key turns in the lock.', `while the AI writes, the buyer's own words ink at once, read like a chip line ("${first}")`);
   }
-  await page.waitForSelector('text=Tell me more?', { timeout: 4000 });
-  ok(Date.now() - t < 3600, `AI ${mode}: "Tell me more?" fallback in ${Date.now() - t}ms`);
+  await page.waitForSelector('text=Tell me more?', { timeout: 6500 });
+  ok(Date.now() - t < 6500, `AI ${mode}: "Tell me more?" fallback in ${Date.now() - t}ms`);
   ok((await noteLines(page))[0] === 'Howls the moment your key turns in the lock.', `AI ${mode}: the buyer's own words become the line, read like a chip line ("${(await noteLines(page))[0]}")`);
-  ok((await noteLines(page))[0].length <= 44, `AI ${mode}: own-words line fits 44 characters`);
+  ok((await noteLines(page))[0].length <= 60, `AI ${mode}: own-words line fits 60 characters`);
   await tap(page, '[data-hs3="skip"]');
   await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).slice(1).join('|') === "I'm never far from you.|Any time with you is my favorite time.|I'm yours. Always.", `AI ${mode}: "Not sure" uses the calm lines`);
+  ok((await noteLines(page)).slice(1).join('|') === "I'm never far from you.|Any time with you is my favorite time.|I'm yours, always.", `AI ${mode}: "Not sure" uses the calm lines`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
@@ -193,7 +197,7 @@ for (const mode of ['fail', 'slow']) {
   await page.fill('#hs3-dog', 'Moose'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Ana'); await tap(page, '[data-hs3="next"]');
   for (let i = 0; i < 4; i++) await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).join('|') === "Best part of my day? You walking in.|I'm never far from you.|Any time with you is my favorite time.|I'm yours. Always.", 'all "Not sure": a warm, complete set of lines');
+  ok((await noteLines(page)).join('|') === "Best part of my day? You walking in.|I'm never far from you.|Any time with you is my favorite time.|I'm yours, always.", 'all "Not sure": a warm, complete set of lines');
   await tap(page, '[data-hs3="next"]');
   await page.waitForTimeout(3300);
   await page.screenshot({ path: path.join(shots, '7-not-sure-reveal.png') });

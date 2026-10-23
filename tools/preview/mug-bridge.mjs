@@ -34,13 +34,13 @@ const state = {
   hs3_kinds: { 'the-morning-mug': 'mug', 'the-couch-blanket': 'blanket' }
 };
 
-async function run(kind, handle, size = [390, 844], check = null) {
+async function run(kind, handle, size = [390, 844], check = null, initialState = state) {
   const ctx = await browser.newContext({ viewport: { width: size[0], height: size[1] } });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(([st, kind]) => {
-    window.sessionStorage.setItem('hs2-review', JSON.stringify(st));
+    if (st) window.sessionStorage.setItem('hs2-review', JSON.stringify(st));
     const data = {};
     window.teeinblueCampaign = { productId: '9001' };
     window.teeinblue = { getCurrentCustomization: () => ({ ...data }), refillCustomizationData: () => {} };
@@ -55,7 +55,7 @@ async function run(kind, handle, size = [390, 844], check = null) {
       (document.querySelector('[data-hs2-answers]') || document.body).after(box);
       document.dispatchEvent(new Event('teeinblue-event-component-injected'));
     }, 500));
-  }, [state, kind]);
+  }, [initialState, kind]);
   await page.goto(`${base}/products/${handle}`);
   await page.waitForTimeout(2500);
   const vals = await page.evaluate(() => ['layer-1', 'layer-2', 'layer-3', 'layer-4'].map((id) => document.getElementById(id).value));
@@ -88,7 +88,7 @@ async function run(kind, handle, size = [390, 844], check = null) {
   ok(r.vals[2] === 'Lives for our morning walks.', 'blanket: Line 3 is the together line');
 }
 // the gift view is one screen (Krish, 21 Oct): nothing scrolls, the words fold behind
-// "Change a word", which opens them in a panel and folds them again on Done
+// "Change a word", which opens one field at a time and folds it again on Done
 const screen = (page) => page.evaluate(() => {
   const b = document.querySelector('#buy[data-hs2-v3]');
   window.scrollTo(0, 5000); const sy = window.scrollY; window.scrollTo(0, 0);
@@ -100,22 +100,46 @@ for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]
     const before = await screen(page);
     await page.click('[data-hs2-tib-edit]'); await page.waitForTimeout(200);
     const open = await screen(page);
+    await page.click('[data-hs2-gift-edit-next]');
+    const next = await screen(page);
     await page.click('[data-hs2-tib-edit]'); await page.waitForTimeout(200);
     const closed = await screen(page);
     // the next-gift bar takes the bottom of the screen
     await page.evaluate(() => { const n = document.createElement('div'); n.className = 'hs2-next'; n.setAttribute('data-hs2-next', ''); n.style.height = '72px'; document.body.appendChild(n); document.documentElement.classList.add('hs2-has-next'); window.dispatchEvent(new Event('resize')); });
     await page.waitForTimeout(400);
     const bar = await page.evaluate(() => ({ b: document.querySelector('#buy').getBoundingClientRect().bottom, t: document.querySelector('.hs2-next').getBoundingClientRect().top }));
-    return { before, open, closed, bar };
+    return { before, open, next, closed, bar };
   });
-  const { before: b, open: o, closed: c, bar } = r.extra;
+  const { before: b, open: o, next: n, closed: c, bar } = r.extra;
   const tag = `${size[0]}x${size[1]}`;
   ok(b.v3 && b.sy === 0 && b.over <= 1 && b.bottom <= size[1] + 1 && b.z >= 0.75, `${tag} gift view: one screen, no scroll (zoom ${b.z}, scroll ${b.sy}, over ${b.over})`);
   ok(b.shown === 0 && b.edit === 'Change a word', `${tag} gift view: the words fold behind "Change a word"`);
-  ok(o.editing && o.shown === 4 && o.edit === 'Done', `${tag} gift view: "Change a word" opens the four fields, then says Done`);
+  ok(o.editing && o.shown === 1 && o.edit === 'Done', `${tag} gift view: "Change a word" opens one field`);
+  ok(n.editing && n.shown === 1, `${tag} gift view: Next shows one field`);
   ok(!c.editing && c.shown === 0 && c.sy === 0, `${tag} gift view: Done folds them again`);
   ok(bar.b <= bar.t + 1, `${tag} gift view: the next-gift bar doesn't cover the page (page ends ${Math.round(bar.b)}, bar starts ${Math.round(bar.t)})`);
   ok(!r.errors.length, `${tag} no script errors ` + r.errors.join(' '));
+}
+{
+  const r = await run('textarea', 'the-morning-mug', [390, 844], async (page) => {
+    const before = await screen(page);
+    const direct = await page.evaluate(() => document.documentElement.classList.contains('hs2-v3-direct'));
+    await page.screenshot({ path: path.join(out, 'direct-product-one-field.png') });
+    const first = await page.locator('.tee-field.hs2-v3-active').getAttribute('id');
+    await page.locator(`#${first} .tee__input`).fill('You are my person.');
+    await page.evaluate(() => window.__hs2api?.runBridge?.());
+    await page.waitForTimeout(200);
+    const afterTyping = await page.evaluate(() => ({ direct: document.documentElement.classList.contains('hs2-v3-direct'), editing: document.documentElement.classList.contains('hs2-v3-editing'), personHidden: document.querySelector('[data-hs2-person-wrap]')?.hidden }));
+    await page.click('[data-hs2-gift-edit-next]');
+    const after = await screen(page);
+    const second = await page.locator('.tee-field.hs2-v3-active').getAttribute('id');
+    return { before, direct, afterTyping, after, first, second };
+  }, null);
+  ok(r.extra.direct && r.extra.before.shown === 1, 'direct product arrival: one field is visible');
+  ok(r.extra.afterTyping.direct && !r.extra.afterTyping.editing, 'direct product entry: typing keeps the photo and direct layout visible');
+  ok(r.extra.afterTyping.personHidden, 'direct product entry: no invented recipient appears in the gift preview');
+  ok(r.extra.after.shown === 1 && r.extra.first !== r.extra.second, 'direct product arrival: Next switches the single field');
+  ok(!r.errors.length, 'direct product arrival: no script errors ' + r.errors.join(' '));
 }
 await browser.close();
 server.close();

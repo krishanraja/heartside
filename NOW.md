@@ -43,6 +43,9 @@ Live and recorded as verified in the repo:
 - The buyer's hidden answers (`_hs_answers`, `_hs_lines`, `_hs_ship_to`) reaching the cart line, checked on the live store on 21 Oct (`5440649`).
 - Order QC on GitHub Actions twice a day, tagging only and never confirming (`.github/workflows/order-qc.yml`, `5075902`).
 - The mug's note at Fraunces 58 px in the live Teeinblue mug artwork, and 61-character Line fields on the storefront mug page (`docs/evidence/cowork-2026-10-22/REPORT-2.md`).
+- On 23 Oct, all four live storefront gift forms displayed 61-character Line fields. The signed-in Teeinblue product bases mapped all four active gifts to Printful, and Check stock reported all variants in stock. Shopify's active variants are available for sale, with inventory untracked because they are made on demand. This is a current stock indication, not proof of a completed order.
+- Shopify Payments showed "Accepting payments" on 23 Oct. A separate notice said payouts are pending until 25 Oct after a bank-detail update; the account owner should verify that update was expected.
+- A synthetic ornament with an uploaded test image and custom dog name, line and signature reached the live cart and checkout. For a New York ZIP, checkout quoted $5.99 standard US shipping with a $5.99 automatic discount, a $24 total and 5 to 9 Nov standard delivery. No payment was submitted; the test cart item was removed afterward.
 - The compose call (the whole note) on Claude Sonnet with a hand-over to Gemini 3.5 Flash at 7.5 s, and the typed answer on Gemini 3.5 Flash, as `n8n/README.md` records since 22 Oct.
 
 Merged to `main` but not recorded as deployed:
@@ -52,8 +55,9 @@ Merged to `main` but not recorded as deployed:
 Blocked or waiting:
 
 - **No real order through the v3 journey yet.** The mock order is the first item of work left (`docs/HANDOFF.md` section 4).
-- **The blanket, print and ornament still take 45 characters a line on the storefront.** The 61 limit is saved in their Teeinblue artwork but needs Teeinblue's Update, which Cowork held for Krish's yes because it publishes to the live store (`docs/evidence/cowork-2026-10-22/REPORT-2.md`, step 6).
-- The mug's Teeinblue Preview shows all ten slides per colour and prints flat; Christmas order-by dates are not confirmed per product; funnel events fire at the wrong moment (`docs/HANDOFF.md` section 3, "Known gaps right now").
+- The mug's Teeinblue Preview shows all ten slides per colour and prints flat; funnel events fire at the wrong moment (`docs/HANDOFF.md` section 3, "Known gaps right now").
+- The live gift pages promise "Order by Dec 10 for Christmas," but the accessible detailed Printful cutoff was for Christmas 2025. The 2026 cutoff and fulfillment location are not verified per product. A prepared theme change removes the dated promise until they are confirmed.
+- Shopify-to-Teeinblue-to-Printful fulfillment, actual combined-order supplier shipping charges, product quality and a completed paid checkout still need a full mock order.
 - `docs/HANDOFF.md` section 3 still says the AI runs on Google Gemini and that "Change a word" allows 45 characters; `n8n/README.md` and `docs/V3-GIFTS-FROM-YOUR-DOG.md` section 5 carry the 22 Oct values.
 
 ## What changed recently
@@ -76,8 +80,8 @@ Blocked or waiting:
 ## What is next and what is waiting on Krish
 
 - **Next action:** run `docs/evidence/claude-code-2026-10-21/COWORK-FIRST-MOCK-ORDER.md` with Krish logged in, ending in his mock order of one Black mug and one Couch Blanket, checked through order QC, the hidden answers and both print files, then "Confirm & Send to fulfill" in Teeinblue (`docs/HANDOFF.md` section 4, items 1 and 2). It is the proof that Shopify, Teeinblue and Printful work for the v3 range.
-- **Say yes to the 60-character lines going live together:** Teeinblue's Update on the Couch Blanket, Framed Print and Tree Ornament campaigns (`docs/evidence/cowork-2026-10-22/REPORT-2.md`), and the theme deploy of `main`'s `hs3.js` (`docs/HANDOFF.md` section 5b). Deploying the theme first would let the site write lines the three storefront forms still cap at 45.
-- Confirm the Christmas order-by date per product in Printful before the theme shows one (`docs/HANDOFF.md` section 4, item 3).
+- Confirm the 60-character chat generation in the live theme, since all four Teeinblue storefront forms now show 61-character Line fields. Do not repeat the older Teeinblue Update step without finding an actual mismatch.
+- Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
 
