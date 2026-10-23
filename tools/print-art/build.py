@@ -10,7 +10,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageCms, ImageDraw, ImageFont, ImageOps
 
 
 ROOT = Path(__file__).resolve().parent
@@ -115,7 +115,8 @@ def build(manifest_path, output_path):
         place_font = fit_place(draw, place.upper())
         draw.text((230, 5175), place.upper(), font=place_font, fill=INK)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    art.save(output_path, format="PNG", dpi=(300, 300), optimize=True)
+    srgb_profile = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+    art.save(output_path, format="PNG", dpi=(300, 300), icc_profile=srgb_profile, optimize=True)
     if output_path.stat().st_size > 60 * 1024 * 1024:
         output_path.unlink()
         raise ValueError("Print file exceeds the 60 MiB pre-upload limit")

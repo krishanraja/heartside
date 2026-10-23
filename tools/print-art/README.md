@@ -41,7 +41,8 @@ order storage, never in this repository or a pull request.
 The compositor rejects low-resolution input, wrong ratio, too-long lines,
 inferred places, and production output without a named likeness reviewer. A
 4× upscale of a 1024 x 1536 concept produced a 4096 x 6144 test background;
-the final trial PNG was 3600 x 5400, tagged 300 DPI and 32.5 MB. That proves
+the final trial PNG was 3600 x 5400, tagged 300 DPI with an embedded sRGB
+profile, and 32.5 MB. That proves
 the file dimensions and note placement, **not** true photographic detail,
 identity preservation across many dogs, or physical print quality.
 
@@ -75,4 +76,6 @@ Primary supplier instructions, checked 23 October 2026:
 - [Teeinblue order API scope](https://support.teeinblue.com/en/article/public-api-to-retrieve-teeinblue-data-1e3y72c/)
 - [Photo-based AI effect and buyer variable behavior](https://support.teeinblue.com/en/article/how-to-use-gen-ai-effect-feature-to-create-custom-image-effects-l8mqej/)
 - [Image effect output sizes and costs](https://support.teeinblue.com/en/article/gen-ai-effect-faqs-1t47d9o/)
+- [Printful print-file and color-profile guidance](https://help.printful.com/hc/en-us/articles/50264019148177-How-should-I-prepare-my-print-file-for-the-best-results)
+- [Printful wall-art safe-area guidance](https://help.printful.com/hc/en-us/articles/50264024409233-What-is-the-safe-print-area)
 - [Caveat font](https://github.com/google/fonts/blob/main/ofl/caveat/METADATA.pb), OFL license in `fonts/`.

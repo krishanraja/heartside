@@ -54,6 +54,7 @@ with tempfile.TemporaryDirectory() as folder:
     with Image.open(output) as image:
         assert image.size == (3600, 5400)
         assert image.info.get("dpi") == (299.9994, 299.9994)
+        assert image.info.get("icc_profile"), "Printful recommends an embedded sRGB profile"
         assert image.getpixel((3500, 5000)) == (255, 247, 224)
         assert image.getpixel((3270, 5250)) != (255, 247, 224)
     assert proof["status"] == "test_only"
