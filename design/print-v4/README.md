@@ -1,0 +1,9 @@
+# Framed-print art direction, 23 October 2026
+
+Krish approved `city-screenprint-approved-target.png` as the visual target for a new framed-print direction. It uses the existing public reference pug photo in `assets/photos/pug-autumn-leaves.jpg`, a fictional dog name, and a San Francisco scene. It is an internal concept, not a customer image, production print file or live product mockup. The companion `city-screenprint-background-concept.png` leaves the small footer blank so customer-specific words can be composed as an exact separate layer.
+
+The chosen art direction is a refined screenprint with the recognizable dog in a meaningful city scene. The dog-voice note is small, handwritten and at lower right, with a decorative illustrated paw mark. The paw must never be described as an actual print from the customer's dog. City or meaningful place should be optional; never infer it from a shipping address.
+
+The approved concept and blank background are 1024 × 1536 pixels. At 12 × 18 inches, that is about 85 DPI, so neither file may be sent to Printful. The background requires a tested high-resolution route; the exact note, signature and paw must be composed outside the image model and checked against the final print file. Customer likeness, location accuracy, turnaround, cost, and Teeinblue handoff remain unproven. Keep the current framed print live until these checks pass and an exact live-theme change is approved.
+
+Image prompt for the background: edit the real reference photo into a 12 × 18 vertical, premium mid-century screenprint of the same recognizable pug in a San Francisco scene, with restrained indigo, coral, cream and gold, fine halftone texture, natural dog anatomy, no costume, and a clean 12% ivory footer for exact customer-specific text. The artwork was generated and edited with the built-in image generation tool.
