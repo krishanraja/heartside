@@ -1021,6 +1021,7 @@ html:has(#buy[data-hs2-v3]) .shopify-section-group-footer-group { display: none 
 #buy[data-hs2-v3] .tee-field--photo .tee-photo-action { display: flex !important; align-items: center; gap: 10px; margin: 0 !important; padding: 0 !important; }
 #buy[data-hs2-v3] .tee-form-action:has(.tee-btn--preview), #buy[data-hs2-v3] .tee-quantity { display: none !important; }
 #buy[data-hs2-v3] .tee-form-actions { padding: 0 !important; margin: 0 !important; }
+#buy[data-hs2-v3] [data-hs2-proof-wait] { margin: 6px 0 0; color: var(--ink); font-size: 12px; line-height: 1.35; text-align: center; }
 #buy[data-hs2-v3] .tee-form-atc-wrapper { margin: 0 !important; }
 #buy[data-hs2-v3] .hs2-product__fine { font-size: 12.5px; line-height: 1.4; text-align: center; color: var(--muted); display: block; padding: 0; margin: -4px 0 0; border: 0; }
 #buy[data-hs2-v3] .hs2-product__fine > div { display: inline; }
