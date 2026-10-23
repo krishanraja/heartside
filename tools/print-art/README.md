@@ -97,13 +97,22 @@ last in the revamp, must read back the source photo, four exact lines, name,
 and replacement design under the same order reference before this adapter is
 implemented.
 
-Teeinblue also offers an in-artwork GPT Image effect that transforms a buyer's
-photo on upload, with place variables and a reference image. This is a viable
-future live-preview experiment, but generation before a paid order creates a
-credit-exposure and latency problem. It would need a connected image-provider
-key, a per-buyer upload limit, measured conversion benefit, and tests that its
-roughly 1024 x 1536 output can be made print-safe. Do not switch it on merely
-because the integration exists.
+An isolated native Teeinblue trial now exists, recorded in
+`teeinblue/draft-artwork.json` and
+`docs/evidence/2026-10-23-compose-native-artwork.md`. Krish connected and
+validated OpenAI. The saved provider setting is GPT Image 2.5 Sunburst / High;
+the draft photo effect requests 3840 resolution with the layer's 2:3 ratio.
+Actual output dimensions and billed usage are not yet verified. The native
+layout follows the approved single small meaning-line target and links the
+signature to the dog's name. The older four-line local compositor above
+remains a test route, not the current native design target.
+
+The native proof renderer verified changed wording and a long signature, but
+does not execute upload effects. A real photo upload is the next test. The
+account's five-upload-per-buyer-per-option hourly limit is not a financial
+hard cap, and account auto fallback can change the actual model. Generation
+before payment still needs measured latency, cost and abuse controls before
+any live campaign release. The draft campaign is not published to Shopify.
 
 Primary supplier instructions, checked 23 October 2026:
 
