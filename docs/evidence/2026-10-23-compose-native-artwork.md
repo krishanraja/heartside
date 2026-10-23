@@ -75,7 +75,7 @@ The agent clicked Teeinblue's Launch control expecting a store-selection dialog.
 
 ## Next action
 
-Customer-form upload and saved-preview acceptance are complete for San Francisco. Finish native source resolution, provider cost, failure handling and the chat-to-artwork production handoff before release. The exact Buddy-only live AI updates are prepared separately in 2026-10-23-buddy-live-ai-change.md and await action-time approval. All product upgrades precede site mockup refresh, and the physical sample remains last.
+Customer-form upload and saved-preview acceptance are complete for San Francisco. Finish native source resolution, provider cost, failure handling and the chat-to-artwork production handoff before release. The exact Buddy-only live AI updates are published and independently verified in 2026-10-23-buddy-live-ai-change.md. All product upgrades precede site mockup refresh, and the physical sample remains last.
 
 Sources checked: n8n's official generated update/publish API schemas and Teeinblue's connected artwork schema; [Teeinblue AI effects, variables and upload limits](https://support.teeinblue.com/en/article/how-to-use-gen-ai-effect-feature-to-create-custom-image-effects-l8mqej/).
 
@@ -96,3 +96,5 @@ Commit 8bee656 deployed successfully only to the unpublished theme in run 399913
 - The approved compose tone change remains published. Both live AI host-name updates are prepared with complete backups, exact active-version checks and a six-field change record, awaiting the separately requested action-time approval.
 - Local city bridge regression, minification and theme checks pass after the real provider selector/label corrections. Earlier Buddy chat, rules and voice checks passed. Latest theme head has no GitHub PR checks, so deployment success is not called PR CI acceptance. Growth PR #21 has a passing GitHub PR self-test; Windows baseline failures are documented separately.
 - Krish explicitly queued better website mockups after all product upgrades, followed by the physical sample last. Saved in the workboard, both repository guidance and the authorized memory note.
+
+Both prepared Buddy-only live AI updates were subsequently approved and published. See 2026-10-23-buddy-live-ai-change.md for exact active versions and verification. This supersedes the earlier pending-publication checkpoint above.
