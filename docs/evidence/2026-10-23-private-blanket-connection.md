@@ -21,7 +21,7 @@ Krish was asked to remove the channel assignments in Shopify while leaving the p
 - [x] Native word-free blanket artwork and one-variant campaign prepared.
 - [x] Chat facts reach the local bridge without invented breed-based traits or extra text boxes.
 - [x] Blanket template deployed to the unpublished Shopify theme and rendered there.
-- [ ] Clear private test-product channel assignment, connect the native artwork, return to Draft, and verify the actual form in the unpublished theme.
+- [ ] Obtain a supported private connection route, connect the native artwork, and verify the actual form in the unpublished theme. Online Store assignment is now cleared, but Active still adds Microsoft Copilot automatically.
 - [ ] Compare every generated dog portrait with the source photo and trace each prop to an actual answer. No blanket likeness pass has been claimed.
 - [ ] Resolve original source resolution and production-file behavior with Teeinblue. Monday follow-up is already scheduled.
 - [ ] Complete remaining product upgrades and print checks, including the ornament's known small-text issue.
@@ -37,3 +37,13 @@ Krish could not find action pages among accumulated tabs. Closed eight obsolete 
 - [Teeinblue existing Shopify product campaigns](https://support.teeinblue.com/en/article/personalize-existing-shopify-products-with-campaign-by-shopify-products-1wo8urm/)
 - [Shopify product creation](https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate)
 - [Private theme deployment](https://github.com/krishanraja/heartside/actions/runs/40012124675)
+
+## Owner clearance and second connection check
+
+Krish cleared Online Store in the visible Shopify product dialog. Browser readback confirmed its checkbox was off. Agentic showed Unpublished while the product was Draft. A subsequent Active status update left the Online Store URL null but automatically added a published Microsoft Copilot record. The product was immediately returned to Draft.
+
+Unlisted was then checked as the documented Shopify alternative. Teeinblue disabled selection for that status too, and the publication record remained present. The product was restored to Draft. Final independent Admin API readback: DRAFT, null Online Store URL, no resource publications and no additional page. Do not repeat these status transitions or change the store-wide Agentic settings to solve this isolated test.
+
+The connector's prior refusal to remove publications remains in force. No alternate removal route was used. Monday October 26 at 9 AM London, the existing support follow-up will also ask how to attach a Draft or Unlisted Shopify product without publishing it to Online Store or automatic AI channels. The follow-up checks for an answer first and avoids duplicate messages.
+
+Current documentation: [Shopify automatic agentic product discovery](https://help.shopify.com/en/manual/online-sales-channels/agentic-storefronts/products), [Microsoft channel behavior](https://help.shopify.com/en/manual/online-sales-channels/agentic-storefronts/microsoft). Actual account observations above take precedence over assumptions about eligibility or propagation.
