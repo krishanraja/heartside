@@ -4,6 +4,10 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-10-23
+
+- stamped at `6710125`: two commits since (`e395228` steward enrolment, `fc48639` harness administration) touched no product behaviour; NOW.md re-dated, no other change.
+
 ## 2026-10-22
 
 - reconciled at `6710125`: first NOW.md, written by hand at enrolment in the docs steward fleet.

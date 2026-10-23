@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-22
+as_of: 2026-10-23
 head: 6710125
 lifecycle: live
 production_url: https://heartside.io
@@ -31,7 +31,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-22)
+## Where it is right now (as of 2026-10-23)
 
 Lifecycle: live. The chat-led store has been public at heartside.io since 19 October (`docs/HANDOFF.md` section 3, "The buyer's journey, as live"; `9ea7e34`).
 
