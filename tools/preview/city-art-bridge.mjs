@@ -73,7 +73,9 @@ try {
   assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'placeholder never becomes a customer preview');
   await page.evaluate(() => {
     document.querySelector('.tee-field--photo').insertAdjacentHTML('beforeend', '<span>Choose another image</span>');
-    document.querySelector('#artwork-layer--layer-747218 image').setAttribute('href', 'https://example.test/customer-sf.png');
+    const nativePlacement = document.querySelector('#artwork-layer--layer-747218');
+    nativePlacement.id += '-image-placement';
+    nativePlacement.querySelector('image').setAttribute('href', 'https://example.test/customer-sf.png');
     document.dispatchEvent(new Event('teeinblue-event-component-injected'));
   });
   await page.waitForTimeout(500);
@@ -92,6 +94,7 @@ try {
   await page.click('[data-hs2-artwork-edit-city]');
   await page.fill('#layer-city', 'Boston');
   await page.click('[data-hs2-tib-edit]');
+  await page.waitForFunction(() => document.querySelector('[data-hs2-artwork-status]').textContent.includes('changed'));
   assert.equal(await page.evaluate(() => window.uploads), 0, 'changing city never triggers a paid call');
   assert.match(await page.textContent('[data-hs2-artwork-status]'), /changed/);
   assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'a changed city cannot reuse the prior preview link');

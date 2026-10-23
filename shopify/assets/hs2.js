@@ -76,7 +76,7 @@
   function cityArtSource() {
     var link = document.querySelector('[data-hs2-artwork-source]');
     var id = link && link.getAttribute('data-hs2-artwork-layer');
-    var layer = id && document.getElementById('artwork-layer--' + id);
+    var layer = id && (document.getElementById('artwork-layer--' + id + '-image-placement') || document.getElementById('artwork-layer--' + id));
     var image = layer && (layer.matches('image') ? layer : layer.querySelector('image'));
     var src = image && (image.getAttribute('href') || image.getAttribute('xlink:href')) || '';
     if (!src || src.indexOf('6adb83e021733') !== -1) return ''; // approved concept placeholder
