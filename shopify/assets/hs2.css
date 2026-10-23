@@ -980,6 +980,8 @@ html:has(#buy[data-hs2-v3]) .shopify-section-group-footer-group { display: none 
 #buy[data-hs2-v3] .hs2-product__media { flex: 1 1 0; min-height: 0; position: relative; top: auto; align-items: center; justify-content: center; gap: 0; }
 #buy[data-hs2-v3] .hs2-product__thumbs { display: none !important; }
 #buy[data-hs2-v3] .hs2-product__media { overflow: hidden; }
+#buy[data-hs2-v3] .hs2-product__example { display: none; position: absolute; z-index: 2; top: 8px; left: 8px; max-width: calc(100% - 16px); padding: 6px 9px; border-radius: 8px; background: rgba(18, 16, 16, .88); color: #fff; font: 600 12px/1.3 "HS DM Sans", "DM Sans", system-ui, sans-serif; }
+#buy[data-hs2-v3] [data-hs2-media][data-hs2-sample] .hs2-product__example { display: block; }
 #buy[data-hs2-v3] .hs2-product__tib, #buy[data-hs2-v3] .hs2-product__main { width: 100%; flex: none; margin: 0 auto; }
 #buy[data-hs2-v3] .hs2-product__media[data-tib="on"] .hs2-product__tib { background: transparent; }
 /* scaled down (giftFit), the preview keeps the width Teeinblue laid its slider out at */
@@ -1054,3 +1056,22 @@ html.hs2-v3-editing #buy[data-hs2-v3] .hs2-gift-edit-nav, html.hs2-v3-direct #bu
   html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__media { display: flex; }
   html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__info { flex: 0 0 440px; height: 100%; align-self: stretch; }
 }
+/* The isolated artwork preview has a place as well as a name. Keep both readable. */
+#buy[data-hs2-city-art-preview] .hs2-answers { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; }
+#buy[data-hs2-city-art-preview] .hs2-answers__who { grid-column: 1; grid-row: 1; }
+#buy[data-hs2-city-art-preview] .hs2-answers__top { grid-column: 2; grid-row: 1; }
+#buy[data-hs2-city-art-preview] .hs2-answers > p:has([data-hs2-artwork-city]) { grid-column: 1 / -1; grid-row: 2; margin: 0; font-size: 14px; }
+#buy[data-hs2-city-art-preview] [data-hs2-artwork-status] { grid-column: 1 / -1; grid-row: 3; margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+#buy[data-hs2-city-art-preview] .hs2-answers__photo { grid-column: 1 / -1; grid-row: 4; }
+#buy[data-hs2-city-art-preview] [data-hs2-artwork-source] { grid-column: 1 / -1; grid-row: 4; width: fit-content; font-size: 14px; min-height: 44px; display: flex; align-items: center; text-decoration: underline; }
+#buy[data-hs2-city-art-preview] [data-hs2-artwork-source][hidden] { display: none; }
+/* Frame finishes need names. Mug color dots cannot represent wood or white reliably. */
+#buy[data-hs2-city-art-preview] .tee-radio .tee-radio-label { width: auto !important; height: auto !important; min-height: 44px !important; padding: 8px 14px !important; border: 1px solid var(--ink) !important; border-radius: 8px !important; font-size: 14px !important; }
+#buy[data-hs2-city-art-preview] .tee-radio .tee-radio-label span { position: static !important; width: auto !important; height: auto !important; overflow: visible !important; clip: auto !important; }
+#buy[data-hs2-city-art-preview] .tee-radio .tee-radio-label::before { display: none !important; }
+#buy[data-hs2-city-art-preview] .tee-radio.active .tee-radio-label, #buy[data-hs2-city-art-preview] .tee-radio:has(input:checked) .tee-radio-label { box-shadow: none !important; background: var(--ink) !important; color: var(--cream) !important; }
+#buy[data-hs2-city-art-preview] #teeAtcButton:disabled { opacity: .55; cursor: not-allowed; }
+#buy[data-hs2-blanket-art-preview] [data-hs2-art-personality] { display: none !important; }
+/* Catalog shortcuts must not submit bare variants before Teeinblue personalizes them. */
+product-card quick-add-component form,
+product-card quick-add-component button { display: none !important; }

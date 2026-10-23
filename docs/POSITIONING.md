@@ -19,7 +19,7 @@ This repo copy is canonical. Drive mirrors it (see [`SYNC.md`](SYNC.md)).
 | Lead line | **Your dog loves you too.** (Krish's own line, 12 Oct; since 13 Oct it reads literally: the gift tells the person the dog loves them) |
 | Christmas campaign line | **This year, the dog's buying.** |
 | What we sell, in one line | Gifts from your dog: a mug, a blanket, a framed print and a tree ornament, each carrying a short message from your dog to the person it loves most. |
-| How it works, in one line | Tell Biscuit about your dog in a minute-long chat, then put your dog's words on any gift you like. |
+| How it works, in one line | Tell Buddy about your dog in a minute-long chat, then put your dog's words on any gift you like. |
 | Standing promise | Free US shipping. A person checks every order before it prints. Misprints are remade free. |
 
 **The gifts speak as the dog (Krish, 20 Oct).**
@@ -31,18 +31,18 @@ This repo copy is canonical. Drive mirrors it (see [`SYNC.md`](SYNC.md)).
 
 **Who speaks where:**
 - The dog speaks on the gifts.
-- Biscuit, the brand's chestnut miniature dachshund host, speaks in the chat and in content. He talks to the buyer about their dog, a bit like a dog, with one dog-ism per message at most (V3 4.6).
+- Buddy, the brand's chestnut miniature dachshund host, speaks in the chat and in content. He talks to the buyer about their dog, a bit like a dog, with one dog-ism per message at most (V3 4.6).
 - The brand speaks plainly everywhere else: labels, prices, promises, shipping, bios, page names and headlines.
 
 ## 2. Why (keep this intent; do not lose it in later briefs)
 
 - **12 Oct.** Krish found the old business headline, "a poster of your dog reviewing you", lame: one cheap gag a stranger needs explained. His rule since then: **business headlines must never be lame or dumb.** Bios, page names, the site hero, meta titles and descriptions stay plain, warm and true.
-- **12 to 13 Oct.** He rejected "gifts written by your dog": dogs can't write. Gifts are **from** the dog, and the words come from what the buyer told Biscuit. The 20 Oct voice keeps this: the dog speaks in the gift's words; nobody claims the dog wrote them.
+- **12 to 13 Oct.** He rejected "gifts written by your dog": dogs can't write. Gifts are **from** the dog, and the words come from what the buyer told Buddy. The 20 Oct voice keeps this: the dog speaks in the gift's words; nobody claims the dog wrote them.
 - **13 Oct.** He reframed the product from words about the dog to gifts given on behalf of the dog to someone it loves: everyday things people use (the mug every morning, the blanket on the couch, the ornament every December). The HR "annual review" builder was rejected for having "zero actual empathy for how a user wants to use a website, or thinks about their dog". The HR poster and the pillow were retired from sale.
 - **15 Oct.** "Every gift as a letter" ("Dear Linda,") was rejected ("sounds shit"). The dog's voice on the gifts is short lines with a signature, never a letter.
 - **20 Oct.** Krish saw a cart that read "Understands every word. Pretends he doesn't." and asked for "a humanized warm message from the dog to the person with some humour and dog anthropomorphisms", on every product. That replaced the 13 Oct rule that gift lines never say I.
 - **The feeling, in order:**
-  1. "Oh, that's fun" (Biscuit greets them).
+  1. "Oh, that's fun" (Buddy greets them).
   2. "It's actually listening."
   3. "That's exactly them."
   4. "I want all of these."
@@ -68,14 +68,14 @@ This repo copy is canonical. Drive mirrors it (see [`SYNC.md`](SYNC.md)).
 
 | Surface | State | Still to do |
 |---|---|---|
-| The site (theme code; deploy only through the GitHub workflow, `HANDOFF.md` 5b) | Since 19 Oct heartside.io opens on the v3 chat with Biscuit: "Your dog *loves you too.*", the four gifts as pills and "Start with your dog". The gift lines are in the dog's own voice since 20 Oct. The four gifts are the only active products. The v2 homepage is kept as `index.classic.json` (`?view=classic`). | Nothing on positioning |
+| The site (theme code; deploy only through the GitHub workflow, `HANDOFF.md` 5b) | Since 19 Oct heartside.io opens on the v3 chat with Buddy: "Your dog *loves you too.*", the four gifts as pills and "Start with your dog". The gift lines are in the dog's own voice since 20 Oct. The four gifts are the only active products. The v2 homepage is kept as `index.classic.json` (`?view=classic`). | Nothing on positioning |
 | Product pages | `product.gift.json` (`?view=gift`): title, price, Heartside's description, "Your Words", then Teeinblue | Nothing: the product images show the dog's own voice since 21 Oct |
 | Shopify home page title and meta (Online Store > Preferences) | Last recorded 12 Oct: "Heartside &#124; Personalized Dog Gifts. Your dog loves you too." and a description naming posters, ornaments and pillows | Rewrite the description to the section 1 one-liner. It's a live change, so ask Krish first |
 | Facebook Page facebook.com/yourdoghasnotes | Name "Heartside: Personalized Dog Gifts" | Check the bio still describes the v3 gifts, not posters and pillows |
 | Instagram @yourdoghasnotes | Last recorded bio (12 Oct): "Your dog loves you too. / Personalized posters, ornaments and pillows made from their photo. / Free US shipping. Preview yours free ↓" | Rewrite the middle line to the section 1 one-liner; set the display name to "Heartside: Personalized Dog Gifts" if it still reads "Your Dog Has Notes"; point the bio link at heartside.io with UTM tags |
 | TikTok @yourdoghasnotes | Bio: "Your dog loves you too. Personalized dog gifts. heartside.io" | Display name, once TikTok allows it |
 
-Profile images: the Biscuit avatar (`assets/heartside-avatar-biscuit-1080.jpg`) and the Facebook cover (`assets/heartside-fb-cover-1640x624.jpg`). The cover was built from the retired poster, so replace it with a v3 gift image when the profiles are next touched.
+Profile images: the Buddy avatar (`assets/heartside-avatar-biscuit-1080.jpg`) and the Facebook cover (`assets/heartside-fb-cover-1640x624.jpg`). The cover was built from the retired poster, so replace it with a v3 gift image when the profiles are next touched.
 
 ## 6. Goal and the growth plan
 
@@ -85,5 +85,5 @@ Profile images: the Biscuit avatar (`assets/heartside-avatar-biscuit-1080.jpg`) 
   - US-only selling.
   - Gifts to creators disclosed in the post (FTC).
   - AI never draws the product: composite the real print.
-  - Never show AI "customers" holding or reviewing the product. Biscuit as an openly fictional, AI-labelled character is fine.
+  - Never show AI "customers" holding or reviewing the product. Buddy as an openly fictional, AI-labelled character is fine.
   - Every spend needs Krish's yes.

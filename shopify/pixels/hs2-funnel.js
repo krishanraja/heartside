@@ -29,7 +29,7 @@ const EVENTS = [
   'hs2_caption_copied',   // copied the story caption ({ card })
   'hs2_link_shared',      // shared the review link ({ card })
   'hs2_faq_open',         // opened an FAQ ticket ({ question })
-  // v3, the chat with Biscuit (shopify/assets/hs3.js). Typed words and names never leave the store.
+  // v3, the chat with Buddy (shopify/assets/hs3.js). Typed words and names never leave the store.
   'hs3_start',            // pressed "Start with your dog"
   'hs3_step',             // a question shown, answered or skipped ({ step, action, kind, value, sub })
   'hs3_photo_attached',   // added the dog's photo
@@ -37,9 +37,10 @@ const EVENTS = [
   'hs3_reveal',           // pressed "Show me" ({ typed })
   'hs3_gift_tab',         // looked at a gift on the reveal ({ gift })
   'hs3_edit',             // opened "Change a word"
+  'hs3_tone_pick',        // changed the note's tone on the reveal ({ tone })
   'hs3_choose',           // "That's them. Choose gifts" ({ gift })
   'hs3_gift_pick',        // ticked or unticked a gift ({ gift, on })
-  'hs3_add_to_cart',      // left for the first gift's page ({ gifts, picks })
+  'hs3_personalize_gifts', // opened the first selected gift's personalizer ({ gifts, picks })
   'hs3_share_card',       // drew the story card
 ];
 
