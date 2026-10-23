@@ -171,12 +171,18 @@ for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]
     await page.click('[data-hs2-gift-edit-next]');
     const after = await screen(page);
     const second = await page.locator('.tee-field.hs2-v3-active').getAttribute('id');
-    return { before, direct, afterTyping, after, first, second };
+    const directGuard = await page.evaluate(() => {
+      const button = document.createElement('button'); button.id = 'teeAtcButton'; document.body.append(button);
+      let added = false; button.addEventListener('click', () => { added = true; }); button.click();
+      return !added && !!document.querySelector('[data-hs2-proof-wait]');
+    });
+    return { before, direct, afterTyping, after, first, second, directGuard };
   }, null);
   ok(r.extra.direct && r.extra.before.shown === 1, 'direct product arrival: one field is visible');
   ok(r.extra.afterTyping.direct && !r.extra.afterTyping.editing, 'direct product entry: typing keeps the photo and direct layout visible');
   ok(r.extra.afterTyping.personHidden, 'direct product entry: no invented recipient appears in the gift preview');
   ok(r.extra.after.shown === 1 && r.extra.first !== r.extra.second, 'direct product arrival: Next switches the single field');
+  ok(r.extra.directGuard, 'direct product arrival: an unfinished mug proof cannot enter the cart');
   ok(!r.errors.length, 'direct product arrival: no script errors ' + r.errors.join(' '));
 }
 await browser.close();

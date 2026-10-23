@@ -56,6 +56,7 @@
   var V3_ANSWER = /^(line[1-4]|signed|hs_answers|hs_lines|hs_ship_to)$/;
   var V3_ORDER = { mug: ['home', 'spot', 'meaning'], ornament: ['meaning'], blanket: ['home', 'spot', 'together', 'meaning'], print: ['home', 'spot', 'together', 'meaning'] };
   function v3Kind() { var kinds = state.hs3_kinds || {}; return kinds[handleOf(window.location.pathname)] || ''; }
+  function mugProduct() { return v3Kind() === 'mug' || handleOf(window.location.pathname) === 'the-morning-mug'; }
   function v3Answer(k) {
     var lines = state.hs3_lines || {};
     if (k === 'signed') { var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
@@ -738,7 +739,7 @@
   // reproduced on the live mug: the inputs said "Love, Milo" while the note face still
   // rendered "Love, Test Dog". Compare the print artwork, not only the input values.
   function mugArtworkValue(name) {
-    if (v3Kind() !== 'mug') return null;
+    if (!mugProduct()) return null;
     var layer = document.getElementById('artwork-layer--' + name);
     if (!layer) return null; // the mockup has not rendered yet
     var visible = layer.querySelector('text[opacity="1"]');
@@ -753,7 +754,7 @@
   function guardMugProof() {
     document.addEventListener('click', function (e) {
       var button = e.target.closest && e.target.closest('#teeAtcButton');
-      if (!button || v3Kind() !== 'mug') return;
+      if (!button || !mugProduct()) return;
       var fields = tibFields().filter(function (f) { return /^(line[1-3]|signed)$/.test(f.rule.k); });
       var ready = fields.length === 4 && fields.every(function (f) {
         var inp = f.el.querySelector('input[type="text"], input:not([type]), textarea');
