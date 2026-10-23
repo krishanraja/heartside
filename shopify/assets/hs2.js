@@ -83,8 +83,10 @@
     try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
   }
   function cityArtSaved() {
-    if (!cityArtPreview() || !artRequested() || !tibTookPhoto() || document.querySelector('.vm--container')) return false;
+    if (!cityArtPreview() || !artRequested() || document.querySelector('.vm--container')) return false;
     var src = cityArtSource(), before = '';
+    var photo = document.querySelector('.tee-field--photo .tee-photo-image');
+    if (!photo || photo.getAttribute('src') !== src) return false;
     try { before = window.sessionStorage.getItem(artRequestKey() + ':before') || ''; } catch (e) { /* no storage */ }
     return !!src && src !== before;
   }

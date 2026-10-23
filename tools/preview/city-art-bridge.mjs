@@ -72,7 +72,7 @@ try {
   assert.equal(await page.evaluate(() => window.uploads), 1, 'repeated click does not submit twice');
   assert.equal(await page.locator('[data-hs2-artwork-source]').isVisible(), false, 'placeholder never becomes a customer preview');
   await page.evaluate(() => {
-    document.querySelector('.tee-field--photo').insertAdjacentHTML('beforeend', '<span>Choose another image</span>');
+    document.querySelector('.tee-field--photo').insertAdjacentHTML('beforeend', '<span>Change photo</span><img class="tee-photo-image" src="https://example.test/customer-sf.png">');
     const nativePlacement = document.querySelector('#artwork-layer--layer-747218');
     nativePlacement.id += '-image-placement';
     nativePlacement.querySelector('image').setAttribute('href', 'https://example.test/customer-sf.png');
