@@ -33,7 +33,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-23)
 
-<!-- north-star-state {"week_of": "2026-10-26", "week_target": 250, "current": 0, "current_as_of": "2026-10-23", "current_source": "ShopifyQL: FROM sales SHOW orders, net_sales SINCE -28d UNTIL today", "urgency": 4, "urgency_reason": "0% of this week's $250 target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 as of 23 October 2026, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
+<!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-23","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
 Lifecycle: live. The chat-led store has been public at heartside.io since 19 October (`docs/HANDOFF.md` section 3, "The buyer's journey, as live"; `9ea7e34`).
 
