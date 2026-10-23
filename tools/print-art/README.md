@@ -24,9 +24,18 @@ we have a documented write route. No step confirms fulfillment automatically.
 For the current *fictional* proof in the scratch folder:
 
 ```text
+python tools/print-art/prompt_for_order.py <order-manifest.json> <private-prompt.txt>
 python tools/print-art/build.py <order-manifest.json> <print.png>
 python tools/print-art/test_build.py
 ```
+
+`prompt_for_order.py` creates the exact image-editing prompt before generation.
+It uses an optional buyer-supplied city or neighborhood name as scene context;
+it never reads or derives a place from the delivery address. Reject punctuation
+that would turn the place into model instructions. The print proof records the
+rendered prompt hash. A person still compares the actual generated picture
+with the original photo and reviews geographical plausibility; a prompt hash
+does not prove the provider followed it.
 
 The manifest keys are `mode` (`test` or `production`), `style`
 (`city-screenprint-v1`), `source_photo`, `background`, `dog_name`,

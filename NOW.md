@@ -80,7 +80,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** prove the approved print direction as a repeatable paid-order route across varied real dog photos, with measured generation cost and time, a checked Teeinblue replacement and buyer-facing preview truth. The test-only 300 DPI compositor is in `tools/print-art/`; model generation, live supplier handoff and physical quality are not verified. Then review and approve the prepared tone and photo-safety release as an exact theme and compose-workflow change. Place the physical sample only after the revamp is complete.
+- **Next action:** prove the approved print direction as a repeatable paid-order route, with measured generation cost and time, a checked Teeinblue replacement and buyer-facing preview truth. Five public-reference dogs have had exploratory image edits, exposing a landmark-collage failure and improving the prompt; this does not prove customer likeness or print quality. The test-only 300 DPI compositor and exact prompt builder are in `tools/print-art/`; live supplier handoff and physical quality are not verified. Then review and approve the prepared tone and photo-safety release as an exact theme and compose-workflow change. Place the physical sample only after the revamp is complete.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.

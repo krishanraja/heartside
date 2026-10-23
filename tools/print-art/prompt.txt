@@ -1,9 +1,11 @@
 Use the buyer's uploaded dog photo as the identity reference. Preserve this
 individual dog's face, coat markings, ear shape, build and expression. Create a
 premium mid-century screenprint illustration of this same dog as the clear
-subject. Place the dog in {PLACE_SCENE}, using recognizable local details only
-when the buyer supplied that place. If no place was supplied, use a quiet,
-unidentified neighborhood setting. Restrained indigo, coral, cream and gold;
+subject. Place the dog in {PLACE_SCENE}. If the buyer supplied a place, include
+only one recognizable local cue. Keep the perspective geographically
+plausible; do not collage several landmarks into one impossible street scene.
+If no place was supplied, use a quiet, unidentified neighborhood setting.
+Restrained indigo, coral, cream and gold;
 fine halftone texture; natural dog anatomy; no costume, human, text, lettering,
 logo, signature or paw print. Vertical 2:3 composition. Keep the bottom 14%
 free of meaningful scene content for an exact handwritten note added later.

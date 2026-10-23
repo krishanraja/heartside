@@ -20,6 +20,7 @@ PAPER = (255, 247, 224)
 INK = (18, 42, 72)
 FONT = ROOT / "fonts" / "Caveat-variable.ttf"
 MAX_LINE = {"home": 60, "spot": 60, "together": 60, "meaning": 44}
+CITY_PUNCTUATION = " .,'-"
 
 
 def digest(path):
@@ -37,6 +38,23 @@ def checked_text(value, label, limit):
     if not value or len(value) > limit or any(c in value for c in "\n\r\t—!"):
         raise ValueError(f"{label} is empty, too long or contains unsupported print punctuation")
     return value
+
+
+def render_prompt(manifest):
+    """Turn only a buyer-supplied city into scene context; never use shipping data."""
+    source = manifest.get("place_source")
+    if source == "none":
+        if manifest.get("place"):
+            raise ValueError("Omitted place cannot carry a value")
+        scene = "a quiet, unidentified residential neighborhood"
+    elif source == "buyer":
+        place = checked_text(manifest.get("place"), "place", 60)
+        if not place[0].isalpha() or not all(c.isalpha() or c.isdigit() or c in CITY_PUNCTUATION for c in place):
+            raise ValueError("Place must be a short city or neighborhood name")
+        scene = f"a plausible residential street in {place}"
+    else:
+        raise ValueError("Place must come from the buyer or be omitted")
+    return (ROOT / "prompt.txt").read_text(encoding="utf-8").replace("{PLACE_SCENE}", scene)
 
 
 def fit_font(draw, lines, max_width):
@@ -76,6 +94,7 @@ def build(manifest_path, output_path):
         raise ValueError("A named person must review the generated dog's likeness")
     if m.get("place_source") not in ("buyer", "none"):
         raise ValueError("Place must come from the buyer or be omitted")
+    rendered_prompt = render_prompt(m)
     if mode == "production" and not checked_text(m.get("order_ref"), "order_ref", 80):
         raise ValueError("Production requires an order reference")
     dog = checked_text(m.get("dog_name"), "dog_name", 14)
@@ -129,6 +148,7 @@ def build(manifest_path, output_path):
         "print_file_bytes": output_path.stat().st_size,
         "note_sha256": hashlib.sha256(json.dumps({"dog": dog, "lines": lines, "place": place}, ensure_ascii=False).encode("utf-8")).hexdigest(),
         "style_prompt_sha256": digest(ROOT / "prompt.txt"),
+        "rendered_prompt_sha256": hashlib.sha256(rendered_prompt.encode("utf-8")).hexdigest(),
         "place_source": m["place_source"],
         "order_ref": m.get("order_ref") if mode == "production" else None,
         "likeness_reviewed_by": m.get("likeness_reviewed_by") if mode == "production" else None,
