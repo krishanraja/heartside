@@ -1054,3 +1054,6 @@ html.hs2-v3-editing #buy[data-hs2-v3] .hs2-gift-edit-nav, html.hs2-v3-direct #bu
   html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__media { display: flex; }
   html.hs2-v3-editing #buy[data-hs2-v3] .hs2-product__info { flex: 0 0 440px; height: 100%; align-self: stretch; }
 }
+/* Catalog shortcuts must not submit bare variants before Teeinblue personalizes them. */
+product-card quick-add-component form,
+product-card quick-add-component button { display: none !important; }

@@ -2178,9 +2178,36 @@
     }, true);
   }
 
+  // Every gift needs Teeinblue's photo and note. Helio's collection quick-add
+  // submits a bare variant, so a catalog card must open the product form first.
+  function personalizeCatalogCards() {
+    var handles = ['the-morning-mug', 'the-couch-blanket', 'the-framed-print', 'the-tree-ornament'];
+    document.querySelectorAll('product-card quick-add-component').forEach(function (quick) {
+      var card = quick.closest('product-card');
+      var productLink = card && card.querySelector('a[href*="/products/"]');
+      if (!productLink || handles.indexOf(handleOf(productLink.href)) === -1) return;
+      var link = quick.querySelector('.hs2-catalog-personalize');
+      if (link) { link.href = productLink.href; return; }
+      link = document.createElement('a');
+      link.className = 'button quick-add__button add-to-cart-button hs2-catalog-personalize';
+      link.href = productLink.href;
+      link.textContent = 'Personalize';
+      quick.replaceChildren(link);
+    });
+  }
+  function guardCatalogQuickAdd() {
+    if (guardCatalogQuickAdd.done) return;
+    guardCatalogQuickAdd.done = true;
+    personalizeCatalogCards();
+    if (document.body && window.MutationObserver) {
+      new MutationObserver(personalizeCatalogCards).observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     guardSearchFocus();
+    guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
     shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto(); guardGiftPhoto(); guardMugProof();
@@ -2196,7 +2223,7 @@
   document.addEventListener('focusout', function () { setTimeout(giftFit, 150); });
   window.addEventListener('load', function () { guardSearchFocus(); clearHeader(); layout(); giftFit(); setTimeout(function () { clearHeader(); layout(); giftFit(); }, 600); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-  document.addEventListener('shopify:section:load', function () { bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
+  document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
   window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
