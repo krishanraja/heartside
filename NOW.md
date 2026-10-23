@@ -33,6 +33,8 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-23)
 
+<!-- north-star-state {"week_of": "2026-10-26", "week_target": 250, "current": null, "current_as_of": null, "current_source": null, "urgency": 4, "urgency_reason": "not measured yet (no Shopify reading this week)"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: not measured yet (no Shopify reading this week), against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
+
 Lifecycle: live. The chat-led store has been public at heartside.io since 19 October (`docs/HANDOFF.md` section 3, "The buyer's journey, as live"; `9ea7e34`).
 
 Live and recorded as verified in the repo:
@@ -56,6 +58,7 @@ Blocked or waiting:
 
 ## What changed recently
 
+- 2026-10-23 **The North Star now has a number, a weekly ladder and an urgency rating, so every session knows how far behind it is and how hard to push.** Ruling (Krish, 2026-10-23): every repository chases one aggressive number on a weekly ladder, and urgency U1 to U5 sets its intensity. The number and ladder are in `docs/NORTH_STAR.md`; where it stands is the first line under "Where it is right now". Contract: ai-harness `contract/north-star-metric.md`.
 - **2026-10-22: the note sounds like each dog, up to 60 characters a line, written by Claude Sonnet** (PR #44). Krish: "Two-word sentences stacked against two- or three-word sentences are just a clear tell ... A border collie would sound different to a poodle if they were human." The old prompt had taught the staccato ("two short sentences beat one long one"); the new one describes each breed archetype as a person, writes a one-line voice first, and the rules now reject stacked fragments and worn lines such as "not sorry" (`fd00399`, `9aa8f98`). A first round still made a Border Collie, a Poodle and a Beagle sound nearly the same on identical answers, which is why the voice step exists. A blind lab across three providers (`14cbf98`) preceded the ruling for Sonnet; measured Sonnet times were 12.0, 4.3 and about 5.6 s for a full note, so the theme's compose budget went to 11 s (`17a800c`).
 - **2026-10-22: Cowork raised the Teeinblue Line fields to 61 and measured the real print files** (`ea79f11`, `66928e6`). The ornament already prints under the 12 pt rule at 44 characters (about 9.6 pt), so its meaning line stays at 44 (`docs/evidence/cowork-2026-10-22/REPORT.md`; ruling in `17a800c`).
 - **2026-10-21: one screen, no scroll, on the homepage and the gift page** (PR #41). Krish: "We need radical simplicity of the UI and UX on all devices!" The footer became one policy line and Teeinblue's fields moved behind Change a word (`docs/HANDOFF.md` section 9).
@@ -76,7 +79,7 @@ Blocked or waiting:
 - **Say yes to the 60-character lines going live together:** Teeinblue's Update on the Couch Blanket, Framed Print and Tree Ornament campaigns (`docs/evidence/cowork-2026-10-22/REPORT-2.md`), and the theme deploy of `main`'s `hs3.js` (`docs/HANDOFF.md` section 5b). Deploying the theme first would let the site write lines the three storefront forms still cap at 45.
 - Confirm the Christmas order-by date per product in Printful before the theme shows one (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
-- North Star check (2026-10-22): holds.
+- North Star check (2026-10-23): holds.
 
 ## Read next
 
