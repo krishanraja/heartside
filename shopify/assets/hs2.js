@@ -1145,6 +1145,10 @@
   }
   function editing(on) {
     var html = document.documentElement;
+    if (!on && cityArtPreview() && giftEditFields().every(function (f) {
+      var inp = f.el.querySelector('input:not([type="hidden"]), textarea');
+      return inp && inp.value.trim();
+    })) html.classList.remove('hs2-v3-direct');
     html.classList.toggle('hs2-v3-editing', on);
     bridge.opened = on;
     fold(!on);
@@ -1203,6 +1207,8 @@
     var media = document.querySelector('#buy [data-hs2-media]');
     if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() || !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
     if (cityArtPreview()) {
+      var orderButton = document.getElementById('teeAtcButton');
+      if (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; }
       var place = document.querySelector('[data-hs2-artwork-city]');
       if (place) place.textContent = answer('city');
       var editPlace = document.querySelector('[data-hs2-artwork-edit-city]');

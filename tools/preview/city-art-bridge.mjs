@@ -29,6 +29,7 @@ try {
       const form = document.createElement('div'); form.className = 'tee-customization-form';
       const field = (id, label, max) => `<div class="tee-field" id="tee-field--${id}"><div class="tee-field__heading"><span>${label}</span></div><input type="text" name="${id}" id="${id}" maxlength="${max}"></div>`;
       form.innerHTML = field('layer-city', 'City', 60) + field('layer-dog', "Dog's name", 14) + field('layer-note', 'Line 4', 44) + '<div class="tee-field tee-field--photo"><span>Upload photo</span><input type="file" id="tee-photo-test"></div><button id="teeAtcButton">Add to cart</button>';
+      form.insertAdjacentHTML('afterbegin', '<div class="tee-variants"><div class="tee-option-inner">' + ['Black', 'Red Oak', 'White'].map((name, i) => `<div class="tee-radio"><label class="tee-radio-label"><input type="radio" name="frame" ${i ? '' : 'checked'}><span>${name}</span></label></div>`).join('') + '</div></div>');
       form.addEventListener('input', e => { data[e.target.name] = e.target.value; });
       form.addEventListener('change', e => { if(e.target.type === 'file') window.uploads++; });
       form.querySelector('#teeAtcButton').addEventListener('click', () => window.cartAdds++);
@@ -51,6 +52,15 @@ try {
   await page.fill('#layer-city', 'San Francisco');
   await page.click('[data-hs2-tib-edit]');
   assert.equal(await page.locator('.tee-field:visible input[type=text]').count(), 0);
+  // Reproduce the direct-arrival class that survived Done in the actual Shopify editor.
+  await page.evaluate(() => document.documentElement.classList.add('hs2-v3-direct'));
+  await page.click('[data-hs2-tib-edit]');
+  await page.click('[data-hs2-tib-edit]');
+  assert.equal(await page.locator('[data-hs2-gift-edit-nav]').isVisible(), false, 'Done closes the direct-arrival field navigation');
+  for (const finish of ['Black', 'Red Oak', 'White']) {
+    const bounds = await page.getByText(finish, {exact: true}).boundingBox();
+    assert.ok(bounds && bounds.width > 20 && bounds.height > 10, `${finish} has a readable frame label`);
+  }
   await page.evaluate(() => { window.__hs2api.usePhoto(new File(['synthetic fixture'], 'fixture.png', {type:'image/png'}), 123456); document.dispatchEvent(new Event('teeinblue-event-component-injected')); });
   await page.waitForTimeout(500);
   assert.equal(await page.evaluate(() => window.uploads), 0, 'AI photo is not submitted before deliberate creation');
@@ -59,7 +69,8 @@ try {
   assert.equal(await page.evaluate(() => window.uploads), 1, 'slow or uncertain AI request does not retry after ten seconds');
   await page.evaluate(() => document.querySelector('[data-hs2-handoff-btn]').click());
   assert.equal(await page.evaluate(() => window.uploads), 1, 'repeated click does not submit twice');
-  await page.click('#teeAtcButton');
+  assert.equal(await page.locator('#teeAtcButton').isDisabled(), true, 'preview ordering is visibly disabled');
+  await page.locator('#teeAtcButton').dispatchEvent('click');
   assert.equal(await page.evaluate(() => window.cartAdds), 0, 'unfinished artwork preview cannot enter cart');
   await page.reload();
   await page.waitForTimeout(1000);
