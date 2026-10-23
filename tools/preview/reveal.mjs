@@ -52,9 +52,10 @@ async function run(label, { withPhoto, dog = 'Biscotti', rec = 'Linda', width = 
     await page.screenshot({ path: path.join(shots, `${label}-${g}.png`) });
     if (g === 'mug') {
       const note = await page.locator('.hs3-mugface__line').allInnerTexts();
-      ok(note[0] === 'I wait by the door.\nWeekends too. Obviously.', `${label}: mug line 1 breaks evenly (${JSON.stringify(note[0])})`);
-      ok(note[1] === 'I took your side of\nthe bed. Not sorry.', `${label}: the bed line breaks evenly`);
-      ok(note[2] === "You're my best friend.\nNot even close.", `${label}: mug line 3 breaks evenly`);
+      const flat = (s) => s.replace(/\s*\n\s*/g, ' ');
+      ok(flat(note[0]) === 'I wait by the door for you, weekends too.' && note[0].includes('\n'), `${label}: mug line 1 keeps the complete sentence and even break (${JSON.stringify(note[0])})`);
+      ok(flat(note[1]) === 'I took your side of the bed to keep it warm.' && note[1].includes('\n'), `${label}: the bed line keeps the complete sentence and even break`);
+      ok(flat(note[2]) === "You're my best friend, and I'm yours." && note[2].includes('\n'), `${label}: mug line 3 keeps the complete sentence and even break`);
       // the mug is drawn wrapped on the photo (layout and fonts: mockup-gate.mjs), never the flat fallback
       await page.waitForFunction(() => document.querySelectorAll('canvas[data-hs3-mug].is-drawn').length === 2, null, { timeout: 8000 }).catch(() => {});
       const drawn = await page.evaluate(() => {
@@ -64,11 +65,11 @@ async function run(label, { withPhoto, dog = 'Biscotti', rec = 'Linda', width = 
         return { both: document.querySelectorAll('canvas[data-hs3-mug].is-drawn').length, flat: m.classList.contains('is-flat'), ink, label: c.getAttribute('aria-label') };
       });
       ok(drawn.both === 2 && !drawn.flat && drawn.ink > 2000, `${label}: both faces drawn wrapped on the mug photo (${drawn.ink} ink pixels on the note)`);
-      ok(drawn.label.includes('Love, ' + dog) && drawn.label.includes('I took your side of the bed. Not sorry.'), `${label}: the drawn note is labelled for screen readers`);
+      ok(drawn.label.includes('Love, ' + dog) && drawn.label.includes(flat(note[1])), `${label}: the drawn note is labelled for screen readers`);
       const said = await page.evaluate(() => ({ top: document.querySelector('.hs3-top .hs3-label').textContent, bubble: document.querySelector('.hs3-says--reveal .hs3-bubble').textContent }));
       ok(said.top === 'The Morning Mug' && !/walk|coffee/i.test(said.bubble), `${label}: after "Naps", the mug tab says "${said.top}" and "${said.bubble}"`);
       const handed = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review') || '{}').hs3_mug_lines || {});
-      ok(handed.home === 'I wait by the door.\nWeekends too. Obviously.' && handed.spot === 'I took your side of\nthe bed. Not sorry.', `${label}: the chat hands the broken lines to the product page`);
+      ok(handed.home === note[0] && handed.spot === note[1] && handed.meaning === note[2], `${label}: the chat hands the broken lines to the product page`);
       await page.locator('[data-hs3="turn"]').click();
       await page.waitForTimeout(150);
       await page.screenshot({ path: path.join(shots, `${label}-mug-turned.png`) });

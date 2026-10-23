@@ -77,6 +77,44 @@ async function run(kind, handle, size = [390, 844], check = null, initialState =
   ok(!r.errors.length, 'no script errors ' + r.errors.join(' '));
 }
 {
+  const r = await run('textarea', 'the-morning-mug', [390, 844], async (page) => {
+    // Model the live failure: Teeinblue's fields are correct, but the artwork is
+    // still showing its saved sample until each field receives another input event.
+    return page.evaluate(() => {
+      const names = ['layer-1', 'layer-2', 'layer-3', 'layer-4'];
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      names.forEach((name) => {
+        const g = document.createElementNS(svg.namespaceURI, 'g');
+        g.id = 'artwork-layer--' + name;
+        const text = document.createElementNS(svg.namespaceURI, 'text');
+        text.setAttribute('opacity', '1');
+        const span = document.createElementNS(svg.namespaceURI, 'tspan');
+        span.textContent = 'Old sample';
+        text.append(span); g.append(text); svg.append(g);
+      });
+      document.body.append(svg);
+      document.querySelector('.tee-customization-form').addEventListener('input', (e) => {
+        const span = document.getElementById('artwork-layer--' + e.target.name)?.querySelector('tspan');
+        if (span) span.textContent = e.target.value.replace(/\s+/g, ' ');
+      });
+      const button = document.createElement('button'); button.id = 'teeAtcButton';
+      document.body.append(button);
+      let added = 0;
+      button.addEventListener('click', () => { added++; });
+      button.click();
+      const blocked = added === 0;
+      window.__hs2api.runBridge();
+      const words = names.map((name) => document.getElementById('artwork-layer--' + name).querySelector('tspan').textContent);
+      button.click();
+      return { blocked, added, words };
+    });
+  });
+  ok(r.extra.blocked, 'mug: Add To Cart waits while rendered artwork is stale');
+  ok(r.extra.words.every((s) => s !== 'Old sample'), 'mug: correct fields refresh stale rendered artwork');
+  ok(r.extra.added === 1, 'mug: Add To Cart proceeds when the print proof matches');
+  ok(!r.errors.length, 'stale artwork recovery has no script errors ' + r.errors.join(' '));
+}
+{
   const r = await run('input', 'the-morning-mug');
   ok(r.vals[0] === 'Naps best when you are there.', `mug, one-line input: the line goes in unbroken, words never joined (${JSON.stringify(r.vals[0])})`);
   ok(r.vals[2] === 'Your best friend, no contest.', 'mug, one-line input: Line 3 unbroken');

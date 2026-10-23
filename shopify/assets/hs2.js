@@ -734,6 +734,55 @@
   function tibCurrent() {
     try { return (window.teeinblue && window.teeinblue.getCurrentCustomization && window.teeinblue.getCurrentCustomization()) || null; } catch (e) { return null; }
   }
+  // Teeinblue can retain an older SVG proof after its fields receive our words. This was
+  // reproduced on the live mug: the inputs said "Love, Milo" while the note face still
+  // rendered "Love, Test Dog". Compare the print artwork, not only the input values.
+  function mugArtworkValue(name) {
+    if (v3Kind() !== 'mug') return null;
+    var layer = document.getElementById('artwork-layer--' + name);
+    if (!layer) return null; // the mockup has not rendered yet
+    var visible = layer.querySelector('text[opacity="1"]');
+    if (!visible) return null;
+    var spans = Array.prototype.slice.call(visible.querySelectorAll('tspan'));
+    return (spans.length ? spans.map(function (s) { return s.textContent; }).join(' ') : visible.textContent).replace(/\s+/g, ' ').trim();
+  }
+  function mugArtworkMismatch(name, want) {
+    var shown = mugArtworkValue(name);
+    return shown !== null && shown !== String(want).replace(/\s+/g, ' ').trim();
+  }
+  function guardMugProof() {
+    document.addEventListener('click', function (e) {
+      var button = e.target.closest && e.target.closest('#teeAtcButton');
+      if (!button || v3Kind() !== 'mug') return;
+      var fields = tibFields().filter(function (f) { return /^(line[1-3]|signed)$/.test(f.rule.k); });
+      var ready = fields.length === 4 && fields.every(function (f) {
+        var inp = f.el.querySelector('input[type="text"], input:not([type]), textarea');
+        return inp && inp.value.trim() && mugArtworkValue(inp.name || inp.id) !== null && !mugArtworkMismatch(inp.name || inp.id, inp.value);
+      });
+      if (ready) {
+        var old = document.querySelector('[data-hs2-proof-wait]');
+        if (old) old.remove();
+        return;
+      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      // Also covers a word the shopper edited directly: that field is theirs, so the
+      // automatic bridge will not overwrite it, but it can safely resend its value.
+      fields.forEach(function (f) {
+        var inp = f.el.querySelector('input[type="text"], input:not([type]), textarea');
+        if (inp && inp.value && mugArtworkMismatch(inp.name || inp.id, inp.value)) setValue(inp, inp.value);
+      });
+      runBridge();
+      var note = document.querySelector('[data-hs2-proof-wait]');
+      if (!note) {
+        note = document.createElement('p');
+        note.setAttribute('data-hs2-proof-wait', '');
+        note.setAttribute('role', 'status');
+        button.parentNode.insertBefore(note, button.nextSibling);
+      }
+      note.textContent = 'Just finishing your mug preview. Please try again in a moment.';
+    }, true);
+  }
   /* A scripted click on a label moves focus to its radio, and the browser scrolls to it: on
      the ad landing page that pulled a shopper typing in the hero 5,000px down the page. So
      the bridge puts focus and scroll back where the shopper had them. */
@@ -782,7 +831,9 @@
       if (!want) return null; // no name yet: leave the field for the shopper, never a placeholder
       // a one-line input drops "\n" and would join two words, so it gets the line unbroken
       if (text.tagName !== 'TEXTAREA') want = want.replace(/\n/g, ' ');
-      if (text.value === want) return { name: name, value: want };
+      // A matching field does not prove Teeinblue rebuilt the print artwork. Re-send its
+      // input event when the mug's visible SVG still shows an older customization.
+      if (text.value === want && !mugArtworkMismatch(name, want)) return { name: name, value: want };
       setValue(text, want);
       return { name: name, value: want, changed: true };
     }
@@ -2101,7 +2152,7 @@
     guardSearchFocus();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto(); guardMugProof();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
