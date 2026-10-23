@@ -78,3 +78,8 @@ The agent clicked Teeinblue's Launch control expecting a store-selection dialog.
 Read back the repaired unpublished theme in the working Shopify editor route, then exercise one actual storefront upload and its final saved output. The file picker still needs Krish's click. Verify source resolution, cost, fallback behavior and the full chat-to-artwork journey before release. The controlled merchant-editor San Francisco proof passes; it does not substitute for this customer-path check. Live theme/product release remains gated. Sample order remains last.
 
 Sources checked: n8n's official generated update/publish API schemas and Teeinblue's connected artwork schema; [Teeinblue AI effects, variables and upload limits](https://support.teeinblue.com/en/article/how-to-use-gen-ai-effect-feature-to-create-custom-image-effects-l8mqej/).
+
+### Draft release readback
+
+Commit 8bee656 deployed successfully only to the unpublished theme in run 39991340971. After reload, the native mobile form showed the separated summary, all three labeled finishes and disabled Preview only button. Red Oak and White each changed to their matching variant and frame mockup. San Francisco and Milo persisted. The closed editor no longer showed field navigation. Screenshot: heartside-native-editor-mobile-fixed.jpg. Product remains DRAFT. Existing mug/blanket regression passed five viewports; targeted native stand-in test, minification and theme checks passed. GitHub reports no PR checks for this head, so no CI acceptance is inferred. Next is the actual customer-form photo upload, which requires the native file picker.
+

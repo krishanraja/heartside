@@ -85,7 +85,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** verify the repaired private Shopify theme-editor preview, then complete one customer-path photo upload and saved print proof there. The merchant-editor San Francisco case passes. Provider source resolution/cost, likeness and failure behavior remain open before live release. The compose publication is complete; its hilarious backup quality still needs tuning. Sample order remains last.
+- **Next action:** complete one customer-path photo upload and saved print proof in the prepared private Shopify theme-editor preview. The repaired mobile layout, all three frame choices and disabled ordering were read back after draft push 39991340971. The merchant-editor San Francisco case passes. Provider source resolution/cost, likeness and failure behavior remain open before live release. The compose publication is complete; its hilarious backup quality still needs tuning. Sample order remains last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.
@@ -113,4 +113,3 @@ Blocked or waiting:
 - `design/BRAND-SYSTEM.md` on the poster voice (marked retired), `design/prototype-v3/Main.dc.html` on its gift lines (retired), and `assets/heartside-fb-cover-1640x624.jpg`, which shows the retired poster (`docs/HANDOFF.md` sections 7 and 8).
 
 North Star check, 2026-10-23: holds. Controlled city-to-artwork proof now passes and the private native storefront form works; no new sales claim. Sample remains last.
-
