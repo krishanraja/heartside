@@ -117,8 +117,8 @@ Biscuit's reactions are in `design/prototype-v3/Main.dc.html` (the step blocks);
 - A strip with the photo, the first line and "Love, Kuku".
 - Four tick boxes with name, one-line description and price. Biscuit's pick arrives ticked. The ornament shows $19 when another gift is ticked.
 - "Ship to: Sam / Me".
-- "Free US shipping. Order by Dec 10 for Christmas. A real person checks every order before it prints. Misprints are remade free." (Confirm the Dec 10 date per product in Printful before it goes live.)
-- Button: "Add to cart · $29", or "Add 2 gifts to cart · $48".
+- "Free US shipping. A real person checks every order before it prints. Misprints are remade free." A dated Christmas order-by promise stays off the live store until Printful publishes a verified 2026 cutoff for each route.
+- Button: "Personalize gift · $29", or "Personalize 2 gifts · $48". It opens the first product's personalizer; Teeinblue's button adds each completed gift to the cart.
 - After adding: "In your cart. Kuku's tail is going." and "Save Kuku's gift to your story".
 
 ### 4.5 The share card
@@ -281,6 +281,11 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
   - the blanket, the four framed-print images and the two ornament images had only their lines replaced;
   - all are live in Shopify, with each variant on its own image.
 
+- 2026-10-23: Krish moved the physical sample order to the end of the product revamp. The browser's saved photo must be tied to the current gift, and a gift with no customer photo must not add Teeinblue's sample dog to the cart. The choose button now says "Personalize" because it opens a product page; it does not add to the cart.
+- 2026-10-23: Krish approved a framed-print visual target: a city screenprint with the customer's recognizable dog as the subject and a small handwritten dog-voice note and decorative paw mark at lower right. A city or meaningful place can be optional, but never inferred from shipping. A test-only full-size composition and a production route are in `tools/print-art/`; the pictured concept is not a live offer or a physically validated print.
+- 2026-10-23: Krish approved the rendered three-stop note control on the reveal: Sentimental, Warm with a wink (default), and Hilarious. The model rewrites from the same answers while manual edits stay intact; its breed voice remains a separate signal. The theme, prompt, guard and local browser tests are prepared but the new compose workflow and theme are not yet published. Hilarious must stay affectionate and must not turn grief or a tender answer into a joke.
+- 2026-10-23: Krish directed Runway and Higgsfield toward lead-generation content and ads rather than concept brainstorming. The product priority is a repeatable final-art route when orders arrive. Keep the current four-gift route until the generated print route passes identity, print, supplier and purchase checks. The physical sample order is last.
+
 ## 14. Next action
 
-Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and use the n8n credential in 5.4 for the AI; ask Krish before switching the webhooks on.
+Finish the product revamp before the sample order: prove the approved print direction as a repeatable order-time route, validate the note control, product descriptions, photo identity and the US buying path, then seek exact approval for each live theme deployment. The physical sample and full Teeinblue-to-Printful order handoff come last.

@@ -22,14 +22,14 @@
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false, toneStatus: '' };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
     return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
-      typed: {}, ai: {}, fu: null, edits: {}, composed: null, gift: null, tabbed: false,
-      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, mugColor: '' };
+      typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
+      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, mugColor: '' };
   }
   function load() {
     var s = null;
@@ -331,18 +331,28 @@
   function anyTyped() { return Object.keys(S.typed).some(function (k) { return !!S.typed[k]; }); }
   /* Compose runs for every buyer now (Krish, 20 Oct: every gift a warm message with personality),
      not only after a typed answer. The scripted lines show at once; the AI's arrive within 6 s. */
-  function compose() {
+  function compose(tone, previous) {
+    tone = tone || 'warm';
     var n = names();
     var answers = [];
     var push = function (id, chip, label) { answers.push({ id: id, chip: chip && chip !== 'typed' && chip !== 'skip' ? chip : null, label: label || '', typed: S.typed[id] || null }); };
     push('home', S.home, ''); push('home_follow', S.follow, ''); push('spot', S.spot, ''); push('together', S.together, ''); push('meaning', S.meaning, '');
     var asked = S.composeAsked = (S.composeAsked || 0) + 1;
-    callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
-      if (!r || !r.lines || asked !== S.composeAsked) return;
+    callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: S.baseLines || allLines(), default_gift: recGift(), note_tone: tone }, COMPOSE_MS).then(function (r) {
+      if (asked !== S.composeAsked) return;
+      if (!r || !r.lines || (previous && r.source && r.source !== 'ai') || (tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
+        if (previous) S.noteTone = S.appliedTone || 'warm';
+        ui.toneStatus = previous ? 'Could not rewrite this note. Your words are unchanged.' : '';
+        save(); if (S.screen === 'reveal') render(); return;
+      }
       var lines = {};
       ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k], k); if (l) lines[k] = l; });
-      S.composed = { lines: lines, gift: GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null, reason: typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '' };
-      if (S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
+      var old = S.composed;
+      S.composed = { lines: lines, gift: previous && old ? old.gift : (GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null), reason: previous && old ? old.reason : (typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '') };
+      S.toneDrafts = S.toneDrafts || {}; S.toneDrafts[tone] = S.composed;
+      S.appliedTone = tone;
+      ui.toneStatus = '';
+      if (!previous && S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
       save();
       if (S.screen === 'reveal' && !ui.editing) render();
     });
@@ -365,16 +375,19 @@
       };
     });
   }
-  function usePhoto(file) {
+  function usePhoto(file, t) {
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(file);
-    S.hasPhoto = true; save();
+    S.hasPhoto = true; S.photoT = t; save();
     document.querySelectorAll('[data-hs3-photo]').forEach(function (img) { img.src = photoURL; });
   }
   function restorePhoto() {
+    if (!S.hasPhoto) return Promise.resolve();
+    if (!S.photoT) { S.hasPhoto = false; save(); return Promise.resolve(); }
     return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
-      if (rec && rec.file && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file);
-    }).catch(function () {});
+      if (rec && rec.file && S.hasPhoto && rec.t === S.photoT && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file, rec.t);
+      else { S.hasPhoto = false; S.photoT = 0; save(); }
+    }).catch(function () { S.hasPhoto = false; S.photoT = 0; save(); });
   }
   // never a stranger's dog on the buyer's gift: no photo yet shows a paw placeholder
   function photoSrc() { return photoURL || ''; }
@@ -390,6 +403,7 @@
     st.person = S.rec ? n.rec : '';
     st.hs3_lines = allLines();
     st.hs3_mug_lines = mugLines();
+    st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
     var kinds = {};
     GIFTS.forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) kinds[x.handle] = g; });
     st.hs3_kinds = kinds;
@@ -589,7 +603,10 @@
     if (!ui.editing) {
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + GIFTS.map(function (k) {
         return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Biscuit's pick" : '') + '</span></button>';
-      }).join('') + '</div><p class="hs3-small hs3-center">Same words on any of them. Tap to see each one, then pick as many as you like.</p>';
+      }).join('') + '</div>';
+      var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
+      var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
+      h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" data-hs3-tone><span>Hilarious</span></div>' + (ui.toneStatus ? '<p class="hs3-tone__status" role="status">' + esc(ui.toneStatus) + '</p>' : '') + '</div>';
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
@@ -886,7 +903,7 @@
     // Publish an order-by date only after Printful confirms the current year's cutoff for
     // every selected variant and fulfillment route, including any gift bundle.
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. A person checks every order before it prints.</p>';
-    var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Add to cart · ' + fmt(c.total) : 'Add ' + c.count + ' gifts to cart · ' + fmt(c.total));
+    var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
@@ -904,7 +921,7 @@
       return { url: u, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
-    track('add_to_cart', { gifts: q.length, picks: GIFTS.filter(function (k) { return S.sel[k]; }).join(',') });
+    track('personalize_gifts', { gifts: q.length, picks: GIFTS.filter(function (k) { return S.sel[k]; }).join(',') });
     window.location.href = q[0].url;
   }
 
@@ -1065,7 +1082,7 @@
       stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; save(); render(); stepEvent('shown'); return;
     }
     // the end of the chat: the reveal
-    S.composed = null; S.tabbed = false; save();
+    S.composed = null; S.baseLines = allLines(); S.toneDrafts = {}; S.noteTone = 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
     track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
     compose();
     startReveal(recGift());
@@ -1119,8 +1136,9 @@
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
-      usePhoto(f);
-      idb('readwrite', function (st) { return st.put({ file: f, t: Date.now() }, PHOTO); }).catch(function () {});
+      var t = Date.now();
+      usePhoto(f, t);
+      idb('readwrite', function (st) { return st.put({ file: f, t: t }, PHOTO); }).catch(function () {});
       track('photo_attached', {});
       var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
       var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
@@ -1141,6 +1159,24 @@
         else { ui.editing = false; render(); }
       });
     });
+    var tone = frame.querySelector('[data-hs3-tone]');
+    if (tone) {
+      tone.addEventListener('input', function () {
+        var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][Number(tone.value)] || 'Warm with a wink';
+        tone.setAttribute('aria-valuetext', name);
+        var label = frame.querySelector('[data-hs3-tone-name]'); if (label) label.textContent = name;
+      });
+      tone.addEventListener('change', function () {
+        var name = ['sentimental', 'warm', 'hilarious'][Number(tone.value)] || 'warm';
+        if (name === S.noteTone) return;
+        var previous = S.noteTone;
+        S.noteTone = name; ui.toneStatus = '';
+        track('tone_pick', { tone: name });
+        if (S.toneDrafts && S.toneDrafts[name]) { S.composeAsked = (S.composeAsked || 0) + 1; S.composed = S.toneDrafts[name]; S.appliedTone = name; save(); render(); return; }
+        ui.toneStatus = 'Rewriting from your answers. Your edits stay as written.';
+        save(); render(); compose(name, previous);
+      });
+    }
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
@@ -1192,6 +1228,14 @@
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     heroHTML = frame.innerHTML;
+    var q = null;
+    try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
+    if (q && q.get('hs3') === 'reset') {
+      S = fresh();
+      try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
+      idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
+      save();
+    }
     if (S.screen === 'reveal') ui.revealN = 9;
     if (S.screen === 'chat' && S.step === 3 && S.fu && !S.fu.chips.length) ui.typing = true;
     if (S.screen === 'chat') warm(cfg.typedUrl);
@@ -1207,9 +1251,6 @@
     // hs2.js moves the section under Helio's header after this runs; follow the frame's top
     if (window.ResizeObserver) new ResizeObserver(refit).observe(root.parentNode || root);
     [300, 1200].forEach(function (t) { setTimeout(fit, t); });
-    var q = null;
-    try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
-    if (q && q.get('hs3') === 'reset') { S = fresh(); save(); render(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests

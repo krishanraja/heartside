@@ -47,15 +47,17 @@ Live and recorded as verified in the repo:
 - Shopify Payments showed "Accepting payments" on 23 Oct. A separate notice said payouts are pending until 25 Oct after a bank-detail update; the account owner should verify that update was expected.
 - A synthetic ornament with an uploaded test image and custom dog name, line and signature reached the live cart and checkout. For a New York ZIP, checkout quoted $5.99 standard US shipping with a $5.99 automatic discount, a $24 total and 5 to 9 Nov standard delivery. No payment was submitted; the test cart item was removed afterward.
 - PR #49 was merged and deployed to the live theme on 23 Oct with Krish's explicit approval. The one-field gift editor and the 60-character chat lines are live; the unsupported December 10 Christmas order-by promise has been removed. Desktop, phone and Instagram-browser layout checks passed after deployment.
-- A separate live mug test found a print-proof mismatch: Teeinblue's four fields held the intended gift words while its rendered note still showed an earlier sample signature. Manually re-entering the same words updated the artwork and the cart then showed the correct lines. This branch prepares a consistency check and Add To Cart guard in PR #50. A $29 mug with test artwork reached prepayment checkout for Brooklyn, with free standard shipping and a November 5 to 9 estimate. No payment or fulfillment was submitted.
+- A separate live mug test found a print-proof mismatch: Teeinblue's four fields held the intended gift words while its rendered note still showed an earlier sample signature. PR #50 was merged and deployed with Krish's approval on 23 Oct. A fresh live mug chat, preview and cart then held the same four values. A $29 mug with test artwork reached prepayment checkout for Brooklyn, with free standard shipping and a November 5 to 9 estimate. No payment or fulfillment was submitted.
+- The framed print's next direction is a city screenprint with the customer's recognizable dog as its subject, plus a small handwritten note and decorative paw at lower right. Krish approved the revised concept on 23 Oct. The 1024 x 1536 concept is not print-ready; high-resolution art, likeness, city selection and final Teeinblue print-file checks are still open. The live certificate-style print remains unchanged.
 - The compose call (the whole note) on Claude Sonnet with a hand-over to Gemini 3.5 Flash at 7.5 s, and the typed answer on Gemini 3.5 Flash, as `n8n/README.md` records since 22 Oct.
 
 Blocked or waiting:
 
-- **No real order through the v3 journey yet.** The mock order is the first item of work left (`docs/HANDOFF.md` section 4).
+- **No real order through the v3 journey yet.** Krish moved the physical sample to the last step after the full product revamp.
 - The mug's Teeinblue Preview shows all ten slides per colour and prints flat; funnel events fire at the wrong moment (`docs/HANDOFF.md` section 3, "Known gaps right now").
 - No dated Christmas order-by promise is live. The accessible detailed Printful cutoff was for Christmas 2025; the 2026 cutoff and fulfillment location are not verified per product.
-- PR #50 needs review, merge and Krish's explicit approval for live theme deployment. Until then, the mug may show stale Teeinblue artwork even when its text fields are correct.
+- A new draft theme change ties a saved photo to its current gift, blocks Add To Cart without a current photo handoff, and labels the product-page action "Personalize." It needs preview and live-path checks, review, and Krish's exact approval before theme deployment.
+- The blanket, frame and ornament still contain inaccurate supplier boilerplate in their Shopify descriptions. The city screenprint and optional note-tone control remain in development.
 - Shopify-to-Teeinblue-to-Printful fulfillment, actual combined-order supplier shipping charges, product quality and a completed paid checkout still need a full mock order.
 - `docs/HANDOFF.md` section 3 still says the AI runs on Google Gemini and that "Change a word" allows 45 characters; `n8n/README.md` and `docs/V3-GIFTS-FROM-YOUR-DOG.md` section 5 carry the 22 Oct values.
 
@@ -78,7 +80,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** after PR #50 passes its checks, obtain Krish's exact approval to merge and deploy the mug print-proof guard to the live theme, then verify a fresh mug chat, preview and cart on the deployed code. After that, finish the first paid sample or approved test-order route through Teeinblue and Printful.
+- **Next action:** prove the approved print direction as a repeatable paid-order route across varied real dog photos, with measured generation cost and time, a checked Teeinblue replacement and buyer-facing preview truth. The test-only 300 DPI compositor is in `tools/print-art/`; model generation, live supplier handoff and physical quality are not verified. Then review and approve the prepared tone and photo-safety release as an exact theme and compose-workflow change. Place the physical sample only after the revamp is complete.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-23): holds.

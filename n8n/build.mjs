@@ -1,6 +1,7 @@
 // Builds the n8n Workflow SDK code for the two Heartside webhooks (spec section 5).
 import fs from 'node:fs';
-const dir = new URL('.', import.meta.url).pathname;
+import { fileURLToPath } from 'node:url';
+const dir = fileURLToPath(new URL('.', import.meta.url));
 const shared = fs.readFileSync(dir + 'shared.js', 'utf8');
 const CRED = { id: 'LtlmaVHoTQdTTngQ', name: 'Google Gemini(PaLM) - Heartside' };
 // 22 Oct (Krish): Claude Sonnet writes the whole note; Gemini 3.5 Flash answers typed replies and backs Claude up.
@@ -83,6 +84,7 @@ const COMPOSE_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   ' "reason": "<= 140 characters. Biscuit explaining the pick from what the dog and the person do together, warmly and a little funny.",',
   ' "flags": []}',
   "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must be the most tender and stand on its own, because the ornament prints it alone. alternates holds one more option per line (two for meaning), in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters. The meaning line is the hardest: at most 44 characters, so count it, and shorten it if it runs over.",
+  "note_tone is the buyer's optional slider, separate from dog.tone (the breed personality). sentimental means more direct affection, warm means affection with a small knowing smile, hilarious means the dog's funny habits get more room. All three must still sound like this particular dog, use only the owner's details, and leave the meaning line tender. Hilarious is observational and affectionate, never a roast, a stock joke, or a joke about grief, illness or loss. If the answers are tender or concern grief, keep the note gentle regardless of the slider.",
   "In reason, Biscuit talks to the buyer about the person: use the person's name, never you, and never address the person directly (no \"KJ,\").",
   "Pick: the morning walk or coffee means mug; couch and a movie or naps means blanket; car rides or anything else means print. Never pick ornament unless the buyer asked for the tree.",
   'Reason example: "Kuku\'s mornings start with Sam and a coffee, so a mug puts her right there in every one of them."'
@@ -90,7 +92,7 @@ const COMPOSE_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
 
 const guard = (kind) => `
 const ALLOWED = ${JSON.stringify(ORIGINS)};
-const LIMIT_SESSION = ${kind === 'typed' ? 8 : 3};
+const LIMIT_SESSION = ${kind === 'typed' ? 8 : 5};
 const LIMIT_IP = ${kind === 'typed' ? 60 : 20};
 const req = $input.first().json;
 const h = req.headers || {};
@@ -134,8 +136,10 @@ const answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 8).map(a =>
 const current_lines = {};
 KEYS.forEach(k => { current_lines[k] = str(b.current_lines && b.current_lines[k], 60); });
 const GIFTS = ['mug', 'blanket', 'print', 'ornament'];
+const NOTE_TONES = ['sentimental', 'warm', 'hilarious'];
 const input = { dog: dog, recipient: recipient, answers: answers, current_lines: current_lines,
-  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift };
+  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,
+  note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };
 `}
 return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];
 `;

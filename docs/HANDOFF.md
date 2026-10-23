@@ -133,7 +133,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 - **Social bios** may still describe the retired range (`POSITIONING.md` section 5).
 - **Orders placed before 21 Oct have no hidden answers** (`_hs_answers`, `_hs_lines`, `_hs_ship_to`). For those, the words are only in Teeinblue's Line fields.
 - **The smallest phones (360×640)** zoom the gift page's details to about 78% and the homepage's busiest screens to about 85% to keep them on one screen. Any copy added to those screens shrinks them further.
-- **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared, and `hs3_add_to_cart` fires on the hand-off to the product page, not a confirmed add (`HANDOVER-2026-10-17.md`).
+- **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared. `hs3_personalize_gifts` fires on the hand-off to the first product page, not a confirmed cart add. The previous `hs3_add_to_cart` event mislabeled that hand-off (`HANDOVER-2026-10-17.md`).
 
 ## 4. The work left, in order
 

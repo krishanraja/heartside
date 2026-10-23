@@ -1,11 +1,16 @@
 import fs from 'node:fs';
-process.chdir(new URL(".", import.meta.url).pathname);
+import { fileURLToPath } from 'node:url';
+process.chdir(fileURLToPath(new URL('.', import.meta.url)));
 function run(file, guardOut, raw){ const f=new Function('$','$input', fs.readFileSync(file,'utf8')); return f(()=>({first:()=>({json:guardOut})}), {first:()=>({json:raw})})[0].json; }
 function guard(file, req){ const sd={}; const f=new Function('$input','$getWorkflowStaticData', fs.readFileSync(file,'utf8')); return f({first:()=>({json:req})}, ()=>sd)[0].json; }
 let fails=0; const ok=(c,m)=>{ if(!c){fails++;console.log('FAIL',m);} else console.log('pass',m); };
 const g = guard('guard-typed.js',{headers:{origin:'https://heartside.io'},body:{session:'abcdefgh12',step:'home',question:'What does Mowgli do?',typed_text:'brings the stick back every single time',dog:{name:'Mowgli',pronoun:'he',breed:'Border Collie',tone:'Herding Manager'},recipient:{name:'Sam',relation:'partner'}}});
 ok(g.input.dog.tone==='Herding Manager' && g.input.dog.breed==='Border Collie','guard keeps breed and tone');
 ok(!guard('guard-typed.js',{headers:{origin:'https://heartside.io'},body:{session:'abcdefgh13',typed_text:'x',dog:{name:'A',tone:'Evil'}}}).input.dog.tone,'guard drops unknown tone');
+const composeReq = {headers:{origin:'https://heartside.io'},body:{session:'abcdefgh14',dog:{name:'Pip',pronoun:'he',tone:'Terrier Menace'},recipient:{name:'Sam',relation:'partner'},answers:[],current_lines:{home:'I wait for you.',spot:'I sit close.',together:'I walk with you.',meaning:'I love you.'},default_gift:'mug',note_tone:'hilarious'}};
+ok(guard('guard-compose.js',composeReq).input.note_tone==='hilarious','compose guard keeps the selected note tone apart from breed personality');
+composeReq.body.note_tone='untrusted';
+ok(guard('guard-compose.js',composeReq).input.note_tone==='warm','compose guard defaults an unknown note tone to warm');
 const L=(line)=>run('enforce-typed.js', g, {reaction:'Sticks! Serious business.',line,follow_up:null,flags:[]}).line;
 ok(L("I bring the stick back to you, every time.")==="I bring the stick back to you, every time.",'dog-voice I line passes');
 ok(L("Understands every word. Pretends he doesn't.")!=="Understands every word. Pretends he doesn't.",'he line rejected');

@@ -99,16 +99,29 @@ async function run(kind, handle, size = [390, 844], check = null, initialState =
       });
       const button = document.createElement('button'); button.id = 'teeAtcButton';
       document.body.append(button);
+      // Teeinblue's photo control has accepted a current upload before the
+      // print-proof check. A stale artwork alone must still stop Add To Cart.
+      const photo = document.createElement('div'); photo.className = 'tee-field--photo';
+      photo.innerHTML = '<span>Upload photo</span><input type="file" id="tee-photo-test">';
+      document.body.append(photo);
+      const transfer = new DataTransfer();
+      transfer.items.add(new File(['photo'], 'current-dog.png', { type: 'image/png' }));
+      photo.querySelector('input').files = transfer.files;
+      photo.querySelector('input').dispatchEvent(new Event('change', { bubbles: true }));
       let added = 0;
       button.addEventListener('click', () => { added++; });
+      button.click();
+      const unacknowledgedBlocked = added === 0 && !!document.querySelector('[data-hs2-photo-wait]');
+      photo.querySelector('span').textContent = 'Choose another image';
       button.click();
       const blocked = added === 0;
       window.__hs2api.runBridge();
       const words = names.map((name) => document.getElementById('artwork-layer--' + name).querySelector('tspan').textContent);
       button.click();
-      return { blocked, added, words };
+      return { unacknowledgedBlocked, blocked, added, words };
     });
   });
+  ok(r.extra.unacknowledgedBlocked, 'mug: Add To Cart waits until Teeinblue acknowledges the current photo');
   ok(r.extra.blocked, 'mug: Add To Cart waits while rendered artwork is stale');
   ok(r.extra.words.every((s) => s !== 'Old sample'), 'mug: correct fields refresh stale rendered artwork');
   ok(r.extra.added === 1, 'mug: Add To Cart proceeds when the print proof matches');
@@ -174,7 +187,7 @@ for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]
     const directGuard = await page.evaluate(() => {
       const button = document.createElement('button'); button.id = 'teeAtcButton'; document.body.append(button);
       let added = false; button.addEventListener('click', () => { added = true; }); button.click();
-      return !added && !!document.querySelector('[data-hs2-proof-wait]');
+      return !added && !!document.querySelector('[data-hs2-photo-wait]');
     });
     return { before, direct, afterTyping, after, first, second, directGuard };
   }, null);
@@ -182,7 +195,7 @@ for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]
   ok(r.extra.afterTyping.direct && !r.extra.afterTyping.editing, 'direct product entry: typing keeps the photo and direct layout visible');
   ok(r.extra.afterTyping.personHidden, 'direct product entry: no invented recipient appears in the gift preview');
   ok(r.extra.after.shown === 1 && r.extra.first !== r.extra.second, 'direct product arrival: Next switches the single field');
-  ok(r.extra.directGuard, 'direct product arrival: an unfinished mug proof cannot enter the cart');
+  ok(r.extra.directGuard, 'direct product arrival: no-photo gift cannot enter the cart');
   ok(!r.errors.length, 'direct product arrival: no script errors ' + r.errors.join(' '));
 }
 await browser.close();

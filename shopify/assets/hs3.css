@@ -179,7 +179,13 @@
 .hs3-tab.is-on { border: 2px solid var(--ink); background: #fff; }
 .hs3-tab svg { width: 18px; height: 18px; }
 .hs3-tab__tag { font-family: var(--mono); font-size: 9.5px; font-weight: 400; color: var(--chestnut); min-height: 11px; letter-spacing: .04em; }
-.hs3-tabs + .hs3-small { padding: 0 16px; }
+.hs3-tone { margin: 2px 16px 0; font-family: var(--mono); font-size: 11px; color: #583427; }
+.hs3-tone__top, .hs3-tone__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hs3-tone__top strong { font-weight: 600; color: var(--chestnut); }
+.hs3-tone__row { margin-top: 3px; }
+.hs3-tone__row input { flex: 1; min-width: 30px; accent-color: var(--chestnut); cursor: pointer; }
+.hs3-tone__row input:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.hs3-tone__status { margin: 2px 0 0; font-size: 10px; }
 .hs3-edit { padding: 12px 18px 0; display: flex; flex-direction: column; gap: 8px; }
 .hs3-edit__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .hs3-edit__arrow { appearance: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--ink); font-size: 24px; line-height: 1; cursor: pointer; }
@@ -309,7 +315,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-top { grid-area: top; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-h2 { grid-area: h2; padding: 28px 0 0; font-size: 44px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs { grid-area: tabs; padding: 18px 0 8px; }
-  .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs + .hs3-small { grid-area: note; padding: 0; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-tone { grid-area: note; margin: 2px 0 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-stage { grid-area: stage; align-self: start; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); min-height: min(640px, calc(100svh - var(--hs2-head, 66px) - 120px)); padding: 24px 0; }
   .hs3__frame[data-hs3-screen="reveal"] :is(.hs3-says, .hs3-edit) { grid-area: says; padding: 22px 0 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-bubble { max-width: 460px; font-size: 17px; }

@@ -248,8 +248,9 @@
     idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).catch(function () {});
   }
   function restorePhoto() {
+    if (!state.hs3_photo_t) return Promise.resolve(null);
     return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
-      if (!rec || !rec.file || Date.now() - rec.t > PHOTO_DAYS * 864e5) return null;
+      if (!rec || !rec.file || rec.t !== state.hs3_photo_t || Date.now() - rec.t > PHOTO_DAYS * 864e5) return null;
       return rec;
     }).catch(function () { return null; });
   }
@@ -782,6 +783,34 @@
         button.parentNode.insertBefore(note, button.nextSibling);
       }
       note.textContent = 'Just finishing your mug preview. Please try again in a moment.';
+    }, true);
+  }
+  // Every v3 gift prints a dog photo. Teeinblue can otherwise submit its sample image
+  // when the chat's optional photo step was skipped or an earlier photo was restored.
+  function guardGiftPhoto() {
+    document.addEventListener('click', function (e) {
+      var button = e.target.closest && e.target.closest('#teeAtcButton');
+      if (!button || !giftView()) return;
+      // Dispatching a file is not proof that Teeinblue accepted it. The upload
+      // field must acknowledge the image, and its crop dialog must be closed.
+      var ready = !!(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container'));
+      if (ready) {
+        var old = document.querySelector('[data-hs2-photo-wait]');
+        if (old) old.remove();
+        return;
+      }
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var note = document.querySelector('[data-hs2-photo-wait]');
+      if (!note) {
+        note = document.createElement('p');
+        note.setAttribute('data-hs2-photo-wait', '');
+        note.setAttribute('role', 'status');
+        button.parentNode.insertBefore(note, button.nextSibling);
+      }
+      if (!usePhoto.file) note.textContent = "Add your dog's photo before adding this gift.";
+      else if (document.querySelector('.vm--container')) note.textContent = 'Save your photo crop before adding this gift.';
+      else { handoff(); note.textContent = 'Finish your photo in the personalizer, check the preview, then try again.'; }
     }, true);
   }
   /* A scripted click on a label moves focus to its radio, and the browser scrolls to it: on
@@ -1325,6 +1354,7 @@
       var t = Date.now();
       markHanded(t);
       usePhoto(f, t);
+      state.hs3_photo_t = t; save();
       savePhoto(f, t);
       track('photo_attached', { where: 'personalizer' });
     }, true);
@@ -2153,7 +2183,7 @@
     guardSearchFocus();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto(); guardMugProof();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto(); guardGiftPhoto(); guardMugProof();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);

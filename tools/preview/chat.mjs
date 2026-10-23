@@ -46,7 +46,7 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
     if (ai === 'fail') return route.fulfill({ status: 403, contentType: 'application/json', body: '{"error":"origin"}' });
     if (ai === 'slow') { await new Promise((r) => setTimeout(r, 4000)); return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }).catch(() => {}); }
     if (route.request().url().includes('compose')) {
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: body.answers.some((a) => a.typed) ? 'mug' : body.default_gift, reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: body.note_tone === 'hilarious' ? 'I guard the window like it owes me rent.' : 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: body.note_tone === 'hilarious' ? 'blanket' : (body.answers.some((a) => a.typed) ? 'mug' : body.default_gift), reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
     }
     if (/passed away/.test(body.typed_text)) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: "I didn't quite catch that one. Try again, or pick one of these?", line: '', follow_up: null, flags: ['grief'] }) });
     const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps office hours. Smart dog.', 'Weekends too. Very loyal.'] } : null;
@@ -95,6 +95,13 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   ok((await page.locator('.hs3-h2').innerText()) === "Kuku's gift for Sam", 'reveal: "Kuku\'s gift for Sam"');
   ok((await page.locator('.hs3-tab.is-on').innerText()).includes("Biscuit's pick") && (await page.locator('.hs3-tab.is-on').innerText()).includes('Mug'), 'reveal: walks pick the mug, marked Biscuit\'s pick');
   ok((await page.locator('.hs3-stage .hs3-line.hs3-ink').count()) === 3, 'reveal: three lines ink on the mug');
+  ok(await page.locator('[data-hs3-tone]').inputValue() === '1', 'tone: warm default on the reveal');
+  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('End');
+  await page.waitForFunction(() => document.querySelector('.hs3-stage')?.textContent?.includes('owes me rent'));
+  ok(calls.length === 2 && calls[1].note_tone === 'hilarious', 'tone: hilarious rewrites from the same answers');
+  ok((await page.locator('.hs3-tab.is-on').innerText()).includes('Mug') && (await page.locator('.hs3-tab.is-on').innerText()).includes("Biscuit's pick"), 'tone: a rewrite cannot change the gift recommendation');
+  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('ArrowLeft');
+  ok(await page.locator('[data-hs3-tone]').inputValue() === '1' && calls.length === 2, 'tone: cached warm note returns without a third call');
   await tap(page, '[data-hs3="tab"][data-v="blanket"]');
   await page.waitForTimeout(3300);
   ok((await page.locator('.hs3-stage .hs3-line').count()) === 4, 'reveal: the blanket tab shows the same words, all four');
@@ -107,10 +114,12 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   await tap(page, '[data-hs3="editNext"]');
   ok(await page.locator('[data-hs3-edit="spot"]').count() === 1 && await page.locator('[data-hs3-edit]').count() === 1, 'reveal: Next changes the single field');
   await tap(page, '[data-hs3="edit"]');
+  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('End');
+  ok((await page.locator('.hs3-stage').innerText()).includes("Will ride anywhere, as long as it's with you."), 'tone: changing it keeps the buyer-edited sentence');
   await tap(page, '[data-hs3="them"]');
   await tap(page, '[data-hs3="sel"][data-v="mug"]');
   const label = await page.locator('[data-hs3="add"]').innerText();
-  ok(label === 'Add 2 gifts to cart · $118', `choose: two gifts ("${label}")`);
+  ok(label === 'Personalize 2 gifts · $118', `choose: two gifts ("${label}")`);
   ok((await page.locator('.hs3-opts').innerText()).includes('$19'), 'choose: the ornament shows $19 with another gift (discount on)');
   await page.screenshot({ path: path.join(shots, '5-choose.png'), fullPage: true });
   await tap(page, '[data-hs3="add"]');
@@ -125,7 +134,7 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   const props = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value])));
   ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /as long as it's with you/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
   ok(!('properties[_Manager]' in props), 'order: no v2 review properties on a v3 gift');
-  ok(calls.length === 1 && !!calls[0].current_lines, `chips only made one AI call, compose at the reveal (${calls.length})`);
+  ok(calls.length === 2 && !!calls[0].current_lines, `chips only made the initial compose and one requested tone call (${calls.length})`);
   ok(warms.length === 2 && warms[0].includes('typed-answer') && warms[1].includes('compose'), `a warm-up ping as the chat starts and one before compose (${warms.length})`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
@@ -248,6 +257,32 @@ for (const mode of ['fail', 'slow']) {
   await ctx.close();
 }
 // 5. narrow phone and the Instagram in-app height
+// A new gift must not inherit a previous dog's photo, and a photo-free gift cannot
+// be added with Teeinblue's sample dog in its place.
+{
+  const { ctx, page } = await session('index-gifts.html');
+  await tap(page, '[data-hs3-start]');
+  await page.fill('#hs3-dog', 'Pip');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lZkAAAAASUVORK5CYII=', 'base64');
+  await page.locator('[data-hs3-file]').setInputFiles({ name: 'pip.png', mimeType: 'image/png', buffer: png });
+  const prior = await page.evaluate(() => window.__hs3api.state());
+  ok(prior.hasPhoto && prior.photoT > 0, 'photo: attachment belongs to this gift session');
+  await page.goto(`${base}/index-gifts.html?hs3=reset`);
+  const reset = await page.evaluate(() => window.__hs3api.state());
+  const bridge = await page.evaluate(() => sessionStorage.getItem('hs2-review'));
+  ok(!reset.hasPhoto && !reset.photoT && !bridge, 'new gift: old photo and bridge are cleared');
+  await tap(page, '[data-hs3-start]');
+  ok((await page.locator('.hs3-photo-pick').innerText()).includes('Add a photo'), 'new gift: asks for this dog’s photo');
+  await page.goto(`${base}/product-gift.html`);
+  await page.evaluate(() => {
+    const b = document.createElement('button'); b.id = 'teeAtcButton'; b.textContent = 'Add To Cart';
+    b.addEventListener('click', () => { window.__testAdded = true; });
+    document.querySelector('#buy').appendChild(b);
+  });
+  await page.locator('#teeAtcButton').click();
+  ok(await page.locator('[data-hs2-photo-wait]').innerText() === "Add your dog's photo before adding this gift." && !(await page.evaluate(() => window.__testAdded)), 'product: no-photo order is blocked before Teeinblue can add its sample');
+  await ctx.close();
+}
 for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
   const { ctx, page } = await session('index-gifts.html', { width: w, height: h });
   await tap(page, '[data-hs3-start]');

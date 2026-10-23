@@ -37,9 +37,10 @@ const EVENTS = [
   'hs3_reveal',           // pressed "Show me" ({ typed })
   'hs3_gift_tab',         // looked at a gift on the reveal ({ gift })
   'hs3_edit',             // opened "Change a word"
+  'hs3_tone_pick',        // changed the note's tone on the reveal ({ tone })
   'hs3_choose',           // "That's them. Choose gifts" ({ gift })
   'hs3_gift_pick',        // ticked or unticked a gift ({ gift, on })
-  'hs3_add_to_cart',      // left for the first gift's page ({ gifts, picks })
+  'hs3_personalize_gifts', // opened the first selected gift's personalizer ({ gifts, picks })
   'hs3_share_card',       // drew the story card
 ];
 
