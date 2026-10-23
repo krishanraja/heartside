@@ -226,14 +226,13 @@ All three ship in version one, on Sunday.
 - The 2027 wall calendar (needs twelve photos).
 - The HR review poster and the pillow.
 
-## 10. Phase two: an AI drawing from their answers (Krish asked, 13 Oct)
+## 10. Ordered artwork trial (updated by Krish, 23 Oct)
 
-Recommended: offer it from week two, as an illustration rather than a photo, starting with the mug and the ornament.
+The 13 October idea of a phase-two drawing on the mug and ornament is superseded for product development. The approved first target is a framed city screenprint with the buyer's dog as the subject, a small handwritten note, a dog signature and a decorative illustrated paw. A buyer may give one meaningful city or neighborhood without adding a long questionnaire; an omitted place stays unidentified. The buyer's own photo is the identity reference. Runway and Higgsfield are primarily for lead-generation content and ads, not the ordered-product image route.
 
-- Why an illustration: owners know every marking; a slightly wrong ear on a realistic picture reads as "that's not my dog". An illustration forgives small details.
-- Why it's worth it: the picture comes from their answers (Kuku waiting at the door at 6:10), which pet-portrait sellers can't offer.
-- Controls: three photos, a preview before paying, two redraws, the human check, only the dog (never people), labeled "An illustration made with AI from your photos". Images are too small for the 12x18 print and the blanket until upscaling is proven.
-- Gate: a bake-off of five dogs (three photos each) through Higgsfield and Runway in one style; Krish judges "is that my dog?"; four of five must pass. Uses Krish's credits, so ask before running it.
+- Generate the dog scene after payment with ChatGPT Images. Render the four exact lines, signature and paw deterministically outside the image model. A person checks likeness and the complete print file before Teeinblue sends it to Printful. `tools/print-art/` is the dry-run production trial; it cannot confirm fulfillment.
+- Keep the current framed print on sale until five varied owner-supplied dog photos pass likeness review, the 12 x 18 file passes print inspection and a physical sample, a real order's photo and words reach the replacement design, the buyer-facing preview describes what is actually delivered, and measured image cost and time preserve the margin.
+- A blanket adaptation is a separate product test. Its much larger print area, fabric texture and viewing distance cannot inherit approval from the framed print. Mug and ornament scene art remain later options.
 
 ## 11. Done for Sunday (pass or fail)
 

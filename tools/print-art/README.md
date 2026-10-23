@@ -28,8 +28,11 @@ For the current *fictional* proof in the scratch folder:
 
 ```text
 python tools/print-art/prompt_for_order.py <order-manifest.json> <private-prompt.txt>
+python tools/print-art/generate.py <order-manifest.json>
+python tools/print-art/generate.py <order-manifest.json> --execute
 python tools/print-art/build.py <order-manifest.json> <print.png>
 python tools/print-art/test_build.py
+python tools/print-art/test_generate.py
 ```
 
 `prompt_for_order.py` creates the exact image-editing prompt before generation.
@@ -39,6 +42,18 @@ that would turn the place into model instructions. The print proof records the
 rendered prompt hash. A person still compares the actual generated picture
 with the original photo and reviews geographical plausibility; a prompt hash
 does not prove the provider followed it.
+
+`generate.py` is dry-run by default. With `--execute` and a key supplied by the
+approved runtime, it makes one GPT Image 2.5 Sunburst edit from a metadata-free
+copy of the buyer's dog photo and the approved place only. It sends no order
+number, delivery address or gift lines. It writes the raw model image, a
+3600 x 5400 prepared background, and a receipt containing hashes, elapsed
+time and any usage returned by the provider. It never makes a second call
+against the same output path. If the provider times out or the result cannot
+be validated, a `.pending.json` marker blocks automatic retry because the
+first call may already have been billed. An operator must reconcile it.
+The generated image still requires human likeness and print review before
+`build.py` or fulfillment. Keep every input and output in private order storage.
 
 The manifest keys are `mode` (`test` or `production`), `style`
 (`city-screenprint-v1`), `source_photo`, `background`, `dog_name`,
@@ -59,10 +74,10 @@ the file dimensions and note placement, **not** true photographic detail,
 identity preservation across many dogs, or physical print quality.
 
 For paid-order production, the preferred image trial is a direct ChatGPT Images
-edit after payment. Current OpenAI API guidance supports a 2560 x 3840 portrait
-request on GPT Image 2 and the newer 2.5 models. That is a 2:3 source needing
-only a 1.406× resize to the print canvas, but resolutions above 2560 x 1440
-are experimental. The built-in trial images here came back at 1024 x 1536;
+edit after payment. The request is 2336 x 3504, a 2:3 source with 8,185,344
+pixels. It fits the API's 8,294,400-pixel limit and needs a 1.541× resize to
+the print canvas. Resolutions above 2560 x 1440 are experimental, so this
+request still needs a real API acceptance and quality test. The built-in trial images here came back at 1024 x 1536;
 they cannot establish the larger API route's quality, time or billed cost.
 Test a real metered request and inspect its usage before selecting a model or
 quoting unit economics.
