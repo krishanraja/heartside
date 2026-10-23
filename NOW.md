@@ -80,7 +80,7 @@ Blocked or waiting:
 - Confirm the 60-character chat generation in the live theme, since all four Teeinblue storefront forms now show 61-character Line fields. Do not repeat the older Teeinblue Update step without finding an actual mismatch.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
-- North Star check (2026-10-22): holds.
+- North Star check (2026-10-23): holds. The one-field gift flow reduces purchase friction, and the US checkout test strengthens delivery and price confidence; neither establishes paid demand yet.
 
 ## Read next
 
@@ -103,3 +103,4 @@ Blocked or waiting:
 - `docs/archive/*`: history, do not act on it (`docs/archive/README.md`).
 - `content/v1-2026-10-06/`: the first videos, for the retired HR poster. Do not post them.
 - `design/BRAND-SYSTEM.md` on the poster voice (marked retired), `design/prototype-v3/Main.dc.html` on its gift lines (retired), and `assets/heartside-fb-cover-1640x624.jpg`, which shows the retired poster (`docs/HANDOFF.md` sections 7 and 8).
+
