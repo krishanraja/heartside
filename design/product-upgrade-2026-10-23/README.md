@@ -2,6 +2,8 @@
 
 Status: concept development, awaiting Krish's visual review. October 23, 2026.
 
+Latest steering: "I think the sentimental>hilarious slider would come in here, and a few different artwork styles?" This extends the proposed creative control to artwork, not just note wording. It is not approval of the first mug render or any of the style candidates below.
+
 Krish's request: "can we get the other products all up to the creative standard of the blanket and portrait?"
 
 This moves the immediate work from ornament typography repair to material creative upgrades for the mug and ornament. Existing approved blanket and portrait directions remain locked. No native artwork, live campaign, product listing or theme is changed by this concept work.
@@ -18,7 +20,7 @@ This moves the immediate work from ornament typography repair to material creati
 
 ## Focused sequence
 
-1. Review one mug art direction, then lock or revise it.
+1. Review the mug style comparison and the proposed tone/artwork behavior, then lock or revise the direction.
 2. Develop and review an ornament-specific direction at its small circular scale.
 3. Implement approved directions in isolated native artwork and verify the storefront handoff, final print files and dog likeness.
 4. Complete all four products before improving website mockups.
@@ -55,3 +57,37 @@ A compact painted keepsake centered on one recognizable dog, with one meaningful
 - Circle trim, hanging-hole safety, curved mug placement and minimum readable type.
 
 The existing Monday support follow-up remains active. No sample, order or paid external generation was triggered for this concept.
+
+## Tone and style proposal
+
+These are two independent choices. Tone controls the emotional/comic treatment of the real dog and supplied habits, plus the note where the product has words. Style controls the drawing medium. Changing style must not change which dog or facts are depicted.
+
+Initial style candidates, pending visual review:
+
+- Painterly: textured gouache, natural fur, soft edges.
+- Vintage screenprint: restrained palette, strong shapes, print texture.
+- Ink & wash: expressive ink and loose watercolor, natural dog proportions.
+
+Keep the existing three tone stops: Sentimental, Warm with a wink, Hilarious. For the illustrative sofa/sock fixture, sentimental emphasizes the dog's closeness and comfort; warm gives the familiar knowing expression; hilarious exaggerates the staging of the known seat-stealing/sock habit while preserving natural anatomy and actual identity. It must not invent a new habit, costume, possession, relationship or customer claim. Sparse answers get a graceful portrait at every tone, not fabricated jokes.
+
+The blanket stays word-free. Applying alternate media to its repeating layout, the frame's city composition or the ornament's small circle needs a separate visual check; approving a mug style does not prove all product/style combinations work.
+
+### Proposed customer flow
+
+1. Existing Buddy conversation and photo produce the recommended starting gift.
+2. On the reveal, show one tone slider and three visual style thumbnails. The recommended style is selected already; no extra questionnaire or several text fields.
+3. Changing either control stages a choice without starting an image request. One explicit Update artwork action applies the pending choices. A later interface preview must validate the exact wording and placement.
+4. Keep the last good preview visible while generating and label it as the previous version. On failure, retain the photo, choices and saved artwork. Do not silently replace it with a sample dog or auto-retry a potentially billable request.
+5. Cache exact approved combinations when available. The accepted render identity must include photo, product/variant, style, tone, source facts, optional place and prompt revision. Never permit ordering a preview that belongs to older settings. Exact separately composed copy must match the accepted print proof too.
+
+### Current versus proposed
+
+Repository inspection confirms the existing three-stop control currently rewrites note copy in `hs3.js`. The artwork bridge does not yet provide these style choices or a joint tone/artwork regeneration contract. This document and style comparison are a proposal, not a deployed feature. Native dynamic prompt support, duplicate prevention, generation costs and final print verification must be proved before implementation can be called ready.
+
+### Comparison fixture
+
+The style comparison uses the same public pug, illustrative sofa/sock scene, composition, medium tone and note in all three rows. Only the rendering medium should vary. A single built-in image generation call makes the comparison sheet. It is not three supplier proofs or evidence of customer likeness. No live configuration changed.
+
+Artifact: `mug-style-comparison-v1.png`, generated and presented inline October 23. All three labeled rows, the intended note and signature are present and visually inspected. Painted, halftone-print and ink-outline treatments are distinguishable. The image model introduces small pose/expression differences, so this is a concept comparison rather than a controlled pixel-identical style transform. All styles and the proposed default remain unapproved.
+
+Prompt specification: one portrait comparison sheet with three equal horizontal flat mug-wrap rows labeled Painterly, Vintage screenprint and Ink & wash; public pug photo is identity authority; first mug concept is scene reference; same sofa/sock scene, composition, pose, warmth-with-a-wink tone and exact note in each; vary medium only; no physical mug, price, interface, extra dog, costume or invented behavior. Built-in image tool; final production typography must be separately composed.
