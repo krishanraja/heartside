@@ -1172,6 +1172,8 @@
     if (!giftView()) return;
     var d = (state.dog == null ? '' : String(state.dog)).trim();
     var has = !!document.querySelector('#buy .tee-field--photo .tee-photo-head img');
+    var media = document.querySelector('#buy [data-hs2-media]');
+    if (media) media.toggleAttribute('data-hs2-sample', !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
     document.querySelectorAll('#buy .tee-field--photo .tee-btn--upload, #buy .tee-field--photo .tee-btn--recustomize').forEach(function (b) {
       var want = /recustomize/.test(b.className) ? 'Crop' : has ? 'Change photo' : (d ? 'Add ' + d + '\'s photo' : 'Add your dog\'s photo');
       var t = b.querySelector('span') || b;

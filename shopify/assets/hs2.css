@@ -980,6 +980,8 @@ html:has(#buy[data-hs2-v3]) .shopify-section-group-footer-group { display: none 
 #buy[data-hs2-v3] .hs2-product__media { flex: 1 1 0; min-height: 0; position: relative; top: auto; align-items: center; justify-content: center; gap: 0; }
 #buy[data-hs2-v3] .hs2-product__thumbs { display: none !important; }
 #buy[data-hs2-v3] .hs2-product__media { overflow: hidden; }
+#buy[data-hs2-v3] .hs2-product__example { display: none; position: absolute; z-index: 2; top: 8px; left: 8px; max-width: calc(100% - 16px); padding: 6px 9px; border-radius: 8px; background: rgba(18, 16, 16, .88); color: #fff; font: 600 12px/1.3 "HS DM Sans", "DM Sans", system-ui, sans-serif; }
+#buy[data-hs2-v3] [data-hs2-media][data-hs2-sample] .hs2-product__example { display: block; }
 #buy[data-hs2-v3] .hs2-product__tib, #buy[data-hs2-v3] .hs2-product__main { width: 100%; flex: none; margin: 0 auto; }
 #buy[data-hs2-v3] .hs2-product__media[data-tib="on"] .hs2-product__tib { background: transparent; }
 /* scaled down (giftFit), the preview keeps the width Teeinblue laid its slider out at */

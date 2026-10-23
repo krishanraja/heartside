@@ -274,6 +274,7 @@ for (const mode of ['fail', 'slow']) {
   await tap(page, '[data-hs3-start]');
   ok((await page.locator('.hs3-photo-pick').innerText()).includes('Add a photo'), 'new gift: asks for this dog’s photo');
   await page.goto(`${base}/product-gift.html`);
+  ok(await page.locator('#buy [data-hs2-media][data-hs2-sample] .hs2-product__example').isVisible(), 'product: sample artwork is clearly labelled until the current dog photo is accepted');
   await page.evaluate(() => {
     const b = document.createElement('button'); b.id = 'teeAtcButton'; b.textContent = 'Add To Cart';
     b.addEventListener('click', () => { window.__testAdded = true; });
