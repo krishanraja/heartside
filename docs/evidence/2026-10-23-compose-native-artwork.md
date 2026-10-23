@@ -98,3 +98,5 @@ Commit 8bee656 deployed successfully only to the unpublished theme in run 399913
 - Krish explicitly queued better website mockups after all product upgrades, followed by the physical sample last. Saved in the workboard, both repository guidance and the authorized memory note.
 
 Both prepared Buddy-only live AI updates were subsequently approved and published. See 2026-10-23-buddy-live-ai-change.md for exact active versions and verification. This supersedes the earlier pending-publication checkpoint above.
+
+The later dedicated-key usage check verified $0.37 across three recorded image-model requests. Native source dimensions remain open. See 2026-10-23-native-artwork-cost-and-resolution.md; this supersedes earlier statements that provider usage cost was wholly unknown.
