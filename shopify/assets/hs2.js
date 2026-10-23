@@ -957,6 +957,7 @@
       // the gift view always offers "Change a word"; with words missing (no chat, say), the
       // fields open in the panel so the shopper can fill them
       if (edit) edit.hidden = !bridge.fields;
+      if (document.documentElement.classList.contains('hs2-v3-direct')) { showGiftEdit(); return; }
       if (!complete && bridge.fields && !bridge.autoOpened && !document.documentElement.classList.contains('hs2-v3-editing')) { bridge.autoOpened = true; editing(true); }
       else if (document.documentElement.classList.contains('hs2-v3-editing')) showGiftEdit();
     }

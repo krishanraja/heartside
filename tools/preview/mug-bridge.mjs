@@ -126,12 +126,17 @@ for (const size of [[360, 640], [390, 664], [390, 844], [1280, 720], [1440, 900]
     const direct = await page.evaluate(() => document.documentElement.classList.contains('hs2-v3-direct'));
     await page.screenshot({ path: path.join(out, 'direct-product-one-field.png') });
     const first = await page.locator('.tee-field.hs2-v3-active').getAttribute('id');
+    await page.locator(`#${first} .tee__input`).fill('You are my person.');
+    await page.evaluate(() => window.__hs2api?.runBridge?.());
+    await page.waitForTimeout(200);
+    const afterTyping = await page.evaluate(() => ({ direct: document.documentElement.classList.contains('hs2-v3-direct'), editing: document.documentElement.classList.contains('hs2-v3-editing') }));
     await page.click('[data-hs2-gift-edit-next]');
     const after = await screen(page);
     const second = await page.locator('.tee-field.hs2-v3-active').getAttribute('id');
-    return { before, direct, after, first, second };
+    return { before, direct, afterTyping, after, first, second };
   }, null);
   ok(r.extra.direct && r.extra.before.shown === 1, 'direct product arrival: one field is visible');
+  ok(r.extra.afterTyping.direct && !r.extra.afterTyping.editing, 'direct product entry: typing keeps the photo and direct layout visible');
   ok(r.extra.after.shown === 1 && r.extra.first !== r.extra.second, 'direct product arrival: Next switches the single field');
   ok(!r.errors.length, 'direct product arrival: no script errors ' + r.errors.join(' '));
 }
