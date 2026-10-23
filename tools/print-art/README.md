@@ -32,8 +32,9 @@ The manifest keys are `mode` (`test` or `production`), `style`
 (`city-screenprint-v1`), `source_photo`, `background`, `dog_name`,
 `place_source` (`buyer` or `none`), `place`, and `lines` with `home`, `spot`,
 `together`, `meaning`. Production mode also needs `order_ref` and
-`likeness_reviewed_by`. The proof JSON records input, exact-note, prompt and output hashes, dimensions, file size, review
-status and the fact that fulfillment has not been confirmed. Keep customer
+`likeness_reviewed_by`. The proof JSON records input, exact-note, prompt and
+output hashes, dimensions, file size, review status and the fact that
+fulfillment has not been confirmed. Keep customer
 manifests, photos, backgrounds, outputs and receipts in approved private
 order storage, never in this repository or a pull request.
 
@@ -51,6 +52,13 @@ and any discrepancy between the Shopify order, Teeinblue replacement and
 Printful draft. Time and cost each stage on those same cases. Use the current
 framed print until the full route, buyer-facing preview honesty and a physical
 sample pass.
+
+The exact original-photo URL and line-item structure in a paid Shopify order
+have not been proven because no new v3 order has been placed. Do not automate
+order intake by guessing those properties. The first real sample, scheduled
+last in the revamp, must read back the source photo, four exact lines, name,
+and replacement design under the same order reference before this adapter is
+implemented.
 
 Teeinblue also offers an in-artwork GPT Image effect that transforms a buyer's
 photo on upload, with place variables and a reference image. This is a viable
