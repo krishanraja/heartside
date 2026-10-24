@@ -1088,6 +1088,8 @@ html:has(#buy[data-hs2-city-art-preview]), body:has(#buy[data-hs2-city-art-previ
 .hs-art-wrap-reference { margin: 0; width: 100%; align-self: center; }
 .hs-art-wrap-reference img { display: block; width: 100%; height: auto; }
 .hs-art-wrap-reference figcaption { margin-top: 12px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+#buy[data-hs2-mug-art-preview] #tee-artwork-form,
+#buy[data-hs2-mug-art-preview] [data-hs2-tib-edit] { display: none !important; }
 @media (min-width: 900px) {
   #buy[data-hs2-city-art-preview] .hs2-product__media { flex: 1 1 0; height: 75svh; }
   #buy[data-hs2-city-art-preview] .hs-art-wrap-reference { flex: 1 1 0; min-width: 0; }

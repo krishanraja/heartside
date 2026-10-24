@@ -1105,6 +1105,9 @@
   // the ad landing page has the review on the same page, so the review owns these answers
   function reviewHere() { return !!document.querySelector('[data-hs2-steps]'); }
   function runBridge() {
+    // The new mug artwork is unbound. The global app embed can still insert the
+    // old mug form; never refill that campaign from this reference-only template.
+    if (document.querySelector('#buy[data-hs2-mug-art-preview]')) return;
     var fields = tibFields();
     if (!fields.length) return;
     bridge.all = fields;

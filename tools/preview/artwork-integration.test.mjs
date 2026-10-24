@@ -60,6 +60,12 @@ test('mug candidate expands art across wrap, removes cut-out mask and keeps one 
   assert.equal(r.layers.filter(l=>/^Line/.test(l.name)).length,1);assert.equal(source.layers[0].width,900);
   for(const f of ['mug','blanket','portrait','pillow']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.ok(p.includes('{{Artwork tone}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
 });
+test('unbound mug review never writes into the globally embedded legacy campaign',()=>{
+  const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+  const start=source.indexOf('  function runBridge()'),end=source.indexOf('\n  function ',start+1);
+  const ctx={document:{querySelector:selector=>selector==='#buy[data-hs2-mug-art-preview]'?{}:null},tibFields:()=>{throw new Error('legacy campaign accessed');}};
+  vm.runInNewContext(source.slice(start,end),ctx);assert.doesNotThrow(()=>ctx.runBridge());
+});
 test('normalized PNG guard rejects metadata and trailing bytes',()=>{
   const ctx={window:{},Uint8Array,DataView};
   vm.runInNewContext(readFileSync(new URL('../../shopify/assets/hs-artwork-photo.js',import.meta.url),'utf8'),ctx);

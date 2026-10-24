@@ -25,9 +25,9 @@ A separate mug acceptance template displays the existing illustrated wrap promin
 
 Alternate Buddy template has AI disabled for no-cost integration review. Its selected gift links remain on paused mug/blanket/portrait templates; conditional ornament is excluded from this technical route. Default homepage settings are unchanged. This does not establish a complete qualified assortment or unframed supplier mapping.
 
-Local checks: 47 tests across artwork state, source/minified copy requests and integration, including draft destination gates; fact-profile regression; bundle parity; minification; Liquid rendering; Theme Check zero offenses. IAB mug inspection at default desktop and 390x844 shows the large wrap, 6/3 selectors, explicit reference label and disabled Preview only. Product quality remains untested.
+Local checks: 48 tests across artwork state, source/minified copy requests and integration, including draft destination gates; fact-profile regression; bundle parity; minification; Liquid rendering; Theme Check zero offenses. IAB mug inspection at default desktop and 390x844 shows the large wrap, 6/3 selectors, explicit reference label and disabled Preview only. Product quality remains untested.
 
-Follow-up deployment/readback: pending at this commit. Only checklist: continuation/2026-10-24/01-EXECUTION-QUEUE.md.
+Follow-up run 40091951031 deployed 9773b44. Nine files match Git blob MD5 exactly; the mug JSON template matches semantically after Shopify adds comments/empty settings and reorders keys. Real portrait controls are visible with an empty session. Comic/Hilarious reaches matching native values, empty explicit facts, empty photo input and disabled ordering; controls are 44px high with no horizontal overflow at the editor's 365px preview width. Mug navigation retains those choices and displays the reference. The global app embed still injected the old mug editor despite no app block; a narrow follow-up hides it and prevents any refill of that legacy campaign from the unbound mug review. This last repair awaits deployment/readback. Only checklist: continuation/2026-10-24/01-EXECUTION-QUEUE.md.
 
 ## Remaining gates
 
