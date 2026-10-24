@@ -17,6 +17,7 @@
   var HS2 = 'hs2-review';
   var QKEY = 'hs2-queue';
   var MAX_CALLS = 8;
+  var COMPOSE_VERSION = 'explicit-tone-v1';
   var TYPED_MS = 5000, COMPOSE_MS = 11000; // 22 Oct: Gemini 3.5 Flash answers typed replies (about 3 s); Claude writes the note and n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -28,7 +29,7 @@
   function fresh() {
     return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
-      typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
+      typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, toneCache: {}, composeRequest: null, composeBaseGift: null, appliedComposeKey: '', noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
       sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, mugColor: '' };
   }
   function load() {
@@ -37,6 +38,8 @@
     var f = fresh();
     if (!s || typeof s !== 'object') return f;
     Object.keys(f).forEach(function (k) { if (!(k in s)) s[k] = f[k]; });
+    // A reload cannot establish whether a dispatched request was billed or completed.
+    if (s.composeRequest) s.composeRequest.status = 'uncertain';
     return s;
   }
   function save() {
@@ -202,17 +205,17 @@
 
   /* ---------------------------------------------------------------- the AI */
   function canCall(url) { return !!(cfg.ai && url && S.calls < MAX_CALLS && window.fetch); }
-  function callAI(url, body, ms) {
+  function callAI(url, body, ms, lateResult) {
     if (!canCall(url)) return Promise.resolve(null);
     S.calls++; save();
     body.session = sessionId();
     var ctrl = window.AbortController ? new AbortController() : null;
     var done = false;
     return new Promise(function (resolve) {
-      var t = setTimeout(function () { if (done) return; done = true; if (ctrl) ctrl.abort(); track('ai', { call: body.step || 'compose', result: 'timeout' }); resolve(null); }, ms);
-      window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' })
+      var t = setTimeout(function () { if (done) return; done = true; if (ctrl && !lateResult) ctrl.abort(); track('ai', { call: body.step || 'compose', result: 'timeout' }); resolve(null); }, ms);
+      Promise.resolve().then(function () { return window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' }); })
         .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) { if (done) return; done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: j ? 'ok' : 'error' }); resolve(j); })
+        .then(function (j) { if (done) { if (lateResult) lateResult(j); return; } done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: j ? 'ok' : 'error' }); resolve(j); })
         .catch(function () { if (done) return; done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: 'error' }); resolve(null); });
     });
   }
@@ -329,33 +332,78 @@
     return typedAnswer(step, question, text, prev);
   }
   function anyTyped() { return Object.keys(S.typed).some(function (k) { return !!S.typed[k]; }); }
-  /* Compose runs for every buyer now (Krish, 20 Oct: every gift a warm message with personality),
-     not only after a typed answer. The scripted lines show at once; the AI's arrive within 6 s. */
-  function compose(tone, previous) {
-    tone = tone || 'warm';
+  /* Copy requests only. Image generation and production acceptance are separate gates.
+     The chat's final button requests the first note; tone selection itself never calls AI. */
+  function composeBody(tone) {
     var n = names();
     var answers = [];
     var push = function (id, chip, label) { answers.push({ id: id, chip: chip && chip !== 'typed' && chip !== 'skip' ? chip : null, label: label || '', typed: S.typed[id] || null }); };
     push('home', S.home, ''); push('home_follow', S.follow, ''); push('spot', S.spot, ''); push('together', S.together, ''); push('meaning', S.meaning, '');
-    var asked = S.composeAsked = (S.composeAsked || 0) + 1;
-    callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: S.baseLines || allLines(), default_gift: recGift(), note_tone: tone }, COMPOSE_MS).then(function (r) {
-      if (asked !== S.composeAsked) return;
-      if (!r || !r.lines || (previous && r.source && r.source !== 'ai') || (tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
-        if (previous) S.noteTone = S.appliedTone || 'warm';
-        ui.toneStatus = previous ? 'Could not rewrite this note. Your words are unchanged.' : '';
-        save(); if (S.screen === 'reveal') render(); return;
-      }
-      var lines = {};
-      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k], k); if (l) lines[k] = l; });
+    return { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: S.baseLines || allLines(), default_gift: S.composeBaseGift || recGift(), note_tone: tone };
+  }
+  function composeKey(tone) { return JSON.stringify({ version: COMPOSE_VERSION, body: composeBody(tone) }); }
+  function toneStatus() {
+    if (S.composeRequest) return S.composeRequest.status === 'pending' ? 'Updating your note. Your edits stay as written.' : 'Your update has not been confirmed. Your words are safe; please keep this page open. Another update is paused.';
+    if (ui.toneStatus) return ui.toneStatus;
+    return S.appliedComposeKey === composeKey(S.noteTone) ? '' : 'Choose Update note to apply this tone. Your edits stay as written.';
+  }
+  function selectTone(tone) {
+    if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || tone === S.noteTone) return;
+    S.noteTone = tone; ui.toneStatus = '';
+    track('tone_pick', { tone: tone }); save();
+    // Keep the range element mounted so repeated arrow keys retain focus.
+    if (frame) {
+      var status = frame.querySelector('#hs3-tone-status');
+      var button = frame.querySelector('[data-hs3="updateTone"]');
+      if (status) status.textContent = toneStatus();
+      if (button) button.disabled = !!S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone);
+      fit();
+    }
+  }
+  function applyComposed(result, tone, key, rewrite) {
+    // User-owned edits always win in lineFor, including edits made during a request.
+    S.composed = result; S.appliedTone = tone; S.appliedComposeKey = key;
+    if (!rewrite && result.gift && !S.tabbed && S.screen === 'reveal') S.gift = result.gift;
+    ui.toneStatus = '';
+  }
+  function settleCompose(request, r) {
+    if (!S.composeRequest || S.composeRequest.id !== request.id) return;
+    if (!r) {
+      S.composeRequest.status = 'uncertain'; save(); if (!ui.editing) render(); return;
+    }
+    var lines = {};
+    ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines && dogStyle(r.lines[k], k); if (l) lines[k] = l; });
+    S.composeRequest = null;
+    if (Object.keys(lines).length !== 4 || (request.rewrite && r.source && r.source !== 'ai') || (request.tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
+      ui.toneStatus = 'Could not rewrite this note. Your words are unchanged.';
+    } else {
       var old = S.composed;
-      S.composed = { lines: lines, gift: previous && old ? old.gift : (GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null), reason: previous && old ? old.reason : (typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '') };
-      S.toneDrafts = S.toneDrafts || {}; S.toneDrafts[tone] = S.composed;
-      S.appliedTone = tone;
-      ui.toneStatus = '';
-      if (!previous && S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
-      save();
-      if (S.screen === 'reveal' && !ui.editing) render();
-    });
+      var result = { lines: lines, gift: request.rewrite && old ? old.gift : (GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null), reason: request.rewrite && old ? old.reason : (typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '') };
+      S.toneCache[request.key] = result;
+      if (composeKey(S.noteTone) === request.key) applyComposed(result, request.tone, request.key, request.rewrite);
+      else ui.toneStatus = 'Your earlier version is ready. Choose Update note to apply your selected tone.';
+    }
+    save(); if (!ui.editing) render();
+  }
+  function compose(tone, rewrite) {
+    tone = tone || 'warm';
+    if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || S.composeRequest) return;
+    if (!S.baseLines) S.baseLines = allLines();
+    if (!S.composeBaseGift) S.composeBaseGift = recGift();
+    var key = composeKey(tone);
+    if (S.appliedComposeKey === key) return;
+    if (S.toneCache[key]) { applyComposed(S.toneCache[key], tone, key, rewrite); save(); render(); return; }
+    if (!canCall(cfg.composeUrl)) { ui.toneStatus = 'Updates are unavailable right now. Your words are unchanged.'; render(); return; }
+    var body = composeBody(tone);
+    var id = sessionId() + '-note-' + (S.composeAsked = (S.composeAsked || 0) + 1);
+    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, status: 'pending' };
+    save();
+    // Persist before dispatch. If storage is unavailable, a reload would defeat the guard.
+    var persisted = false;
+    try { persisted = JSON.parse(window.sessionStorage.getItem(KEY)).composeRequest.id === id; } catch (e) { /* unavailable storage */ }
+    if (!persisted) { S.composeRequest = null; ui.toneStatus = 'Your browser could not save this update. Your words are unchanged.'; render(); return; }
+    render();
+    return callAI(cfg.composeUrl, body, COMPOSE_MS, function (r) { settleCompose(request, r); }).then(function (r) { settleCompose(request, r); });
   }
 
   /* ----------------------------------------------------------------- photo */
@@ -442,6 +490,7 @@
 
   function render() {
     if (!frame) return;
+    var keepToneFocus = document.activeElement && document.activeElement.hasAttribute('data-hs3-tone');
     var n = names();
     frame.setAttribute('data-hs3-screen', S.screen);
     root.classList.toggle('hs3--app', S.screen !== 'hero');
@@ -452,6 +501,7 @@
     else if (S.screen === 'share') frame.innerHTML = shareView(n);
     bind();
     fit();
+    if (keepToneFocus) { var tone = frame.querySelector('[data-hs3-tone]'); if (tone) tone.focus(); }
   }
 
   /* One screen, no scroll (Krish, 21 Oct): every screen fits the window under the header on
@@ -607,7 +657,8 @@
       }).join('') + '</div>';
       var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
       var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
-      h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" data-hs3-tone><span>Hilarious</span></div>' + (ui.toneStatus ? '<p class="hs3-tone__status" role="status">' + esc(ui.toneStatus) + '</p>' : '') + '</div>';
+      var status = toneStatus();
+      h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
@@ -1083,7 +1134,7 @@
       stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; save(); render(); stepEvent('shown'); return;
     }
     // the end of the chat: the reveal
-    S.composed = null; S.baseLines = allLines(); S.toneDrafts = {}; S.noteTone = 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
+    S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
     track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
     compose();
     startReveal(recGift());
@@ -1169,13 +1220,7 @@
       });
       tone.addEventListener('change', function () {
         var name = ['sentimental', 'warm', 'hilarious'][Number(tone.value)] || 'warm';
-        if (name === S.noteTone) return;
-        var previous = S.noteTone;
-        S.noteTone = name; ui.toneStatus = '';
-        track('tone_pick', { tone: name });
-        if (S.toneDrafts && S.toneDrafts[name]) { S.composeAsked = (S.composeAsked || 0) + 1; S.composed = S.toneDrafts[name]; S.appliedTone = name; save(); render(); return; }
-        ui.toneStatus = 'Rewriting from your answers. Your edits stay as written.';
-        save(); render(); compose(name, previous);
+        selectTone(name);
       });
     }
     var typed = frame.querySelector('#hs3-typed');
@@ -1209,6 +1254,7 @@
       case 'edit': ui.editing = !ui.editing; ui.editKey = giftKeys(S.gift || recGift())[0]; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) { track('edit', {}); focusEdit(); } break;
       case 'editPrev': moveEdit(-1); break;
       case 'editNext': moveEdit(1); break;
+      case 'updateTone': compose(S.noteTone, true); break;
       case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'dog' ? 'note' : 'dog'); track('mug_turn', { side: ui.mugSide }); break;
       case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; S.sel[g] = true; ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
       case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
@@ -1229,6 +1275,7 @@
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     heroHTML = frame.innerHTML;
+    if (S.composeRequest) save();
     var q = null;
     try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
     if (q && q.get('hs3') === 'reset') {

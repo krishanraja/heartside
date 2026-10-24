@@ -111,3 +111,12 @@ The 11 selected Printful single variants and two defined baskets now have Brookl
 The existing Teeinblue support thread was read again after the owner boundary reply: it still contains only the original October 23 sent question. No reply, new send or duplicate schedule was found/created in this check. The existing Monday follow-up remains the route for the unresolved source-resolution and retry-billing questions.
 
 Independent E2 inspection after the quote checkpoint: `shopify/assets/hs3.js` tone change handler (around line 1170) still calls `compose(name, previous)` automatically after slider release. The new offline artwork state contract is not integrated into that UI. This is a verified code-path finding, not a runtime billing observation or completed repair. No storefront source was changed in this quote/boundary checkpoint. The next local repair must make the update explicit and test pending, reload, duplicate and late-response behavior before any draft deployment.
+
+
+## Subsequent owner instruction: cost price plus margin for now
+
+In response to the labor-rate question, Krish directed that labor calibration be deferred and the current view be cost price plus margin. The existing 50% target is applied to delivered supplier cost: product + shipping + surcharge + supplier tax, divided by 0.50. This is a provisional supplier-cost margin, not all-cost net margin. Unknown costs remain null in the full model. No labor question is pending and labor is not a blocker to independent product work. The earlier accounting-boundary confirmation remains recorded; business profit-tax treatment is still unverified.
+
+The reproducible cost_price.py report checks all 13 quote totals and calculates: mug $33.10; unframed $37.04; framed $95.96; blanket $109.20; pillow $56.36; mug + black frame $128.18; mug + blanket $141.42. These are exact price floors before discounts and before excluded operating costs. No live price is approved or changed. Conditional ornament remains unpriced. This provisional view does not extrapolate Brooklyn costs to every US destination.
+
+The later local note-control repair is documented separately in 2026-10-24-explicit-tone-update.md; it supersedes the prior source finding above without claiming artwork/provider completion.

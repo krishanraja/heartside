@@ -6,6 +6,8 @@ This pack is the current brief for this revamp. Read it before acting. It contai
 
 ## Outcome
 
+**Latest pricing instruction (October 24):** Krish deferred labor calibration and requested "just cost price + margin" for now. Use delivered supplier cost at the existing 50% margin target as a clearly labeled provisional planning view; do not call it net margin or convert unknown operating costs to zero. Continue product work without further labor questions. `02-ECONOMICS.md` records this later instruction and preserves the earlier all-cost definition for reconciliation. Exact live prices remain gated.
+
 Finish a US-only gift range that convincingly looks like the buyer's actual dog, reflects its real personality, shares a choice of substantially different art styles and a sentimental-to-hilarious control, is simple to personalize, and is priced to achieve **at least 50% net operating margin after all attributable business costs**. Net margin is a release requirement, not an outcome already achieved. Confirm the accounting treatment of business income taxes from available records or with Krish if necessary before certifying net margin; owner personal income taxes are not assumed to be product costs.
 
 The work serves Heartside's North Star: a recognizable, shareable gift business US dog owners reach for. The repository's `docs/NORTH_STAR.md` owns the business ambition and metric. Do not change it or update revenue from inference.

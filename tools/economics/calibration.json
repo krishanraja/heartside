@@ -2,6 +2,13 @@
   "currency": "USD",
   "period_days": 30,
   "target_margin": "0.50",
+  "current_pricing_basis": {
+    "owner_direction": "October 24 2026: defer labor calibration for now; just cost price plus margin.",
+    "basis": "Delivered supplier cost: product, shipping, surcharge and supplier tax. Separate provisional view, not all-cost net margin.",
+    "target_supplier_cost_margin": "0.50",
+    "status": "PROVISIONAL_NOT_LIVE_PRICE_NOT_NET_MARGIN",
+    "labor_calibration": "Deferred by owner; do not ask again during this stage. Unknown inputs in the all-cost model remain null."
+  },
   "accounting_boundary": "Owner-confirmed October 24 2026: net operating profit after all attributable business costs, before owner personal income tax; include business-level profit tax when treatment is confirmed. Business profit-tax treatment remains unverified.",
   "accounting_boundary_confirmed": true,
   "costs": {

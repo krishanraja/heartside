@@ -1,5 +1,7 @@
 # Evidence-aware net economics
 
+Current owner direction (October 24): defer labor calibration and produce cost price plus margin for now. `python tools/economics/cost_price.py tools/economics/calibration.json --output <path.md>` creates the provisional 50% delivered-supplier-cost-margin view from the 13 observed quotes. It verifies each total and rounds the price upward to cents. This view excludes operating costs and does not certify net margin or authorize live prices. The all-cost model below remains intact, with missing inputs still unknown.
+
 Offline planning engine for E1 of the October 24 continuation. It never calls a service, changes a price or approves a release. `calibration.json` contains account observations and explicit missing inputs. `working-sensitivity.json` is a deliberately hypothetical override, not an approved commercial case.
 
 From the repository root:
@@ -22,4 +24,4 @@ Volume values are sensitivities, not a forecast of demand. A period projection a
 
 `realized_period` accepts ledger totals separately: refunds reduce revenue once, actual remakes are costs, and a reserve cannot also be entered. Period overhead remains an expense at zero sales; margin is undefined when net revenue is nonpositive. It requires an explicit business profit-tax treatment. A calculated ledger result is not an accounting audit.
 
-Current boundaries: no configured supplier destination quotes, no measured end-to-end AI/review/support cost, no established organic acquisition cost, incomplete shared overhead/FX and unresolved business tax treatment. No SKU has a certified selling price.
+Current boundaries: 13 configured Brooklyn supplier quotes are recorded, but wider destinations and integration route parity remain unverified. End-to-end AI/review/support cost, organic acquisition cost, shared overhead/FX and business tax treatment remain incomplete. Labor calibration is deferred by the owner. No SKU has a certified net-margin selling price.

@@ -16,9 +16,11 @@ Pass: the agent can name the exact working checkout, unpublished theme, artwork/
 
 ## E1. Calibrate economics and qualify the range
 
+- [x] Current owner direction: defer labor calibration for now and calculate delivered supplier cost plus margin. `tools/economics/cost_price.py` reconciles all 13 recorded quotes and produces provisional prices at a 50% supplier-cost margin. This does not certify net margin or authorize live prices. No further labor question is pending.
+
 - [ ] Read actual processing fees, Teeinblue fees/subscription, supplier base cost, shipping by exact variant/US destination, taxes charged to Heartside and any exemptions.
-- [ ] Build a bounded monthly cost allocation using realistic order volume, software/hosting, labor, support, refunds, replacements, AI retries, marketing and acquisition. Include fixed costs once. Treat unknowns as unknown, never zero by default.
-- [ ] Price every variant and proposed bundle to the 50% net-margin gate. Verify the formula and stress scenarios in 02-ECONOMICS.
+- [ ] Deferred for current cost-based planning: complete the monthly all-business-cost allocation. Include fixed costs once and preserve unknowns rather than setting them to zero.
+- [ ] Deferred net-margin certification: reconcile every variant/basket against the complete cost model in 02-ECONOMICS. The current cost-based view is a provisional planning output.
 - [ ] For the ornament, qualify the exact US Printify configuration, separate front/back, packaging, provider and route into Teeinblue. Verify both-side charges and full delivery cost. Do not install a paid plan or silently switch providers.
 - [ ] Confirm stock/availability and US fulfillment/delivery route for each selected base. Imported available=true is provisional.
 - [ ] Establish current 2026 route-specific holiday cutoffs and a customer-artwork/QC buffer. No promised Christmas date without evidence.
@@ -40,6 +42,8 @@ Pass: each core SKU has a quoted delivered cost and a price with a defensible 50
 Checkpoint (2026-10-24): local versioned six-style/three-tone recipes and preparation/state contract added under `tools/print-art/`; consumes the existing facts profile. Ten tests pass across 90 prepared style/tone/format configurations, plus the existing facts regression. Not storefront-wired, not image-qualified, no paid run. Exact input keys, stale/late results, manual copy preservation, duplicate requests and uncertain-response reconciliation are tested locally. See `tools/print-art/ARTWORK-SYSTEM.md`. No E2 acceptance box is checked from these tests alone. Follow-on inspection found the existing hs3 tone-change handler still invokes compose on slider release; explicit-update integration and actual duplicate/reload/late-response checks remain the next local repair.
 
 Pass: six varied reference dogs across six styles and three tone stops are evaluated for identity and grounded personality. This is up to 108 art cases, staged in a small initial screen then a full qualification matrix only for viable styles, with an explicit spend budget. Reuse accepted source art across format adaptations where appropriate, not 108 fresh calls by default. A failed style remains unavailable until repaired; do not substitute a different style silently.
+
+Subsequent E2 local repair checkpoint: hs3 now keeps tone selection separate from an explicit Update note action. Pending copy requests persist before dispatch; reload/uncertainty pauses new dispatches; late replies only apply to matching input; manual edits stay authoritative. 26 source/minified tests and existing adjacent checks pass. Codex IAB checks at 390x844 and 1280x900 verify no request from selection, one from a double-click, edit/reload preservation and stale-result cache reuse. A keyboard-focus regression was repaired and retested. No deployment or provider request occurred. Full image/style integration and provider billing remain unverified; see `../../evidence/2026-10-24-explicit-tone-update.md`. This is copy-control progress, not E2 completion.
 
 ## E3. Complete selected products
 

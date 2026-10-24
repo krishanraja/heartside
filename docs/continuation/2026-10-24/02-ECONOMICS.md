@@ -1,5 +1,11 @@
 # Pricing to at least 50% net margin
 
+## Current working instruction, October 24
+
+Krish subsequently directed: "Dont worry about that for now, just cost price + margin" in response to the labor-rate question. Use a provisional delivered-supplier-cost view now and defer labor calibration. Carry the existing 50% target into this view: price = (product + shipping + surcharge + supplier tax) / 0.50. This is supplier-cost margin, not all-cost net margin; no unknown operating cost becomes zero. Do not keep requesting labor inputs at this stage. Exact live prices remain approval-gated. The all-cost definition below is retained for later reconciliation, not used to block independent product work.
+
+Current quote-based prices are reproducible with `python tools/economics/cost_price.py tools/economics/calibration.json`. All 11 quoted variants and both baskets have a provisional floor; the unqualified ornament does not. See the calibration evidence for quote conditions and remaining route uncertainty.
+
 Krish's approved requirement, October 24: “ensure the pricing is calibrated for at least 50% net margin for me.” This replaces all provisional price recommendations as the governing pricing constraint. Scope is approved; exact retail prices require calibration. No live price change has been authorized for an unspecified amount.
 
 ## Definition and hard gate
