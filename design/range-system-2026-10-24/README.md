@@ -2,6 +2,8 @@
 
 Status: range-wide principle instructed by Krish; visual styles and revamped suite lock pending. October 24, 2026.
 
+**Correction after Krish's challenge:** the four products below describe the original launch baseline, not an agreement to retain them unchanged after research. The assistant's recommendation to freeze that range was not accepted and is withdrawn pending reconciliation with the recovered research. See `docs/evidence/2026-10-24-product-suite-decision-correction.md`. Preserve the comparison and range-wide style/tone work; final categories, formats, prices and supplier choices remain open.
+
 Ruling (Krish): "yes - this and the sentimental > hilarious piece need to transcend all the products. Have we locked the final product suite?"
 
 ## What is decided and what is not
@@ -10,7 +12,7 @@ The recorded October 13 range consists of an 11 oz mug, 50 x 60 sherpa blanket, 
 
 Blanket and framed-print creative directions are approved. Mug and ornament upgraded designs are not. No six-style set is yet approved or proved across every product. No final production-ready suite lock has been claimed.
 
-Recommendation: keep the four existing product categories for the revamp launch and finish their quality before expanding. Ask Krish to confirm that scope explicitly if he intends a new final suite decision. Do not add or remove catalog products from this proposal.
+Historical assistant recommendation, not accepted: keep the four existing product categories for the revamp launch and finish their quality before expanding. Withdrawn after recovering the research recommendations. Do not add or remove catalog products from this proposal.
 
 ## Range-wide behavior
 
