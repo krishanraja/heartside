@@ -47,7 +47,7 @@ Subsequent E2 local repair checkpoint: hs3 now keeps tone selection separate fro
 
 Artwork QC checkpoint (2026-10-24): six candidate specifications retained; conditional $5 approval recorded. Five new evidence-completeness regressions and ten adjacent artwork-state regressions pass. The actual six-case evidence remains NOT_RUN; no style or sample is qualified. Source inspection identifies dark-coat/asymmetry gaps and unsuitable sleepy/cropped sources. Existing old-mug QC cannot qualify the illustrated wrap. Tone routing is now approved: copy only on text products, imagery only on word-free products. See `../../evidence/2026-10-24-artwork-qc-contract.md`.
 
-Tone-routing implementation checkpoint (2026-10-24): separate image/full-product keys and cache reuse implemented; text-native prompts fixed at Warm, textile tone retained. Two saved native drafts read back exactly and validate. 56 local regressions pass, with no provider run. Draft deployment acceptance follows; no E2/E3 qualification box is inferred from these results.
+Tone-routing implementation checkpoint (2026-10-24): separate image/full-product keys and cache reuse implemented; text-native prompts fixed at Warm, textile tone retained. Two saved native drafts read back exactly and validate. 56 local regressions pass, with no provider run. Guarded unpublished deploy 40098927875, matching three-asset checksums, actual portrait Hilarious/shared versus Warm/native and paused blanket helper are verified. No E2/E3 qualification box is inferred from these results. Evidence: `../../evidence/2026-10-24-tone-routing.md`.
 
 ## E3. Complete selected products
 

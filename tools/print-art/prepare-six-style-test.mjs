@@ -42,7 +42,7 @@ const cases = plan.caseOrder.map((style, i) => {
   const fingerprint = sha(JSON.stringify({requestKey:request.key,nativePromptExpected,settings}));
   return {id:`S${i+1}`,style,label:recipes.styles[style].label,tone:plan.route.tone,
     nativeFieldValues:values,nativePromptExpected,nativePromptSha256:sha(nativePromptExpected),
-    requestKey:request.key,settings,fingerprint,status:'NOT_RUN',providerReceipt:null,actualCostUsd:null,
+    requestKey:request.key,imageKey:request.imageKey,imageTone:request.imageTone,settings,fingerprint,status:'NOT_RUN',providerReceipt:null,actualCostUsd:null,
     originalOutputDimensions:null,outputSha256:null,identityVerdict:null,factsVerdict:null,mediumVerdict:null};
 });
 assert.equal(new Set(cases.map(c=>c.fingerprint)).size, 6);

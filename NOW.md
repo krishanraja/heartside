@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-24
-head: f80b37c (deployed unpublished code; evidence closeout follows)
+head: 989d23b (deployed unpublished code; evidence closeout follows)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -37,7 +37,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
-October 24 tone-routing checkpoint: Krish approved copy-only tone for text products and imagery-only tone for word-free products. Implemented separate full-product and image keys, image-cache reuse across exact-copy/text-tone changes, fixed Warm native staging for portrait/mug, and tone-dependent textile prompts. Two native draft patches read back exactly and validate; blanket prompt unchanged. 56 local tests, facts regression, bundle parity and minification pass. Draft deployment verification follows. No generation or order.
+October 24 tone-routing checkpoint: Krish approved copy-only tone for text products and imagery-only tone for word-free products. Implemented separate full-product and image keys, image-cache reuse across exact-copy/text-tone changes, fixed Warm native staging for portrait/mug, and tone-dependent textile prompts. Two native draft patches read back exactly and validate; blanket prompt unchanged. 56 local tests, facts regression, bundle parity and minification pass. Guarded run 40098927875 deployed 989d23b to the unpublished theme; all three changed assets match Git. Actual portrait UI has shared Hilarious with fixed native Warm, and paused blanket UI explains imagery-only tone. Editor Save disabled and original shared selection restored. No generation or order. See `docs/evidence/2026-10-24-tone-routing.md`.
 
 October 24 artwork QC checkpoint: Krish approved the conditional $5 six-image ceiling. Six style specifications are fixed for the screen, with no new output yet. Offline review gate and eight required human findings prevent incomplete/stale/duplicate records from passing the screen; even a complete screen cannot qualify products or samples. Five gate tests plus ten adjacent state tests pass; current evidence returns six NOT_RUN cases. Photo inspection confirms dark-coat and strong-asymmetry coverage gaps. Old three-line mug QC does not qualify the new prominent wrap. The subsequent owner ruling resolves tone routing; see the newer checkpoint. See `docs/evidence/2026-10-24-artwork-qc-contract.md`. No generation, browser/native mutation, paid action or release.
 
