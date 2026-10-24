@@ -49,12 +49,13 @@ The scope is approved. Do not ask Krish to approve it again. Exact sell prices a
 5. `04-BROWSER-AND-AUTHORITY.md`: tool and browser behavior.
 6. `05-CURRENT-STATE-AND-CODE.md`: implementation checkpoint and entry points.
 7. `06-EVIDENCE-AND-ACCEPTANCE.md`: supplier evidence and release matrix.
-8. Private local `PRIVATE-OPERATIONS.md` in the portable handoff folder: exact account URLs and targets. Never commit or publish it.
+8. `07-SESSION-HANDOFF.md`: latest resume checkpoint, approved six-style run, billing lead, code map and completion boundaries. The expanded `01-EXECUTION-QUEUE.md` remains the only checklist (185 detailed tasks at this handoff).
+9. Private local `PRIVATE-OPERATIONS.md` in the portable handoff folder, including its latest addendum: exact account URLs and targets. Never commit or publish it.
 
 The three supplied reference images are approved portrait direction, approved blanket direction and an explicitly **unapproved six-style candidate board**. They establish different things. Do not present the style board as production acceptance or as a supplier mockup.
 
 ## First action in the new session
 
-Read this pack and applicable repository/harness instructions. Verify repository branch/head and the current draft/live targets, then fill the missing economic inputs from authorized account records. Start E1 in the queue. While a genuinely external dependency is blocked, advance the next independent product task. Do not ask Krish to recap the conversation or reapprove known decisions.
+Read this pack and applicable repository/harness instructions. Perform E0's short freshness check, then resume E2-B01: clear the native billing condition and run the already approved six-style screen within USD 5, beginning with one canary and reconciling it before continuing. E1 has already produced the provisional supplier-cost planning output; do not restart discovery or the deferred labor interview. Continue independent product work while genuine external dependencies are blocked. Do not ask Krish to recap or reapprove known decisions.
 
 The current session creates and verifies this handoff only. No further product implementation, live release, image spend or sample order is included in its completion claim.

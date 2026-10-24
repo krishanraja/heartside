@@ -1,5 +1,7 @@
 # Current evidence and release matrix
 
+This matrix defines acceptance, not a competing task checklist. Use the expanded `01-EXECUTION-QUEUE.md` for remaining work and `07-SESSION-HANDOFF.md` plus the linked October 24 evidence for the latest checkpoint. Supplier quotes and unpublished routing have advanced beyond the initial status column; actual six-style generation, production-source qualification and physical acceptance have not passed.
+
 Retrieved October 24, 2026 unless noted. This is selected evidence for the approved scope, not a replay of earlier plans. Supplier listing facts are stronger than inferences about demand. Transaction-linked reviews support individual purchases, not representative US volume. Imported account catalogs can lag supplier inventory.
 
 ## Primary sources
