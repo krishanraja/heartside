@@ -35,6 +35,8 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-23","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
+October 24 range research is complete as a proposal, not a catalog lock. The current ornament supplier explicitly repeats one design on both sides and has adverse quality signals; the recommended replacement remains unqualified. See `docs/evidence/2026-10-24-product-suite-proposal.md` and its margin scenarios. No live catalog or price was changed.
+
 Lifecycle: live. The chat-led store has been public at heartside.io since 19 October (`docs/HANDOFF.md` section 3, "The buyer's journey, as live"; `9ea7e34`).
 
 Live and recorded as verified in the repo:
@@ -87,7 +89,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** reconcile the recovered October 23 research into a launch / test / defer product-suite proposal, incorporating later approved artwork directions, current supplier feasibility, US delivery and delivered margin. Krish challenged the unsupported carry-forward of the original four-product launch range; no post-research agreement to retain the suite unchanged was found. The research includes unframed wall-art and ornament changes, a compact-book candidate and narrow pillow/calendar tests. See `docs/evidence/2026-10-24-product-suite-decision-correction.md`. Shared style/tone across the selected range is instructed; the six candidate styles remain under review. Monday support follow-up remains scheduled. Products first, website mockups next, sample last.
+- **Next action:** obtain the range decision on `docs/evidence/2026-10-24-product-suite-proposal.md`, then complete that selected product system. The proposal recommends three core gift families/four formats (mug, blanket, framed and unframed portrait), a replacement ornament conditional on qualification, and a limited pillow test; book development is for 2027 and calendar/broad novelty expansion is deferred. Prices are test hypotheses, not approved live changes. The report checks six connected bases, official US supplier offers and modeled contribution. Exact stock/route quotes, physical quality and Christmas cutoffs remain open. Shared style/tone across the selected range is instructed; the six candidate styles remain under review. Monday support follow-up remains scheduled. Products first, website mockups next, sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-24): holds.
