@@ -1,6 +1,13 @@
 {
   "id": "heartside-six-style-screen-20261024-v1",
-  "status": "PREPARED_NOT_APPROVED_NOT_GENERATED",
+  "status": "BUDGET_APPROVED_EXECUTION_BLOCKED_NOT_GENERATED",
+  "approval": {
+    "date": "2026-10-24",
+    "authority": "Krish's explicit Yes to the six-image screen with a USD 5 ceiling, conditional on verifying the native billing boundary first",
+    "approvedSpecificationSha256": "8b52c029cabdad0fe86e57e98a5a8d742f9ca1850cb7e8a1fda2ba7e70605ea3",
+    "scope": "Existing six cases only; no retries, larger matrix, samples or live release",
+    "billingConditionSatisfied": false
+  },
   "purpose": "Screen six genuinely different media on one licensed reference dog before larger tone, dog and product qualification.",
   "source": {
     "path": "assets/photos/pug-autumn-leaves.jpg",
@@ -50,7 +57,7 @@
     "initialCanaryActions": 1,
     "budgetCurrency": "USD",
     "proposedAllInCeiling": 5,
-    "approvedCeiling": null,
+    "approvedCeiling": 5,
     "providerEnforcedCeilingVerified": false,
     "exactTotalQuote": null,
     "allInAttemptUpperBound": null,
@@ -73,7 +80,6 @@
     "sources": ["https://platform.openai.com/usage", "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst", "https://developers.openai.com/api/docs/guides/image-generation#cost-and-latency"]
   },
   "executionBlockers": [
-    "Exact owner spend approval is absent",
     "Native request size and all-in per-attempt cost bound are unverified",
     "Provider-side retries and billing reconciliation behavior are unverified"
   ],

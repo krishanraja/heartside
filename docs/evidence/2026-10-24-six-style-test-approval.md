@@ -1,10 +1,10 @@
 # Six-style artwork screen: approval packet v1
 
-Prepared October 24, 2026. **No generation run. No spending approval recorded.** The test is precisely specified; the native billing boundary still prevents calling it executable.
+Updated October 24, 2026. **USD 5 ceiling conditionally approved by Krish; no generation run.** Approval covers the frozen six cases only. The native billing condition remains unsatisfied, so execution is still blocked.
 
-## The proposed decision
+## Recorded decision
 
-Approve a **maximum USD 5 all-in allowance for six intentional native image-generation actions**, one per candidate style, with no retries, repairs or substitutions. This is a proposed owner allowance, not an enforced provider cap or a fixed quote. Do not dispatch even the first action until the unresolved cost/retry boundary below can keep it inside that allowance. An approval does not waive those conditions.
+Krish approved a **maximum USD 5 all-in allowance for six intentional native image-generation actions**, one per candidate style, with no retries, repairs or substitutions. This is an approved conditional owner allowance, not an enforced provider cap or a fixed quote. Do not dispatch even the first action until the unresolved cost/retry boundary below can keep it inside that allowance. An approval does not waive those conditions.
 
 The current historical estimate is **about $0.75 for six**, based on three earlier requests. The exact total is unknown. No new subscription, credit purchase, model switch, global setting change, order or live release is included.
 
@@ -94,4 +94,4 @@ Preparation route: principles and strategy for the bounded screen; evidence-rese
 
 Reproduce the no-cost preparation with `node tools/print-art/prepare-six-style-test.mjs [private-output-directory]`. With no directory it validates and prints a summary only. There is no execute flag or dispatch implementation.
 
-**Single next action:** close the native request-size/billing boundary, then obtain action-time approval for the frozen six-image screen within the proposed $5 allowance. Production-source and private-binding answers remain separate release gates. Products first, website mockups next, physical samples last.
+**Single next action:** close the native request-size/billing boundary so the frozen six-image screen can execute inside the already approved conditional $5 ceiling. Do not ask for the same approval again. The review contract and edge-case coverage are in `2026-10-24-artwork-qc-contract.md`. Production-source and private-binding answers remain separate release gates. Products first, website mockups next, physical samples last.

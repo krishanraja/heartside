@@ -7,6 +7,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {recipes, prepare} from './artwork-system.mjs';
 import {nativePrompt} from './native-candidate.mjs';
+import {criteria} from './review-six-style-screen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -18,7 +19,8 @@ assert.equal(plan.limits.maximumIntentionalGenerationActions, 6);
 assert.equal(plan.limits.automaticRetries, 0);
 assert.equal(plan.route.purchaseEnabled, false);
 assert.equal(plan.route.dispatchImplemented, false);
-assert.equal(plan.limits.approvedCeiling, null, 'This compiler is preparation-only; it cannot record approval');
+assert.equal(plan.limits.approvedCeiling, 5, 'Match the recorded conditional owner ceiling; this compiler cannot grant approval');
+assert.equal(plan.approval.billingConditionSatisfied, false, 'A billing release needs a separately verified execution path');
 const ctx = {window: {}};
 vm.runInNewContext(readFileSync(resolve(root, 'shopify/assets/hs-artwork-profile.js'), 'utf8'), ctx);
 const facts = JSON.parse(ctx.window.HSArtworkProfile.serialize(ctx.window.HSArtworkProfile.fromChat(plan.fixture.chat)));
@@ -48,7 +50,7 @@ const lineItems = Object.values(plan.costEvidence.roundedLineItemsUsd).reduce((a
 assert.ok(Math.abs(lineItems / 3 * 6 - plan.costEvidence.historicalExtrapolationSixUsd) < 1e-9);
 const packet = {planId:plan.id,planSha256:sha(readFileSync(planPath)),recipeVersion:recipes.version,
   recipeSha256:sha(JSON.stringify(recipes)),nativePromptSha256:sha(rawNativePrompt),factsProfile:facts,
-  status:'PREPARED_NOT_APPROVED_NOT_GENERATED',executionReady:false,cases};
+  status:plan.status,approvedCeilingUsd:plan.limits.approvedCeiling,executionReady:false,cases};
 const outputDir = process.argv[2];
 if (outputDir) {
   assert.ok(!outputDir.startsWith('--'), 'Pass an output directory or no argument for validation');
@@ -57,9 +59,12 @@ if (outputDir) {
   for (const c of cases) writeFileSync(resolve(dest,`${c.id}-${c.style}-prompt.txt`),c.nativePromptExpected+'\n');
   // This is an immutable empty template, never the execution ledger.
   writeFileSync(resolve(dest,'results-template.csv'), 'case_id,style,status,provider_receipt,cost_usd,output_sha256,original_width,original_height,identity,facts,medium,production_source,reviewer,evidence\n'+cases.map(c=>`${c.id},${c.style},NOT_RUN,,,,,,,,,,,`).join('\n')+'\n');
+  writeFileSync(resolve(dest,'human-reviews-template.json'), JSON.stringify(cases.map(c=>({caseId:c.id,fingerprint:c.fingerprint,
+    outputSha256:null,providerReceipt:null,actualCostUsd:null,reviewer:{kind:null,name:null},reviewedAt:null,
+    sourceComparisonEvidence:null,criteria:Object.fromEntries(criteria.map(key=>[key,{verdict:'NOT_RUN',evidence:null}]))})),null,2)+'\n');
   writeFileSync(resolve(dest,'packet-sha256.txt'),sha(JSON.stringify(packet))+'\n');
 }
 console.log(JSON.stringify({planId:plan.id,cases:cases.length,uniqueFingerprints:6,facts:facts.facts.length,
   planSha256:packet.planSha256,nativePromptSha256:packet.nativePromptSha256,
-  historicalEstimateUsd:plan.costEvidence.historicalExtrapolationSixUsd,proposedCeilingUsd:5,
+  historicalEstimateUsd:plan.costEvidence.historicalExtrapolationSixUsd,approvedCeilingUsd:plan.limits.approvedCeiling,
   exactQuote:null,executionReady:false,networkCalls:0}));
