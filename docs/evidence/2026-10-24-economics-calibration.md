@@ -1,6 +1,6 @@
 # E0 verified; E1 calibrated inputs with explicit gaps
 
-Read on 2026-10-24 using the connected Shopify and Teeinblue tools, Gmail support thread, local repositories and Codex in-app browser. No catalog price, publication, supplier setting, paid generation, order or payment changed. Exact private target identifiers remain in the private operations companion, not this document.
+Read on 2026-10-24 using the connected Shopify and Teeinblue tools, Gmail support thread, local repositories and Codex in-app browser. No live catalog price, publication, fulfillment setting, paid generation, paid order or payment changed. A clearly marked unpaid supplier quote draft and display-only currency preference are described below. Exact private target identifiers remain in the private operations companion, not this document.
 
 ## Checkpoint and sources
 
@@ -8,7 +8,7 @@ Heartside was clean on `fix/photo-identity-and-funnel-truth` at `97239bd`; origi
 
 Shopify's connected shop identity is Heartside, heartside.io, USD, US, Basic. Native readback distinguishes the main Heartside launch theme from its unpublished copy. The portrait and blanket acceptance products remain Draft with no online-store URL or publication records. The portrait campaign has its existing acceptance-product binding; the blanket campaign has none. These are target checks, not a storefront integration pass.
 
-Four critical in-app tabs are retained: draft theme editor, Teeinblue fulfillment settings, standalone Printful account and Shopify's authenticated embedded Printful app. The initial empty browser inventory was transient; the owner's clarification allowed supplier tabs. Redundant read-only tabs were closed. No alternate browser was used and the editor was not navigated away from.
+Four critical in-app tabs are retained: draft theme editor, Teeinblue fulfillment settings, the unpaid Printful quote and supplier catalog. The read-only embedded Printful app tab was reused for catalog checks after its connection was verified. The initial empty browser inventory was transient; the owner's clarification allowed supplier tabs. Redundant read-only tabs were closed. No alternate browser was used and the editor was not navigated away from.
 
 The existing Monday October 26, 09:00 London support heartbeat is active. The original October 23 resolution/production-source email still had no reply at this read. No duplicate message or automation was created. Original source dimensions, failed/retried generation billing and the supported private blanket connection remain unresolved.
 
@@ -36,7 +36,7 @@ Fresh connected catalog readback repeated the base amounts in `02-ECONOMICS.md`:
 
 Shipping, seller-borne supplier tax/exemptions, Alaska/Hawaii treatment and exact mixed-basket shipping remain unverified. The authenticated embedded mug detail shows shipping starting at $4.99, while the earlier public US category rate was $6.69; neither is an exact configured destination quote.
 
-The owner clarified that connection work starts through Shopify's installed Printful app. That route was inspected: the app already opens its connected dashboard, with Heartside assigned to the saved account billing method. The standalone Printful tab is authenticated but lists no stores. Its visible account page shows a personal login different from the business email in Printful's October 4 account-change confirmation. This establishes a login mismatch, not which account currently owns each integration. The existing account tab was brought forward and screenshot-verified for switching to the business login. No account was disconnected, reinstalled, created or modified.
+The owner clarified that connection work starts through Shopify's installed Printful app. That route was inspected: the app already opens its connected dashboard, with Heartside assigned to the saved account billing method. The standalone Printful tab is authenticated but lists no stores. Its visible account page shows a personal login different from the business email in Printful's October 4 account-change confirmation. This establishes a login mismatch, not which account currently owns each integration. The existing account tab was brought forward and screenshot-verified. The owner then switched to the business login; a fresh Stores read explicitly shows Shopify / Heartside / Live. Account access is resolved without disconnecting or reinstalling anything. Billing > Resale certificate explicitly says no certificates submitted. No exemption is assumed.
 
 Teeinblue's fulfillment settings independently show Printful connected, Store set to Heartside, and Auto confirm order unchecked. The catalog selling region is Worldwide; that is not proof of a US fulfillment route. Printify is not connected. These settings verify current gates and configuration, not successful production handoff or the replacement ornament route.
 
@@ -57,3 +57,45 @@ Actual-input CLI run: 70 of 70 order/volume cases blocked on missing costs. Expl
 Remaining material accounting decisions: business profit-tax boundary versus owner personal tax; shared overhead allocation and actual paid FX/fees; a defensible order-volume/mix assumption; review/support labor rate and time; acquisition including organic production labor; end-to-end image/copy cost including abandoned sessions and retries. Existing records have not supplied these. The 3% refund/remake reserve remains an assumption, not an observed loss rate.
 
 **Status:** E0 target verification passed. E1 cost engine and accessible account inputs advanced; no SKU margin, supplier route, holiday promise or live price certified. The ordered checklist remains `01-EXECUTION-QUEUE.md`.
+
+## Authenticated supplier follow-up
+
+Site browsing currency was changed from GBP to USD; store billing was already USD and was not changed. These are the non-membership catalog prices and US shipping tables, read October 24. They are not final destination/tax quotes. Estimated times are not customer promises or holiday cutoffs.
+
+| Configuration | Base USD | First / next shipping USD | Catalog estimate |
+|---|---:|---:|---|
+| 11oz mug black/red/pink | 9.75 | 6.69 / 3.50 | 5-7 business days |
+| 11oz mug dark blue/dark green | 8.11 | 6.69 / 3.50 | 5-7 business days |
+| Tan sherpa 50x60 | 37.25 | 13.99 / 4.00 | 6-8 business days |
+| Matte unframed 12x18 | 13.25 | 4.99 / 0.40 | 5-7 business days |
+| Matte frame black/white 12x18 | 34.50 | 10.89 / 4.50 | 5-7 business days |
+| Matte frame red oak 12x18 | 32.77 | 10.89 / 4.50 | 5-7 business days |
+| Basic pillow 16x16 with insert | 14.95 | 10.89 / 4.50 | 6-8 business days |
+
+The sherpa supplier catalog is $1.49 higher than the imported Teeinblue base ($35.76). The initial calibration retained the higher $37.25 provisionally; the later exact-destination observation below is now recorded separately and preserves the discrepancy. Catalog extras explain that fulfillment region and billing currency can change the base. No membership/trial discount was assumed or activated.
+
+Stock matrices show all five selected 11oz mugs, the tan 50x60 blanket, 12x18 unframed poster and 16x16 basic pillow in stock in US/Mexico. All three 12x18 frame colors show in stock in the United States. These are availability observations, not guaranteed routing or physical-quality acceptance.
+
+Supplier file guidelines: unframed paper portrait requires PNG/JPEG, sRGB, at least 300 DPI and full bleed. The 50x60 sherpa uses a 53x63-inch file, at least 150 DPI, full bleed and safe areas; supplier warns of shifts up to two inches and recommends avoiding tiny details. This does not verify the native AI source resolution. The pillow has a washable case, hand-wash-only insert, and ships unassembled. Its displayed file-template table omits 16x16 despite the available size picker; exact seam-safe geometry remains unverified. Do not infer it from another size.
+
+Primary catalog pages: [mug](https://www.printful.com/dashboard/custom/home-living/all/ceramic-mug), [sherpa](https://www.printful.com/dashboard/custom/blankets/personalized/sublimated-sherpa-blanket), [unframed](https://www.printful.com/dashboard/custom/home-living/all/enhanced-matte-paper-poster-in), [framed](https://www.printful.com/dashboard/custom/wall-art/framed-posters/enhanced-matte-paper-framed-poster-in), [pillow](https://www.printful.com/dashboard/custom/pillows/decorative/basic-pillow).
+
+A standard unpaid Basic-order quote configuration uses disposable text, `COST QUOTE ONLY - DO NOT PRINT`. Continuing to shipping saved a draft. The recipient name was resolved from the existing Shopify order matching the owner-confirmed handoff address; no name was inferred. Full contact data stays private. The address-book save checkbox stayed unchecked.
+
+The black 11oz mug, quantity one, now has an exact unpaid Brooklyn quote: fulfillment $8.11, Flat Rate shipping $6.69, seasonal surcharge $0.40, supplier tax $1.35, total $16.55. Both review and a subsequent edit/save/recalculation show this total. No discount code was applied. The catalog and editor show $9.75, but saving the Basic-order draft restores $8.11. Printful states prices depend on fulfillment region and payment currency; this does not establish which route will serve the Teeinblue integration. The model records the quote as an observed sample, preserves the $9.75 catalog conflict and does not certify nationwide cost or integration parity. Delivery Oct 29-31 is a current estimate, not a customer promise. Supplier tax is separate from Shopify sales tax.
+
+No sample discount, customer photo, paid order, payment, terms acceptance or fulfillment was used. The unpaid draft is preserved for the remaining variant and basket quotes.
+
+The same draft was reused for one unframed 12x18 matte portrait: fulfillment $11.62, Flat Rate shipping $4.99, surcharge $0.40, tax $1.51, total $18.52. Product readback confirms 12x18 and quantity one. Catalog/editor $13.25 versus saved quote $11.62 is retained as a separate discrepancy. No all-US or Teeinblue-route extrapolation.
+
+The black-frame 12x18 portrait is also quoted independently at $32.77 fulfillment + $10.89 Flat Rate shipping + $0.40 surcharge + $3.92 tax = $47.98. Quantity one and Black / 12x18 were read back. Catalog/editor $34.50 versus saved quote $32.77 remains an unresolved route/currency pricing distinction.
+
+White-frame 12x18 was separately selected, saved and read back at the same $32.77 + $10.89 + $0.40 + $3.92 = $47.98 total. It was not inferred from black. Catalog/editor remains $34.50.
+
+Red-oak 12x18 was separately selected, saved and read back at $32.77 + $10.89 + $0.40 + $3.92 = $47.98. This color agrees with its $32.77 catalog/editor base. All three frame colors have independent destination observations; provider integration parity remains untested.
+
+Tan 50x60 sherpa, quantity one, is quoted at $35.76 fulfillment + $13.99 Flat Rate shipping + $0.40 surcharge + $4.45 supplier tax = $54.60. This agrees with the imported base but differs from $37.25 in the catalog/editor. Delivery Oct 30-Nov 2 is an estimate only. Disposable quote text does not change the approved word-free production design.
+
+Basic pillow 16x16, quantity one, white zipper/stitch, with both Front print and Back print read back, is quoted at $14.59 fulfillment + $10.89 Flat Rate shipping + $0.40 surcharge + $2.30 tax = $28.18. Catalog/editor is $14.95. Estimate Oct 30-Nov 2 only. No fabric, seam geometry or production-quality acceptance follows from the disposable text draft.
+
+Seven independent unpaid single-variant Brooklyn observations are now recorded. Four remaining mug colors, proposed mixed baskets and wider destination coverage remain open. All totals reconcile exactly; no final order was submitted. An accounting-boundary question is pending with the owner after accessible account records failed to establish business profit-tax treatment. No answer or tax exemption is presumed.
