@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-23
+as_of: 2026-10-24
 head: 6710125
 lifecycle: live
 production_url: https://heartside.io
@@ -31,7 +31,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-23)
+## Where it is right now (as of 2026-10-24)
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-23","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
@@ -87,12 +87,14 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** review the mug's three-style comparison with Krish and settle how the existing sentimental-to-hilarious control shapes artwork as well as the note, then develop the ornament. Tone and style are proposed as separate choices with one explicit Update artwork action; the existing slider currently rewrites only note copy. The blanket remains word-free. See `design/product-upgrade-2026-10-23/README.md`. These concepts use a public reference pug and illustrative habits, not production files or accepted customer likeness. Monday's support follow-up remains scheduled. All products first, website mockups next, physical sample last.
+- **Next action:** confirm the revamped launch scope and get Krish's selection from the six-style comparison, then test the shared three-stop tone treatment and adapt accepted art to the products. Krish has instructed that style and tone carry across the whole range. The original mug, blanket, framed print and ornament are the recorded product categories, but their upgraded production-ready suite is not locked. Current candidate board and acceptance sequence: `design/range-system-2026-10-24/README.md`. The existing slider still changes only note copy; this cross-product artwork behavior is not implemented. Monday's support follow-up remains scheduled. Products first, website mockups next, sample last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
-- North Star check (2026-10-23): holds.
+- North Star check (2026-10-24): holds.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
+
+- October 24: the six-style concept board is rendered and presented. The old three-style comparison is superseded as the candidate shortlist. Shared style/tone across products is instructed, while the six particular styles, their product adaptations and final launch readiness remain unapproved. No live product, theme or native artwork was changed.
 
 ## Read next
 
