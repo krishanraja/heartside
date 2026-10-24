@@ -1,0 +1,686 @@
+{
+  "currency": "USD",
+  "period_days": 30,
+  "target_margin": "0.50",
+  "accounting_boundary": "Planning operating profit before owner personal tax; business profit-tax treatment unresolved",
+  "accounting_boundary_confirmed": false,
+  "costs": {
+    "payment_rate": {
+      "value": "0.029",
+      "status": "verified",
+      "source": "Shopify Plan page 2026-10-24: online rate 2.9% plus USD 0.30; captured transaction corroborates one route; other methods require separate case"
+    },
+    "payment_fixed": {
+      "value": "0.30",
+      "status": "verified",
+      "source": "Shopify Plan page 2026-10-24, online card route"
+    },
+    "ai_all_attempts_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Measure artwork, copy, abandoned sessions and all failed/retried calls; historical image sample is not per-sale cost"
+    },
+    "review_support_labor_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Measure review/support minutes including failed orders; assign stated labor rate"
+    },
+    "acquisition_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Include organic production/distribution labor and tools, creator gifts, paid media where applicable; avoid duplicate overhead"
+    },
+    "other_variable_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Establish chargebacks, bank/FX and other variable charges or evidenced zero"
+    },
+    "business_profit_tax_rate": {
+      "value": null,
+      "status": "unknown",
+      "source": "Existing business accounting treatment required before certification"
+    },
+    "refund_remake_reserve_rate": {
+      "value": "0.03",
+      "status": "assumption",
+      "source": "Continuation planning reserve only; replace with ledger entries for realized results"
+    },
+    "account_order_ordinal": {
+      "value": "2",
+      "status": "verified",
+      "source": "Teeinblue Subscription Details 2026-10-24: one order counted; NEXT order is ordinal 2. Usage cycle resets Nov 03, distinct from subscription period Oct 18-Nov 17. Refresh before release."
+    }
+  },
+  "overhead": {
+    "teeinblue": {
+      "amount": {
+        "value": "49",
+        "status": "verified",
+        "source": "Active Teeinblue subscription Oct 18-Nov 17; USD 49. Shopify upcoming bill converts this once to GBP 37.31. Do not add both amounts."
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Subscription Details shows one store, Heartside, 2026-10-24"
+      }
+    },
+    "metashop": {
+      "amount": {
+        "value": "9.99",
+        "status": "verified",
+        "source": "Shopify Plan page confirms active USD 9.99 every 30 days, next renewal Nov 10; upcoming converted charge GBP 7.67, not a second expense"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Heartside store subscription 2026-10-24"
+      }
+    },
+    "shopify": {
+      "amount": {
+        "value": "1",
+        "status": "verified",
+        "source": "Shopify Basic Plan page 2026-10-24: GBP 1 per month until Jan 05 2027, then displayed standard GBP 25. Model current promo only; use post-promo scenario for sustainable pricing."
+      },
+      "period_days": 30.4375,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Heartside store plan"
+      },
+      "currency": "GBP",
+      "period_note": "Calendar monthly normalized using 365.25/12; actual period ledger uses exact bills, not this forecast approximation"
+    },
+    "hosting_automation": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "October 14 hosting invoice reports USD 17.47 for September (CPX21, backup, IPv4, snapshot; supplier tax USD 0). Heartside instance attribution/current-period coverage unproven; do not substitute whole shared invoice."
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    },
+    "domains_email": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "Attributable renewal and email costs missing"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    },
+    "other_operating": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "Accounting, insurance, fixed support/admin and other attributable costs missing"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    }
+  },
+  "variants": {
+    "mug_black": {
+      "base": {
+        "value": "9.75",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_red": {
+      "base": {
+        "value": "9.75",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_pink": {
+      "base": {
+        "value": "9.75",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_dark_blue": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_dark_green": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "blanket_50x60": {
+      "base": {
+        "value": "35.76",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "13.99",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_black_12x18": {
+      "base": {
+        "value": "34.50",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_white_12x18": {
+      "base": {
+        "value": "34.50",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_red_oak_12x18": {
+      "base": {
+        "value": "32.77",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "unframed_12x18": {
+      "base": {
+        "value": "13.25",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "4.99",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "pillow_16x16": {
+      "base": {
+        "value": "14.95",
+        "status": "observed_sample",
+        "source": "Connected Teeinblue selected variant read, 2026-10-24; imported catalog, not an exact supplier quote"
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "replacement_ornament": {
+      "base": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact provider, round configuration, front/back and packaging quote required"
+      }
+    }
+  },
+  "orders": {
+    "mug_black": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_red": {
+      "items": [
+        {
+          "variant": "mug_red",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_pink": {
+      "items": [
+        {
+          "variant": "mug_pink",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_dark_blue": {
+      "items": [
+        {
+          "variant": "mug_dark_blue",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_dark_green": {
+      "items": [
+        {
+          "variant": "mug_dark_green",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "blanket_50x60": {
+      "items": [
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_black_12x18": {
+      "items": [
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_white_12x18": {
+      "items": [
+        {
+          "variant": "frame_white_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_red_oak_12x18": {
+      "items": [
+        {
+          "variant": "frame_red_oak_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "unframed_12x18": {
+      "items": [
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "pillow_16x16": {
+      "items": [
+        {
+          "variant": "pillow_16x16",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "replacement_ornament": {
+      "items": [
+        {
+          "variant": "replacement_ornament",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact quote must establish whether surcharge is already included"
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_and_frame": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Combined supplier order quote, categories may ship separately"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "Printful October 15 account notice verifies USD 0.40 per US order Oct 15 2026-Jan 17 2027; this mixed basket assumes one Printful order, pending routing verification"
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_and_blanket": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Combined supplier order quote, categories may ship separately"
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "Printful October 15 account notice verifies USD 0.40 per US order Oct 15 2026-Jan 17 2027; this mixed basket assumes one Printful order, pending routing verification"
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    }
+  },
+  "fx": {
+    "GBP_USD": {
+      "value": null,
+      "status": "unknown",
+      "source": "Read actual settled bill conversion/FX fee or select and label planning FX; do not convert from unrelated display estimates"
+    }
+  }
+}

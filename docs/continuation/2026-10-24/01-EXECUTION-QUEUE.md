@@ -6,9 +6,11 @@ Use this as the only revamp checklist. Preserve scope in START-HERE. On each com
 
 - [x] Owner approved the range and required at least 50% net margin on October 24.
 - [x] Clean continuation corpus prepared; no live mutation in handoff preparation.
-- [ ] New session verifies branch, working tree, latest commit, connected account identity and draft/live targets.
-- [ ] Inventory the in-app browser and retain only critical tabs, never more than five. Do not touch unrelated Chrome tabs.
-- [ ] Read actual current service capabilities once. Prefer native MCPs; use the in-app browser for unsupported operations.
+- [x] New session verifies branch, working tree, latest commit, connected account identity and draft/live targets.
+- [x] Inventory the in-app browser and retain only critical tabs, never more than five. Do not touch unrelated Chrome tabs.
+- [x] Read actual current service capabilities once. Prefer native MCPs; use the in-app browser for unsupported operations.
+
+Evidence (2026-10-24): `../../evidence/2026-10-24-economics-calibration.md`, E0 target checks; four critical in-app tabs, draft editor preserved.
 
 Pass: the agent can name the exact working checkout, unpublished theme, artwork/campaign targets and outstanding blockers without guessing or creating replacements.
 
@@ -21,6 +23,8 @@ Pass: the agent can name the exact working checkout, unpublished theme, artwork/
 - [ ] Confirm stock/availability and US fulfillment/delivery route for each selected base. Imported available=true is provisional.
 - [ ] Establish current 2026 route-specific holiday cutoffs and a customer-artwork/QC buffer. No promised Christmas date without evidence.
 
+Checkpoint (2026-10-24): accessible account fees and catalog bases read, including the confirmed US holiday surcharge; existing Shopify/Teeinblue connections preserved while the standalone supplier login mismatch is resolved; offline model plus 13 regression tests built in `tools/economics/`. Complete account calibration remains open. Exact supplier quotes/taxes, all-attempt AI, labor, acquisition, shared overhead/FX and accounting boundary are named missing inputs. All actual-input price cases fail closed. Evidence: `../../evidence/2026-10-24-economics-calibration.md`.
+
 Pass: each core SKU has a quoted delivered cost and a price with a defensible 50% net model, or is explicitly blocked on a named input. If a viable price does not sell or a supplier cannot qualify, present the exact cost/design/scope trade-off to Krish; do not quietly lower the margin target. Do not change catalog prices live merely to finish a spreadsheet.
 
 ## E2. Finish the common artwork and tone foundation
@@ -32,6 +36,8 @@ Pass: each core SKU has a quoted delivered cost and a price with a defensible 50
 - [ ] Use one deliberate generation/update action. No generation while dragging, duplicate click charges, timeout auto-retries or refresh-triggered charges. Verify provider behavior rather than assuming the client guard prevents all charges.
 - [ ] Verify manual copy edits have explicit ownership: changing tone offers a rewrite or preserves the edit; it never silently overwrites it.
 - [ ] Resolve original source resolution and final production source through Teeinblue support or a supported export. An enlarged canvas does not pass.
+
+Checkpoint (2026-10-24): local versioned six-style/three-tone recipes and preparation/state contract added under `tools/print-art/`; consumes the existing facts profile. Ten tests pass across 90 prepared style/tone/format configurations, plus the existing facts regression. Not storefront-wired, not image-qualified, no paid run. Exact input keys, stale/late results, manual copy preservation, duplicate requests and uncertain-response reconciliation are tested locally. See `tools/print-art/ARTWORK-SYSTEM.md`. No E2 acceptance box is checked from these tests alone.
 
 Pass: six varied reference dogs across six styles and three tone stops are evaluated for identity and grounded personality. This is up to 108 art cases, staged in a small initial screen then a full qualification matrix only for viable styles, with an explicit spend budget. Reuse accepted source art across format adaptations where appropriate, not 108 fresh calls by default. A failed style remains unavailable until repaired; do not substitute a different style silently.
 

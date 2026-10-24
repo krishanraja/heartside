@@ -2,13 +2,13 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-24
-head: 6710125
+head: 97239bd (local E0/E1 continuation changes follow)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
 history_log: docs/history/LOG.md
 truth_files: []
-authority_order: [docs/NORTH_STAR.md, docs/V3-GIFTS-FROM-YOUR-DOG.md, docs/POSITIONING.md, docs/HANDOFF.md, docs/COWORK-HANDOVER-2026-10-15.md, docs/HANDOVER-2026-10-17.md, docs/SYNC.md]
+authority_order: [docs/continuation/2026-10-24/START-HERE.md, docs/continuation/2026-10-24/01-EXECUTION-QUEUE.md, docs/NORTH_STAR.md, docs/V3-GIFTS-FROM-YOUR-DOG.md, docs/POSITIONING.md, docs/HANDOFF.md, docs/COWORK-HANDOVER-2026-10-15.md, docs/HANDOVER-2026-10-17.md, docs/SYNC.md]
 steward: https://github.com/krishanraja/ai-harness/blob/main/docs/steward/RUNBOOK.md
 never_publish: [any credential or the name of any credential, the Shopify store handle and the live theme id, the n8n instance address and its webhook URLs, the Teeinblue campaign ids and Printful product ids, the Google Drive folder link, Krish's personal email address, any customer's order or chat answers or dog's name or photo]
 ---
@@ -35,7 +35,9 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-24)
 
-<!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-23","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
+<!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
+
+October 24 execution checkpoint: E0 targets verified. E1 now has an offline evidence-aware net-cost engine, fresh account fee/subscription observations and 13 passing arithmetic/guard regressions. Complete supplier quotes and operating-cost allocation remain blocked on named inputs; no price or margin is certified. See `docs/evidence/2026-10-24-economics-calibration.md`. Independent E2 groundwork now includes six recipe candidates, one tone/input contract and ten passing preparation/state tests plus the existing fact-profile regression. It is not storefront-wired or image-qualified. The standalone Printful tab uses a different login from the business account identified in its October 4 confirmation; switching that existing tab to the business login is pending. Shopify and Teeinblue already show Heartside connected with manual confirmation gates. The US holiday surcharge is confirmed at $0.40 per Printful order; exact quotes/tax remain missing. The official 2026 holiday hub says cutoffs will be shared soon. No live, paid or fulfillment action occurred.
 
 October 24: Krish approved three core gift families/four formats, a conditional replacement ornament and bounded square-pillow pilot, and required at least 50% net margin. A clean current-only continuation pack now controls the revamp. Six style candidates require qualification. Economics are not yet certified with actual complete costs. No live catalog, artwork, theme or price changed in preparing the pack.
 
@@ -91,7 +93,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** continue from `docs/continuation/2026-10-24/START-HERE.md`, E0/E1. Krish approved the scope on October 24 and requires at least 50% net margin after attributable business costs. The clean continuation corpus is the current execution brief; do not reopen the range decision or carry forward provisional prices. Verify account cost inputs, calibrate net prices, then finish actual-dog product artwork and shared style/tone. Maximum five critical Codex in-app tabs; reuse and visibly open the exact existing tab for owner action. Products first, website mockups next, physical samples last.
+- **Next action:** after switching the existing Printful tab to the business account and confirming the Heartside store identity, obtain exact variant/destination and mixed-basket quotes plus supplier tax/exemption evidence for E1, without submitting an order. Keep missing operating-cost inputs blocked. E2 local recipes are prepared; provider integration and paid image evaluation follow their source, cost and approval gates. Scope stays approved; physical samples remain last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-24): holds.
