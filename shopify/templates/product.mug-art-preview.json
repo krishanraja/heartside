@@ -1,0 +1,58 @@
+{
+  "sections": {
+    "main": {
+      "type": "hs2-product",
+      "settings": {
+        "show_poster": false,
+        "open_on": "preview",
+        "photo_shape": "square",
+        "city_art_preview": false,
+        "mug_art_preview": true
+      },
+      "blocks": {
+        "title": {
+          "type": "title"
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "note": "Free US shipping. A person checks every order before it prints."
+          }
+        },
+        "answers": {
+          "type": "answers",
+          "settings": {
+            "picks": false,
+            "title": "YOUR ARTWORK",
+            "note": "Your dog leads the wrap. One short note sits beside the illustration."
+          }
+        },
+        "buy": {
+          "type": "buy",
+          "settings": {
+            "v3": true
+          }
+        },
+        "fine": {
+          "type": "fine",
+          "settings": {
+            "line_1": "A person checks every order before it prints."
+          }
+        },
+        "description": {
+          "type": "description"
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "answers",
+        "buy",
+        "fine"
+      ]
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

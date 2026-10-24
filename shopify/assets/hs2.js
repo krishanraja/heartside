@@ -1258,6 +1258,8 @@
     giftFit();
   }
   function giftFit() {
+    // Candidate controls stay readable; allow scrolling instead of shrinking art and controls.
+    if (cityArtPreview()) return;
     var buy = document.querySelector('#buy[data-hs2-v3]');
     if (!buy) return;
     var a = document.activeElement;
@@ -1309,7 +1311,7 @@
     if (media) media.toggleAttribute('data-hs2-sample', cityArtPreview() ? !cityArtSaved() : !(usePhoto.file && handed() && tibTookPhoto() && !document.querySelector('.vm--container')));
     if (cityArtPreview()) {
       var previewLabel = media && media.querySelector('.hs2-product__example');
-      if (previewLabel) previewLabel.textContent = artRequested() ? 'Waiting for your saved artwork.' : doHandoff.artPhoto ? 'Earlier artwork. Create a new preview for your changes.' : "Add your dog's photo to see your artwork.";
+      if (previewLabel) previewLabel.textContent = 'Existing reference artwork. Generation is paused.';
       document.querySelectorAll('#buy #teeAtcButton, #buy .tee-btn--atc, #buy [data-hs2-add]').forEach(function (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; });
       var place = document.querySelector('[data-hs2-artwork-city]');
       if (place) place.textContent = answer('city');

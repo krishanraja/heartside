@@ -940,22 +940,23 @@
     return p;
   }
   function fmt(p) { return '$' + (Math.round(p * 100) % 100 ? p.toFixed(2) : String(Math.round(p))); }
+  function reviewGifts() { return cfg.artworkCandidates ? GIFTS.filter(function (k) { return k !== 'ornament'; }) : GIFTS; }
   function chooseModel() {
     var others = ['mug', 'blanket', 'print'].filter(function (k) { return S.sel[k]; }).length;
-    var count = GIFTS.filter(function (k) { return S.sel[k]; }).length;
-    var total = GIFTS.reduce(function (a, k) { return a + (S.sel[k] ? priceOf(k, others) : 0); }, 0);
-    var missing = GIFTS.filter(function (k) { return S.sel[k] && !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
+    var count = reviewGifts().filter(function (k) { return S.sel[k]; }).length;
+    var total = reviewGifts().reduce(function (a, k) { return a + (S.sel[k] ? priceOf(k, others) : 0); }, 0);
+    var missing = reviewGifts().filter(function (k) { return S.sel[k] && !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
     return { others: others, count: count, total: total, missing: missing };
   }
   function chooseView(n) {
     var pick = recGift(), c = chooseModel();
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toReveal">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">Pick one or more. Your words go on each one.</p>';
+    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('home') || lineFor('meaning') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
-    h += '<div class="hs3-opts">' + GIFTS.map(function (k) {
+    h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
       var on = !!S.sel[k];
       var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates ? 'Draft' : fmt(priceOf(k, c.others))) + '</span></button>';
     }).join('') + '</div>';
     if (S.sel.mug) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
@@ -963,6 +964,7 @@
     // every selected variant and fulfillment route, including any gift bundle.
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. A person checks every order before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
+    if (cfg.artworkCandidates) label = c.count ? 'Review selected drafts' : 'Pick a draft';
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
@@ -974,13 +976,14 @@
     shareWithBridge();
     // the mug opens on the color picked here; Teeinblue follows the variant in the link
     var mc = mugColor();
-    var q = GIFTS.filter(function (k) { return S.sel[k]; }).map(function (k) {
+    var q = reviewGifts().filter(function (k) { return S.sel[k]; }).map(function (k) {
       var u = cfg.gifts[k].url;
+      if (cfg.artworkCandidates) u += (u.indexOf('?') < 0 ? '?' : '&') + 'view=' + ({mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
       if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
       return { url: u, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
-    track('personalize_gifts', { gifts: q.length, picks: GIFTS.filter(function (k) { return S.sel[k]; }).join(',') });
+    track('personalize_gifts', { gifts: q.length, picks: reviewGifts().filter(function (k) { return S.sel[k]; }).join(',') });
     window.location.href = q[0].url;
   }
 

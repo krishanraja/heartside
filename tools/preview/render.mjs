@@ -289,6 +289,7 @@ const written = [
     return t;
   }),
   await page('product-gift.html', 'product.gift.json', { product: products.mug, template: { name: 'product', suffix: 'gift' } }),
+  await page('product-mug-art.html', 'product.mug-art-preview.json', { product: products.mug, template: { name: 'product', suffix: 'mug-art-preview' } }),
   await page('product-city-art.html', 'product.city-art-preview.json', { product: products.mug, template: { name: 'product', suffix: 'city-art-preview' } }),
   await page('product-blanket-art.html', 'product.blanket-art-preview.json', { product: products.blanket, template: { name: 'product', suffix: 'blanket-art-preview' } }),
   await page('index-hero-a.html', 'index.classic.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),

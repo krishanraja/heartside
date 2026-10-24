@@ -41,10 +41,10 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Content-Type', ({'.js':'text/javascript','.css':'text/css','.woff2':'font/woff2','.webp':'image/webp','.png':'image/png'})[path.extname(file)] || 'application/octet-stream');
     res.end(fs.readFileSync(file)); return;
   }
-  if (['/product-city-art.html','/product-blanket-art.html'].includes(url.pathname)) {
+  if (['/product-city-art.html','/product-blanket-art.html','/product-mug-art.html'].includes(url.pathname)) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     var html = fs.readFileSync(new URL('./out'+url.pathname,import.meta.url),'utf8');
-    res.end(html.replace('</head>','<script src="/candidate-native-fixture.js"></script></head>')); return;
+    res.end(url.pathname === '/product-mug-art.html' ? html : html.replace('</head>','<script src="/candidate-native-fixture.js"></script></head>')); return;
   }
   if (url.pathname === '/candidate-native-fixture.js') {
     res.setHeader('Content-Type','text/javascript');res.end(fs.readFileSync(new URL('./candidate-native-fixture.js',import.meta.url)));return;

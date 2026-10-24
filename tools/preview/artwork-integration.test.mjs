@@ -7,6 +7,17 @@ import {transformSync} from 'esbuild';
 import {prepare, recipes} from '../print-art/artwork-system.mjs';
 import {mugTemplate, nativePrompt} from '../print-art/native-candidate.mjs';
 const input = () => ({photo:{originalHash:'a'.repeat(64),uploadHash:'b'.repeat(64),metadataRemoved:true},factsProfile:{version:1,facts:[{source:'spot',text:'Does not chase balls; rests by the door.'}]},city:'',style:'screenprint',tone:'warm',format:'mug',variant:'synthetic-11oz-black',model:'test-only',copy:{owner:'user',note:'My exact edit.',signature:'Love, Test dog'}});
+test('draft gift navigation excludes conditional ornament and keeps selected gifts on paused templates',()=>{
+  const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
+  const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
+  const saved=new Map(), ctx={cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug'},blanket:{url:'/products/test-blanket'},print:{url:'/products/test-print'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:''},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
+  vm.runInNewContext(['reviewGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
+  assert.equal(ctx.chooseModel().count,3);ctx.addToCart();
+  const queue=JSON.parse(saved.get('queue'));assert.equal(queue.length,3);
+  for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.equal(new URL(queue[i].url,'https://example.test').searchParams.get('view'),view);
+  assert.equal(new URL(ctx.window.location.href,'https://example.test').searchParams.get('variant'),'123');
+  assert.equal(JSON.parse(readFileSync(new URL('../../shopify/templates/index.artwork-preview.json',import.meta.url),'utf8')).sections.gift.settings.ai_on,false);
+});
 function browser(minify, storage=new Map()) {
   const context = {TextEncoder, Uint8Array, structuredClone, sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}, CustomEvent:class {constructor(name,o){this.type=name;this.detail=o.detail;}}, window:{crypto:webcrypto,dispatchEvent:()=>{}}};
   for(const name of ['hs-artwork-engine.js','hs-artwork-choices.js']) {

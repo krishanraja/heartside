@@ -1,0 +1,19 @@
+{
+  "sections": {
+    "gift": {
+      "type": "hs3-chat",
+      "settings": {
+        "product_mug": "the-morning-mug",
+        "product_blanket": "the-couch-blanket",
+        "product_print": "the-framed-print",
+        "product_ornament": "the-tree-ornament",
+        "ornament_bundle": false,
+        "artwork_candidates": true,
+        "ai_on": false
+      }
+    }
+  },
+  "order": [
+    "gift"
+  ]
+}

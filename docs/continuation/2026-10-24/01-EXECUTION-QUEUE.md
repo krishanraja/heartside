@@ -60,6 +60,8 @@ Order within this stage: portrait pair, blanket, mug, ornament qualification/ada
 
 Pass: native templates, print-area mappings and final files match selected variants and the creative requirements. Keep every unfinished product private and ordering disabled. Conditional ornament/pillow failures do not block independent core work, but must not be declared complete.
 
+Unpublished integration checkpoint (2026-10-24): first guarded draft-theme push and catalog-preserving private portrait sync verified. Actual native DOM now has six styles/three tones; product remains Draft, public URL null. Cold-session controls and prominent mug-reference follow-up are locally verified and awaiting draft deployment. See `../../evidence/2026-10-24-unpublished-integration.md`. No production acceptance box is passed.
+
 ## E4. Prove the actual storefront integration
 
 - [ ] Real customer path: Buddy answers -> photo -> style/tone -> artwork -> optional text edit -> product choice -> matching preview -> cart -> checkout. Use the unpublished environment until release is approved.
