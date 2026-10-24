@@ -1,5 +1,7 @@
 # Shared artwork system across the gift range
 
+> Current direction and approved scope: `docs/continuation/2026-10-24/START-HERE.md` and `03-CREATIVE-AND-UX.md`. The six-style board remains a candidate reference. The dated discussion below is historical and must not govern the current assortment or pricing.
+
 Status: range-wide principle instructed by Krish; visual styles and revamped suite lock pending. October 24, 2026.
 
 **Correction after Krish's challenge:** the four products below describe the original launch baseline, not an agreement to retain them unchanged after research. The assistant's recommendation to freeze that range was not accepted and is withdrawn pending reconciliation with the recovered research. See `docs/evidence/2026-10-24-product-suite-decision-correction.md`. Preserve the comparison and range-wide style/tone work; final categories, formats, prices and supplier choices remain open.

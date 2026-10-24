@@ -14,6 +14,8 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 ---
 # Heartside (heartside.io): where it is right now
 
+> Current revamp contract: `docs/continuation/2026-10-24/START-HERE.md`. Scope is approved. The 50% net-margin requirement governs pricing. Historical descriptions below are implementation evidence, not the current product plan.
+
 ## What it is
 
 Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and a tree ornament carrying a short message from the dog to the person it loves, in the dog's own voice, signed "Love, [dog]". A buyer answers six short questions in a chat with Buddy, the brand's AI dachshund host; an AI writes the note from those answers, and Printful makes the gift to order for US customers, with a person checking every order before it prints. A Shopify store (theme code in `shopify/`, deployed by GitHub workflow), Teeinblue for the personalised print file, and two n8n webhooks for the AI (`n8n/`). Lead line: "Your dog loves you too." (`docs/POSITIONING.md`). Heartside is a Mindmaker LLC company (`docs/HANDOFF.md` section 3).
@@ -35,7 +37,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-23","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
-October 24 range research is complete as a proposal, not a catalog lock. The current ornament supplier explicitly repeats one design on both sides and has adverse quality signals; the recommended replacement remains unqualified. See `docs/evidence/2026-10-24-product-suite-proposal.md` and its margin scenarios. No live catalog or price was changed.
+October 24: Krish approved three core gift families/four formats, a conditional replacement ornament and bounded square-pillow pilot, and required at least 50% net margin. A clean current-only continuation pack now controls the revamp. Six style candidates require qualification. Economics are not yet certified with actual complete costs. No live catalog, artwork, theme or price changed in preparing the pack.
 
 Lifecycle: live. The chat-led store has been public at heartside.io since 19 October (`docs/HANDOFF.md` section 3, "The buyer's journey, as live"; `9ea7e34`).
 
@@ -89,7 +91,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** obtain the range decision on `docs/evidence/2026-10-24-product-suite-proposal.md`, then complete that selected product system. The proposal recommends three core gift families/four formats (mug, blanket, framed and unframed portrait), a replacement ornament conditional on qualification, and a limited pillow test; book development is for 2027 and calendar/broad novelty expansion is deferred. Prices are test hypotheses, not approved live changes. The report checks six connected bases, official US supplier offers and modeled contribution. Exact stock/route quotes, physical quality and Christmas cutoffs remain open. Shared style/tone across the selected range is instructed; the six candidate styles remain under review. Monday support follow-up remains scheduled. Products first, website mockups next, sample last.
+- **Next action:** continue from `docs/continuation/2026-10-24/START-HERE.md`, E0/E1. Krish approved the scope on October 24 and requires at least 50% net margin after attributable business costs. The clean continuation corpus is the current execution brief; do not reopen the range decision or carry forward provisional prices. Verify account cost inputs, calibrate net prices, then finish actual-dog product artwork and shared style/tone. Maximum five critical Codex in-app tabs; reuse and visibly open the exact existing tab for owner action. Products first, website mockups next, physical samples last.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Open questions in `docs/HANDOFF.md` section 9: whether "Your dog has notes." survives as an end-card line; when to run the five-dog bake-off for the phase-two illustration; whether to offer a bundle discount beyond the $19 ornament.
 - North Star check (2026-10-24): holds.
