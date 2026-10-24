@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-24
-head: 1e0e80f (shared-artwork checkpoint; portability follow-up follows)
+head: f80b37c (deployed unpublished code; evidence closeout follows)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -37,7 +37,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
-October 24 unpublished integration: 018437b deployed to the verified unpublished copy after backup and editor checks. Private portrait native form now exposes six styles/three tones after a catalog-preserving sync; Shopify remains Draft with no public URL. Cold-session controls and the prominent labelled mug wrap reference are deployed at 9773b44. Real portrait choices match native values and ordering remains disabled. A final repair isolates the globally embedded legacy mug editor; 48 tests pass. Final repair deployment/readback is next. See docs/evidence/2026-10-24-unpublished-integration.md.
+October 24 unpublished integration: f80b37c is deployed to Copy of Heartside launch, verified UNPUBLISHED. Backups and editor guards preserved saved changes; Save was disabled before navigation/deploy. Nine assets match Git bytes and the mug template matches semantically. Real portrait shared controls map to native values; Ink/Sentimental persists mug -> private blanket -> portrait -> reload. The mug prominently displays the existing labelled wrap reference and isolates the old global multi-line editor. Ordering and generation remain paused; no live release, upload, image-generation action, order or payment. Buddy's alternate review has shared choices on and AI off. 48 tests pass. Support remains unanswered with the single Monday follow-up retained. See docs/evidence/2026-10-24-unpublished-integration.md.
 
 October 24 artwork checkpoint: six shared style candidates and three tones now exist in the native portrait/blanket drafts and a new isolated full-wrap mug draft. Local browser choices persist across products and Buddy; actual-photo normalization and complete-key preparation make no upload. Three native validations/readbacks, 46 local tests, IAB controls/hidden-field/zero-request checks and Theme Check pass. No generated likeness, native prompt substitution, original AI source, production file or physical quality is certified. No theme deployment or paid action. See docs/evidence/2026-10-24-six-style-integration.md.
 
@@ -99,7 +99,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** deploy the verified cold-session/mug-reference repair to the same unpublished theme, then read back real native choice mapping, mobile layout and disabled ordering. The shared choices and native templates are prepared; original-source, exact model/cost, paid-evaluation and sample gates remain open. Keep the conditional ornament and 16x16 pillow mapping unqualified until evidenced.
+- **Next action:** resolve Teeinblue's original-source and private-connection answers, then qualify the native mug/blanket and framed/unframed bindings before requesting a bounded paid style test. The unpublished controls and real portrait bridge are verified; likeness, production source, exact model/cost and physical samples remain gates. Conditional ornament and 16x16 pillow mapping remain unqualified.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
 - North Star check (2026-10-24): holds.
