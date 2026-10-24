@@ -10,12 +10,14 @@ const input = () => ({photo:{originalHash:'a'.repeat(64),uploadHash:'b'.repeat(6
 test('draft gift navigation excludes conditional ornament and keeps selected gifts on paused templates',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  const saved=new Map(), ctx={cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug'},blanket:{url:'/products/test-blanket'},print:{url:'/products/test-print'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:''},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
+  const saved=new Map(), ctx={URL,cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug?view=gift&variant=999&keep=yes#art'},blanket:{url:'/products/test-blanket?view=gift'},print:{url:'/products/test-print?view=gift'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
   vm.runInNewContext(['reviewGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
   assert.equal(ctx.chooseModel().count,3);ctx.addToCart();
   const queue=JSON.parse(saved.get('queue'));assert.equal(queue.length,3);
-  for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.equal(new URL(queue[i].url,'https://example.test').searchParams.get('view'),view);
+  for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.deepEqual(new URL(queue[i].url,'https://example.test').searchParams.getAll('view'),[view]);
   assert.equal(new URL(ctx.window.location.href,'https://example.test').searchParams.get('variant'),'123');
+  assert.equal(new URL(ctx.window.location.href,'https://example.test').searchParams.get('keep'),'yes');
+  assert.equal(new URL(ctx.window.location.href,'https://example.test').hash,'#art');
   assert.equal(JSON.parse(readFileSync(new URL('../../shopify/templates/index.artwork-preview.json',import.meta.url),'utf8')).sections.gift.settings.ai_on,false);
 });
 function browser(minify, storage=new Map()) {

@@ -978,8 +978,14 @@
     var mc = mugColor();
     var q = reviewGifts().filter(function (k) { return S.sel[k]; }).map(function (k) {
       var u = cfg.gifts[k].url;
-      if (cfg.artworkCandidates) u += (u.indexOf('?') < 0 ? '?' : '&') + 'view=' + ({mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
-      if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
+      if (cfg.artworkCandidates) {
+        // Liquid already supplies ?view=gift. Replace it; duplicate view values
+        // could otherwise send the draft journey back to the ordering template.
+        var draftUrl = new URL(u, window.location.href);
+        draftUrl.searchParams.set('view', {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
+        if (k === 'mug' && mc && mc.id) draftUrl.searchParams.set('variant', mc.id);
+        u = draftUrl.pathname + draftUrl.search + draftUrl.hash;
+      } else if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
       return { url: u, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
