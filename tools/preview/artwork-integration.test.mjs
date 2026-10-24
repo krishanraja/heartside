@@ -60,7 +60,37 @@ test('mug candidate expands art across wrap, removes cut-out mask and keeps one 
   const r=mugTemplate(source,{style:1,tone:2});
   const photo=r.layers.find(l=>l.type==='photo'); assert.equal(photo.width,2700);assert.equal(photo.height,1050);assert.equal(photo.masked_enable,false);
   assert.equal(r.layers.filter(l=>/^Line/.test(l.name)).length,1);assert.equal(source.layers[0].width,900);
-  for(const f of ['mug','blanket','portrait','pillow']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.ok(p.includes('{{Artwork tone}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
+  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.equal(p.includes('{{Artwork tone}}'),!recipes.formats[f].words);assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
+});
+
+for(const minify of [false,true]) test((minify?'minified':'source')+': tone and copy changes reuse text-product imagery but invalidate word-free imagery',async()=>{
+  const w=browser(minify);
+  for(const format of Object.keys(recipes.formats)) {
+    const a=await w.HSArtworkEngine.prepare({...input(),format,tone:'sentimental'});
+    const b=await w.HSArtworkEngine.prepare({...input(),format,tone:'hilarious',copy:{...input().copy,note:'Changed exact note.'}});
+    assert.notEqual(a.key,b.key);
+    assert.equal(a.imageKey===b.imageKey,recipes.formats[format].words);
+    assert.equal(a.prompt===b.prompt,recipes.formats[format].words);
+    let state=w.HSArtworkEngine.newSession(a);
+    state=w.HSArtworkEngine.begin(state,a,'test',true);
+    state=w.HSArtworkEngine.selectRequest(state,b);
+    state=w.HSArtworkEngine.settle(state,{key:a.imageKey,requestId:'test',providerReceipt:'synthetic',imageHash:'c'.repeat(64),width:100,height:100});
+    assert.equal(w.HSArtworkEngine.previewState(state).current,recipes.formats[format].words);
+    assert.equal(w.HSArtworkEngine.previewState(state).purchaseEnabled,false);
+    if(recipes.formats[format].words) assert.throws(()=>w.HSArtworkEngine.begin(state,b,'again',true),/Reuse/);
+  }
+});
+
+test('native staleness key ignores note tone and exact words on portrait but follows blanket tone',()=>{
+  const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+  const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
+  let wordFree=false, choice={style:'screenprint',tone:'sentimental'};
+  const ctx={productId:()=>1,usePhoto:{t:1},artworkFacts:()=>'{"version":1,"facts":[]}',state:{},blanketArtPreview:()=>wordFree,v3Kind:()=> 'portrait',document:{querySelector:()=>null},window:{HSArtworkChoices:{read:()=>choice},HSArtworkEngine:{recipeHash:'test',recipes}}};
+  vm.runInNewContext(section('artRequestKey'),ctx);
+  const a=ctx.artRequestKey();choice.tone='hilarious';ctx.state.hs3_lines={meaning:'Exact new words'};
+  assert.equal(ctx.artRequestKey(),a);
+  wordFree=true;const b=ctx.artRequestKey();choice.tone='sentimental';assert.notEqual(ctx.artRequestKey(),b);
+  wordFree=false;choice.style='ink';assert.notEqual(ctx.artRequestKey(),a);
 });
 test('unbound mug review never writes into the globally embedded legacy campaign',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');

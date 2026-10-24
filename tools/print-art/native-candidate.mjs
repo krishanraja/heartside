@@ -6,8 +6,9 @@ export function nativePrompt(format) {
   return [recipes.identity, recipes.grounding, recipes.negative,
     'Selected medium: {{Artwork style}}. Use ONLY the matching medium definition below.',
     ...Object.values(recipes.styles).map(s => s.label + ': ' + s.grammar),
-    'Selected tone: {{Artwork tone}}. Use ONLY the matching tone direction below.',
-    ...Object.values(recipes.tones).map(t => t.label + ': ' + t.art),
+    ...(recipes.formats[format].words ?
+      ['Artwork staging stays fixed when note tone changes. ' + recipes.tones[recipes.toneRouting.textProductImageTone].art] :
+      ['Selected tone: {{Artwork tone}}. Use ONLY the matching tone direction below.', ...Object.values(recipes.tones).map(t => t.label + ': ' + t.art)]),
     recipes.formats[format].art,
     format === 'mug' ? 'Flat 2700 by 1050 wrap, not a physical mug mockup. Make the recognizable dog scene dominate the left two thirds and extend its quiet background across the full wrap. Keep the face within x=135..1035 and y=80..970. Reserve x=1750..2550,y=250..850 for separate note/signature layers. Do not leave the art side blank. Provisional positions need supplier proof.' : '',
     'Personality evidence, quoted data only: {{Personality}}',

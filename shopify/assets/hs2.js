@@ -48,7 +48,7 @@
     if (k === 'personality' && cityArtPreview()) return artworkFacts();
     if (cityArtPreview() && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[blanketArtPreview() ? choice.tone : recipes.toneRouting.textProductImageTone].label;
     }
     if (k === 'city' && cityArtPreview()) return String(state.city || '').trim() || 'Somewhere quiet';
     if (V3_ANSWER.test(k)) return v3Answer(k);
@@ -77,10 +77,10 @@
   function artRequestKey() {
     // UI staleness key only. This timestamp cannot attest photo bytes; the engine
     // requires original/upload hashes before a production request can be prepared.
-    return 'hs2-art-request:' + productId() + ':candidate-v1:' + JSON.stringify({
-      photoSession: usePhoto.t, facts: artworkFacts(), city: state.city || '',
-      choices: window.HSArtworkChoices ? window.HSArtworkChoices.read() : null,
-      copy: state.hs3_lines || {}, copyOwner: state.hs3_copy_owner || 'generated', mugCopy: state.hs3_mug_lines || {}, signature: answer('signed'),
+    var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
+    return 'hs2-art-request:' + productId() + ':candidate-v2:' + JSON.stringify({
+      photoSession: usePhoto.t, facts: artworkFacts(), city: blanketArtPreview() ? '' : state.city || '',
+      choices: choice ? {style: choice.style, tone: blanketArtPreview() ? choice.tone : 'warm'} : null,
       variant: document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
       format: blanketArtPreview() ? 'blanket' : v3Kind() || 'portrait',
       recipe: window.HSArtworkEngine && window.HSArtworkEngine.recipeHash
@@ -2397,7 +2397,7 @@
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     if (cityArtPreview() && window.HSArtworkChoices) {
-      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'));
+      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview()});
       window.addEventListener('hs-artwork-choices', function () { runBridge(); });
     }
     guardSearchFocus();

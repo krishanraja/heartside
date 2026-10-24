@@ -31,7 +31,7 @@ Build these as versioned, reusable production recipes with identity constraints,
 | Warm with a wink | Affection with one recognizable observation | Light visual joke using a real habit |
 | Hilarious | Stronger dog-perspective comic premise, still affectionate | Exaggerated situation grounded in the habit, never a different dog or an invented habit |
 
-The slider changes both intended copy and visual staging across the range. It does not change art medium or identity. On word-free textiles it changes visual storytelling only. Mere slider motion does not generate or charge. Let the buyer commit a change once and show honest progress. No automatic retry after an uncertain billable response.
+Owner ruling, October 24: the shared slider changes **copy only on mugs, portraits and ornaments**, and **imagery only on word-free blankets and pillows**. Text-product imagery retains the fixed Warm staging direction when copy tone changes; no image regeneration is needed for tone or exact-copy edits. It does not change art medium or identity. Keep the full product key (including exact copy) separate from the image key, so reusing imagery never attests the current text layout. Mere slider motion does not generate or charge. Let the buyer commit a change once and show honest progress. No automatic retry after an uncertain billable response.
 
 ## Shared input and render contract
 

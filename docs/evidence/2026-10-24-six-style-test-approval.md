@@ -12,6 +12,8 @@ This is the small E2 screen already required by the current execution corpus. It
 
 ## Frozen input and six cases
 
+Revision 2 implements Krish's later tone ruling: text-product imagery stays at Warm while tone controls copy only. Word-free products retain visual tone. Source, six media, facts, $5 limit and no-retry scope are unchanged; prompt hashes/fingerprints are revised, and earlier packets are superseded.
+
 - Photo: existing `assets/photos/pug-autumn-leaves.jpg`, 1589 x 1052. `assets/README.md` records the owner-supplied commercial-use license. Original SHA-256: `86a70c0dc963b00bd829e993f59e9a3198d7636a4b29540fb267d9f1b1d98910`.
 - Upload: locally prepared `reference-pug-clean.png`, 1,642,193 bytes. Decoded RGB pixels and dimensions equal the original; no metadata keys. SHA-256: `2b19e44d9abdeac40112a1cbbb50cea31a4a913255ec232360b89f9cd2044370`. Not uploaded. If the browser re-encodes it, capture the actual upload hash and revise the frozen packet before dispatch.
 - Explicit synthetic Buddy inputs: `home = typed`, text `Guards a striped sock. Does not chase tennis balls.`; `spot = couch`. The existing facts builder produces exactly these two facts. They are an internal fixture, not claims about the photographed dog's real habits.
@@ -73,7 +75,7 @@ Original-source export, native dimensions, print readability and matching produc
 
 ## What this advances next, without expanding this approval
 
-- **Tone:** for viable styles, prepare Sentimental and Hilarious counterparts with identical photo/facts, retaining Warm as the center reference. Up to 12 additional generations for one dog, separately priced and approved. Confirm the change is story/staging, never identity; manual copy remains unchanged until an explicit rewrite. Add separate no-facts and negated-facts controls before qualification.
+- **Tone:** on text products test Sentimental/Hilarious copy against the same accepted image, with no image regeneration. Evaluate visual endpoints on word-free products only after their bindings qualify, separately priced and approved. Confirm the change is story/staging, never identity; manual copy remains unchanged until an explicit rewrite. Add separate no-facts and negated-facts controls before qualification.
 - **Varied dogs:** the full matrix remains up to six dogs x six media x three tones. Existing licensed photos supply useful candidates but do not yet establish dark-coat and asymmetric-marking coverage. Select and inspect that set before pricing a larger run. Reuse accepted sources where valid, without treating cached art as new tone evidence.
 - **Portrait pair:** one accepted scene for framed and unframed 12 x 18, separate supplier mapping and crop checks.
 - **Mug:** preserve the prominent wrap. Qualify the native mug binding, then test an independent landscape composition with a large focal dog, exact note, handle clearance and outward/drinker views. A portrait crop does not qualify it. No mug regeneration is hidden inside this six-image allowance.

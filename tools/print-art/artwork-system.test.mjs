@@ -11,7 +11,7 @@ const fixture = () => ({photo: {originalHash: 'a'.repeat(64), uploadHash: 'b'.re
   factsProfile: facts, style: 'screenprint', tone: 'warm', format: 'portrait',
   city: '', variant: 'test-portrait-12x18', model: 'test-only-model',
   copy: {owner: 'user', note: 'My exact words.', signature: 'Love, Test dog'}});
-const receipt = (request, id='r1') => ({key: request.key, requestId: id, providerReceipt: 'test-receipt', imageHash: 'c'.repeat(64), width: 3600, height: 5400});
+const receipt = (request, id='r1') => ({key: request.imageKey, requestId: id, providerReceipt: 'test-receipt', imageHash: 'c'.repeat(64), width: 3600, height: 5400});
 
 test('all six media, three tones and five formats prepare without claiming quality', () => {
   const grammars = new Set(Object.values(recipes.styles).map(s => s.grammar));
@@ -21,7 +21,7 @@ test('all six media, three tones and five formats prepare without claiming quali
     const r = prepare({...fixture(), style, tone, format});
     assert.equal(r.qualified, false); assert.equal(r.productionEnabled, false);
     assert.ok(r.prompt.includes(recipes.styles[style].grammar));
-    assert.ok(r.prompt.includes(recipes.tones[tone].art));
+    assert.ok(r.prompt.includes(recipes.tones[recipes.formats[format].words ? 'warm' : tone].art));
     assert.equal(r.textLayer === null, ['blanket','pillow'].includes(format)); count++;
   }
   assert.equal(count, 90); // configuration coverage, not 90 generated or judged images
@@ -73,7 +73,7 @@ test('duplicate click, reload and uncertain response cannot start automatic retr
   assert.equal(begin(state,request,'r2',true).pending.requestId,'r2');
 });
 test('late result is retained as evidence but cannot become current preview', () => {
-  const a=prepare(fixture()), b=prepare({...fixture(),tone:'hilarious'});
+  const a=prepare(fixture()), b=prepare({...fixture(),style:'ink'});
   let state=begin(newSession(a),a,'r1',true);
   state=selectRequest(state,b); state=settle(state,receipt(a));
   assert.equal(state.completed.length,1); assert.equal(previewState(state).current,false);

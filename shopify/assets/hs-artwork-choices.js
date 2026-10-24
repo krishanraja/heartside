@@ -38,10 +38,11 @@
       tone.value = choice.tone; tl.appendChild(tone); host.appendChild(tl);
     }
     var status = document.createElement('p'); status.setAttribute('role', 'status');
-    status.textContent = 'Shared across your gifts. Artwork updates are paused while these styles are tested.';
+    var toneHelp = options && options.toneElsewhere ? 'Tone changes the note on gifts with words and the imagery on word-free gifts.' : options && options.wordFree ? 'Tone changes the imagery. This gift has no words.' : 'Tone changes the note. Your artwork stays the same.';
+    status.textContent = toneHelp + ' Artwork updates are paused while these styles are tested.';
     host.appendChild(status);
     function changed() {
-      try { select({style: picker.value, tone: tone ? tone.value : read().tone}); status.textContent = 'Choices saved for all your gifts. Existing artwork has not changed. Your edited words stay as written.'; }
+      try { select({style: picker.value, tone: tone ? tone.value : read().tone}); status.textContent = toneHelp + ' Choices saved for all your gifts. Your edited words stay as written.'; }
       catch (e) { status.textContent = 'Your choices could not be saved. Please keep this page open.'; }
     }
     picker.addEventListener('change', changed); if (tone) tone.addEventListener('change', changed);

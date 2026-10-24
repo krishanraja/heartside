@@ -8,7 +8,7 @@ The six media remain Cinematic, Painterly, Vintage screenprint, Comic book, Cut-
 
 Krish approved the USD 5 ceiling conditionally on closing the native billing boundary. No additional generation, retry, larger matrix or sample payment is authorized. The offline packet now records that approval rather than asking for it again. Historical estimate remains about $0.75 for six, not an exact quote or enforced cap. Native retries, request size and all-in attempt upper bound remain unresolved.
 
-Tone routing is a single pending owner clarification prompted by the latest instruction that tone controls either imagery or copy. Proposed: copy on mug/portrait/ornament; visual staging on word-free blanket/pillow. Existing implementation changes both intended copy and staging on text products. It remains unchanged pending the answer. The fixed Warm screen does not depend on this choice; later tone tests do. Style and dog identity never change with tone. Manual copy stays owned by the user until an explicit rewrite.
+Tone routing resolved by Krish on October 24: copy only on mugs/portraits/ornaments; imagery only on word-free blanket/pillow. Text-product imagery uses fixed Warm staging. Style and dog identity never change with tone. Manual copy remains user-owned until an explicit rewrite. The six Warm portrait cases and $5 limit stay the same; the prompt revision implements this later ruling.
 
 ## Initial screen: evidence required per output
 
@@ -34,7 +34,7 @@ These are test requirements, not completed tests or a claim to cover every possi
 | Negated fact | No tennis-ball chase for the frozen negative fact | In initial fixture; actual output untested |
 | Contradictory/ambiguous facts, unspecified toy | No arbitrary choice of habit, toy type or costume | Additional factual controls, not run on provider |
 | Instructions embedded in answers | Treat as quoted facts, not prompt authority | Local prompt boundary exists; actual provider obedience untested |
-| Tone endpoints | Affection and humor remain fact-grounded; no grief or changed dog | Depends on final tone-routing answer, no paid cases yet |
+| Tone endpoints | Affection and humor remain fact-grounded; no grief or changed dog | Copy-only on text products, imagery-only on textiles; no paid cases yet |
 | Manual note, long name, apostrophe/Unicode, overflow | Exact separate text; no silent rewrite, truncation or unreadable shrink | Copy ownership locally tested; final native print legibility untested |
 | Missing/corrupt/unsupported/large photo | Useful error, no generation, no lost good preview | Upload guards exist; full native path still untested |
 | Change photo/style/tone/city/product then return | Matching cached result only; stale art cannot be ordered | Local state regressions pass; paid provider path untested |

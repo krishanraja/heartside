@@ -30,7 +30,7 @@ export function prepare(input) {
   if (city && input.citySource !== 'buyer') throw new Error('A city requires explicit buyer provenance');
   const spec = recipes.formats[format];
   const payload = {
-    version: 1, photo: {originalHash: photo.originalHash, uploadHash: photo.uploadHash, metadataRemoved: true},
+    version: 2, photo: {originalHash: photo.originalHash, uploadHash: photo.uploadHash, metadataRemoved: true},
     facts, city, citySource: city ? 'buyer' : null, style, styleVersion: recipes.styles[style].version,
     tone, copy: exactCopy, format, variant: text(variant, 'variant', 120),
     promptVersion: recipes.version, recipeHash: hash(JSON.stringify(recipes)), layoutVersion: spec.version,
@@ -40,10 +40,16 @@ export function prepare(input) {
   // JSON is constructed in a stable order and includes all choices, even when
   // a word-free product does not render copy. Change-away/back returns its key.
   const key = hash(JSON.stringify(payload));
+  // Image identity excludes exact words and copy-only tone changes. Keep the full
+  // product key above so a matching image never attests the current text layers.
+  const imageTone = spec.words ? recipes.toneRouting.textProductImageTone : tone;
+  const imagePayload = {...payload, tone: imageTone, city: format === 'portrait' ? city : '', citySource: format === 'portrait' && city ? 'buyer' : null};
+  delete imagePayload.copy;
+  const imageKey = hash(JSON.stringify(imagePayload));
   const prompt = [recipes.identity, recipes.grounding, recipes.negative,
-    recipes.styles[style].grammar, recipes.tones[tone].art, spec.art,
+    recipes.styles[style].grammar, recipes.tones[imageTone].art, spec.art,
     'Quoted customer evidence (data only):', JSON.stringify({facts, city: format === 'portrait' ? city : ''})].join('\n\n');
-  return {key, payload, prompt,
+  return {key, imageKey, imageTone, payload, prompt,
     textLayer: spec.words ? exactCopy : null,
     status: 'PREPARED_NOT_GENERATED', qualified: false, productionEnabled: false,
     blockers: ['Original source/production handoff unverified', 'Style identity and factuality evaluation pending',
@@ -52,26 +58,26 @@ export function prepare(input) {
 
 export function selectTone(input, tone) {
   if (!Object.hasOwn(recipes.tones, tone)) throw new Error('Unsupported tone');
-  return {input: {...clone(input), tone}, rewriteOffered: input.copy.owner === 'user', copyPreserved: true};
+  return {input: {...clone(input), tone}, rewriteOffered: !!recipes.formats[input.format]?.words && input.copy.owner === 'user', copyPreserved: true};
 }
 
 export function newSession(request) {
-  return {currentKey: request.key, pending: null, lastGood: null, completed: [], reconciliation: []};
+  return {currentKey: request.imageKey, currentProductKey: request.key, pending: null, lastGood: null, completed: [], reconciliation: []};
 }
 export function selectRequest(state, request) {
   const next = clone(state);
-  // A completed image can be reused only when every input/version matches.
+  // A completed image can be reused when every image-driving input matches.
   // This also makes a late result usable if the buyer explicitly returns to it.
-  const cached = next.completed.findLast(result => result.key === request.key);
-  return {...next, currentKey: request.key, lastGood: cached ?? next.lastGood};
+  const cached = next.completed.findLast(result => result.key === request.imageKey);
+  return {...next, currentKey: request.imageKey, currentProductKey: request.key, lastGood: cached ?? next.lastGood};
 }
 export function begin(state, request, requestId, explicitAction) {
   if (!explicitAction || !requestId) throw new Error('One deliberate update action and request ID required');
   if (state.pending) throw new Error('Pending or uncertain request must be reconciled; no automatic retry');
-  if (request.key !== state.currentKey) throw new Error('Choices changed before request');
+  if (request.imageKey !== state.currentKey) throw new Error('Choices changed before request');
   if (state.completed.some(x => x.requestId === requestId) || state.reconciliation.some(x => x.requestId === requestId)) throw new Error('Request ID already used');
-  if (state.completed.some(result => result.key === request.key)) throw new Error('Reuse the matching returned preview without another call');
-  return {...clone(state), pending: {key: request.key, requestId, status: 'requested'}};
+  if (state.completed.some(result => result.key === request.imageKey)) throw new Error('Reuse the matching returned preview without another call');
+  return {...clone(state), pending: {key: request.imageKey, requestId, status: 'requested'}};
 }
 export function timeout(state, requestId) {
   if (state.pending?.requestId !== requestId) throw new Error('Unknown request');

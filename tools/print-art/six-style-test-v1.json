@@ -6,7 +6,8 @@
     "authority": "Krish's explicit Yes to the six-image screen with a USD 5 ceiling, conditional on verifying the native billing boundary first",
     "approvedSpecificationSha256": "8b52c029cabdad0fe86e57e98a5a8d742f9ca1850cb7e8a1fda2ba7e70605ea3",
     "scope": "Existing six cases only; no retries, larger matrix, samples or live release",
-    "billingConditionSatisfied": false
+    "billingConditionSatisfied": false,
+    "amendment": "Krish, 2026-10-24: copy-only tone on text products; imagery-only tone on word-free products. Six Warm portrait cases, source, facts, budget and no-retry limits unchanged; prompts and fingerprints revised to implement that ruling."
   },
   "purpose": "Screen six genuinely different media on one licensed reference dog before larger tone, dog and product qualification.",
   "source": {
@@ -26,10 +27,16 @@
     "chat": {
       "spot": "couch",
       "home": "typed",
-      "typed": {"home": "Guards a striped sock. Does not chase tennis balls."}
+      "typed": {
+        "home": "Guards a striped sock. Does not chase tennis balls."
+      }
     },
     "city": "",
-    "copy": {"owner": "user", "note": "Your spot is our spot.", "signature": "Love, Pip"}
+    "copy": {
+      "owner": "user",
+      "note": "Your spot is our spot.",
+      "signature": "Love, Pip"
+    }
   },
   "route": {
     "provider": "Teeinblue native gpt:image_filter using the existing connected OpenAI account",
@@ -39,7 +46,10 @@
     "tone": "warm",
     "nativeResolutionSetting": "3840",
     "nativeLayerOutputSize": true,
-    "canvas": [3600, 5400],
+    "canvas": [
+      3600,
+      5400
+    ],
     "actualProviderOutputSize": null,
     "exactTargets": "Private companion in the portable handoff; existing draft portrait only",
     "originalProductionSourceVerified": false,
@@ -47,7 +57,14 @@
     "publicationAuthorized": false,
     "dispatchImplemented": false
   },
-  "caseOrder": ["screenprint", "cinematic", "painterly", "comic", "collage", "ink"],
+  "caseOrder": [
+    "screenprint",
+    "cinematic",
+    "painterly",
+    "comic",
+    "collage",
+    "ink"
+  ],
   "limits": {
     "maximumIntentionalGenerationActions": 6,
     "imagesPerAction": 1,
@@ -68,16 +85,55 @@
     "usageWindow": "October 18 through October 24, dedicated integration filter",
     "historicalRequests": 3,
     "historicalDisplayedTotalUsd": 0.37,
-    "roundedLineItemsUsd": {"imageOutput": 0.353, "imageInput": 0.017, "textInput": 0.003, "cachedImageInput": 0},
+    "roundedLineItemsUsd": {
+      "imageOutput": 0.353,
+      "imageInput": 0.017,
+      "textInput": 0.003,
+      "cachedImageInput": 0
+    },
     "historicalExtrapolationSixUsd": 0.746,
     "extrapolationMethod": "6 * sum(displayed three-decimal line items) / 3; estimate only, not a quote or cost ceiling",
-    "standardUsdPerMillionTokens": {"textInput": 5, "imageInput": 8, "cachedTextInput": 1.25, "cachedImageInput": 2, "imageOutput": 30},
+    "standardUsdPerMillionTokens": {
+      "textInput": 5,
+      "imageInput": 8,
+      "cachedTextInput": 1.25,
+      "cachedImageInput": 2,
+      "imageOutput": 30
+    },
     "calculatorSensitivities": [
-      {"model": "GPT Image 2.5", "quality": "high", "size": [1024, 1536], "outputTokens": 1372, "outputOnlyUsd": 0.04116},
-      {"model": "GPT Image 2.5", "quality": "high", "size": [2160, 3840], "outputTokens": 3336, "outputOnlyUsd": 0.10008}
+      {
+        "model": "GPT Image 2.5",
+        "quality": "high",
+        "size": [
+          1024,
+          1536
+        ],
+        "outputTokens": 1372,
+        "outputOnlyUsd": 0.04116
+      },
+      {
+        "model": "GPT Image 2.5",
+        "quality": "high",
+        "size": [
+          2160,
+          3840
+        ],
+        "outputTokens": 3336,
+        "outputOnlyUsd": 0.10008
+      }
     ],
-    "limitations": ["Neither calculator size is verified as the native request size", "Input and possible orchestration charges are additional", "Failure/retry billing remains unverified", "Seller tax, currency conversion and any additional native fee are not established for this batch", "Historical line items are rounded and may differ from the displayed total"],
-    "sources": ["https://platform.openai.com/usage", "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst", "https://developers.openai.com/api/docs/guides/image-generation#cost-and-latency"]
+    "limitations": [
+      "Neither calculator size is verified as the native request size",
+      "Input and possible orchestration charges are additional",
+      "Failure/retry billing remains unverified",
+      "Seller tax, currency conversion and any additional native fee are not established for this batch",
+      "Historical line items are rounded and may differ from the displayed total"
+    ],
+    "sources": [
+      "https://platform.openai.com/usage",
+      "https://developers.openai.com/api/docs/models/gpt-image-2.5-sunburst",
+      "https://developers.openai.com/api/docs/guides/image-generation#cost-and-latency"
+    ]
   },
   "executionBlockers": [
     "Native request size and all-in per-attempt cost bound are unverified",
@@ -89,5 +145,6 @@
     "No mug, blanket, ornament or pillow generation is included",
     "No additional tone, dog, repair or retry generation is included",
     "No sample, physical mockup, order, fulfillment or live release is authorized"
-  ]
+  ],
+  "revision": 2
 }
