@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-24
-head: d1a901f (local supplier quote checkpoint follows)
+head: 1e0e80f (shared-artwork checkpoint; portability follow-up follows)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md

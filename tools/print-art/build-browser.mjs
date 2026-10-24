@@ -4,7 +4,7 @@ import {readFileSync, writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 const recipes = JSON.parse(readFileSync(new URL('./recipes-v1.json', import.meta.url), 'utf8'));
 const hash = createHash('sha256').update(JSON.stringify(recipes)).digest('hex');
-const source = readFileSync(new URL('./artwork-system.mjs', import.meta.url), 'utf8');
+const source = readFileSync(new URL('./artwork-system.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const body = source.slice(source.indexOf('const clone =')).replace(/^const hash = .*;\r?\n/m, '')
   .replace(/export function /g, 'function ')
   .replace('recipeHash: hash(JSON.stringify(recipes))', 'recipeHash: RECIPE_HASH');
@@ -25,5 +25,5 @@ window.HSArtworkEngine = {recipes: recipes, recipeHash: RECIPE_HASH,
 `;
 const target = new URL('../../shopify/assets/hs-artwork-engine.js', import.meta.url);
 if (process.argv.includes('--check')) {
-  if (readFileSync(target, 'utf8') !== output) throw new Error('Browser artwork contract is stale');
+  if (readFileSync(target, 'utf8').replace(/\r\n/g, '\n') !== output) throw new Error('Browser artwork contract is stale');
 } else writeFileSync(target, output);
