@@ -45,7 +45,11 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
-    if (k === 'personality' && blanketArtPreview()) return artworkFacts();
+    if (k === 'personality' && cityArtPreview()) return artworkFacts();
+    if (cityArtPreview() && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
+      var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
+    }
     if (k === 'city' && cityArtPreview()) return String(state.city || '').trim() || 'Somewhere quiet';
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
@@ -70,7 +74,33 @@
     }
     return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
   }
-  function artRequestKey() { return 'hs2-art-request:' + productId() + ':' + usePhoto.t + ':' + (blanketArtPreview() ? 'blanket-v2:' + artworkFacts() : answer('city')); }
+  function artRequestKey() {
+    // UI staleness key only. This timestamp cannot attest photo bytes; the engine
+    // requires original/upload hashes before a production request can be prepared.
+    return 'hs2-art-request:' + productId() + ':candidate-v1:' + JSON.stringify({
+      photoSession: usePhoto.t, facts: artworkFacts(), city: state.city || '',
+      choices: window.HSArtworkChoices ? window.HSArtworkChoices.read() : null,
+      copy: state.hs3_lines || {}, copyOwner: state.hs3_copy_owner || 'generated', mugCopy: state.hs3_mug_lines || {}, signature: answer('signed'),
+      variant: document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
+      format: blanketArtPreview() ? 'blanket' : v3Kind() || 'portrait',
+      recipe: window.HSArtworkEngine && window.HSArtworkEngine.recipeHash
+    });
+  }
+  async function prepareCurrentArtwork(format, variant, exactModel) {
+    if (!cityArtPreview() || !window.HSArtworkPhoto || !window.HSArtworkChoices) throw new Error('Draft artwork preparation only');
+    var file = usePhoto.file, revision = artRequestKey();
+    if (!file) throw new Error('The original dog photo is required');
+    var prepared = await window.HSArtworkPhoto.prepare(file);
+    if (file !== usePhoto.file || revision !== artRequestKey()) throw new Error('Your choices changed during preparation');
+    var request = await window.HSArtworkChoices.prepare({photo: prepared.photo,
+      factsProfile: JSON.parse(artworkFacts()), city: String(state.city || ''), citySource: state.city ? 'buyer' : null,
+      format: format, variant: variant, model: exactModel,
+      copy: {owner: state.hs3_copy_owner || 'generated', note: String((state.hs3_lines || {}).meaning || ''), signature: answer('signed')}});
+    if (file !== usePhoto.file || revision !== artRequestKey()) throw new Error('Your choices changed during preparation');
+    // No dispatch. Keep original bytes private; only the normalized file may be
+    // handed to a future gated adapter after source/model/provider verification.
+    return {request: request, upload: prepared.file, sourceWidth: prepared.width, sourceHeight: prepared.height};
+  }
   function latestArtRequest() {
     if (doHandoff.artKey) return doHandoff.artKey;
     try {
@@ -122,7 +152,7 @@
   }
   function v3Answer(k) {
     var lines = state.hs3_lines || {};
-    if (k === 'signed') { var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
+    if (k === 'signed') { if (typeof state.hs3_signature_override === 'string') return state.hs3_signature_override; var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
     if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
     var kind = v3Kind(), order = V3_ORDER[kind] || V3_ORDER.print;
     if (k === 'hs_lines') return cityArtPreview() ? String(lines.meaning || '') : order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
@@ -764,6 +794,8 @@
     { k: 'signed', re: /^\s*sign(ed|ature)\b/i },
     { k: 'city', re: /^\s*city\b/i },
     { k: 'personality', re: /^\s*personality\b/i },
+    { k: 'art_style', re: /^\s*artwork style\b/i, choice: true },
+    { k: 'art_tone', re: /^\s*artwork tone\b/i, choice: true },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
     { k: 'cupboard', re: /cupboard|treat/i },
@@ -795,6 +827,7 @@
     inp.__hs2set = false;
   }
   function choiceMatches(text, k) {
+    if (cityArtPreview() && (k === 'art_style' || k === 'art_tone')) return norm(text) === norm(answer(k));
     var t = norm(text), label = norm(val(k)), line = norm(lines(k)[val(k)]);
     return !!t && (t === label || t === line || t.indexOf(label + ' ') === 0 || (line && t.indexOf(line) === 0));
   }
@@ -927,11 +960,12 @@
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
+    if (cityArtPreview() && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
       var name = text.name || text.id;
-      if (k === 'personality' && blanketArtPreview()) {
+      if (k === 'personality' && cityArtPreview()) {
         el.setAttribute('data-hs2-art-personality', '');
         var facts = artworkFacts();
         if (text.value !== facts) setValue(text, facts);
@@ -950,8 +984,9 @@
       return { name: name, value: want, changed: true };
     }
     if (select) {
-      watchField(select, k);
-      if (bridge.owned[select.name]) return { name: select.name, value: select.value, mine: true };
+      var sharedArtChoice = cityArtPreview() && (k === 'art_style' || k === 'art_tone');
+      if (!sharedArtChoice) watchField(select, k);
+      if (!sharedArtChoice && bridge.owned[select.name]) return { name: select.name, value: select.value, mine: true };
       var opt = Array.prototype.slice.call(select.options).filter(function (o) { return !o.disabled && choiceMatches(o.textContent, k); })[0];
       if (!opt) return null;
       if (select.value === opt.value) return { name: select.name, value: opt.value };
@@ -1022,7 +1057,12 @@
       } else if (/^line[1-4]$/.test(k)) {
         // a v3 line edited in the personalizer flows back to the gift's words
         var key = (V3_ORDER[v3Kind()] || V3_ORDER.print)[Number(k.slice(4)) - 1];
-        if (key) { state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value.replace(/\s*\n\s*/g, ' '); }
+        if (key) {
+          state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value.replace(/\s*\n\s*/g, ' '); state.hs3_copy_owner = 'user';
+          try { var chat = JSON.parse(sessionStorage.getItem('hs3-gift') || '{}'); chat.edits = chat.edits || {}; chat.edits[key] = state.hs3_lines[key]; sessionStorage.setItem('hs3-gift', JSON.stringify(chat)); } catch (e) { /* current product keeps the edit */ }
+        }
+      } else if (k === 'signed') {
+        state.hs3_signature_override = inp.value; state.hs3_copy_owner = 'user';
       } else if (k !== 'signed') {
         state[k] = inp.value;
       }
@@ -1381,6 +1421,9 @@
      over 0.2s after the field appeared and Teeinblue never saw it (6 October). So the hand-off
      checks that Teeinblue took it and tries again, a few times, if it didn't. */
   function doHandoff(box, attempt) {
+    // Candidate system has no paid dispatch authority or verified original source.
+    // No option selection, reload or legacy handoff may start an image effect.
+    if (cityArtPreview()) return;
     attempt = attempt || 0;
     if (cityArtPreview() && artRequested()) return;
     var target = photoInput();
@@ -1443,6 +1486,13 @@
     var img = box.querySelector('[data-hs2-handoff-img]');
     if (img && photoURL && img.src !== photoURL) img.src = photoURL;
     var btn = box.querySelector('[data-hs2-handoff-btn]');
+    if (cityArtPreview()) {
+      box.hidden = false;
+      if (btn) { btn.disabled = true; btn.textContent = 'Artwork update paused'; }
+      var paused = document.querySelector('[data-hs2-artwork-status]');
+      if (paused) paused.textContent = 'Your shared choices are saved. Candidate artwork is not ready to generate or order yet.';
+      return;
+    }
     if (btn && !btn.__hs2) {
       btn.__hs2 = true;
       btn.addEventListener('click', function () {
@@ -2341,6 +2391,10 @@
 
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
+    if (cityArtPreview() && window.HSArtworkChoices) {
+      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'));
+      window.addEventListener('hs-artwork-choices', function () { runBridge(); });
+    }
     guardSearchFocus();
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
@@ -2360,5 +2414,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

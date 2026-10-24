@@ -349,6 +349,10 @@
   }
   function selectTone(tone) {
     if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || tone === S.noteTone) return;
+    if (cfg.artworkCandidates && window.HSArtworkChoices) {
+      try { window.HSArtworkChoices.select({tone: tone}); }
+      catch (e) { ui.toneStatus = 'Your shared choice could not be saved. Please keep this page open.'; return; }
+    }
     S.noteTone = tone; ui.toneStatus = '';
     track('tone_pick', { tone: tone }); save();
     // Keep the range element mounted so repeated arrow keys retain focus.
@@ -451,12 +455,14 @@
     st.person = S.rec ? n.rec : '';
     st.hs3_lines = allLines();
     st.hs3_mug_lines = mugLines();
+    st.hs3_copy_owner = Object.keys(S.edits || {}).some(function(k) { return S.edits[k] != null; }) ? 'user' : 'generated';
     st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
     var kinds = {};
     GIFTS.forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) kinds[x.handle] = g; });
     st.hs3_kinds = kinds;
     st.hs_answers = answerSummary();
     if (window.HSArtworkProfile) st.hs3_art_profile = window.HSArtworkProfile.fromChat(S);
+    if (cfg.artworkCandidates && window.HSArtworkChoices) st.hs3_art_choices = window.HSArtworkChoices.read();
     st.hs_ship_to = S.shipTo === 'me' ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
   }
@@ -658,6 +664,7 @@
       var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
       var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
       var status = toneStatus();
+      if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
       h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
@@ -1134,7 +1141,7 @@
       stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; save(); render(); stepEvent('shown'); return;
     }
     // the end of the chat: the reveal
-    S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
+    S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
     track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
     compose();
     startReveal(recGift());
@@ -1212,6 +1219,7 @@
       });
     });
     var tone = frame.querySelector('[data-hs3-tone]');
+    if (cfg.artworkCandidates && window.HSArtworkChoices) window.HSArtworkChoices.mount(frame.querySelector('[data-hs-art-choices]'), {toneElsewhere: true});
     if (tone) {
       tone.addEventListener('input', function () {
         var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][Number(tone.value)] || 'Warm with a wink';
@@ -1275,6 +1283,7 @@
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     heroHTML = frame.innerHTML;
+    if (cfg.artworkCandidates && window.HSArtworkChoices) S.noteTone = window.HSArtworkChoices.read().tone;
     if (S.composeRequest) save();
     var q = null;
     try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }

@@ -1,6 +1,6 @@
 # Actual-dog preparation contract
 
-This is the local E2 foundation, governed by `docs/continuation/2026-10-24/03-CREATIVE-AND-UX.md`. It is not deployed to Shopify or Teeinblue and does not generate, upload, retry or purchase anything.
+This is the E2 preparation foundation, governed by `docs/continuation/2026-10-24/03-CREATIVE-AND-UX.md`. Its browser bundle is local; its native candidate adapter has been applied to isolated Teeinblue drafts. It does not generate, upload, retry or purchase anything. See `docs/evidence/2026-10-24-six-style-integration.md` for current verification and limits.
 
 `recipes-v1.json` defines the six candidate media, shared three-stop tone and five distinct format compositions. Framed and unframed portraits share the portrait scene. The approved screenprint portrait and word-free blanket remain the visual anchors. These recipes have not passed a new image evaluation; distinct instructions do not establish distinct acceptable outputs.
 
@@ -10,6 +10,6 @@ The local request-state functions demonstrate the integration contract: selectin
 
 Run `node --test tools/print-art/artwork-system.test.mjs` and `node tools/preview/artwork-profile-test.mjs`. Ten preparation/state tests pass. Configuration tests exercise 6 styles x 3 tones x 5 formats. That is 90 prepared configurations, **not generated artwork, six qualified dogs, provider billing proof or an end-to-end storefront test**.
 
-The current storefront still uses its existing `hs3.js`/`hs2.js` path. It has not yet been wired to these functions. Do not present a new six-style control as working until the native provider adapter, explicit update action, edited-copy ownership and exact production-source binding are exercised together in the unpublished environment. No source-hash field alone can prove likeness or prevent provider-side duplicate charges.
+The local hs3/hs2 path now shares choices and exposes a no-dispatch preparation adapter. Run `node tools/print-art/build-browser.mjs --check` for generated-source parity. Photo preparation establishes normalized upload hashes from actual bytes without resizing; it does not establish AI-output detail. Native form mapping is read back, but a real request and production binding have not been exercised together in the unpublished environment. Hashes alone do not prove likeness or prevent provider-side duplicate charges.
 
 The next image evaluation should first screen all six media with one authorized reference dog and fixed grounded facts at the warm stop. Prepare the exact provider/model/input and hard budget before running those six calls. Then evaluate viable styles against six varied licensed/consented dogs and all three tones, reusing accepted art where suitable. The existing one-dog board is illustrative; it does not supply six licensed sources or approved production prompts. Log every attempt, failed charge, original dimensions, identity/fact verdict and output hash. Stop a failing style rather than silently replacing it. Products precede website mockups; samples remain last.

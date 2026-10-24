@@ -47,6 +47,8 @@ Subsequent E2 local repair checkpoint: hs3 now keeps tone selection separate fro
 
 ## E3. Complete selected products
 
+E2/E3 integration checkpoint (2026-10-24): browser and Node share the six-style/three-tone contract; selectors persist across products and Buddy without requests. Actual photo normalization/hashes and copy ownership are implemented locally. Native options are saved/read back in existing portrait/blanket drafts and one new unbound full-wrap mug draft. Three native validations, 46 local tests, IAB selection/reload/hidden-field/zero-upload checks and Theme Check pass. No art generated, campaign published or theme deployed. Native substitution/source/cost remain gated; pillow 17x17 imported labels do not qualify the 16x16 pilot. See `../../evidence/2026-10-24-six-style-integration.md`. No E2/E3 acceptance box is checked from configuration tests.
+
 Order within this stage: portrait pair, blanket, mug, ornament qualification/adaptation, bounded pillow prototype.
 
 - [ ] Portrait: finish shared framed/unframed artwork; optional buyer-specified city; small exact handwritten note, dog signature and decorative paw; correct print sizes and safe areas.

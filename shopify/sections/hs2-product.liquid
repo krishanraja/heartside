@@ -191,6 +191,7 @@
                 <p data-hs2-artwork-status role="status">Preview only. Check your dog, city and note before release.</p>
                 <a data-hs2-artwork-source data-hs2-artwork-layer="layer-747218" target="_blank" rel="noopener noreferrer" hidden>View artwork</a>
               {% endif %}
+              {% if artwork_preview %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
               <div class="hs2-answers__photo" data-hs2-handoff hidden>
                 <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy" data-hs2-handoff-img>
                 <button type="button" data-hs2-handoff-btn>{% render 'hs2-t', text: block.settings.photo_button %}</button>
