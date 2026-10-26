@@ -120,3 +120,22 @@ for(const minify of [false,true]) test((minify?'minified':'source')+': native sh
   assert.equal(state.hs3_copy_owner,'user');assert.equal(state.hs3_signature_override,'Always, Test dog');
   const edits=JSON.parse(saved.get('hs3-gift')).edits;assert.equal(edits.meaning,'My exact new note.');assert.equal(edits.spot,'Earlier edit');
 });
+
+for (const minify of [false,true]) test((minify?'minified':'source')+': optional city stays absent and clears stale native defaults',()=>{
+  const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+  const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
+  const ctx={state:{city:''},cityArtPreview:()=>true,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,setValue:(el,v)=>{el.value=v;}};
+  const code=['answer','nativeArtworkEvidence','watchField','fillField'].map(section).join('\n');vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
+  assert.equal(ctx.answer('city'),'');assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).place,null);
+  const events={},inp={value:'Somewhere quiet',name:'city',tagName:'INPUT',addEventListener:(n,fn)=>events[n]=fn};
+  const el={querySelector:s=>s.startsWith('input')?inp:null,setAttribute:()=>{}};
+  ctx.fillField({rule:{k:'city'},el});assert.equal(inp.value,'');
+  inp.value='  ';events.input();events.blur();assert.equal(inp.value,'');assert.equal(ctx.state.city,'');
+  inp.value='São Paulo';events.input();assert.deepEqual(JSON.parse(ctx.nativeArtworkEvidence()).place,{source:'buyer',text:'São Paulo'});
+  inp.value='';events.input();assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).place,null);
+  assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).facts[0].text,'Does not chase balls.');
+  ctx.state.city='Paris';ctx.blanketArtPreview=()=>true;assert.equal('place' in JSON.parse(ctx.nativeArtworkEvidence()),false);
+});
+test('portrait native prompt has no required City substitution',()=>{
+  const prompt=nativePrompt('portrait');assert.ok(!prompt.includes('{{City}}'));assert.ok(prompt.includes('place is null or absent'));assert.ok(prompt.includes('{{Personality}}'));
+});

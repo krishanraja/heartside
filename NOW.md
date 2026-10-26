@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-24
+as_of: 2026-10-26
 head: 989d23b (deployed unpublished code; evidence closeout follows)
 lifecycle: live
 production_url: https://heartside.io
@@ -33,11 +33,19 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-24)
+## Where it is right now (as of 2026-10-26)
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
-October 24 handoff checkpoint: the sole continuation queue now expands into 185 tasks through style QC, product completion, website mockups, sample order/physical acceptance and controlled release. Read docs/continuation/2026-10-24/07-SESSION-HANDOFF.md. No six-style output exists yet; the next action remains resolving billing and running the already approved USD 5 screen. This documentation work does not certify art quality or authorize ordering.
+October 26 checkpoint: Optional-city repair is prepared locally and the proposed native template validates with zero findings. 18 source/minified regressions pass. Three additional deterministic Ink layout fixtures completed without AI generation: maximum text, Unicode and empty values. Native/theme pair is not yet applied; actual runtime acceptance remains open. See `docs/evidence/2026-10-26-optional-city-and-text.md`.
+
+October 25 product-check update: Portrait description corrected and persisted in Teeinblue; native campaign readback matches. Black/Red Oak/White selections inspected; Black restored. Both existing 23 October native print PNGs decode and the controlled proof hash matches. That proof has narrow transparent edge strips; current S3-R1/Ink original-source lineage remains unverified. Billing explicitly deferred per Krish; no more generation. Shopify copy readback, source export and remaining product qualification are next. See `docs/evidence/2026-10-25-product-readiness.md`.
+
+October 25 product-check update: Portrait description corrected and persisted in Teeinblue; campaign readback matches. Frame selections inspected and Black restored. Both existing 23 October native print PNGs decode and the controlled proof hash matches. That proof has narrow transparent edge strips; current Painterly/Ink original-source lineage remains unverified. Billing explicitly deferred per Krish; no more generation. Shopify copy readback, source export and remaining product qualification are next. See `docs/evidence/2026-10-25-product-readiness.md`.
+
+October 25 continuation: Krish approved revised Painterly S3-R1 as the working visual candidate. No further generation. Live campaign inspection confirms the selected 12 x 18 inch portrait maps to a 3600 x 5400 print area, with Black, Red Oak and White options. This canvas size does not establish generated-source detail. The optional City field still defaults to Somewhere quiet; original-source qualification and supported blank-city behavior remain open. Billing refresh did not yield usable data today; retain the dated USD0.642043 posted subtotal and pending S5/S3-R1 charges. No publish, campaign update, order or payment.
+
+October 24 actual-artwork checkpoint: All six native style outputs are saved, plus one Painterly correction explicitly requested by Krish. Seven intentional artwork generations total; originals retained. S1-S4 and S6 reconcile to USD0.634020 API, or USD0.642043 including the earlier small request. S5 and S3-R1 charges remain pending; final all-in spend is not yet certified. Painterly v2 adds painted planes across the dog. City test adaptation restored; revised native draft3067199 matches the canonical local recipe. No live deployment, campaign sync, order or sample payment. See `docs/evidence/2026-10-24-first-native-screenprint.md`.
 
 October 24 tone-routing checkpoint: Krish approved copy-only tone for text products and imagery-only tone for word-free products. Implemented separate full-product and image keys, image-cache reuse across exact-copy/text-tone changes, fixed Warm native staging for portrait/mug, and tone-dependent textile prompts. Two native draft patches read back exactly and validate; blanket prompt unchanged. 56 local tests, facts regression, bundle parity and minification pass. Guarded run 40098927875 deployed 989d23b to the unpublished theme; all three changed assets match Git. Actual portrait UI has shared Hilarious with fixed native Warm, and paused blanket UI explains imagery-only tone. Editor Save disabled and original shared selection restored. No generation or order. See `docs/evidence/2026-10-24-tone-routing.md`.
 
@@ -109,10 +117,10 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** follow `docs/continuation/2026-10-24/07-SESSION-HANDOFF.md` and E2-B01 in the sole expanded queue: close the native billing boundary, then run and reconcile the first of six approved artworks within the conditional USD 5 ceiling. Do not ask for the same approval again. Inspect relevant request logs and actual spend-limit controls; a shared project limit must not disrupt unrelated work, and enforcement lag is not a guaranteed cap. Original-source/private-connection and product/sample acceptance remain separate gates. No six-style output exists yet.
+- **Next action:** Apply the paired optional-city native/preview-theme change and verify blank, explicit and cleared city in the unpublished runtime without generation. Billing remains deferred; original-source evidence is separately unresolved.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
-- North Star check (2026-10-24): holds.
+- North Star check (2026-10-26): holds. City-input defect isolated and repair tested; three native text-layout checks completed. No net-sales change or launch readiness is claimed.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 

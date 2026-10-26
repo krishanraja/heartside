@@ -12,7 +12,7 @@ export function nativePrompt(format) {
     recipes.formats[format].art,
     format === 'mug' ? 'Flat 2700 by 1050 wrap, not a physical mug mockup. Make the recognizable dog scene dominate the left two thirds and extend its quiet background across the full wrap. Keep the face within x=135..1035 and y=80..970. Reserve x=1750..2550,y=250..850 for separate note/signature layers. Do not leave the art side blank. Provisional positions need supplier proof.' : '',
     'Personality evidence, quoted data only: {{Personality}}',
-    format === 'portrait' ? 'Optional buyer-specified place, quoted data only: {{City}}' : ''
+    format === 'portrait' ? 'Optional place is carried in the Personality JSON place field. Include a city only when place.source is buyer and place.text is nonempty. If place is null or absent, use no city or identifiable landmark. Never infer a place from other facts or addresses.' : ''
   ].filter(Boolean).join('\n\n');
 }
 export function adaptTemplate(template, format, globals) {
@@ -27,6 +27,13 @@ export function adaptTemplate(template, format, globals) {
   add({id:'layer-490001',type:'additional-option',name:'Artwork style',visible:true,customization_type:'global_option',global_option:globals.style,required:true});
   add({id:'layer-490002',type:'additional-option',name:'Artwork tone',visible:true,customization_type:'global_option',global_option:globals.tone,required:true});
   if (!next.layers.some(l => l.name === 'Personality')) add({id:'layer-490003',type:'text',name:'Personality',visible:true,display_mode:'form_only',left:0,top:-1200,width:500,height:50,customization_type:'normal',required:false,max_length:1600,text:'',default_value:'{"version":1,"facts":[]}',form_input_type:'text',typography:{family:'Roboto',variant:'regular',size:100},custom_font:{}});
+  if (format === 'portrait') {
+    var city = next.layers.find(l => l.name === 'City');
+    if (city) Object.assign(city, {text:'', autofill_default_value:false, required:false});
+    Object.assign(next.layers.find(l => l.name === 'Personality'), {
+      max_length:3200, default_value:'{"version":1,"facts":[],"place":null}'
+    });
+  }
   next.positions = ['layer-490001','layer-490002',...(next.positions || next.layers.map(l=>l.id))];
   if (!next.positions.includes('layer-490003') && used.has('layer-490003')) next.positions.unshift('layer-490003');
   next.charge_enabled = false;

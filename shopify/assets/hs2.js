@@ -45,12 +45,12 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
-    if (k === 'personality' && cityArtPreview()) return artworkFacts();
+    if (k === 'personality' && cityArtPreview()) return nativeArtworkEvidence();
     if (cityArtPreview() && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
       return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[blanketArtPreview() ? choice.tone : recipes.toneRouting.textProductImageTone].label;
     }
-    if (k === 'city' && cityArtPreview()) return String(state.city || '').trim() || 'Somewhere quiet';
+    if (k === 'city' && cityArtPreview()) return String(state.city || '').trim();
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
     return v || (NAMES.indexOf(k) === -1 ? DEFAULTS[k] : '');
@@ -74,11 +74,20 @@
     }
     return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
   }
+  function nativeArtworkEvidence() {
+    var evidence = JSON.parse(artworkFacts());
+    // Transport projection only: the buyer's optional place is not a personality fact.
+    if (!blanketArtPreview() && !document.querySelector('#buy[data-hs2-mug-art-preview]')) {
+      var city = String(state.city || '').trim();
+      evidence.place = city ? { source: 'buyer', text: city } : null;
+    }
+    return JSON.stringify(evidence);
+  }
   function artRequestKey() {
     // UI staleness key only. This timestamp cannot attest photo bytes; the engine
     // requires original/upload hashes before a production request can be prepared.
     var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
-    return 'hs2-art-request:' + productId() + ':candidate-v2:' + JSON.stringify({
+    return 'hs2-art-request:' + productId() + ':candidate-v3-optional-place:' + JSON.stringify({
       photoSession: usePhoto.t, facts: artworkFacts(), city: blanketArtPreview() ? '' : state.city || '',
       choices: choice ? {style: choice.style, tone: blanketArtPreview() ? choice.tone : 'warm'} : null,
       variant: document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
@@ -967,14 +976,14 @@
       var name = text.name || text.id;
       if (k === 'personality' && cityArtPreview()) {
         el.setAttribute('data-hs2-art-personality', '');
-        var facts = artworkFacts();
+        var facts = nativeArtworkEvidence();
         if (text.value !== facts) setValue(text, facts);
         return { name: name, value: facts };
       }
       watchField(text, k);
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };
       var want = answer(k);
-      if (!want) return null; // no name yet: leave the field for the shopper, never a placeholder
+      if (!want && !(k === 'city' && cityArtPreview())) return null; // blank city must clear a previous native default
       // a one-line input drops "\n" and would join two words, so it gets the line unbroken
       if (text.tagName !== 'TEXTAREA') want = want.replace(/\n/g, ' ');
       // A matching field does not prove Teeinblue rebuilt the print artwork. Re-send its
@@ -1072,7 +1081,7 @@
     inp.addEventListener('change', handler);
     if (k === 'city') inp.addEventListener('blur', function () {
       if (cityArtPreview() && !inp.value.trim()) {
-        state.city = ''; save(); setValue(inp, 'Somewhere quiet');
+        state.city = ''; save(); if (inp.value !== '') setValue(inp, '');
       }
     });
   }
@@ -1317,7 +1326,7 @@
       if (previewLabel) previewLabel.textContent = 'Existing reference artwork. Generation is paused.';
       document.querySelectorAll('#buy #teeAtcButton, #buy .tee-btn--atc, #buy [data-hs2-add]').forEach(function (orderButton) { orderButton.disabled = true; orderButton.textContent = 'Preview only'; });
       var place = document.querySelector('[data-hs2-artwork-city]');
-      if (place) place.textContent = answer('city');
+      if (place) place.textContent = answer('city') || 'No city selected';
       var editPlace = document.querySelector('[data-hs2-artwork-edit-city]');
       if (editPlace && !editPlace.__hs2) {
         editPlace.__hs2 = true;
@@ -1516,7 +1525,7 @@
         btn.textContent = sent ? 'Artwork requested' : doHandoff.artPhoto ? 'Create new artwork' : 'Create artwork';
       }
       var artStatus = document.querySelector('[data-hs2-artwork-status]');
-      if (artStatus) artStatus.textContent = saved ? 'Check the saved image for your dog and ' + (blanketArtPreview() ? 'their actual habits' : answer('city')) + '. Preview only.' : doHandoff.artPhoto && !sent ? 'Your photo or ' + (blanketArtPreview() ? 'answers' : 'city') + ' changed. Create new artwork to use it.' : sent ? 'Your artwork is being prepared. Save its placement when it appears.' : blanketArtPreview() ? 'Preview only. Check their face, markings and personality.' : 'Preview only. Check your dog, city and note before release.';
+      if (artStatus) artStatus.textContent = saved ? 'Check the saved image for your dog' + (blanketArtPreview() ? ' and their actual habits' : answer('city') ? ' and ' + answer('city') : '') + '. Preview only.' : doHandoff.artPhoto && !sent ? 'Your photo or ' + (blanketArtPreview() ? 'answers' : 'city') + ' changed. Create new artwork to use it.' : sent ? 'Your artwork is being prepared. Save its placement when it appears.' : blanketArtPreview() ? 'Preview only. Check their face, markings and personality.' : 'Preview only. Check your dog, any selected city and note before release.';
       var sourceLink = document.querySelector('[data-hs2-artwork-source]');
       if (sourceLink) { sourceLink.hidden = !saved; if (saved) sourceLink.href = cityArtSource(); else sourceLink.removeAttribute('href'); }
       return;
