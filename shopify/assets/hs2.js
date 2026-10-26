@@ -94,7 +94,23 @@
       return !!el.getClientRects().length && (el.classList.contains('tee-field--invalid') || /failed|error|could not|unable/i.test(el.textContent));
     });
   }
-  function blanketReviewAccepted() { return blanketAcceptedKey === blanketReviewKey() && !blanketNativeError(); }
+  function invalidateBlanketReview() {
+    blanketAcceptedKey = '';
+    var acceptance = document.querySelector('[data-hs2-artwork-accept]');
+    if (acceptance) acceptance.checked = false;
+  }
+  function blanketReviewAccepted() {
+    if (document.querySelector('.vm--container')) { invalidateBlanketReview(); return false; }
+    return blanketAcceptedKey === blanketReviewKey() && !blanketNativeError();
+  }
+  function syncBlanketProperties() {
+    if (!nativeBlanketPurchase()) return;
+    document.querySelectorAll('#hs2-product-form [data-hs2-prop]').forEach(function (input) {
+      var key = input.getAttribute('data-hs2-prop');
+      if (['personality', 'art_style', 'art_tone'].indexOf(key) !== -1) input.value = answer(key);
+    });
+  }
+  function artworkChoicesChanged() { syncBlanketProperties(); runBridge(); }
   function resetBlanketUpload() {
     try {
       // Invalidate the old UI request before unlocking. Reset never sends a photo.
@@ -1019,10 +1035,14 @@
       if ((cityArtPreview() || nativeBlanketPurchase()) && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
     document.addEventListener('click', function (e) {
+      if (nativeBlanketPurchase() && e.target.closest && e.target.closest('#buy .tee-field--photo .tee-btn--recustomize')) {
+        invalidateBlanketReview();
+        return; // Native placement editing continues without another upload.
+      }
       var button = e.target.closest && e.target.closest(cityArtPreview() || nativeBlanketPurchase() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
       if (!button || !(giftView() || nativeBlanketPurchase())) return;
       if (nativeBlanketPurchase()) {
-        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted()) return;
+        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted()) { syncBlanketProperties(); return; }
         e.preventDefault(); e.stopImmediatePropagation();
         blanketPurchaseStatus('Finish and save artwork for your current choices, then tick the artwork review before adding this blanket. Resolve any error shown by the personalizer.');
         return;
@@ -2541,7 +2561,7 @@
   function init() {
     if ((cityArtPreview() || nativeBlanketPurchase()) && window.HSArtworkChoices) {
       window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeBlanketPurchase()});
-      window.addEventListener('hs-artwork-choices', function () { runBridge(); });
+      window.addEventListener('hs-artwork-choices', artworkChoicesChanged);
     }
     guardSearchFocus();
     bindBlanketRecovery();
