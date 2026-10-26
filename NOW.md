@@ -35,6 +35,8 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-26)
 
+October 26 parallel results integrated: three demonstrated personalization defects fixed and independently checked with 71 passing regressions, clean minification and zero Theme Check offenses. All 13 Brooklyn cost floors reconcile; nationwide route/tax parity remains open. A credible independent-front/back SwiftPOD ornament candidate advances to exact-template/account qualification. The selected 16-inch pillow still lacks its exact supplier template. Teeinblue selects Heartside with auto-confirmation off. Krish will send the source-recovery question himself; no agent send is pending. See `docs/evidence/2026-10-26-parallel-qualification.md`.
+
 October 26 latest: Teeinblue confirms placement saves do not generate AI, no draft-publishing option exists, and standard product-page orders should render. Its official documentation supplies the Bogus Gateway test-order route, excluded from transaction billing but requiring temporary replacement of the normal card gateway. Krish accepts a brief checkout-maintenance window in principle; exact visibility, saved customization reuse, restoration and fulfillment holds remain to be proved. No new generation, payment, order or public release. See `docs/evidence/2026-10-26-note-label-and-supplier-checks.md`.
 
 Unpublished mug mobile/reference/selection-persistence checks pass. The separate three-line Recently viewed guard is now deployed with exact snippet readback: unavailable products no longer create blank cards. Real matching/no-match/Clear/close checks pass, original choices remain restored and Save disabled. Historical transient reset errors did not recur; this is bounded search proof, not full journey certification. Main deployed code remains 4c0909c plus this scoped snippet patch.
@@ -123,10 +125,10 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Recover the newer saved generated results for the standard product-page rehearsal without another AI upload. Krish accepts a brief Bogus Gateway maintenance window in principle; normal payments remain active. Printful manual-confirmation/draft-import settings are verified. Only the older October 23 portrait is visibly retained in Shopify; it cannot certify newer styles. A precise recovery question is prepared for support, with send permission pending. Exact visibility/restoration and test execution remain gated; billing stays deferred and generation paused.
+- **Next action:** Complete unpublished acceptance of the integrated personalization repairs, then qualify the exact ornament template/account route while the owner-sent source-recovery question is pending. Normal payments remain active; exact order-test actions are not authorized. Generation and billing reconciliation remain paused/deferred.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
-- North Star check (2026-10-26): holds. Removed visible search placeholders and identified the documented order-test route, advancing launch verification; no net-sales change or launch readiness is claimed.
+- North Star check (2026-10-26): holds. Parallel work repaired three personalization failures, reconciled provisional costs and narrowed supplier gates; no measured revenue change or launch-readiness claim.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 
