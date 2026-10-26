@@ -106,6 +106,51 @@ test('unbound mug review never writes into the globally embedded legacy campaign
   const ctx={document:{querySelector:selector=>selector==='#buy[data-hs2-mug-art-preview]'?{}:null},tibFields:()=>{throw new Error('legacy campaign accessed');}};
   vm.runInNewContext(source.slice(start,end),ctx);assert.doesNotThrow(()=>ctx.runBridge());
 });
+
+for (const minify of [false,true]) {
+  const mode=minify?'minified':'source';
+  for (const field of ['note','signature','owner','tone']) test(mode+': preparation rejects a '+field+' edit while request hashing is pending',async()=>{
+    const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+    const start=source.indexOf('  async function prepareCurrentArtwork(');
+    const code=source.slice(start,source.indexOf('\n  function ',start+1));
+    const state={hs3_lines:{meaning:'Original exact note'},hs3_copy_owner:'generated'};
+    let signature='Love, Buddy', tone='warm', release, captured;
+    const ctx={state,usePhoto:{file:{}},cityArtPreview:()=>true,artRequestKey:()=> 'unchanged-image',artworkFacts:()=>'{"version":1,"facts":[]}',answer:()=>signature,window:{HSArtworkPhoto:{prepare:async()=>({photo:{},file:{},width:10,height:10})},HSArtworkChoices:{read:()=>({style:'screenprint',tone}),prepare:request=>{captured=request;return new Promise(resolve=>{release=()=>resolve(request);});}}}};
+    vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
+    const pending=ctx.prepareCurrentArtwork('portrait','synthetic-variant','test-only');
+    await new Promise(resolve=>setImmediate(resolve));assert.ok(captured);
+    if(field==='note') state.hs3_lines.meaning='New exact note';
+    if(field==='signature') signature='Always, Buddy';
+    if(field==='owner') state.hs3_copy_owner='user';
+    if(field==='tone') tone='hilarious';
+    release();await assert.rejects(pending,/choices changed during preparation/);
+    const unchanged=ctx.prepareCurrentArtwork('portrait','synthetic-variant','test-only');
+    await new Promise(resolve=>setImmediate(resolve));release();
+    const result=await unchanged;
+    assert.equal(result.request.copy.note,state.hs3_lines.meaning);
+    assert.equal(result.request.copy.signature,signature);
+    assert.equal(result.request.copy.owner,state.hs3_copy_owner);
+  });
+
+  test(mode+': failed shared-choice writes restore displayed controls and allow a later retry',()=>{
+    const saved=new Map(),events=[];let denyWrites=false;
+    function element(tag){return {tag,children:[],listeners:{},attributes:{},appendChild(child){this.children.push(child);},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,v){this.listeners[k]=v;}};}
+    const ctx={document:{createElement:element},sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>{if(denyWrites)throw Error('Quota exceeded');saved.set(k,v);}},CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}},window:{HSArtworkEngine:{recipes},dispatchEvent:event=>events.push(event)}};
+    const source=readFileSync(new URL('../../shopify/assets/hs-artwork-choices.js',import.meta.url),'utf8');
+    vm.runInNewContext(minify?transformSync(source,{minify:true}).code:source,ctx);
+    ctx.window.HSArtworkChoices.select({style:'ink',tone:'sentimental'});
+    const host=element('div');ctx.window.HSArtworkChoices.mount(host,{});
+    const [styleLabel,toneLabel,status]=host.children,style=styleLabel.children[0],tone=toneLabel.children[0];
+    denyWrites=true;style.value='comic';tone.value='hilarious';style.listeners.change();
+    assert.equal(style.value,'ink');assert.equal(tone.value,'sentimental');
+    assert.equal(events.length,1);assert.equal(status.attributes.role,'status');
+    assert.match(status.textContent,/could not be saved/i);
+    assert.match(status.textContent,/previous choices/i);
+    denyWrites=false;style.value='comic';tone.value='hilarious';style.listeners.change();
+    assert.equal(ctx.window.HSArtworkChoices.read().style,'comic');
+    assert.equal(ctx.window.HSArtworkChoices.read().tone,'hilarious');assert.equal(events.length,2);
+  });
+}
 test('normalized PNG guard rejects metadata and trailing bytes',()=>{
   const ctx={window:{},Uint8Array,DataView};
   vm.runInNewContext(readFileSync(new URL('../../shopify/assets/hs-artwork-photo.js',import.meta.url),'utf8'),ctx);

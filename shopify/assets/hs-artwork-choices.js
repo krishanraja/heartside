@@ -43,7 +43,10 @@
     host.appendChild(status);
     function changed() {
       try { select({style: picker.value, tone: tone ? tone.value : read().tone}); status.textContent = toneHelp + ' Choices saved for all your gifts. Your edited words stay as written.'; }
-      catch (e) { status.textContent = 'Your choices could not be saved. Please keep this page open.'; }
+      catch (e) {
+        var saved = read(); picker.value = saved.style; if (tone) tone.value = saved.tone;
+        status.textContent = 'Your choices could not be saved. Your previous choices are still selected. Please try again.';
+      }
     }
     picker.addEventListener('change', changed); if (tone) tone.addEventListener('change', changed);
   }

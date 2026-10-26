@@ -97,15 +97,21 @@
   }
   async function prepareCurrentArtwork(format, variant, exactModel) {
     if (!cityArtPreview() || !window.HSArtworkPhoto || !window.HSArtworkChoices) throw new Error('Draft artwork preparation only');
-    var file = usePhoto.file, revision = artRequestKey();
+    // The image reuse key intentionally ignores words and text-product tone.
+    // Preparation must still bind the exact copy and choices across both awaits.
+    function preparationRevision() {
+      return JSON.stringify([artRequestKey(), window.HSArtworkChoices.read(),
+        state.hs3_copy_owner || 'generated', String((state.hs3_lines || {}).meaning || ''), answer('signed')]);
+    }
+    var file = usePhoto.file, revision = preparationRevision();
     if (!file) throw new Error('The original dog photo is required');
     var prepared = await window.HSArtworkPhoto.prepare(file);
-    if (file !== usePhoto.file || revision !== artRequestKey()) throw new Error('Your choices changed during preparation');
+    if (file !== usePhoto.file || revision !== preparationRevision()) throw new Error('Your choices changed during preparation');
     var request = await window.HSArtworkChoices.prepare({photo: prepared.photo,
       factsProfile: JSON.parse(artworkFacts()), city: String(state.city || ''), citySource: state.city ? 'buyer' : null,
       format: format, variant: variant, model: exactModel,
       copy: {owner: state.hs3_copy_owner || 'generated', note: String((state.hs3_lines || {}).meaning || ''), signature: answer('signed')}});
-    if (file !== usePhoto.file || revision !== artRequestKey()) throw new Error('Your choices changed during preparation');
+    if (file !== usePhoto.file || revision !== preparationRevision()) throw new Error('Your choices changed during preparation');
     // No dispatch. Keep original bytes private; only the normalized file may be
     // handed to a future gated adapter after source/model/provider verification.
     return {request: request, upload: prepared.file, sourceWidth: prepared.width, sourceHeight: prepared.height};
