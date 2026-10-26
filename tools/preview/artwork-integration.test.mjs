@@ -7,6 +7,14 @@ import {transformSync} from 'esbuild';
 import {prepare, recipes} from '../print-art/artwork-system.mjs';
 import {mugTemplate, nativePrompt} from '../print-art/native-candidate.mjs';
 const input = () => ({photo:{originalHash:'a'.repeat(64),uploadHash:'b'.repeat(64),metadataRemoved:true},factsProfile:{version:1,facts:[{source:'spot',text:'Does not chase balls; rests by the door.'}]},city:'',style:'screenprint',tone:'warm',format:'mug',variant:'synthetic-11oz-black',model:'test-only',copy:{owner:'user',note:'My exact edit.',signature:'Love, Test dog'}});
+test('native note label retains the exact-copy bridge and legacy mapping',()=>{
+  const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+  const start=source.indexOf('  var TIB_RULES = [');
+  const ctx={};vm.runInNewContext(source.slice(start,source.indexOf('\n  ];',start)+5),ctx);
+  const key=label=>ctx.TIB_RULES.find(rule=>rule.re.test(label))?.k;
+  for(const label of ['Line 4','Line 4*','Your note','Your note *']) assert.equal(key(label),'line4');
+  assert.equal(key('Line 1'),'line1');assert.equal(key('Your notebook'),undefined);
+});
 test('draft gift navigation excludes conditional ornament and keeps selected gifts on paused templates',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));

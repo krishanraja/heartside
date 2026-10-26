@@ -799,7 +799,7 @@
     { k: 'line1', re: /^\s*line\s*1\b/i },
     { k: 'line2', re: /^\s*line\s*2\b/i },
     { k: 'line3', re: /^\s*line\s*3\b/i },
-    { k: 'line4', re: /^\s*line\s*4\b/i },
+    { k: 'line4', re: /^\s*(?:line\s*4|your note)\b/i },
     { k: 'signed', re: /^\s*sign(ed|ature)\b/i },
     { k: 'city', re: /^\s*city\b/i },
     { k: 'personality', re: /^\s*personality\b/i },

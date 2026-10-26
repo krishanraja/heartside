@@ -27,7 +27,7 @@ No upload effect or image generation was called. These are deterministic composi
 - Unicode name and note were transported exactly and persisted after reload. Original review copy was restored afterwards; city intentionally remains blank.
 - Desktop and mobile previews show the reference-artwork label. Generation and ordering controls remain disabled. Both theme and product are Draft; editor Save is disabled.
 - Shopify draft description was stale. A description-only native sync corrected it; independent Shopify readback confirms the corrected copy and DRAFT status. Images, three variants, SKUs and prices remain unchanged. No image regeneration was requested.
-- Native selected frame variants map to the same Shopify suffixes: Black 9031107 / supplier 4398, Red Oak 9031122 / supplier 15026, White 9031134 / supplier 10752; all are 12x18. This is mapping evidence, not current supplier-stock certification.
+- Native selected frame variants map to the same Shopify SKU suffixes for Black, Red Oak and White; all are 12x18. Exact account mappings are retained in private operations. This is mapping evidence, not current supplier-stock certification.
 - Screenshot: private workspace outputs/optional-city-deployed.png. The portal tab was stale and had no retained generated upload; it was not used to regenerate art.
 
 ## Support evidence and remaining qualification
