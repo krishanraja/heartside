@@ -11,6 +11,9 @@
   elsif msg contains '[DATE]'
     assign msg = s.text_undated
   endif
+  if template.name == 'product' and template.suffix == 'blanket-native'
+    assign msg = 'Shipping calculated at checkout.'
+  endif
 -%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the
