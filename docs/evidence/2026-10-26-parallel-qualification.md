@@ -57,3 +57,17 @@ Master browser readback: Teeinblue's Printful connection selects **Heartside**, 
 Krish chose to send the prepared exact-output recovery question himself. No permission to send is pending and no agent sent it. The question concerns restoring existing generated outputs into a standard product-page test order without uploading again or generating replacements. Only the older portrait remains visibly retained in the Shopify preview. The brief payment-maintenance window is accepted in principle; exact product visibility, saved-output reuse and test/restoration actions remain unapproved/unverified. Normal payments remain active.
 
 Reports and original worker artifacts remain in the private `heartside-parallel-2026-10-26` scratch directory, split by lane. Public evidence omits customer data, private service identifiers and credentials. This work reduces launch risk; no revenue movement or launch readiness is claimed.
+
+
+## Direct UI recovery inspection after owner challenge
+
+The owner challenged whether an ordinary interface path had been missed. A bounded native/Shopify UI inspection found a useful path: in the unpublished theme editor, choose Products > Default product, then preview the existing draft portrait. Shopify adds its standard `view=__DEFAULT__` preview override; no product template assignment or theme save is required. This exposes Teeinblue photo controls hidden by the paused review template.
+
+Observed results:
+- Campaign editor photo is empty. The documented non-generating Generate test design action stops with required photo/name/note validation. No test design or image generation was produced.
+- Campaign Logs contains Publication History and Edit Activities, with configuration events rather than a generated-output gallery. Assets exposes clipart/vector/global-option/font categories; no recent customer-output recovery selector was present in the inspected menu. This is bounded UI evidence, not a claim about every provider capability.
+- The standard product form retains the older October 23 photo and explicitly warns: “Your details changed after this photo was processed. Please upload it again.” The rendered image has natural dimensions 680x1024.
+- Recustomize image opens zoom/rotate/position controls with Cancel and Save. Saving unchanged placement succeeds and closes the dialog, but leaves the stale-photo warning unchanged. No new upload, processing screen, cart submission or order occurred. Provider billing was not queried; support previously confirmed placement saves do not trigger AI generation.
+- No gallery, URL restore or generated-output version selector was available in the inspected photo field/placement editor. This route does not recover current Painterly/Ink outputs or establish their original dimensions.
+
+The standard-template discovery corrects the earlier incomplete UI investigation. The precise remaining dependency is restoration of the newer saved outputs into a supported current customization, not whether placement editing exists. The owner-sent support question remains relevant in that narrower form. Original paused portrait review restored; no editor save, product assignment, payment or publication change. Private screenshot: `master/ordinary-photo-stale-after-placement.png`.
