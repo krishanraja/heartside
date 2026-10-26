@@ -183,6 +183,10 @@
             {% if artwork_preview or s.blanket_purchase %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
             {% if s.blanket_purchase %}
               <p>Inspired by what you told Buddy. No words on the blanket.</p>
+              <div data-hs2-blanket-photo hidden>
+                <img data-hs2-blanket-photo-img alt="Your dog's photo" width="80" height="80">
+                <button type="button" data-hs2-blanket-create>Create artwork with this photo</button>
+              </div>
               <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
               <a data-hs2-artwork-source data-hs2-artwork-layer="layer-292294" target="_blank" rel="noopener noreferrer" hidden>View your artwork</a>
               <label data-hs2-artwork-accept-wrap hidden><input type="checkbox" data-hs2-artwork-accept> I have checked the finished artwork, including every face, marking and limb, and want this design on my blanket.</label>

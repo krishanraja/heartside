@@ -105,9 +105,24 @@
       return true;
     } catch (e) { return false; }
   }
+  function sendBlanketPhoto() {
+    if (!nativeBlanketPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
+    var target = photoInput();
+    if (!target) { blanketPurchaseStatus('The personalizer is still loading. Your photo is saved here.'); return; }
+    try {
+      var transfer = new DataTransfer(); transfer.items.add(usePhoto.file);
+      target.files = transfer.files;
+      // The capture handler persists the single-request guard before native dispatch.
+      // No timers, refill API or retry follows this explicit click.
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch (e) {
+      blanketPurchaseStatus('Your photo could not be sent automatically. Check whether the personalizer is working before choosing it below.');
+    }
+  }
   function bindBlanketRecovery() {
     var box = document.querySelector('[data-hs2-upload-recovery]');
     if (!nativeBlanketPurchase() || !box) return;
+    document.querySelector('[data-hs2-blanket-create]').addEventListener('click', sendBlanketPhoto);
     var acceptance = document.querySelector('[data-hs2-artwork-accept]');
     acceptance.addEventListener('change', function () {
       blanketAcceptedKey = acceptance.checked && !blanketUploadPending() && cityArtSaved() && !blanketNativeError() ? blanketReviewKey() : '';
@@ -120,7 +135,7 @@
       if (!resetBlanketUpload()) { blanketPurchaseStatus('This browser could not save the retry choice. No new upload has started.'); return; }
       ack.checked = false; button.disabled = true; box.open = false;
       updateBlanketPurchaseStatus();
-      blanketPurchaseStatus('No new artwork has started. Choose your photo again only when you are ready to retry.');
+      blanketPurchaseStatus('No new artwork has started. Use your saved photo or choose a different photo below when you are ready to retry.');
     });
   }
   function nativeBlanketInputsReady() {
@@ -143,6 +158,13 @@
   }
   function updateBlanketPurchaseStatus() {
     var pending = blanketUploadPending();
+    var photoBox = document.querySelector('[data-hs2-blanket-photo]');
+    if (photoBox) {
+      photoBox.hidden = !usePhoto.file || artRequested();
+      var photo = photoBox.querySelector('[data-hs2-blanket-photo-img]'), create = photoBox.querySelector('[data-hs2-blanket-create]');
+      if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
+      create.disabled = pending || !nativeBlanketInputsReady();
+    }
     var recovery = document.querySelector('[data-hs2-upload-recovery]');
     if (recovery) recovery.hidden = !pending;
     var link = document.querySelector('[data-hs2-artwork-source]');
@@ -154,7 +176,7 @@
     if (pending) { blanketPurchaseStatus('Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
-    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your blanket.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Your choices changed. Choose your photo below to create matching artwork before adding your blanket.' : 'Choose your photo below to create your artwork. Check the result before adding your blanket.');
+    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your blanket.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your blanket.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your blanket.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }

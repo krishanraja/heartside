@@ -39,7 +39,7 @@
     }
     var status = document.createElement('p'); status.setAttribute('role', 'status');
     var toneHelp = options && options.toneElsewhere ? 'Tone changes the note on gifts with words and the imagery on word-free gifts.' : options && options.wordFree ? 'Tone changes the imagery. This gift has no words.' : 'Tone changes the note. Your artwork stays the same.';
-    var updateHelp = options && options.nativeUpload ? ' Choose your photo in the personalizer to create artwork for these choices.' : ' Artwork updates are paused while these styles are tested.';
+    var updateHelp = options && options.nativeUpload ? ' Create artwork with your photo below when these choices are ready.' : ' Artwork updates are paused while these styles are tested.';
     status.textContent = toneHelp + updateHelp;
     host.appendChild(status);
     function changed() {

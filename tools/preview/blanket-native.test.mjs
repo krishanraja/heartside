@@ -52,6 +52,16 @@ for(const minified of [false,true]) {
     change();assert.equal(used,1);assert.equal(marked,1);assert.equal(tracked,1);assert.equal(blocked,0);
     change();assert.equal(used,1);assert.equal(marked,1);assert.equal(tracked,1);assert.equal(blocked,2);assert.equal(input.value,'');
   });
+  test(label+': explicit cached-photo click reuses Buddy file once without timers or automatic retry',()=>{
+    let listener,pending=false,dispatches=0,marked=0;
+    const file={type:'image/png',name:'synthetic-fixture.png'};
+    const target={type:'file',matches:()=>true,dispatchEvent:event=>{dispatches++;event.target=target;listener(event);}};
+    const usePhoto=()=>{};usePhoto.file=file;
+    const ctx={document:{addEventListener:(name,fn)=>listener=fn},doHandoff:{},nativeBlanketPurchase:()=>true,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>true,beginBlanketUpload:()=>{if(pending)return false;pending=true;return true;},photoInput:()=>target,blanketPurchaseStatus:()=>{},usePhoto,markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>marked++,state:{},save:()=>{},savePhoto:()=>{},track:()=>{},DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type,options){this.type=type;this.bubbles=options.bubbles;}preventDefault(){}stopImmediatePropagation(){}}};
+    run(['keepTibPhoto','sendBlanketPhoto'],ctx,minified);ctx.keepTibPhoto();
+    assert.equal(dispatches,0);ctx.sendBlanketPhoto();assert.equal(dispatches,1);assert.equal(marked,1);assert.equal(target.files[0],file);assert.equal(pending,true);
+    ctx.sendBlanketPhoto();assert.equal(dispatches,1);assert.equal(marked,1);
+  });
   test(label+': native cart blocks unresolved, stale and unsaved images but permits the saved matching result',()=>{
     const events={};let pending=false,ready=false,image=false,accepted=false,blocked=0;
     const ctx={document:{addEventListener:(name,fn)=>events[name]=fn},cityArtPreview:()=>false,nativeBlanketPurchase:()=>true,giftView:()=>false,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>ready,cityArtSaved:()=>image,blanketReviewAccepted:()=>accepted,blanketPurchaseStatus:()=>{}};
