@@ -121,6 +121,7 @@
             srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
             sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
             {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+          {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
         </div>
         {%- comment -%} With Teeinblue's live preview on the page, it is the first picture and the product
           photos sit behind it as thumbnails, so the page shows one picture at a time. {%- endcomment -%}
@@ -144,6 +145,7 @@
         <div class="hs2-product__main hs2-card__media">
           <img src="{{ 'hs-photo-asleep-640.webp' | asset_url }}" alt="" width="640" height="640">
           <div class="hs2-card__shot">{{ s.shot }}</div>
+          {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
         </div>
       {%- endif -%}
     </div>

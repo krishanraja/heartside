@@ -1076,6 +1076,7 @@ html.hs2-v3-editing #buy[data-hs2-v3] .hs2-gift-edit-nav, html.hs2-v3-direct #bu
 #buy[data-hs2-blanket-art-preview] [data-hs2-tib-edit] { display: none !important; }
 #buy[data-hs2-blanket-purchase] [data-hs2-art-personality],
 #buy[data-hs2-blanket-purchase] [data-hs2-handoff] { display: none !important; }
+#buy[data-hs2-blanket-purchase] .hs2-product__placement-note { margin: 0; padding: 12px 16px; font-size: 13px; line-height: 1.4; }
 .hs-art-choices { font: inherit; margin-block: 8px; }
 .hs-art-choices summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .hs-art-choices label { display: block; font-size: 13px; margin-block: 8px; }

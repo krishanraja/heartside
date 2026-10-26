@@ -293,6 +293,7 @@ const written = [
   await page('product-city-art.html', 'product.city-art-preview.json', { product: products.mug, template: { name: 'product', suffix: 'city-art-preview' } }),
   await page('product-blanket-art.html', 'product.blanket-art-preview.json', { product: products.blanket, template: { name: 'product', suffix: 'blanket-art-preview' } }),
   await page('product-blanket-native.html', 'product.blanket-native.json', { product: products.blanket, template: { name: 'product', suffix: 'blanket-native' } }),
+  await page('product-blanket-native-example.html', 'product.blanket-native.json', { product: products.framed, template: { name: 'product', suffix: 'blanket-native' } }),
   await page('index-hero-a.html', 'index.classic.json', { template: { name: 'index', suffix: null } }, (t) => { t.sections.hero.settings = { ...(t.sections.hero.settings || {}), ...HERO_B, ...HERO_A }; return t; }),
 ];
 // Helio's cart drawer, as the live store rendered it on 5 October with a framed poster in it
