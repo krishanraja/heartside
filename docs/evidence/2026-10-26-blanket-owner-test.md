@@ -2,7 +2,7 @@
 
 The owner selected the word-free 50x60 sherpa for his own real test order to New York and supplied a new dog photograph. A bench partially obscures a foreleg. The user will place and pay for the real order through Heartside after readiness checks. No order or supplier payment was made in this work.
 
-## Verified current state
+## Earlier checkpoint (superseded below)
 
 - Native blanket has one selected Tan50x60 variant, the correct supplier mapping and one assigned mockup. Artwork canvas5300x6300 is placed proportionally across the15900x18900 output. Structural validation has zero warnings. The current generated test-design PNG was downloaded, fully decoded and visually inspected, as detailed below.
 - Smooth face is printed; reverse is sherpa. There is no separate reverse print to create.
@@ -31,6 +31,19 @@ The isolated blanket-native template carries grounded Buddy facts and shared sty
 
 An opt-in Buddy setting routes only the selected blanket to this template; it remains off until the correct new product is bound. Other gifts and the paused private blanket preview retain their existing behavior. Integrated code revision d7d69e6 has95 passing source/minified and adjacent checks, clean asset minification and zero ThemeCheck offenses. Independent review reproduced all six placement/metadata regressions against the parent and passed them against the repair. Local fixture checks cover choices, persistence and blocked cart state; they do not prove the real provider/cart flow. Guarded workflow40367772185 deployed e37a75b to the existing unpublished review theme. All six changed code files match committed MD5 values; the new template is semantically equal after Shopify adds empty settings and its generated-file comment. Independent readback confirms UNPUBLISHED, the actual private-placeholder page renders the word-free controls, and editor Save is disabled. No native form exists on that unbound placeholder, so real native/cart acceptance remains open.
 
-## Next verification
+## Earlier next verification (superseded below)
 
 Obtain the concrete new-product setup decision: proposed149USD, New York standard delivery included using a product-specific shipping profile, native publication followed by Unlisted status, and manual production review. Existing89USD blanket records stay unchanged. After approval, bind the new product and verify actual personalization, quantity-one cart, destination eligibility, final shipping/tax/payable total and manual production hold. The owner enters recipient details directly and pays. Physical quality is accepted only after the sample arrives; the broader upgraded launch remains separate.
+
+
+## Latest verification: native binding, pricing separate
+
+Pricing research runs separately while the owner blanket is prepared for ordering. A new native-linked Shopify product is verified Unlisted, with blanket-native template, word-free copy/image and one Tan50x60 variant. Existing89USD remains provisional; the active5.99USD Standard rate includes New York. Admin availability passes (CONTINUE/untracked inventory), and native auto-confirm is off. A missing default-image URL was repaired with an existing merchant reference, without AI generation. Mixed draft/blanket selection is repaired at84cf4cc: independent review,71 integration checks, minification and ThemeCheck pass. Guarded unpublished deployment40381714636 awaits final readback. Actual native form/cart/checkout is not yet verified because primary-domain browser loading fails. Preserved15900x18900 print passes decode and bounded likeness/occlusion review; six transparent top rows and five bottom rows need supplier-bleed confirmation. No order, payment, final price change or live theme release.
+
+Native default repair changes only the required photo layer URL. Required upload, prompts, effects, canvas and placement remain unchanged. Validation returns zero errors/warnings; image-only sync and Shopify image persistence pass. Native version3082901 and linked instance are verified. No new AI generation. The reference cannot qualify as customer artwork.
+
+Shopify configuration confirms a New York shipping method without conditions; this is not an executed checkout quote. Native Printful connection selects Heartside with auto-confirm off. Actual supplier order routing/draft hold remains order-stage proof.
+
+Print audit confirms sRGB and approximately300DPI metadata, with six transparent top rows and five bottom rows (about0.02in and0.017in); interior after10px is opaque. Confirm these stay outside the finished edge in the supplier preview before production. No image edit. Original AI source dimensions and physical quality remain unverified.
+
+The saved customer photo is no longer present in the editor; original outputs are preserved privately. Do not claim a real cart pass from fixture tests or trigger blind repeat generation. Remaining checks: actual form/mobile/keyboard, exact cart properties and quantity, checkout shipping/tax/payable total, and supplier preview/manual hold. Finish the actual unpublished native form/cart/checkout checks once browser connectivity recovers; pricing remains separate, and the owner enters recipient details and pays only after readiness. No further upload is requested yet.

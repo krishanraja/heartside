@@ -35,7 +35,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-26)
 
-Current priority: prepare the owner's word-free 50x60 sherpa for his own real New York test order. One native generation from the supplied partly occluded photo passed bounded likeness, word-free repeat and safe head/shoulder fallback review. The current15900x18900 print PNG was retrieved, integrity checked and fully decoded. Original AI source dimensions and physical quality remain unverified. The purchase-flow candidate passes95 automated checks and independent review; guarded deployment of e37a75b to the unpublished review theme is verified by exact code hashes, semantic template equality and actual page rendering. Native/cart acceptance remains open. The new blanket still has no store binding. Proposed149USD with New York standard delivery included is not approved or applied. The owner will enter details and pay after actual product/cart/checkout checks. No order or payment occurred. See `docs/evidence/2026-10-26-blanket-owner-test.md`.
+Pricing research runs separately while the owner blanket is prepared for ordering. A new native-linked Shopify product is verified Unlisted, with blanket-native template, word-free copy/image and one Tan50x60 variant. Existing89USD remains provisional; the active5.99USD Standard rate includes New York. Admin availability passes (CONTINUE/untracked inventory), and native auto-confirm is off. A missing default-image URL was repaired with an existing merchant reference, without AI generation. Mixed draft/blanket selection is repaired at84cf4cc: independent review,71 integration checks, minification and ThemeCheck pass. Guarded unpublished deployment40381714636 awaits final readback. Actual native form/cart/checkout is not yet verified because primary-domain browser loading fails. Preserved15900x18900 print passes decode and bounded likeness/occlusion review; six transparent top rows and five bottom rows need supplier-bleed confirmation. No order, payment, final price change or live theme release. See `docs/evidence/2026-10-26-blanket-owner-test.md`.
 
 The following checkpoints are historical and do not supersede this current priority.
 
@@ -137,7 +137,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Request the concrete new-product setup decision: proposed149USD with New York standard delivery included, native publication followed by Unlisted, and manual production review. After approval, verify the actual native cart/checkout before inviting the owner's real purchase. No old portrait upload or gateway maintenance.
+- **Next action:** Finish the actual unpublished native form/cart/checkout checks once browser connectivity recovers; pricing remains separate, and the owner enters recipient details and pays only after readiness. No further upload is requested yet.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
 - North Star check (2026-10-26): holds. The actual blanket artwork and print render passed bounded review, and purchase-flow defects are repaired; no measured revenue change or launch-readiness claim.
