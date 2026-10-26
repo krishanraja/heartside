@@ -19,7 +19,7 @@ test('draft gift navigation excludes conditional ornament and keeps selected gif
   const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
   const saved=new Map(), ctx={URL,cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug?view=gift&variant=999&keep=yes#art'},blanket:{url:'/products/test-blanket?view=gift'},print:{url:'/products/test-print?view=gift'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
-  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','chooseModel','addToCart'].map(section).join('\n'),ctx);
+  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','selectedGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
   assert.equal(ctx.chooseModel().count,3);ctx.addToCart();
   const queue=JSON.parse(saved.get('queue'));assert.equal(queue.length,3);
   for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.deepEqual(new URL(queue[i].url,'https://example.test').searchParams.getAll('view'),[view]);
