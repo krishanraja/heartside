@@ -39,10 +39,11 @@
     }
     var status = document.createElement('p'); status.setAttribute('role', 'status');
     var toneHelp = options && options.toneElsewhere ? 'Tone changes the note on gifts with words and the imagery on word-free gifts.' : options && options.wordFree ? 'Tone changes the imagery. This gift has no words.' : 'Tone changes the note. Your artwork stays the same.';
-    status.textContent = toneHelp + ' Artwork updates are paused while these styles are tested.';
+    var updateHelp = options && options.nativeUpload ? ' Choose your photo in the personalizer to create artwork for these choices.' : ' Artwork updates are paused while these styles are tested.';
+    status.textContent = toneHelp + updateHelp;
     host.appendChild(status);
     function changed() {
-      try { select({style: picker.value, tone: tone ? tone.value : read().tone}); status.textContent = toneHelp + ' Choices saved for all your gifts. Your edited words stay as written.'; }
+      try { select({style: picker.value, tone: tone ? tone.value : read().tone}); status.textContent = toneHelp + ' Choices saved for all your gifts.' + (options && options.nativeUpload ? updateHelp : ' Your edited words stay as written.'); }
       catch (e) {
         var saved = read(); picker.value = saved.style; if (tone) tone.value = saved.tone;
         status.textContent = 'Your choices could not be saved. Your previous choices are still selected. Please try again.';

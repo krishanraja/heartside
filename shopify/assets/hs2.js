@@ -45,8 +45,8 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
-    if (k === 'personality' && cityArtPreview()) return nativeArtworkEvidence();
-    if (cityArtPreview() && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
+    if (k === 'personality' && (cityArtPreview() || nativeBlanketPurchase())) return nativeArtworkEvidence();
+    if ((cityArtPreview() || nativeBlanketPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
       return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[blanketArtPreview() ? choice.tone : recipes.toneRouting.textProductImageTone].label;
     }
@@ -65,7 +65,99 @@
   function mugProduct() { return v3Kind() === 'mug' || handleOf(window.location.pathname) === 'the-morning-mug'; }
   // Opt-in preview only. Existing products retain their approved photo flow.
   function cityArtPreview() { return !!document.querySelector('#buy[data-hs2-city-art-preview]'); }
-  function blanketArtPreview() { return !!document.querySelector('#buy[data-hs2-blanket-art-preview]'); }
+  function blanketArtPreview() { return !!document.querySelector('#buy[data-hs2-blanket-art-preview], #buy[data-hs2-blanket-purchase]'); }
+  function nativeBlanketPurchase() { return !!document.querySelector('#buy[data-hs2-blanket-purchase]'); }
+  function blanketUploadPending() {
+    var key = 'hs2-blanket-upload:' + productId(), pending;
+    try { pending = JSON.parse(window.sessionStorage.getItem(key) || 'null'); } catch (e) { return true; }
+    if (!pending) return false;
+    var src = cityArtSource(), photo = document.querySelector('.tee-field--photo .tee-photo-image');
+    if (src && src !== pending.before && photo && photo.getAttribute('src') === src && !document.querySelector('.vm--container')) {
+      try { window.sessionStorage.removeItem(key); } catch (e) { return true; }
+      return false;
+    }
+    return true;
+  }
+  function beginBlanketUpload() {
+    if (!productId() || blanketUploadPending() || !nativeBlanketInputsReady()) return false;
+    try { window.sessionStorage.setItem('hs2-blanket-upload:' + productId(), JSON.stringify({before: cityArtSource()})); return true; }
+    catch (e) { return false; }
+  }
+  function blanketPurchaseStatus(message) {
+    var el = document.querySelector('[data-hs2-artwork-status]');
+    if (el && el.textContent !== message) el.textContent = message;
+  }
+  var blanketAcceptedKey = '';
+  function blanketReviewKey() { return artRequestKey() + ':' + cityArtSource(); }
+  function blanketNativeError() {
+    return Array.prototype.some.call(document.querySelectorAll('#buy .tee-field--invalid, #buy [role="alert"]'), function (el) {
+      return !!el.getClientRects().length && (el.classList.contains('tee-field--invalid') || /failed|error|could not|unable/i.test(el.textContent));
+    });
+  }
+  function blanketReviewAccepted() { return blanketAcceptedKey === blanketReviewKey() && !blanketNativeError(); }
+  function resetBlanketUpload() {
+    try {
+      // Invalidate the old UI request before unlocking. Reset never sends a photo.
+      window.sessionStorage.setItem('hs2-art-request:' + productId() + ':latest', 'retry-required');
+      window.sessionStorage.removeItem('hs2-blanket-upload:' + productId());
+      doHandoff.artKey = '';
+      blanketAcceptedKey = '';
+      return true;
+    } catch (e) { return false; }
+  }
+  function bindBlanketRecovery() {
+    var box = document.querySelector('[data-hs2-upload-recovery]');
+    if (!nativeBlanketPurchase() || !box) return;
+    var acceptance = document.querySelector('[data-hs2-artwork-accept]');
+    acceptance.addEventListener('change', function () {
+      blanketAcceptedKey = acceptance.checked && !blanketUploadPending() && cityArtSaved() && !blanketNativeError() ? blanketReviewKey() : '';
+      acceptance.checked = !!blanketAcceptedKey;
+    });
+    var ack = box.querySelector('[data-hs2-upload-retry-ack]'), button = box.querySelector('[data-hs2-upload-retry]');
+    ack.addEventListener('change', function () { button.disabled = !ack.checked; });
+    button.addEventListener('click', function () {
+      if (!ack.checked) return;
+      if (!resetBlanketUpload()) { blanketPurchaseStatus('This browser could not save the retry choice. No new upload has started.'); return; }
+      ack.checked = false; button.disabled = true; box.open = false;
+      updateBlanketPurchaseStatus();
+      blanketPurchaseStatus('No new artwork has started. Choose your photo again only when you are ready to retry.');
+    });
+  }
+  function nativeBlanketInputsReady() {
+    var fields = tibFields();
+    return ['personality', 'art_style', 'art_tone'].every(function (key) {
+      var field = fields.find(function (f) { return f.rule.k === key; });
+      if (!field) return false;
+      var text = field.el.querySelector('input[type="text"], input:not([type]), textarea');
+      if (text) return text.value === answer(key);
+      var select = field.el.querySelector('select');
+      if (select) { var option = select.options[select.selectedIndex]; return !!option && choiceMatches(option.textContent, key); }
+      var selectedRadio = Array.prototype.some.call(field.el.querySelectorAll('input[type="radio"]'), function (radio) {
+        var label = radioLabel(radio);
+        return radioPicked(radio) && choiceMatches(label ? label.textContent : radio.value, key);
+      });
+      return selectedRadio || Array.prototype.some.call(field.el.querySelectorAll('button, [role="radio"], [role="option"], .tee-option'), function (option) {
+        return (/active|selected|checked/.test(option.className) || option.getAttribute('aria-checked') === 'true') && choiceMatches(option.textContent, key);
+      });
+    });
+  }
+  function updateBlanketPurchaseStatus() {
+    var pending = blanketUploadPending();
+    var recovery = document.querySelector('[data-hs2-upload-recovery]');
+    if (recovery) recovery.hidden = !pending;
+    var link = document.querySelector('[data-hs2-artwork-source]');
+    if (link) { link.hidden = true; link.removeAttribute('href'); }
+    var acceptance = document.querySelector('[data-hs2-artwork-accept]'), review = document.querySelector('[data-hs2-artwork-accept-wrap]');
+    if (review) review.hidden = true;
+    if (acceptance && !blanketReviewAccepted()) { acceptance.checked = false; blanketAcceptedKey = ''; }
+    document.querySelectorAll('[data-hs-art-choices] select').forEach(function (select) { select.disabled = pending; });
+    if (pending) { blanketPurchaseStatus('Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
+    if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
+    var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
+    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your blanket.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Your choices changed. Choose your photo below to create matching artwork before adding your blanket.' : 'Choose your photo below to create your artwork. Check the result before adding your blanket.');
+    if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
+    if (review) review.hidden = !saved;
+  }
   function artworkFacts() {
     var profile = state.hs3_art_profile;
     // Existing chat sessions can migrate without making the buyer answer again.
@@ -158,7 +250,7 @@
     try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
   }
   function cityArtSaved() {
-    if (!cityArtPreview() || !artRequested() || document.querySelector('.vm--container')) return false;
+    if (!(cityArtPreview() || nativeBlanketPurchase()) || !artRequested() || document.querySelector('.vm--container')) return false;
     var src = cityArtSource(), before = '';
     var photo = document.querySelector('.tee-field--photo .tee-photo-image');
     if (!photo || photo.getAttribute('src') !== src) return false;
@@ -842,7 +934,7 @@
     inp.__hs2set = false;
   }
   function choiceMatches(text, k) {
-    if (cityArtPreview() && (k === 'art_style' || k === 'art_tone')) return norm(text) === norm(answer(k));
+    if ((cityArtPreview() || nativeBlanketPurchase()) && (k === 'art_style' || k === 'art_tone')) return norm(text) === norm(answer(k));
     var t = norm(text), label = norm(val(k)), line = norm(lines(k)[val(k)]);
     return !!t && (t === label || t === line || t.indexOf(label + ' ') === 0 || (line && t.indexOf(line) === 0));
   }
@@ -902,11 +994,17 @@
   // when the chat's optional photo step was skipped or an earlier photo was restored.
   function guardGiftPhoto() {
     document.addEventListener('submit', function (e) {
-      if (cityArtPreview() && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
+      if ((cityArtPreview() || nativeBlanketPurchase()) && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
     document.addEventListener('click', function (e) {
-      var button = e.target.closest && e.target.closest(cityArtPreview() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
-      if (!button || !giftView()) return;
+      var button = e.target.closest && e.target.closest(cityArtPreview() || nativeBlanketPurchase() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
+      if (!button || !(giftView() || nativeBlanketPurchase())) return;
+      if (nativeBlanketPurchase()) {
+        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted()) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        blanketPurchaseStatus('Finish and save artwork for your current choices, then tick the artwork review before adding this blanket. Resolve any error shown by the personalizer.');
+        return;
+      }
       // This isolated template is for acceptance testing. AI completion, raw-photo
       // fallback and source resolution still need provider-backed verification.
       if (cityArtPreview()) {
@@ -975,12 +1073,12 @@
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
-    if (cityArtPreview() && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
+    if ((cityArtPreview() || nativeBlanketPurchase()) && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
       var name = text.name || text.id;
-      if (k === 'personality' && cityArtPreview()) {
+      if (k === 'personality' && (cityArtPreview() || nativeBlanketPurchase())) {
         el.setAttribute('data-hs2-art-personality', '');
         var facts = nativeArtworkEvidence();
         if (text.value !== facts) setValue(text, facts);
@@ -999,7 +1097,7 @@
       return { name: name, value: want, changed: true };
     }
     if (select) {
-      var sharedArtChoice = cityArtPreview() && (k === 'art_style' || k === 'art_tone');
+      var sharedArtChoice = (cityArtPreview() || nativeBlanketPurchase()) && (k === 'art_style' || k === 'art_tone');
       if (!sharedArtChoice) watchField(select, k);
       if (!sharedArtChoice && bridge.owned[select.name]) return { name: select.name, value: select.value, mine: true };
       var opt = Array.prototype.slice.call(select.options).filter(function (o) { return !o.disabled && choiceMatches(o.textContent, k); })[0];
@@ -1096,6 +1194,7 @@
     return (c && c.productId) || (m && m.product && m.product.id) || null;
   }
   function refill(wanted) {
+    if (nativeBlanketPurchase()) return; // Never replay a stored photo through a paid native effect.
     var pid = productId(), api = window.teeinblue;
     if (!pid || !api || !api.refillCustomizationData || bridge.refilled) return;
     bridge.refilled = true;
@@ -1167,6 +1266,7 @@
      reads preview, price, photo, Add To Cart. The photo field and any field the review
      doesn't fill (a line to pick, say) stay open. */
   function bridgeStatus(settled) {
+    if (nativeBlanketPurchase()) return; // Keep the native upload and dog-name field visible.
     var card = document.querySelector('[data-hs2-answers]');
     if (!card) return;
     var st = card.querySelector('[data-hs2-bridge-status]'), note = card.querySelector('[data-hs2-bridge-note]');
@@ -1443,7 +1543,7 @@
   function doHandoff(box, attempt) {
     // Candidate system has no paid dispatch authority or verified original source.
     // No option selection, reload or legacy handoff may start an image effect.
-    if (cityArtPreview()) return;
+    if (cityArtPreview() || nativeBlanketPurchase()) return;
     attempt = attempt || 0;
     if (cityArtPreview() && artRequested()) return;
     var target = photoInput();
@@ -1501,6 +1601,7 @@
      dog, not the shopper's. The card and its button stay, only as a fallback for a browser
      where the automatic hand-off throws. */
   function handoff() {
+    if (nativeBlanketPurchase()) { updateBlanketPurchaseStatus(); return; }
     var box = document.querySelector('[data-hs2-handoff]');
     if (!box) return;
     var img = box.querySelector('[data-hs2-handoff-img]');
@@ -1555,10 +1656,15 @@
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
       var f = inp.files && inp.files[0];
       if (!f || !/^image\//.test(f.type)) return;
+      if (nativeBlanketPurchase() && !beginBlanketUpload()) {
+        e.preventDefault(); e.stopImmediatePropagation(); inp.value = '';
+        blanketPurchaseStatus('Upload held: wait for any current artwork to finish and your choices to load. This browser must allow session storage before creating artwork.');
+        return;
+      }
       var t = Date.now();
       markHanded(t);
       usePhoto(f, t);
-      if (cityArtPreview()) markArtRequested();
+      if (cityArtPreview() || nativeBlanketPurchase()) markArtRequested();
       state.hs3_photo_t = t; save();
       savePhoto(f, t);
       track('photo_attached', { where: 'personalizer' });
@@ -2411,11 +2517,12 @@
 
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
-    if (cityArtPreview() && window.HSArtworkChoices) {
-      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview()});
+    if ((cityArtPreview() || nativeBlanketPurchase()) && window.HSArtworkChoices) {
+      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeBlanketPurchase()});
       window.addEventListener('hs-artwork-choices', function () { runBridge(); });
     }
     guardSearchFocus();
+    bindBlanketRecovery();
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
