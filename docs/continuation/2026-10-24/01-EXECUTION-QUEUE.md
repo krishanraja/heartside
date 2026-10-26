@@ -19,7 +19,7 @@ Approved assortment, Buddy host, shared profile, six candidate media and three t
 
 Eleven selected-variant Brooklyn quotes and two baskets are recorded; provisional 50% delivered-supplier-cost floors are reproducible. No all-cost net margin or live retail price is certified. See [economics](../../evidence/2026-10-24-economics-calibration.md).
 
-Six-style screen: revision 2 of tools/print-art/six-style-test-v1.json, six Warm portrait cases, existing native route, one licensed dog, USD 5 all-in maximum, no retries/replacements, one action at a time. Approval exists; billing condition is unresolved. **Zero new six-style outputs exist.** The old candidate board and mug wrap reference are not results.
+Six-style screen: revision 2 of tools/print-art/six-style-test-v1.json, six Warm portrait cases, existing native route, one licensed dog, USD 5 all-in maximum, no retries/replacements, one action at a time. Approval exists; billing condition is unresolved. **Six original style outputs plus one approved Painterly correction now exist.** No more generation is authorized. Billing is deferred; the old mug wrap reference is not a new output.
 
 ## E0. Resume the exact checkpoint
 
@@ -57,7 +57,7 @@ Current quoted delivered costs: each mug color USD 16.55; unframed 18.52; each f
 - [x] **E2-B02 PASS 2026-10-24, controls evidence only:** Actual account supports enforced limits. Approved isolated USD 1 limit saved/reloaded at USD 0; enforcement lag and reserve documented. This does not pass the all-in execution gate. [Evidence](../../evidence/2026-10-24-native-billing-isolation.md).
 - [x] **E2-B03 PASS 2026-10-24:** No suitable existing isolated project; concrete minimal native setup prepared, approved and project created. Shared production limit unchanged. [Evidence](../../evidence/2026-10-24-native-billing-isolation.md).
 - [x] **E2-B04 APPROVAL RECEIVED 2026-10-24:** Krish approved isolated native setup with USD 1 hard API limit, image-only credential and backup-model switching off. Project/model/failover changes verified; direct credential creation/entry remains pending. No alternate engine or overrun approved. [Evidence](../../evidence/2026-10-24-native-billing-isolation.md).
-- [ ] **E2-B05 PARTIAL:** Read support response if available; otherwise retain the existing authorized Monday follow-up. Capture answers about original source, scaling, failed/time-out billing, refresh/final-render regeneration and private binding. Pass: no duplicate message; unresolved facts remain unresolved.
+- [ ] **E2-B05 PARTIAL 2026-10-26:** Read support reply confirming low-resolution previews and high-resolution test designs; exact original export, upscaling, private binding and direct-provider charge behavior remain unanswered. Existing follow-up is already sent; do not duplicate it. Capture answers about original source, scaling, failed/time-out billing, refresh/final-render regeneration and private binding. Pass: no duplicate message; unresolved facts remain unresolved.
 - [x] **E2-B06 PASS, corrected baseline:** Historical Oct23 CSV: USD0.372896 / three requests. A separate small Oct24 16:37 UTC request (USD0.008023) appeared late and is conservatively included in this run allowance; origin unestablished. Rounded UI baseline omitted it.
 - [x] **E2-B07 PASS 2026-10-24:** Revision-2 plan/source/normalized upload/native prompt hashes matched; latest tone-routing compiler returned six unique fingerprints with unchanged scope and executionReady=false. No packet/results overwrite. [Evidence](../../evidence/2026-10-24-native-billing-isolation.md).
 - [ ] **E2-B08 BLOCKED on B01-B07:** Record the evidence that satisfies the billing condition in a separate execution receipt. The offline compiler deliberately reports executionReady=false; do not invent an execute switch or flip a flag to bypass the gate. Pass: maximum total USD 5 including uncertainty reserve, one request at a time, no automatic retry.
@@ -118,9 +118,9 @@ This is a staged qualification matrix, not authorization to buy 108 new images. 
 
 ### Portrait pair: one art system, framed and unframed
 
-- [ ] **E3-P01 PARTIAL:** Verify exact 12x18 unframed and black/white/red-oak frame mappings and supplier print templates. Pass: selected frame changes physical format, not accepted dog/scene.
+- [ ] **E3-P01 PARTIAL, framed mapping verified 2026-10-26:** Black/Red Oak/White 12x18 native supplier mappings match the three Shopify draft variants; no SKU/price/image changes. Unframed remains open.  Verify exact 12x18 unframed and black/white/red-oak frame mappings and supplier print templates. Pass: selected frame changes physical format, not accepted dog/scene.
 - [ ] **E3-P02 NOT RUN:** Adapt each qualified medium to the approved portrait hierarchy: focal actual dog, optional buyer-specified city, restrained deterministic handwritten note/signature and decorative paw.
-- [ ] **E3-P03 PARTIAL, repair staged:** Blank/entered/cleared-city source and minified regressions pass; proposed native template validates. Paired deployment and actual runtime check remain open. Test blank city, explicit supported city and long place input. Pass: no default city, shipping-address inference or invented landmark.
+- [ ] **E3-P03 PARTIAL, transport PASS 2026-10-26:** Paired native/unpublished deployment complete. Actual blank, São Paulo, clearing and reload produce correct native values with no default city; 18 regressions pass. Long-place and generated scene acceptance remain unproven because generation is paused. [Evidence](../../evidence/2026-10-26-optional-city-and-text.md).
 - [ ] **E3-P04 NOT RUN:** Set crop, bleed, safe area, note/signature placement and frame overlap at 12x18. Pass: full-resolution files and actual-size text inspection for all framing choices.
 - [ ] **E3-P05 PARTIAL:** Bind/check existing private portrait campaign and intended variants using supported draft-safe operations. Pass: saved prompt/options and mappings match readback; no public listing or optional catalog overwrites.
 - [ ] **E3-P06 NOT RUN:** Export/inspect final portrait production file and supplier preview for each frame option plus unframed. Pass: same accepted scene, correct crop/color and exact note.
@@ -167,7 +167,7 @@ This is a staged qualification matrix, not authorization to buy 108 new images. 
 
 ### Product records and stage close
 
-- [ ] **E3-R01 NOT RUN:** Update private product titles/descriptions/options/alt text to correct sizes, colors, materials, included frame/insert, word-free versus note behavior and Buddy. Keep customer names independent.
+- [ ] **E3-R01 PARTIAL 2026-10-26:** Portrait description corrected in native product and Shopify, with independent readback and DRAFT status preserved. Other product records remain open.  Update private product titles/descriptions/options/alt text to correct sizes, colors, materials, included frame/insert, word-free versus note behavior and Buddy. Keep customer names independent.
 - [ ] **E3-R02 NOT RUN:** Check variant availability/price placeholders, template assignment, campaign/artwork versions and purchase flags. Pass: all unfinished products stay private/unorderable.
 - [ ] **E3-R03 NOT RUN:** Store final accepted art, source linkages, layout revisions and product approvals in the owning repo/private evidence as appropriate. Pass: reproducible production inputs, no customer/account-private data committed.
 - [ ] **E3-R04 NOT RUN:** Complete acceptance entries for every enabled product/style/tone route. Pass: no critical identity, factual, text, geometry, source or private-binding failure.

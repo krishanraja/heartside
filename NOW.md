@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-26
-head: 989d23b (deployed unpublished code; evidence closeout follows)
+head: 1387432 (deployed unpublished code; evidence closeout follows)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -37,7 +37,7 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
-October 26 checkpoint: Optional-city repair is prepared locally and the proposed native template validates with zero findings. 18 source/minified regressions pass. Three additional deterministic Ink layout fixtures completed without AI generation: maximum text, Unicode and empty values. Native/theme pair is not yet applied; actual runtime acceptance remains open. See `docs/evidence/2026-10-26-optional-city-and-text.md`.
+October 26 checkpoint: Paired optional-city repair deployed to the unpublished theme at 1387432 (successful guarded run 40299189411) and native version 3078046. Eighteen regressions pass; actual blank -> São Paulo -> cleared -> reload checks pass. Unicode copy persists and ordering/generation remain disabled. Description-only sync independently reads back correctly in Shopify with DRAFT status. Support has replied about high-resolution versus preview rendering; exact current original/source linkage and private binding remain open. See `docs/evidence/2026-10-26-optional-city-and-text.md`.
 
 October 25 product-check update: Portrait description corrected and persisted in Teeinblue; native campaign readback matches. Black/Red Oak/White selections inspected; Black restored. Both existing 23 October native print PNGs decode and the controlled proof hash matches. That proof has narrow transparent edge strips; current S3-R1/Ink original-source lineage remains unverified. Billing explicitly deferred per Krish; no more generation. Shopify copy readback, source export and remaining product qualification are next. See `docs/evidence/2026-10-25-product-readiness.md`.
 
@@ -117,7 +117,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Apply the paired optional-city native/preview-theme change and verify blank, explicit and cleared city in the unpublished runtime without generation. Billing remains deferred; original-source evidence is separately unresolved.
+- **Next action:** Continue non-AI product/variant qualification and recover current original-source proof through the existing support thread; city repair and description sync are complete. Billing remains deferred.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
 - North Star check (2026-10-26): holds. City-input defect isolated and repair tested; three native text-layout checks completed. No net-sales change or launch readiness is claimed.
