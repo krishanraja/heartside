@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-26
-head: 1387432 (deployed unpublished code; evidence closeout follows)
+head: 4c0909c (deployed unpublished code; evidence closeout follows)
 lifecycle: live
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -34,6 +34,8 @@ Angles a writer can use:
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
 ## Where it is right now (as of 2026-10-26)
+
+October 26 later verification: buyer-facing Your note label deployed and exercised with reload persistence; 55 request/integration checks and grounded-profile check pass, Theme Check zero offenses. Mug dimensions and five-color US/Mexico stock confirmed; sherpa file dimensions confirmed. Pillow safe-area/source lineage/private binding remain unresolved. No more generation; no launch claim. Evidence: docs/evidence/2026-10-26-note-label-and-supplier-checks.md. One next action: resolve original production source and supported private binding from the existing Teeinblue follow-up while continuing independent supplier checks.
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"zero net sales against this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $0 after the recorded full refund, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
 
