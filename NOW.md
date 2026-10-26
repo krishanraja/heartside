@@ -35,7 +35,9 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-26)
 
-Current priority, superseding the portrait upload below: Krish supplied a partially occluded dog photo and selected the word-free 50x60 sherpa for his own real test order to New York. He will place and pay for it through Heartside after readiness checks; no agent order is authorized by this direction. The native private blanket preview is prepared for one existing-prompt image test. The owner must select the file himself because desktop/native picker control is prohibited. No new image has been uploaded or generated. The portrait has been restored to Draft and is not published; its inactive Online Store assignment remains staged. Normal payments remain active. The new blanket campaign has no store binding, so it is not yet ready for purchase. See `docs/evidence/2026-10-26-blanket-owner-test.md`.
+Current priority: prepare the owner's word-free 50x60 sherpa for his own real New York test order. One native generation from the supplied partly occluded photo passed bounded likeness, word-free repeat and safe head/shoulder fallback review. The current15900x18900 print PNG was retrieved, integrity checked and fully decoded. Original AI source dimensions and physical quality remain unverified. The purchase-flow candidate at d7d69e6 passes95 automated checks and independent review; deployment to the unpublished review theme is next. The new blanket still has no store binding. Proposed149USD with New York standard delivery included is not approved or applied. The owner will enter details and pay after actual product/cart/checkout checks. No order or payment occurred. See `docs/evidence/2026-10-26-blanket-owner-test.md`.
+
+The following checkpoints are historical and do not supersede this current priority.
 
 Latest verification: Krish saved the publishing cleanup; independent staged-publication readback is empty and the portrait is Draft. Normal payments remain restored. US shipping/inventory and observable native SKU mapping checks found no mismatch; the embedded session's visitor-country/request context remains unknown. A standalone preview with matching text/settings is ready but has no photo; one additional upload/generation is awaiting a specific owner decision. Historical blanket PNG dimensions are directly verified at 15900x18900. A mug preview text trial failed visual acceptance and was exactly rolled back; the original private templates are restored. See the later section of `docs/evidence/2026-10-26-controlled-checkout-and-mug.md`.
 
@@ -135,10 +137,10 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Krish selects his supplied photo in the prepared private native blanket form. Inspect the generated likeness, occlusion handling, word-free repeat and original test-design output. Then connect the correct new blanket through the supported Product Base route, with a concrete publication decision before any temporary public exposure. Verify the real product/cart/checkout and manual production hold before inviting his real purchase. Do not resume the old portrait upload or gateway window.
+- **Next action:** Deploy and verify the repaired blanket purchase flow on the existing unpublished review theme, then request the concrete new-product setup decision: proposed149USD with New York standard delivery included, native publication followed by Unlisted, and manual production review. After approval, verify the actual native cart/checkout before inviting the owner's real purchase. No old portrait upload or gateway maintenance.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
-- North Star check (2026-10-26): holds. Parallel work repaired three personalization failures, reconciled provisional costs and narrowed supplier gates; no measured revenue change or launch-readiness claim.
+- North Star check (2026-10-26): holds. The actual blanket artwork and print render passed bounded review, and purchase-flow defects are repaired; no measured revenue change or launch-readiness claim.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 
