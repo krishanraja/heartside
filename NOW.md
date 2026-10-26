@@ -35,9 +35,9 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Where it is right now (as of 2026-10-26)
 
-October 26 subsequent product checks: isolated unframed campaign restricted to 12x18 with its existing technical preview; separate private full-wrap mug campaign mapped to exactly five approved 11oz colors. Both have no store instances. Actual supplier 12x18 template proves an 11x17 safe area; all three selected frame colors show US catalog stock. Support now confirms original output cannot be retrieved before an order, so source verification is an order-stage dependency. Krish will send the prepared private/test-mode route clarification himself. No new generation, payment or publication. See `docs/evidence/2026-10-26-note-label-and-supplier-checks.md`.
+October 26 latest: Teeinblue confirms placement saves do not generate AI, no draft-publishing option exists, and standard product-page orders should render. Its official documentation supplies the Bogus Gateway test-order route, excluded from transaction billing but requiring temporary replacement of the normal card gateway. Krish accepts a brief checkout-maintenance window in principle; exact visibility, saved customization reuse, restoration and fulfillment holds remain to be proved. No new generation, payment, order or public release. See `docs/evidence/2026-10-26-note-label-and-supplier-checks.md`.
 
-The clarification is now visibly sent by Krish. Unpublished mug mobile/reference/selection-persistence checks pass, with original choices restored and Save disabled. Predictive-search reset errors and blank Recently viewed cards remain unresolved; browser controls timed out during real-key reproduction, so search is not certified. No theme code changed in this continuation.
+Unpublished mug mobile/reference/selection-persistence checks pass. The separate three-line Recently viewed guard is now deployed with exact snippet readback: unavailable products no longer create blank cards. Real matching/no-match/Clear/close checks pass, original choices remain restored and Save disabled. Historical transient reset errors did not recur; this is bounded search proof, not full journey certification. Main deployed code remains 4c0909c plus this scoped snippet patch.
 
 October 26 later verification: buyer-facing Your note label deployed and exercised with reload persistence; 55 request/integration checks and grounded-profile check pass, Theme Check zero offenses. Mug dimensions and five-color US/Mexico stock confirmed; sherpa file dimensions confirmed. Pillow safe-area/source lineage/private binding remain unresolved. No more generation; no launch claim. Evidence: docs/evidence/2026-10-26-note-label-and-supplier-checks.md. One next action: resolve original production source and supported private binding from the existing Teeinblue follow-up while continuing independent supplier checks.
 
@@ -123,10 +123,10 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Finish independent product/layout qualification and establish the supported private test-order route. Original-source inspection now belongs after a supported order; do not repeat pre-order export hunting. Krish is sending the prepared support clarification. Billing stays deferred, generation paused.
+- **Next action:** Recover the newer saved generated results for the standard product-page rehearsal without another AI upload. Krish accepts a brief Bogus Gateway maintenance window in principle; normal payments remain active. Printful manual-confirmation/draft-import settings are verified. Only the older October 23 portrait is visibly retained in Shopify; it cannot certify newer styles. A precise recovery question is prepared for support, with send permission pending. Exact visibility/restoration and test execution remain gated; billing stays deferred and generation paused.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
-- North Star check (2026-10-26): holds. Private variant mappings and supplier safe-area evidence advance product qualification; no net-sales change or launch readiness is claimed.
+- North Star check (2026-10-26): holds. Removed visible search placeholders and identified the documented order-test route, advancing launch verification; no net-sales change or launch readiness is claimed.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 
