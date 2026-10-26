@@ -351,7 +351,19 @@
     if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || tone === S.noteTone) return;
     if (cfg.artworkCandidates && window.HSArtworkChoices) {
       try { window.HSArtworkChoices.select({tone: tone}); }
-      catch (e) { ui.toneStatus = 'Your shared choice could not be saved. Please keep this page open.'; return; }
+      catch (e) {
+        ui.toneStatus = 'Your shared choice could not be saved. Your previous tone is still selected. Please try again.';
+        if (frame) {
+          var index = {sentimental: 0, warm: 1, hilarious: 2}[S.noteTone];
+          var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][index];
+          var range = frame.querySelector('[data-hs3-tone]'), label = frame.querySelector('[data-hs3-tone-name]');
+          var error = frame.querySelector('#hs3-tone-status');
+          if (range) { range.value = index; range.setAttribute('aria-valuetext', name); }
+          if (label) label.textContent = name;
+          if (error) error.textContent = ui.toneStatus;
+        }
+        return;
+      }
     }
     S.noteTone = tone; ui.toneStatus = '';
     track('tone_pick', { tone: tone }); save();

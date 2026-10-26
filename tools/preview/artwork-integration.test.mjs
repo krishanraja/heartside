@@ -132,23 +132,36 @@ for (const minify of [false,true]) {
     assert.equal(result.request.copy.owner,state.hs3_copy_owner);
   });
 
-  test(mode+': failed shared-choice writes restore displayed controls and allow a later retry',()=>{
+  for (const options of [{},{wordFree:true},{toneElsewhere:true}]) test(mode+': failed shared-choice writes restore displayed controls and allow a later retry '+JSON.stringify(options),()=>{
     const saved=new Map(),events=[];let denyWrites=false;
     function element(tag){return {tag,children:[],listeners:{},attributes:{},appendChild(child){this.children.push(child);},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,v){this.listeners[k]=v;}};}
     const ctx={document:{createElement:element},sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>{if(denyWrites)throw Error('Quota exceeded');saved.set(k,v);}},CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}},window:{HSArtworkEngine:{recipes},dispatchEvent:event=>events.push(event)}};
     const source=readFileSync(new URL('../../shopify/assets/hs-artwork-choices.js',import.meta.url),'utf8');
     vm.runInNewContext(minify?transformSync(source,{minify:true}).code:source,ctx);
     ctx.window.HSArtworkChoices.select({style:'ink',tone:'sentimental'});
-    const host=element('div');ctx.window.HSArtworkChoices.mount(host,{});
-    const [styleLabel,toneLabel,status]=host.children,style=styleLabel.children[0],tone=toneLabel.children[0];
-    denyWrites=true;style.value='comic';tone.value='hilarious';style.listeners.change();
-    assert.equal(style.value,'ink');assert.equal(tone.value,'sentimental');
+    const host=element('div');ctx.window.HSArtworkChoices.mount(host,options);
+    const style=host.children[0].children[0],tone=options.toneElsewhere?null:host.children[1].children[0],status=host.children.at(-1);
+    denyWrites=true;style.value='comic';if(tone)tone.value='hilarious';style.listeners.change();
+    assert.equal(style.value,'ink');if(tone)assert.equal(tone.value,'sentimental');
+    if(tone){tone.value='hilarious';tone.listeners.change();assert.equal(tone.value,'sentimental');}
     assert.equal(events.length,1);assert.equal(status.attributes.role,'status');
     assert.match(status.textContent,/could not be saved/i);
     assert.match(status.textContent,/previous choices/i);
-    denyWrites=false;style.value='comic';tone.value='hilarious';style.listeners.change();
+    denyWrites=false;style.value='comic';if(tone)tone.value='hilarious';style.listeners.change();
     assert.equal(ctx.window.HSArtworkChoices.read().style,'comic');
-    assert.equal(ctx.window.HSArtworkChoices.read().tone,'hilarious');assert.equal(events.length,2);
+    assert.equal(ctx.window.HSArtworkChoices.read().tone,tone?'hilarious':'sentimental');assert.equal(events.length,2);
+  });
+
+  test(mode+': failed Buddy tone save restores range, visible label and accessible value without dispatch',()=>{
+    const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
+    const start=source.indexOf('  function selectTone('),code=source.slice(start,source.indexOf('\n  function ',start+1));
+    const range={value:'2',attributes:{'aria-valuetext':'Hilarious'},setAttribute(k,v){this.attributes[k]=v;}},label={textContent:'Hilarious'},status={textContent:''};
+    const nodes={'[data-hs3-tone]':range,'[data-hs3-tone-name]':label,'#hs3-tone-status':status};
+    const ctx={S:{noteTone:'warm'},ui:{},cfg:{artworkCandidates:true},frame:{querySelector:k=>nodes[k]},window:{HSArtworkChoices:{select:()=>{throw Error('Quota exceeded');}}},save:()=>{throw Error('state must not change');},track:()=>{throw Error('selection must not succeed');}};
+    vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);ctx.selectTone('hilarious');
+    assert.equal(ctx.S.noteTone,'warm');assert.equal(String(range.value),'1');
+    assert.equal(label.textContent,'Warm with a wink');assert.equal(range.attributes['aria-valuetext'],'Warm with a wink');
+    assert.match(status.textContent,/could not be saved/);assert.match(status.textContent,/previous tone/);
   });
 }
 test('normalized PNG guard rejects metadata and trailing bytes',()=>{
