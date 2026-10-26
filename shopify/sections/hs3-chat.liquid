@@ -50,6 +50,7 @@
       "composeUrl": {{ s.compose_url | json }},
       "ai": {{ s.ai_on | json }},
       "artworkCandidates": {{ s.artwork_candidates | json }},
+      "blanketPurchase": {{ s.blanket_purchase | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
       "examplePhoto": {{ example_photo | strip | json }},
       "mug": {
@@ -149,6 +150,7 @@
     { "type": "text", "id": "product_view", "label": "Product template for the gifts", "info": "Opens each gift with ?view= this.", "default": "gift" },
     { "type": "product", "id": "product_mug", "label": "The Morning Mug" },
     { "type": "product", "id": "product_blanket", "label": "The Couch Blanket" },
+    { "type": "checkbox", "id": "blanket_purchase", "label": "Enable native blanket purchase route", "default": false, "info": "With shared artwork choices enabled, sends only the selected blanket product to blanket-native. Enable after its native campaign, price and purchase flow are verified." },
     { "type": "product", "id": "product_print", "label": "The Framed Print" },
     { "type": "product", "id": "product_ornament", "label": "The Tree Ornament" },
     { "type": "number", "id": "price_mug", "label": "Mug price until the product is picked", "default": 29 },
