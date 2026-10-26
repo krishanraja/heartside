@@ -71,3 +71,19 @@ Observed results:
 - No gallery, URL restore or generated-output version selector was available in the inspected photo field/placement editor. This route does not recover current Painterly/Ink outputs or establish their original dimensions.
 
 The standard-template discovery corrects the earlier incomplete UI investigation. The precise remaining dependency is restoration of the newer saved outputs into a supported current customization, not whether placement editing exists. The owner-sent support question remains relevant in that narrower form. Original paused portrait review restored; no editor save, product assignment, payment or publication change. Private screenshot: `master/ordinary-photo-stale-after-placement.png`.
+
+## Owner-approved replacement and current product checks
+
+Krish subsequently lifted the generation freeze and directed a practical trade-off discussion before vendor escalation. One fresh Painterly upload was executed under the existing USD5 total. This supersedes recovery support as a prerequisite; the previous paragraph describes the earlier checkpoint only.
+
+- Approved normalized source hash matched. Existing OpenAI Sunburst/High and backup switching off were verified. The strengthened Painterly prompt was retained.
+- One source file was submitted through the standard draft-product preview. Processing completed and the image-placement Save closed the placement editor. The native stale-photo warning cleared. Eight intentional artwork generations now exist across the original six, the earlier revision and this replacement; prior outputs were preserved.
+- The new preview is 680x1024. It shows the dog on a couch with a striped sock, the requested note and signature. Painted treatment is apparent in the surroundings and coat, with finer facial detail. This is assistant preview inspection, not owner likeness approval or original print-resolution verification.
+- Black, Red Oak and White previews changed frame correctly while retaining the same generated image URL and dimensions. Black was restored. The default Shopify preview also exposes a separate Color selector that stays Black; these checks establish Teeinblue mockup behavior, not full variant/order parity or the intended customer-facing template.
+- Scoped provider dashboard increased from USD1.27 / 11 requests before upload to USD1.40 / 12 after it. Rounded displayed delta is USD0.13 and one request. Both totals include the historical baseline; this is API display evidence, not final tax-inclusive invoice reconciliation.
+- A single Add to Cart attempt from the still-Draft product returned **Cart Error**. No order, payment, fulfillment, publication or saved template assignment occurred. No matching error/warning was returned by the bounded browser console query. The cause remains unresolved; do not infer that Draft status alone caused it.
+- Private screenshots and receipt are in `C:\Users\krish\.scratch\heartside-painterly-reupload-2026-10-26\`. The current product session is retained without refresh to preserve customization.
+
+**Owner control boundary:** all UI actions must remain inside Codex's in-app browser. Never operate native desktop/apps or trigger a native picker without asking Krish first. Browser failures do not authorize a desktop fallback. The previous desktop fallback interrupted his work and was explicitly prohibited; he cancelled the leftover dialog himself. No further generation or upload is queued.
+
+Next: diagnose the cart handoff and prepare a concrete, controlled test-order decision for original-file verification, while continuing independent supplier/product work. Existing acceptance of a brief payment-maintenance window is in principle; no payment-gateway switch or order is executed here.
