@@ -1,6 +1,12 @@
-# Pricing to at least 50% net margin
+# Pricing for maximum total profit with a30% net floor
 
-## Current working instruction, October 24
+## Current owner ruling, October26
+
+Maximize expected total net operating profit, subject to a 30% net operating margin floor after all attributable business costs. The October26 owner ruling supersedes the mandatory50% floor; supplier-only margin is not net margin. Retrieve actual costs or use explicit conservative bounds without restarting the deferred labor interview. Exact price/discount activation, publication, spending and product acceptance remain separately gated.
+
+Recommended starting prices and inactive offers are in [the pricing ruling](../../evidence/2026-10-26-pricing-ruling.md). The all-cost model calibration now uses0.30; missing inputs continue to block certification. The old supplier-cost report remains explicitly historical. All October24 calculations below preserve decision-time assumptions and are superseded as current policy.
+
+## Historical working instruction, October24 (superseded)
 
 Krish subsequently directed: "Dont worry about that for now, just cost price + margin" in response to the labor-rate question. Use a provisional delivered-supplier-cost view now and defer labor calibration. Carry the existing 50% target into this view: price = (product + shipping + surcharge + supplier tax) / 0.50. This is supplier-cost margin, not all-cost net margin; no unknown operating cost becomes zero. Do not keep requesting labor inputs at this stage. Exact live prices remain approval-gated. The all-cost definition below is retained for later reconciliation, not used to block independent product work.
 

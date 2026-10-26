@@ -1,12 +1,12 @@
 {
   "currency": "USD",
   "period_days": 30,
-  "target_margin": "0.50",
+  "target_margin": "0.30",
   "current_pricing_basis": {
     "owner_direction": "October 24 2026: defer labor calibration for now; just cost price plus margin.",
     "basis": "Delivered supplier cost: product, shipping, surcharge and supplier tax. Separate provisional view, not all-cost net margin.",
     "target_supplier_cost_margin": "0.50",
-    "status": "PROVISIONAL_NOT_LIVE_PRICE_NOT_NET_MARGIN",
+    "status": "HISTORICAL_SUPERSEDED_SUPPLIER_ONLY_VIEW",
     "labor_calibration": "Deferred by owner; do not ask again during this stage. Unknown inputs in the all-cost model remain null."
   },
   "accounting_boundary": "Owner-confirmed October 24 2026: net operating profit after all attributable business costs, before owner personal income tax; include business-level profit tax when treatment is confirmed. Business profit-tax treatment remains unverified.",
@@ -902,5 +902,12 @@
       "route_parity_verified": false,
       "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Tan 50x60 sherpa qty1. Fulfillment 43.87, shipping 20.68, one surcharge 0.40, supplier tax 5.76, total 70.71. Exact basket readback; Teeinblue route parity unverified."
     }
+  },
+  "margin_policy": {
+    "owner_direction": "October26:30% net floor; maximize total net operating profit",
+    "source": "docs/evidence/2026-10-26-pricing-ruling.md",
+    "supersedes": "October24 mandatory50% minimum; prior20% downside allowance",
+    "status": "OWNER_POLICY_NOT_CERTIFIED_ECONOMICS",
+    "authority": "No live-price, promotion, spend or release approval"
   }
 }

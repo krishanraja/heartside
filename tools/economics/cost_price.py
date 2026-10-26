@@ -1,4 +1,4 @@
-"""Provisional delivered-supplier-cost pricing, not net-margin certification."""
+"""Historical October24 supplier-cost scenario; not the current net-margin policy."""
 import argparse
 import json
 from decimal import Decimal, ROUND_CEILING
@@ -19,10 +19,10 @@ def report(data):
             raise ValueError(f"Quote does not reconcile: {observation}")
         price = (total / (1 - target)).quantize(Decimal("0.01"), rounding=ROUND_CEILING)
         rows.append((quote.get("variant", quote.get("order_id")), total, price))
-    text = ["# Heartside provisional cost-based prices", "",
+    text = ["# Heartside historical supplier-cost scenario (October24)", "",
             "Owner direction, October 24, 2026: defer labor calibration for now and use cost price plus margin. "
-            "This view applies the existing 50% target to delivered supplier cost. Price = cost / (1 - 0.50), "
-            "so a 50% margin doubles cost; it is not a 50% markup.", "",
+            "This historical view applies the former50% target to delivered supplier cost. Price = cost / (1 - 0.50), "
+            "so a50% margin doubles cost; it is not a50% markup. October26 policy supersedes this: maximize total net profit subject to a30% net floor. These historical supplier-only results are not current price recommendations.", "",
             "Cost includes product, supplier shipping, the quoted seasonal surcharge and supplier tax. "
             "All quotes are unpaid Basic-order observations for Brooklyn, NY. "
             "The conditional ornament has no qualified quote and no calculated price.", "",

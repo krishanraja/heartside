@@ -43,7 +43,7 @@ For every product and each enabled style/tone route, record result as PASS, FAIL
 | Request safety | No stale result purchase, duplicate charges, implicit retry or auto-regeneration | Partial fixture PASS; full actual route NOT RUN |
 | US delivery | Exact variant/address quote, route and stock refresh | Public offer PASS; exact route NOT RUN |
 | Holiday claim | 2026 supplier cutoff plus artwork/review buffer | BLOCKED pending exact dates |
-| Net margin | Full order and monthly cost model meets 50%; assumptions disclosed | NOT RUN with actual cost inputs |
+| Net margin | Full order and monthly cost model supports30% net floor; maximize total profit; assumptions disclosed | NOT RUN with actual cost inputs |
 | UX | One simple flow, persistent shared state, mobile/desktop/keyboard/errors | Full upgraded range NOT RUN |
 | Website mockups | Faithful accepted product geometry/art/materials | WAIT for products |
 | Physical sample | Final batch received, inspected, costs reconciled | WAIT until last |
@@ -51,6 +51,6 @@ For every product and each enabled style/tone route, record result as PASS, FAIL
 
 ## Claim limits
 
-Use “listed available” for a catalog flag, “quote verified” for a current configured price, “visual direction approved” for Krish's concept ruling, “sample accepted” only after physical inspection, and “50% realized net margin” only after actual revenue/cost reconciliation. Never interchange these labels.
+Use “listed available” for a catalog flag, “quote verified” for a current configured price, “visual direction approved” for Krish's concept ruling, “sample accepted” only after physical inspection, and “realized net margin meeting the30% floor” only after actual revenue/cost reconciliation. Never interchange these labels.
 
 Stop release for any wrong-dog, stale-art, public-test-product, unreadable production copy, unsupported delivery promise or below-floor margin defect. Continue independent draft work. Ask Krish only for a genuinely unavailable fact, taste choice, exact external approval or unavoidable commercial trade-off.

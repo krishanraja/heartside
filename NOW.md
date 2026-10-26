@@ -14,7 +14,7 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 ---
 # Heartside (heartside.io): where it is right now
 
-> Current revamp contract: `docs/continuation/2026-10-24/START-HERE.md`. Scope is approved. Latest owner direction defers labor calibration and uses provisional delivered-supplier-cost pricing at a 50% margin for now. This is not net-margin certification or live-price approval. Historical descriptions below are implementation evidence, not the current product plan.
+> Current revamp contract: `docs/continuation/2026-10-24/START-HERE.md`. Scope is approved. Maximize expected total net operating profit, subject to a 30% net operating margin floor after all attributable business costs. The October26 owner ruling supersedes the mandatory50% floor; supplier-only margin is not net margin. Retrieve actual costs or use explicit conservative bounds without restarting the deferred labor interview. Exact price/discount activation, publication, spending and product acceptance remain separately gated. Historical descriptions below are evidence, not the current policy.
 
 ## What it is
 
@@ -34,6 +34,8 @@ Angles a writer can use:
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
 ## Where it is right now (as of 2026-10-26)
+
+October26 pricing ruling integrated:30% net operating margin is the floor; maximize total net profit. The recommended price/discount matrix and provisional-product flags are in `docs/evidence/2026-10-26-pricing-ruling.md`. Live89USD blanket and5.99USD shipping remain unchanged. No new generation approval or store reopening follows from this handoff.
 
 Pricing research runs separately while the owner blanket is prepared for ordering. A new native-linked Shopify product is verified Unlisted, with blanket-native template, word-free copy/image and one Tan50x60 variant. Existing89USD remains provisional; the active5.99USD Standard rate includes New York. Admin availability passes (CONTINUE/untracked inventory), and native auto-confirm is off. A missing default-image URL was repaired with an existing merchant reference, without AI generation. Mixed draft/blanket selection is repaired at84cf4cc: independent review,71 integration checks, minification and ThemeCheck pass. Guarded unpublished deployments40381714636 and40395703129 succeeded; chooser and memo hashes match committed bytes. Primary-domain connectivity recovered: actual native form and mobile preview render, choice reload persistence passes, and empty-artwork Add to Cart leaves the cart empty. The blanket-specific header now accurately says Shipping calculated at checkout. Reference-image labelling is also deployed and verified at e306a31; the protected standalone preview is staged. Complete personalized cart/checkout remains pending one fresh owner upload decision. Preserved15900x18900 print passes decode and bounded likeness/occlusion review; six transparent top rows and five bottom rows need supplier-bleed confirmation. No order, payment, final price change or live theme release. See `docs/evidence/2026-10-26-blanket-owner-test.md`.
 

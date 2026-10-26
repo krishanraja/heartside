@@ -6,9 +6,9 @@ This pack is the current brief for this revamp. Read it before acting. It contai
 
 ## Outcome
 
-**Latest pricing instruction (October 24):** Krish deferred labor calibration and requested "just cost price + margin" for now. Use delivered supplier cost at the existing 50% margin target as a clearly labeled provisional planning view; do not call it net margin or convert unknown operating costs to zero. Continue product work without further labor questions. `02-ECONOMICS.md` records this later instruction and preserves the earlier all-cost definition for reconciliation. Exact live prices remain gated.
+**Latest owner ruling (October26):** Maximize expected total net operating profit, subject to a 30% net operating margin floor after all attributable business costs. The October26 owner ruling supersedes the mandatory50% floor; supplier-only margin is not net margin. Retrieve actual costs or use explicit conservative bounds without restarting the deferred labor interview. Exact price/discount activation, publication, spending and product acceptance remain separately gated. See `../../evidence/2026-10-26-pricing-ruling.md`. The earlier50% instruction is retained as superseded history in `02-ECONOMICS.md`.
 
-Finish a US-only gift range that convincingly looks like the buyer's actual dog, reflects its real personality, shares a choice of substantially different art styles and a sentimental-to-hilarious control, is simple to personalize, and is priced to achieve **at least 50% net operating margin after all attributable business costs**. Net margin is a release requirement, not an outcome already achieved. Confirm the accounting treatment of business income taxes from available records or with Krish if necessary before certifying net margin; owner personal income taxes are not assumed to be product costs.
+Finish a US-only gift range that convincingly looks like the buyer's actual dog, reflects its real personality, shares a choice of substantially different art styles and a sentimental-to-hilarious control, is simple to personalize, and is priced to maximize **total net operating profit subject to at least30% net operating margin after all attributable business costs**. Net margin is a release requirement, not an outcome already achieved. Confirm the accounting treatment of business income taxes from available records or with Krish if necessary before certifying net margin; owner personal income taxes are not assumed to be product costs.
 
 The work serves Heartside's North Star: a recognizable, shareable gift business US dog owners reach for. The repository's `docs/NORTH_STAR.md` owns the business ambition and metric. Do not change it or update revenue from inference.
 
@@ -25,7 +25,7 @@ The work serves Heartside's North Star: a recognizable, shareable gift business 
 | Later development | Compact dog-narrated book for 2027 |
 | Outside this launch | Calendar, shaped pillow and broad novelty accessories/apparel |
 
-The scope is approved. Do not ask Krish to approve it again. Exact sell prices are not locked: calibrate to the 50% requirement using `02-ECONOMICS.md`. The pillow pilot and conditional ornament are not automatically core launch products.
+The scope is approved. Do not ask Krish to approve it again. Exact sell prices are not locked: calibrate to the30% net floor and total-profit objective using `02-ECONOMICS.md`. The pillow pilot and conditional ornament are not automatically core launch products.
 
 ## Non-negotiable instructions
 
