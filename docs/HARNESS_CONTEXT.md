@@ -1,4 +1,4 @@
-<!-- krish-repo-context:start brain=156425417b98 sha=e7a5edf21446 -->
+<!-- krish-repo-context:start brain=d84cfdfa1507 sha=222ff254d41d -->
 # heartside: operating context
 
 Generated from the central ai-harness brain. This is a route inventory, not a certification of current architecture. Read the section for the work at hand; repository-owned sources establish current facts. The nightly publisher rechecks source paths and named commands. This file grants no product action or spending authority.
@@ -6,9 +6,9 @@ Generated from the central ai-harness brain. This is a route inventory, not a ce
 ## Sources and system boundaries
 
 - Purpose and system boundaries (orientation): `README.md`.
-- Current repository state (state): `NOW.md`.
+- Current release state and next action; replaces docs/HANDOFF.md (verified at heartside 85471b7 on 2026-10-27) (state): `NOW.md`.
 - North Star (orientation): `docs/NORTH_STAR.md`.
-- Product scope; current status and next action remain in NOW.md (orientation): `docs/SCOPE.md`.
+- Current product scope at heartside 85471b7; status and next action remain in NOW.md (orientation): `docs/SCOPE.md`.
 - Superseded handoff moved from docs/HANDOFF.md in heartside commit 82dd8a6 (history): `docs/history/HANDOFF-2026-10-21.md`.
 - How the store, assets and growth engine stay in sync (workflow): `docs/SYNC.md`.
 
@@ -33,5 +33,5 @@ Keep an accumulated working brief: goal, accepted decisions, requested delta, co
 
 The brain retains evidence and proposals separately. Newly observed evidence never approves itself. When a failure repeats, diagnose missing knowledge, interpretation, retrieval, stale instructions, ignored guidance or the owning code before adding another rule.
 
-Acceptance: brain-repository-administration-v1. Effective knowledge IDs and their acceptance references are in ai-harness `brain/knowledge.jsonl`. Source inventory revision: `67101254a23e06a85361f978b12ab4e7ad34ae48`.
+Acceptance: brain-repository-administration-v1. Effective knowledge IDs and their acceptance references are in ai-harness `brain/knowledge.jsonl`. Source inventory revision: `85471b76a8b10627a277e0b6815968c2c102c5c5`.
 <!-- krish-repo-context:end -->
