@@ -356,3 +356,6 @@ html:has(.hs3--app) .shopify-section-group-footer-group { display: none !importa
   .hs3__frame[data-hs3-screen="choose"] .hs3-opts { grid-area: opts; padding: 28px 0 0; }
   .hs3__frame[data-hs3-screen="choose"] .hs3-ship { grid-area: ship; padding: 14px 0 0; }
 }
+.hs3-photo-note { display: flex; flex-direction: column; gap: 4px; }
+.hs3-photo-note[hidden] { display: none; }
+.hs3-photo-note p { color: var(--body); }

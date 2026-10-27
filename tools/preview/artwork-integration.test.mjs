@@ -216,7 +216,7 @@ for(const minify of [false,true]) test((minify?'minified':'source')+': native sh
 for (const minify of [false,true]) test((minify?'minified':'source')+': optional city stays absent and clears stale native defaults',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  const ctx={state:{city:''},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,setValue:(el,v)=>{el.value=v;}};
+  const ctx={state:{city:''},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,mayResend:()=>true,setValue:(el,v)=>{el.value=v;}};
   const code=['answer','nativeArtworkEvidence','watchField','fillField'].map(section).join('\n');vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
   assert.equal(ctx.answer('city'),'');assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).place,null);
   const events={},inp={value:'Somewhere quiet',name:'city',tagName:'INPUT',addEventListener:(n,fn)=>events[n]=fn};

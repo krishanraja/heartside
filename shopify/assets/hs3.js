@@ -513,6 +513,38 @@
       save(); photoStorageStatus();
     });
   }
+  /* The same on-device check the product page runs (hs-photo-quality.js): a photo that can't make
+     good artwork is turned away here, with the reason, before it is saved for the gifts. A dog the
+     detector missed can still be used ("It's my dog"); a warning keeps the photo. */
+  function checkPhoto(f, done) {
+    if (!window.HSPhotoQuality) { done(); return; }
+    photoNote('Checking your photo on your device.');
+    window.HSPhotoQuality.check(f, { timeout: 4000 }).then(function (r) {
+      var say = r.reasons.map(function (x) { return x.message; }).join(' ');
+      if (r.verdict === 'reject') {
+        track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+        photoNote(say, r.overridable ? function () { track('photo_override', {}); photoNote(''); done(); } : null);
+        return;
+      }
+      photoNote(r.verdict === 'warn' ? say : '');
+      done();
+    });
+  }
+  function photoNote(message, override) {
+    if (!frame) return;
+    var box = frame.querySelector('[data-hs3-photo-note]');
+    if (!box && message) {
+      box = document.createElement('div'); box.className = 'hs3-photo-note'; box.setAttribute('data-hs3-photo-note', '');
+      box.innerHTML = '<p class="hs3-small" role="alert"></p><button type="button" class="hs3-quiet" hidden>It\'s my dog. Use this photo.</button>';
+      var dock = frame.querySelector('.hs3-dock'); (dock || frame).appendChild(box);
+    }
+    if (!box) return;
+    box.hidden = !message;
+    box.querySelector('p').textContent = message || '';
+    var btn = box.querySelector('button');
+    btn.hidden = !override;
+    btn.onclick = override ? function () { btn.hidden = true; override(); } : null;
+  }
   // never a stranger's dog on the buyer's gift: no photo yet shows a paw placeholder
   function photoSrc() { return photoURL || ''; }
 
@@ -1319,11 +1351,13 @@
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
-      attachPhoto(f);
       file.value = ''; // Permit an explicit retry with the same file after storage failure.
-      track('photo_attached', {});
-      var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
-      var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
+      checkPhoto(f, function () {
+        attachPhoto(f);
+        track('photo_attached', {});
+        var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
+        var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
+      });
     });
     frame.querySelectorAll('[data-hs3-edit]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-edit');

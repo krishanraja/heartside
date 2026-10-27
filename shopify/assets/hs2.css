@@ -1115,3 +1115,9 @@ product-card quick-add-component button { display: none !important; }
 /* The shared native controller owns these machine-readable fields. */
 #buy[data-hs2-artwork-kind] [data-hs2-art-personality],
 #buy[data-hs2-artwork-kind] [data-hs2-handoff] { display:none!important; }
+
+/* the on-device photo check on a product page (hs2.js photoCheck) */
+.hs-photo-check { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; }
+.hs-photo-check[hidden] { display: none; }
+.hs-photo-check p { margin: 0; font-size: 15px; line-height: 1.45; }
+.hs-photo-check button { align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #121010; background: transparent; font: inherit; font-weight: 600; cursor: pointer; }

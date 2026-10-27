@@ -126,6 +126,30 @@
       return true;
     } catch (e) { return false; }
   }
+  /* What the on-device photo check found, beside the artwork status: a reason in plain words,
+     and for a dog the detector may have missed, "It's my dog. Use this photo." */
+  function photoCheck(message, override) {
+    var box = document.querySelector('[data-hs2-photo-check]');
+    if (!box) { if (message) blanketPurchaseStatus(message); return; }
+    box.hidden = !message;
+    var text = box.querySelector('[data-hs2-photo-check-text]'), btn = box.querySelector('[data-hs2-photo-override]');
+    if (text) text.textContent = message || '';
+    if (btn) {
+      btn.hidden = !override;
+      btn.onclick = override ? function () { btn.hidden = true; override(); } : null;
+    }
+  }
+  // start the dog detector when the buyer heads for the photo, so the check is ready by the time they pick one
+  function warmPhotoCheck() {
+    if (warmPhotoCheck.done || !nativeArtworkPurchase()) return;
+    warmPhotoCheck.done = true;
+    var go = function (e) {
+      if (!window.HSPhotoQuality || !e.target || !e.target.closest || !e.target.closest('.tee-field--photo, [data-hs2-blanket-create]')) return;
+      document.removeEventListener('pointerdown', go, true);
+      try { window.HSPhotoQuality.loadDetector(); } catch (err) { /* the check fails open without it */ }
+    };
+    document.addEventListener('pointerdown', go, true);
+  }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
     var target = photoInput();
@@ -1033,7 +1057,13 @@
     { k: 'incident', re: /incident/i, choice: true },
     { k: 'enemy', re: /enemy|threat/i, choice: true }
   ];
-  var bridge = { owned: {}, filled: 0, fields: 0, tries: 0, refilled: false, folded: false, opened: false };
+  var bridge = { owned: {}, filled: 0, fields: 0, tries: 0, refilled: false, folded: false, opened: false, sent: {}, selfAt: 0 };
+  /* Loop guard (27 Oct review): Teeinblue answers our own writes with its events, and those used
+     to reset the retry count, so a field it would not take could be resent forever. Our writes
+     are timestamped and ignored as triggers for 600 ms, and one value goes to one field at most
+     three times per page; a new value starts its own count. */
+  function mayResend(name, want) { return (bridge.sent[name + '\u0000' + want] || 0) < 3; }
+  function selfTriggered() { return Date.now() - (bridge.selfAt || 0) < 600; }
   function norm(t) { return String(t || '').replace(/[\s*:]+/g, ' ').replace(/[’‘]/g, "'").trim().toLowerCase(); }
   function tibFields() {
     return Array.prototype.slice.call(document.querySelectorAll('.tee-field')).filter(function (f) {
@@ -1051,6 +1081,8 @@
     var proto = inp.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : inp.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype;
     var d = Object.getOwnPropertyDescriptor(proto, 'value');
     if (d && d.set) d.set.call(inp, v); else inp.value = v;
+    var key = (inp.name || inp.id) + '\u0000' + v;
+    bridge.sent[key] = (bridge.sent[key] || 0) + 1; bridge.selfAt = Date.now();
     inp.__hs2set = true;
     inp.dispatchEvent(new Event('input', { bubbles: true }));
     inp.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1287,6 +1319,7 @@
       // A matching field does not prove Teeinblue rebuilt the print artwork. Re-send its
       // input event when the mug's visible SVG still shows an older customization.
       if (text.value === want && !mugArtworkMismatch(name, want)) return { name: name, value: want };
+      if (!mayResend(name, want)) return { name: name, value: want }; // tried enough: leave the field as it is
       setValue(text, want);
       return { name: name, value: want, changed: true };
     }
@@ -1297,6 +1330,7 @@
       var opt = Array.prototype.slice.call(select.options).filter(function (o) { return !o.disabled && choiceMatches(o.textContent, k); })[0];
       if (!opt) return null;
       if (select.value === opt.value) return { name: select.name, value: opt.value };
+      if (!mayResend(select.name, opt.value)) return { name: select.name, value: opt.value };
       setValue(select, opt.value);
       return { name: select.name, value: opt.value, changed: true };
     }
@@ -1329,7 +1363,7 @@
   // answers typed on the same page (the ad landing page) reach the personalizer too
   function bridgeSoon() {
     if (!document.querySelector('.tee-field')) return;
-    bridge.tries = 0;
+    if (!selfTriggered()) bridge.tries = 0;
     clearTimeout(bridgeSoon.t);
     bridgeSoon.t = setTimeout(function () { runBridge(); }, 400);
   }
@@ -1862,6 +1896,34 @@
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
       var f = inp.files && inp.files[0];
       if (!f || !/^image\//.test(f.type)) return;
+      if (nativeArtworkPurchase() && inp.__hs2PreparedPhoto !== f && window.HSPhotoQuality && inp.__hs2CheckedPhoto !== f) {
+        // The photo check comes first, on the device (hs-photo-quality.js): a photo that can't make
+        // good artwork never reaches Teeinblue and never reserves the upload (27 Oct).
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (keepTibPhoto.checking) return;
+        keepTibPhoto.checking = f;
+        photoCheck('Checking your photo on your device.');
+        window.HSPhotoQuality.check(f, { timeout: 4000 }).then(function (r) {
+          keepTibPhoto.checking = null;
+          if (r.verdict === 'reject' && !(r.overridable && inp.__hs2Override === f)) {
+            inp.value = '';
+            photoCheck(r.reasons.map(function (x) { return x.message; }).join(' '), r.overridable ? function () {
+              // the buyer knows their dog: the detector can miss an unusual one
+              inp.__hs2Override = f;
+              try { var dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; } catch (err) { return; }
+              track('photo_override', {});
+              inp.dispatchEvent(new Event('change', { bubbles: true }));
+            } : null);
+            track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+            return;
+          }
+          photoCheck(r.verdict === 'warn' ? r.reasons.map(function (x) { return x.message; }).join(' ') : '');
+          inp.__hs2CheckedPhoto = f;
+          if (!inp.isConnected) return;
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        return;
+      }
       if (nativeArtworkPurchase() && inp.__hs2PreparedPhoto !== f) {
         // Capture before the vendor receives the File. Preparing is local only;
         // the sole vendor event is emitted after metadata removal succeeds.
@@ -1931,7 +1993,7 @@
     editDetails();
     var tick = function () { runBridge(); tibGallery(); handoff(); relabelOptions(); unfoldInvalid(); giftLabels(); giftFit(); };
     ['teeinblue-event-component-injected', 'teeinblue-event-campaign-loaded', 'teeinblue-event-variant-changed', 'teeinblue-event-customization-changed'].forEach(function (ev) {
-      document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); setTimeout(swatchTib, 120); });
+      document.addEventListener(ev, function () { if (!selfTriggered()) bridge.tries = 0; setTimeout(tick, 60); setTimeout(swatchTib, 120); });
     });
     tick();
     watchBlanketCompletion(); // Native AI may finish long after the general bridge observer stops.
@@ -2887,7 +2949,7 @@
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); confirmAdds(); previewOnPhoto(); keepTibPhoto(); guardGiftPhoto(); guardMugProof();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); guardMugProof();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
