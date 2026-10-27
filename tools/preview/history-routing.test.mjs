@@ -142,6 +142,23 @@ for (const minified of [false, true]) {
     } finally { await browser.close(); }
   });
 
+  test(`${minified ? 'minified' : 'source'}: "Not sure" on a follow-up keeps the home answer and skips only the detail`, async () => {
+    const {browser, tab, errors} = await open(minified);
+    try {
+      await tab.goto('http://localhost/');
+      await tab.click('[data-hs3-start]');
+      await tab.fill('#hs3-dog', 'Pip'); await tab.click('[data-hs3="next"]');
+      await tab.fill('#hs3-rec', 'Alex'); await tab.click('[data-hs3="next"]');
+      await tab.click('[data-hs3="chip"][data-v="door"]'); await tab.waitForSelector('[data-hs3="chip"][data-v="weekends"]');
+      await tab.click('[data-hs3="skip"]');
+      assert.equal(step(tab), 'spot');
+      const s = await state(tab); assert.equal(s.home, 'door'); assert.equal(s.follow, 'skip');
+      await move(tab, 'back', 'home-more');
+      assert.equal(await pressed(tab, 'weekends'), 'false');
+      assert.deepEqual(errors, []);
+    } finally { await browser.close(); }
+  });
+
   test(`${minified ? 'minified' : 'source'}: a link to a step the answers don't reach clamps back, and Start over clears`, async () => {
     const {browser, tab, errors} = await open(minified);
     try {

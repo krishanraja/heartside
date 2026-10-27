@@ -51,6 +51,7 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 
 ## What changed recently
 
+- **27 October, later:** Follow-ups went live the same way: the Christmas reminder capture on the choose screen, the mug reveal opening on the dog's side, and review polish (an Artist's touch line whose design left the cart now says so; "Not sure" on the home follow-up).
 - **27 October:** The journey redesign went live, with the bundle discount and the Artist's touch add-on, after an independent review and a real-store check on an unpublished copy. Krish's rulings are in the commit bodies. The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) is rewritten: Part A is automated (`tools/preview/preview-acceptance.mjs`), Part B (production) is due, Part C runs on his word.
 - **27 October:** The three core products and reviewed theme went live with normal payments. The fee-free blanket compatibility order confirmed the accepted artwork reached Teeinblue and produced an inspectable print file; physical print quality and a real paid order still await Krish's sample. See the release checkpoint above and the [live acceptance assignment](docs/review/COWORK-LIVE-ACCEPTANCE.md).
 - **27 October:** The current scope and economics were moved to stable documents because dated continuation notes and older price briefs could mislead a reviewer. The active sources are [scope](docs/SCOPE.md) and [economics](docs/ECONOMICS.md); older material is indexed in [history](docs/history/README.md).

@@ -38,6 +38,10 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
   const [url, body] = posts[0];
   assert.equal(url, '/cart/add.js'); assert.equal(body.get('id'), '777'); assert.equal(body.get('properties[_hs_addon_for]'), A);
   assert.equal(body.get('properties[What to change]'), 'Make the ears floppier.'); assert.ok(body.has('properties[Photo 1: Favorite toy]'));
-  const withAddon = row({}, true); ctx.artistTouch([withAddon, row({_hs_addon_for: A}, false)]);
+  const withAddon = row({}, true), addon = row({_hs_addon_for: A}, false); ctx.artistTouch([withAddon, addon]);
   assert.equal(withAddon.host.children.length, 0, 'never twice for one design');
+  assert.equal(addon.host.children.length, 0, 'an add-on beside its gift says nothing');
+  const orphan = row({_hs_addon_for: A}, false); ctx.artistTouch([orphan]);
+  assert.equal(orphan.host.children.length, 1, "an add-on whose gift left the cart says so");
+  assert.match(made.at(-1).textContent, /no longer in your cart/);
 });
