@@ -99,7 +99,10 @@
           var cart = await fetch('{{ routes.cart_url }}.js', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Cart read failed'); return r.json(); });
           if (cart.item_count !== 0) throw new Error('Existing cart is not empty; no item added');
           var added = await fetch('{{ routes.cart_add_url }}.js', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: preparedBody });
-          if (!added.ok) throw new Error('Cart add failed: ' + added.status);
+          if (!added.ok) {
+            var rejected = await added.json().catch(function () { return {}; });
+            throw new Error('Cart add failed: ' + added.status + ' ' + String(rejected.description || rejected.message || '').slice(0,500));
+          }
           adapterResult.textContent = JSON.stringify({ added: true, orderPlaced: false });
           preparedBody = null;
         } catch (error) { adapterResult.textContent = JSON.stringify({ added: false, message: error.message }); }
