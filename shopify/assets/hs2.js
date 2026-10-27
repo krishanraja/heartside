@@ -116,6 +116,7 @@
       // Invalidate the old UI request before unlocking. Reset never sends a photo.
       window.sessionStorage.setItem('hs2-art-request:' + productId() + ':latest', 'retry-required');
       window.sessionStorage.removeItem('hs2-blanket-upload:' + productId());
+      keepTibPhoto.preparing = null; // Cancel local preparation; never dispatch after an explicit reset.
       doHandoff.artKey = '';
       blanketAcceptedKey = '';
       return true;
@@ -1698,7 +1699,40 @@
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
       var f = inp.files && inp.files[0];
       if (!f || !/^image\//.test(f.type)) return;
-      if (nativeBlanketPurchase() && !beginBlanketUpload()) {
+      if (nativeBlanketPurchase() && inp.__hs2PreparedPhoto !== f) {
+        // Capture before the vendor receives the File. Preparing is local only;
+        // the sole vendor event is emitted after metadata removal succeeds.
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (keepTibPhoto.preparing || !beginBlanketUpload()) {
+          blanketPurchaseStatus('Upload held: wait for your current artwork or photo preparation to finish.');
+          return;
+        }
+        var token = { key: artRequestKey() };
+        keepTibPhoto.preparing = token;
+        blanketPurchaseStatus('Preparing your photo and removing its location metadata.');
+        Promise.resolve().then(function () {
+          if (!window.HSArtworkPhoto || typeof DataTransfer !== 'function') throw new Error('Photo preparation is unavailable.');
+          return window.HSArtworkPhoto.prepare(f);
+        }).then(function (prepared) {
+          if (keepTibPhoto.preparing !== token) return;
+          if (!inp.isConnected || token.key !== artRequestKey() || !nativeBlanketInputsReady()) throw new Error('Your artwork choices changed.');
+          var dt = new DataTransfer(); dt.items.add(prepared.file);
+          inp.files = dt.files;
+          inp.__hs2PreparedPhoto = prepared.file;
+          state.hs3_photo_provenance = { photo: prepared.photo, width: prepared.width, height: prepared.height };
+          keepTibPhoto.preparing = null;
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+        }).catch(function () {
+          if (keepTibPhoto.preparing !== token) return;
+          keepTibPhoto.preparing = null;
+          resetBlanketUpload(); inp.value = '';
+          blanketPurchaseStatus('No artwork was started. Use a JPEG, PNG or WebP photo up to 40 megapixels, then try again.');
+        });
+        return;
+      }
+      var preparedUpload = inp.__hs2PreparedPhoto === f;
+      delete inp.__hs2PreparedPhoto;
+      if (nativeBlanketPurchase() && !preparedUpload && !beginBlanketUpload()) {
         e.preventDefault(); e.stopImmediatePropagation(); inp.value = '';
         blanketPurchaseStatus('Upload held: wait for any current artwork to finish and your choices to load. This browser must allow session storage before creating artwork.');
         return;
