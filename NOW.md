@@ -2,8 +2,8 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: release branch pending final main merge; resolve exact SHA from Git
-lifecycle: launch-preparation
+head: 45d927b40797f67962d240a9997e8c75afe84991; later closeout update may advance main
+lifecycle: live acceptance
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
 history_log: docs/history/LOG.md
@@ -35,17 +35,17 @@ Objection it answers: "AI-written personalisation is generic." The record shows 
 
 ## Current release checkpoint (27 October 2026)
 
-The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119), and word-free sherpa blanket ($129). Old duplicate products have been archived or held, and the old core handles redirect to the clean ones. The candidate theme has the tested native purchase and actual-design checkout settings enabled for all three products. The public theme has **not** yet been switched to that candidate and the storefront password is still in place at this checkpoint. Normal Shopify Payments is accepting payments; its test gateway is off, and the three pre-existing $49 US market prices remain intact.
+The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119), and word-free sherpa blanket ($129). Old duplicate products have been archived or held, and the old core handles redirect to the clean ones. The reviewed theme, with native purchase and actual-design checkout settings enabled for all three products, was published on 27 October. The storefront password was removed and a direct public homepage request returned HTTP 200 without a password form. Normal Shopify Payments is accepting payments; its test gateway is off, and the three pre-existing $49 US market prices remain intact.
 
 One approved fee-free compatibility order passed for a single $129 blanket with the saved accepted artwork. Shopify recorded it as test/paid/unfulfilled; Teeinblue received the original variant and a completed design without a rendering error. The order-linked original print file was downloaded and inspected at 15,900 × 18,900 RGBA PNG. Supplier fulfillment remains held for manual review. No real customer charge or new AI generation is included in this proof. The order is not a physical sample and does not establish production print quality for every gift.
 
 The retained personalized cart changed quantity 2→1 with its exact component, attributes and prepared image intact; checkout read back $129 and the actual accepted design as its main image. The typed-answer workflow's self-recipient correction is published and independently matches `n8n/prompts.json`. The temporary checkout-image QA template was removed from the candidate theme and from the source tree. The current Drive brand pack is complete, with old product assets marked historical; its link and private identifiers stay in the private handoff.
 
-Release closeout still requires: reconcile and merge this branch to current main; publish the tested candidate theme; remove the storefront password; verify the public no-preview routes and payment/supplier settings; and run the separate CoWork live and Claude Code repository acceptance assignments in `docs/`. Krish will place the real sample blanket order himself when the store is available. Physical sample and real paid fulfillment remain future evidence, not launch claims.
+Release source was merged to main at `45d927b40797f67962d240a9997e8c75afe84991`; theme publication and password removal are complete. Closeout still requires independent public no-preview product and checkout review plus the separate CoWork live and Claude Code repository acceptance assignments in `docs/`. Krish will place the real sample blanket order himself. Physical sample and real paid fulfillment remain future evidence, not launch claims.
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** merge the verified release branch, publish the tested theme, remove the storefront password, and verify the live customer routes. Krish then places the real blanket sample order. The separate CoWork and Claude Code prompts cover independent live and repository acceptance.
+- **Next action:** complete independent live customer-route and repository acceptance using the separate CoWork and Claude Code prompts, then Krish places the real blanket sample order. Do not claim physical quality or paid-order fulfillment until that sample is inspected.
 - North Star check (2026-10-27): holds.
 
 ## Historical snapshots before the final compatibility order (superseded)

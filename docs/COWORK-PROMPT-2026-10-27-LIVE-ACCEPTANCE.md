@@ -1,6 +1,6 @@
 # Claude CoWork: Heartside live-browser acceptance review
 
-Status: DRAFT for the release owner to finalize after publishing the theme, reopening the store and merging the release. Written 27 October 2026. This document is a verification instruction, not evidence that release has occurred.
+Status: READY FOR INDEPENDENT LIVE ACCEPTANCE. The release owner merged the source to `main` at `45d927b40797f67962d240a9997e8c75afe84991`, published the reviewed theme and removed the storefront password on 27 October 2026. This document is a verification instruction, not an acceptance result. Recheck those release facts independently before drawing a conclusion.
 
 ## Release owner: complete the handoff first
 
