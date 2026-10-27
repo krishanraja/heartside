@@ -16,6 +16,21 @@ python tools/economics/net_margin.py tools/economics/calibration.json --scenario
 
 Use `--output <local-path>` to save JSON. Do not commit customer records, invoices or private account identifiers. The source log is `docs/evidence/2026-10-24-economics-calibration.md`.
 
+`--scenario` can repeat; files apply in order. A scenario file may `override` existing evidence cells and may `add` new rows whose cells carry their own status and source; an addition never replaces an input. Stackable files:
+
+- `working-sensitivity.json`: the repo working set (AI USD0.50 and support USD2 per order, USD10 acquisition, about USD142 per 30 days of overhead, zero supplier tax, no checkout app), plus one USD0.13 redo per gift and the Artist's touch labor assumptions.
+- `economics-md-sensitivity.json`: the `docs/ECONOMICS.md` operating set (AI USD2.50, support USD5, no paid acquisition, about USD200 per 30 days before the app). Stack it after the working set.
+- `supplier-tax-sensitivity.json`: Printful supplier tax borne at the amounts recorded in `calibration.json`.
+- `checkout-app-sensitivity.json`: adds the USD69 per 30 days checkout app overhead row.
+
+Bundle offer, free redo and Artist's touch (October 27 owner decisions, all inactive):
+
+```powershell
+python tools/economics/bundle_economics.py tools/economics/calibration.json --orders-per-period 25
+```
+
+It runs five labeled stacks (repo set with and without the app, ECONOMICS.md set with and without the app, and a bounding case of the repo set with the app and supplier tax). For each, it reports every basket at 0, 15 and 20% off, the verdicts that flip between stacks, every 2 to 4 gift mix under candidate discount rules, the redo allowance and the add-on line margin. Each customized gift is its own line: one Teeinblue fee and one `costs.ai_per_customization_line` allowance per line. A two- or three-gift basket without its own quote uses the conservative sum of single-item shipping and supplier tax with one holiday surcharge, marked as an assumption. `service_line` models a paid service add-on without supplier cost, charging payment, reserve, stated labor and extra AI, and not charging the order's fixed costs again. The 30% floor is aggregate across the order mix; per-basket verdicts are a conservative guardrail. Results are in `docs/evidence/2026-10-27-bundle-economics.md`.
+
 Every cost cell requires a value, evidence status and source. A missing cost blocks price output. An assumed or provisional input keeps the result `UNVERIFIED_SCENARIO`. Even verified forecast inputs cannot certify realized margin or authorize a live price. Revalidate variable fees, subscriptions and quotes before release.
 
 The order calculation includes product quantities, an explicit basket shipping quote, seller-borne taxes, payment on revenue plus collected tax, customization-line fees, all-attempt AI cost, labor, acquisition, other variable costs, refund/remake reserve and allocated operating overhead. A shared customization with quantity two is one line; two separate customizations are two lines. Fixed payment, acquisition and overhead are counted once per order. Currency conversion is explicit; missing GBP-to-USD conversion blocks the result.
@@ -26,4 +41,4 @@ Volume values are sensitivities, not a forecast of demand. A period projection a
 
 `realized_period` accepts ledger totals separately: refunds reduce revenue once, actual remakes are costs, and a reserve cannot also be entered. Period overhead remains an expense at zero sales; margin is undefined when net revenue is nonpositive. It requires an explicit business profit-tax treatment. A calculated ledger result is not an accounting audit.
 
-Current boundaries: 13 configured Brooklyn supplier quotes are recorded, but wider destinations and integration route parity remain unverified. End-to-end AI/review/support cost, organic acquisition cost, shared overhead/FX and business tax treatment remain incomplete. Labor calibration is deferred by the owner. No SKU has a certified net-margin selling price.
+Current boundaries: 13 configured Brooklyn supplier quotes are recorded, but wider destinations and integration route parity remain unverified. Only the mug+frame and mug+blanket baskets have their own quotes; the other bundle rows are summed assumptions. End-to-end AI/review/support cost, organic acquisition cost, shared overhead/FX and business tax treatment remain incomplete. Labor calibration is deferred by the owner. No SKU has a certified net-margin selling price.

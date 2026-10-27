@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
-from decimal import Decimal, ROUND_CEILING
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from pathlib import Path
 
 D = Decimal
@@ -80,10 +80,47 @@ def floor(fixed, variable_rate, target=D("0.50"), business_profit_tax=ZERO):
     return (fixed / denominator).quantize(CENT, rounding=ROUND_CEILING)
 
 
-def forecast(model, order_id, volume, discount="0"):
-    """Order floor with a monthly allocation. Null costs block all price output."""
+def apply_scenario(model, scenario):
+    """Return a copy with explicit sensitivity inputs. Never fills a gap silently.
+
+    `overrides` replace existing evidence cells only. `additions` add new rows
+    (for example an overhead line) whose cells carry their own status and source;
+    an addition may not replace anything that already exists.
+    """
+    model = copy.deepcopy(model)
+    for path, value in scenario.get("overrides", {}).items():
+        parent = model
+        bits = path.split(".")
+        for part in bits[:-1]:
+            parent = parent[part]
+        old = parent[bits[-1]]
+        if not isinstance(old, dict) or "value" not in old:
+            raise ValueError(f"Not an evidence cell: {path}")
+        parent[bits[-1]] = {"value": value, "status": "assumption", "source": "Sensitivity only: " + scenario["name"]}
+    for path, row in scenario.get("additions", {}).items():
+        parent = model
+        bits = path.split(".")
+        for part in bits[:-1]:
+            parent = parent[part]
+        if bits[-1] in parent:
+            raise ValueError(f"Addition would replace an existing input: {path}")
+        cells = [row] if "value" in row else [v for v in row.values() if isinstance(v, dict)]
+        for cell in cells:
+            if cell.get("status") not in STATUSES or not cell.get("source") or "value" not in cell:
+                raise ValueError(f"{path}: added cells require value, evidence status and source")
+        parent[bits[-1]] = copy.deepcopy(row)
+    return model
+
+
+def forecast(model, order_id, volume, discount="0", list_price=None):
+    """Order floor with a monthly allocation. Null costs block all price output.
+
+    With `list_price`, also reports the paid revenue after `discount`, its
+    headroom over the floor and the modeled margin at that paid revenue.
+    """
     volume = integer(volume, "period_orders", 1)
     discount = number(discount, "discount", rate=True)
+    offered = None if list_price is None else number(list_price, "list_price", positive=True)
     order = model["orders"][order_id]
     inp = Inputs()
     if model['currency'] != 'USD':
@@ -94,6 +131,11 @@ def forecast(model, order_id, volume, discount="0"):
     for key in ("ai_all_attempts_per_order", "review_support_labor_per_order", "acquisition_per_order",
                 "other_variable_per_order", "payment_fixed"):
         costs[key] = inp.read(model["costs"][key], "costs." + key)
+    # Optional generation allowance charged once per customized line (gift), such
+    # as the free in-cart artwork redo. Absent means the offer has no per-gift
+    # allowance; a present cell with a null value blocks output like any cost.
+    per_line_cell = model["costs"].get("ai_per_customization_line")
+    ai_per_line = ZERO if per_line_cell is None else inp.read(per_line_cell, "costs.ai_per_customization_line")
     processing = inp.read(model["costs"]["payment_rate"], "costs.payment_rate", rate=True)
     reserve = inp.read(model["costs"]["refund_remake_reserve_rate"], "costs.refund_remake_reserve_rate", rate=True)
     sales_tax = inp.read(order["collected_sales_tax_rate"], "orders." + order_id + ".collected_sales_tax_rate", rate=True)
@@ -133,8 +175,9 @@ def forecast(model, order_id, volume, discount="0"):
     if inp.missing:
         return result
     fee = blue_fee(ordinal, lines)
+    ai_lines = ai_per_line * lines
     overhead_per_order = fixed_period / volume
-    fixed = sum(costs.values(), ZERO) + base + shipping + surcharge + seller_tax + fee + overhead_per_order
+    fixed = sum(costs.values(), ZERO) + ai_lines + base + shipping + surcharge + seller_tax + fee + overhead_per_order
     variable = processing * (1 + sales_tax) + reserve
     try:
         paid = floor(fixed, variable, target, business_tax)
@@ -149,9 +192,64 @@ def forecast(model, order_id, volume, discount="0"):
                    "supplier_shipping": money(shipping), "holiday_surcharge": money(surcharge),
                    "seller_borne_tax": money(seller_tax),
                    "teeinblue_customization_fee": money(fee), "customization_lines": lines,
+                   "ai_per_customization_line_total": money(ai_lines),
                    "total_fixed_per_order": money(fixed), "variable_rate": str(variable),
                    "modeled_margin_at_floor": str(after_tax / paid) if paid else None,
                    "modeled_period_profit_at_floor": money(after_tax * volume)})
+    if offered is not None:
+        # Paid revenue rounds DOWN to cents; the floor rounds UP. Both lean conservative.
+        paid_at = (offered * (1 - discount)).quantize(CENT, rounding=ROUND_FLOOR)
+        pretax_at = paid_at * (1 - variable) - fixed
+        after_at = pretax_at - max(pretax_at, ZERO) * business_tax
+        result.update({"list_price": str(offered.quantize(CENT)), "paid_revenue_at_discount": str(paid_at),
+                       "headroom_at_discount": str(paid_at - paid), "meets_target_at_discount": paid_at >= paid,
+                       "modeled_margin_at_discount": str((after_at / paid_at).quantize(D("0.0001"), rounding=ROUND_FLOOR))})
+    return result
+
+
+def service_line(model, service_id, price, minutes_key, discount="0"):
+    """Marginal economics of a paid service add-on attached to a gift order.
+
+    No supplier item, shipping, surcharge or Teeinblue line unless the inputs say
+    so. Fixed payment, acquisition and overhead are already carried by the gift
+    order it attaches to, so they are not charged again here. Labor is minutes at
+    a stated hourly value. Returns the line margin, never a live price.
+    """
+    price = number(price, "price", positive=True)
+    discount = number(discount, "discount", rate=True)
+    service = model["services"][service_id]
+    target = number(model["target_margin"], "target_margin", rate=True, positive=True)
+    inp = Inputs()
+    prefix = "services." + service_id + "."
+    processing = inp.read(model["costs"]["payment_rate"], "costs.payment_rate", rate=True)
+    reserve = inp.read(model["costs"]["refund_remake_reserve_rate"], "costs.refund_remake_reserve_rate", rate=True)
+    business_tax = inp.read(model["costs"]["business_profit_tax_rate"], "costs.business_profit_tax_rate", rate=True)
+    sales_tax = inp.read(service["collected_sales_tax_rate"], prefix + "collected_sales_tax_rate", rate=True)
+    supplier = inp.read(service["supplier_and_shipping"], prefix + "supplier_and_shipping")
+    minutes = inp.read(service[minutes_key], prefix + minutes_key)
+    hourly = inp.read(service["labor_hourly_value"], prefix + "labor_hourly_value")
+    ai = inp.read(service["extra_ai_per_service"], prefix + "extra_ai_per_service")
+    result = {"service": service_id, "list_price": str(price.quantize(CENT)), "discount": str(discount),
+              "labor_minutes_input": minutes_key,
+              "status": "BLOCKED_MISSING_INPUTS" if inp.missing else "UNVERIFIED_SCENARIO" if inp.uncertain else "FORECAST_INPUTS_VERIFIED",
+              "missing": inp.missing, "uncertain": inp.uncertain,
+              "realized_margin_certified": False, "live_price_authorized": False}
+    if inp.missing:
+        return result
+    paid = (price * (1 - discount)).quantize(CENT, rounding=ROUND_FLOOR)
+    variable = processing * (1 + sales_tax) + reserve
+    labor = minutes * hourly / 60
+    pretax = paid * (1 - variable) - supplier - labor - ai
+    after_tax = pretax - max(pretax, ZERO) * business_tax
+    # Largest labor cost that still leaves the target margin after business tax.
+    labor_room = paid * (1 - variable) - supplier - ai - target * paid / (1 - business_tax)
+    result.update({"paid_revenue": str(paid), "payment_and_reserve": money(paid * variable),
+                   "labor_minutes": str(minutes), "labor_cost": money(labor), "extra_ai": money(ai),
+                   "modeled_profit": str(after_tax.quantize(CENT, rounding=ROUND_FLOOR)),
+                   "modeled_margin": str((after_tax / paid).quantize(D("0.0001"), rounding=ROUND_FLOOR)),
+                   "meets_target": after_tax >= target * paid,
+                   "max_minutes_at_target": str((labor_room * 60 / hourly).quantize(D("0.1"), rounding=ROUND_FLOOR)) if hourly else None,
+                   "minimum_list_price_at_target": money(floor(supplier + labor + ai, variable, target, business_tax) / (1 - discount))})
     return result
 
 
@@ -178,22 +276,13 @@ def main():
     parser.add_argument("input", type=Path)
     parser.add_argument("--orders-per-period", type=int, nargs="+", default=[1, 10, 25, 100, 250])
     parser.add_argument("--discount", default="0")
-    parser.add_argument("--scenario", type=Path, help="Explicit sensitivity overrides, never silently fills gaps")
+    parser.add_argument("--scenario", type=Path, action="append", default=[],
+                        help="Explicit sensitivity file, never silently fills gaps; repeat to stack, applied in order")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     model = json.loads(args.input.read_text(encoding="utf-8-sig"))
-    if args.scenario:
-        overrides = json.loads(args.scenario.read_text(encoding="utf-8-sig"))
-        model = copy.deepcopy(model)
-        for path, value in overrides["overrides"].items():
-            parent = model
-            bits = path.split(".")
-            for part in bits[:-1]:
-                parent = parent[part]
-            old = parent[bits[-1]]
-            if not isinstance(old, dict) or "value" not in old:
-                raise ValueError(f"Not an evidence cell: {path}")
-            parent[bits[-1]] = {"value": value, "status": "assumption", "source": "Sensitivity only: " + overrides["name"]}
+    for path in args.scenario:
+        model = apply_scenario(model, json.loads(path.read_text(encoding="utf-8-sig")))
     rows = [forecast(model, name, volume, args.discount) for volume in args.orders_per_period for name in model["orders"]]
     result = {"model_version": 1, "currency": model["currency"], "rows": rows}
     payload = json.dumps(result, indent=2) + "\n"

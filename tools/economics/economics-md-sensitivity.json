@@ -1,0 +1,9 @@
+{
+  "name": "ECONOMICS.md operating set (docs/ECONOMICS.md lines 13-15, October 27). Stack after working-sensitivity.json; for the set as ECONOMICS.md states it, also stack supplier-tax-sensitivity.json (its delivered-quote basis) and checkout-app-sensitivity.json (the USD69 app it includes). Changes: USD2.50 pre-purchase AI and USD5 support per order, no paid acquisition, about USD200 per 30 days of operating cost before the app. Interpretation: USD200 is total fixed operating cost excluding the app, so other_operating tops the itemized rows (Teeinblue 49, Metashop 9.99, Shopify 25 GBP at 1.34 normalized 33.02, hosting 20, domains 5) up to USD200.01. Payment, reserve, redo, shipping and ordinal stay as in the base set; this is this model's implementation of the stated inputs, not the private report's formula.",
+  "overrides": {
+    "costs.ai_all_attempts_per_order": "2.50",
+    "costs.review_support_labor_per_order": "5.00",
+    "costs.acquisition_per_order": "0",
+    "overhead.other_operating.amount": "83"
+  }
+}
