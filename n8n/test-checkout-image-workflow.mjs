@@ -1,0 +1,168 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
+import vm from 'node:vm';
+import { readFileSync } from 'node:fs';
+import { buildCheckoutImageWorkflow } from './build-checkout-image-workflow.mjs';
+import { proxyGuard, proxyVerified } from './checkout-image-steps.mjs';
+
+const config = () => ({ shop: 'example-shop.myshopify.com', proxyPath: '/apps/heartside-artwork', shopifyImagePrefix: 'https://cdn.shopify.com/s/files/1/1111/2222/3333/files/', allowedVariantIds: ['12345'], enabled: true, cryptoCredentialId: 'test_crypto', shopifyCredentialId: 'test_shopify' });
+const uuid = '11111111-2222-4333-8444-555555555555';
+const secret = 'synthetic-local-test-only';
+const runtimeToken = 'synthetic_runtime_access_token_only';
+function signedInput() {
+  const body = { customizationId: uuid, variantId: '12345' };
+  const query = { ...body, shop: config().shop, path_prefix: config().proxyPath, logged_in_customer_id: '', timestamp: String(Math.floor(Date.now() / 1000)), extra: ['a', 'b'], signature: '0'.repeat(64) };
+  query.signature = createHmac('sha256', secret).update(proxyGuard({ body, query }, config()).canonical).digest('hex');
+  return { body, query };
+}
+function fixtureRuntime() {
+  const calls = []; let file;
+  return { calls, setFile: x => { file = x; }, async http(node, parameters) {
+    calls.push({ name: node.name, parameters });
+    if (node.name === 'Acquire shop token') return { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'read_files,write_files,read_app_proxy,write_app_proxy' } };
+    if (node.name === 'Check native preview') return { statusCode: 200, headers: { 'content-type': 'image/jpeg', 'content-length': '1000' }, body: '' };
+    assert.equal(parameters.headerParameters.parameters[0].value, runtimeToken);
+    const request = JSON.parse(parameters.jsonBody);
+    if (node.name === 'Find image') return { statusCode: 200, body: { data: { files: { nodes: file ? [file] : [], pageInfo: { hasNextPage: false } } } } };
+    if (node.name === 'Create image once') {
+      const input = request.variables.files[0];
+      file = { id: 'gid://shopify/MediaImage/99', alt: input.alt, fileStatus: 'READY', fileErrors: [], image: { url: config().shopifyImagePrefix + input.filename + '?v=123', width: 960, height: 960 } };
+      return { statusCode: 200, body: { data: { fileCreate: { files: [file], userErrors: [] } } } };
+    }
+    if (node.name === 'Read image') return { statusCode: 200, body: { data: { node: file } } };
+    throw new Error('unexpected HTTP node');
+  } };
+}
+async function runGraph(flow, input, runtime) {
+  const byName = new Map(flow.nodes.map(n => [n.name, n])); const outputs = new Map();
+  let name = 'Webhook'; let current = input; let steps = 0;
+  while (name) {
+    assert.ok(++steps < 40, 'acyclic bounded workflow');
+    const node = byName.get(name); let branch = 0;
+    const scope = { $input: { first: () => ({ json: current }) }, $json: current, $: n => ({ first: () => ({ json: outputs.get(n) }) }), URL, Date, Buffer };
+    const expression = value => typeof value === 'string' && value.startsWith('={{') ? vm.runInNewContext(value.slice(3, -2), scope) : value;
+    if (node.type.endsWith('.code')) current = vm.runInNewContext(`(function(){${node.parameters.jsCode}})()`, scope)[0].json;
+    else if (node.type.endsWith('.crypto')) current = { ...current, computedSignature: createHmac('sha256', secret).update(expression(node.parameters.value)).digest('hex') };
+    else if (node.type.endsWith('.if')) branch = expression(node.parameters.conditions.conditions[0].leftValue) ? 0 : 1;
+    else if (node.type.endsWith('.httpRequest')) {
+      const resolve = value => Array.isArray(value) ? value.map(resolve) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolve(v)])) : expression(value);
+      const parameters = resolve(node.parameters);
+      current = await runtime.http(node, parameters);
+    } else if (node.type.endsWith('.respondToWebhook')) return { status: expression(node.parameters.options.responseCode), body: JSON.parse(expression(node.parameters.responseBody)) };
+    outputs.set(name, current);
+    const next = flow.connections[name]?.main?.[branch] || [];
+    assert.equal(next.length, 1, `exactly one continuation for ${name}`);
+    name = next[0].node;
+  }
+  throw new Error('missing response');
+}
+test('full generated graph: authenticated creation202, next pollREADY200, no duplicate mutation', async () => {
+  const runtime = fixtureRuntime(); const flow = buildCheckoutImageWorkflow(config());
+  const first = await runGraph(flow, signedInput(), runtime);
+  assert.equal(first.status, 202);
+  const second = await runGraph(flow, signedInput(), runtime);
+  assert.equal(second.status, 200);
+  assert.equal(second.body.properties._hs_checkout_bundle_id, uuid + '-12345');
+  assert.equal(second.body.properties._hs_checkout_parent, 'true');
+  assert.equal(runtime.calls.filter(x => x.name === 'Create image once').length, 1);
+  assert.equal(runtime.calls.at(-1).name, 'Read image');
+  assert.equal(runtime.calls.filter(x => x.name === 'Acquire shop token').length, 2);
+  assert.ok(!JSON.stringify([first, second]).includes(runtimeToken));
+});
+for (const [label, mutate] of [
+  ['bad signature', x => { x.query.signature = 'a'.repeat(64); }],
+  ['changed signed body', x => { x.body.variantId = '54321'; }],
+  ['wrong shop', x => { x.query.shop = 'other.myshopify.com'; }],
+  ['expired timestamp', x => { x.query.timestamp = '1000000000'; }],
+  ['duplicate signed ID', x => { x.query.variantId = ['12345', '54321']; }],
+  ['extra body URL', x => { x.body.url = 'https://example.invalid'; }],
+]) test(`rejects ${label} before any HTTP side effect`, async () => {
+  const input = signedInput(); mutate(input); const runtime = fixtureRuntime();
+  const result = await runGraph(buildCheckoutImageWorkflow(config()), input, runtime);
+  assert.ok([400, 403].includes(result.status)); assert.equal(runtime.calls.length, 0);
+});
+test('disabled configuration returns503 before Crypto or HTTP', async () => {
+  const c = config(); c.enabled = false; delete c.cryptoCredentialId; delete c.shopifyCredentialId;
+  const runtime = fixtureRuntime(); const result = await runGraph(buildCheckoutImageWorkflow(c), signedInput(), runtime);
+  assert.equal(result.status, 503); assert.equal(runtime.calls.length, 0);
+});
+test('credentials are references only and every managed request rejects redirects/retries', () => {
+  const flow = buildCheckoutImageWorkflow(config());
+  assert.equal(flow.active, false);
+  assert.equal(flow.settings.saveDataSuccessExecution, 'none');
+  assert.equal(flow.nodes.find(n => n.name === 'Proxy HMAC').typeVersion, 2);
+  for (const node of flow.nodes.filter(n => n.type.endsWith('.httpRequest'))) {
+    assert.equal(node.retryOnFail, false);
+    assert.equal(node.parameters.options.redirect.redirect.followRedirects, false);
+    if (node.name === 'Acquire shop token') assert.deepEqual(node.credentials, { httpCustomAuth: { id: 'test_shopify' } });
+    else assert.equal(node.credentials, undefined);
+  }
+  assert.ok(!JSON.stringify(flow).includes(secret));
+  assert.throws(() => buildCheckoutImageWorkflow({ ...config(), accessToken: 'not-a-secret' }), /unsupported/);
+});
+
+test('three-part Shopify CDN prefix is required', () => {
+  assert.doesNotThrow(() => buildCheckoutImageWorkflow(config()));
+  assert.throws(() => buildCheckoutImageWorkflow({ ...config(), shopifyImagePrefix: 'https://cdn.shopify.com/s/files/1/1111/2222/files/' }), /invalid_server/);
+});
+
+test('checked-in import is reproducible, disabled and restricted to ten synthetic variant fixtures', () => {
+  const read = name => JSON.parse(readFileSync(new URL(name, import.meta.url), 'utf8'));
+  const registry = read('checkout-image.config.json');
+  const actual = read('checkout-image.workflow.json');
+  assert.deepEqual(actual, buildCheckoutImageWorkflow(registry));
+  assert.equal(registry.enabled, false);
+  assert.equal(registry.allowedVariantIds.length, 10);
+  assert.equal(new Set(registry.allowedVariantIds).size, 10);
+  assert.ok(actual.nodes.every(n => !n.credentials));
+  assert.ok(!JSON.stringify(actual).includes(runtimeToken));
+});
+
+test('generated workflow is identical when actual step source uses LF or CRLF', async () => {
+  const source = readFileSync(new URL('checkout-image-steps.mjs', import.meta.url), 'utf8').replace(/\r\n?/g, '\n');
+  const builder = readFileSync(new URL('build-checkout-image-workflow.mjs', import.meta.url), 'utf8');
+  const dataUrl = text => 'data:text/javascript;base64,' + Buffer.from(text).toString('base64');
+  const load = async steps => import(dataUrl(builder
+    .replace("'./checkout-image.mjs'", JSON.stringify(new URL('checkout-image.mjs', import.meta.url).href))
+    .replace("'./checkout-image-steps.mjs'", JSON.stringify(dataUrl(steps)))));
+  const lf = await load(source);
+  const crlf = await load(source.replace(/\n/g, '\r\n'));
+  assert.deepEqual(lf.buildCheckoutImageWorkflow(config()), crlf.buildCheckoutImageWorkflow(config()));
+});
+
+for (const [label, response] of [
+  ['expired credentials', { statusCode: 401, body: { error: 'secret-provider-message' } }],
+  ['missing Files scope', { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'read_files,write_app_proxy' } }],
+  ['missing app proxy write scope', { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'read_files,write_files,read_app_proxy' } }],
+  ['unexpected broad scope', { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'write_files,write_app_proxy,write_orders' } }],
+  ['customer read scope', { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'read_files,write_files,read_app_proxy,write_app_proxy,read_customers' } }],
+  ['customer write scope', { statusCode: 200, body: { access_token: runtimeToken, expires_in: 86399, scope: 'read_files,write_files,read_app_proxy,write_app_proxy,write_customers' } }],
+]) test(`token acquisition fails closed for ${label}, with no secret in response`, async () => {
+  const runtime = fixtureRuntime(); const original = runtime.http;
+  runtime.http = async (node, p) => node.name === 'Acquire shop token' ? response : original(node, p);
+  const result = await runGraph(buildCheckoutImageWorkflow(config()), signedInput(), runtime);
+  assert.equal(result.status, 503);
+  assert.deepEqual(result.body, { state: 'error', code: 'shop_authentication_failed' });
+  assert.equal(runtime.calls.length, 0);
+});
+test('Shopify documented anonymous query canonicalization includes repeated params', () => {
+  const x = signedInput(); const guarded = proxyGuard(x, config());
+  assert.ok(guarded.canonical.includes('extra=a,b'));
+  assert.ok(guarded.canonical.includes('logged_in_customer_id='));
+  assert.equal(proxyVerified(guarded, x.query.signature).request.variantId, '12345');
+  assert.equal(proxyVerified(guarded, '0'.repeat(64)).httpStatus, 403);
+});
+test('provider redirect or bad HEAD prevents fileCreate', async () => {
+  const runtime = fixtureRuntime(); const http = runtime.http;
+  runtime.http = async (node, p) => node.name === 'Check native preview' ? { statusCode: 302, headers: { location: 'https://example.invalid' } } : http(node, p);
+  const result = await runGraph(buildCheckoutImageWorkflow(config()), signedInput(), runtime);
+  assert.equal(result.status, 503); assert.ok(!runtime.calls.some(x => x.name === 'Create image once'));
+});
+test('lost create response yields pending; graph never retries mutation', async () => {
+  const runtime = fixtureRuntime(); const http = runtime.http;
+  runtime.http = async (node, p) => { const result = await http(node, p); return node.name === 'Create image once' ? { error: 'timeout' } : result; };
+  const result = await runGraph(buildCheckoutImageWorkflow(config()), signedInput(), runtime);
+  assert.equal(result.body.code, 'create_unconfirmed');
+  assert.equal(runtime.calls.filter(x => x.name === 'Create image once').length, 1);
+});

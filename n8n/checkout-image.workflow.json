@@ -1,0 +1,841 @@
+{
+  "name": "Heartside checkout image preparation - candidate",
+  "active": false,
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "heartside-checkout-image",
+        "authentication": "none",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "proxy_input",
+      "name": "Proxy input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function proxyGuard(input, config, now = Date.now()) {\n  const reject = (code, httpStatus = 400) => ({ httpStatus, body: { state: 'error', code } });\n  if (!config.enabled) return reject('image_preparation_disabled', 503);\n  const query = input.query;\n  const body = input.body;\n  if (!query || !body || Array.isArray(body) || Object.keys(body).some(k => !['customizationId', 'variantId'].includes(k))) return reject('invalid_request');\n  const known = ['signature', 'shop', 'path_prefix', 'timestamp', 'customizationId', 'variantId'];\n  if (known.some(k => typeof query[k] !== 'string')) return reject('invalid_proxy_request', 403);\n  if (!/^[0-9a-f]{64}$/.test(query.signature) || query.shop !== config.shop || query.path_prefix !== config.proxyPath) return reject('invalid_proxy_request', 403);\n  if (!/^[0-9]{10}$/.test(query.timestamp) || Math.abs(now / 1000 - Number(query.timestamp)) > 300) return reject('expired_proxy_request', 403);\n  if (body.customizationId !== query.customizationId || body.variantId !== query.variantId) return reject('signed_request_mismatch', 403);\n  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(body.customizationId) || !config.allowedVariantIds.includes(body.variantId)) return reject('invalid_artwork_request');\n  const pairs = [];\n  for (const [key, value] of Object.entries(query)) {\n    if (key === 'signature') continue;\n    const values = Array.isArray(value) ? value : [value];\n    if (!values.every(v => typeof v === 'string') || key.length > 200 || values.join(',').length > 2048) return reject('invalid_proxy_request', 403);\n    pairs.push(key + '=' + values.join(','));\n  }\n  const customizationId = body.customizationId;\n  return { request: { customizationId, variantId: body.variantId }, signature: query.signature,\n    canonical: pairs.sort().join(''),\n    filename: `heartside-checkout-${customizationId}.jpg`, marker: `Heartside checkout artwork ${customizationId}`,\n    source: `https://cdn.teeinblue.com/customizations/${customizationId}.jpg`, config };\n};\nreturn [{json:step($input.first().json, {\"shop\":\"example-shop.myshopify.com\",\"proxyPath\":\"/apps/heartside-artwork\",\"shopifyImagePrefix\":\"https://cdn.shopify.com/s/files/1/1111/2222/3333/files/\",\"allowedVariantIds\":[\"10001\",\"10002\",\"10003\",\"10004\",\"10005\",\"10006\",\"10007\",\"10008\",\"10009\",\"10010\"],\"enabled\":false})}];"
+      }
+    },
+    {
+      "id": "input_allowed",
+      "name": "Input allowed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "input_allowed",
+              "leftValue": "={{ !$json.httpStatus }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "proxy_hmac",
+      "name": "Proxy HMAC",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [
+        540,
+        0
+      ],
+      "parameters": {
+        "action": "hmac",
+        "type": "SHA256",
+        "binaryData": false,
+        "value": "={{ $json.canonical }}",
+        "dataPropertyName": "computedSignature",
+        "encoding": "hex"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "verified_request",
+      "name": "Verified request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function proxyVerified(context, computed) {\n  const bad = { httpStatus: 403, body: { state: 'error', code: 'invalid_proxy_signature' } };\n  if (!context.canonical || typeof computed !== 'string' || !/^[0-9a-f]{64}$/.test(computed)) return bad;\n  // Fixed-length hexadecimal comparison; the secret itself never reaches Code.\n  let difference = 0;\n  for (let i = 0; i < 64; i++) difference |= computed.charCodeAt(i) ^ context.signature.charCodeAt(i);\n  if (difference) return bad;\n  const { signature, canonical, ...verified } = context;\n  return verified;\n};\nreturn [{json:step($('Proxy input').first().json, $input.first().json.computedSignature)}];"
+      }
+    },
+    {
+      "id": "signature_valid",
+      "name": "Signature valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "signature_valid",
+              "leftValue": "={{ !$json.httpStatus }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "acquire_shop_token",
+      "name": "Acquire shop token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://example-shop.myshopify.com/admin/oauth/access_token",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"grant_type\":\"client_credentials\"}",
+        "options": {
+          "timeout": 6000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "shop_token_valid",
+      "name": "Shop token valid",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1260,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function tokenStep(response, context) {\n  const body = response.body;\n  const scopes = typeof body?.scope === 'string' ? body.scope.split(',').map(x => x.trim()).filter(Boolean) : [];\n  if (response.statusCode !== 200 || typeof body?.access_token !== 'string' || !/^[A-Za-z0-9_-]{20,512}$/.test(body.access_token) ||\n      !Number.isSafeInteger(body.expires_in) || body.expires_in < 60 || !scopes.includes('write_files') || !scopes.includes('write_app_proxy') ||\n      scopes.some(s => !['read_files', 'write_files', 'read_app_proxy', 'write_app_proxy'].includes(s))) {\n    return { httpStatus: 503, body: { state: 'error', code: 'shop_authentication_failed' } };\n  }\n  // Keep the transient token only in the managed HTTP node's runtime output.\n  // No token, provider response, or credential is copied into this Code output.\n  return context;\n};\nreturn [{json:step($input.first().json, $('Verified request').first().json)}];"
+      }
+    },
+    {
+      "id": "shop_authenticated",
+      "name": "Shop authenticated",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "shop_authenticated",
+              "leftValue": "={{ !$json.httpStatus }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "find_image",
+      "name": "Find image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1620,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://example-shop.myshopify.com/admin/api/2026-10/graphql.json",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Shopify-Access-Token",
+              "value": "={{ $('Acquire shop token').first().json.body.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImages($query: String!) {\\n  files(first: 10, query: $query) { nodes {\\n    id alt fileStatus fileErrors { code }\\n    ... on MediaImage { image { url width height } }\\n  } pageInfo { hasNextPage } }\\n}\",variables:{query:'filename:'+$json.filename}}) }}",
+        "options": {
+          "timeout": 6000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "lookup_decision",
+      "name": "Lookup decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function lookupStep(response, context) {\n  const bad = { httpStatus: 503, body: { state: 'error', code: 'image_lookup_failed' } };\n  if (response.statusCode !== 200 || response.body?.errors?.length) return bad;\n  const files = response.body?.data?.files;\n  if (!Array.isArray(files?.nodes) || files.pageInfo?.hasNextPage || files.nodes.length > 1) return bad;\n  if (!files.nodes.length) return { ...context, needsCreate: true };\n  const file = files.nodes[0];\n  if (file.alt !== context.marker || !/^gid:\\/\\/shopify\\/MediaImage\\/[0-9]+$/.test(file.id)) return bad;\n  return { ...context, fileId: file.id, needsCreate: false };\n};\nreturn [{json:step($input.first().json, $('Verified request').first().json)}];"
+      }
+    },
+    {
+      "id": "lookup_valid",
+      "name": "Lookup valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "lookup_valid",
+              "leftValue": "={{ !$json.httpStatus }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "image_exists",
+      "name": "Image exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "image_exists",
+              "leftValue": "={{ !$json.needsCreate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "read_image",
+      "name": "Read image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://example-shop.myshopify.com/admin/api/2026-10/graphql.json",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Shopify-Access-Token",
+              "value": "={{ $('Acquire shop token').first().json.body.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImage($id: ID!) {\\n  node(id: $id) { ... on MediaImage {\\n    id alt fileStatus fileErrors { code } image { url width height }\\n  } }\\n}\",variables:{id:$json.fileId}}) }}",
+        "options": {
+          "timeout": 6000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ready_response",
+      "name": "Ready response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2520,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function readyStep(response, context) {\n  const bad = { httpStatus: 503, body: { state: 'error', code: 'image_readback_failed' } };\n  const file = response.body?.data?.node;\n  if (response.statusCode !== 200 || response.body?.errors?.length || !file || file.id !== context.fileId || file.alt !== context.marker || file.fileErrors?.length || file.fileStatus === 'FAILED') return bad;\n  if (file.fileStatus !== 'READY') return { httpStatus: 202, body: { state: 'pending', code: 'image_processing', retryAfterSeconds: 3 } };\n  if (!(file.image?.width > 0 && file.image?.height > 0)) return bad;\n  let url;\n  try { url = new URL(file.image.url); } catch { return bad; }\n  if (url.origin !== 'https://cdn.shopify.com' || url.pathname !== new URL(context.config.shopifyImagePrefix).pathname + context.filename || url.hash || url.username || url.password || ![...url.searchParams].every(([k, v]) => k === 'v' && /^[0-9]+$/.test(v))) return bad;\n  const { customizationId, variantId } = context.request;\n  return { httpStatus: 200, body: { state: 'ready', customizationId, variantId, fileId: file.id, imageUrl: url.href,\n    properties: { _hs_checkout_image: url.href, _hs_checkout_parent: 'true', _hs_checkout_bundle_id: customizationId + '-' + variantId } } };\n};\nreturn [{json:step($input.first().json, $('Lookup decision').first().json)}];"
+      }
+    },
+    {
+      "id": "check_native_preview",
+      "name": "Check native preview",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2700,
+        0
+      ],
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $json.source }}",
+        "authentication": "none",
+        "options": {
+          "timeout": 6000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "preview_verified",
+      "name": "Preview verified",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function previewHeadStep(response, context) {\n  const headers = response.headers || {};\n  const mime = String(headers['content-type'] || '').split(';')[0].trim().toLowerCase();\n  const length = Number(headers['content-length']);\n  if (response.statusCode !== 200 || mime !== 'image/jpeg' || !Number.isSafeInteger(length) || length < 4 || length > 8 * 1024 * 1024) {\n    return { httpStatus: 503, body: { state: 'error', code: 'preview_unavailable' } };\n  }\n  return { ...context, previewBytes: length };\n};\nreturn [{json:step($input.first().json, $('Lookup decision').first().json)}];"
+      }
+    },
+    {
+      "id": "preview_valid",
+      "name": "Preview valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3060,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "preview_valid",
+              "leftValue": "={{ !$json.httpStatus }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "create_image_once",
+      "name": "Create image once",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3240,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://example-shop.myshopify.com/admin/api/2026-10/graphql.json",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Shopify-Access-Token",
+              "value": "={{ $('Acquire shop token').first().json.body.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({query:\"mutation CheckoutImageCreate($files: [FileCreateInput!]!) {\\n  fileCreate(files: $files) { files { id alt fileStatus } userErrors { code field } }\\n}\",variables:{files:[{originalSource:$json.source,filename:$json.filename,alt:$json.marker,contentType:'IMAGE',duplicateResolutionMode:'RAISE_ERROR'}]}}) }}",
+        "options": {
+          "timeout": 6000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "processing_response",
+      "name": "Processing response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3420,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const step = function createStep(response) {\n  // A timed-out request may already have created the file. No mutation retry here;\n  // the next frontend poll begins with the authoritative deterministic-name lookup.\n  if (response.error || response.statusCode >= 500) return { httpStatus: 202, body: { state: 'pending', code: 'create_unconfirmed', retryAfterSeconds: 5 } };\n  const result = response.body?.data?.fileCreate;\n  if (response.statusCode !== 200 || response.body?.errors?.length || !Array.isArray(result?.userErrors)) return { httpStatus: 503, body: { state: 'error', code: 'image_creation_failed' } };\n  if (result.userErrors.length && !result.userErrors.every(e => e.code === 'FILENAME_ALREADY_EXISTS')) return { httpStatus: 503, body: { state: 'error', code: 'image_creation_failed' } };\n  if (!result.userErrors.length && result.files?.length !== 1) return { httpStatus: 503, body: { state: 'error', code: 'image_creation_failed' } };\n  return { httpStatus: 202, body: { state: 'pending', code: 'image_processing', retryAfterSeconds: 3 } };\n};\nreturn [{json:step($input.first().json)}];"
+      }
+    },
+    {
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3600,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "responseCode": "={{ $json.httpStatus }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Proxy input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proxy input": {
+      "main": [
+        [
+          {
+            "node": "Input allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input allowed": {
+      "main": [
+        [
+          {
+            "node": "Proxy HMAC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proxy HMAC": {
+      "main": [
+        [
+          {
+            "node": "Verified request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified request": {
+      "main": [
+        [
+          {
+            "node": "Signature valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signature valid": {
+      "main": [
+        [
+          {
+            "node": "Acquire shop token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acquire shop token": {
+      "main": [
+        [
+          {
+            "node": "Shop token valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shop token valid": {
+      "main": [
+        [
+          {
+            "node": "Shop authenticated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shop authenticated": {
+      "main": [
+        [
+          {
+            "node": "Find image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find image": {
+      "main": [
+        [
+          {
+            "node": "Lookup decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup decision": {
+      "main": [
+        [
+          {
+            "node": "Lookup valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup valid": {
+      "main": [
+        [
+          {
+            "node": "Image exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image exists": {
+      "main": [
+        [
+          {
+            "node": "Read image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check native preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read image": {
+      "main": [
+        [
+          {
+            "node": "Ready response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check native preview": {
+      "main": [
+        [
+          {
+            "node": "Preview verified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preview verified": {
+      "main": [
+        [
+          {
+            "node": "Preview valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preview valid": {
+      "main": [
+        [
+          {
+            "node": "Create image once",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create image once": {
+      "main": [
+        [
+          {
+            "node": "Processing response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processing response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 30,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false
+  }
+}

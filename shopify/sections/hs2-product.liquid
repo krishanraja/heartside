@@ -95,7 +95,7 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.native_artwork_kind != blank and s.native_artwork_kind != 'off' %} data-hs2-artwork-kind="{{ s.native_artwork_kind }}" data-hs2-purchase-enabled="{{ s.native_purchase_enabled }}"{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy" data-hs2-checkout-image-enabled="{{ s.checkout_image_enabled }}" data-hs2-checkout-image-endpoint="{{ s.checkout_image_endpoint | escape }}" data-hs2-checkout-image-cdn-prefix="{{ s.checkout_image_cdn_prefix | escape }}"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.native_artwork_kind != blank and s.native_artwork_kind != 'off' %} data-hs2-artwork-kind="{{ s.native_artwork_kind }}" data-hs2-purchase-enabled="{{ s.native_purchase_enabled }}"{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
 
     {% if s.mug_art_preview %}
     <figure class="hs-art-wrap-reference">
@@ -261,6 +261,9 @@
   "settings": [
     { "type": "select", "id": "native_artwork_kind", "label": "Native artwork format", "options": [{"value":"off","label":"Off"},{"value":"mug","label":"Illustrated mug"},{"value":"print","label":"Portrait family"}], "default":"off" },
     { "type": "checkbox", "id": "native_purchase_enabled", "label": "Enable tested native artwork ordering", "default": false },
+    { "type": "checkbox", "id": "checkout_image_enabled", "label": "Prepare personal checkout image", "default": false },
+    { "type": "text", "id": "checkout_image_endpoint", "label": "Checkout image registration endpoint", "info": "Same-store /apps/ proxy path. Enable only after the secured endpoint and checkout transformation pass testing." },
+    { "type": "text", "id": "checkout_image_cdn_prefix", "label": "Store's Shopify Files URL prefix", "info": "Exact https://cdn.shopify.com/s/files/1/.../files/ prefix for this store." },
     { "type": "checkbox", "id": "blanket_purchase", "label": "Native word-free blanket", "info": "Explicit native photo upload, shared art choices and Buddy facts. Enable only on the linked word-free blanket product.", "default": false },
     { "type": "checkbox", "id": "city_art_preview", "label": "City artwork acceptance preview", "info": "Isolated draft only. Disables ordering and automatic photo submission while artwork checks are pending.", "default": false },
     { "type": "checkbox", "id": "blanket_art_preview", "label": "Personality blanket acceptance preview", "info": "Isolated draft only. Uses chat facts and blocks ordering while likeness and production checks are pending.", "default": false },

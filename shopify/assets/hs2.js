@@ -2426,6 +2426,42 @@
       return JSON.stringify(j);
     } catch (e) { return body; }
   }
+  function checkoutImageConfig() {
+    var buy = document.querySelector('#buy[data-hs2-checkout-image-enabled="true"]');
+    return nativeArtworkPurchase() && buy ? {endpoint: buy.getAttribute('data-hs2-checkout-image-endpoint') || '', cdnPrefix: buy.getAttribute('data-hs2-checkout-image-cdn-prefix') || ''} : null;
+  }
+  function checkoutImageStatus(message) {
+    var status = document.querySelector('[data-hs2-checkout-image-status]');
+    if (status) { status.textContent = message; status.hidden = !message; }
+  }
+  function prepareCheckoutCart(body) {
+    var config = checkoutImageConfig();
+    if (!config) return null; // The new route is opt-in until its endpoint is verified.
+    if (prepareCheckoutCart.pending) return Promise.reject(new Error('Checkout artwork is already being prepared.'));
+    var revision = function () { return JSON.stringify([blanketReviewKey(), answer('line4'), answer('signed'), hsProps()]); };
+    var identity = revision(), variant = document.querySelector('[data-hs2-variant-id]');
+    var variantId = variant && variant.value;
+    prepareCheckoutCart.pending = true;
+    checkoutImageStatus('Preparing your saved artwork for checkout.');
+    return Promise.resolve().then(function () {
+      if (!window.HSCheckoutImage) throw new Error('Checkout artwork service is unavailable.');
+      return window.HSCheckoutImage.prepare(body, config);
+    }).then(function (prepared) {
+      var currentVariant = document.querySelector('[data-hs2-variant-id]');
+      if (identity !== revision() || variantId !== (currentVariant && currentVariant.value) || !cityArtSaved() || !blanketReviewAccepted() || !nativePurchaseReady() || blanketUploadPending()) throw new Error('Your artwork selection changed.');
+      checkoutImageStatus('Your artwork is ready for checkout.');
+      prepareCheckoutCart.pending = false;
+      return prepared;
+    }, function (error) {
+      prepareCheckoutCart.pending = false;
+      checkoutImageStatus('We could not prepare your checkout picture. Try Add to cart again. Your saved artwork does not need another upload.');
+      throw error;
+    }).catch(function (error) {
+      prepareCheckoutCart.pending = false;
+      checkoutImageStatus('We could not prepare your checkout picture. Check your saved artwork, then try Add to cart again. You do not need to upload your photo again.');
+      throw error;
+    });
+  }
   function onCartAdd(cb) {
     (onCartAdd.cbs = onCartAdd.cbs || []).push(cb);
     if (onCartAdd.hooked) return;
@@ -2441,7 +2477,8 @@
         var u = typeof input === 'string' ? input : (input && input.url);
         var args = arguments;
         if (isAdd(u) && args[1] && typeof args[1].body === 'string') { args = [input, Object.assign({}, args[1], { body: withHsProps(args[1].body) })]; }
-        var pr = f0.apply(this, args);
+        var context = this, preparation = isAdd(u) ? prepareCheckoutCart(args[1] && args[1].body) : null;
+        var pr = preparation ? preparation.then(function (body) { return f0.call(context, input, Object.assign({}, args[1], {body: body})); }) : f0.apply(this, args);
         if (isAdd(u)) pr.then(function (r) {
           if (!r || !r.ok) return;
           var copy = null;
@@ -2452,8 +2489,9 @@
       };
     }
     if (window.XMLHttpRequest) {
-      var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send;
-      X.open = function (m, u) { this.__hs2add = isAdd(u); return open0.apply(this, arguments); };
+      var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send, abort0 = X.abort;
+      X.open = function (m, u) { this.__hs2add = isAdd(u); this.__hs2generation = (this.__hs2generation || 0) + 1; return open0.apply(this, arguments); };
+      X.abort = function () { this.__hs2generation = (this.__hs2generation || 0) + 1; return abort0.apply(this, arguments); };
       X.send = function (b) {
         if (this.__hs2add && typeof b === 'string') arguments[0] = withHsProps(b);
         if (this.__hs2add) this.addEventListener('load', function () {
@@ -2462,7 +2500,17 @@
           try { body = JSON.parse(this.responseText); } catch (e) { /* not JSON */ }
           fire(body);
         });
-        return send0.apply(this, arguments);
+        var xhr = this, generation = this.__hs2generation;
+        var preparation = this.__hs2add ? prepareCheckoutCart(arguments[0]) : null;
+        if (!preparation) return send0.apply(this, arguments);
+        preparation.then(function (body) {
+          if (xhr.__hs2generation === generation) send0.call(xhr, body);
+        }, function () {
+          if (xhr.__hs2generation !== generation) return;
+          // Teeinblue's XHR client receives a normal network failure and releases its button.
+          xhr.dispatchEvent(new Event('error'));
+          xhr.dispatchEvent(new Event('loadend'));
+        });
       };
     }
   }
