@@ -2,6 +2,8 @@
 
 Krish asked for more real examples on the site, showing different personalities and the products in use, from "a small real batch" of the dog photos in the brand Drive. This is the spec. Nothing here has been generated, and nothing runs without his yes in the session that spends.
 
+**Update, later on 27 October.** Krish chose route A and starts the local session himself, which is his yes to the capped spend. He confirmed these are stock photos, not customer photos, so the photos (already in `assets/photos/`), the photo-check fixtures and the finished examples are committed. The runnable job list is `design/examples-2026-10-27/` (19 jobs: the 18 below plus the pug portrait at Warm with a wink for the slider demo; cap 20), with the brief for Codex in its README. Styles: pug Vintage screenprint, poodle Painterly, golden puppy Cut-paper collage.
+
 ## What to make
 
 Three dogs, two tones, three products: 18 generations, capped at 20 (two spares for a failed render). About $0.13 each through Teeinblue's Gen AI (OpenAI GPT Image), so about $2.50 in all.

@@ -5,6 +5,3 @@ node_modules/
 tools/preview/out/
 content/out/
 
-# Photo-quality fixtures derived from the Drive dog photos: held out of this public repository
-# until Krish confirms those photos may be published (27 Oct 2026).
-tools/preview/fixtures/photo-quality/
