@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: bea22ce182f8fbeec4b464a6eafba75e31881f99
+head: 785e0d7f609c3146ea46020a042d4ac6dc1e4853
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -57,9 +57,9 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Krish approves pushing the redesign branch to an unpublished copy of the live theme (the approval gates are listed in the pull request), then CoWork runs Part A of [the acceptance prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) on that preview before he decides to publish.
+- **Next action:** Krish approves pushing the redesign branch to an unpublished copy of the live theme (the approval gates are listed in the pull request), then CoWork runs Part A of [the acceptance prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) on that preview before he decides to publish. The redesign targets conversion and order value; it moves the number only once published, and the number is still $0 as last measured.
 - **Waiting on Krish:** the Artist's touch price and product; the bundle discount per basket (two mugs alone fail the 30% floor); the mug price; whether the Artist's touch may name him; whether the six Drive dog photos may be public; the example batch (route A on his computer, or route B with an OpenAI key); the real blanket sample order. Do not claim physical quality or paid-order fulfillment until that sample is inspected.
-- North Star check (2026-10-27): holds. The number is still $0 as last measured; the redesign targets conversion and order value and is not live yet, so nothing has moved it.
+- North Star check (2026-10-27): holds.
 
 ## Read next
 
