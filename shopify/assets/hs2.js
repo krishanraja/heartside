@@ -1712,6 +1712,23 @@
       track('photo_attached', { where: 'personalizer' });
     }, true);
   }
+  function watchBlanketCompletion() {
+    if (!nativeBlanketPurchase() || watchBlanketCompletion.done || !('MutationObserver' in window)) return;
+    watchBlanketCompletion.done = true;
+    var queued = false;
+    var relevantNode = function (node) {
+      return node.nodeType === 1 && (node.matches('.vm--container, .tee-photo-image, image') || node.querySelector('.vm--container, .tee-photo-image, image'));
+    };
+    new MutationObserver(function (records) {
+      var relevant = records.some(function (record) {
+        if (record.type === 'attributes') return record.target.matches('image, .tee-field--photo .tee-photo-image');
+        return Array.prototype.some.call(record.addedNodes, relevantNode) || Array.prototype.some.call(record.removedNodes, relevantNode);
+      });
+      if (!relevant || queued) return;
+      queued = true;
+      setTimeout(function () { queued = false; updateBlanketPurchaseStatus(); }, 150);
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'href', 'xlink:href'] });
+  }
   function teeinblue() {
     if (!document.querySelector('[data-hs2-answers], [data-hs2-tib-gallery]')) return;
     editDetails();
@@ -1720,6 +1737,7 @@
       document.addEventListener(ev, function () { bridge.tries = 0; setTimeout(tick, 60); setTimeout(swatchTib, 120); });
     });
     tick();
+    watchBlanketCompletion(); // Native AI may finish long after the general bridge observer stops.
     if ('MutationObserver' in window) {
       var queued = false;
       var mo = new MutationObserver(function () {
@@ -1739,7 +1757,7 @@
      tidies each line: no "Available Product", "Frame: Red Oak" for the framed poster,
      options that aren't a choice ("Default", "1 pc") left out, the shopper's own
      preview (Teeinblue's _customization_image, read from /cart.js) as the picture,
-     and the free US shipping the site promises in place of the shipping-at-checkout note. */
+     and preserves an accurate checkout-rate message for mixed shipping profiles. */
   var CART_DROP_PROPS = /^available product$/i;
   var CART_DROP_VALUES = /^(default|default title|1 pc|one size)$/i;
   var cartImages = {};
@@ -1772,7 +1790,7 @@
       });
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
-        var want = 'Free US shipping. Taxes calculated at checkout.';
+        var want = 'Shipping and taxes calculated at checkout.';
         if (n.textContent.trim() !== want) n.textContent = want;
       });
       if (need && !cartTidy.busy) {
@@ -2408,7 +2426,7 @@
   }
   function announceAdd(items) {
     var list = queueGet().length > 0;
-    var fallback = function () { if (!list) showNext('In your cart', 'Free US shipping.', shopRoot() + 'checkout', 'Check out'); };
+    var fallback = function () { if (!list) showNext('In your cart', 'Shipping calculated at checkout.', shopRoot() + 'checkout', 'Check out'); };
     if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
     var settle = {};
     var promise = new Promise(function (resolve, reject) { settle.resolve = resolve; settle.reject = reject; });
@@ -2477,7 +2495,7 @@
           var done = q.length - left.length;
           showNext('Next: ' + next.title, done + ' of ' + q.length + ' in your cart. Photo and names carry over.', next.url, 'Personalize it');
         } else {
-          showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping.', shopRoot() + 'checkout', 'Check out');
+          showNext('All ' + q.length + ' gifts are in your cart', 'Shipping calculated at checkout.', shopRoot() + 'checkout', 'Check out');
         }
       })
       .catch(function () { /* the bar is a convenience; the cart still works */ });
