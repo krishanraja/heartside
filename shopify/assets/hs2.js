@@ -2395,13 +2395,13 @@
      Each callback gets the added lines as /cart/add answers them (null if unreadable). */
   /* Teeinblue's Add To Cart posts its own JSON to /cart/add and never reads our form, so the
      hidden answers (_hs_answers, _hs_lines, _hs_ship_to) never reached an order (found in the
-     live cart test, 21 Oct). They are added to that request on its way out; a property
-     Teeinblue already sends is left as it is. */
+     live cart test, 21 Oct). Add our properties on the way out. On native artwork routes,
+     our raw _hs values also replace vendor-escaped copies; vendor design identifiers stay intact. */
   function hsProps() {
-    var o = {}, n = 0;
+    var o = {}, n = 0, native = nativeArtworkPurchase();
     document.querySelectorAll('#hs2-product-form [data-hs2-prop]').forEach(function (inp) {
       var m = /^properties\[(.+)\]$/.exec(inp.name || '');
-      if (m && inp.value) { o[m[1]] = inp.value; n++; }
+      if (m && (inp.value || (native && m[1].indexOf('_hs_') === 0))) { o[m[1]] = inp.value; n++; }
     });
     return n ? o : null;
   }
@@ -2413,7 +2413,15 @@
       (Array.isArray(j.items) ? j.items : [j]).forEach(function (it) {
         if (!it || !it.id) return;
         it.properties = it.properties || {};
-        Object.keys(add).forEach(function (k) { if (!(k in it.properties)) it.properties[k] = add[k]; });
+        Object.keys(add).forEach(function (k) {
+          if (!(k in it.properties) || (nativeArtworkPurchase() && k.indexOf('_hs_') === 0)) it.properties[k] = add[k];
+        });
+        // Teeinblue encoded this label in the observed native cart. Correct only the
+        // known label; never HTML-decode customer prose or customization/design URLs.
+        if (nativeArtworkPurchase() && Object.prototype.hasOwnProperty.call(it.properties, 'Dog&#39;s name') && !Object.prototype.hasOwnProperty.call(it.properties, "Dog's name")) {
+          it.properties["Dog's name"] = it.properties['Dog&#39;s name'];
+          delete it.properties['Dog&#39;s name'];
+        }
       });
       return JSON.stringify(j);
     } catch (e) { return body; }
