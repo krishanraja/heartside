@@ -81,6 +81,6 @@ n8n's expression splitter treats adjacent closing braces as its delimiter even i
 
 Install test dependencies with `npm ci --ignore-scripts` in `tools/preview`. From the repository root, run `node --test n8n/test-checkout-image.mjs n8n/test-checkout-image-workflow.mjs`.
 
-Adjacent tests: `node --test n8n/test-checkout-image.mjs n8n/test-checkout-image-workflow.mjs tools/checkout/function-studio-probe.test.mjs tools/checkout/transform-candidate.test.mjs`.
+Adjacent frontend tests: `node --test tools/preview/checkout-image.test.mjs tools/preview/cart-properties.test.mjs`. Browser transport fixtures: `node --test tools/preview/checkout-image.browser.test.mjs`. These paths are tracked in this repository; earlier private Function Studio probe scripts are not public test commands.
 
 The initial read-only native preview check on27October succeeded against the accepted existing preview: JPEG172999bytes. That check made no Shopify mutation. The later controlled Files creation/readback/reuse sequence above supersedes the earlier no-mutation runtime status; it reused existing artwork and did not generate or edit an image.
