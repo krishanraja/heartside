@@ -6,7 +6,10 @@
         "show_poster": false,
         "open_on": "preview",
         "photo_shape": "square",
-        "blanket_purchase": true
+        "blanket_purchase": true,
+        "checkout_image_enabled": true,
+        "checkout_image_endpoint": "/apps/heartside-artwork",
+        "checkout_image_cdn_prefix": "https://cdn.shopify.com/s/files/1/1025/2301/1454/files/"
       },
       "blocks": {
         "title": {

@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: e7cfd15 (native adapter and hosted Merge checkout verified; order and print acceptance open)
+head: release branch pending final main merge; resolve exact SHA from Git
 lifecycle: launch-preparation
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -33,7 +33,17 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-27)
+## Current release checkpoint (27 October 2026)
+
+The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119), and word-free sherpa blanket ($129). Old duplicate products have been archived or held, and the old core handles redirect to the clean ones. The candidate theme has the tested native purchase and actual-design checkout settings enabled for all three products. The public theme has **not** yet been switched to that candidate and the storefront password is still in place at this checkpoint. Normal Shopify Payments is accepting payments; its test gateway is off, and the three pre-existing $49 US market prices remain intact.
+
+One approved fee-free compatibility order passed for a single $129 blanket with the saved accepted artwork. Shopify recorded it as test/paid/unfulfilled; Teeinblue received the original variant and a completed design without a rendering error. The order-linked original print file was downloaded and inspected at 15,900 × 18,900 RGBA PNG. Supplier fulfillment remains held for manual review. No real customer charge or new AI generation is included in this proof. The order is not a physical sample and does not establish production print quality for every gift.
+
+The retained personalized cart changed quantity 2→1 with its exact component, attributes and prepared image intact; checkout read back $129 and the actual accepted design as its main image. The typed-answer workflow's self-recipient correction is published and independently matches `n8n/prompts.json`. The temporary checkout-image QA template was removed from the candidate theme and from the source tree. The current Drive brand pack is complete, with old product assets marked historical; its link and private identifiers stay in the private handoff.
+
+Release closeout still requires: reconcile and merge this branch to current main; publish the tested candidate theme; remove the storefront password; verify the public no-preview routes and payment/supplier settings; and run the separate CoWork live and Claude Code repository acceptance assignments in `docs/`. Krish will place the real sample blanket order himself when the store is available. Physical sample and real paid fulfillment remain future evidence, not launch claims.
+
+## Historical snapshots before the final compatibility order (superseded)
 
 **Latest cart follow-through:** The exact unpublished theme's cart still displayed the neutral product image and legacy recommendations despite the hosted checkout's correct personalized parent image. A bounded quantity increase exposed a Merge limitation: two component units became one parent bundle, leaving the ordinary decrease control disabled. The transformation was saved Inactive and the ordinary native cart was restored to one USD129 blanket. Scoped cart image, recommendation and quantity repair is in progress. The owner has now approved one final fee-free compatibility order, including the temporary gateway change and restoration of the three existing market prices; that approval is unused. Normal payments remain unchanged. The three private blanket checkout-image settings are backed up and temporarily reset to source defaults for guarded deployment, then must be restored before the test. These findings supersede earlier Active and approval-pending statements below.
 
@@ -167,7 +177,7 @@ Blocked or waiting:
 - **2026-10-12: positioning set** (`35f0070`): "Heartside: Personalized Dog Gifts" and "Your dog loves you too."
 - **2026-10-04 to 07: the v1 and v2 stores** (the ornament, then the "Your dog has notes" poster), now history (`docs/archive/README.md`).
 
-## What is next and what is waiting on Krish
+## Superseded pre-order next steps (historical)
 
 - **Next action:** Close the remaining finite acceptance checks using the retained artwork, with the final native Merge order and order-linked print mapping still open. Files READY/reuse, native preparation and hosted actual-design checkout already pass; the approved mug generation is complete. The additional fee-free Merge-order approval is granted and unused; first restore and verify exactly one retained blanket, then execute within that approval. Preserve normal payments, manual production holds, remote template settings and the store pause; the Advanced trial ends November1.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).

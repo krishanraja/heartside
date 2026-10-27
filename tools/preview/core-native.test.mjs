@@ -49,10 +49,13 @@ for(const minified of [false,true]) {
     run(['guardMugProof'],c,minified);c.guardMugProof();click({target:{closest:()=>({})}});
   });
 }
-test('new native templates are disabled by default and use their real photo layers',()=>{
+test('release native templates enable ordering and actual-design checkout images',()=>{
   for(const [name,kind] of [['mug-native','mug'],['portrait-native','print']]){
     const t=JSON.parse(readFileSync(new URL('../../shopify/templates/product.'+name+'.json',import.meta.url),'utf8')).sections.main;
-    assert.equal(t.settings.native_artwork_kind,kind);assert.equal(t.settings.native_purchase_enabled,false);assert.equal(t.settings.blanket_purchase,undefined);
+    assert.equal(t.settings.native_artwork_kind,kind);assert.equal(t.settings.native_purchase_enabled,true);assert.equal(t.settings.blanket_purchase,undefined);
+    assert.equal(t.settings.checkout_image_enabled,true);
+    assert.equal(t.settings.checkout_image_endpoint,'/apps/heartside-artwork');
+    assert.match(t.settings.checkout_image_cdn_prefix,/^https:\/\/cdn\.shopify\.com\/s\/files\/1\/[^\s]+\/files\/$/);
     assert.equal(t.blocks.buy.settings.v3,false);assert.match(t.blocks.price.settings.note,/calculated at checkout/);
     if(kind==='print')assert.equal(t.blocks.teeinblue_product_personalizer_product_app_block_UBn6nK.settings.show_available_product,true);
   }

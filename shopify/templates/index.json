@@ -9,7 +9,8 @@
         "product_ornament": "the-tree-ornament",
         "ornament_bundle": false,
         "artwork_candidates": true,
-        "blanket_purchase": false
+        "blanket_purchase": false,
+        "core_purchase": true
       }
     }
   },

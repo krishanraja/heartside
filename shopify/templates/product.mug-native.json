@@ -7,7 +7,10 @@
         "open_on": "preview",
         "photo_shape": "square",
         "native_artwork_kind": "mug",
-        "native_purchase_enabled": false
+        "native_purchase_enabled": true,
+        "checkout_image_enabled": true,
+        "checkout_image_endpoint": "/apps/heartside-artwork",
+        "checkout_image_cdn_prefix": "https://cdn.shopify.com/s/files/1/1025/2301/1454/files/"
       },
       "blocks": {
         "title": {
