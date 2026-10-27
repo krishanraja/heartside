@@ -1,0 +1,53 @@
+# Order QC
+
+> **HISTORICAL MUG QC SNAPSHOT.** The pixel/layout assumptions below belong to the earlier photo-cutout mug and are not acceptance for the current landscape illustrated mug, portrait or word-free blanket. Manual supplier review remains required. Consult [`../../NOW.md`](../../NOW.md) and verify the actual current order-linked print file before making any claim about production quality. Do not run this procedure against a current order without revalidating its layout assumptions.
+
+Every order's real print file is checked before anyone confirms it in Teeinblue. Built 15 Oct, after Krish asked "what do we do for autonomous mock up quality control for live orders?". It covers The Morning Mug for now; the blanket, print and ornament follow once their designs settle.
+
+## The mug: `mug_qc.py`
+
+```sh
+python3 tools/qc/mug_qc.py <print file or its URL> <out_dir> \
+  --line1 "..." --line2 "..." --line3 "..." --signed "Love, Biscuit"
+```
+
+The print file is the order's `_tib_design_link_1` (Teeinblue's 2700x1050 PNG). The words are the line item's `Line 1` to `Line 3` and `Signed`, exactly as Teeinblue printed them. It exits 0 for pass and 1 for hold, and writes `report.json` and `card.png`. The card shows the print file wrapped onto Printful's photo of the mug, both faces, with every check under it.
+
+It uses no AI and no OCR. The mug's layout is known to the pixel (calibrated against Teeinblue's own print files), so it draws what the words should look like and compares that ink with the print:
+
+| Check | Holds the order when |
+|---|---|
+| file | the print isn't 2700x1050 with a transparent background |
+| not blank | the note has almost no ink |
+| line 1 to 3 words | no way of breaking the line matches the print (missing, clipped or wrong text, a font that didn't load) |
+| signature | "Love, [dog]" isn't on the print as it should be |
+| inside | ink sits outside the note's boxes |
+| photo | there's no photo on the dog face |
+| photo cut out | the photo is still a rectangle, so Teeinblue's background remover didn't run |
+
+Two checks warn without holding: **breaks** (a line leaves one word alone on its second row) and **photo whole** (the dog touches the edge of the photo area, so the buyer's photo may have cut it off).
+
+`python3 tools/qc/test_mug_qc.py` runs it on Teeinblue's three real print files (all pass) and on six broken prints made from them, which it must catch: a line missing, no photo, the background left on, one word alone, text past its box, and the wrong name on the signature.
+
+## How it runs on live orders
+
+**From 19 Oct: GitHub Actions** (`.github/workflows/order-qc.yml`, run by `order_qc.py`, tested by `test_order_qc.py`). Krish moved the check off Claude so it needs no connector or scheduled task. It tags `qc-pass` or `qc-hold`, adds one note line and opens a GitHub issue for Krish on any hold. It signs in as the Dev Dashboard app "Heartside order QC" (orders only). The schedule went on on 19 Oct after green dry runs; the Claude task below should be switched off so the two never tag the same order.
+
+### Before 19 Oct: the Claude scheduled task (approved by Krish, 15 Oct)
+
+Krish approved a twice-daily order check with an AI pre-check on 13 Oct (V3 section 6), and this way of running it on 15 Oct. It is the scheduled task **Heartside order QC**, a fresh Claude session at 07:56 and 16:56 London time, with a push and an email to Krish when a run has something to say. The morning run catches orders placed overnight in the US before Krish's morning confirm, and the afternoon run catches US daytime orders.
+
+**It can't read orders until Shopify is connected to it.** On 15 Oct the Shopify connector needed signing in again, and a connector can't be added to a scheduled task from a coding session in this organization. Krish's two steps: reconnect Shopify at https://claude.ai/customize/connectors, then add Shopify to "Heartside order QC" in his scheduled tasks. Until then each run stops and says exactly that.
+
+Each run:
+
+1. Lists unfulfilled orders with the Shopify connector, and runs `mug_qc.py` on each mug line item.
+2. Looks at each card for what pixels can't judge: is it a dog, is the face whole, is anything off.
+3. Tags the order `qc-pass` or `qc-hold`, with the reason in the order note.
+4. Sends Krish one message: holds first, each with its card, then the number that passed.
+
+It never confirms an order in Teeinblue. A person still does, as the site promises ("A real person checks every order before it prints"), and now checks a card instead of a raw file.
+
+## The preview gate (the other half)
+
+`tools/preview/mockup-gate.mjs` holds the chat's mug preview to the same standard before a deploy. It compares the chat's render with Teeinblue's real print files wrapped by `tools/realphoto/golden_reveal_mug.py`.

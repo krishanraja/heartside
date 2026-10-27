@@ -49,4 +49,4 @@ No icon library. The only drawn marks are the **paw** signature (`Paw`) and a li
 - **LandingPage** shows the ad-traffic landing template assembled from these parts.
 - Assets: Logos, Imagery (lifestyle scenes), Product mockups, Poster template (Teeinblue layers), Social cards and Founder.
 - The component layer, tokens and previews are the claude.ai Design System artifact; its export is in Drive `00_Brand-Assets/06_Claude-Design-System` (see `docs/SYNC.md`).
-- The range and prices are live business facts: The Annual Review $39, framed $89, The Body Double $59, Tiny Me ornament $24. Paused until Teeinblue background removal is set up: Mandatory Company Uniform set $129, Surveillance Socks $24. Re-check them before publishing anything.
+- **Historical range and prices (superseded):** The Annual Review $39, framed $89, The Body Double $59, Tiny Me ornament $24; Mandatory Company Uniform set $129 and Surveillance Socks $24 were paused even then. For current catalog and prices use [`../NOW.md`](../NOW.md).

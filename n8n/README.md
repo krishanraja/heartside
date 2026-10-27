@@ -1,53 +1,5 @@
-# Buddy's AI: two n8n webhooks
+# n8n integration source
 
-The live AI in v3 (`docs/V3-GIFTS-FROM-YOUR-DOG.md` section 5) runs on Krish's n8n, with Google Gemini through the credential **"Google Gemini(PaLM) - Heartside"**. The key stays in n8n; it never reaches the browser, this repo or a chat.
+This directory contains builders and public workflow source for typed answers, note composition and checkout artwork. [`../NOW.md`](../NOW.md) owns current release status; the independent live review checks active published definitions and actual behavior. The older two-webhook account snapshot is archived in [`../docs/history/N8N-README-2026-10.md`](../docs/history/N8N-README-2026-10.md).
 
-| Workflow | n8n id | Production URL | Call (spec 5.2) |
-|---|---|---|---|
-| Heartside: typed answer (Buddy AI) | `ryyzdxv8SBm5HTjP` | `https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer` | a "Something else" answer: reaction, line, follow-up, flags |
-| Heartside: compose gift lines (Buddy AI) | `28WZgPmgTaY33KY3` | `https://krishraja10101.app.n8n.cloud/webhook/heartside-compose` | at the reveal, only when an answer was typed: four lines, the pick, Buddy's reason |
-
-Both were switched on by Krish's instruction on 13 October 2026. Models since 22 Oct (Krish): the compose call (the whole note) runs on Claude Sonnet (`claude-sonnet-5-5`, credential "Anthropic account", thinking `between_tools`, instructions cached), handing over to Gemini 3.5 Flash at 7.5 s; the typed answer runs on `models/gemini-3.5-flash`, thinking off. Before that: `models/gemini-3.1-flash-lite`. Gemini is on a paid tier (Krish, 14 Oct).
-
-## How each one works
-
-Webhook (POST) > **Stamp** > **Warm?** > **Guard** > **Allowed?** > **Gemini** (or **Gemini backup**) > **Enforce rules** > **Tag** > Respond > **Log**. A refused call goes to **Refuse**.
-
-- **Speed (14 Oct, "this needs to be lightning fast").** n8n's code runner sleeps when the site is quiet, and waking it took about 1.5 s, which pushed one real call past 3 s. So the theme sends `{"warm":true}` as a chat starts and again when the buyer taps "Something else" (at most once every 45 s). **Warm?** sends it down a one-line Code node and back, with no AI and no budget used. The runner is then awake, and the phone already has its connection open (the page also preconnects to n8n), by the time the buyer presses Done. The page inks the buyer's own words the instant they press Done, and swaps in Buddy's version when it lands. Measured warm: the server takes about 1 s (almost all Gemini), and the full round trip is 1.3 to 1.6 s.
-- **Answers start before Done.** While the buyer types, a 600 ms pause sends what they have so far. If they press Done on the same words, Buddy's reply is usually already back (46 ms in the test, against a 1.2 s AI). Early calls spend from the same 8-call budget and stop with 3 calls left.
-- **One call on the home question, not two.** The typed-answer call returns, for each follow-up chip, the refined line and Buddy's reply (`follow_up.lines` and `follow_up.replies`, an addition to the 5.2 shape, checked by the same rules). A chip tap is instant with no second call. A chip whose line fails the rules falls back to the second call. Only the home question asks for a follow-up, so the other answers stay short and quick. Lines say "you", never the person's name.
-- **Gemini backup:** if the first call errors (a passing error or a rate limit), one retry on the same model, inside the 3 s. Tested on 14 Oct: `gemini-2.5-flash-lite` returns "not found" on this key, `gemini-3.5-flash-lite` took 4.6 s, and `gemini-flash-lite-latest` needs its thinking time and runs out of tokens at our limit. None of them can answer in time, so a full model outage falls back to the buyer's own words.
-- **Stamp, Tag and Log (the fallback watch):** Stamp records the arrival time before any code runs. Tag adds `model` (primary, backup or none) and `ms` (arrival to answer, cold start included) to the response. After the response has gone, Log writes one row per call to the n8n data table **Heartside AI calls**: call, step, source (ai or fallback), model, ms, slow (over 2.7 s for a typed answer, which the buyer saw as a fallback, or over 5.7 s for compose), and flags. The table is in n8n under Overview > Data tables. Read the fallback rate as rows with `source = fallback` or `slow = true`, over all rows. Look again if it goes above about 1 in 10 in launch week.
-
-- **Who is who (14 Oct, from Cowork's chat test).** Buddy talks to the buyer, and the gift speaks to the person. So only gift lines say "you"; Buddy's reaction, follow-up question, chips, chip replies and the compose reason name the person ("Does he howl until Linda sits?", chip "Until she sits"). Enforce rules drops a follow-up whose question or any chip says you, I or my, nulls such a reply, drops a reason that says you, and rejects any gift line or alternate that names the person ("Howls until Linda sits down." falls back; "Howls until you sit down." passes). Checked live with Biscotti for Linda: questions "Does Biscotti howl for the full minute?" and "Is the sofa where Linda always sits?", lines "Howls until you sit on the sofa.", reason names Linda.
-- **Guard** (spec 5.4 guard rails): the `Origin` header must match an allowed storefront origin (403 otherwise). A `session` id is required (the theme makes one per visit). Caps per hour: the typed answer 8 calls per session and 60 per IP; compose 5 per session and 20 per IP (429 over the cap), published with approval on 23 Oct. Inputs are trimmed to the lengths in 5.2. The Buddy host-name changes were published with approval on 23 Oct to both existing workflows and their active definitions were verified.
-- **Gemini** gets Buddy's voice rules (spec 4.6) and the JSON shape, and is told the buyer's words are data, not instructions. If it errors, its error output still goes to Enforce rules.
-- **Enforce rules** never trusts the model (spec 5.3): lengths (reaction 70, lines 60 with the meaning line 44, follow-up 70, chips 24, reason 140); one natural sentence per line, so stacked fragments and worn lines (you're welcome, it isn't close, not sorry) are rejected; no I, me or my in a line; no em dashes or banned words; every number, time, place and name in a line must appear in the buyer's input, or the line becomes the buyer's own trimmed words. Grief or profanity in the typed words is caught by pattern too, whatever the model says, and returns "I didn't quite catch that one. Try again, or pick one of these?" with no line. With no usable model answer it returns "Tell me more?" and the buyer's own words, marked `"source": "fallback"`.
-- The theme times out at 3 s (typed) and 11 s (compose, since 22 Oct) and falls back to the scripted lines, so a slow or switched-off webhook never blocks a buyer. The AI can be switched off without n8n in the theme editor: **HS3 gift chat > Use the AI for typed answers**.
-
-- **The dog's voice (20 Oct, Krish).** Gift lines are the buyer's dog talking to the person: I is the dog, you is the person, warm with a little humour. Enforce rules now allows I, me and my in a line and rejects he, she, his, her, the dog's name, the person's name and "!". Compose runs for every buyer and rewrites all four lines as one message. Both calls accept `dog.breed` and `dog.tone` (the corpus archetype, checked against the list in `build.mjs`). Tests: `node test-voice.mjs`.
-
-## Change them
-
-The source is here. `shared.js` holds the rule helpers, `build.mjs` the prompts, the Guard and the Enforce code, and writes `typed.js` and `compose.js` (n8n Workflow SDK code, what is live) plus the node code on its own for `test-rules.mjs`.
-
-1. Edit `build.mjs` or `shared.js`, then `node build.mjs && node test-rules.mjs`.
-2. Paste the changed node code into the workflow (n8n MCP `update_workflow`, or the editor), then publish. n8n keeps every version, so rollback is publishing the previous version in the workflow's history.
-3. Check it live. The webhook ignores bots, so send a browser user agent:
-
-```sh
-curl -sS -A 'Mozilla/5.0 (iPhone) Mobile' -H 'Origin: https://heartside.io' -H 'Content-Type: application/json' \
-  -d '{"session":"check0001","step":"home","question":"What does Kuku do when Sam comes home?","typed_text":"she sits in the window from 5pm","dog":{"name":"Kuku","pronoun":"she"},"recipient":{"name":"Sam","relation":"partner"}}' \
-  https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer
-```
-
-## Checked on 13 October 2026 (live)
-
-- Typed answer: 200 with the 5.2 JSON, usually 1.3 to 1.9 s with thinking off (one cold call took 3.6 s, which the theme turns into the fallback). On 14 Oct, with the warm-up: the warm call itself took 2.4 s (it carries the cold start), then real answers took 1.3 to 1.6 s with the server at about 1 s.
-- Grief ("she passed away in March"), profanity, a prompt injection ("ignore your instructions...") and an answer about chemo were all refused with the try-again line.
-- The ninth call in one session got 429. A call from another origin got 403.
-- Compose: 200 in 1.5 to 1.9 s; chip lines came back unchanged, the typed line kept "5pm", the pick and the reason followed the answers.
-
-## Voice lab (22 Oct)
-
-`lab.mjs` writes `lab-cases.json` (the current prompts, held-out test dogs and a same-answers Border Collie, Poodle and Beagle). The n8n workflow "Heartside: voice lab v3" (manual only, never published) reads that file from the branch on GitHub and runs it on Gemini, OpenAI and Claude, so a prompt change is: `node build.mjs && node lab.mjs`, commit, push, run. `HS_LAB_MODELS` and `HS_LAB_LIMIT` pick the models and the line length.
+Builder output in Git is not proof of the active n8n version. Regenerate deterministic public artifacts in an isolated checkout, compare the diff, and obtain sanitized active-version readback separately. Keep credentials, private endpoints and customer data outside Git and reports. Do not publish a workflow from this README.

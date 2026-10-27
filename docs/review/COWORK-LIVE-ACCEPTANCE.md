@@ -1,18 +1,24 @@
 # Claude CoWork: Heartside live-browser acceptance review
 
-Status: READY FOR INDEPENDENT LIVE ACCEPTANCE. The release owner merged the source to `main` at `45d927b40797f67962d240a9997e8c75afe84991`, published the reviewed theme and removed the storefront password on 27 October 2026. This document is a verification instruction, not an acceptance result. Recheck those release facts independently before drawing a conclusion.
+Status: READY FOR INDEPENDENT LIVE ACCEPTANCE. The core release was merged and published on 27 October 2026; the release merge was `45d927b40797f67962d240a9997e8c75afe84991`, with later documentation commits possible. This is an assignment, not an acceptance result. Recheck the current main revision, published theme and password state independently.
+
+## Governing facts and document order
+
+Read [`../../NOW.md`](../../NOW.md) first for the single current release state, configured prices, evidence limits and next action; [`../continuation/2026-10-24/START-HERE.md`](../continuation/2026-10-24/START-HERE.md) owns approved product scope; [`../continuation/2026-10-24/02-ECONOMICS.md`](../continuation/2026-10-24/02-ECONOMICS.md) records the 26 October owner ruling and modeled sensitivities; [`../SYNC.md`](../SYNC.md) and [`../../design/CANVA-SOURCES.md`](../../design/CANVA-SOURCES.md) own the current brand-asset handoff. The pre-release V2/V3 briefs, positioning, old handoffs, execution queues, old economics and old module notes have moved to [`../history/`](../history/README.md). Their "current" labels refer only to their dates. Never use them to assert today's product, price, gateway or AI state.
+
+The expected live core is the five-color 11 oz illustrated mug ($45), word-free 50×60 sherpa blanket ($129), and 12×18 portrait ($59 unframed; $119 framed in black, white or red oak). Buddy hosts; the customer's dog name is independent. The ornament is held, the pillow is conditional, and the book is future scope. The 30% after-all-attributable-costs net operating margin floor is a modeled decision gate, not realized profit. The store was reported live with normal payments, a qualified US shipping discount, manual supplier holds and one fee-free blanket compatibility order; **verify each dynamic claim in its native system**. The owner will place the real paid blanket sample order later, so no physical sample or paid fulfillment is yet accepted.
 
 ## Release owner: complete the handoff first
 
 Supply the final main commit, release time, current live-theme identity in the private handoff, and the private final compatibility-order receipt. Confirm that normal payments were restored, the three pre-existing USD49 market overrides match their backups, and manual supplier holds remain enabled. Supply any accepted remaining limitations. Do not put customer names/photos, order identifiers, admin URLs, private runtime identifiers or credentials in this repository document.
 
-Use the release owner's final live-state packet and private acceptance receipts. Claude Code separately owns repository tests, build, generated files, security review and source parity; do not repeat that review here. Repository state documents may contain historical and superseded checkpoints. If the packet still describes an unpublished or password-protected store, report the discrepancy and verify current state before drawing conclusions. Do not repeat already-completed tests or revive historical prices merely because an old paragraph mentions them.
+Use the release owner's private compatibility-order and live-state receipts where their exact target and revision match; request a sanitized pointer only if the cited receipt is unavailable. Claude Code separately owns repository tests, build, generated files, security review and source parity; do not repeat that review here. If a private packet or cached browser tab still describes an unpublished or password-protected store, report the discrepancy and verify the public state before drawing conclusions. Do not repeat already-completed paid tests or revive historical prices because an old paragraph mentions them.
 
 ## Your assignment
 
 Independently verify the real customer experience at Heartside after release. This advances the North Star by checking that US buyers can confidently buy a gift from their own dog. Begin with the public store, then use existing authenticated browser tabs for read-only backend confirmation. The result must be a finite evidence-backed acceptance report, not a generic checklist or a claim that every possible future order is guaranteed.
 
-Use browser controls only within the authorized browser session. Do not take over the native desktop or open a file picker. Do not ask routine questions that can be answered from the UI or release packet. Continue independent checks if one surface is unavailable; report the precise unverified boundary.
+Use browser controls only within Codex's authorized in-app browser session. Do not take over the native desktop or open a system file picker. Do not ask routine questions that can be answered from the UI or release packet. Continue independent checks if one surface is unavailable; report the precise unverified boundary.
 
 Allowed: navigation, screenshots, ordinary form input, product/format/style selection, reload, and reversible changes to an isolated QA cart you created. Preserve any pre-existing customer cart and accepted artwork. Inspect existing order/workflow/supplier records read-only. Do not record customer data in public artifacts.
 

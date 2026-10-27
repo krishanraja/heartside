@@ -1,4 +1,4 @@
-<!-- krish-repo-context:start brain=29049a88d851 sha=15e74d007066 -->
+<!-- krish-repo-context:start brain=5a7f164650ec sha=dcdbecaac236 -->
 # heartside: operating context
 
 Generated from the central ai-harness brain. This is a route inventory, not a certification of current architecture. Read the section for the work at hand; repository-owned sources establish current facts. The nightly publisher rechecks source paths and named commands. This file grants no product action or spending authority.
@@ -6,16 +6,16 @@ Generated from the central ai-harness brain. This is a route inventory, not a ce
 ## Sources and system boundaries
 
 - Purpose and system boundaries (orientation): `README.md`.
-- Current repository state (state): `NOW.md`.
+- Current release state and next action (state): `NOW.md`.
 - North Star (orientation): `docs/NORTH_STAR.md`.
-- Current handoff state (state): `docs/HANDOFF.md`.
+- Approved product scope and constraints (orientation): `docs/continuation/2026-10-24/START-HERE.md`.
 - How the store, assets and growth engine stay in sync (workflow): `docs/SYNC.md`.
 
 ## Workflows
 
 ### store: Products, assets and the Shopify store
 
-Read: `README.md`, `docs/HANDOFF.md`, `docs/SYNC.md`.
+Read: `README.md`, `NOW.md`, `docs/continuation/2026-10-24/START-HERE.md`, `docs/SYNC.md`.
 Checks: use the owning repository source; no command is inferred.
 Run only within existing authority. Check inputs, the owning stage, and the downstream artifact actually consumed.
 

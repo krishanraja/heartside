@@ -1,6 +1,8 @@
 # Heartside positioning
 
-Status: current, rewritten 21 October 2026 so every doc says the same thing. It covers the positioning Krish set on 12 October, the product reframe of 13 October (`V3-GIFTS-FROM-YOUR-DOG.md`), and the dog's own voice on the gifts (20 October).
+> **HISTORICAL POSITIONING SNAPSHOT — 21 October 2026.** The active ornament, words on every gift, old range and unqualified shipping promise below are superseded. Do not use the old one-line offer or gift list for copy/social work. Read [`../NOW.md`](../NOW.md) for the current products, prices and release state, [`continuation/2026-10-24/START-HERE.md`](continuation/2026-10-24/START-HERE.md) for scope, and [`../design/CANVA-SOURCES.md`](../design/CANVA-SOURCES.md) for the current Canva/social asset handoff. The lead line "Your dog loves you too" remains in use.
+
+Status: historical, written 21 October 2026. It records the earlier positioning and is not the current product or offer source.
 
 Order of authority:
 - `NORTH_STAR.md` sets the ambition.

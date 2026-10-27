@@ -1,5 +1,7 @@
 # Cowork handover, 15 October 2026
 
+> **HISTORICAL HANDOVER.** This is dated evidence, not the current assortment, price list or next action. Read [`../NOW.md`](../NOW.md) and [`continuation/2026-10-24/START-HERE.md`](continuation/2026-10-24/START-HERE.md) first.
+
 Written by the Cowork session that ran 14 to 15 October, at Krish's request, to start a fresh session. It carries the north star, what Krish rejected and why, the exact state of the store, and what comes next. Read it with `docs/V3-GIFTS-FROM-YOUR-DOG.md`. V3 stays the source of truth for the product; this file adds what changed since and the open question it leaves.
 
 ## Start the next session with this prompt

@@ -1,5 +1,7 @@
 # Teeinblue setup for the v2 range
 
+> **HISTORICAL V2 SETUP.** Product, price and integration instructions below are not a current Teeinblue runbook. Use [`../NOW.md`](../NOW.md) and [`continuation/2026-10-24/START-HERE.md`](continuation/2026-10-24/START-HERE.md); verify current provider settings before any action.
+
 Run this from a Claude session that has the **teeinblue** connector, which is installed in Claude Desktop as a local connector. The cloud Claude Code session that built the theme can't reach a local connector, so it prepared this instead. Read `docs/V2-FROM-THE-DOG.md` sections 1 to 5 first: the comedy is the point, and the prices below come from section 4.
 
 ## Rules for this job

@@ -1,5 +1,7 @@
 # Heartside v3: gifts from your dog
 
+> **HISTORICAL SPECIFICATION — 13–24 October 2026.** This file records decisions and prototypes from that period. Its old prices, four-gift launch range, blanket text, 50% rule, approval and launch dates are superseded. Its own "source of truth" and "current revamp" labels below applied only at those checkpoints. Use [`../NOW.md`](../NOW.md) for current release state and [`continuation/2026-10-24/START-HERE.md`](continuation/2026-10-24/START-HERE.md) for approved scope and the 26 October economic ruling. Do not initiate an order, generation or deployment from this historical text.
+
 **Status, 13 October 2026.** Decided by Krish in a Cowork session. This file is the source of truth for the product, the journey, the AI, the words on the page and the launch. Where it disagrees with `HANDOFF.md`, `POSITIONING.md`, `V2-FROM-THE-DOG.md`, `BRIEF.md` or `TEEINBLUE-SETUP.md` on any of those, this file wins. Facts in `HANDOFF.md` about systems, deploys and hard rules still stand.
 
 - **Approved prototype:** the claude.ai Design canvas "Heartside: gifts from your dog" (https://claude.ai/artifact/68cvd4wN9xLGFzkFJSughX, version 7, approved by Krish on 13 Oct with "love it"). Its source is in this repo at `design/prototype-v3/Main.dc.html`. It is a reference for flow, layout and copy, not production code.
