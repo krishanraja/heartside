@@ -116,6 +116,16 @@ for (const v of views) {
     await page.goto(url('/'), { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500);
     const resume = (await page.textContent('[data-hs3-start]')).trim();
     check(v, 'chat: the first screen offers to pick up where you left off', resume === 'Pick up where you left off', resume);
+    // on to the choose screen: the reveal's own first note is refused here, which must not stop it
+    await page.click('[data-hs3-start]'); await page.waitForSelector('[data-hs3="chip"][data-v="bed"]');
+    await page.click('[data-hs3="chip"][data-v="bed"]'); await page.click('[data-hs3="chip"][data-v="walk"]');
+    await page.click('[data-hs3="chip"][data-v="shadow"]'); await page.click('[data-hs3="next"]');
+    await page.waitForSelector('[data-hs3="them"]', { timeout: 20000 });
+    const slider = await page.evaluate(() => { const t = document.querySelector('[data-hs3-tone]'); return { free: !!t && !t.disabled, stuck: /didn't come back/.test(document.body.innerText) }; });
+    check(v, 'reveal: the slider stays free when the first note does not come back', slider.free && !slider.stuck);
+    await page.click('[data-hs3="them"]'); await page.waitForTimeout(800);
+    const remind = await page.evaluate(() => { const r = document.querySelector('[data-hs3-remind]'); return { shown: !!r && !r.hidden && r.getBoundingClientRect().height > 0, email: !!(r && r.querySelector('input[type="email"][name="contact[email]"]')), tags: r && (r.querySelector('input[name="contact[tags]"]') || {}).value }; });
+    check(v, 'choose: the Christmas reminder offer is there (not submitted)', step(page) === 'choose' && remind.shown && remind.email && /newsletter/.test(remind.tags || ''), JSON.stringify(remind));
 
     // 3. A retired ?view= link lands on the same page without view, keeping utm_
     await page.goto(url('/products/your-dogs-portrait?view=gift&utm_source=qa'), { waitUntil: 'domcontentloaded' });

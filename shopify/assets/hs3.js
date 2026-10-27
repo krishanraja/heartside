@@ -29,7 +29,7 @@
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'right', mugTurned: false, toneStatus: '', view: '' };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'left', mugTurned: false, toneStatus: '', view: '' };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
@@ -719,6 +719,9 @@
     ui.view = view;
     frame.setAttribute('data-hs3-screen', S.screen);
     root.classList.toggle('hs3--app', S.screen !== 'hero');
+    // the reminder offer: where a buyer decides (choose, the card), and whenever Shopify answered a post
+    var remind = root.querySelector('[data-hs3-remind]');
+    if (remind) remind.hidden = !(S.screen === 'choose' || S.screen === 'share' || remind.querySelector('[data-hs3-remind-show]'));
     document.documentElement.classList.remove('hs3-routed');
     if (S.screen === 'hero') { frame.innerHTML = heroHTML; bindHero(); return; }
     if (S.screen === 'chat') frame.innerHTML = chatView(n);
@@ -995,7 +998,7 @@
   }
   function startReveal(g) {
     clearTimers();
-    ui.editing = false; ui.revealN = reduced ? 9 : 0; ui.mugSide = 'right'; ui.mugTurned = false;
+    ui.editing = false; ui.revealN = reduced ? 9 : 0; ui.mugSide = 'left'; ui.mugTurned = false; // the side the dog is painted on
     S.screen = 'reveal'; S.gift = g; save(); render(); toView();
     if (reduced) return;
     var k = Math.max(1, giftKeys(g).length);
