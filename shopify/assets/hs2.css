@@ -1149,3 +1149,13 @@ product-card quick-add-component button { display: none !important; }
 .hs2-redo span, .hs2-redo p { margin: 0; color: #5A4A44; font-size: 13px; }
 .hs2-redo__remove { align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #121010; background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
 .hs2-bundle-line { margin: 0 0 8px; font-weight: 600; color: #8A4A2B; }
+
+/* Artist's touch, on a personalised cart line (hs2.js artistTouch) */
+.hs2-artist { margin-top: 8px; font-size: 14px; line-height: 1.4; }
+.hs2-artist > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; }
+.hs2-artist p { margin: 6px 0; color: #5A4A44; font-size: 13px; }
+.hs2-artist label { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; font-weight: 600; }
+.hs2-artist textarea, .hs2-artist select { font: inherit; padding: 8px 10px; border: 1.5px solid #E2D4C8; border-radius: 12px; background: #fff; }
+.hs2-artist__photo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.hs2-artist [data-hs2-artist-add] { min-height: 48px; padding: 0 16px; border: 0; border-radius: 14px; background: #121010; color: #FBF6F1; font: inherit; font-weight: 600; cursor: pointer; }
+.hs2-artist [data-hs2-artist-add]:disabled { background: #CFC4BB; }

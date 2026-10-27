@@ -2093,7 +2093,7 @@
     [snap.properties || {}].concat((snap.item_components || []).map(function (c) { return c.properties || {}; })).forEach(function (p) {
       id = id || p._customization_id || ''; of = of || p._hs_redo_of || '';
     });
-    return { id: String(id), of: String(of), quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
+    return { id: String(id), of: String(of), addonFor: String((snap.properties || {})._hs_addon_for || ''), quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
   }
   function redoOffers(rows) {
     var lines = [], redone = {};
@@ -2140,6 +2140,51 @@
       if (el.textContent !== say) el.textContent = say;
     }).catch(function () { /* the cart works without it */ }).then(function () { bundleLine.busy = false; });
     void rowCount;
+  }
+  /* Artist's touch (Krish, 27 Oct): a paid hand rework of one design, offered on each personalised
+     cart line once the add-on product exists (memo strip setting). It goes in as its own line,
+     linked by _hs_addon_for, with the buyer's notes and up to three tagged photos as file
+     properties, for a person to read. Added from the cart page, never during the gift's own add. */
+  var ADDON_TAGS = ['Another photo of my dog', 'Favorite toy', 'Collar or accessory', 'Something else'];
+  function artistTouch(rows) {
+    var memo = document.querySelector('[data-hs-artist-variant]');
+    if (!memo || !/^\/cart\/?$/.test(location.pathname)) return;
+    var variant = memo.getAttribute('data-hs-artist-variant'), price = memo.getAttribute('data-hs-artist-price') || '';
+    var lines = [], taken = {};
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; } });
+    lines.forEach(function (l) {
+      if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || taken[l.id] || l.row.querySelector('[data-hs2-artist]')) return;
+      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      if (!host) return;
+      var box = document.createElement('details');
+      box.className = 'hs2-artist'; box.setAttribute('data-hs2-artist', '');
+      var photo = function (i) { return '<div class="hs2-artist__photo"><select aria-label="What photo ' + i + ' shows" data-hs2-artist-tag>' + ADDON_TAGS.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select><input type="file" accept="image/*" aria-label="Photo ' + i + '" data-hs2-artist-file></div>'; };
+      box.innerHTML = '<summary>Want it reworked by hand? Artist\'s touch' + (price ? ', ' + price : '') + '. Adds 5 days.</summary>' +
+        '<p>Our artist reworks this design by hand from your notes and photos, then a person checks it before it prints.</p>' +
+        '<label>What should change?<textarea maxlength="500" rows="3" data-hs2-artist-notes></textarea></label>' + photo(1) + photo(2) + photo(3) +
+        '<button type="button" data-hs2-artist-add>Add the artist\'s touch</button><p role="status" data-hs2-artist-status></p>';
+      host.appendChild(box);
+      box.querySelector('[data-hs2-artist-add]').addEventListener('click', function () {
+        var btn = this, status = box.querySelector('[data-hs2-artist-status]');
+        var notes = box.querySelector('[data-hs2-artist-notes]').value.trim();
+        if (!notes) { status.textContent = 'Tell our artist what to change first.'; return; }
+        var form = new FormData();
+        form.append('id', variant); form.append('quantity', '1');
+        form.append('properties[_hs_addon_for]', l.id);
+        form.append('properties[What to change]', notes);
+        var n = 0;
+        box.querySelectorAll('.hs2-artist__photo').forEach(function (p) {
+          var file = p.querySelector('[data-hs2-artist-file]').files[0];
+          if (file) { n++; form.append('properties[Photo ' + n + ': ' + p.querySelector('[data-hs2-artist-tag]').value + ']', file); }
+        });
+        btn.disabled = true; status.textContent = 'Adding it to your cart.';
+        track('artist_touch_add', { photos: n });
+        fetch(shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
+          .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
+          .then(function () { status.textContent = 'Added. Our artist will be in touch if anything is unclear.'; location.reload(); })
+          .catch(function () { btn.disabled = false; status.textContent = 'That did not go through. Your gift is unchanged; try again, or leave out a large photo.'; });
+      });
+    });
   }
   // arriving from "Make another version": the new design carries the id of the one it replaces
   function redoMode() {
@@ -2198,6 +2243,7 @@
         else if (!(key in cartImages)) need = true;
       });
       redoOffers(Array.prototype.slice.call(rows));
+      artistTouch(Array.prototype.slice.call(rows));
       bundleLine(rows.length);
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;

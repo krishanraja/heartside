@@ -171,7 +171,7 @@
               {%- comment -%} Current-row artwork and quantity evidence only; no cart token or buyer answers. {%- endcomment -%}
               {%- capture hs_cart_line -%}
                 {"key":{{ item.key | json }},"variant_id":{{ item.variant_id | json }},"quantity":{{ item.quantity | json }},
-                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }},"_customization_id":{{ item.properties._customization_id | json }},"_hs_redo_of":{{ item.properties._hs_redo_of | json }}},
+                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }},"_customization_id":{{ item.properties._customization_id | json }},"_hs_redo_of":{{ item.properties._hs_redo_of | json }},"_hs_addon_for":{{ item.properties._hs_addon_for | json }}},
                 "item_components":[{%- for component in item.item_components -%}
                   {"key":{{ component.key | json }},"variant_id":{{ component.variant_id | json }},"quantity":{{ component.quantity | json }},
                   "properties":{"_hs_checkout_image":{{ component.properties._hs_checkout_image | json }},"_customization_image":{{ component.properties._customization_image | json }},"_customization_id":{{ component.properties._customization_id | json }},"_hs_redo_of":{{ component.properties._hs_redo_of | json }}}}{% unless forloop.last %},{% endunless %}

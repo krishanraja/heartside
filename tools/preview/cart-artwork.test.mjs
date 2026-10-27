@@ -14,7 +14,7 @@ const native='https://cdn.teeinblue.com/customizations/'+uuid+'.jpg';
 const child={key:'123:child',variant_id:123,quantity:2,properties:{_customization_image:native}};
 for(const minified of [false,true]){
  const mode=minified?'minified':'source';
- const context=extra=>{const c={redoOffers:()=>{},bundleLine:()=>{},...extra};const code=['cartArtworkImage','cartTidy','cartPicture'].map(part).join('\n');vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);return c;};
+ const context=extra=>{const c={redoOffers:()=>{},bundleLine:()=>{},artistTouch:()=>{},...extra};const code=['cartArtworkImage','cartTidy','cartPicture'].map(part).join('\n');vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);return c;};
  test(mode+': parent prepared image wins; ordinary native and exact single component recover artwork',()=>{
   const c=context();assert.equal(c.cartArtworkImage({...child,properties:{_hs_checkout_image:prepared,_customization_image:native}}),prepared);
   assert.equal(c.cartArtworkImage(child),native);

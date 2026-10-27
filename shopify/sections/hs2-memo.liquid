@@ -24,7 +24,8 @@
   phones too (hs-brand.css, "the announcement strip").
 {%- endcomment -%}
 <div class="hs2">
-  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+  {%- assign artist = s.artist_touch_product -%}
+  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
         <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
@@ -96,6 +97,12 @@
       "label": "Show the bundle saving (15% off two gifts, 20% off three)",
       "info": "The one switch for the chat, the product pages and the cart. Tick only once the Shopify automatic discount exists and matches; until then no saving is shown anywhere.",
       "default": false
+    },
+    {
+      "type": "product",
+      "id": "artist_touch_product",
+      "label": "Artist's touch add-on",
+      "info": "The paid hand rework offered on each personalised cart line (adds 5 days). Empty, or a product that isn't available, hides the offer everywhere."
     }
   ],
   "presets": [
