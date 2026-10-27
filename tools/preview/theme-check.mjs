@@ -4,6 +4,12 @@
 // reports offenses in our files (the stubs' own offenses are ignored).
 //
 //   cd tools/preview && node theme-check.mjs        # exit 1 on any offense in our files
+//   node theme-check.mjs --baseline                  # exit 1 only on offenses not in theme-check-baseline.json
+//
+// The baseline lists, one by one, the offenses that come from the theme being partial: our
+// override of Helio's cart-products snippet and cart template refer to Helio snippets,
+// translations and sections that live only in the full theme. They are printed as inherited,
+// never hidden. Anything not on the list is introduced and fails the run.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -26,10 +32,25 @@ fs.writeFileSync(path.join(theme, 'locales', 'en.default.json'), '{}\n');
 
 const offenses = await check(theme);
 const ours = offenses.filter((o) => !/layout\/theme\.liquid|config\/|locales\//.test(o.uri));
+const useBaseline = process.argv.includes('--baseline');
+const baseline = useBaseline ? JSON.parse(fs.readFileSync(path.join(here, 'theme-check-baseline.json'), 'utf8')).inherited : [];
+const key = (o) => `${o.check} ${o.uri.split('/theme/')[1]} ${o.message}`;
+const left = new Map();
+for (const k of baseline) left.set(k, (left.get(k) || 0) + 1);
+let introduced = 0;
 for (const o of ours) {
   const f = o.uri.split('/theme/')[1];
-  console.log(`[${['ERROR', 'WARN', 'INFO'][o.severity] ?? o.severity}] ${o.check} ${f}:${o.start?.line ?? ''}  ${o.message}`);
+  const k = key(o);
+  const known = (left.get(k) || 0) > 0;
+  if (known) left.set(k, left.get(k) - 1); else introduced++;
+  const tag = useBaseline ? (known ? ' (inherited)' : ' (introduced)') : '';
+  console.log(`[${['ERROR', 'WARN', 'INFO'][o.severity] ?? o.severity}] ${o.check} ${f}:${o.start?.line ?? ''}  ${o.message}${tag}`);
 }
-console.log(`${ours.length ? 'FAIL' : 'ok  '} ${ours.length} offenses in Heartside files (${offenses.length - ours.length} in the stubs ignored)`);
+if (useBaseline) {
+  for (const [k, n] of left) if (n > 0) console.log(`resolved, can leave the baseline: ${k}`);
+  console.log(`${introduced ? 'FAIL' : 'ok  '} ${introduced} introduced, ${ours.length - introduced} inherited offenses in Heartside files (${offenses.length - ours.length} in the stubs ignored)`);
+} else {
+  console.log(`${ours.length ? 'FAIL' : 'ok  '} ${ours.length} offenses in Heartside files (${offenses.length - ours.length} in the stubs ignored)`);
+}
 fs.rmSync(dir, { recursive: true, force: true });
-process.exit(ours.length ? 1 : 0);
+process.exit((useBaseline ? introduced : ours.length) ? 1 : 0);

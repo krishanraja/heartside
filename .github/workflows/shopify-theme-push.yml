@@ -185,14 +185,22 @@ jobs:
 
       - name: Set the favicon
         if: ${{ inputs.favicon != '' && !inputs.pull_only }}
+        # the file name reaches the shell through the environment, never through the script
+        # text, and must look like a plain file name before anything reads it
+        env:
+          FAVICON: ${{ inputs.favicon }}
         run: |
+          if ! [[ "$FAVICON" =~ ^[A-Za-z0-9_.-]+\.(png|jpg|jpeg|gif|webp|svg)$ ]]; then
+            echo "::error::favicon must be a plain file name from Shopify Files, for example heartside-favicon.png."
+            exit 1
+          fi
           if [ ! -f backup/config/settings_data.json ]; then
             echo "::error::The backup has no config/settings_data.json, so the favicon was left alone."
             exit 1
           fi
           mkdir -p shopify/config
           cp backup/config/settings_data.json shopify/config/settings_data.json
-          node .github/scripts/set-favicon.mjs shopify/config/settings_data.json "${{ inputs.favicon }}"
+          node .github/scripts/set-favicon.mjs shopify/config/settings_data.json "$FAVICON"
 
       - name: Push Heartside files into the copy
         if: ${{ !inputs.pull_only }}

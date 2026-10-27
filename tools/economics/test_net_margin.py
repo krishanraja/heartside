@@ -12,7 +12,7 @@ HERE = Path(__file__).parent
 
 class EconomicsTests(unittest.TestCase):
     def test_existing_21_scenario_floors(self):
-        path = HERE.parents[1] / 'docs/continuation/2026-10-24/pricing-scenarios.csv'
+        path = HERE.parents[1] / 'docs/history/pricing-scenarios-2026-10-24.csv'
         with path.open(encoding='utf-8') as source:
             rows = list(csv.DictReader(source))
         self.assertEqual(len(rows), 21)

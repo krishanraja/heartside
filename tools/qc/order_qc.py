@@ -186,6 +186,16 @@ def run(shop, out, dry, now=None):
     q = f'created_at:>={since} fulfillment_status:unfulfilled -tag:qc-pass -tag:qc-hold'
     orders = shop.gql(ORDERS, {'q': q})['orders']['nodes']
     summary = {'checked': [], 'holds': [], 'waiting': [], 'no_mug': 0, 'dry_run': dry}
+    try:
+        _check_all(shop, orders, out, dry, now, summary)
+    finally:
+        # written even when a run stops part way, so holds already tagged still reach Krish
+        json.dump(summary, open(os.path.join(out, 'summary.json'), 'w'), indent=1)
+        json.dump(summary['holds'], open(os.path.join(out, 'holds.json'), 'w'), indent=1)
+    return summary
+
+
+def _check_all(shop, orders, out, dry, now, summary):
     for o in orders:
         has_mug = any(is_mug(i) for i in o['lineItems']['nodes'])
         if not has_mug:
@@ -201,14 +211,12 @@ def run(shop, out, dry, now=None):
         if verdict == 'hold':
             summary['holds'].append(entry)
         if not dry:
-            for m, v in ((TAG, {'id': o['id'], 'tags': ['qc-' + verdict]}),
-                         (NOTE, {'input': {'id': o['id'], 'note': ((o.get('note') or '').rstrip() + '\n' + line).strip()}})):
+            # the note first: a tagged order leaves the queue, so it must already say why
+            for m, v in ((NOTE, {'input': {'id': o['id'], 'note': ((o.get('note') or '').rstrip() + '\n' + line).strip()}}),
+                         (TAG, {'id': o['id'], 'tags': ['qc-' + verdict]})):
                 errs = next(iter(shop.gql(m, v).values()))['userErrors']
                 if errs:
                     raise RuntimeError(f'{o["name"]}: {errs}')
-    json.dump(summary, open(os.path.join(out, 'summary.json'), 'w'), indent=1)
-    json.dump(summary['holds'], open(os.path.join(out, 'holds.json'), 'w'), indent=1)
-    return summary
 
 
 def report(s, dry):

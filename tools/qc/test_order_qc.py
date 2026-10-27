@@ -10,7 +10,9 @@ import order_qc  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
 GOOD = os.path.join(ROOT, 'design', 'teeinblue', 'mug-v3', 'shopify-images', 'print-file-biscuit.png')
-L1, L2, L3 = 'Waits at the door for you, weekends too.', 'Steals your side of the bed.', "Will ride anywhere, as long as it's with you."
+# the lines print-file-biscuit.png carries since it was rebuilt in the dog's own voice (cef09ae,
+# tools/realphoto/build_shopify_mug_inputs.py LINES)
+L1, L2, L3 = 'I wait by the door. Weekends too. Obviously.', 'I took your side of the bed. Not sorry.', "I'm your shadow. Where else would I be?"
 failures = 0
 
 
@@ -75,6 +77,28 @@ with tempfile.TemporaryDirectory() as out:
     dry = Fake([order('1006', item('the-morning-mug'))])
     s = order_qc.run(dry, out, dry=True, now=now)
     ok(len(dry.calls) == 1 and s['checked'][0]['verdict'] == 'pass', 'a dry run checks but writes nothing')
+
+# a run that stops part way still reports the holds it already tagged (27 Oct acceptance review)
+class Refuses(Fake):
+    def gql(self, query, v):
+        if 'orders(' not in query and 'Order/1008' in json.dumps(v):
+            self.calls.append((query, v))
+            return {'x': {'userErrors': [{'message': 'refused'}]}}
+        return super().gql(query, v)
+
+
+import json  # noqa: E402
+with tempfile.TemporaryDirectory() as out:
+    shop = Refuses([order('1007', item('the-morning-mug', l1='Lives for our morning walks.')), order('1008', item('the-morning-mug'))])
+    try:
+        order_qc.run(shop, out, dry=False, now=now)
+        stopped = False
+    except RuntimeError:
+        stopped = True
+    held = json.load(open(os.path.join(out, 'holds.json')))
+    ok(stopped and [h['order'] for h in held] == ['#1007'], 'a run that stops part way still writes the holds it tagged')
+    first = [c[0] for c in shop.calls if 'Order/1007' in json.dumps(c[1])]
+    ok(len(first) == 2 and 'orderUpdate' in first[0] and 'tagsAdd' in first[1], 'the note is written before the tag, so a tagged order always says why')
 
 # signing in: the client credentials grant (Dev Dashboard app, 19 Oct)
 import contextlib, io, json, urllib.error  # noqa: E402

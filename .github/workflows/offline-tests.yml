@@ -1,0 +1,82 @@
+# Offline tests on every push and pull request. Nothing here calls Shopify, Teeinblue,
+# Printful, n8n or a model: the suites use local fixtures and mocks only, and the job has
+# read-only access to the repository. Theme Check runs in baseline mode, so the offenses
+# that come from the theme being partial (Helio snippets our cart override refers to) are
+# printed as inherited and any new offense fails the run.
+
+name: Offline tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tools/preview/package-lock.json
+      - name: Install the preview tools from the lockfile
+        working-directory: tools/preview
+        run: npm ci
+      - name: Install the Chromium the browser tests use
+        working-directory: tools/preview
+        run: npx playwright install --with-deps chromium
+      - name: Theme and storefront tests
+        run: node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs
+      - name: Artwork facts profile
+        run: node tools/preview/artwork-profile-test.mjs
+      - name: Shopify minifier check
+        run: node tools/preview/minify-check.mjs
+      - name: Theme Check (fails on introduced offenses)
+        run: node tools/preview/theme-check.mjs --baseline
+      - name: Browser artwork engine is not stale
+        run: node tools/print-art/build-browser.mjs --check
+      - name: n8n rules, voice and checkout image
+        working-directory: n8n
+        run: |
+          node test-rules.mjs
+          node test-voice.mjs
+          node test-checkout-image.mjs
+          node test-checkout-image-workflow.mjs
+      - name: n8n artifacts are not stale
+        run: |
+          node n8n/build.mjs > /dev/null
+          git diff --exit-code -- n8n/
+
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Pillow with text layout, and numpy
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libfribidi0 libharfbuzz0b
+          pip install -q "Pillow>=12,<13" "numpy>=2,<3"
+          python3 -c "from PIL import features; assert features.check('raqm'), 'Pillow has no RAQM'"
+      - name: Print art
+        run: |
+          python3 tools/print-art/test_build.py
+          python3 tools/print-art/test_generate.py
+      - name: Economics
+        run: python3 tools/economics/test_net_margin.py
+      - name: Mug QC and order QC
+        run: |
+          python3 tools/qc/test_mug_qc.py
+          python3 tools/qc/test_order_qc.py
