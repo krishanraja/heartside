@@ -283,3 +283,7 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
    until hs2.js replaces it with the true line (free US shipping), and stays hidden if the script
    never runs, rather than showing the wrong promise */
 .cart-totals__tax-note:not([data-hs-note]) { visibility: hidden; }
+
+/* The Artist's touch is an add-on bought from the cart, never browsed: it stays published (so the
+   cart can add it) but is hidden from the catalog grid, the menu's featured products and search */
+li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive-search-results__card):has(a[href*="/products/artists-touch"]) { display: none !important; }
