@@ -1,4 +1,5 @@
 import { Component } from '@theme/component';
+import { HeartsideCartQuantity } from './hs-cart-quantity.js';
 import {
   fetchConfig,
   debounce,
@@ -36,16 +37,10 @@ function heartsideQuantityTarget(row) {
 
 async function heartsideSetComponentQuantity(key, quantity) {
   if (!Number.isInteger(quantity) || quantity < 0) throw new Error('Choose a whole-number quantity.');
-  if (typeof window.Shopify?.actions?.updateCart !== 'function') throw new Error('Your cart is still loading. Refresh the page and try again.');
-  // The Storefront action accepts an Ajax line key and preserves omitted attributes.
-  // Ajax change/update cannot address the original component of this merged line.
-  const result = await window.Shopify.actions.updateCart(
-    { lines: [{ id: key, quantity }] },
-    { event: { context: 'cart', detail: { source: 'heartside-component-quantity' } } }
-  );
-  if (result.userErrors?.length) throw new Error(result.userErrors[0].message || 'The quantity could not be updated.');
-  if (!result.cart) throw new Error('The cart update could not be confirmed. Refresh the page before trying again.');
-  return result;
+  if (typeof window.Shopify?.actions?.getCart !== 'function') throw new Error('Your cart is still loading. Refresh the page and try again.');
+  const current = await window.Shopify.actions.getCart();
+  if (!current.cart?.id) throw new Error('The cart update could not be confirmed. Refresh the page before trying again.');
+  return HeartsideCartQuantity.change(current.cart.id, key, quantity);
 }
 
 function heartsideQuantityMatches(rows, key, quantity) {
@@ -353,6 +348,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     // The standard action dispatches its own event; a pre-dispatch failure must
     // not leave this ordinary-Ajax promise as an unhandled rejection.
     deferredUpdatePromise.promise.catch(() => {});
+    let heartsideUpdate = false;
     let completeQuantityUpdate = () => {};
     /** @type {Promise<void>} */
     const quantityUpdate = new Promise((resolve) => {
@@ -381,12 +377,13 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
       if (componentKey) {
+        heartsideUpdate = true;
         cartTotal?.shimmer();
         this.#heartsideQuantityInFlight = true;
         try {
           const result = await heartsideSetComponentQuantity(componentKey, quantity);
           await this.#refreshCartSection();
-          if (!heartsideQuantityMatches(this.refs.cartItemRows, componentKey, quantity)) {
+          if (!result.componentKey || !heartsideQuantityMatches(this.refs.cartItemRows, result.componentKey, quantity)) {
             throw new Error('The requested quantity was not confirmed. Check the current cart before trying again.');
           }
           deferredUpdatePromise.resolve({ cart: result.cart, detail: { source: 'heartside-component-quantity' } });
@@ -476,6 +473,10 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       this.#updateCartQuantitySelectorButtonStates();
     } catch (error) {
       console.error(error);
+      if (heartsideUpdate) {
+        await this.#refreshCartSection();
+        HeartsideCartQuantity.refreshRecovery();
+      }
       resetShimmer(this);
       deferredUpdatePromise.reject(error);
 

@@ -13,18 +13,25 @@ const component={key:'123:native',variant_id:123,quantity:2,properties:{_hs_chec
 const item={key:'123:merged',variant_id:123,quantity:1,original_price:25800,final_price:25800,original_line_price:25800,final_line_price:25800,item_components:[component]};
 function rowFor(data,key=component.key){return {dataset:{key:data.key},getAttribute:k=>k==='data-hs2-cart-line'?JSON.stringify(data):key};}
 function helpers(minified, action){
- const context={window:{Shopify:{actions:{updateCart:action}}}};
+ const context={window:{Shopify:{actions:{getCart:action?async()=>({cart:{id:'private-cart'}}):undefined}}},HeartsideCartQuantity:{change:action}};
  const code=helper+'\napi={target:heartsideQuantityTarget,set:heartsideSetComponentQuantity,matches:heartsideQuantityMatches};';
  vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,context);return context.api;
 }
 for(const minified of [false,true]){
  const mode=minified?'minified':'source';
- test(mode+': Storefront action changes exact component quantity without replacing attributes or adding products',async()=>{
-  const calls=[], api=helpers(minified,async(payload,options)=>{calls.push(JSON.parse(JSON.stringify({payload,options})));return {cart:{lines:[]}};});
+ test(mode+': quantity replacement receives exact component key, cart and requested quantity',async()=>{
+  const calls=[], api=helpers(minified,async(...args)=>{calls.push(args);return {lines:{nodes:[]}};});
   assert.equal(api.target(rowFor(item)),component.key);
   for(const quantity of [0,1,2,3])await api.set(component.key,quantity);
-  assert.deepEqual(calls.map(c=>c.payload),[0,1,2,3].map(quantity=>({lines:[{id:component.key,quantity}]})));
-  assert.ok(calls.every(c=>c.options.event.context==='cart'));
+  assert.deepEqual(calls,[0,1,2,3].map(quantity=>['private-cart',component.key,quantity]));
+ });
+ test(mode+': refreshed verification uses the newly returned key after replacement',async()=>{
+  const api=helpers(minified,async()=>({cart:{lines:{nodes:[]}},componentKey:'123:replacement'}));
+  const result=await api.set(component.key,1);
+  const fresh={...item,item_components:[{...component,key:'123:replacement',quantity:1}]};
+  assert.equal(api.matches([rowFor(fresh)],component.key,1),false);
+  assert.equal(api.matches([rowFor(fresh)],result.componentKey,1),true);
+  assert.match(source,/heartsideQuantityMatches\(this.refs.cartItemRows, result.componentKey, quantity\)/);
  });
  test(mode+': ordinary rows keep native routing and malformed marked rows are blocked',()=>{
   const api=helpers(minified);
@@ -36,10 +43,9 @@ for(const minified of [false,true]){
  });
  test(mode+': rejected, unavailable, uncertain and invalid quantity actions fail without retries',async()=>{
   let calls=0;
-  await assert.rejects(helpers(minified,async()=>{calls++;return {userErrors:[{message:'Not allowed'}]};}).set(component.key,1),/Not allowed/);
+  await assert.rejects(helpers(minified,async()=>{calls++;throw Error('Not allowed');}).set(component.key,1),/Not allowed/);
   assert.equal(calls,1);
   await assert.rejects(helpers(minified).set(component.key,1),/still loading/);
-  await assert.rejects(helpers(minified,async()=>({})).set(component.key,1),/could not be confirmed/);
   await assert.rejects(helpers(minified,async()=>{throw Error('Network unavailable');}).set(component.key,1),/Network unavailable/);
   await assert.rejects(helpers(minified,async()=>{throw Error('must not run');}).set(component.key,1.5),/whole-number/);
  });

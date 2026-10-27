@@ -683,10 +683,10 @@
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
       } else if (m.input === 'rec') {
-        h += '<div class="hs3-chips">' + [['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
+        h += '<div class="hs3-chips">' + [['self', 'Me'], ['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
           return '<button type="button" class="hs3-chip' + (S.rel === c[0] ? ' is-on' : '') + '" data-hs3="rel" data-v="' + c[0] + '" aria-pressed="' + (S.rel === c[0]) + '">' + esc(c[1]) + '</button>';
         }).join('') + '</div>';
-        h += '<label class="hs3-small" for="hs3-rec">Their first name</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
+        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
       } else if (ui.typing) {
         h += '<label class="hs3-small" for="hs3-typed">In your own words</label><div class="hs3-row hs3-row--typed"><input id="hs3-typed" class="hs3-field" type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-hs3-in="typed"><button type="button" class="hs3-btn hs3-btn--small" data-hs3="send">Done</button></div>' + privacy();
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
