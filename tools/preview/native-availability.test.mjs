@@ -12,7 +12,7 @@ for(const minified of [false,true]) {
  test(mode+': disabled availability survives observer progress updates without hiding upload status',()=>{
   let enabled='false',pending=false;const status={textContent:''};
   const c={document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
-  run(['blanketPurchaseStatus','updateBlanketPurchaseStatus'],c,minified);
+  run(['portraitSignatureChoice','updatePortraitSignatureRecovery','blanketPurchaseStatus','updateBlanketPurchaseStatus'],c,minified);
   c.blanketPurchaseStatus('This gift is not available to order yet.');
   c.updateBlanketPurchaseStatus();
   assert.match(status.textContent,/^This gift is not available to order yet\. Create artwork/);

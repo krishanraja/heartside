@@ -177,6 +177,7 @@
     });
   }
   function updateBlanketPurchaseStatus() {
+    updatePortraitSignatureRecovery();
     var pending = blanketUploadPending();
     var photoBox = document.querySelector('[data-hs2-blanket-photo]');
     if (photoBox) {
@@ -1054,6 +1055,46 @@
       var shown = mugArtworkValue(input.name || input.id);
       return shown !== null && exact(input.value) === exact(answer(key)) && exact(shown) === exact(answer(key));
     });
+  }
+  function portraitSignatureChoice() {
+    if (!document.querySelector('#buy[data-hs2-artwork-kind="print"]')) return '';
+    var input = document.querySelector('#buy input[name="layer-209591"]');
+    var dog = input && input.value.replace(/\s+/g, ' ').trim();
+    var supported = dog ? 'Love, ' + dog : '';
+    return supported && supported !== String(answer('signed') || '').replace(/\s+/g, ' ').trim() ? supported : '';
+  }
+  function updatePortraitSignatureRecovery() {
+    var supported = portraitSignatureChoice();
+    var box = document.querySelector('[data-hs2-portrait-signature-recovery]');
+    if (!supported) { if (box) box.hidden = true; return; }
+    var status = document.querySelector('[data-hs2-artwork-status]');
+    if (!status) return;
+    if (!box) {
+      box = document.createElement('div');
+      box.setAttribute('data-hs2-portrait-signature-recovery', '');
+      var message = document.createElement('p');
+      message.setAttribute('role', 'status');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.addEventListener('click', function () {
+        var current = portraitSignatureChoice();
+        if (!current) return;
+        state.hs3_signature_override = current;
+        state.hs3_copy_owner = 'user';
+        save(); invalidateBlanketReview(); render();
+        updatePortraitSignatureRecovery();
+        // The native signature already follows the dog name. No upload or AI request.
+        var review = document.querySelector('[data-hs2-artwork-accept]');
+        if (review && review.getClientRects().length) review.focus();
+      });
+      box.appendChild(message); box.appendChild(button);
+      status.parentNode.insertBefore(box, status);
+    }
+    box.hidden = false;
+    var text = 'Portraits are signed "' + supported + '" using your dog\'s name. Your saved signature is different. Choose the portrait signature, then review your artwork again.';
+    if (box.firstChild.textContent !== text) box.firstChild.textContent = text;
+    var label = 'Use "' + supported + '"';
+    if (box.lastChild.textContent !== label) box.lastChild.textContent = label;
   }
   function guardGiftPhoto() {
     document.addEventListener('submit', function (e) {
