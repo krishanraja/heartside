@@ -2,7 +2,7 @@
 {% if request.design_mode %}
   <main style="max-width:48rem;margin:2rem auto;padding:1rem">
     <h1>Existing artwork preparation check</h1>
-    <p>This checks one saved design. It does not generate artwork, change the cart, place an order or take payment.</p>
+    <p>The preparation checks use saved artwork without generating images. The separate Add button adds one prepared item only when the cart is empty. No order or payment is submitted.</p>
     <form id="hs-image-check">
       <p><label>Existing customization ID <input name="customizationId" required pattern="[a-f0-9-]{36}" autocomplete="off"></label></p>
       <p><label>Original variant ID <input name="variantId" required pattern="[0-9]+" autocomplete="off"></label></p>
@@ -10,7 +10,17 @@
     </form>
     <pre id="hs-image-result" role="status" style="white-space:pre-wrap"></pre>
     <img id="hs-image-preview" alt="Saved design returned by the artwork preparation service" width="512" height="512" hidden style="max-width:100%;max-height:32rem;object-fit:contain">
+    <hr>
+    <form id="hs-adapter-check">
+      <p><label>Existing native cart payload <textarea name="payload" required rows="6" style="width:100%" autocomplete="off"></textarea></label></p>
+      <p><label>Shopify Files prefix <input name="prefix" required type="url" autocomplete="off"></label></p>
+      <button type="submit">Prepare existing native cart item</button>
+    </form>
+    <button id="hs-add-prepared" type="button" disabled>Add prepared test item to cart</button>
+    <pre id="hs-adapter-result" role="status" style="white-space:pre-wrap"></pre>
+    <a href="{{ routes.cart_url }}" target="_blank" rel="noopener">Open test cart</a>
   </main>
+  <script src="{{ 'hs-checkout-image.js' | asset_url }}" defer="defer"></script>
   <script>
     (function () {
       var form = document.getElementById('hs-image-check');
@@ -52,6 +62,47 @@
           clearTimeout(timer);
           button.disabled = false;
         }
+      });
+      var adapterForm = document.getElementById('hs-adapter-check');
+      var adapterResult = document.getElementById('hs-adapter-result');
+      var addButton = document.getElementById('hs-add-prepared');
+      var preparedBody = null;
+      adapterForm.addEventListener('input', function () { preparedBody = null; addButton.disabled = true; });
+      adapterForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var button = adapterForm.querySelector('button');
+        if (button.disabled || !adapterForm.reportValidity()) return;
+        button.disabled = true; addButton.disabled = true; preparedBody = null;
+        adapterResult.textContent = 'Preparing existing native data…';
+        try {
+          var original = JSON.parse(adapterForm.elements.payload.value);
+          var before = original.items || [original];
+          preparedBody = await window.HSCheckoutImage.prepare(JSON.stringify(original), {
+            endpoint: '/apps/heartside-artwork', cdnPrefix: adapterForm.elements.prefix.value
+          });
+          var prepared = JSON.parse(preparedBody), after = prepared.items || [prepared];
+          var preserved = before.every(function (item, i) {
+            return item.id === after[i].id && item.quantity === after[i].quantity && Object.keys(item.properties).every(function (key) { return item.properties[key] === after[i].properties[key]; });
+          });
+          if (!preserved) throw new Error('Native data changed');
+          adapterResult.textContent = JSON.stringify({ prepared: true, nativeDataPreserved: preserved, itemCount: after.length, propertyKeys: Object.keys(after[0].properties), imageUrl: after[0].properties._hs_checkout_image }, null, 2);
+          addButton.disabled = false;
+        } catch (error) {
+          preparedBody = null;
+          adapterResult.textContent = JSON.stringify({ prepared: false, cartChanged: false, message: error.message });
+        } finally { button.disabled = false; }
+      });
+      addButton.addEventListener('click', async function () {
+        if (!preparedBody || addButton.disabled) return;
+        addButton.disabled = true;
+        try {
+          var cart = await fetch('{{ routes.cart_url }}.js', { credentials: 'same-origin', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Cart read failed'); return r.json(); });
+          if (cart.item_count !== 0) throw new Error('Existing cart is not empty; no item added');
+          var added = await fetch('{{ routes.cart_add_url }}.js', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: preparedBody });
+          if (!added.ok) throw new Error('Cart add failed: ' + added.status);
+          adapterResult.textContent = JSON.stringify({ added: true, orderPlaced: false });
+          preparedBody = null;
+        } catch (error) { adapterResult.textContent = JSON.stringify({ added: false, message: error.message }); }
       });
     }());
   </script>
