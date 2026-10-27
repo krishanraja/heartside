@@ -14,7 +14,7 @@ function page(gift, state, saved = false) {
   const parts = {'[data-hs-journey-line]': el(), '[data-hs-journey-intro]': el(), '[data-hs-journey-card]': Object.assign(el(), {hidden: true}), '[data-hs-journey-here]': el()};
   const box = {getAttribute: () => gift, querySelector: s => parts[s]};
   return {parts, ctx: {state, document: {querySelector: s => s === '[data-hs-journey]' ? box : null}, possessive: n => /s$/i.test(n) ? n + "'" : n + "'s",
-    answer: k => ({dog: state.dog || '', person: state.person || '', signed: state.dog ? 'Love, ' + state.dog : ''})[k], shopRoot: () => '/', track() {}, cityArtSaved: () => saved,
+    answer: k => ({dog: state.dog || '', person: state.person || '', signed: state.dog ? 'Love, ' + state.dog : ''})[k], shopRoot: () => '/', track() {}, cityArtSaved: () => saved, redoMode: {id: ''},
     artworkFacts: () => JSON.stringify({version: 1, facts: [{source: 'spot', text: "Rests on their person's side of the bed."}]}),
     window: {HSArtworkChoices: {read: () => ({style: 'ink', tone: 'hilarious'})}, HSArtworkEngine: {recipes: {styles: {ink: {label: 'Fine ink drawing'}}, tones: {hilarious: {label: 'Hilarious'}}}}}}};
 }
@@ -32,6 +32,8 @@ for (const minified of [false, true]) {
     const blanket = page('blanket', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}, true); run(blanket.ctx);
     assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /None\. The blanket is all painting\./);
     assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /Changing these means painting new artwork\./);
+    const redo = page('mug', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}); redo.ctx.redoMode.id = 'a'.repeat(36); run(redo.ctx);
+    assert.equal(redo.parts['[data-hs-journey-line]'].textContent, 'Another version, then. Your first design stays in your cart until you choose.');
   });
   test(`${minified ? 'minified' : 'source'}: a direct visit gets Buddy's offer and no stranger's names`, () => {
     const {parts, ctx} = page('portrait', {});

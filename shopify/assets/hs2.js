@@ -484,7 +484,7 @@
       return;
     }
     if (intro) intro.hidden = true;
-    var want = 'Last step. Let\'s make ' + possessive(dog) + ' ' + gift + '.';
+    var want = redoMode.id ? 'Another version, then. Your first design stays in your cart until you choose.' : 'Last step. Let\'s make ' + possessive(dog) + ' ' + gift + '.';
     if (line && line.textContent !== want) line.textContent = want;
     if (!card) return;
     var esc_ = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -2080,6 +2080,86 @@
     if (Array.isArray(components) && components.length === 1 && item.variant_id != null && String(components[0].variant_id) === String(item.variant_id)) return own(components[0]);
     return '';
   }
+  /* One redo per gift (Krish, 27 Oct). A personalised line in the cart offers "Make another
+     version" once; the new version is added with _hs_redo_of naming the design it replaces, and the
+     old line then offers to be removed by the buyer. Nothing is removed for them, so a failed step
+     leaves two designs, never none, and every new design passes the same purchase gates. */
+  function cartLineFacts(row) {
+    var snap = null;
+    try { snap = JSON.parse(row.getAttribute('data-hs2-cart-line') || 'null'); } catch (e) { snap = null; }
+    if (!snap) return null;
+    var id = '', of = '';
+    [snap.properties || {}].concat((snap.item_components || []).map(function (c) { return c.properties || {}; })).forEach(function (p) {
+      id = id || p._customization_id || ''; of = of || p._hs_redo_of || '';
+    });
+    return { id: String(id), of: String(of), quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
+  }
+  function redoOffers(rows) {
+    var lines = [], redone = {};
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.of) redone[f.of] = true; } });
+    lines.forEach(function (l) {
+      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      if (!host) return;
+      var slot = l.row.querySelector('[data-hs2-redo]');
+      var html = '';
+      if (redone[l.id]) html = '<p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button>';
+      else if (l.personal && l.quantity === 1 && /^[a-f0-9-]{36}$/i.test(l.id) && !l.of) {
+        var u = new URL(link.getAttribute('href'), location.href); u.searchParams.set('redo', l.id);
+        html = '<a href="' + u.pathname + u.search + '" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span>';
+      }
+      if (!html) { if (slot) slot.remove(); return; }
+      if (!slot) { slot = document.createElement('div'); slot.className = 'hs2-redo'; slot.setAttribute('data-hs2-redo', ''); host.appendChild(slot); }
+      if (slot.__html === html) return;
+      slot.__html = html; slot.innerHTML = html;
+      var remove = slot.querySelector('[data-hs2-redo-remove]');
+      if (remove) remove.addEventListener('click', function () {
+        var own = l.row.querySelector('.cart-items__remove');
+        track('redo_remove_old', {});
+        if (own && !own.hidden) own.click();
+      });
+      var go = slot.querySelector('[data-hs2-redo-go]');
+      if (go) go.addEventListener('click', function () { track('redo_start', { from: 'cart' }); });
+    });
+  }
+  /* The bundle in the cart (Krish, 27 Oct: 15% off two gifts, 20% off three), only while the memo
+     strip's switch says the real discount exists: one gift gets the nudge, and two or more show
+     the saving Shopify actually applied, read from /cart.js, never a computed promise. */
+  function bundleLine(rowCount) {
+    var totals = document.querySelector('.cart-totals__tax-note');
+    if (!document.querySelector('[data-hs-bundle-live]') || !totals || bundleLine.busy) return;
+    bundleLine.busy = true;
+    fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cart) {
+      var gifts = (cart.items || []).filter(function (it) { return !/artist'?s touch/i.test(it.product_title || ''); }).length;
+      var saved = Number(cart.total_discount) || 0, say = '';
+      if (gifts === 1) say = 'Add a second gift and save 15%. Three saves 20%.';
+      else if (gifts > 1 && saved > 0) say = 'You are saving $' + (saved / 100).toFixed(2).replace(/\.00$/, '') + ' on ' + gifts + ' gifts.';
+      var el = document.querySelector('[data-hs2-bundle-line]');
+      if (!say) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement('p'); el.className = 'hs2-bundle-line'; el.setAttribute('data-hs2-bundle-line', ''); totals.parentNode.insertBefore(el, totals); }
+      if (el.textContent !== say) el.textContent = say;
+    }).catch(function () { /* the cart works without it */ }).then(function () { bundleLine.busy = false; });
+    void rowCount;
+  }
+  // arriving from "Make another version": the new design carries the id of the one it replaces
+  function redoMode() {
+    if (redoMode.done) return;
+    redoMode.done = true;
+    var id = '';
+    try { id = new URLSearchParams(window.location.search).get('redo') || ''; } catch (e) { id = ''; }
+    var form = document.getElementById('hs2-product-form');
+    if (!nativeArtworkPurchase() || !form || !/^[a-f0-9-]{36}$/i.test(id)) return;
+    var inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'properties[_hs_redo_of]'; inp.value = id;
+    form.appendChild(inp);
+    redoMode.id = id;
+    resetBlanketUpload(); // the one new upload this redo allows; still started by the buyer's click
+    journeyCard();
+    onCartAdd(function () {
+      if (inp.parentNode) inp.parentNode.removeChild(inp);
+      redoMode.id = '';
+      journeyCard();
+    });
+  }
   function cartTidy() {
     var run = function () {
       var rows = document.querySelectorAll('.cart-items__table-row[data-key]');
@@ -2116,6 +2196,8 @@
         if (cartImages[key]) cartPicture(row, cartImages[key]);
         else if (!(key in cartImages)) need = true;
       });
+      redoOffers(Array.prototype.slice.call(rows));
+      bundleLine(rows.length);
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
         var want = 'Free US shipping on every order. Tax is added at checkout.';
@@ -2998,7 +3080,7 @@
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); window.addEventListener('hs-artwork-choices', function () { journeyCard(); }); guardMugProof();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); redoMode(); window.addEventListener('hs-artwork-choices', function () { journeyCard(); }); guardMugProof();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);

@@ -270,3 +270,9 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
 }
 @keyframes hs-ear { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(9deg); } 88% { transform: rotate(-4deg); } }
 @keyframes hs-peek { from { transform: translateY(72%); } to { transform: none; } }
+
+/* the empty cart: Buddy and one line (snippets/cart-products) */
+.hs-cart-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 8px 0 16px; text-align: center; }
+.hs-cart-empty__buddy { width: 96px; }
+.hs-cart-empty__line { margin: 0; font-family: "HS Fraunces", Georgia, serif; font-weight: 650; font-size: 22px; line-height: 1.2; color: var(--hs-ink, #121010); }
+@media (prefers-reduced-motion: no-preference) { .hs-cart-empty .hs-buddy__ear { animation: hs-ear 3.2s ease-in-out infinite; } }

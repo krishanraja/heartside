@@ -56,7 +56,6 @@
       "blanketPurchase": {{ s.blanket_purchase | json }},
       "corePurchase": {{ s.core_purchase | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
-      "bundleOffer": {{ s.bundle_offer_live | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },
       "gifts": {
         {%- comment -%} Each gift straight from its Shopify product: its own address, its lowest and
@@ -381,13 +380,6 @@
       "id": "ornament_bundle",
       "label": "Show the ornament at $19 with another gift",
       "info": "Tick only once a Shopify automatic discount takes $5 off the ornament when another gift is in the cart. Until then the page shows $24, so it never promises a price the cart won't charge.",
-      "default": false
-    },
-    {
-      "type": "checkbox",
-      "id": "bundle_offer_live",
-      "label": "Show the bundle saving (15% off two gifts, 20% off three)",
-      "info": "Tick only once the Shopify automatic discount exists and matches. Until then no saving is shown anywhere, so the page never promises a price the cart won't charge.",
       "default": false
     }
   ],

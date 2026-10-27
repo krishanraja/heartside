@@ -64,13 +64,16 @@
       </p>
     {%- endif -%}
 
+    {%- comment -%} Heartside's empty cart (27 Oct): Buddy, one line, and the way into the chat, not Helio's catalog {%- endcomment -%}
+    <div class="hs-cart-empty">
+      <span class="hs-cart-empty__buddy">{% render 'hs-buddy' %}</span>
+      <p class="hs-cart-empty__line">Nothing in here yet. I checked twice.</p>
+    </div>
     <a
       class="button cart-items__empty-button"
-      href="{{ settings.empty_cart_button_link | default: routes.all_products_collection_url }}"
+      href="{{ routes.root_url }}"
     >
-      <span class="button-text">
-        {{ 'actions.continue_shopping' | t }}
-      </span>
+      <span class="button-text">Start with your dog</span>
     </a>
   {%- else -%}
     <span
@@ -168,10 +171,10 @@
               {%- comment -%} Current-row artwork and quantity evidence only; no cart token or buyer answers. {%- endcomment -%}
               {%- capture hs_cart_line -%}
                 {"key":{{ item.key | json }},"variant_id":{{ item.variant_id | json }},"quantity":{{ item.quantity | json }},
-                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }}},
+                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }},"_customization_id":{{ item.properties._customization_id | json }},"_hs_redo_of":{{ item.properties._hs_redo_of | json }}},
                 "item_components":[{%- for component in item.item_components -%}
                   {"key":{{ component.key | json }},"variant_id":{{ component.variant_id | json }},"quantity":{{ component.quantity | json }},
-                  "properties":{"_hs_checkout_image":{{ component.properties._hs_checkout_image | json }},"_customization_image":{{ component.properties._customization_image | json }}}}{% unless forloop.last %},{% endunless %}
+                  "properties":{"_hs_checkout_image":{{ component.properties._hs_checkout_image | json }},"_customization_image":{{ component.properties._customization_image | json }},"_customization_id":{{ component.properties._customization_id | json }},"_hs_redo_of":{{ component.properties._hs_redo_of | json }}}}{% unless forloop.last %},{% endunless %}
                 {%- endfor -%}]}
               {%- endcapture -%}
               <tr

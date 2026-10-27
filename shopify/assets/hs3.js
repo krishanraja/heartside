@@ -1438,6 +1438,8 @@
     if (!root) return;
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
+    // the bundle saving shows only when the memo strip's one switch says the real discount exists
+    cfg.bundleOffer = !!(cfg.bundleOffer || document.querySelector('[data-hs-bundle-live]'));
     heroHTML = frame.innerHTML;
     if (cfg.artworkCandidates && window.HSArtworkChoices) S.noteTone = window.HSArtworkChoices.read().tone;
     if (S.composeRequest) save();

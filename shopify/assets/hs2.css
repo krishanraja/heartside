@@ -1142,3 +1142,10 @@ product-card quick-add-component button { display: none !important; }
 .hs-journey__row a { font-size: 14px; color: #121010; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
 .hs-journey__warn { margin: 0; padding: 0 0 10px; font-size: 13.5px; color: #5A4A44; }
 @media (max-width: 420px) { .hs-journey__row { grid-template-columns: minmax(0, 1fr) auto; } .hs-journey__k { grid-column: 1 / -1; } }
+
+/* one redo per gift, in the cart (hs2.js redoOffers) */
+.hs2-redo { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 14px; line-height: 1.4; }
+.hs2-redo a { color: #121010; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+.hs2-redo span, .hs2-redo p { margin: 0; color: #5A4A44; font-size: 13px; }
+.hs2-redo__remove { align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #121010; background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
+.hs2-bundle-line { margin: 0 0 8px; font-weight: 600; color: #8A4A2B; }

@@ -75,7 +75,10 @@ test('blanket purchase setting is default off and reads product picker price and
   assert.match(liquid,/"blanketPurchase": {{ s.blanket_purchase \| json }}/);
   assert.match(liquid,/p\.price_min \| divided_by: 100\.0/);assert.match(liquid,/"url": {{ p\.url \| json }}/);
   assert.doesNotMatch(liquid,/product_view|price_mug|price_blanket|price_print/,'no template override and no price that is not Shopify\'s');
-  const bundle=schema.settings.find(setting=>setting.id==='bundle_offer_live');assert.equal(bundle.default,false);
+  const memo=readFileSync(new URL('../../shopify/sections/hs2-memo.liquid',import.meta.url),'utf8');
+  const bundle=JSON.parse(memo.match(/{% schema %}([\s\S]*?){% endschema %}/)[1]).settings.find(setting=>setting.id==='bundle_offer_live');
+  assert.equal(bundle.default,false,'one switch, on the memo strip, off until the real discount exists');
+  assert.equal(schema.settings.some(setting=>setting.id==='bundle_offer_live'),false);
 });
 
 test('default Buddy entry point has live core products; the alternate entry points have moved',()=>{
