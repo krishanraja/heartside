@@ -145,7 +145,7 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Complete the core launch fixes and verify the real customer journey, including an actual-design checkout thumbnail, before reopening Heartside for the owner's real order. A bounded Function Studio install/access/monthly-cost/test decision is pending on the exact Shopify consent screen; the app is not installed. Continue existing-output product review while awaiting that decision. No more AI generation is authorized.
+- **Next action:** Complete the core launch fixes and verify the real customer journey, including an actual-design checkout thumbnail, before reopening Heartside for the owner's real order. A bounded Function Studio install/access/monthly-cost/test decision is pending on the exact Shopify consent screen; the app is not installed. Existing-output review and no-generation mug reference geometry are complete; actual native landscape acceptance remains distinct. No more AI generation is authorized.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
 - North Star check (2026-10-27): holds. Personalized cart and address-specific checkout have bounded evidence; core launch defects remain and no revenue increase or full-launch completion is claimed.
