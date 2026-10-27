@@ -30,7 +30,7 @@
     return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
       typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, toneCache: {}, composeRequest: null, composeBaseGift: null, appliedComposeKey: '', noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
-      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, mugColor: '' };
+      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, photoStorageWarning: '', mugColor: '' };
   }
   function load() {
     var s = null;
@@ -439,19 +439,51 @@
       };
     });
   }
-  function usePhoto(file, t) {
+  function usePhoto(file, t, transferable) {
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(file);
-    S.hasPhoto = true; S.photoT = t; save();
+    S.hasPhoto = transferable !== false; S.photoT = t; save();
     document.querySelectorAll('[data-hs3-photo]').forEach(function (img) { img.src = photoURL; });
   }
   function restorePhoto() {
-    if (!S.hasPhoto) return Promise.resolve();
-    if (!S.photoT) { S.hasPhoto = false; save(); return Promise.resolve(); }
-    return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
+    return idb('readwrite', function (st) {
+      var req = st.get(PHOTO);
+      // Check and delete in one transaction, so cleanup cannot erase a newer photo.
+      req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= 3 * 864e5) st.delete(PHOTO); };
+      return req;
+    }).then(function (rec) {
       if (rec && rec.file && S.hasPhoto && rec.t === S.photoT && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file, rec.t);
       else { S.hasPhoto = false; S.photoT = 0; save(); }
     }).catch(function () { S.hasPhoto = false; S.photoT = 0; save(); });
+  }
+  function photoStorageStatus() {
+    if (!frame) return;
+    var status = frame.querySelector('[data-hs3-photo-storage]');
+    var message = ui.photoSaving ? 'Saving your photo before you continue…' : S.photoStorageWarning;
+    if (!status && message) {
+      status = document.createElement('p'); status.className = 'hs3-small';
+      status.setAttribute('data-hs3-photo-storage', ''); status.setAttribute('role', 'status'); frame.appendChild(status);
+    }
+    if (status) { status.hidden = !message; status.textContent = message || ''; fit(); }
+  }
+  function attachPhoto(file) {
+    var t = Math.max(Date.now(), (ui.photoSaving || S.photoT || 0) + 1);
+    usePhoto(file, t, false);
+    // A local preview is not proof that another page can restore the photo.
+    S.hasPhoto = false; S.photoStorageWarning = ''; ui.photoSaving = t; save(); photoStorageStatus();
+    var timer;
+    var timeout = new Promise(function (_, reject) { timer = setTimeout(function () { reject(new Error('photo storage timeout')); }, 8000); });
+    return Promise.race([idb('readwrite', function (st) { return st.put({file: file, t: t}, PHOTO); }), timeout]).then(function () {
+      clearTimeout(timer);
+      if (ui.photoSaving !== t) return;
+      S.hasPhoto = true; ui.photoSaving = 0; save(); photoStorageStatus();
+    }).catch(function () {
+      clearTimeout(timer);
+      if (ui.photoSaving !== t) return;
+      S.hasPhoto = false; S.photoT = 0; ui.photoSaving = 0;
+      S.photoStorageWarning = 'Your browser could not save this photo. Choose it again on your gift, or try adding a photo here again.';
+      save(); photoStorageStatus();
+    });
   }
   // never a stranger's dog on the buyer's gift: no photo yet shows a paw placeholder
   function photoSrc() { return photoURL || ''; }
@@ -517,6 +549,7 @@
     else if (S.screen === 'reveal') frame.innerHTML = revealView(n);
     else if (S.screen === 'choose') frame.innerHTML = chooseView(n);
     else if (S.screen === 'share') frame.innerHTML = shareView(n);
+    photoStorageStatus();
     bind();
     fit();
     if (keepToneFocus) { var tone = frame.querySelector('[data-hs3-tone]'); if (tone) tone.focus(); }
@@ -1178,6 +1211,7 @@
     });
   }
   function next() {
+    if (ui.photoSaving) { photoStorageStatus(); return; }
     var n = names();
     if (S.step === 1) {
       if (!String(S.dog).trim()) { focusField('hs3-dog'); return; }
@@ -1242,9 +1276,8 @@
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
-      var t = Date.now();
-      usePhoto(f, t);
-      idb('readwrite', function (st) { return st.put({ file: f, t: t }, PHOTO); }).catch(function () {});
+      attachPhoto(f);
+      file.value = ''; // Permit an explicit retry with the same file after storage failure.
       track('photo_attached', {});
       var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
       var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();

@@ -492,9 +492,12 @@
     idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).catch(function () {});
   }
   function restorePhoto() {
-    if (!state.hs3_photo_t) return Promise.resolve(null);
-    return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
-      if (!rec || !rec.file || rec.t !== state.hs3_photo_t || Date.now() - rec.t > PHOTO_DAYS * 864e5) return null;
+    return idb('readwrite', function (st) {
+      var req = st.get(PHOTO);
+      req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= PHOTO_DAYS * 864e5) st.delete(PHOTO); };
+      return req;
+    }).then(function (rec) {
+      if (!state.hs3_photo_t || !rec || !rec.file || rec.t !== state.hs3_photo_t || Date.now() - rec.t >= PHOTO_DAYS * 864e5) return null;
       return rec;
     }).catch(function () { return null; });
   }
