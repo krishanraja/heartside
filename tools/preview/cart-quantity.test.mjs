@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {transformSync} from 'esbuild';
 import {Liquid} from 'liquidjs';
 const root=new URL('../../',import.meta.url);
-const source=readFileSync(new URL('shopify/assets/component-cart-items.js',root),'utf8');
+const source=readFileSync(new URL('shopify/assets/component-cart-items.js',root),'utf8').replace(/\r\n/g,'\n');
 const helper=source.slice(source.indexOf('function heartsideQuantityTarget('),source.indexOf('/** @typedef'));
 const a=source.indexOf('      const componentKey = heartsideQuantityTarget('),b=source.indexOf('\n\n      cartTotal',a);
 assert.ok(a>=0&&b>a);const request=source.slice(a,b);
@@ -35,7 +35,7 @@ for(const minified of [false,true]){
  });
 }
 test('Liquid displays actual component units and per-unit price but keeps the parent row index',async()=>{
- const source=readFileSync(new URL('shopify/snippets/cart-products.liquid',root),'utf8');
+ const source=readFileSync(new URL('shopify/snippets/cart-products.liquid',root),'utf8').replace(/\r\n/g,'\n');
  const a=source.indexOf('{%- liquid\n                assign hs_quantity_item'),b=source.indexOf('{%- comment -%} Current-row',a);
  assert.ok(a>=0&&b>a);const engine=new Liquid();
  const render=async item=>(await engine.parseAndRender(source.slice(a,b)+'{{ hs_quantity_item.quantity }}|{{ hs_quantity_key }}|{{ hs_unit_original_price }}|{{ hs_unit_final_price }}',{item})).trim();
