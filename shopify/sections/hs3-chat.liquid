@@ -166,6 +166,27 @@
   </div>
   <noscript><p class="hs3-small">Buddy needs JavaScript to chat. Turn it on, or email hello@krishraja.com and a person will help.</p></noscript>
   <p class="hs3-privacy" data-hs3-privacy hidden>{{ s.privacy }}</p>
+  {%- comment -%} The lead the chat keeps (27 Oct): a buyer not ready to choose leaves an email for one
+    reminder before Christmas delivery closes. Shopify's own customer form; the newsletter tag is
+    what makes them a subscriber. hs3.js shows it on the choose and card screens, and after a post. {%- endcomment -%}
+  {%- if s.remind_on -%}
+    <div class="hs3-remind" data-hs3-remind hidden>
+      {%- form 'customer', id: 'hs3-remind-form', class: 'hs3-remind__form' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="hs3-remind__done" role="status" data-hs3-remind-show>{{ s.remind_done }}</p>
+        {%- else -%}
+          <input type="hidden" name="contact[tags]" value="newsletter, buddy-reminder">
+          <label class="hs3-label" for="hs3-remind-email">{{ s.remind_label }}</label>
+          <div class="hs3-row hs3-row--typed">
+            <input id="hs3-remind-email" class="hs3-field" type="email" name="contact[email]" autocomplete="email" autocapitalize="off" spellcheck="false" required>
+            <button type="submit" class="hs3-btn hs3-btn--small">Remind me</button>
+          </div>
+          {%- if form.errors -%}<p class="hs3-small" role="alert" data-hs3-remind-show>{{ form.errors | default_errors }}</p>{%- endif -%}
+          <p class="hs3-small">{{ s.remind_fine }}</p>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  {%- endif -%}
 </div>
 
 {% schema %}
@@ -174,6 +195,31 @@
   "tag": "section",
   "class": "hs3-section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "remind_on",
+      "label": "Offer a Christmas reminder by email on the choose screen",
+      "info": "Adds the email to Shopify customers with the newsletter and buddy-reminder tags. Someone must send that reminder.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "remind_label",
+      "label": "Reminder: ask",
+      "default": "Not ready to choose? Get one reminder before Christmas delivery closes."
+    },
+    {
+      "type": "text",
+      "id": "remind_fine",
+      "label": "Reminder: fine print",
+      "default": "Your email joins Heartside's list. Unsubscribe any time."
+    },
+    {
+      "type": "text",
+      "id": "remind_done",
+      "label": "Reminder: thanks",
+      "default": "Done. I'll send one reminder before Christmas delivery closes."
+    },
     {
       "type": "checkbox",
       "id": "core_purchase",

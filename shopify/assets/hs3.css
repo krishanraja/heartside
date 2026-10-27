@@ -390,3 +390,8 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
 
 /* the blanket's caption under the example keeps the 16px gutter on a phone */
 .hs3-product + .hs3-small.hs3-center { padding: 0 16px; }
+
+/* the Christmas reminder under the choose screen and the card */
+.hs3-remind { width: 100%; max-width: 440px; margin: 20px auto 0; padding: 16px; border-radius: 18px; background: var(--paper, #FFFDF9); box-shadow: 0 0 0 1px var(--line, #E2D4C8); display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
+.hs3-remind__form { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.hs3-remind__done { margin: 0; font-family: var(--serif, "HS Fraunces", Georgia, serif); font-weight: 650; font-size: 18px; line-height: 1.3; }

@@ -719,6 +719,9 @@
     ui.view = view;
     frame.setAttribute('data-hs3-screen', S.screen);
     root.classList.toggle('hs3--app', S.screen !== 'hero');
+    // the reminder offer: where a buyer decides (choose, the card), and whenever Shopify answered a post
+    var remind = root.querySelector('[data-hs3-remind]');
+    if (remind) remind.hidden = !(S.screen === 'choose' || S.screen === 'share' || remind.querySelector('[data-hs3-remind-show]'));
     document.documentElement.classList.remove('hs3-routed');
     if (S.screen === 'hero') { frame.innerHTML = heroHTML; bindHero(); return; }
     if (S.screen === 'chat') frame.innerHTML = chatView(n);
