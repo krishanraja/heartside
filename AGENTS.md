@@ -12,7 +12,7 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 - Only Krish changes it.
 <!-- north-star:end -->
 
-<!-- krish-repo-admin:start brain=29049a88d851 sha=0cc207a2c492 -->
+<!-- krish-repo-admin:start brain=d84cfdfa1507 sha=0cc207a2c492 -->
 ## Administer this repository
 
 Use `docs/HARNESS_CONTEXT.md` for the owning workflow, source of truth and checks. Preserve the goal and accepted decisions when a revision changes one part; explain material trade-offs. Verify the downstream result. Record corrections and observed outcomes through the existing capture path. Experimental results retain their conditions; inferred requirements remain proposals.
