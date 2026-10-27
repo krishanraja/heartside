@@ -2,8 +2,8 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: 4c0909c (deployed unpublished code; evidence closeout follows)
-lifecycle: live
+head: 280b809 (local core launch integration; unpublished deployment verification follows)
+lifecycle: launch-preparation
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
 history_log: docs/history/LOG.md
@@ -22,7 +22,7 @@ Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and
 
 ## Who it is for and why it matters for Mindmake
 
-The buyer is a US dog owner looking for a gift that sounds like their dog (`docs/NORTH_STAR.md`); prices run from $19 to $89 with free US shipping (`docs/HANDOFF.md` section 1). It is a consumer product, not sold to Mindmake's buyer. What it proves to that buyer: one founder, working with AI agents (Claude Code for the build, Cowork in the browser, a separate growth engine in `krishanraja/growth-heartside`), took a store from a first commit on 4 October 2026 to a live chat-led store on 19 October (`git log`; `docs/HANDOFF.md` section 3), with the AI fenced in by rules a person can read.
+The buyer is a US dog owner looking for a gift that sounds like their dog (`docs/NORTH_STAR.md`). The current core retail baseline is USD45 for the illustrated mug, USD59 for an unframed portrait, USD119 framed, and USD129 for the word-free blanket. Regional delivery costs and all-cost margin qualification remain open. It is a consumer product, not sold to Mindmake's buyer. What it proves to that buyer: one founder, working with AI agents (Claude Code for the build, Cowork in the browser, a separate growth engine in `krishanraja/growth-heartside`), took a store from a first commit on 4 October 2026 to a live chat-led store on 19 October (`git log`; `docs/HANDOFF.md` section 3), with the AI fenced in by rules a person can read.
 
 Angles a writer can use:
 
@@ -34,6 +34,8 @@ Angles a writer can use:
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
 ## Where it is right now (as of 2026-10-27)
+
+**Superseding owner ruling, October 27:** Finish the core products, pricing strategy, shared personalization and purchase flows before reopening Heartside. The owner will place a real customer order himself on the reopened store; the private sample checkout is no longer the next action. Checkout must show the actual design being purchased. The neutral thumbnail workaround below is rejected and remains a launch defect. Three parallel workers own engineering, product/supplier qualification and economics; the master owns integration and browser changes. No new generation, paid upgrade, payment or supplier release is authorized. Existing one-off artwork acceptance does not certify all AI outputs or physical print quality.
 
 October27 owner sample: one approved fresh upload/generation completed, the owner accepted the exact design including decorative ball motifs, and the actual native quantity-one blanket cart reached checkout. The supplied New York destination is accepted:89USD subtotal,5.99USD shipping offset by an existing5.99USD shipping discount,0USD tax,89USD total. The old synthetic contact/billing details were cleared for owner entry; no payment/order was submitted. Shopify Basic cannot use Teeinblue's Plus-only personalized checkout block. The misleading example-dog thumbnail is replaced by an existing neutral blanket base for this product/variant; actual cart customization still shows the accepted customer artwork. Late placement completion after60seconds is repaired at c3c2e00, independently tested, and deployed only to the unpublished review theme by40456728298; hs2.js MD5 matches0f618e26779b3a87c4d983154c110550. This is a prepared owner sample checkout, not a full-launch certification. Order-linked print inspection and supplier hold verification follow the owner's payment; the earlier print file cannot certify this new design. See `docs/evidence/2026-10-27-blanket-checkout.md`. Earlier checkpoints below are historical.
 
@@ -141,10 +143,10 @@ Blocked or waiting:
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** Owner enters real contact/billing/payment details in the retained89USD checkout and places the sample order; then inspect that exact order's print file, dimensions, bleed and supplier draft before any production release. No more AI generation is authorized.
+- **Next action:** Complete the core launch fixes and verify the real customer journey, including an actual-design checkout thumbnail, before reopening Heartside for the owner's real order. Continue independent work while resolving the supported checkout-image route; escalate only a concrete consequential choice. No more AI generation is authorized.
 - Confirm the Christmas 2026 order-by date per product and fulfillment route before publishing any dated delivery promise (`docs/HANDOFF.md` section 4, item 3).
 - Historical handoff questions do not reopen the approved range or authorize a discount. Current queue and scope remain in the continuation corpus.
-- North Star check (2026-10-27): holds. Actual personalized cart and address-specific checkout now pass; owner payment and order-linked print acceptance remain, with no measured revenue change or full-launch claim.
+- North Star check (2026-10-27): holds. Personalized cart and address-specific checkout have bounded evidence; core launch defects remain and no revenue increase or full-launch completion is claimed.
 
 - Creative upgrade checkpoint (October 23): supplier readback marks the five existing mug colors and circle ornament available. A first mug panorama concept has been rendered and presented for review. Both remaining gifts need product-specific creative approval and final native print checks; no live artwork or theme was changed.
 
