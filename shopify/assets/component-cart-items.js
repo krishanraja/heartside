@@ -88,7 +88,13 @@ export class CartItemsComponent extends createViewEventElement(Component) {
   );
   /** @type {Promise<any> | null} */
   #pendingCartFetch = null;
-  #heartsideQuantityInFlight = false;
+  /**
+   * The token of the Heartside replacement that owns this cart until its own final render.
+   * Only that operation clears it, so an overlapping request can never release the owner
+   * or start a competing render while its verification is pending.
+   * @type {object | null}
+   */
+  #heartsideQuantityOwner = null;
 
   /**
    * True when the event was dispatched from outside this cart-items-component (e.g.
@@ -337,18 +343,40 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    * @param {string} config.action - The action.
    */
   #validateHeartsideQuantity(line) {
-    if (heartsideQuantityTarget(this.refs.cartItemRows[line - 1]) !== null) return true;
-    this.#handleCartError(line, { errors: 'Your cart changed. Refresh the page and try again.' });
+    const blocked = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]) === null
+      ? 'Your cart changed. Refresh the page and try again.'
+      : this.#heartsideQuantityBlocked();
+    if (!blocked) return true;
+    this.#handleCartError(line, { errors: blocked });
     return false;
   }
 
+  /**
+   * While a personalised replacement runs or its recovery record is saved, every row waits:
+   * the replacement re-adds its line at the end, so nothing may change underneath it.
+   * @returns {string} Why no quantity change can start now, or an empty string.
+   */
+  #heartsideQuantityBlocked() {
+    if (this.#heartsideQuantityOwner) return 'A quantity change is still running. Wait for it to finish.';
+    if (HeartsideCartQuantity?.pending?.()) return 'Finish the saved quantity change first. Nothing was changed.';
+    return '';
+  }
+
   async updateQuantity(config) {
+    // Refuse before touching anything the running operation owns: its controls, its
+    // shimmer, its pending render and the flag that only it may clear.
+    const blocked = this.#heartsideQuantityBlocked();
+    if (blocked) {
+      this.dispatchEvent(new CartErrorEvent({ error: blocked, code: 'INVALID' }));
+      return;
+    }
     const cartPerformaceUpdateMarker = cartPerformance.createStartingMarker(`${config.action}:user-action`);
     const deferredUpdatePromise = CartLinesUpdateEvent.createPromise();
     // The standard action dispatches its own event; a pre-dispatch failure must
     // not leave this ordinary-Ajax promise as an unhandled rejection.
     deferredUpdatePromise.promise.catch(() => {});
-    let heartsideUpdate = false;
+    /** @type {object | null} */
+    let heartsideOwner = null;
     let completeQuantityUpdate = () => {};
     /** @type {Promise<void>} */
     const quantityUpdate = new Promise((resolve) => {
@@ -377,9 +405,9 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
       if (componentKey) {
-        heartsideUpdate = true;
+        heartsideOwner = {};
+        this.#heartsideQuantityOwner = heartsideOwner;
         cartTotal?.shimmer();
-        this.#heartsideQuantityInFlight = true;
         try {
           const result = await heartsideSetComponentQuantity(componentKey, quantity);
           await this.#refreshCartSection();
@@ -388,21 +416,24 @@ export class CartItemsComponent extends createViewEventElement(Component) {
           }
           deferredUpdatePromise.resolve({ cart: result.cart, detail: { source: 'heartside-component-quantity' } });
         } finally {
-          this.#heartsideQuantityInFlight = false;
           resetShimmer(this);
         }
         return;
       }
+      // Ordinary rows change by line key, never by position: a personalised change re-adds
+      // its line at the end, and after a failed or aborted render a stale position could
+      // name the re-added design.
+      const lineId = this.refs.cartItemRows[line - 1]?.dataset.key;
+      if (!lineId) throw new Error('Your cart changed. Refresh the page and try again.');
       const requestUrl = `${Theme.routes.cart_change_url}`;
       const body = JSON.stringify({
-        line: line, quantity: quantity,
+        id: lineId, quantity: quantity,
         sections: Array.from(sectionsToUpdate).join(','),
         sections_url: window.location.pathname,
       });
 
       cartTotal?.shimmer();
 
-      const lineId = this.refs.cartItemRows[line - 1]?.dataset.key ?? '';
       this.dispatchEvent(
         new CartLinesUpdateEvent({
           action: config.action === 'change' && quantity > 0 ? 'update' : 'remove',
@@ -473,7 +504,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       this.#updateCartQuantitySelectorButtonStates();
     } catch (error) {
       console.error(error);
-      if (heartsideUpdate) {
+      if (heartsideOwner) {
         await this.#refreshCartSection();
         HeartsideCartQuantity.refreshRecovery();
       }
@@ -487,6 +518,8 @@ export class CartItemsComponent extends createViewEventElement(Component) {
         })
       );
     } finally {
+      // Only the owning operation releases the cart, after its final render.
+      if (heartsideOwner && this.#heartsideQuantityOwner === heartsideOwner) this.#heartsideQuantityOwner = null;
       try {
         this.#enableCartItems();
         cartPerformance.measureFromMarker(cartPerformaceUpdateMarker);
@@ -537,7 +570,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     if (event.target === this) return;
     // The action emits synchronously when it starts. This instance owns and
     // awaits its one render below; other cart instances still consume the event.
-    if (this.#heartsideQuantityInFlight) return;
+    if (this.#heartsideQuantityOwner) return;
 
     event.promise
       ?.then(async ({ detail }) => {

@@ -298,12 +298,14 @@
                             {%- assign property_first_char = property.first | slice: 0 -%}
                             {%- if property.last != blank and property_first_char != '_' -%}
                               <div class="cart-items__property">
-                                <dt>{{ property.first }}:</dt>
+                                <dt>{{ property.first | escape_once }}:</dt>
                                 <dd>
-                                  {%- if property.last contains '/uploads/' -%}
-                                    <a href="{{ property.last }}">{{ property.last | split: '/' | last }}</a>
+                                  {%- comment -%} Teeinblue pre-encodes some values, so escape_once; only https uploads link. {%- endcomment -%}
+                                  {%- assign hs_property_scheme = property.last | slice: 0, 8 -%}
+                                  {%- if property.last contains '/uploads/' and hs_property_scheme == 'https://' -%}
+                                    <a href="{{ property.last | escape_once }}">{{ property.last | split: '/' | last | escape_once }}</a>
                                   {%- else -%}
-                                    {{ property.last }}
+                                    {{ property.last | escape_once }}
                                   {%- endif -%}
                                 </dd>
                               </div>
