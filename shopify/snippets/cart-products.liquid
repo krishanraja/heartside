@@ -399,6 +399,7 @@
                       aria-label="{{ 'accessibility.remove_item' | t: title: item.title | escape }}"
                       on:click="/onLineItemRemove/{{ item.index | plus: 1 }}"
                       {% assign can_remove = item.instructions.can_remove | default: true, allow_false: true %}
+                      {% if hs_quantity_item.instructions.can_remove == false %}{% assign can_remove = false %}{% endif %}
                       {% if can_remove == false %}
                         hidden
                       {% endif %}

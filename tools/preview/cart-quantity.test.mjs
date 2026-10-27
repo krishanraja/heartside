@@ -28,9 +28,10 @@ for(const minified of [false,true]){
  });
  test(mode+': ordinary, ambiguous, different-variant and invalid provenance lines retain native line-position behavior',()=>{
   for(const data of [{...item,item_components:[]},{...item,item_components:[component,component]},{...item,variant_id:456},{...item,quantity:2},{...item,item_components:[{...component,properties:{}}]}]){
-   assert.deepEqual(body(data,1,minified),{line:1,quantity:1,sections:'cart-main',sections_url:'/cart'});
+   assert.deepEqual(body(data,1,minified,''),{line:1,quantity:1,sections:'cart-main',sections_url:'/cart'});
+   assert.throws(()=>body(data,1,minified),/Refresh the page/);
   }
-  assert.equal(body(item,1,minified,'123:stale').line,1);
+  assert.throws(()=>body(item,1,minified,'123:stale'),/Refresh the page/);
  });
 }
 test('Liquid displays actual component units and per-unit price but keeps the parent row index',async()=>{
@@ -44,4 +45,10 @@ test('Liquid displays actual component units and per-unit price but keeps the pa
  assert.equal(await render({...item,item_components:[{...component,properties:{_hs_checkout_image:image}}]}),'1||25800|25800');
  assert.match(source,/in_cart_quantity: hs_quantity_item.quantity,\s+line_index: item.index/);
  assert.match(source,/hs_quantity_item.instructions.can_update_quantity == false/);
+ assert.match(source,/hs_quantity_item.instructions.can_remove == false/);
+});
+
+test('marked-invalid controls stop before shimmer or optimistic removal',()=>{
+ assert.match(source,/#onQuantityChange\(event\)[\s\S]*?#validateHeartsideQuantity\(line\)[\s\S]*?this.updateQuantity/);
+ assert.match(source,/onLineItemRemove\(line\) \{\s+if \(!this.#validateHeartsideQuantity\(line\)\) return;/);
 });

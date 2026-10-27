@@ -23,14 +23,15 @@ import {
 // Quantity updates address that exact component key, never another line of the variant.
 function heartsideQuantityTarget(row) {
   if (!row) return '';
-  let data;
-  try { data = JSON.parse(row.getAttribute('data-hs2-cart-line')); } catch { return ''; }
-  if (!data || data.key !== row.dataset.key || data.quantity !== 1 || !Array.isArray(data.item_components) || data.item_components.length !== 1) return '';
-  const component = data.item_components[0];
   const key = row.getAttribute('data-hs2-quantity-key');
-  if (!key || key !== component.key || key === data.key || String(component.variant_id) !== String(data.variant_id) || !key.startsWith(String(data.variant_id) + ':') || !Number.isInteger(component.quantity) || component.quantity < 1) return '';
+  if (!key) return '';
+  let data;
+  try { data = JSON.parse(row.getAttribute('data-hs2-cart-line')); } catch { return null; }
+  if (!data || data.key !== row.dataset.key || data.quantity !== 1 || !Array.isArray(data.item_components) || data.item_components.length !== 1) return null;
+  const component = data.item_components[0];
+  if (!key || key !== component.key || key === data.key || String(component.variant_id) !== String(data.variant_id) || !key.startsWith(String(data.variant_id) + ':') || !Number.isInteger(component.quantity) || component.quantity < 1) return null;
   const image = component.properties?._hs_checkout_image;
-  return /^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/heartside-checkout-[a-f0-9-]{36}\.jpg(?:\?v=[0-9]+)?$/i.test(image || '') ? key : '';
+  return /^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/heartside-checkout-[a-f0-9-]{36}\.jpg(?:\?v=[0-9]+)?$/i.test(image || '') ? key : null;
 }
 
 /** @typedef {import('./utilities').TextComponent} TextComponent */
@@ -236,6 +237,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
 
     // Cart items require a line number
     if (!line) return;
+    if (!this.#validateHeartsideQuantity(line)) return;
 
     if (quantity === 0) {
       return this.onLineItemRemove(line);
@@ -259,6 +261,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    * @param {number} line - The line item index.
    */
   onLineItemRemove(line) {
+    if (!this.#validateHeartsideQuantity(line)) return;
     this.updateQuantity({
       line,
       quantity: 0,
@@ -311,6 +314,12 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    * @param {number} config.quantity - The quantity.
    * @param {string} config.action - The action.
    */
+  #validateHeartsideQuantity(line) {
+    if (heartsideQuantityTarget(this.refs.cartItemRows[line - 1]) !== null) return true;
+    this.#handleCartError(line, { errors: 'Your cart changed. Refresh the page and try again.' });
+    return false;
+  }
+
   async updateQuantity(config) {
     const cartPerformaceUpdateMarker = cartPerformance.createStartingMarker(`${config.action}:user-action`);
     const deferredUpdatePromise = CartLinesUpdateEvent.createPromise();
@@ -340,6 +349,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       }
 
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
+      if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
       const body = JSON.stringify({
         ...(componentKey ? { id: componentKey } : { line: line }),
         quantity: quantity,
