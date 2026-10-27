@@ -10,7 +10,7 @@ const section=name=>{const start=source.indexOf('  function '+name+'(');assert.n
 function fixture(minified,flag=true) {
   const saved=new Map();
   const ctx={URL,cfg:{artworkCandidates:true,blanketPurchase:flag,gifts:{mug:{url:'/products/fixture-mug?view=gift&variant=9',price:31},blanket:{url:'/products/new-configured-blanket?view=gift&view=blanket-art-preview&variant=42&keep=yes#art',price:137},print:{url:'/products/fixture-print?view=gift&variant=8',price:92}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},DS:{mug:'Mug description',blanket:'Blanket description',print:'Print description'},shareWithBridge:()=>{},mugColor:()=>({id:123,name:'Black'}),mugSwatches:()=>'',QKEY:'queue',track:()=>{},recGift:()=> 'blanket',esc:String,img:()=>'',lineFor:()=>'',window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
-  const code=['priceOf','fmt','reviewGifts','blanketPurchaseEnabled','selectedGifts','selectGift','chooseModel','chooseView','addToCart'].filter(name=>source.includes('  function '+name+'(')).map(section).join('\n');
+  const code=['priceOf','fmt','reviewGifts','blanketPurchaseEnabled','giftPurchasable','selectedGifts','selectGift','chooseModel','chooseView','addToCart'].filter(name=>source.includes('  function '+name+'(')).map(section).join('\n');
   vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,ctx);
   let href=ctx.window.location.href;
   Object.defineProperty(ctx.window.location,'href',{get:()=>href,set:value=>{href=new URL(value,href).href;}});
@@ -18,6 +18,14 @@ function fixture(minified,flag=true) {
 }
 for(const minified of [false,true]) {
   const mode=minified?'minified':'source';
+  test(mode+': core purchase flag routes each qualified gift to its guarded native template',()=>{
+    const {ctx,saved}=fixture(minified,false);ctx.cfg.corePurchase=true;
+    for(const [kind,view] of [['mug','mug-native'],['blanket','blanket-native'],['print','portrait-native']]){
+      ctx.selectGift(kind,true);ctx.addToCart();
+      assert.equal(new URL(ctx.window.location.href).searchParams.get('view'),view);assert.equal(saved.has('queue'),false);
+    }
+    ctx.cfg.corePurchase=false;ctx.selectGift('mug',true);assert.equal(ctx.giftPurchasable('mug'),false);
+  });
   test(mode+': restored mixed selections reach only blanket purchase, preserving its handle, variant, query and hash',()=>{
     const {ctx,saved}=fixture(minified);saved.set('queue','old draft queue');ctx.addToCart();
     assert.equal(saved.has('queue'),false);
@@ -52,12 +60,12 @@ test('blanket purchase setting is default off and reads product picker price and
   assert.match(liquid,/p\.price \| divided_by: 100\.0/);assert.match(liquid,/p\.url \| append: '\?view='/);
 });
 
-test('core Buddy entry points use verified revamp handles and cannot route to an unbound mug',()=>{
+test('core Buddy entry points use verified revamp handles and include the newly bound mug',()=>{
   for(const name of ['index.json','index.gifts.json','index.landing.json','index.artwork-preview.json']) {
     const config=JSON.parse(readFileSync(new URL('../../shopify/templates/'+name,import.meta.url),'utf8')).sections.gift.settings;
     assert.equal(config.product_blanket,'heartside-personality-blanket-draft-2026-10-23');
     assert.equal(config.product_print,'heartside-city-screenprint-draft-2026-10-23');
-    assert.equal(config.product_mug,'');assert.equal(config.artwork_candidates,true);
+    assert.equal(config.product_mug,'your-dogs-illustrated-mug');assert.equal(config.artwork_candidates,true);
     assert.equal(config.blanket_purchase,false);assert.equal(config.ornament_bundle,false);
   }
 });

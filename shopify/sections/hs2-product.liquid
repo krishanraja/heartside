@@ -2,6 +2,10 @@
 {%- render 'hs-schema', kind: 'product', product: product -%}
 {%- liquid
   assign s = section.settings
+  assign native_artwork = s.blanket_purchase
+  if s.native_artwork_kind != blank and s.native_artwork_kind != 'off'
+    assign native_artwork = true
+  endif
   assign current = product.selected_or_first_available_variant
   assign artwork_preview = s.city_art_preview
   if s.blanket_art_preview or s.mug_art_preview
@@ -91,7 +95,7 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.native_artwork_kind != blank and s.native_artwork_kind != 'off' %} data-hs2-artwork-kind="{{ s.native_artwork_kind }}" data-hs2-purchase-enabled="{{ s.native_purchase_enabled }}"{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
 
     {% if s.mug_art_preview %}
     <figure class="hs-art-wrap-reference">
@@ -182,29 +186,14 @@
               <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- endif -%}
           {%- when 'answers' -%}
-            {% if artwork_preview or s.blanket_purchase %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
-            {% if s.blanket_purchase %}
-              <p>Inspired by what you told Buddy. No words on the blanket.</p>
-              <div data-hs2-blanket-photo hidden>
-                <img data-hs2-blanket-photo-img alt="Your dog's photo" width="80" height="80">
-                <button type="button" data-hs2-blanket-create>Create artwork with this photo</button>
-              </div>
-              <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
-              <a data-hs2-artwork-source data-hs2-artwork-layer="layer-292294" target="_blank" rel="noopener noreferrer" hidden>View your artwork</a>
-              <label data-hs2-artwork-accept-wrap hidden><input type="checkbox" data-hs2-artwork-accept> I have checked the finished artwork, including every face, marking and limb, and want this design on my blanket.</label>
-              <details data-hs2-upload-recovery hidden>
-                <summary>Artwork failed or stopped?</summary>
-                <p>Wait while the personalizer is still working. If it reports a failure, you can allow another upload. The earlier request may still complete, and another upload may charge again.</p>
-                <label><input type="checkbox" data-hs2-upload-retry-ack> The personalizer failed. I understand another upload may charge again.</label>
-                <button type="button" data-hs2-upload-retry disabled>Allow another upload</button>
-              </details>
-            {% endif %}
+            {% if artwork_preview or native_artwork %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
+            {% if native_artwork %}{% render 'hs-native-artwork', settings: s %}{% endif %}
             {%- comment -%} The review's answers, short. Once they are in Teeinblue's preview, its copies of
               them fold away and "Edit details" opens them again. {%- endcomment -%}
             <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>
               <div class="hs2-answers__top">
                 <div class="hs2-answers__title">{{ block.settings.title }}</div>
-              {% unless s.blanket_purchase %}<button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>{% endunless %}
+              {% unless native_artwork %}<button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>{% endunless %}
               </div>
               <p class="hs2-answers__who">From <strong data-hs2="dog">Buddy</strong><span data-hs2-person-wrap hidden> to <strong data-hs2="person">Sarah</strong></span></p>
               {%- if block.settings.picks -%}
@@ -251,7 +240,8 @@
                     </select>
                   </div>
                 {%- endif -%}
-                {%- if s.blanket_purchase -%}
+                {%- if native_artwork -%}
+                  {% unless s.blanket_purchase %}<input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">{% endunless %}
                   <input type="hidden" name="properties[_hs_art_profile]" data-hs2-prop="personality" value="">
                   <input type="hidden" name="properties[_hs_art_style]" data-hs2-prop="art_style" value="">
                   <input type="hidden" name="properties[_hs_art_tone]" data-hs2-prop="art_tone" value="">
@@ -318,6 +308,8 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
+    { "type": "select", "id": "native_artwork_kind", "label": "Native artwork format", "options": [{"value":"off","label":"Off"},{"value":"mug","label":"Illustrated mug"},{"value":"print","label":"Portrait family"}], "default":"off" },
+    { "type": "checkbox", "id": "native_purchase_enabled", "label": "Enable tested native artwork ordering", "default": false },
     { "type": "checkbox", "id": "blanket_purchase", "label": "Native word-free blanket", "info": "Explicit native photo upload, shared art choices and Buddy facts. Enable only on the linked word-free blanket product.", "default": false },
     { "type": "checkbox", "id": "city_art_preview", "label": "City artwork acceptance preview", "info": "Isolated draft only. Disables ordering and automatic photo submission while artwork checks are pending.", "default": false },
     { "type": "checkbox", "id": "blanket_art_preview", "label": "Personality blanket acceptance preview", "info": "Isolated draft only. Uses chat facts and blocks ordering while likeness and production checks are pending.", "default": false },

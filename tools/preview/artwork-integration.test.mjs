@@ -19,7 +19,7 @@ test('draft gift navigation excludes conditional ornament and keeps selected gif
   const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
   const saved=new Map(), ctx={URL,cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug?view=gift&variant=999&keep=yes#art'},blanket:{url:'/products/test-blanket?view=gift'},print:{url:'/products/test-print?view=gift'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
-  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','selectedGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
+  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','giftPurchasable','selectedGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
   assert.equal(ctx.chooseModel().count,3);ctx.addToCart();
   const queue=JSON.parse(saved.get('queue'));assert.equal(queue.length,3);
   for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.deepEqual(new URL(queue[i].url,'https://example.test').searchParams.getAll('view'),[view]);
@@ -115,7 +115,7 @@ for (const minify of [false,true]) {
     const code=source.slice(start,source.indexOf('\n  function ',start+1));
     const state={hs3_lines:{meaning:'Original exact note'},hs3_copy_owner:'generated'};
     let signature='Love, Buddy', tone='warm', release, captured;
-    const ctx={state,usePhoto:{file:{}},cityArtPreview:()=>true,artRequestKey:()=> 'unchanged-image',artworkFacts:()=>'{"version":1,"facts":[]}',answer:()=>signature,window:{HSArtworkPhoto:{prepare:async()=>({photo:{},file:{},width:10,height:10})},HSArtworkChoices:{read:()=>({style:'screenprint',tone}),prepare:request=>{captured=request;return new Promise(resolve=>{release=()=>resolve(request);});}}}};
+    const ctx={state,usePhoto:{file:{}},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,artRequestKey:()=> 'unchanged-image',artworkFacts:()=>'{"version":1,"facts":[]}',answer:()=>signature,window:{HSArtworkPhoto:{prepare:async()=>({photo:{},file:{},width:10,height:10})},HSArtworkChoices:{read:()=>({style:'screenprint',tone}),prepare:request=>{captured=request;return new Promise(resolve=>{release=()=>resolve(request);});}}}};
     vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
     const pending=ctx.prepareCurrentArtwork('portrait','synthetic-variant','test-only');
     await new Promise(resolve=>setImmediate(resolve));assert.ok(captured);
@@ -178,7 +178,7 @@ for(const minify of [false,true]) test((minify?'minified':'source')+': native sh
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
   const saved=new Map([['hs3-gift',JSON.stringify({edits:{spot:'Earlier edit'}})]]), state={hs3_lines:{meaning:'Old'}};
-  const ctx={state,bridge:{owned:{}},cityArtPreview:()=>true,norm:x=>String(x||'').toLowerCase(),answer:k=>k==='art_style'?'Fine ink drawing':'Hilarious',val:()=>'',lines:()=>({}),V3_ORDER:{print:['home','spot','together','meaning']},v3Kind:()=> 'print',sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},save:()=>{},render:()=>{}};
+  const ctx={state,bridge:{owned:{}},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,norm:x=>String(x||'').toLowerCase(),answer:k=>k==='art_style'?'Fine ink drawing':'Hilarious',val:()=>'',lines:()=>({}),V3_ORDER:{print:['home','spot','together','meaning']},v3Kind:()=> 'print',sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},save:()=>{},render:()=>{}};
   const code=section('choiceMatches')+'\n'+section('watchField');vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
   assert.equal(ctx.choiceMatches('Fine ink drawing','art_style'),true);assert.equal(ctx.choiceMatches('Comic book','art_style'),false);
   function input(k,value){const events={};const el={value,name:k,id:k,tagName:'INPUT',addEventListener:(n,fn)=>events[n]=fn};ctx.watchField(el,k);events.input();}
@@ -190,7 +190,7 @@ for(const minify of [false,true]) test((minify?'minified':'source')+': native sh
 for (const minify of [false,true]) test((minify?'minified':'source')+': optional city stays absent and clears stale native defaults',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  const ctx={state:{city:''},cityArtPreview:()=>true,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,setValue:(el,v)=>{el.value=v;}};
+  const ctx={state:{city:''},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,setValue:(el,v)=>{el.value=v;}};
   const code=['answer','nativeArtworkEvidence','watchField','fillField'].map(section).join('\n');vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
   assert.equal(ctx.answer('city'),'');assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).place,null);
   const events={},inp={value:'Somewhere quiet',name:'city',tagName:'INPUT',addEventListener:(n,fn)=>events[n]=fn};

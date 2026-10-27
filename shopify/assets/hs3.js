@@ -965,7 +965,8 @@
   }
   function fmt(p) { return '$' + (Math.round(p * 100) % 100 ? p.toFixed(2) : String(Math.round(p))); }
   function reviewGifts() { return cfg.artworkCandidates ? GIFTS.filter(function (k) { return k !== 'ornament'; }) : GIFTS; }
-  function blanketPurchaseEnabled() { return !!(cfg.artworkCandidates && cfg.blanketPurchase && cfg.gifts && cfg.gifts.blanket && cfg.gifts.blanket.url); }
+  function blanketPurchaseEnabled() { return !!(cfg.artworkCandidates && (cfg.blanketPurchase || cfg.corePurchase) && cfg.gifts && cfg.gifts.blanket && cfg.gifts.blanket.url); }
+  function giftPurchasable(k) { return !!(cfg.artworkCandidates && cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url && (cfg.corePurchase && ['mug', 'blanket', 'print'].indexOf(k) !== -1 || k === 'blanket' && blanketPurchaseEnabled())); }
   function selectedGifts() {
     var selected = reviewGifts().filter(function (k) { return S.sel[k]; });
     // A draft cannot complete the cart step used by the multi-gift queue.
@@ -987,12 +988,12 @@
   function chooseView(n) {
     var pick = recGift(), c = chooseModel();
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toReveal">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
+    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (cfg.corePurchase ? 'Choose one gift to personalize. Your photo and answers carry over.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('home') || lineFor('meaning') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
     h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
       var on = selectedGifts().indexOf(k) !== -1;
       var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !(k === 'blanket' && blanketPurchaseEnabled()) ? 'Draft' : fmt(priceOf(k, c.others))) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : fmt(priceOf(k, c.others))) + '</span></button>';
     }).join('') + '</div>';
     if (selectedGifts().indexOf('mug') !== -1) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
@@ -1001,7 +1002,7 @@
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">' + (blanketPurchaseEnabled() ? 'Delivery details appear on the product page.' : 'Free US shipping.') + ' A person checks every order before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
     if (cfg.artworkCandidates) label = c.count ? 'Review selected drafts' : 'Pick a draft';
-    if (blanketPurchaseEnabled()) label = !c.count ? 'Pick a gift or draft' : selectedGifts()[0] === 'blanket' ? 'Personalize blanket · ' + fmt(priceOf('blanket', c.others)) : 'Review draft';
+    if (blanketPurchaseEnabled()) label = !c.count ? 'Pick a gift or draft' : giftPurchasable(selectedGifts()[0]) ? 'Personalize ' + {mug:'mug',blanket:'blanket',print:'portrait'}[selectedGifts()[0]] + ' · ' + fmt(priceOf(selectedGifts()[0], c.others)) : 'Review draft';
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
@@ -1019,7 +1020,7 @@
         // Liquid already supplies ?view=gift. Replace it; duplicate view values
         // could otherwise send the draft journey back to the ordering template.
         var draftUrl = new URL(u, window.location.href);
-        draftUrl.searchParams.set('view', k === 'blanket' && blanketPurchaseEnabled() ? 'blanket-native' : {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
+        draftUrl.searchParams.set('view', giftPurchasable(k) ? {mug:'mug-native',blanket:'blanket-native',print:'portrait-native'}[k] : {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
         if (k === 'mug' && mc && mc.id) draftUrl.searchParams.set('variant', mc.id);
         u = draftUrl.pathname + draftUrl.search + draftUrl.hash;
       } else if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;

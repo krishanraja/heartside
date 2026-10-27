@@ -1101,3 +1101,7 @@ html:has(#buy[data-hs2-city-art-preview]), body:has(#buy[data-hs2-city-art-previ
 /* Catalog shortcuts must not submit bare variants before Teeinblue personalizes them. */
 product-card quick-add-component form,
 product-card quick-add-component button { display: none !important; }
+
+/* The shared native controller owns these machine-readable fields. */
+#buy[data-hs2-artwork-kind] [data-hs2-art-personality],
+#buy[data-hs2-artwork-kind] [data-hs2-handoff] { display:none!important; }

@@ -51,6 +51,7 @@
       "ai": {{ s.ai_on | json }},
       "artworkCandidates": {{ s.artwork_candidates | json }},
       "blanketPurchase": {{ s.blanket_purchase | json }},
+      "corePurchase": {{ s.core_purchase | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
       "examplePhoto": {{ example_photo | strip | json }},
       "mug": {
@@ -128,6 +129,7 @@
   "tag": "section",
   "class": "hs3-section",
   "settings": [
+    { "type": "checkbox", "id": "core_purchase", "label": "Enable tested core native product routes", "default": false },
     { "type": "checkbox", "id": "artwork_candidates", "label": "Draft shared artwork choices", "default": false, "info": "Candidate controls only. Does not enable image generation or qualified previews." },
     { "type": "paragraph", "content": "Gifts from your dog: the chat with Buddy, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Buddy's lines are in assets/hs3.js, word for word from the approved prototype." },
     { "type": "header", "content": "First screen" },

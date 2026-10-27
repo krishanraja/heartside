@@ -17,7 +17,7 @@ function uploadHarness(minified) {
   const raw={type:'image/jpeg',name:'original-with-location.jpg'},clean={type:'image/png',name:'dog-artwork-source.png'},vendor=[];
   const usePhoto=()=>{};usePhoto.file=raw;
   const input={type:'file',matches:()=>true,isConnected:true,files:[raw],value:'chosen',dispatchEvent:event=>{event.target=input;listener(event);if(!event.blocked)vendor.push(input.files[0]);}};
-  const ctx={window:{HSArtworkPhoto:{prepare:()=>{preparations++;return new Promise((resolve,reject)=>{release=fail=>fail?reject(Error('decode')):resolve({file:clean,photo:{metadataRemoved:true,originalHash:'original',uploadHash:'clean'},width:10,height:20});});}}},document:{addEventListener:(name,fn)=>listener=fn},doHandoff:{},nativeBlanketPurchase:()=>true,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>true,beginBlanketUpload:()=>{if(pending)return false;pending=true;return true;},artRequestKey:()=>key,photoInput:()=>input,blanketPurchaseStatus:()=>{},usePhoto,markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>marked++,state:{},save:()=>{},savePhoto:()=>{},track:()=>{},DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type){this.type=type;}preventDefault(){this.blocked=true;}stopImmediatePropagation(){this.blocked=true;}}};
+  const ctx={window:{HSArtworkPhoto:{prepare:()=>{preparations++;return new Promise((resolve,reject)=>{release=fail=>fail?reject(Error('decode')):resolve({file:clean,photo:{metadataRemoved:true,originalHash:'original',uploadHash:'clean'},width:10,height:20});});}}},document:{addEventListener:(name,fn)=>listener=fn},doHandoff:{},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>true,beginBlanketUpload:()=>{if(pending)return false;pending=true;return true;},artRequestKey:()=>key,photoInput:()=>input,blanketPurchaseStatus:()=>{},usePhoto,markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>marked++,state:{},save:()=>{},savePhoto:()=>{},track:()=>{},DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type){this.type=type;}preventDefault(){this.blocked=true;}stopImmediatePropagation(){this.blocked=true;}}};
   ctx.resetBlanketUpload=()=>{pending=false;ctx.keepTibPhoto.preparing=null;return true;};
   run(['keepTibPhoto','sendBlanketPhoto'],ctx,minified);ctx.keepTibPhoto();
   return {ctx,input,clean,vendor,pending:()=>pending,marked:()=>marked,preparations:()=>preparations,release:fail=>release(fail),changeKey:()=>{key='changed';}};
@@ -26,14 +26,14 @@ function uploadHarness(minified) {
 for(const minified of [false,true]) {
   const label=minified?'minified':'source';
   test(label+': native blanket carries factual profile and shared visual tone without legacy words',()=>{
-    const ctx={cityArtPreview:()=>false,nativeBlanketPurchase:()=>true,blanketArtPreview:()=>true,nativeArtworkEvidence:()=>'{"version":1,"facts":[{"source":"spot","text":"Does not chase balls"}]}',window:{HSArtworkChoices:{read:()=>({style:'ink',tone:'hilarious'})},HSArtworkEngine:{recipes:{styles:{ink:{label:'Fine ink drawing'}},tones:{hilarious:{label:'Hilarious'}},toneRouting:{textProductImageTone:'warm'}}}},V3_ANSWER:/^line/,state:{},DEFAULTS:{},NAMES:[]};
+    const ctx={cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,blanketArtPreview:()=>true,nativeArtworkEvidence:()=>'{"version":1,"facts":[{"source":"spot","text":"Does not chase balls"}]}',window:{HSArtworkChoices:{read:()=>({style:'ink',tone:'hilarious'})},HSArtworkEngine:{recipes:{styles:{ink:{label:'Fine ink drawing'}},tones:{hilarious:{label:'Hilarious'}},toneRouting:{textProductImageTone:'warm'}}}},V3_ANSWER:/^line/,state:{},DEFAULTS:{},NAMES:[]};
     run(['answer'],ctx,minified);
     assert.match(ctx.answer('personality'),/Does not chase balls/);
     assert.equal(ctx.answer('art_style'),'Fine ink drawing');assert.equal(ctx.answer('art_tone'),'Hilarious');
   });
   test(label+': restored photo never enters automatic handoff or timed AI retry on purchase route',()=>{
     let uploads=0,timers=0;
-    const ctx={cityArtPreview:()=>false,nativeBlanketPurchase:()=>true,photoInput:()=>{uploads++;return{};},document:{querySelector:()=>null},DataTransfer:class {constructor(){throw Error('must not dispatch');}},setInterval:()=>timers++,clearInterval:()=>{},track:()=>{}};
+    const ctx={cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,photoInput:()=>{uploads++;return{};},document:{querySelector:()=>null},DataTransfer:class {constructor(){throw Error('must not dispatch');}},setInterval:()=>timers++,clearInterval:()=>{},track:()=>{}};
     run(['doHandoff'],ctx,minified);ctx.doHandoff(null);ctx.doHandoff(null,1);
     assert.equal(uploads,0);assert.equal(timers,0);
   });
@@ -81,7 +81,7 @@ for(const minified of [false,true]) {
   });
   test(label+': native cart blocks unresolved, stale and unsaved images but permits the saved matching result',()=>{
     const events={};let pending=false,ready=false,image=false,accepted=false,blocked=0;
-    const ctx={document:{addEventListener:(name,fn)=>events[name]=fn},cityArtPreview:()=>false,nativeBlanketPurchase:()=>true,giftView:()=>false,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>ready,cityArtSaved:()=>image,blanketReviewAccepted:()=>accepted,syncBlanketProperties:()=>{},blanketPurchaseStatus:()=>{}};
+    const ctx={document:{addEventListener:(name,fn)=>events[name]=fn},cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,giftView:()=>false,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>ready,cityArtSaved:()=>image,blanketReviewAccepted:()=>accepted,syncBlanketProperties:()=>{},blanketPurchaseStatus:()=>{}};
     run(['guardGiftPhoto'],ctx,minified);ctx.guardGiftPhoto();
     const click=()=>events.click({target:{closest:selector=>selector.includes('recustomize')?null:{}},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});
     click();assert.equal(blocked,1);ready=true;click();assert.equal(blocked,2);image=true;pending=true;click();assert.equal(blocked,3);pending=false;click();assert.equal(blocked,4);accepted=true;click();assert.equal(blocked,4);
@@ -104,12 +104,12 @@ for(const minified of [false,true]) {
   });
   test(label+': changed shared choices invalidate accepted artwork on native blanket',()=>{
     let current=false,src='https://example.test/generated.png';
-    const ctx={cityArtPreview:()=>false,nativeBlanketPurchase:()=>true,artRequested:()=>current,artRequestKey:()=> 'current',cityArtSource:()=>src,window:{sessionStorage:{getItem:()=> 'https://example.test/old.png'}},document:{querySelector:s=>s==='.vm--container'?null:{getAttribute:()=>src}}};
+    const ctx={cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,artRequested:()=>current,artRequestKey:()=> 'current',cityArtSource:()=>src,window:{sessionStorage:{getItem:()=> 'https://example.test/old.png'}},document:{querySelector:s=>s==='.vm--container'?null:{getAttribute:()=>src}}};
     run(['cityArtSaved'],ctx,minified);assert.equal(ctx.cityArtSaved(),false);current=true;assert.equal(ctx.cityArtSaved(),true);current=false;assert.equal(ctx.cityArtSaved(),false);
   });
   test(label+': recropping the same saved image invalidates buyer acceptance without dispatch',()=>{
     const events={},checkbox={checked:true};let blocked=0;
-    const ctx={blanketAcceptedKey:'same:same.png',blanketReviewKey:()=> 'same:same.png',blanketNativeError:()=>false,document:{addEventListener:(name,fn)=>events[name]=fn,querySelector:selector=>selector==='.vm--container'?null:checkbox},nativeBlanketPurchase:()=>true,cityArtPreview:()=>false,giftView:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketPurchaseStatus:()=>{},syncBlanketProperties:()=>{},invalidateBlanketReview:()=>{ctx.blanketAcceptedKey='';checkbox.checked=false;}};
+    const ctx={blanketAcceptedKey:'same:same.png',blanketReviewKey:()=> 'same:same.png',blanketNativeError:()=>false,document:{addEventListener:(name,fn)=>events[name]=fn,querySelector:selector=>selector==='.vm--container'?null:checkbox},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,cityArtPreview:()=>false,giftView:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketPurchaseStatus:()=>{},syncBlanketProperties:()=>{},invalidateBlanketReview:()=>{ctx.blanketAcceptedKey='';checkbox.checked=false;}};
     if(source.includes('  function invalidateBlanketReview(')) run(['invalidateBlanketReview'],ctx,minified);
     run(['guardGiftPhoto','blanketReviewAccepted'],ctx,minified);ctx.guardGiftPhoto();assert.equal(ctx.blanketReviewAccepted(),true);
     events.click({target:{closest:selector=>selector.includes('recustomize')?{}:null}});
@@ -125,7 +125,7 @@ for(const minified of [false,true]) {
   test(label+': shared-choice event and permitted cart both refresh hidden order metadata',()=>{
     const props=['personality','art_style','art_tone'].map(key=>({name:`properties[_hs_${key}]`,value:'initial',getAttribute:()=>key}));
     const events={};let style='Fine ink drawing',tone='Hilarious',bridges=0;
-    const ctx={document:{querySelectorAll:()=>props,addEventListener:(name,fn)=>events[name]=fn},window:{addEventListener:(name,fn)=>events[name]=fn},nativeBlanketPurchase:()=>true,answer:key=>key==='personality'?'current facts':key==='art_style'?style:tone,runBridge:()=>bridges++,cityArtPreview:()=>false,giftView:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketReviewAccepted:()=>true,blanketPurchaseStatus:()=>{}};
+    const ctx={document:{querySelectorAll:()=>props,addEventListener:(name,fn)=>events[name]=fn},window:{addEventListener:(name,fn)=>events[name]=fn},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,answer:key=>key==='personality'?'current facts':key==='art_style'?style:tone,runBridge:()=>bridges++,cityArtPreview:()=>false,giftView:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketReviewAccepted:()=>true,blanketPurchaseStatus:()=>{}};
     if(source.includes('  function syncBlanketProperties(')) run(['syncBlanketProperties','artworkChoicesChanged'],ctx,minified);
     const registration=source.match(/window\.addEventListener\('hs-artwork-choices', [^\n]+/)[0];vm.runInNewContext(minified?transformSync(registration,{minify:true}).code:registration,ctx);
     events['hs-artwork-choices']();assert.equal(bridges,1);assert.deepEqual(props.map(input=>input.value),['current facts','Fine ink drawing','Hilarious']);
@@ -140,6 +140,6 @@ test('dedicated purchase template keeps preview protections and worded gifts sep
   assert.equal(t.settings.blanket_purchase,true);assert.equal(t.settings.blanket_art_preview,undefined);assert.equal(t.settings.city_art_preview,undefined);
   assert.equal(t.blocks.buy.settings.v3,false);assert.equal(t.blocks.answers.settings.title,'YOUR ARTWORK');assert.ok(t.block_order.includes('description'));
   const preview=JSON.parse(read('shopify/templates/product.blanket-art-preview.json')).sections.main;assert.equal(preview.settings.blanket_art_preview,true);assert.equal(preview.settings.blanket_purchase,undefined);
-  const liquid=read('shopify/sections/hs2-product.liquid');const props=liquid.slice(liquid.indexOf('{%- if s.blanket_purchase -%}'),liquid.indexOf('{%- elsif block.settings.v3 -%}'));
-  assert.ok(props.includes('_hs_art_profile'));assert.ok(props.includes('_hs_art_style'));assert.ok(props.includes('_hs_art_tone'));assert.equal(props.includes('_hs_lines'),false);
+  const liquid=read('shopify/sections/hs2-product.liquid');const props=liquid.slice(liquid.indexOf('{%- if native_artwork -%}'),liquid.indexOf('{%- elsif block.settings.v3 -%}'));
+  assert.ok(props.includes('_hs_art_profile'));assert.ok(props.includes('_hs_art_style'));assert.ok(props.includes('_hs_art_tone'));assert.match(props, /unless s\.blanket_purchase.*_hs_lines.*endunless/);
 });

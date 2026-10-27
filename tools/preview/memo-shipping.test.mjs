@@ -11,12 +11,14 @@ const body=source.replace("{%- render 'hs2-head' -%}",'').replace("{% render 'hs
 const engine=new Liquid();
 const render=(template,deadline='')=>engine.parseAndRender(body,{template,section:{settings:{text:'Order by [DATE] for Christmas delivery. Free US shipping.',text_undated:'Free US shipping on every order.',deadline}}});
 
-test('native blanket header uses checkout shipping with or without a global deadline',async()=>{
+test('native product headers use checkout shipping with or without a global deadline',async()=>{
+  for(const suffix of ['blanket-native','mug-native','portrait-native']) {
   for(const deadline of ['', '2026-12-10']) {
-    const html=await render({name:'product',suffix:'blanket-native'},deadline);
+    const html=await render({name:'product',suffix},deadline);
     assert.match(html,/class="hs2-memo__msg">Shipping calculated at checkout\.<\/span>/);
     assert.doesNotMatch(html,/Free US shipping|Order by/);
     assert.match(html,/data-hs2-countdown="memo"/);
+  }
   }
 });
 test('other product templates and homepage retain their existing shipping messages',async()=>{

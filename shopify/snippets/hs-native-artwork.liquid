@@ -1,0 +1,15 @@
+{%- assign s = settings -%}
+<p>{% if s.blanket_purchase %}Inspired by what you told Buddy. No words on the blanket.{% else %}Your dog, the details you shared with Buddy, and your exact note.{% endif %}</p>
+              <div data-hs2-blanket-photo hidden>
+                <img data-hs2-blanket-photo-img alt="Your dog's photo" width="80" height="80">
+                <button type="button" data-hs2-blanket-create>Create artwork with this photo</button>
+              </div>
+              <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
+              <a data-hs2-artwork-source data-hs2-artwork-layer="{% if s.native_artwork_kind == 'mug' %}layer-696867{% elsif s.native_artwork_kind == 'print' %}layer-747218{% else %}layer-292294{% endif %}" target="_blank" rel="noopener noreferrer" hidden>View your artwork</a>
+              <label data-hs2-artwork-accept-wrap hidden><input type="checkbox" data-hs2-artwork-accept> I have checked the finished artwork, including every face, marking and limb, and want this design on my gift. {% unless s.blanket_purchase %}I have checked the note and signature too.{% endunless %}</label>
+              <details data-hs2-upload-recovery hidden>
+                <summary>Artwork failed or stopped?</summary>
+                <p>Wait while the personalizer is still working. If it reports a failure, you can allow another upload. The earlier request may still complete, and another upload may charge again.</p>
+                <label><input type="checkbox" data-hs2-upload-retry-ack> The personalizer failed. I understand another upload may charge again.</label>
+                <button type="button" data-hs2-upload-retry disabled>Allow another upload</button>
+              </details>

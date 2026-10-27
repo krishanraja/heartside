@@ -11,7 +11,8 @@
   elsif msg contains '[DATE]'
     assign msg = s.text_undated
   endif
-  if template.name == 'product' and template.suffix == 'blanket-native'
+  assign native_templates = 'blanket-native,mug-native,portrait-native' | split: ','
+  if template.name == 'product' and native_templates contains template.suffix
     assign msg = 'Shipping calculated at checkout.'
   endif
 -%}

@@ -289,6 +289,8 @@ const written = [
     return t;
   }),
   await page('product-gift.html', 'product.gift.json', { product: products.mug, template: { name: 'product', suffix: 'gift' } }),
+  await page('product-mug-native.html', 'product.mug-native.json', { product: products.mug, template: { name: 'product', suffix: 'mug-native' } }),
+  await page('product-portrait-native.html', 'product.portrait-native.json', { product: products.framed, template: { name: 'product', suffix: 'portrait-native' } }),
   await page('product-mug-art.html', 'product.mug-art-preview.json', { product: products.mug, template: { name: 'product', suffix: 'mug-art-preview' } }),
   await page('product-city-art.html', 'product.city-art-preview.json', { product: products.mug, template: { name: 'product', suffix: 'city-art-preview' } }),
   await page('product-blanket-art.html', 'product.blanket-art-preview.json', { product: products.blanket, template: { name: 'product', suffix: 'blanket-art-preview' } }),

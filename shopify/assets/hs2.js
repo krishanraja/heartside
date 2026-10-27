@@ -45,12 +45,12 @@
      chips keep their defaults, because those print sensibly as they are. */
   var NAMES = ['dog', 'person'];
   function answer(k) {
-    if (k === 'personality' && (cityArtPreview() || nativeBlanketPurchase())) return nativeArtworkEvidence();
-    if ((cityArtPreview() || nativeBlanketPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
+    if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
+    if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
       return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[blanketArtPreview() ? choice.tone : recipes.toneRouting.textProductImageTone].label;
     }
-    if (k === 'city' && cityArtPreview()) return String(state.city || '').trim();
+    if (k === 'city' && (cityArtPreview() || nativeArtworkPurchase())) return String(state.city || '').trim();
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
     return v || (NAMES.indexOf(k) === -1 ? DEFAULTS[k] : '');
@@ -61,12 +61,12 @@
      so "Line 1" on the mug is the home line and on the ornament the meaning line. */
   var V3_ANSWER = /^(line[1-4]|signed|hs_answers|hs_lines|hs_ship_to)$/;
   var V3_ORDER = { mug: ['home', 'spot', 'meaning'], ornament: ['meaning'], blanket: ['home', 'spot', 'together', 'meaning'], print: ['home', 'spot', 'together', 'meaning'] };
-  function v3Kind() { var kinds = state.hs3_kinds || {}; return kinds[handleOf(window.location.pathname)] || ''; }
+  function v3Kind() { var native = document.querySelector('#buy[data-hs2-artwork-kind]'); if (native) return native.getAttribute('data-hs2-artwork-kind'); var kinds = state.hs3_kinds || {}; return kinds[handleOf(window.location.pathname)] || ''; }
   function mugProduct() { return v3Kind() === 'mug' || handleOf(window.location.pathname) === 'the-morning-mug'; }
   // Opt-in preview only. Existing products retain their approved photo flow.
   function cityArtPreview() { return !!document.querySelector('#buy[data-hs2-city-art-preview]'); }
   function blanketArtPreview() { return !!document.querySelector('#buy[data-hs2-blanket-art-preview], #buy[data-hs2-blanket-purchase]'); }
-  function nativeBlanketPurchase() { return !!document.querySelector('#buy[data-hs2-blanket-purchase]'); }
+  function nativeArtworkPurchase() { return !!document.querySelector('#buy[data-hs2-blanket-purchase], #buy[data-hs2-artwork-kind]'); }
   function blanketUploadPending() {
     var key = 'hs2-blanket-upload:' + productId(), pending;
     try { pending = JSON.parse(window.sessionStorage.getItem(key) || 'null'); } catch (e) { return true; }
@@ -104,10 +104,10 @@
     return blanketAcceptedKey === blanketReviewKey() && !blanketNativeError();
   }
   function syncBlanketProperties() {
-    if (!nativeBlanketPurchase()) return;
+    if (!nativeArtworkPurchase()) return;
     document.querySelectorAll('#hs2-product-form [data-hs2-prop]').forEach(function (input) {
       var key = input.getAttribute('data-hs2-prop');
-      if (['personality', 'art_style', 'art_tone'].indexOf(key) !== -1) input.value = answer(key);
+      if (['personality', 'art_style', 'art_tone', 'hs_lines', 'hs_answers', 'hs_ship_to'].indexOf(key) !== -1) input.value = answer(key);
     });
   }
   function artworkChoicesChanged() { syncBlanketProperties(); runBridge(); }
@@ -123,7 +123,7 @@
     } catch (e) { return false; }
   }
   function sendBlanketPhoto() {
-    if (!nativeBlanketPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
+    if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
     var target = photoInput();
     if (!target) { blanketPurchaseStatus('The personalizer is still loading. Your photo is saved here.'); return; }
     try {
@@ -138,7 +138,7 @@
   }
   function bindBlanketRecovery() {
     var box = document.querySelector('[data-hs2-upload-recovery]');
-    if (!nativeBlanketPurchase() || !box) return;
+    if (!nativeArtworkPurchase() || !box) return;
     document.querySelector('[data-hs2-blanket-create]').addEventListener('click', sendBlanketPhoto);
     var acceptance = document.querySelector('[data-hs2-artwork-accept]');
     acceptance.addEventListener('change', function () {
@@ -193,7 +193,7 @@
     if (pending) { blanketPurchaseStatus('Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
-    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your blanket.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your blanket.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your blanket.');
+    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your gift.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }
@@ -208,7 +208,7 @@
   function nativeArtworkEvidence() {
     var evidence = JSON.parse(artworkFacts());
     // Transport projection only: the buyer's optional place is not a personality fact.
-    if (!blanketArtPreview() && !document.querySelector('#buy[data-hs2-mug-art-preview]')) {
+    if (!blanketArtPreview() && !document.querySelector('#buy[data-hs2-mug-art-preview], #buy[data-hs2-artwork-kind="mug"]')) {
       var city = String(state.city || '').trim();
       evidence.place = city ? { source: 'buyer', text: city } : null;
     }
@@ -221,7 +221,7 @@
     return 'hs2-art-request:' + productId() + ':candidate-v3-optional-place:' + JSON.stringify({
       photoSession: usePhoto.t, facts: artworkFacts(), city: blanketArtPreview() ? '' : state.city || '',
       choices: choice ? {style: choice.style, tone: blanketArtPreview() ? choice.tone : 'warm'} : null,
-      variant: document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
+      variant: document.querySelector('#buy[data-hs2-artwork-kind]') ? v3Kind() + '-native-family' : document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
       format: blanketArtPreview() ? 'blanket' : v3Kind() || 'portrait',
       recipe: window.HSArtworkEngine && window.HSArtworkEngine.recipeHash
     });
@@ -289,7 +289,7 @@
     try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
   }
   function cityArtSaved() {
-    if (!(cityArtPreview() || nativeBlanketPurchase()) || !artRequested() || document.querySelector('.vm--container')) return false;
+    if (!(cityArtPreview() || nativeArtworkPurchase()) || !artRequested() || document.querySelector('.vm--container')) return false;
     var src = cityArtSource(), before = '';
     var photo = document.querySelector('.tee-field--photo .tee-photo-image');
     if (!photo || photo.getAttribute('src') !== src) return false;
@@ -301,6 +301,7 @@
     if (k === 'signed') { if (typeof state.hs3_signature_override === 'string') return state.hs3_signature_override; var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
     if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
     var kind = v3Kind(), order = V3_ORDER[kind] || V3_ORDER.print;
+    if (nativeArtworkPurchase() && !blanketArtPreview() && (k === 'line4' || k === 'hs_lines')) return String(lines.meaning || '');
     if (k === 'hs_lines') return cityArtPreview() ? String(lines.meaning || '') : order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
     var key = order[Number(k.slice(4)) - 1];
     if (!key) return '';
@@ -973,7 +974,7 @@
     inp.__hs2set = false;
   }
   function choiceMatches(text, k) {
-    if ((cityArtPreview() || nativeBlanketPurchase()) && (k === 'art_style' || k === 'art_tone')) return norm(text) === norm(answer(k));
+    if ((cityArtPreview() || nativeArtworkPurchase()) && (k === 'art_style' || k === 'art_tone')) return norm(text) === norm(answer(k));
     var t = norm(text), label = norm(val(k)), line = norm(lines(k)[val(k)]);
     return !!t && (t === label || t === line || t.indexOf(label + ' ') === 0 || (line && t.indexOf(line) === 0));
   }
@@ -984,7 +985,7 @@
   // reproduced on the live mug: the inputs said "Love, Milo" while the note face still
   // rendered "Love, Test Dog". Compare the print artwork, not only the input values.
   function mugArtworkValue(name) {
-    if (!mugProduct()) return null;
+    if (!mugProduct() && !nativeArtworkPurchase()) return null;
     var layer = document.getElementById('artwork-layer--' + name);
     if (!layer) return null; // the mockup has not rendered yet
     var visible = layer.querySelector('text[opacity="1"]');
@@ -999,7 +1000,7 @@
   function guardMugProof() {
     document.addEventListener('click', function (e) {
       var button = e.target.closest && e.target.closest('#teeAtcButton');
-      if (!button || !mugProduct()) return;
+      if (!button || !mugProduct() || nativeArtworkPurchase()) return;
       var fields = tibFields().filter(function (f) { return /^(line[1-3]|signed)$/.test(f.rule.k); });
       var ready = fields.length === 4 && fields.every(function (f) {
         var inp = f.el.querySelector('input[type="text"], input:not([type]), textarea');
@@ -1031,21 +1032,34 @@
   }
   // Every v3 gift prints a dog photo. Teeinblue can otherwise submit its sample image
   // when the chat's optional photo step was skipped or an earlier photo was restored.
+  function nativePurchaseReady() {
+    var buy = document.querySelector('#buy[data-hs2-artwork-kind]');
+    if (!buy) return true; // Existing blanket route retains its separate opt-in contract.
+    if (buy.getAttribute('data-hs2-purchase-enabled') !== 'true') return false;
+    return ['line4', 'signed'].every(function (key) {
+      var field = tibFields().filter(function (f) { return f.rule.k === key; })[0];
+      var input = field && field.el.querySelector('input[type="text"], input:not([type]), textarea');
+      if (!input) return false;
+      var shown = mugArtworkValue(input.name || input.id);
+      var exact = function (value) { return String(value || '').replace(/\s+/g, ' ').trim(); };
+      return shown !== null && exact(input.value) === exact(answer(key)) && exact(shown) === exact(answer(key));
+    });
+  }
   function guardGiftPhoto() {
     document.addEventListener('submit', function (e) {
-      if ((cityArtPreview() || nativeBlanketPurchase()) && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
+      if ((cityArtPreview() || nativeArtworkPurchase()) && e.target.closest && e.target.closest('#buy')) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
     document.addEventListener('click', function (e) {
-      if (nativeBlanketPurchase() && e.target.closest && e.target.closest('#buy .tee-field--photo .tee-btn--recustomize')) {
+      if (nativeArtworkPurchase() && e.target.closest && e.target.closest('#buy .tee-field--photo .tee-btn--recustomize')) {
         invalidateBlanketReview();
         return; // Native placement editing continues without another upload.
       }
-      var button = e.target.closest && e.target.closest(cityArtPreview() || nativeBlanketPurchase() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
-      if (!button || !(giftView() || nativeBlanketPurchase())) return;
-      if (nativeBlanketPurchase()) {
-        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted()) { syncBlanketProperties(); return; }
+      var button = e.target.closest && e.target.closest(cityArtPreview() || nativeArtworkPurchase() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
+      if (!button || !(giftView() || nativeArtworkPurchase())) return;
+      if (nativeArtworkPurchase()) {
+        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted() && nativePurchaseReady()) { syncBlanketProperties(); return; }
         e.preventDefault(); e.stopImmediatePropagation();
-        blanketPurchaseStatus('Finish and save artwork for your current choices, then tick the artwork review before adding this blanket. Resolve any error shown by the personalizer.');
+        blanketPurchaseStatus('Finish and save artwork for your current choices, then tick the artwork review before adding this gift. Ordering must also be enabled. Resolve any error shown by the personalizer.');
         return;
       }
       // This isolated template is for acceptance testing. AI completion, raw-photo
@@ -1116,12 +1130,12 @@
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
-    if ((cityArtPreview() || nativeBlanketPurchase()) && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
+    if ((cityArtPreview() || nativeArtworkPurchase()) && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
       var name = text.name || text.id;
-      if (k === 'personality' && (cityArtPreview() || nativeBlanketPurchase())) {
+      if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) {
         el.setAttribute('data-hs2-art-personality', '');
         var facts = nativeArtworkEvidence();
         if (text.value !== facts) setValue(text, facts);
@@ -1130,7 +1144,7 @@
       watchField(text, k);
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };
       var want = answer(k);
-      if (!want && !(k === 'city' && cityArtPreview())) return null; // blank city must clear a previous native default
+      if (!want && !(k === 'city' && (cityArtPreview() || nativeArtworkPurchase())) && !(nativeArtworkPurchase() && /^(line4|signed)$/.test(k))) return null; // blank city must clear a previous native default
       // a one-line input drops "\n" and would join two words, so it gets the line unbroken
       if (text.tagName !== 'TEXTAREA') want = want.replace(/\n/g, ' ');
       // A matching field does not prove Teeinblue rebuilt the print artwork. Re-send its
@@ -1140,7 +1154,7 @@
       return { name: name, value: want, changed: true };
     }
     if (select) {
-      var sharedArtChoice = (cityArtPreview() || nativeBlanketPurchase()) && (k === 'art_style' || k === 'art_tone');
+      var sharedArtChoice = (cityArtPreview() || nativeArtworkPurchase()) && (k === 'art_style' || k === 'art_tone');
       if (!sharedArtChoice) watchField(select, k);
       if (!sharedArtChoice && bridge.owned[select.name]) return { name: select.name, value: select.value, mine: true };
       var opt = Array.prototype.slice.call(select.options).filter(function (o) { return !o.disabled && choiceMatches(o.textContent, k); })[0];
@@ -1212,7 +1226,7 @@
         Object.keys(all).forEach(function (label) { if (o && (norm(o.textContent) === norm(label) || norm(o.textContent) === norm(all[label]))) state[k] = label; });
       } else if (/^line[1-4]$/.test(k)) {
         // a v3 line edited in the personalizer flows back to the gift's words
-        var key = (V3_ORDER[v3Kind()] || V3_ORDER.print)[Number(k.slice(4)) - 1];
+        var key = nativeArtworkPurchase() && k === 'line4' ? 'meaning' : (V3_ORDER[v3Kind()] || V3_ORDER.print)[Number(k.slice(4)) - 1];
         if (key) {
           state.hs3_lines = state.hs3_lines || {}; state.hs3_lines[key] = inp.value.replace(/\s*\n\s*/g, ' '); state.hs3_copy_owner = 'user';
           try { var chat = JSON.parse(sessionStorage.getItem('hs3-gift') || '{}'); chat.edits = chat.edits || {}; chat.edits[key] = state.hs3_lines[key]; sessionStorage.setItem('hs3-gift', JSON.stringify(chat)); } catch (e) { /* current product keeps the edit */ }
@@ -1222,12 +1236,13 @@
       } else if (k !== 'signed') {
         state[k] = inp.value;
       }
+      if (nativeArtworkPurchase() && /^(line4|signed)$/.test(k)) invalidateBlanketReview();
       save(); render();
     };
     inp.addEventListener('input', handler);
     inp.addEventListener('change', handler);
     if (k === 'city') inp.addEventListener('blur', function () {
-      if (cityArtPreview() && !inp.value.trim()) {
+      if ((cityArtPreview() || nativeArtworkPurchase()) && !inp.value.trim()) {
         state.city = ''; save(); if (inp.value !== '') setValue(inp, '');
       }
     });
@@ -1237,7 +1252,7 @@
     return (c && c.productId) || (m && m.product && m.product.id) || null;
   }
   function refill(wanted) {
-    if (nativeBlanketPurchase()) return; // Never replay a stored photo through a paid native effect.
+    if (nativeArtworkPurchase()) return; // Never replay a stored photo through a paid native effect.
     var pid = productId(), api = window.teeinblue;
     if (!pid || !api || !api.refillCustomizationData || bridge.refilled) return;
     bridge.refilled = true;
@@ -1309,7 +1324,7 @@
      reads preview, price, photo, Add To Cart. The photo field and any field the review
      doesn't fill (a line to pick, say) stay open. */
   function bridgeStatus(settled) {
-    if (nativeBlanketPurchase()) return; // Keep the native upload and dog-name field visible.
+    if (nativeArtworkPurchase()) return; // Keep the native upload and dog-name field visible.
     var card = document.querySelector('[data-hs2-answers]');
     if (!card) return;
     var st = card.querySelector('[data-hs2-bridge-status]'), note = card.querySelector('[data-hs2-bridge-note]');
@@ -1586,7 +1601,7 @@
   function doHandoff(box, attempt) {
     // Candidate system has no paid dispatch authority or verified original source.
     // No option selection, reload or legacy handoff may start an image effect.
-    if (cityArtPreview() || nativeBlanketPurchase()) return;
+    if (cityArtPreview() || nativeArtworkPurchase()) return;
     attempt = attempt || 0;
     if (cityArtPreview() && artRequested()) return;
     var target = photoInput();
@@ -1644,7 +1659,7 @@
      dog, not the shopper's. The card and its button stay, only as a fallback for a browser
      where the automatic hand-off throws. */
   function handoff() {
-    if (nativeBlanketPurchase()) { updateBlanketPurchaseStatus(); return; }
+    if (nativeArtworkPurchase()) { updateBlanketPurchaseStatus(); return; }
     var box = document.querySelector('[data-hs2-handoff]');
     if (!box) return;
     var img = box.querySelector('[data-hs2-handoff-img]');
@@ -1699,7 +1714,7 @@
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
       var f = inp.files && inp.files[0];
       if (!f || !/^image\//.test(f.type)) return;
-      if (nativeBlanketPurchase() && inp.__hs2PreparedPhoto !== f) {
+      if (nativeArtworkPurchase() && inp.__hs2PreparedPhoto !== f) {
         // Capture before the vendor receives the File. Preparing is local only;
         // the sole vendor event is emitted after metadata removal succeeds.
         e.preventDefault(); e.stopImmediatePropagation();
@@ -1732,7 +1747,7 @@
       }
       var preparedUpload = inp.__hs2PreparedPhoto === f;
       delete inp.__hs2PreparedPhoto;
-      if (nativeBlanketPurchase() && !preparedUpload && !beginBlanketUpload()) {
+      if (nativeArtworkPurchase() && !preparedUpload && !beginBlanketUpload()) {
         e.preventDefault(); e.stopImmediatePropagation(); inp.value = '';
         blanketPurchaseStatus('Upload held: wait for any current artwork to finish and your choices to load. This browser must allow session storage before creating artwork.');
         return;
@@ -1740,14 +1755,14 @@
       var t = Date.now();
       markHanded(t);
       usePhoto(f, t);
-      if (cityArtPreview() || nativeBlanketPurchase()) markArtRequested();
+      if (cityArtPreview() || nativeArtworkPurchase()) markArtRequested();
       state.hs3_photo_t = t; save();
       savePhoto(f, t);
       track('photo_attached', { where: 'personalizer' });
     }, true);
   }
   function watchBlanketCompletion() {
-    if (!nativeBlanketPurchase() || watchBlanketCompletion.done || !('MutationObserver' in window)) return;
+    if (!nativeArtworkPurchase() || watchBlanketCompletion.done || !('MutationObserver' in window)) return;
     watchBlanketCompletion.done = true;
     var queued = false;
     var relevantNode = function (node) {
@@ -2611,8 +2626,8 @@
 
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
-    if ((cityArtPreview() || nativeBlanketPurchase()) && window.HSArtworkChoices) {
-      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeBlanketPurchase()});
+    if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices) {
+      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeArtworkPurchase()});
       window.addEventListener('hs-artwork-choices', artworkChoicesChanged);
     }
     guardSearchFocus();
