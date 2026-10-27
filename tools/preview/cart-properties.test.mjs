@@ -10,14 +10,14 @@ for(const minified of [false,true]){
  const mode=minified?'minified':'source';
  const setup=(native=true)=>{
   const inputs=[{name:'properties[_hs_art_profile]',value:'{"version":1,"facts":[]}'},{name:'properties[_hs_lines]',value:''}];
-  const c={nativeArtworkPurchase:()=>native,document:{querySelectorAll:()=>inputs}};const code=['hsProps','withHsProps'].map(section).join('\n');vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);return c;
+  const c={restoredArtworkChosen:()=>false,nativeArtworkPurchase:()=>native,document:{querySelectorAll:()=>inputs}};const code=['hsProps','withHsProps'].map(section).join('\n');vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);return c;
  };
  test(mode+': native cart gets raw owned metadata and apostrophe label without changing artwork identity or literal prose',()=>{
-  const c=setup();const props={'Dog&#39;s name':'Mowgli',_hs_art_profile:'{&quot;version&quot;:1,&quot;facts&quot;:[]}',_hs_lines:'Old note',_customization_id:'existing-id',_customization_image:'https://cdn.example/image?a=1&amp;b=2',_tib_design_link_1:'https://cdn.example/design.png','Your note':'I literally said &quot;hello&quot;'};
-  const item=JSON.parse(c.withHsProps(JSON.stringify({id:58320627859838,quantity:1,properties:props})));
-  assert.equal(item.properties["Dog's name"],'Mowgli');assert.equal('Dog&#39;s name' in item.properties,false);assert.deepEqual(JSON.parse(item.properties._hs_art_profile),{version:1,facts:[]});assert.equal(item.properties._hs_lines,'');
+  const c=setup();const props={'Dog&#39;s name':'Juniper',_hs_art_profile:'{&quot;version&quot;:1,&quot;facts&quot;:[]}',_hs_lines:'Old note',_customization_id:'existing-id',_customization_image:'https://cdn.example/image?a=1&amp;b=2',_tib_design_link_1:'https://cdn.example/design.png','Your note':'I literally said &quot;hello&quot;'};
+  const item=JSON.parse(c.withHsProps(JSON.stringify({id:12345,quantity:1,properties:props})));
+  assert.equal(item.properties["Dog's name"],'Juniper');assert.equal('Dog&#39;s name' in item.properties,false);assert.deepEqual(JSON.parse(item.properties._hs_art_profile),{version:1,facts:[]});assert.equal(item.properties._hs_lines,'');
   for(const k of ['_customization_id','_customization_image','_tib_design_link_1','Your note'])assert.equal(item.properties[k],props[k]);
-  assert.equal(item.id,58320627859838);assert.equal(item.quantity,1);
+  assert.equal(item.id,12345);assert.equal(item.quantity,1);
  });
  test(mode+': legacy routes preserve existing values and native label collisions do not overwrite either value',()=>{
   const body=JSON.stringify({items:[{id:1,properties:{'Dog&#39;s name':'Encoded',"Dog's name":'Canonical',_hs_art_profile:'existing'}}]});

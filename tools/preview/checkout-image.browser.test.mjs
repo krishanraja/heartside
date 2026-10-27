@@ -31,7 +31,7 @@ for(const minified of [false,true])for(const api of ['fetch','xhr']){
         return route.abort();
       });
       await page.goto('https://shop.example/products/gift');
-      const preamble=`function nativeArtworkPurchase(){return true;}function blanketReviewKey(){return 'saved-art';}function answer(){return 'Exact words';}function cityArtSaved(){return true;}function blanketReviewAccepted(){return true;}function nativePurchaseReady(){return true;}function blanketUploadPending(){return false;}`;
+      const preamble=`function restoredArtworkChosen(){return false;}function nativeArtworkPurchase(){return true;}function blanketReviewKey(){return 'saved-art';}function answer(){return 'Exact words';}function cityArtSaved(){return true;}function blanketReviewAccepted(){return true;}function nativePurchaseReady(){return true;}function blanketUploadPending(){return false;}`;
       const code=preamble+'\n'+helper+'\n'+transport+'\nonCartAdd(function(){});';
       await page.addScriptTag({content:minified?transformSync(code,{minify:true}).code:code});
       await page.evaluate(({api,properties})=>{

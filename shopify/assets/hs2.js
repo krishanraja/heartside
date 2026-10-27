@@ -178,6 +178,7 @@
   }
   function updateBlanketPurchaseStatus() {
     updatePortraitSignatureRecovery();
+    updateRestoredArtworkReview();
     var pending = blanketUploadPending();
     var photoBox = document.querySelector('[data-hs2-blanket-photo]');
     if (photoBox) {
@@ -197,7 +198,7 @@
     if (pending) { blanketPurchaseStatus('Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
-    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your gift.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
+    blanketPurchaseStatus(saved ? 'Artwork saved. Check every face and marking before adding your gift.' : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Creating your artwork. Save its placement when it appears. Uploading again creates another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }
@@ -293,12 +294,53 @@
     try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
   }
   function cityArtSaved() {
-    if (!(cityArtPreview() || nativeArtworkPurchase()) || !artRequested() || document.querySelector('.vm--container')) return false;
+    if (!(cityArtPreview() || nativeArtworkPurchase()) || (!artRequested() && !restoredArtworkChosen()) || document.querySelector('.vm--container')) return false;
     var src = cityArtSource(), before = '';
     var photo = document.querySelector('.tee-field--photo .tee-photo-image');
     if (!photo || photo.getAttribute('src') !== src) return false;
     try { before = window.sessionStorage.getItem(artRequestKey() + ':before') || ''; } catch (e) { /* no storage */ }
     return !!src && src !== before;
+  }
+  var restoredArtworkChoice = '';
+  function restoredArtworkKey() {
+    var dog = tibFields().filter(function (field) { return field.rule.k === 'dog'; })[0];
+    var input = dog && dog.el.querySelector('input[type="text"], input:not([type]), textarea');
+    return JSON.stringify([productId(), artRequestKey(), cityArtSource(), answer('dog'), input ? input.value : '']);
+  }
+  function restoredArtworkAvailable() {
+    // No local request receipt means the native app may have restored an older design.
+    // Never turn that into a claimed generation or revive a stale/uncertain local request.
+    if (!nativeArtworkPurchase() || latestArtRequest() || blanketUploadPending() || !nativeBlanketInputsReady() || blanketNativeError() || document.querySelector('.vm--container')) return false;
+    var src = cityArtSource(), photo = document.querySelector('.tee-field--photo .tee-photo-image');
+    return !!src && !!photo && photo.getAttribute('src') === src;
+  }
+  function restoredArtworkChosen() {
+    return !!restoredArtworkChoice && restoredArtworkAvailable() && restoredArtworkChoice === restoredArtworkKey();
+  }
+  function updateRestoredArtworkReview() {
+    if (restoredArtworkChoice && restoredArtworkChoice !== restoredArtworkKey()) {
+      restoredArtworkChoice = ''; invalidateBlanketReview();
+    }
+    var available = restoredArtworkAvailable();
+    var box = document.querySelector('[data-hs2-restored-artwork]');
+    if (!available || restoredArtworkChosen()) { if (box) box.hidden = true; return; }
+    var status = document.querySelector('[data-hs2-artwork-status]');
+    if (!status) return;
+    if (!box) {
+      box = document.createElement('div'); box.setAttribute('data-hs2-restored-artwork', '');
+      var message = document.createElement('p'); message.setAttribute('role', 'status');
+      message.textContent = 'Artwork was restored from an earlier visit. Its original style and details are not verified. You can review this exact design without creating another image. Current style and tone choices do not change this saved artwork.';
+      var button = document.createElement('button'); button.type = 'button'; button.textContent = 'Review this saved artwork';
+      button.addEventListener('click', function () {
+        if (!restoredArtworkAvailable()) return;
+        restoredArtworkChoice = restoredArtworkKey(); invalidateBlanketReview();
+        updateBlanketPurchaseStatus();
+        var review = document.querySelector('[data-hs2-artwork-accept]');
+        if (review && review.getClientRects().length) review.focus();
+      });
+      box.appendChild(message); box.appendChild(button); status.parentNode.insertBefore(box, status);
+    }
+    box.hidden = false;
   }
   function v3Answer(k) {
     var lines = state.hs3_lines || {};
@@ -2447,6 +2489,14 @@
       var m = /^properties\[(.+)\]$/.exec(inp.name || '');
       if (m && (inp.value || (native && m[1].indexOf('_hs_') === 0))) { o[m[1]] = inp.value; n++; }
     });
+    if (native && restoredArtworkChosen()) {
+      // Do not relabel an older image as generated for today's default choices/profile.
+      o._hs_art_source = 'restored-buyer-reviewed';
+      o._hs_art_style = 'Unverified original style (restored artwork)';
+      o._hs_art_tone = 'Unverified original tone (restored artwork)';
+      o._hs_art_profile = '';
+      n++;
+    }
     return n ? o : null;
   }
   function withHsProps(body) {

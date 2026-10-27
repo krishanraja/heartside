@@ -69,7 +69,7 @@ for(const minified of [false,true]) {
       dispatchEvent(e){this.events.push(e.type);if(this.handlers[e.type])this.handlers[e.type]();}
     }
     const window={fetch:async(...args)=>{calls.push({args});return {ok:true,clone:()=>({json:async()=>({id:123})})};},XMLHttpRequest:XHR,HSCheckoutImage:{prepare}};
-    const c={window,Event,setTimeout,document:{querySelector:s=>s.includes('checkout-image-enabled')?(enabled?buy:null):s.includes('checkout-image-status')?status:s.includes('variant-id')?{value:variant}:null,querySelectorAll:()=>[]},nativeArtworkPurchase:()=>true,blanketReviewKey:()=>art,answer:()=>note,cityArtSaved:()=>true,blanketReviewAccepted:()=>accepted,nativePurchaseReady:()=>true,blanketUploadPending:()=>false};
+    const c={restoredArtworkChosen:()=>false,window,Event,setTimeout,document:{querySelector:s=>s.includes('checkout-image-enabled')?(enabled?buy:null):s.includes('checkout-image-status')?status:s.includes('variant-id')?{value:variant}:null,querySelectorAll:()=>[]},nativeArtworkPurchase:()=>true,blanketReviewKey:()=>art,answer:()=>note,cityArtSaved:()=>true,blanketReviewAccepted:()=>accepted,nativePurchaseReady:()=>true,blanketUploadPending:()=>false};
     const code=['hsProps','withHsProps','checkoutImageConfig','checkoutImageStatus','prepareCheckoutCart','onCartAdd'].map(section).join('\n');
     vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);c.onCartAdd(()=>{});
     return {window,calls,status,changeArt:()=>{art='changed';},changeVariant:()=>{variant='456';},changeNote:()=>{note='New words';},uncheck:()=>{accepted=false;}};

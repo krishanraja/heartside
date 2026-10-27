@@ -104,7 +104,7 @@ for(const minified of [false,true]) {
   });
   test(label+': changed shared choices invalidate accepted artwork on native blanket',()=>{
     let current=false,src='https://example.test/generated.png';
-    const ctx={cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,artRequested:()=>current,artRequestKey:()=> 'current',cityArtSource:()=>src,window:{sessionStorage:{getItem:()=> 'https://example.test/old.png'}},document:{querySelector:s=>s==='.vm--container'?null:{getAttribute:()=>src}}};
+    const ctx={restoredArtworkChosen:()=>false,cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,artRequested:()=>current,artRequestKey:()=> 'current',cityArtSource:()=>src,window:{sessionStorage:{getItem:()=> 'https://example.test/old.png'}},document:{querySelector:s=>s==='.vm--container'?null:{getAttribute:()=>src}}};
     run(['cityArtSaved'],ctx,minified);assert.equal(ctx.cityArtSaved(),false);current=true;assert.equal(ctx.cityArtSaved(),true);current=false;assert.equal(ctx.cityArtSaved(),false);
   });
   test(label+': recropping the same saved image invalidates buyer acceptance without dispatch',()=>{
