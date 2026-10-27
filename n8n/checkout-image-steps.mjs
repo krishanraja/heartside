@@ -87,10 +87,12 @@ export function readyStep(response, context) {
   if (response.statusCode !== 200 || response.body?.errors?.length || !file || file.id !== context.fileId || file.alt !== context.marker || file.fileErrors?.length || file.fileStatus === 'FAILED') return bad;
   if (file.fileStatus !== 'READY') return { httpStatus: 202, body: { state: 'pending', code: 'image_processing', retryAfterSeconds: 3 } };
   if (!(file.image?.width > 0 && file.image?.height > 0)) return bad;
-  let url;
-  try { url = new URL(file.image.url); } catch { return bad; }
-  if (url.origin !== 'https://cdn.shopify.com' || url.pathname !== new URL(context.config.shopifyImagePrefix).pathname + context.filename || url.hash || url.username || url.password || ![...url.searchParams].every(([k, v]) => k === 'v' && /^[0-9]+$/.test(v))) return bad;
+  // URL is not exposed by n8n 2.43.5's JS task runner. The server-validated
+  // prefix and deterministic filename permit exact matching without a parser.
+  const imageUrl = file.image.url;
+  const expected = context.config.shopifyImagePrefix + context.filename;
+  if (typeof imageUrl !== 'string' || !imageUrl.startsWith(expected) || (imageUrl !== expected && !/^\?v=[0-9]+$/.test(imageUrl.slice(expected.length)))) return bad;
   const { customizationId, variantId } = context.request;
-  return { httpStatus: 200, body: { state: 'ready', customizationId, variantId, fileId: file.id, imageUrl: url.href,
-    properties: { _hs_checkout_image: url.href, _hs_checkout_parent: 'true', _hs_checkout_bundle_id: customizationId + '-' + variantId } } };
+  return { httpStatus: 200, body: { state: 'ready', customizationId, variantId, fileId: file.id, imageUrl,
+    properties: { _hs_checkout_image: imageUrl, _hs_checkout_parent: 'true', _hs_checkout_bundle_id: customizationId + '-' + variantId } } };
 }

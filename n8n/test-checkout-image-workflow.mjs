@@ -40,7 +40,7 @@ async function runGraph(flow, input, runtime) {
   while (name) {
     assert.ok(++steps < 40, 'acyclic bounded workflow');
     const node = byName.get(name); let branch = 0;
-    const scope = { $input: { first: () => ({ json: current }) }, $json: current, $: n => ({ first: () => ({ json: outputs.get(n) }) }), URL, Date, Buffer };
+    const scope = { $input: { first: () => ({ json: current }) }, $json: current, $: n => ({ first: () => ({ json: outputs.get(n) }) }), Date, Buffer };
     const expression = value => typeof value === 'string' && value.startsWith('={{') ? vm.runInNewContext(value.slice(3, -2), scope) : value;
     if (node.type.endsWith('.code')) current = vm.runInNewContext(`(function(){${node.parameters.jsCode}})()`, scope)[0].json;
     else if (node.type.endsWith('.crypto')) current = { ...current, computedSignature: createHmac('sha256', secret).update(expression(node.parameters.value)).digest('hex') };
