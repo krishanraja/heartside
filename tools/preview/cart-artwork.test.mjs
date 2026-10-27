@@ -25,13 +25,13 @@ for(const minified of [false,true]){
   const c=context();for(const item of [{variant_id:123,item_components:[child,child]},{variant_id:456,item_components:[child]},{image:prepared,featured_image:{url:prepared}},{properties:{_hs_checkout_image:'https://evil.example/a.jpg',_customization_image:'javascript:alert(1)'}},{properties:{_hs_checkout_image:prepared.replace('cdn.shopify.com','cdn.shopify.com.evil.example')}}])assert.equal(c.cartArtworkImage(item),'');
  });
  test(mode+': current row snapshot replaces stale cache on native rerender without cross-design leakage or fetch',()=>{
-  const attrs={src:'https://example.test/neutral.jpg',srcset:'neutral 1x'},img={getAttribute:k=>attrs[k]??null,setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],classList:{add(){},remove(){}}};Object.defineProperty(img,'src',{get:()=>attrs.src,set:v=>attrs.src=v});
+  const attrs={src:'https://example.test/neutral.jpg',srcset:'neutral 1x',alt:'Blank blanket reference'},img={getAttribute:k=>attrs[k]??null,setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],classList:{add(){},remove(){}}};Object.defineProperty(img,'src',{get:()=>attrs.src,set:v=>attrs.src=v});
   let snapshot={key:'123:parent',variant_id:123,quantity:1,item_components:[child]};
   const row={getAttribute:k=>k==='data-key'?'123:parent':JSON.stringify(snapshot),querySelector:s=>s==='.cart-items__media img'?img:null,querySelectorAll:()=>[]};
   const c=context({cartImages:{'123:parent':prepared},window:{},fetch:()=>{throw Error('unexpected request');},document:{querySelectorAll:s=>s.startsWith('.cart-items__table-row')?[row]:[],querySelector:()=>null}});
-  c.cartTidy();assert.equal(img.src,native);assert.equal(attrs.srcset,undefined);
+  c.cartTidy();assert.equal(img.src,native);assert.equal(attrs.srcset,undefined);assert.equal(attrs.alt,'Your personalized artwork');
   snapshot={key:'123:parent',variant_id:123,quantity:1,properties:{_hs_checkout_image:prepared}};c.cartTidy();assert.equal(img.src,prepared);
-  snapshot={key:'another:design',variant_id:123,properties:{_hs_checkout_image:prepared}};c.cartTidy();assert.equal(img.src,'https://example.test/neutral.jpg');assert.equal(attrs.srcset,'neutral 1x');
+  snapshot={key:'another:design',variant_id:123,properties:{_hs_checkout_image:prepared}};c.cartTidy();assert.equal(img.src,'https://example.test/neutral.jpg');assert.equal(attrs.srcset,'neutral 1x');assert.equal(attrs.alt,'Blank blanket reference');
   snapshot={key:'123:parent',variant_id:123,item_components:[child,child]};c.cartTidy();assert.equal(img.src,'https://example.test/neutral.jpg');
  });
 }

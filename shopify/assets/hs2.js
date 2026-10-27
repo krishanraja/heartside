@@ -1990,15 +1990,18 @@
         img.src = img.__hs2Original.src;
         if (img.__hs2Original.srcset) img.setAttribute('srcset', img.__hs2Original.srcset);
         else img.removeAttribute('srcset');
+        if (img.__hs2Original.alt !== null) img.setAttribute('alt', img.__hs2Original.alt);
+        else img.removeAttribute('alt');
         img.removeAttribute('data-hs2-src'); img.classList.remove('hs2-cart-preview');
         delete img.__hs2Original;
       }
       return;
     }
     if (img.getAttribute('data-hs2-src') === url) return;
-    if (!img.__hs2Original) img.__hs2Original = {src: img.getAttribute('src'), srcset: img.getAttribute('srcset')};
+    if (!img.__hs2Original) img.__hs2Original = {src: img.getAttribute('src'), srcset: img.getAttribute('srcset'), alt: img.getAttribute('alt')};
     img.setAttribute('data-hs2-src', url);
     img.src = url; img.removeAttribute('srcset');
+    img.setAttribute('alt', 'Your personalized artwork');
     img.classList.add('hs2-cart-preview');
   }
 
