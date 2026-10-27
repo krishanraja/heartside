@@ -30,6 +30,7 @@
         result.textContent = 'Checking the saved design…';
         preview.hidden = true;
         var controller = new AbortController();
+        var responseMeta = null;
         var timer = setTimeout(function () { controller.abort(); }, 32000);
         try {
           var response = await fetch(endpoint.href, {
@@ -37,6 +38,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data), signal: controller.signal
           });
+          responseMeta = { httpStatus: response.status, contentType: response.headers.get('content-type') };
           if (!(response.headers.get('content-type') || '').includes('application/json')) throw new Error('Unexpected response type');
           var body = await response.json();
           result.textContent = JSON.stringify({ httpStatus: response.status, result: body }, null, 2);
@@ -45,7 +47,7 @@
             preview.hidden = false;
           }
         } catch (error) {
-          result.textContent = 'The check did not complete. No automatic retry. ' + (error.name === 'AbortError' ? 'Request timed out.' : 'Inspect the service or storefront access state.');
+          result.textContent = JSON.stringify({ checkCompleted: false, automaticRetry: false, response: responseMeta, errorType: error.name }, null, 2);
         } finally {
           clearTimeout(timer);
           button.disabled = false;
