@@ -855,6 +855,13 @@
         h += '</div>';
       }
       if (m.skip && (!ui.typing || S.fu)) h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="skip">Not sure</button></div>';
+      if (S.step === 7 && cfg.artworkCandidates) {
+        // optional, typed as plain words with no AI step: they become facts the painting may use
+        var lim = (window.HSArtworkProfile && window.HSArtworkProfile.limits) || { toy: 80, accessory: 80 };
+        h += '<details class="hs3-extras"' + (S.toy || S.accessory ? ' open' : '') + '><summary>Anything I should paint with ' + esc(n.dog) + '? (optional)</summary>';
+        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="A squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
+        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="A red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
+      }
       if (m.next && !ui.typing) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
       if (S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url && S.step > 1) h += '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>';
     }
@@ -1341,11 +1348,12 @@
         if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, 14); save(); }
         if (k === 'breed') { S.breed = inp.value.slice(0, 40); save(); }
+        if (k === 'toy' || k === 'accessory') { S[k] = inp.value.slice(0, 80); save(); }
       });
       inp.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        if (k === 'typed') sendTyped(inp.value); else next();
+        if (k === 'typed') sendTyped(inp.value); else if (k === 'toy' || k === 'accessory') inp.blur(); else next();
       });
     });
     var file = frame.querySelector('[data-hs3-file]');

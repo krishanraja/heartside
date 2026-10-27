@@ -359,3 +359,8 @@ html:has(.hs3--app) .shopify-section-group-footer-group { display: none !importa
 .hs3-photo-note { display: flex; flex-direction: column; gap: 4px; }
 .hs3-photo-note[hidden] { display: none; }
 .hs3-photo-note p { color: var(--body); }
+/* the "Show me" step's optional details for the painting */
+.hs3-extras { display: flex; flex-direction: column; gap: 6px; }
+.hs3-extras > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 15px; color: var(--body); text-decoration: underline; text-underline-offset: 3px; }
+.hs3-extras[open] > summary { margin-bottom: 4px; }
+.hs3-extras .hs3-field { margin-bottom: 6px; }

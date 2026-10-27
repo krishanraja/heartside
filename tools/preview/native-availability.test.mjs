@@ -11,7 +11,7 @@ for(const minified of [false,true]) {
  const mode=minified?'minified':'source';
  test(mode+': disabled availability survives observer progress updates without hiding upload status',()=>{
   let enabled='false',pending=false;const status={textContent:''};
-  const c={updateRestoredArtworkReview(){},restoredArtworkAvailable:()=>false,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
+  const c={updateRestoredArtworkReview(){},answer:()=>'',restoredArtworkAvailable:()=>false,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
   run(['portraitSignatureChoice','updatePortraitSignatureRecovery','blanketPurchaseStatus','updateBlanketPurchaseStatus'],c,minified);
   c.blanketPurchaseStatus('This gift is not available to order yet.');
   c.updateBlanketPurchaseStatus();
