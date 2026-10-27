@@ -56,7 +56,7 @@ test('release native templates enable ordering and actual-design checkout images
     assert.equal(t.settings.checkout_image_enabled,true);
     assert.equal(t.settings.checkout_image_endpoint,'/apps/heartside-artwork');
     assert.match(t.settings.checkout_image_cdn_prefix,/^https:\/\/cdn\.shopify\.com\/s\/files\/1\/[^\s]+\/files\/$/);
-    assert.equal(t.blocks.buy.settings.v3,false);assert.match(t.blocks.price.settings.note,/calculated at checkout/);
+    assert.equal(t.blocks.buy.settings.v3,false);assert.equal(t.blocks.price.settings.note,'Free US shipping on every order.');
     if(kind==='print')assert.equal(t.blocks.teeinblue_product_personalizer_product_app_block_UBn6nK.settings.show_available_product,true);
   }
   const liquid=readFileSync(new URL('../../shopify/snippets/hs-native-artwork.liquid',import.meta.url),'utf8');

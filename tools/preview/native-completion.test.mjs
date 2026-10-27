@@ -35,9 +35,9 @@ for(const minified of [false,true]){
  test(mode+': non-blanket pages retain the existing bounded observer lifetime',()=>{
   const app=lifecycle(minified,false);app.advance(61000);app.finish();app.emit({type:'childList',addedNodes:[],removedNodes:[{nodeType:1,matches:()=>true}]});app.advance(61200);assert.equal(app.status(),'waiting');
  });
- test(mode+': cart drawer and cart-page note do not promise unverified free shipping',()=>{
-  const note={tagName:'SMALL',textContent:'Free US shipping. Taxes calculated at checkout.',querySelector:()=>null};
+ test(mode+': cart drawer and cart-page note say the shipping truth (Ruling, 27 Oct: free US shipping on every order)',()=>{
+  const note={tagName:'SMALL',textContent:'Shipping and taxes calculated at checkout.',querySelector:()=>null};
   const ctx={window:{},document:{querySelectorAll:selector=>selector.startsWith('.cart-items__table-row')?[]:[note],querySelector:()=>({})}};
-  run(['cartTidy'],ctx,minified);ctx.cartTidy();assert.equal(note.textContent,'Shipping and taxes calculated at checkout.');
+  run(['cartTidy'],ctx,minified);ctx.cartTidy();assert.equal(note.textContent,'Free US shipping on every order. Tax is added at checkout.');
  });
 }

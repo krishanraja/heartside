@@ -742,15 +742,25 @@ html.hs2-js .hs2-signoff.is-in .hs2-signoff__paw svg { --r: -8deg; animation: hs
 /* the live preview's own thumbnail: shown only once Teeinblue's preview is on the page */
 .hs2-product__thumb-preview { display: none !important; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink); font-size: 12px; font-weight: 700; }
 .hs2-product__media[data-tib="on"] .hs2-product__thumb-preview { display: inline-flex !important; }
-/* one picture at a time: Teeinblue's preview, or the photo picked below it. The preview
-   keeps its width while hidden, because Teeinblue sizes its slider from it. */
+/* One picture at a time, in one box (27 Oct). The live preview and the product photo share one
+   grid cell, so the stage is as tall as the taller of the two and never changes height when the
+   shopper switches between them or between thumbnails. The one not on show is hidden with
+   visibility, so Teeinblue still sizes its slider from it. Photos sit whole on paper (contain),
+   never cropped to a different shape than the preview, and hs2.js swaps a photo only once the new
+   one has decoded, so the box is never blank. */
 .hs2-product__media { position: relative; }
-.hs2-product__media[data-tib="on"]:not([data-show="photo"]) .hs2-product__main { display: none; }
-.hs2-product__media[data-tib="on"][data-show="photo"] .hs2-product__tib { position: absolute; left: 0; right: 0; top: 0; visibility: hidden; pointer-events: none; }
+.hs2-product__stage { display: grid; grid-template: "stage" auto / minmax(0, 1fr); border-radius: 24px; overflow: hidden; background: #FFFDF9; }
+.hs2-product__stage > * { grid-area: stage; min-width: 0; }
+.hs2-product__stage .hs2-product__main img { aspect-ratio: var(--hs2-ratio, 1); object-fit: contain; background: #FFFDF9; transition: opacity .2s ease; }
+.hs2-product__stage .hs2-product__main img.is-swapping { opacity: .6; }
+.hs2-product__media[data-tib="on"]:not([data-show="photo"]) .hs2-product__main { visibility: hidden; pointer-events: none; }
+.hs2-product__media[data-tib="on"][data-show="photo"] .hs2-product__tib { visibility: hidden; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .hs2-product__stage .hs2-product__main img { transition: none; } }
 @media (max-width: 899px) {
-  .hs2-product__thumbs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; margin: 0 -20px; padding: 0 20px 2px; }
-  .hs2-product__thumbs::-webkit-scrollbar { display: none; }
-  .hs2-product__thumbs button { width: 64px; height: 64px; border-radius: 10px; }
+  /* every thumbnail on the page, wrapping in rows: no sideways scroll on a phone */
+  .hs2-product__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 8px; }
+  .hs2-product__thumbs button { width: auto; height: auto; aspect-ratio: 1; border-radius: 10px; }
+  .hs2-product__thumbs button[hidden] { display: none; }
 }
 .hs2-product__poster { padding: 26px 18px 34px; }
 .hs2-product__info { flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 18px; }

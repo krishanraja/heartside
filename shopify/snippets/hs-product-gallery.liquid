@@ -1,70 +1,81 @@
 {%- liquid
-  assign hidden_media_id = 0
-  if product.id == 16158073880958
-    if s.blanket_purchase or s.blanket_art_preview
-      assign hidden_media_id = 71850515169662
+  # The blank technical reference (Printful's plain blanket, "shown in your cart") never shows in
+  # the gallery: it is hidden by its alt text, with the known ids kept as a backstop (27 Oct; the
+  # old hard-coded id had gone stale and the blank showed first on the live blanket page).
+  assign hide_alt = s.hide_media_alt | default: 'shown in your cart' | downcase
+  assign hidden_ids = '71850515169662,71856697049470' | split: ','
+  assign first = nil
+  assign color_key = ''
+  if product.media.size > 0
+    # the chosen variant's own photo first (the mug's color), else the product's first shown photo
+    assign first = current.featured_media | default: product.featured_media
+    assign first_alt = first.alt | downcase
+    assign first_id = first.id | append: ''
+    if hidden_ids contains first_id or first_alt contains hide_alt or first_alt contains 'blank '
+      assign first = nil
+      for candidate in product.media
+        assign c_alt = candidate.alt | downcase
+        assign c_id = candidate.id | append: ''
+        unless hidden_ids contains c_id or c_alt contains hide_alt or c_alt contains 'blank '
+          assign first = candidate
+          break
+        endunless
+      endfor
     endif
+    # A gift sold in colors (the mug) has a pair of photos per color, alt "..., black inside: ...".
+    # Only the chosen color's pair is shown; hs2.js swaps the pair when the color changes.
+    for opt in product.options_with_values
+      if opt.name == 'Color' and opt.values.size > 1
+        assign color_key = current.options[forloop.index0] | downcase | prepend: ', ' | append: ' inside'
+      endif
+    endfor
   endif
 -%}
     <div class="hs2-product__media" data-hs2-media{% if v3 %} data-hs2-sample{% endif %}{% if s.open_on == 'photo' and product.media.size > 0 %} data-open="photo" data-show="photo"{% endif %}>
       {%- if v3 -%}<span class="hs2-product__example">{% if artwork_preview %}Existing reference artwork. Generation is paused.{% else %}Example artwork. Add your dog's photo to see yours.{% endif %}</span>{%- endif -%}
-      <div class="hs2-product__tib" data-hs2-tib-gallery></div>
-      {%- if s.show_poster -%}
-        <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
-      {%- endif -%}
-      {%- if product.media.size > 0 -%}
-        {%- comment -%} the chosen variant's own photo first (the mug's color), else the product's {%- endcomment -%}
-        {%- assign first = current.featured_media | default: product.featured_media -%}
-        {%- if first.id == hidden_media_id -%}
-          {%- assign first = nil -%}
-          {%- for candidate in product.media -%}
-            {%- if candidate.id != hidden_media_id -%}
-              {%- assign first = candidate -%}
-              {%- break -%}
-            {%- endif -%}
-          {%- endfor -%}
+      {%- comment -%} One stage, one size: the live preview and the product photo are stacked in the same
+        box, so switching between them, or between thumbnails, never changes the page's height. {%- endcomment -%}
+      <div class="hs2-product__stage" data-hs2-stage style="--hs2-ratio: {{ s.media_ratio | default: '1' }}">
+        <div class="hs2-product__tib" data-hs2-tib-gallery></div>
+        {%- if s.show_poster -%}
+          <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
         {%- endif -%}
-        {%- comment -%} A gift sold in colors (the mug) has a pair of photos per color, alt "…, black inside: …".
-          Only the chosen color's pair is shown; hs2.js swaps the pair when the color changes. {%- endcomment -%}
-        {%- assign color_key = '' -%}
-        {%- for opt in product.options_with_values -%}
-          {%- if opt.name == 'Color' and opt.values.size > 1 -%}
-            {%- assign color_key = current.options[forloop.index0] | downcase | prepend: ', ' | append: ' inside' -%}
-          {%- endif -%}
-        {%- endfor -%}
         {%- if first -%}
-        <div class="hs2-product__main">
-          <img data-hs2-main src="{{ first | image_url: width: 1200 }}"
-            srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
-            sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
-            {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
-          {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
-        </div>
+          <div class="hs2-product__main" data-hs2-main-wrap>
+            <img data-hs2-main src="{{ first | image_url: width: 1200 }}"
+              srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
+              sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
+              {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+            {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
+          </div>
+        {%- elsif product.media.size == 0 and s.show_poster == false -%}
+          <div class="hs2-product__main hs2-card__media">
+            <img src="{{ 'hs-photo-asleep-640.webp' | asset_url }}" alt="" width="640" height="640">
+            <div class="hs2-card__shot">{{ s.shot }}</div>
+            {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
+          </div>
         {%- endif -%}
-        {%- comment -%} With Teeinblue's live preview on the page, it is the first picture and the product
-          photos sit behind it as thumbnails, so the page shows one picture at a time. {%- endcomment -%}
+      </div>
+      {%- comment -%} With Teeinblue's live preview on the page, it is the first picture and the product
+        photos sit behind it as thumbnails, so the page shows one picture at a time. {%- endcomment -%}
+      {%- if product.media.size > 0 -%}
         {%- if product.media.size > 1 or tib -%}
           <div class="hs2-product__thumbs">
             {%- if tib -%}
-              <button type="button" class="hs2-product__thumb-preview" data-hs2-thumb-preview aria-current="false" aria-label="Show your preview">
+              <button type="button" class="hs2-product__thumb-preview" data-hs2-thumb-preview aria-current="false" aria-label="Show your design">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span>Yours</span>
+                <span>Your design</span>
               </button>
             {%- endif -%}
             {%- for m in product.media limit: 12 -%}
-              {%- if m.id == hidden_media_id -%}{%- continue -%}{%- endif -%}
               {%- assign m_alt = m.alt | downcase -%}
-              <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if m.id == first.id %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
+              {%- assign m_id = m.id | append: '' -%}
+              {%- if hidden_ids contains m_id or m_alt contains hide_alt or m_alt contains 'blank ' -%}{%- continue -%}{%- endif -%}
+              <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-srcset="{{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 900 }} 900w, {{ m | image_url: width: 1200 }} 1200w" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if first and m.id == first.id %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
                 <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
               </button>
             {%- endfor -%}
           </div>
         {%- endif -%}
-      {%- elsif s.show_poster == false -%}
-        <div class="hs2-product__main hs2-card__media">
-          <img src="{{ 'hs-photo-asleep-640.webp' | asset_url }}" alt="" width="640" height="640">
-          <div class="hs2-card__shot">{{ s.shot }}</div>
-          {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
-        </div>
       {%- endif -%}
     </div>

@@ -909,16 +909,36 @@
   }
 
   /* ---------------------------------------------------------- product gallery */
+  /* The product photo changes only once the new one has decoded, with its srcset kept, so the
+     box is never blank (it showed nothing for about 600 ms on 27 Oct) and never drops to a
+     smaller file. A newer swap wins over one still loading. */
+  function swapMain(src, srcset, alt) {
+    var main = document.querySelector('[data-hs2-main]');
+    if (!main || !src) return;
+    var token = swapMain.n = (swapMain.n || 0) + 1;
+    if (main.getAttribute('src') === src) { main.alt = alt || ''; return; }
+    var put = function () {
+      if (token !== swapMain.n) return;
+      if (srcset && main.setAttribute) main.setAttribute('srcset', srcset); else main.removeAttribute('srcset');
+      main.src = src; main.alt = alt || '';
+      if (main.classList) main.classList.remove('is-swapping');
+    };
+    // without a decoder (an old browser) the swap is immediate, as before
+    if (typeof Image !== 'function') { put(); return; }
+    var next = new Image();
+    if (srcset) { next.sizes = main.getAttribute('sizes') || '100vw'; next.srcset = srcset; }
+    next.src = src;
+    if (main.classList) main.classList.add('is-swapping');
+    (next.decode ? next.decode() : Promise.resolve()).then(put, put);
+  }
   function gallery() {
     var media = document.querySelector('[data-hs2-media]');
     var current = function (b) { document.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === b ? 'true' : 'false'); }); };
     document.querySelectorAll('[data-hs2-thumb]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
       b.addEventListener('click', function () {
-        var main = document.querySelector('[data-hs2-main]');
-        if (!main) return;
-        main.src = b.getAttribute('data-hs2-thumb'); main.removeAttribute('srcset');
-        main.alt = b.getAttribute('data-alt') || '';
+        if (!document.querySelector('[data-hs2-main]')) return;
+        swapMain(b.getAttribute('data-hs2-thumb'), b.getAttribute('data-srcset'), b.getAttribute('data-alt'));
         if (media) { media.setAttribute('data-show', 'photo'); media.__hs2picked = true; }
         current(b);
       });
@@ -957,8 +977,8 @@
         var col = img && /, (.+?) inside/i.exec(img.alt || '');
         if (col) document.querySelectorAll('[data-hs2-thumb][data-hs2-color]').forEach(function (b) { b.hidden = b.getAttribute('data-hs2-color') !== col[1].toLowerCase(); });
         if (img && main && main.getAttribute('src') !== img.src) {
-          main.src = img.src; main.removeAttribute('srcset'); main.alt = img.alt || '';
           var th = document.querySelector('[data-hs2-thumb="' + img.src + '"]');
+          swapMain(img.src, th && th.getAttribute('data-srcset'), img.alt);
           if (th && document.querySelector('[data-hs2-media]').getAttribute('data-show') === 'photo') {
             document.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === th ? 'true' : 'false'); });
           }
@@ -1656,9 +1676,13 @@
     var map = {};
     try { map = JSON.parse(buy.getAttribute('data-hs2-option-labels')) || {}; } catch (e) { return; }
     buy.querySelectorAll('.tee-option').forEach(function (opt) {
-      var m = /(?:^|\s)tee-option--([a-z0-9-]+)/.exec(opt.className), title = opt.querySelector('.tee-option__title');
-      if (!m || !title || !map[m[1]]) return;
-      var want = map[m[1]];
+      var m = /(?:^|\s)tee-option--([a-z0-9_-]+)/.exec(opt.className), title = opt.querySelector('.tee-option__title');
+      if (!title) return;
+      // Teeinblue's own key ("color"), or the title's words ("Available Product") for a key it spells differently
+      var key = m ? m[1].replace(/_/g, '-') : '', words = title.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      var want = map[key] || (title.__hs2key && map[title.__hs2key]) || map[words];
+      if (!want) return;
+      if (!title.__hs2key) title.__hs2key = map[key] ? key : words;
       if (title.textContent.trim() === want) return;
       // change only the text, never Teeinblue's elements
       var walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT), node, done = false;
@@ -1681,6 +1705,13 @@
     var box = document.querySelector('[data-hs2-tib-gallery]'), media = document.querySelector('[data-hs2-media]');
     if (!box || !media) return;
     var on = box.children.length ? 'on' : 'off';
+    // Teeinblue empties its gallery for a moment when it redraws; switching off only after it has
+    // stayed empty for 800 ms keeps the picture from flicking to the photo and back (27 Oct)
+    if (on === 'off' && media.getAttribute('data-tib') === 'on') {
+      if (!tibGallery.offAt) { tibGallery.offAt = Date.now(); setTimeout(tibGallery, 850); return; }
+      if (Date.now() - tibGallery.offAt < 800) return;
+    }
+    tibGallery.offAt = 0;
     if (media.getAttribute('data-tib') === on) return;
     media.setAttribute('data-tib', on);
     var pv = media.querySelector('[data-hs2-thumb-preview]');
@@ -1949,12 +1980,15 @@
       rows.forEach(function (row) {
         var link = row.querySelector('a[href*="/products/"]');
         var framed = !!link && /framed/i.test(link.getAttribute('href') || '');
+        // the portrait: its first option says Framed or Unframed, and a framed one's color is the frame
+        var rowFramed = Array.prototype.some.call(row.querySelectorAll('.cart-items__variant dd'), function (dd) { return /^framed[,\s ]*$/i.test(dd.textContent.trim()); });
         row.querySelectorAll('.cart-items__variant').forEach(function (v) {
           var dt = v.querySelector('dt'), dd = v.querySelector('dd');
           if (!dt || !dd || v.__hs2) return; v.__hs2 = true;
           var name = norm(dt.textContent), value = dd.textContent.replace(/[,\s ]+$/, '').trim();
-          if (name === 'available product' || CART_DROP_VALUES.test(value)) { v.hidden = true; return; }
-          var nice = name === 'color' && framed ? 'Frame' : dt.textContent.replace(/:\s*$/, '').trim();
+          var format = name === 'available product' && /^(framed|unframed)$/i.test(value);
+          if ((name === 'available product' && !format) || CART_DROP_VALUES.test(value)) { v.hidden = true; return; }
+          var nice = format ? 'Format' : name === 'color' && (framed || rowFramed) ? 'Frame' : dt.textContent.replace(/:\s*$/, '').trim();
           dt.classList.remove('visually-hidden');
           dt.textContent = nice + ':';
           dd.textContent = value;
@@ -1976,7 +2010,7 @@
       });
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
-        var want = 'Shipping and taxes calculated at checkout.';
+        var want = 'Free US shipping on every order. Tax is added at checkout.';
         if (n.textContent.trim() !== want) n.textContent = want;
       });
       if (need && !cartTidy.busy) {
@@ -2693,7 +2727,7 @@
   }
   function announceAdd(items) {
     var list = queueGet().length > 0;
-    var fallback = function () { if (!list) showNext('In your cart', 'Shipping calculated at checkout.', shopRoot() + 'checkout', 'Check out'); };
+    var fallback = function () { if (!list) showNext('In your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out'); };
     if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
     var settle = {};
     var promise = new Promise(function (resolve, reject) { settle.resolve = resolve; settle.reject = reject; });
@@ -2762,7 +2796,7 @@
           var done = q.length - left.length;
           showNext('Next: ' + next.title, done + ' of ' + q.length + ' in your cart. Photo and names carry over.', next.url, 'Personalize it');
         } else {
-          showNext('All ' + q.length + ' gifts are in your cart', 'Shipping calculated at checkout.', shopRoot() + 'checkout', 'Check out');
+          showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out');
         }
       })
       .catch(function () { /* the bar is a convenience; the cart still works */ });

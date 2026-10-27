@@ -21,10 +21,15 @@ test('every retired template renders only the moved section',()=>{
   }
 });
 
-test('the live templates are byte for byte what HEAD has',()=>{
+test('the live templates still render their own sections, never the moved page',()=>{
+  // their content changes on purpose (the shipping line, 27 Oct); what must hold is that the move
+  // never reached them
   for(const name of live) {
-    const path='shopify/templates/'+name;
-    assert.equal(read(path),execFileSync('git',['show','HEAD:'+path],{cwd:root,encoding:'utf8'}),name);
+    const t=JSON.parse(read('shopify/templates/'+name).replace(/^\s*\/\*[\s\S]*?\*\//,''));
+    const types=Object.values(t.sections).map(x=>x.type);
+    assert.ok(types.length && !types.includes('hs-moved'),name);
+    if(name.startsWith('product.')) assert.deepEqual(types,['hs2-product'],name);
+    if(name==='index.json') assert.deepEqual(types,['hs3-chat'],name);
   }
 });
 

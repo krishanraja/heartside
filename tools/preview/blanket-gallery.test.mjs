@@ -24,10 +24,17 @@ test('technical featured media falls back to allowed media with the correct acti
  assert.match(html,/data-hs2-main src="\/media\/71856804102526.png"/);
  assert.match(html,/data-hs2-thumb="\/media\/71856804102526.png"[^>]*aria-current="true"/);
 });
-test('other products and non-candidate blanket views keep their media',async()=>{
+test('the blank technical image is hidden by its alt text on every product, labelled photos stay',async()=>{
+ const live={id:71856697049470,alt:'Blank tan sherpa blanket reference. Your personalized artwork is shown in your cart.'};
+ const other={id:71859323634046,alt:'Illustrated mug, black inside: handle-left view. Example only.'};
  for(const [settings,id] of [[{},16158073880958],[{blanket_purchase:true},16160217956734],[{mug_art_preview:true},16160217956734]]){
-  assert.match(await render(settings,id),/71850515169662/);
+  const html=await render(settings,id,live,[live,other,example]);
+  assert.doesNotMatch(html,/71856697049470/,'the blank reference never shows, first or as a thumbnail');
+  assert.match(html,/data-hs2-main src="\/media\/71859323634046.png"/);assert.match(html,/71856804102526/);
  }
+ // a setting can name other alt text to hide; the known ids stay hidden as a backstop
+ const custom=await render({hide_media_alt:'handle-left'},16158073880958,other,[other,example]);
+ assert.doesNotMatch(custom,/71859323634046/);
 });
 test('only-excluded media never leaks into the main image',async()=>{
  const html=await render({blanket_purchase:true},16158073880958,technical,[technical]);
