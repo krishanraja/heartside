@@ -6,6 +6,7 @@ describes current behaviour; NOW.md and the state doc do.
 
 ## 2026-10-23
 
+- reconciled at `351c56c`: PR #50 (mug print-proof guard) is merged to `main`; NOW.md no longer says it awaits merge, and marks live deployment as unrecorded.
 - stamped at `6710125`: two commits since (`e395228` steward enrolment, `fc48639` harness administration) touched no product behaviour; NOW.md re-dated, no other change.
 
 ## 2026-10-22
