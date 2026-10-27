@@ -11,6 +11,10 @@
   elsif msg contains '[DATE]'
     assign msg = s.text_undated
   endif
+  assign native_templates = 'blanket-native,mug-native,portrait-native' | split: ','
+  if template.name == 'product' and native_templates contains template.suffix
+    assign msg = 'Shipping calculated at checkout.'
+  endif
 -%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the

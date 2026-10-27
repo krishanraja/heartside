@@ -22,8 +22,8 @@ Krish's words, 13 October:
 **The idea in one line:** your dog gets the person it loves a gift, and Heartside helps it say what only you two know.
 
 **What the buyer should feel, in order:**
-1. "Oh, that's fun" (Biscuit the dog greets them).
-2. "It's actually listening" (Biscuit reacts to their real answers and asks one follow-up that proves it).
+1. "Oh, that's fun" (Buddy the dog greets them).
+2. "It's actually listening" (Buddy reacts to their real answers and asks one follow-up that proves it).
 3. "That's exactly them" (the words on the gift are their dog and their person, nobody else's).
 4. "I want all of these" (the same words on a mug, a blanket, a print or an ornament, their pick).
 5. "I have to show someone" (the share card).
@@ -41,7 +41,7 @@ These were rejected on 12 and 13 October. Treat each as a hard rule.
 | Rejected | Why (his words or reason) | Rule |
 |---|---|---|
 | The HR "annual review" builder ("Area for improvement", "Known enemy of the company") | "I don't think anyone will understand what the areas for improvement actually mean, nor how to answer them." "Zero actual empathy for how a user wants to use a website, or thinks about their dog." | Every question must be answerable instantly from lived experience, by any owner, including owners of shy, old, quiet or brand-new dogs. |
-| Making the buyer do the comedy | "Why is that even funny? Why would I spend $40 on that?" | The buyer never has to be clever. Chips for everything. Humour comes from Biscuit and from the truth of their answers. |
+| Making the buyer do the comedy | "Why is that even funny? Why would I spend $40 on that?" | The buyer never has to be clever. Chips for everything. Humour comes from Buddy and from the truth of their answers. |
 | "Gifts written by your dog" as a headline | "Dogs can't write." | Gifts are FROM the dog (signed "Love, Kuku" with a paw). The words come from what the buyer told us. ~~Gift lines never use "I" in the dog's voice.~~ Superseded 20 Oct: the gift lines are the dog talking to the person (see section 13). |
 | Lame or dumb business headlines | 12 Oct | Headlines stay plain, warm and true. |
 | One gift, take it or leave it | 13 Oct | Show from the first screen that the words go on any of four gifts, and let them pick several. |
@@ -61,7 +61,7 @@ Same words, four gifts. Prices are Cowork's recommendation (Krish to confirm, se
 
 - Optional fifth: the unframed 12x18 print at $39 ($11.62 + $7.99 = $19.61, contribution about $17.96). Recommendation: keep it off the launch menu to keep the choice to four, and offer it only if buyers ask.
 - **Retire from sale at launch:** The Annual Review poster (HR joke), its framed version, The Body Double pillow. Hide them; don't delete products or reviews. The paused Uniform and Socks stay paused.
-- **Biscuit's pick** is a recommendation, not a default lock: the gift whose use matches what the dog and the recipient do together.
+- **Buddy's pick** is a recommendation, not a default lock: the gift whose use matches what the dog and the recipient do together.
   - Morning walk or coffee: the mug.
   - Couch and a movie, or naps: the blanket.
   - Car rides, or anything else: the framed print.
@@ -76,20 +76,20 @@ Phone first, inside the Instagram and Facebook in-app browsers. Six short steps,
 - Ribbon: "This year, the dog's buying."
 - Eyebrow: "Gifts from your dog"
 - Headline: "Your dog *loves you too.*" (italic in stamp red)
-- Line: "Tell Biscuit about your dog and the person they love most. We'll make something from your dog that they'll use every day."
-- Visual: the real mug with an example dog and two example lines, labeled EXAMPLE. Biscuit peeks in: "Psst. Who does your dog love most?"
+- Line: "Tell Buddy about your dog and the person they love most. We'll make something from your dog that they'll use every day."
+- Visual: the real mug with an example dog and two example lines, labeled EXAMPLE. Buddy peeks in: "Psst. Who does your dog love most?"
 - The four gifts as pills (Mug, Blanket, Print, Ornament) and: "Chat for a minute, then put your words on any of these. Pick one, or a few."
 - Button: "Start with your dog"
 
 ### 4.2 The chat
 
-Layout: a paper note sits at the top ("What Kuku wants Sam to know" / "For Sam", the dog's photo, four lines in pencil that turn to ink as answers land, "Love, Kuku" with a paw). Under it: "At the end, put these words on any gift you like:" with the four gift pills. Biscuit's messages and the buyer's answers sit below; chips and buttons sit at the thumb.
+Layout: a paper note sits at the top ("What Kuku wants Sam to know" / "For Sam", the dog's photo, four lines in pencil that turn to ink as answers land, "Love, Kuku" with a paw). Under it: "At the end, put these words on any gift you like:" with the four gift pills. Buddy's messages and the buyer's answers sit below; chips and buttons sit at the thumb.
 
 Every question offers chips, a "Not sure" skip, and (to build, not in the prototype) **"Something else"**, which opens a short text field so the buyer can use their own words. The phone keyboard's microphone works there; don't rely on the browser's speech feature inside the Instagram app.
 
-| Step | Biscuit says (reaction, then question) | Answer | Line it writes |
+| Step | Buddy says (reaction, then question) | Answer | Line it writes |
 |---|---|---|---|
-| 1 | "Hi! I'm Biscuit. I sniff out gifts from dogs to the people they love. Who's your dog?" | Dog's name (max 14), She/He, photo (allow "Add later") | name and photo |
+| 1 | "Hi! I'm Buddy. I sniff out gifts from dogs to the people they love. Who's your dog?" | Dog's name (max 14), She/He, photo (allow "Add later") | name and photo |
 | 2 | "Kuku! Great name. My tail is going. So who does Kuku love most?" | My partner / Mom / Dad / Our kid / A friend, then their first name (max 14) | "For Sam" |
 | 3 | "Sam! Lucky human. What does Kuku do when Sam comes home?" | Waits at the door / Brings Sam a toy / Spins in circles / Plays it cool | a first draft line inks straight away ("I wait by the door. It's my whole job.") |
 | 3b | One follow-up that proves it listened, e.g. "At the door! Every day? Even weekends? (I would.)" | Even weekends / Weekdays / Hears the car first | refined line ("I wait by the door. Weekends too. Obviously.") |
@@ -98,16 +98,16 @@ Every question offers chips, a "Not sure" skip, and (to build, not in the protot
 | 6 | "Walks! Best part of the day. Ask any dog. Last one. What is Kuku to Sam?" | Sam's shadow / Sam's best friend / There on the hard days / The boss of the house | "I'm your shadow. Where else would I be?" |
 | End | "Oh. That one got me right in the ears. I've sniffed it out. I know what Kuku would get Sam." | Button: "Show me" | |
 
-Biscuit's reactions are in `design/prototype-v3/Main.dc.html` (the step blocks); use them word for word. The gift lines for the chip answers were rewritten in the dog's own voice on 20 Oct (section 13) and live in `shopify/assets/hs3.js` (`H`, `BASE`, `SP`, `TG`, `ME`, `PLAIN`); the prototype's `lineFor` lines are retired. "Not sure" uses calm lines: "Best part of my day? You walking in.", "I'm never far from you.", "Any time with you is my favorite time.", "I'm yours. Always." A buyer who skips everything still gets a warm, true gift.
+Buddy's reactions are in `design/prototype-v3/Main.dc.html` (the step blocks); use them word for word. The gift lines for the chip answers were rewritten in the dog's own voice on 20 Oct (section 13) and live in `shopify/assets/hs3.js` (`H`, `BASE`, `SP`, `TG`, `ME`, `PLAIN`); the prototype's `lineFor` lines are retired. "Not sure" uses calm lines: "Best part of my day? You walking in.", "I'm never far from you.", "Any time with you is my favorite time.", "I'm yours. Always." A buyer who skips everything still gets a warm, true gift.
 
-**The gift lines' voice (Krish, 20 Oct).** Every line is the dog talking to the person it loves: I, me and my are the dog; you is the person. Together the lines read as one warm message from the dog, signed "Love, [dog]": warm first, funny second, with a dog's logic and a straight face. Never he, she or the dog's name (that is writing about the dog from outside), never the person's name, no exclamation marks, no "Dear". Biscuit's own voice (4.6) is unchanged: he talks to the buyer.
+**The gift lines' voice (Krish, 20 Oct).** Every line is the dog talking to the person it loves: I, me and my are the dog; you is the person. Together the lines read as one warm message from the dog, signed "Love, [dog]": warm first, funny second, with a dog's logic and a straight face. Never he, she or the dog's name (that is writing about the dog from outside), never the person's name, no exclamation marks, no "Dear". Buddy's own voice (4.6) is unchanged: he talks to the buyer.
 
 ### 4.3 The reveal
 
-- "Biscuit's pick" eyebrow, "Kuku's gift for Sam".
-- Four gift tabs (Mug, Blanket, Print, Ornament), the pick marked "Biscuit's pick". Tapping a tab shows the same words on that gift. Under the tabs: "Same words on any of them. Tap to see each one, then pick as many as you like."
+- "Buddy's pick" eyebrow, "Kuku's gift for Sam".
+- Four gift tabs (Mug, Blanket, Print, Ornament), the pick marked "Buddy's pick". Tapping a tab shows the same words on that gift. Under the tabs: "Same words on any of them. Tap to see each one, then pick as many as you like."
 - The gift mockup, with the lines inking in one by one (pencil to ink).
-- Biscuit explains the pick, e.g. "The Morning Mug. Walks start with coffee. I would know. So Kuku gets a spot in Sam's mug every morning."
+- Buddy explains the pick, e.g. "The Morning Mug. Walks start with coffee. I would know. So Kuku gets a spot in Sam's mug every morning."
 - "Written from your answers. Change any word."
 - Buttons: "That's them. Choose gifts" and "Change a word" (inline edit with a character count).
 
@@ -115,22 +115,22 @@ Biscuit's reactions are in `design/prototype-v3/Main.dc.html` (the step blocks);
 
 - "Kuku's gifts for Sam" / "Pick one or more. Your words go on each one."
 - A strip with the photo, the first line and "Love, Kuku".
-- Four tick boxes with name, one-line description and price. Biscuit's pick arrives ticked. The ornament shows $19 when another gift is ticked.
+- Four tick boxes with name, one-line description and price. Buddy's pick arrives ticked. The ornament shows $19 when another gift is ticked.
 - "Ship to: Sam / Me".
-- "Free US shipping. Order by Dec 10 for Christmas. A real person checks every order before it prints. Misprints are remade free." (Confirm the Dec 10 date per product in Printful before it goes live.)
-- Button: "Add to cart · $29", or "Add 2 gifts to cart · $48".
+- "Free US shipping. A real person checks every order before it prints. Misprints are remade free." A dated Christmas order-by promise stays off the live store until Printful publishes a verified 2026 cutoff for each route.
+- Button: "Personalize gift · $29", or "Personalize 2 gifts · $48". It opens the first product's personalizer; Teeinblue's button adds each completed gift to the cart.
 - After adding: "In your cart. Kuku's tail is going." and "Save Kuku's gift to your story".
 
 ### 4.5 The share card
 
 A 9:16 card: "A gift from the dog", the photo, "Kuku got Sam something.", three lines, "Love, Kuku", "heartside.io". In-app browsers block downloads, so the instruction is "Press and hold the card to save it."
 
-### 4.6 Biscuit's voice
+### 4.6 Buddy's voice
 
-Biscuit is the brand's host: an illustrated chestnut miniature dachshund with a greying muzzle (geometric, crafted, never a childish cartoon). He talks a bit like a dog.
+Buddy is the brand's host: an illustrated chestnut miniature dachshund with a greying muzzle (geometric, crafted, never a childish cartoon). He talks a bit like a dog.
 
 - Dog things: sniffing things out, his tail going, ears, walks, treats, "Ask any dog.", "Good dog."
-- At most one dog-ism per message. Short sentences. One exclamation mark per message is allowed in Biscuit's chat (it's a dog's excitement); nowhere else.
+- At most one dog-ism per message. Short sentences. One exclamation mark per message is allowed in Buddy's chat (it's a dog's excitement); nowhere else.
 - Warm about every dog. Never makes the buyer or the recipient the joke.
 - Never mentions death, illness, weight, age decline, rescue history or anything sad, even if the buyer does; he stays gentle and moves on.
 - No emoji. No "woof" spam. No baby talk.
@@ -140,9 +140,9 @@ Biscuit is the brand's host: an illustrated chestnut miniature dachshund with a 
 ### 5.1 What it is for
 
 The chips already produce good lines without AI. The AI makes it feel like it knows them:
-1. **Typed answers** ("Something else"): turn the buyer's own words into a gift line and a Biscuit reaction.
+1. **Typed answers** ("Something else"): turn the buyer's own words into a gift line and a Buddy reaction.
 2. **The follow-up** after a typed answer: one question that digs into the detail they gave (which, when, how many). Never why, never a joke request.
-3. **Compose** at the reveal, only when any answer was typed: tidy the four lines to fit, keep the buyer's specifics word for word, write Biscuit's reason for the pick.
+3. **Compose** at the reveal, only when any answer was typed: tidy the four lines to fit, keep the buyer's specifics word for word, write Buddy's reason for the pick.
 
 Chip-only paths use the scripted lines and reactions and make no AI call. That keeps the common path instant and free.
 
@@ -153,7 +153,7 @@ All three ship in version one, on Sunday.
 **Typed answer call.** In: `{ step, question, typed_text, dog: {name, pronoun, breed?, tone?}, recipient: {name, relation} }` (breed and tone only for an exact match in the breed corpus; tone is a light signal, never shown). Out:
 
 ```json
-{ "reaction": "≤ 70 chars, Biscuit's voice",
+{ "reaction": "≤ 70 chars, Buddy's voice",
   "line": "≤ 60 chars (≤ 44 on step meaning), the dog talking to the recipient (I is the dog, you is the person)",
   "follow_up": { "question": "≤ 70 chars", "chips": ["≤ 24 chars", "...", "..."] },
   "flags": ["grief" | "profanity" | "person_described" | "unclear"] }
@@ -165,7 +165,7 @@ All three ship in version one, on Sunday.
 { "lines": { "home": "≤ 60", "spot": "≤ 60", "together": "≤ 60", "meaning": "≤ 44" },
   "alternates": { "home": ["≤ 60"] },
   "recommended_gift": "mug" | "blanket" | "print" | "ornament",
-  "reason": "≤ 140 chars, Biscuit's voice",
+  "reason": "≤ 140 chars, Buddy's voice",
   "sources": { "home": ["answer ids"] },
   "flags": [] }
 ```
@@ -175,7 +175,7 @@ All three ship in version one, on Sunday.
 - Lengths as above. The gift templates must fit the longest allowed line.
 - Every number, time, place and name in an output line must appear in the buyer's input; otherwise use the buyer's own trimmed words.
 - Gift lines are the dog talking (20 Oct): I is allowed and means the dog; a line with he, she, his, her, the dog's name or the person's name is rejected, as is an exclamation mark; no em dashes; the banned word list in section 2. The theme applies the same voice check to every AI line it receives.
-- A flag of grief, profanity or unclear: Biscuit says "I didn't quite catch that one. Try again, or pick one of these?" and shows the chips.
+- A flag of grief, profanity or unclear: Buddy says "I didn't quite catch that one. Try again, or pick one of these?" and shows the chips.
 - Timeouts: typed answer 3 seconds, then a scripted "Tell me more?" and the buyer's own words as the line; compose 11 seconds (since 22 Oct: Claude Sonnet writes the note and n8n hands over to Gemini 3.5 Flash at 7.5 s; the scripted lines show at once and the AI's replace them when they land).
 - Budget: at most 8 AI calls per visitor session. Rate-limit by IP.
 - The model is never asked to draw. No per-visitor image generation in version one (see section 10).
@@ -213,27 +213,26 @@ All three ship in version one, on Sunday.
 - **Hero film (8 seconds):** a mug lands in Sam's hands on a cold morning; the words ink in; "Love, Kuku". End card: "Your dog loves you too. heartside.io".
 - **Launch Reels (made with AI, never showing AI "customers"):**
   1. "My dog got me a gift" reveal: a partner unwraps the blanket and reads the lines aloud (creator version later with real people).
-  2. Biscuit's interview, screen-recorded on a phone, sped up, with the lines inking in.
-  3. "Which gift would your dog pick?" the four gifts with Biscuit's reasons.
+  2. Buddy's interview, screen-recorded on a phone, sped up, with the lines inking in.
+  3. "Which gift would your dog pick?" the four gifts with Buddy's reasons.
 - **Creators:** the 20 gifted US creators film their partner opening a gift from their dog. Disclose the gift in the post (FTC).
 - **The share card** is the loop: every buyer gets a story-sized card that says "Kuku got Sam something."
 - A/B test from `POSITIONING.md` continues: judge posts by sends per reach.
 
 ## 9. What's out of version one
 
-- Per-visitor AI images, and Biscuit as a cartoon of the buyer's own dog.
+- Per-visitor AI images, and Buddy as a cartoon of the buyer's own dog.
 - "A dog I miss" mode for dogs who have died (needs its own care and copy).
 - The 2027 wall calendar (needs twelve photos).
 - The HR review poster and the pillow.
 
-## 10. Phase two: an AI drawing from their answers (Krish asked, 13 Oct)
+## 10. Ordered artwork trial (updated by Krish, 23 Oct)
 
-Recommended: offer it from week two, as an illustration rather than a photo, starting with the mug and the ornament.
+The 13 October idea of a phase-two drawing on the mug and ornament is superseded for product development. The approved first target is a framed city screenprint with the buyer's dog as the subject, a small handwritten note, a dog signature and a decorative illustrated paw. A buyer may give one meaningful city or neighborhood without adding a long questionnaire; an omitted place stays unidentified. The buyer's own photo is the identity reference. Runway and Higgsfield are primarily for lead-generation content and ads, not the ordered-product image route.
 
-- Why an illustration: owners know every marking; a slightly wrong ear on a realistic picture reads as "that's not my dog". An illustration forgives small details.
-- Why it's worth it: the picture comes from their answers (Kuku waiting at the door at 6:10), which pet-portrait sellers can't offer.
-- Controls: three photos, a preview before paying, two redraws, the human check, only the dog (never people), labeled "An illustration made with AI from your photos". Images are too small for the 12x18 print and the blanket until upscaling is proven.
-- Gate: a bake-off of five dogs (three photos each) through Higgsfield and Runway in one style; Krish judges "is that my dog?"; four of five must pass. Uses Krish's credits, so ask before running it.
+- Generate the dog scene after payment with ChatGPT Images. Render the four exact lines, signature and paw deterministically outside the image model. A person checks likeness and the complete print file before Teeinblue sends it to Printful. `tools/print-art/` is the dry-run production trial; it cannot confirm fulfillment.
+- Keep the current framed print on sale until five varied owner-supplied dog photos pass likeness review, the 12 x 18 file passes print inspection and a physical sample, a real order's photo and words reach the replacement design, the buyer-facing preview describes what is actually delivered, and measured image cost and time preserve the margin.
+- A blanket adaptation is a separate product test. Its much larger print area, fabric texture and viewing distance cannot inherit approval from the framed print. Mug and ornament scene art remain later options.
 
 ## 11. Done for Sunday (pass or fail)
 
@@ -262,8 +261,8 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
 - 2026-10-13: Krish rejected the HR-review builder and the "areas for improvement" questions; called for an empathetic, AI-powered journey with an animated host.
 - 2026-10-13: Launch moved to Sunday 18 October ("aim for 5 days from now").
 - 2026-10-13: Product direction: words in the owner's voice about their dog (Krish's pick), then reframed by Krish the same day to gifts given on behalf of the dog to someone it loves, everyday functional gifts.
-- 2026-10-13: Concept process: three independent concepts (conversation, recognition deck, print-as-interface), two blind judges; the conversation with Biscuit won, with grafts from the other two. Trace in the Cowork session.
-- 2026-10-13: Prototype approved ("I love it"), with two changes: make the choice of gifts obvious, and make Biscuit talk a bit like a dog. Both made in version 7; approved ("love it").
+- 2026-10-13: Concept process: three independent concepts (conversation, recognition deck, print-as-interface), two blind judges; the conversation with Buddy won, with grafts from the other two. Trace in the Cowork session.
+- 2026-10-13: Prototype approved ("I love it"), with two changes: make the choice of gifts obvious, and make Buddy talk a bit like a dog. Both made in version 7; approved ("love it").
 - 2026-10-13: AI drawings from answers deferred to phase two, as illustrations, gated by a five-dog likeness test.
 - 2026-10-13: Krish approved the prices, hiding the HR poster, framed poster and pillow, and the twice-daily order check. Live AI stays in version one, as agreed, using Gemini with Krish's key. Krish: "This is a Shopify business": no new outside project. Where the key sits is his call (5.4).
 - 2026-10-13: The Gemini key is in Krish's n8n as "Google Gemini(PaLM) - Heartside"; the AI runs through n8n webhooks. Sample order #1001 (the old HR-ring ornament) refunded by Krish; he reorders once the v3 page and products are live.
@@ -281,6 +280,31 @@ Still open: Krish's go-live approval on Sunday, and any spend (test orders). The
   - the blanket, the four framed-print images and the two ornament images had only their lines replaced;
   - all are live in Shopify, with each variant on its own image.
 
+- 2026-10-23: Krish moved the physical sample order to the end of the product revamp. The browser's saved photo must be tied to the current gift, and a gift with no customer photo must not add Teeinblue's sample dog to the cart. The choose button now says "Personalize" because it opens a product page; it does not add to the cart.
+- 2026-10-23: Krish approved a framed-print visual target: a city screenprint with the customer's recognizable dog as the subject and a small handwritten dog-voice note and decorative paw mark at lower right. A city or meaningful place can be optional, but never inferred from shipping. A test-only full-size composition and a production route are in `tools/print-art/`; the pictured concept is not a live offer or a physically validated print.
+- 2026-10-23: Krish approved the rendered three-stop note control on the reveal: Sentimental, Warm with a wink (default), and Hilarious. The model rewrites from the same answers while manual edits stay intact; its breed voice remains a separate signal. The theme, prompt, guard and local browser tests are prepared but the new compose workflow and theme are not yet published. Hilarious must stay affectionate and must not turn grief or a tender answer into a joke.
+- 2026-10-23: Krish directed Runway and Higgsfield toward lead-generation content and ads rather than concept brainstorming. The product priority is a repeatable final-art route when orders arrive. Keep the current four-gift route until the generated print route passes identity, print, supplier and purchase checks. The physical sample order is last.
+
 ## 14. Next action
 
-Claude Code: read this file, `design/prototype-v3/Main.dc.html`, `HANDOFF.md` sections 3 and 5, and `shopify/README.md`; propose the build plan against section 11 in a preview theme. Section 12 is decided; ask Krish before anything is published, bought or created that costs money, and use the n8n credential in 5.4 for the AI; ask Krish before switching the webhooks on.
+Finish the product revamp before the sample order: prove the approved print direction as a repeatable order-time route, validate the note control, product descriptions, photo identity and the US buying path, then seek exact approval for each live theme deployment. The physical sample and full Teeinblue-to-Printful order handoff come last.
+
+### 23 October: host name and mockup follow-through
+
+Ruling (Krish): change Biscuit to Buddy everywhere. This is a name change, preserving the approved character, voice, chat and gift behavior. Historical artifacts and legacy asset filenames can retain their original names for provenance and compatibility. New customer-facing copy uses Buddy. Refresh the storefront mockups after all product upgrades, using the new native frame mockups as the quality benchmark. The physical sample remains last.
+
+### 23 October: blanket direction supersedes the rectangular print adaptation
+
+Ruling (Krish): use the approved all-over pattern of the customer's recognizable dog and visual representations of its actual personality, with soft rough edges and no words on the blanket. The approved concept is design/blanket/approved-direction-v2.png. This changes the blanket direction only; the framed print retains its approved city artwork and small note. Generated likeness and print quality still require acceptance. Implementation and open checks: docs/evidence/2026-10-23-personality-blanket.md. Physical sample last.
+
+## October 24 ruling: shared artwork styles and tone across the range
+
+Krish: "yes - this and the sentimental > hilarious piece need to transcend all the products." Style and tone are range-wide choices, preserved when changing gifts, with product-specific compositions. The blanket stays word-free and expresses tone visually. Exact notes on the other gifts remain separate production text. Six substantially distinct style candidates are being compared; the candidates and each product adaptation are not yet approved. The original four-category range remains the recorded scope, but the revamped production-ready suite is not locked. Current decision and acceptance record: `design/range-system-2026-10-24/README.md`. Mug and ornament creative upgrades are now active work, superseding the earlier statement that their scene art was a later option. Products first, website mockups next, physical sample last.
+
+### October 24 correction: original range is not a post-research suite decision
+
+Krish challenged the claim that keeping the same products had been agreed. The October 13 four-category launch approval is historical baseline only. No agreement to keep the suite unchanged after the October 23 research has been established. The recovered report recommends changes to wall-art and ornament offers, a compact-book candidate, and narrow pillow/calendar tests alongside retaining mug and blanket formats. Later artwork approvals and sample-last instruction still stand. Product categories, formats, pricing and bundle decisions must be reconciled with that research before asking for a final suite lock. See `docs/evidence/2026-10-24-product-suite-decision-correction.md`. The assistant's proposed four-product freeze was not accepted.
+
+## Current revamp ruling, October 24, 2026
+
+Krish approved the three core gift families/four formats, conditional replacement ornament and bounded pillow pilot. He requires at least 50% net margin, actual-dog likeness, shared style/tone, and products before website mockups before samples. Exact prices must be recalibrated with complete costs. The clean operative contract is `docs/continuation/2026-10-24/START-HERE.md`; use its single execution queue. Browser work is restricted to at most five critical Codex in-app tabs, reusing and visibly opening the existing action tab when Krish must act. This is development authority, not approval of unspecified live release or spending.

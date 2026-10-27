@@ -5,10 +5,10 @@ const NUMWORDS = /^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twel
 const GRIEF = /\b(died|dead|death|dying|passed away|passed on|put down|put to sleep|rainbow bridge|cancer|tumou?r|terminal|euthani[sz]|funeral|lost (him|her|them)|miss (him|her|them) so|in heaven|rip\b)/i;
 const PROFANE = /\b(fuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|cock\w*|piss\w*|asshole\w*|bastard\w*|whore\w*|slut\w*|nigg\w*|fag\w*|retard\w*)/i;
 const FLAGS = ['grief', 'profanity', 'person_described', 'unclear'];
-// Biscuit talks to the buyer; only gift lines may say you (to the person)
+// Buddy talks to the buyer; only gift lines may say you (to the person)
 // Gift lines are the dog talking (Krish, 20 Oct): I is the dog, so he, she or the dog's name is the wrong voice
 const THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
-// Biscuit's reaction slipping into an HR review (22 Oct: "Mowgli is a focused teammate for KJ.")
+// Buddy's reaction slipping into an HR review (22 Oct: "Mowgli is a focused teammate for KJ.")
 const STIFF = /\b(teammate|focused|efficient|manager|managers|professional|productivity|ready for action|in action)\b/i;
 const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Za-z'])/i;
 
@@ -34,10 +34,10 @@ function grounded(line, hay) {
     return true;
   });
 }
-// Biscuit's reason may say I and start sentences; its names and numbers still come from the input
+// Buddy's reason may say I and start sentences; its names and numbers still come from the input
 function groundedProse(text, hay) {
   const h = String(hay || '').toLowerCase();
-  const OK = /^(I|I'm|I'd|I've|Biscuit|Heartside|The|Morning|Mug|Couch|Blanket|Framed|Print|Tree|Ornament|December|Christmas|Love)$/;
+  const OK = /^(I|I'm|I'd|I've|Buddy|Heartside|The|Morning|Mug|Couch|Blanket|Framed|Print|Tree|Ornament|December|Christmas|Love)$/;
   const re = /[A-Za-z0-9][A-Za-z0-9':-]*/g;
   let mm;
   while ((mm = re.exec(text))) {

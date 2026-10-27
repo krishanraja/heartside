@@ -13,7 +13,7 @@ import { transformSync } from 'esbuild';
 const here = path.dirname(fileURLToPath(import.meta.url));
 // hs3.js (the v3 gift chat) gets the same check; --out keeps hs2.js, as the in-app test expects
 let failed = false;
-for (const name of ['hs3.js']) {
+for (const name of ['hs3.js', 'hs-artwork-profile.js', 'hs-artwork-engine.js', 'hs-artwork-choices.js', 'hs-artwork-photo.js', 'hs-checkout-image.js']) {
   const s3 = fs.readFileSync(path.join(here, '..', '..', 'shopify', 'assets', name), 'utf8');
   const c3 = transformSync(s3, { minify: true, loader: 'js' }).code;
   if (/\brequire\(|__toESM|__commonJS|\bimport\(/.test(c3)) { console.log('FAIL minified ' + name + ' contains a require(), import() or module helper'); failed = true; }

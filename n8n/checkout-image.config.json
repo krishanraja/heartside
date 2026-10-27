@@ -1,0 +1,18 @@
+{
+  "shop": "example-shop.myshopify.com",
+  "proxyPath": "/apps/heartside-artwork",
+  "shopifyImagePrefix": "https://cdn.shopify.com/s/files/1/1111/2222/3333/files/",
+  "allowedVariantIds": [
+    "10001",
+    "10002",
+    "10003",
+    "10004",
+    "10005",
+    "10006",
+    "10007",
+    "10008",
+    "10009",
+    "10010"
+  ],
+  "enabled": false
+}

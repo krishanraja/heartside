@@ -1,6 +1,6 @@
 
 const ALLOWED = ["https://heartside.io","https://www.heartside.io","https://bnf1em-ge.myshopify.com"];
-const LIMIT_SESSION = 3;
+const LIMIT_SESSION = 5;
 const LIMIT_IP = 20;
 const req = $input.first().json;
 const h = req.headers || {};
@@ -34,7 +34,9 @@ const answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 8).map(a =>
 const current_lines = {};
 KEYS.forEach(k => { current_lines[k] = str(b.current_lines && b.current_lines[k], 60); });
 const GIFTS = ['mug', 'blanket', 'print', 'ornament'];
+const NOTE_TONES = ['sentimental', 'warm', 'hilarious'];
 const input = { dog: dog, recipient: recipient, answers: answers, current_lines: current_lines,
-  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift };
+  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,
+  note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };
 
 return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];

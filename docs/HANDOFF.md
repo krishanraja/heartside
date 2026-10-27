@@ -17,7 +17,7 @@ Read sections 1 to 3 before touching anything. Section 4 is the work left, in or
 
 ## 1. What this is and why it matters
 
-**Heartside** (heartside.io) sells gifts given on behalf of a dog to the person it loves most, made to order by Printful for US customers. A buyer tells Biscuit about their dog in a minute-long chat. Biscuit is the brand's AI host, a chestnut miniature dachshund. The answers become a short message from the dog, in its own voice, printed on any of four gifts and signed "Love, [dog]" with a paw:
+**Heartside** (heartside.io) sells gifts given on behalf of a dog to the person it loves most, made to order by Printful for US customers. A buyer tells Buddy about their dog in a minute-long chat. Buddy is the brand's AI host, a chestnut miniature dachshund. The answers become a short message from the dog, in its own voice, printed on any of four gifts and signed "Love, [dog]" with a paw:
 
 > I hear your car long before anyone else.
 > I took your side of the bed to keep it warm.
@@ -49,7 +49,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 4. **The product on screen is always the real design.** AI can make dogs and rooms; it never draws the mug, blanket, print or ornament. Show the real print on the real product photo (section 5d).
 5. **Contact details.** Customer-facing email is **krish@heartside.io**, site is **heartside.io**. Krish's personal email never appears on anything customers, partners or platforms see; use hello@krishraja.com where a personal contact is needed.
 6. **Copy style.**
-   - US spelling. No em dashes. No exclamation marks in body copy (Biscuit may use one per chat message).
+   - US spelling. No em dashes. No exclamation marks in body copy (Buddy may use one per chat message).
    - No jokes about a dog dying, ageing, illness or abandonment, and none that mock the buyer or the recipient.
    - **Gift lines are the dog talking to the person it loves:** I is the dog, you is the person. Never he, she, the dog's name or the person's name in a line, no "Dear" (V3 2 and 13).
    - None of the retired headlines in `POSITIONING.md` section 3.
@@ -104,7 +104,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
   Each answer inks a line in the dog's own voice.
 - **The reveal:**
   - The AI's compose call rewrites the four lines as one message in that dog's personality; the scripted lines show first and are the fallback.
-  - Biscuit picks a gift.
+  - Buddy picks a gift.
   - The mug is drawn on Printful's real photo, in the chosen color, with "Turn the mug".
   - "Change a word" allows 45 characters per line.
 - **Choose gifts:** tick any of the four, then "Ship to: them / me". The ornament is $19 with another gift.
@@ -133,7 +133,7 @@ All four ship free in the US. Positioning: "Your dog loves you too." (`POSITIONI
 - **Social bios** may still describe the retired range (`POSITIONING.md` section 5).
 - **Orders placed before 21 Oct have no hidden answers** (`_hs_answers`, `_hs_lines`, `_hs_ship_to`). For those, the words are only in Teeinblue's Line fields.
 - **The smallest phones (360×640)** zoom the gift page's details to about 78% and the homepage's busiest screens to about 85% to keep them on one screen. Any copy added to those screens shrinks them further.
-- **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared, and `hs3_add_to_cart` fires on the hand-off to the product page, not a confirmed add (`HANDOVER-2026-10-17.md`).
+- **Funnel events:** `hs3_share_card` fires when the card is drawn, not when it is shared. `hs3_personalize_gifts` fires on the hand-off to the first product page, not a confirmed cart add. The previous `hs3_add_to_cart` event mislabeled that hand-off (`HANDOVER-2026-10-17.md`).
 
 ## 4. The work left, in order
 
@@ -155,7 +155,7 @@ Owner in brackets. "Krish" means only he can do it (his logins, his money, his t
    This is the proof that Shopify > Teeinblue > Printful works for the v3 range.
 3. **Confirm the Christmas order-by date per product** in Printful, then set it in the theme and deploy.
 4. **Fix the funnel events' meaning**, and document each event in `shopify/README.md` (`HANDOVER-2026-10-17.md`).
-5. **Tighten Biscuit's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
+5. **Tighten Buddy's reaction prompt** so it never leans on the breed archetype ("a very important tool for a manager"). It never reaches a gift.
 6. **Phase two, only on Krish's yes:** an AI illustration of the dog from the buyer's answers (V3 section 10), gated by the five-dog likeness test.
 
 Acquisition (creators, content, the comment loop, paid tests) is planned and drafted in `growth-heartside`, which reads this repo daily.
@@ -279,9 +279,9 @@ This needs a browser session with Krish logged in. Write a prompt in the style o
 | Asset | Where |
 |---|---|
 | Logo, favicon, watercolor heart | `assets/heartside-logo.png`, `assets/favicon-512.png`, `assets/heartside-heart-watercolor.png` |
-| Dog and room photo library (licensed, confirmed by Krish on 5 Oct) | `assets/v2/` (Biscuit the dachshund is `biscuit-headshot.jpg`) |
-| Biscuit, the illustrated host | In the theme (`hs3.js`) and `design/prototype-v3/` |
-| The approved v3 prototype | `design/prototype-v3/Main.dc.html` (flow and Biscuit's lines; its gift lines are retired) |
+| Dog and room photo library (licensed, confirmed by Krish on 5 Oct) | `assets/v2/` (Buddy the dachshund is `biscuit-headshot.jpg`) |
+| Buddy, the illustrated host | In the theme (`hs3.js`) and `design/prototype-v3/` |
+| The approved v3 prototype | `design/prototype-v3/Main.dc.html` (flow and Buddy's lines; its gift lines are retired) |
 | Mug v3: Teeinblue mockups, print file, approved Shopify images, colors | `design/teeinblue/mug-v3/` |
 | Mug layers for the chat (five colors) | `shopify/assets/hs-mug-*.webp` |
 | Ornament artwork | `ornament/` |
@@ -295,7 +295,7 @@ This needs a browser session with Krish logged in. Write a prompt in the style o
 The full log, in Krish's words, is V3 section 13. The ones that shape day-to-day work:
 
 - **12 Oct: positioning.** "Heartside: Personalized Dog Gifts", "Your dog loves you too." Business headlines are never lame or dumb.
-- **13 Oct: gifts from the dog.** The four everyday gifts replaced the HR poster range. The chat with Biscuit replaced the review builder. Live AI runs on Gemini through Krish's n8n.
+- **13 Oct: gifts from the dog.** The four everyday gifts replaced the HR poster range. The chat with Buddy replaced the review builder. Live AI runs on Gemini through Krish's n8n.
 - **15 Oct: mug v3 approved.** The dog as a large cut-out on one face, the note in Fraunces on the other, every preview on real product photos. "Every gift as a letter" rejected.
 - **18 Oct: the North Star.** The gift US dog owners reach for first, with $10,000 an ordinary month by February 2027.
 - **19 Oct: five mug colors** (Black, Dark Blue, Dark Green, Red, Pink), Black first. The chat became the homepage. Order QC moved to GitHub Actions.

@@ -1,0 +1,913 @@
+{
+  "currency": "USD",
+  "period_days": 30,
+  "target_margin": "0.30",
+  "current_pricing_basis": {
+    "owner_direction": "October 24 2026: defer labor calibration for now; just cost price plus margin.",
+    "basis": "Delivered supplier cost: product, shipping, surcharge and supplier tax. Separate provisional view, not all-cost net margin.",
+    "target_supplier_cost_margin": "0.50",
+    "status": "HISTORICAL_SUPERSEDED_SUPPLIER_ONLY_VIEW",
+    "labor_calibration": "Deferred by owner; do not ask again during this stage. Unknown inputs in the all-cost model remain null."
+  },
+  "accounting_boundary": "Owner-confirmed October 24 2026: net operating profit after all attributable business costs, before owner personal income tax; include business-level profit tax when treatment is confirmed. Business profit-tax treatment remains unverified.",
+  "accounting_boundary_confirmed": true,
+  "costs": {
+    "payment_rate": {
+      "value": "0.029",
+      "status": "verified",
+      "source": "Shopify Plan page 2026-10-24: online rate 2.9% plus USD 0.30; captured transaction corroborates one route; other methods require separate case"
+    },
+    "payment_fixed": {
+      "value": "0.30",
+      "status": "verified",
+      "source": "Shopify Plan page 2026-10-24, online card route"
+    },
+    "ai_all_attempts_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Measure artwork, copy, abandoned sessions and all failed/retried calls; historical image sample is not per-sale cost"
+    },
+    "review_support_labor_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Measure review/support minutes including failed orders; assign stated labor rate"
+    },
+    "acquisition_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Include organic production/distribution labor and tools, creator gifts, paid media where applicable; avoid duplicate overhead"
+    },
+    "other_variable_per_order": {
+      "value": null,
+      "status": "unknown",
+      "source": "Establish chargebacks, bank/FX and other variable charges or evidenced zero"
+    },
+    "business_profit_tax_rate": {
+      "value": null,
+      "status": "unknown",
+      "source": "Owner confirmed accounting boundary October 24 2026 but explicitly left tax treatment unverified. Keep null, not zero, until accountant or authoritative business records establish applicable treatment."
+    },
+    "refund_remake_reserve_rate": {
+      "value": "0.03",
+      "status": "assumption",
+      "source": "Continuation planning reserve only; replace with ledger entries for realized results"
+    },
+    "account_order_ordinal": {
+      "value": "2",
+      "status": "verified",
+      "source": "Teeinblue Subscription Details 2026-10-24: one order counted; NEXT order is ordinal 2. Usage cycle resets Nov 03, distinct from subscription period Oct 18-Nov 17. Refresh before release."
+    }
+  },
+  "overhead": {
+    "teeinblue": {
+      "amount": {
+        "value": "49",
+        "status": "verified",
+        "source": "Active Teeinblue subscription Oct 18-Nov 17; USD 49. Shopify upcoming bill converts this once to GBP 37.31. Do not add both amounts."
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Subscription Details shows one store, Heartside, 2026-10-24"
+      }
+    },
+    "metashop": {
+      "amount": {
+        "value": "9.99",
+        "status": "verified",
+        "source": "Shopify Plan page confirms active USD 9.99 every 30 days, next renewal Nov 10; upcoming converted charge GBP 7.67, not a second expense"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Heartside store subscription 2026-10-24"
+      }
+    },
+    "shopify": {
+      "amount": {
+        "value": "1",
+        "status": "verified",
+        "source": "Shopify Basic Plan page 2026-10-24: GBP 1 per month until Jan 05 2027, then displayed standard GBP 25. Model current promo only; use post-promo scenario for sustainable pricing."
+      },
+      "period_days": 30.4375,
+      "heartside_share": {
+        "value": "1",
+        "status": "verified",
+        "source": "Heartside store plan"
+      },
+      "currency": "GBP",
+      "period_note": "Calendar monthly normalized using 365.25/12; actual period ledger uses exact bills, not this forecast approximation"
+    },
+    "hosting_automation": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "October 14 hosting invoice reports USD 17.47 for September (CPX21, backup, IPv4, snapshot; supplier tax USD 0). Heartside instance attribution/current-period coverage unproven; do not substitute whole shared invoice."
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    },
+    "domains_email": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "Attributable renewal and email costs missing"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    },
+    "other_operating": {
+      "amount": {
+        "value": null,
+        "status": "unknown",
+        "source": "Accounting, insurance, fixed support/admin and other attributable costs missing"
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": null,
+        "status": "unknown",
+        "source": "Document allocation basis across ventures"
+      }
+    }
+  },
+  "variants": {
+    "mug_black": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote, 2026-10-24, quantity 1 black 11oz. Review and recalculation both show 8.11 + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor show 9.75; fulfillment-region/currency explanation exists but exact integration route parity remains unverified."
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_red": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Red 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_pink": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Pink 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_dark_blue": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Blue 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "mug_dark_green": {
+      "base": {
+        "value": "8.11",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Green 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "6.69",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "blanket_50x60": {
+      "base": {
+        "value": "35.76",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Tan 50x60 sherpa quantity one, 35.76 fulfillment + 13.99 shipping + 0.40 surcharge + 4.45 tax = 54.60. Catalog/editor 37.25 differs; quote agrees with imported Teeinblue 35.76, but actual integration route parity remains untested."
+      },
+      "public_shipping_reference": {
+        "value": "13.99",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_black_12x18": {
+      "base": {
+        "value": "32.77",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, black framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_white_12x18": {
+      "base": {
+        "value": "32.77",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, white framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "frame_red_oak_12x18": {
+      "base": {
+        "value": "32.77",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: red-oak frame 12x18 quantity one, 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98; catalog/editor agrees at 32.77. Teeinblue integration route parity remains unverified."
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "unframed_12x18": {
+      "base": {
+        "value": "11.62",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, 12x18 unframed matte poster quantity one; 11.62 fulfillment + 4.99 shipping + 0.40 surcharge + 1.51 supplier tax = 18.52. Catalog/editor 13.25 differs; integration route parity unverified."
+      },
+      "public_shipping_reference": {
+        "value": "4.99",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "pillow_16x16": {
+      "base": {
+        "value": "14.59",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Basic Pillow 16x16 quantity one, both Front print and Back print listed; 14.59 fulfillment + 10.89 shipping + 0.40 surcharge + 2.30 tax = 28.18. Catalog/editor 14.95 differs. Integration route and physical fabric not qualified."
+      },
+      "public_shipping_reference": {
+        "value": "10.89",
+        "status": "public_starting",
+        "source": "02-ECONOMICS.md public shipping reference, exact route quote pending"
+      }
+    },
+    "replacement_ornament": {
+      "base": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact provider, round configuration, front/back and packaging quote required"
+      }
+    }
+  },
+  "orders": {
+    "mug_black": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "6.69",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote, 2026-10-24, quantity 1 black 11oz. Review and recalculation both show 8.11 + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor show 9.75; fulfillment-region/currency explanation exists but exact integration route parity remains unverified. Flat Rate, Oct 29-31 estimate only; not all-US pricing."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.35",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote, 2026-10-24, quantity 1 black 11oz. Review and recalculation both show 8.11 + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor show 9.75; fulfillment-region/currency explanation exists but exact integration route parity remains unverified. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_red": {
+      "items": [
+        {
+          "variant": "mug_red",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "6.69",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Red 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.35",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Red 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_pink": {
+      "items": [
+        {
+          "variant": "mug_pink",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "6.69",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Pink 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.35",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Pink 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_dark_blue": {
+      "items": [
+        {
+          "variant": "mug_dark_blue",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "6.69",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Blue 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.35",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Blue 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_dark_green": {
+      "items": [
+        {
+          "variant": "mug_dark_green",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "6.69",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Green 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.35",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Green 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "blanket_50x60": {
+      "items": [
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "13.99",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Tan 50x60 sherpa quantity one, 35.76 fulfillment + 13.99 shipping + 0.40 surcharge + 4.45 tax = 54.60. Catalog/editor 37.25 differs; quote agrees with imported Teeinblue 35.76, but actual integration route parity remains untested."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "4.45",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Tan 50x60 sherpa quantity one, 35.76 fulfillment + 13.99 shipping + 0.40 surcharge + 4.45 tax = 54.60. Catalog/editor 37.25 differs; quote agrees with imported Teeinblue 35.76, but actual integration route parity remains untested."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_black_12x18": {
+      "items": [
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "10.89",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, black framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "3.92",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, black framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_white_12x18": {
+      "items": [
+        {
+          "variant": "frame_white_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "10.89",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, white framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "3.92",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, white framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_red_oak_12x18": {
+      "items": [
+        {
+          "variant": "frame_red_oak_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "10.89",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: red-oak frame 12x18 quantity one, 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98; catalog/editor agrees at 32.77. Teeinblue integration route parity remains unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "3.92",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: red-oak frame 12x18 quantity one, 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98; catalog/editor agrees at 32.77. Teeinblue integration route parity remains unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "unframed_12x18": {
+      "items": [
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "4.99",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, 12x18 unframed matte poster quantity one; 11.62 fulfillment + 4.99 shipping + 0.40 surcharge + 1.51 supplier tax = 18.52. Catalog/editor 13.25 differs; integration route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "1.51",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, 12x18 unframed matte poster quantity one; 11.62 fulfillment + 4.99 shipping + 0.40 surcharge + 1.51 supplier tax = 18.52. Catalog/editor 13.25 differs; integration route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "pillow_16x16": {
+      "items": [
+        {
+          "variant": "pillow_16x16",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "10.89",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Basic Pillow 16x16 quantity one, both Front print and Back print listed; 14.59 fulfillment + 10.89 shipping + 0.40 surcharge + 2.30 tax = 28.18. Catalog/editor 14.95 differs. Integration route and physical fabric not qualified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "verified",
+        "source": "Printful account email October 15, read October 24: USD 0.40 per Printful order to US, all methods, October 15 2026-January 17 2027. Mixed baskets assume one Printful order; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "2.30",
+        "status": "observed_sample",
+        "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Basic Pillow 16x16 quantity one, both Front print and Back print listed; 14.59 fulfillment + 10.89 shipping + 0.40 surcharge + 2.30 tax = 28.18. Catalog/editor 14.95 differs. Integration route and physical fabric not qualified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "replacement_ornament": {
+      "items": [
+        {
+          "variant": "replacement_ornament",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact US destination supplier quote required"
+      },
+      "holiday_surcharge": {
+        "value": null,
+        "status": "unknown",
+        "source": "Exact quote must establish whether surcharge is already included"
+      },
+      "seller_borne_tax": {
+        "value": null,
+        "status": "unknown",
+        "source": "Supplier invoice/quote and exemption status, payment-fee tax, duties"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_and_frame": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "17.58",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Black 12x18 frame qty1. Fulfillment 40.88, shipping 17.58, one surcharge 0.40, supplier tax 5.23, total 64.09. Exact basket readback, not a sum of individual tax quotes; Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Black 12x18 frame qty1. Fulfillment 40.88, shipping 17.58, one surcharge 0.40, supplier tax 5.23, total 64.09. Exact basket readback, not a sum of individual tax quotes; Teeinblue route parity unverified."
+      },
+      "seller_borne_tax": {
+        "value": "5.23",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Black 12x18 frame qty1. Fulfillment 40.88, shipping 17.58, one surcharge 0.40, supplier tax 5.23, total 64.09. Exact basket readback, not a sum of individual tax quotes; Teeinblue route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_and_blanket": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "20.68",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Tan 50x60 sherpa qty1. Fulfillment 43.87, shipping 20.68, one surcharge 0.40, supplier tax 5.76, total 70.71. Exact basket readback; Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Tan 50x60 sherpa qty1. Fulfillment 43.87, shipping 20.68, one surcharge 0.40, supplier tax 5.76, total 70.71. Exact basket readback; Teeinblue route parity unverified."
+      },
+      "seller_borne_tax": {
+        "value": "5.76",
+        "status": "observed_sample",
+        "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Tan 50x60 sherpa qty1. Fulfillment 43.87, shipping 20.68, one surcharge 0.40, supplier tax 5.76, total 70.71. Exact basket readback; Teeinblue route parity unverified."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    }
+  },
+  "fx": {
+    "GBP_USD": {
+      "value": null,
+      "status": "unknown",
+      "source": "Read actual settled bill conversion/FX fee or select and label planning FX; do not convert from unrelated display estimates"
+    }
+  },
+  "quote_observations": {
+    "mug_black_brooklyn_20261024": {
+      "variant": "mug_black",
+      "quantity": 1,
+      "base": "8.11",
+      "shipping": "6.69",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.35",
+      "total": "16.55",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "9.75",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote, 2026-10-24, quantity 1 black 11oz. Review and recalculation both show 8.11 + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor show 9.75; fulfillment-region/currency explanation exists but exact integration route parity remains unverified."
+    },
+    "unframed_brooklyn_20261024": {
+      "variant": "unframed_12x18",
+      "quantity": 1,
+      "base": "11.62",
+      "shipping": "4.99",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.51",
+      "total": "18.52",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "13.25",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, 12x18 unframed matte poster quantity one; 11.62 fulfillment + 4.99 shipping + 0.40 surcharge + 1.51 supplier tax = 18.52. Catalog/editor 13.25 differs; integration route parity unverified."
+    },
+    "frame_black_brooklyn_20261024": {
+      "variant": "frame_black_12x18",
+      "quantity": 1,
+      "base": "32.77",
+      "shipping": "10.89",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "3.92",
+      "total": "47.98",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "34.50",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, black framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+    },
+    "frame_white_brooklyn_20261024": {
+      "variant": "frame_white_12x18",
+      "quantity": 1,
+      "base": "32.77",
+      "shipping": "10.89",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "3.92",
+      "total": "47.98",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "34.50",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026, white framed 12x18 matte poster quantity one; 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98. Catalog/editor 34.50 differs; integration route parity unverified."
+    },
+    "frame_red_oak_brooklyn_20261024": {
+      "variant": "frame_red_oak_12x18",
+      "quantity": 1,
+      "base": "32.77",
+      "shipping": "10.89",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "3.92",
+      "total": "47.98",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "32.77",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: red-oak frame 12x18 quantity one, 32.77 fulfillment + 10.89 shipping + 0.40 surcharge + 3.92 supplier tax = 47.98; catalog/editor agrees at 32.77. Teeinblue integration route parity remains unverified."
+    },
+    "blanket_brooklyn_20261024": {
+      "variant": "blanket_50x60",
+      "quantity": 1,
+      "base": "35.76",
+      "shipping": "13.99",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "4.45",
+      "total": "54.60",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "37.25",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Tan 50x60 sherpa quantity one, 35.76 fulfillment + 13.99 shipping + 0.40 surcharge + 4.45 tax = 54.60. Catalog/editor 37.25 differs; quote agrees with imported Teeinblue 35.76, but actual integration route parity remains untested."
+    },
+    "pillow_brooklyn_20261024": {
+      "variant": "pillow_16x16",
+      "quantity": 1,
+      "base": "14.59",
+      "shipping": "10.89",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "2.30",
+      "total": "28.18",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "14.95",
+      "order_type": "Basic; unpaid; disposable quote text front and back; white zipper/stitch",
+      "route_parity_verified": false,
+      "source": "Authenticated Printful Basic-order unpaid Brooklyn NY quote October 24 2026: Basic Pillow 16x16 quantity one, both Front print and Back print listed; 14.59 fulfillment + 10.89 shipping + 0.40 surcharge + 2.30 tax = 28.18. Catalog/editor 14.95 differs. Integration route and physical fabric not qualified."
+    },
+    "mug_red_brooklyn_20261024": {
+      "variant": "mug_red",
+      "quantity": 1,
+      "base": "8.11",
+      "shipping": "6.69",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.35",
+      "total": "16.55",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "9.75",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Red 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+    },
+    "mug_pink_brooklyn_20261024": {
+      "variant": "mug_pink",
+      "quantity": 1,
+      "base": "8.11",
+      "shipping": "6.69",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.35",
+      "total": "16.55",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "9.75",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Pink 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor 9.75 differs; no discount code. Teeinblue route parity unverified."
+    },
+    "mug_dark_blue_brooklyn_20261024": {
+      "variant": "mug_dark_blue",
+      "quantity": 1,
+      "base": "8.11",
+      "shipping": "6.69",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.35",
+      "total": "16.55",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "8.11",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Blue 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+    },
+    "mug_dark_green_brooklyn_20261024": {
+      "variant": "mug_dark_green",
+      "quantity": 1,
+      "base": "8.11",
+      "shipping": "6.69",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "1.35",
+      "total": "16.55",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "catalog_base": "8.11",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY quote October 24 2026: Dark Green 11oz quantity one, 8.11 fulfillment + 6.69 shipping + 0.40 surcharge + 1.35 tax = 16.55. Catalog/editor agrees at 8.11; integration route parity unverified."
+    },
+    "mug_and_frame_brooklyn_20261024": {
+      "order_id": "mug_and_frame",
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "base": "40.88",
+      "shipping": "17.58",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "5.23",
+      "total": "64.09",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Black 12x18 frame qty1. Fulfillment 40.88, shipping 17.58, one surcharge 0.40, supplier tax 5.23, total 64.09. Exact basket readback, not a sum of individual tax quotes; Teeinblue route parity unverified."
+    },
+    "mug_and_blanket_brooklyn_20261024": {
+      "order_id": "mug_and_blanket",
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "base": "43.87",
+      "shipping": "20.68",
+      "holiday_surcharge": "0.40",
+      "seller_borne_tax": "5.76",
+      "total": "70.71",
+      "currency": "USD",
+      "destination_scope": "Brooklyn NY; full address retained privately",
+      "order_type": "Basic; unpaid; disposable quote text",
+      "route_parity_verified": false,
+      "source": "Authenticated Basic-order Brooklyn NY unpaid quote October 24 2026: Black 11oz mug qty1 + Tan 50x60 sherpa qty1. Fulfillment 43.87, shipping 20.68, one surcharge 0.40, supplier tax 5.76, total 70.71. Exact basket readback; Teeinblue route parity unverified."
+    }
+  },
+  "margin_policy": {
+    "owner_direction": "October26:30% net floor; maximize total net operating profit",
+    "source": "docs/evidence/2026-10-26-pricing-ruling.md",
+    "supersedes": "October24 mandatory50% minimum; prior20% downside allowance",
+    "status": "OWNER_POLICY_NOT_CERTIFIED_ECONOMICS",
+    "authority": "No live-price, promotion, spend or release approval"
+  }
+}

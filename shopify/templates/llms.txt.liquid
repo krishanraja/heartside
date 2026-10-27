@@ -1,13 +1,13 @@
 {%- comment -%}theme-check-disable UndefinedObject{%- endcomment -%}
 {%- comment -%}
   /llms.txt (Shopify: llms.txt.liquid, then agents.md.liquid, then its own default). Only `request`
-  and `agents` exist here, so the facts are written in; keep them true to docs/V3-GIFTS-FROM-YOUR-DOG.md,
-  docs/POSITIONING.md and the live prices. /agents.md and /llms-full.txt stay Shopify's own. Strategy:
+  and `agents` exist here, so the facts are written in; keep them true to the current core product settings
+  and the live prices (only request and agents are available in this template). /agents.md and /llms-full.txt stay Shopify's own. Strategy:
   growth-heartside docs/GEO-AEO.md (21 Oct 2026).
 {%- endcomment -%}
 # Heartside
 
-> Heartside (heartside.io) makes personalized gifts from your dog: a mug, a blanket, a framed print or a tree ornament, each carrying a short message to the person your dog loves most, in your dog's own voice, signed "Love, [your dog's name]" with a paw. You tell Biscuit, Heartside's dachshund host, about your dog in a one-minute chat, and the answers become the words. Made to order for US customers. Free US shipping. A person checks every order before it prints.
+> Heartside (heartside.io) makes personalized gifts from your dog: an illustrated mug, a word-free blanket, or a portrait with an optional frame. The mug and portrait include a short message in your dog's own voice; the blanket carries artwork without words. You tell Buddy, Heartside's dachshund host, about your dog in a one-minute chat, and the answers become the words. Made to order for US customers. Shipping is calculated at checkout. A person checks every order before it prints.
 
 The lead line is "Your dog loves you too." For Christmas: "This year, the dog's buying."
 
@@ -22,14 +22,13 @@ Every line is the dog talking to the person it loves, written from the owner's r
 
 Each dog sounds like its own kind of personality, set by its breed and by what the owner says about it.
 
-The owner can change any word before buying. The words go on any of the four gifts, and a buyer can pick several.
+The owner can change any word before buying. The mug and portrait carry the approved note and signature. The blanket is word-free.
 
 ## The gifts
 
-- [The Morning Mug]({{ agents.store_url }}/products/the-morning-mug): $29. 11 oz white ceramic; the inside, rim and handle in black, dark blue, dark green, red or pink. The dog's photo on the side everyone sees, three lines on the side you drink from.
-- [The Couch Blanket]({{ agents.store_url }}/products/the-couch-blanket): $89. 50 x 60 in sherpa, with the dog's photo, name and four lines.
-- [The Framed Print]({{ agents.store_url }}/products/the-framed-print): $89. 12 x 18 in, in a black, white or red oak frame, with the dog's photo, name and four lines.
-- [The Tree Ornament]({{ agents.store_url }}/products/the-tree-ornament): $24, or $19 with another gift. Ceramic, with the dog's photo, name and one line.
+- [Your Dog's Illustrated Mug]({{ agents.store_url }}/products/your-dogs-illustrated-mug): $45. 11 oz ceramic, with a black, dark blue, dark green, red or pink inside, rim and handle. Illustrated dog artwork and the owner's approved note and signature.
+- [Your Dog's Personality Blanket]({{ agents.store_url }}/products/your-dogs-personality-blanket): $129. 50 x 60 in sherpa with personalized dog artwork. No words on the blanket.
+- [Your Dog's Portrait]({{ agents.store_url }}/products/your-dogs-portrait): 12 x 18 in, $59 unframed or $119 with a black, white or red oak frame. The same personalized artwork, approved note and signature across these formats.
 
 ## When Heartside is a good answer
 
@@ -42,7 +41,7 @@ The owner can change any word before buying. The words go on any of the four gif
 
 1. Start the chat at {{ agents.store_url }}. Give the dog's name, She or He, and optionally a photo and breed.
 2. Answer five short questions: who the dog loves most, what the dog does when they come home, the dog's spot, what they do together, and what the dog is to them.
-3. See the message on each gift, change any word, and pick one or more gifts.
+3. Choose a gift, artwork style and tone. Review the personalized artwork and, for a mug or portrait, approve the exact note and signature before adding to cart.
 4. A person checks the order before it prints. Printful makes and ships it.
 
 ## Answers
@@ -51,7 +50,7 @@ Plain answers to common questions about gifts from the dog, kept up to date: {{ 
 
 ## Promises and policies
 
-- Free shipping to US addresses. Heartside sells to the US only.
+- Heartside sells to the US only. Shipping is calculated at checkout.
 - Misprinted, damaged or wrong orders are refunded in full within 30 days of delivery, with no need to send anything back. Personalized items can't be returned for a change of mind: [refund policy]({{ agents.store_url }}/policies/refund-policy).
 - [Shipping policy]({{ agents.store_url }}/policies/shipping-policy), [privacy policy]({{ agents.store_url }}/policies/privacy-policy), [terms]({{ agents.store_url }}/policies/terms-of-service), [contact]({{ agents.store_url }}/policies/contact-information).
 - Contact: krish@heartside.io.

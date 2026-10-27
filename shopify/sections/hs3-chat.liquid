@@ -1,6 +1,6 @@
 {%- comment -%}
   Heartside v3: gifts from your dog. The whole journey on one screen, phone first:
-  home, the chat with Biscuit, the reveal, choose gifts and the share card.
+  home, the chat with Buddy, the reveal, choose gifts and the share card.
   Built from the approved prototype (design/prototype-v3/Main.dc.html) against
   docs/V3-GIFTS-FROM-YOUR-DOG.md. Behaviour lives in assets/hs3.js; this file holds the
   first screen (so it shows before the script runs) and the settings.
@@ -49,6 +49,9 @@
       "typedUrl": {{ s.typed_url | json }},
       "composeUrl": {{ s.compose_url | json }},
       "ai": {{ s.ai_on | json }},
+      "artworkCandidates": {{ s.artwork_candidates | json }},
+      "blanketPurchase": {{ s.blanket_purchase | json }},
+      "corePurchase": {{ s.core_purchase | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
       "examplePhoto": {{ example_photo | strip | json }},
       "mug": {
@@ -101,7 +104,7 @@
       </div>
       <div class="hs3-hero__foot">
         <div class="hs3-pills" aria-hidden="true">
-          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span><span class="hs3-pill" data-icon="ornament">Ornament</span>
+          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span>{% unless s.artwork_candidates %}<span class="hs3-pill" data-icon="ornament">Ornament</span>{% endunless %}
         </div>
         <p class="hs3-small">{{ s.gifts_note }}</p>
         <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
@@ -116,7 +119,7 @@
       </div>
     </div>
   </div>
-  <noscript><p class="hs3-small">Biscuit needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
+  <noscript><p class="hs3-small">Buddy needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
   <p class="hs3-privacy" data-hs3-privacy hidden>{{ s.privacy }}</p>
 </div>
 
@@ -126,27 +129,30 @@
   "tag": "section",
   "class": "hs3-section",
   "settings": [
-    { "type": "paragraph", "content": "Gifts from your dog: the chat with Biscuit, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Biscuit's lines are in assets/hs3.js, word for word from the approved prototype." },
+    { "type": "checkbox", "id": "core_purchase", "label": "Enable tested core native product routes", "default": false },
+    { "type": "checkbox", "id": "artwork_candidates", "label": "Draft shared artwork choices", "default": false, "info": "Candidate controls only. Does not enable image generation or qualified previews." },
+    { "type": "paragraph", "content": "Gifts from your dog: the chat with Buddy, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Buddy's lines are in assets/hs3.js, word for word from the approved prototype." },
     { "type": "header", "content": "First screen" },
     { "type": "text", "id": "ribbon", "label": "Ribbon", "default": "This year, the dog's buying." },
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Biscuit about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
-    { "type": "text", "id": "peek", "label": "Biscuit's first bubble", "default": "Psst. Who does your dog love most?" },
+    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Buddy about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
+    { "type": "text", "id": "peek", "label": "Buddy's first bubble", "default": "Psst. Who does your dog love most?" },
     { "type": "text", "id": "gifts_note", "label": "Under the gift pills", "default": "Chat for a minute, then put your words on any of these. Pick one, or a few." },
     { "type": "text", "id": "start", "label": "Button", "default": "Start with your dog" },
     { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. A cut-out PNG looks best. Empty uses the sample dog." },
-    { "type": "header", "content": "Biscuit's AI (n8n)" },
+    { "type": "header", "content": "Buddy's AI (n8n)" },
     { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
     { "type": "text", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },
     { "type": "text", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" },
     { "type": "text", "id": "legal_note", "label": "Company note under the first screen", "info": "The homepage is one screen with no footer, so this line carries the policies and the company note.", "default": "Heartside is a Mindmaker LLC company." },
-    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.", "default": "Answers you type are read by an AI service (Google Gemini) to write the words. Your email and address never are." },
+    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.", "default": "Your answers, including choices you select, are processed through n8n using Google Gemini and Anthropic Claude to write your note. Your photo and artwork instructions are processed through Teeinblue using OpenAI. We don't send your email, address or payment details to the text-writing services." },
     { "type": "header", "content": "The gifts" },
     { "type": "text", "id": "product_view", "label": "Product template for the gifts", "info": "Opens each gift with ?view= this.", "default": "gift" },
     { "type": "product", "id": "product_mug", "label": "The Morning Mug" },
     { "type": "product", "id": "product_blanket", "label": "The Couch Blanket" },
+    { "type": "checkbox", "id": "blanket_purchase", "label": "Enable native blanket purchase route", "default": false, "info": "With shared artwork choices enabled, sends only the selected blanket product to blanket-native. Enable after its native campaign, price and purchase flow are verified." },
     { "type": "product", "id": "product_print", "label": "The Framed Print" },
     { "type": "product", "id": "product_ornament", "label": "The Tree Ornament" },
     { "type": "number", "id": "price_mug", "label": "Mug price until the product is picked", "default": 29 },

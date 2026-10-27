@@ -1,9 +1,9 @@
 {%- comment -%}
   Structured data (schema.org JSON-LD) for search and answer engines (21 Oct 2026; strategy in
   growth-heartside docs/GEO-AEO.md). Helio only emits a bare Organization, so:
-  - kind: 'home' adds Heartside's Organization, the WebSite and the four gifts as an ItemList;
-  - kind: 'product' adds the Product with one Offer per variant (price, availability, free US
-    shipping, the made-to-order return terms from /policies/refund-policy) and a BreadcrumbList.
+  - kind: 'home' adds Heartside's Organization, the WebSite and the three core gifts as an ItemList;
+  - kind: 'product' adds the Product with one Offer per variant (price, availability,
+    the made-to-order return terms from /policies/refund-policy) and a BreadcrumbList.
   Every claim here must be true on the page and in the policies: no ratings or reviews until real
   ones exist (HANDOFF 2.3). Rendered once per page by hs3-chat (home) and hs2-product (product).
 {%- endcomment -%}
@@ -23,7 +23,7 @@
       "logo": {{ 'hs-logo.png' | asset_url | prepend: 'https:' | json }},
       "email": "krish@heartside.io",
       "slogan": "Your dog loves you too.",
-      "description": "Heartside makes gifts given on behalf of a dog to the person it loves most: a mug, a blanket, a framed print and a tree ornament, each carrying a short message in the dog's own voice, written from the owner's answers in a one-minute chat with Biscuit, Heartside's dachshund host. Made to order by Printful for US customers. A person checks every order before it prints. Free US shipping.",
+      "description": "Heartside makes personalized gifts from a dog to the person it loves: an illustrated mug, a word-free sherpa blanket, and a portrait available unframed or framed. The mug and portrait carry the owner's approved note and signature. Artwork is inspired by the dog and the details shared with Buddy, Heartside's dachshund host. Made to order by Printful for US customers. A person checks every order before it prints. Shipping is calculated at checkout.",
       "areaServed": { "@type": "Country", "name": "United States" },
       "sameAs": ["https://www.instagram.com/yourdoghasnotes", "https://www.facebook.com/yourdoghasnotes", "https://www.tiktok.com/@yourdoghasnotes"]
     },
@@ -40,7 +40,7 @@
       "name": "Gifts from your dog",
       "itemListElement": [
         {%- assign hs_n = 0 -%}
-        {%- assign hs_handles = 'the-morning-mug,the-couch-blanket,the-framed-print,the-tree-ornament' | split: ',' -%}
+        {%- assign hs_handles = 'your-dogs-illustrated-mug,your-dogs-personality-blanket,your-dogs-portrait' | split: ',' -%}
         {%- for handle in hs_handles -%}
           {%- assign p = all_products[handle] -%}
           {%- if p and p.available -%}
@@ -85,11 +85,6 @@
           "availability": "{% if v.available %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}",
           "itemCondition": "https://schema.org/NewCondition",
           "seller": { "@id": {{ hs_org | json }} },
-          "shippingDetails": {
-            "@type": "OfferShippingDetails",
-            "shippingRate": { "@type": "MonetaryAmount", "value": 0, "currency": "USD" },
-            "shippingDestination": { "@type": "DefinedRegion", "addressCountry": "US" }
-          },
           "hasMerchantReturnPolicy": {
             "@type": "MerchantReturnPolicy",
             "applicableCountry": "US",

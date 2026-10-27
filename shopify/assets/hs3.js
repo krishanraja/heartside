@@ -1,7 +1,7 @@
 /* Heartside v3: gifts from your dog. Loaded (deferred) by sections/hs3-chat.liquid.
-   The chat with Biscuit, the reveal, choose gifts and the share card, from the approved
+   The chat with Buddy, the reveal, choose gifts and the share card, from the approved
    prototype (design/prototype-v3/Main.dc.html) and docs/V3-GIFTS-FROM-YOUR-DOG.md.
-   Biscuit's lines and every gift line for a chip answer are the prototype's, word for word.
+   Buddy's lines and every gift line for a chip answer are the prototype's, word for word.
    Chip answers never call the AI. "Something else" sends the typed words to Krish's n8n
    (two webhooks, section 5.4), which answers in the JSON of section 5.2 or not at all; any
    slow or failed call falls back to the buyer's own words, so the chat never waits long.
@@ -17,19 +17,20 @@
   var HS2 = 'hs2-review';
   var QKEY = 'hs2-queue';
   var MAX_CALLS = 8;
+  var COMPOSE_VERSION = 'explicit-tone-v1';
   var TYPED_MS = 5000, COMPOSE_MS = 11000; // 22 Oct: Gemini 3.5 Flash answers typed replies (about 3 s); Claude writes the note and n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false, toneStatus: '' };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
     return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
-      typed: {}, ai: {}, fu: null, edits: {}, composed: null, gift: null, tabbed: false,
-      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, mugColor: '' };
+      typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, toneCache: {}, composeRequest: null, composeBaseGift: null, appliedComposeKey: '', noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
+      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, photoStorageWarning: '', mugColor: '' };
   }
   function load() {
     var s = null;
@@ -37,6 +38,8 @@
     var f = fresh();
     if (!s || typeof s !== 'object') return f;
     Object.keys(f).forEach(function (k) { if (!(k in s)) s[k] = f[k]; });
+    // A reload cannot establish whether a dispatched request was billed or completed.
+    if (s.composeRequest) s.composeRequest.status = 'uncertain';
     return s;
   }
   function save() {
@@ -167,7 +170,7 @@
   }
   function mugLines() { var o = {}; giftKeys('mug').forEach(function (k) { o[k] = evenBreak(lineFor(k) || ''); }); return o; }
   function recGift() {
-    if (S.composed && GIFTS.indexOf(S.composed.gift) !== -1) return S.composed.gift;
+    if (S.composed && reviewGifts().indexOf(S.composed.gift) !== -1) return S.composed.gift;
     var t = S.together;
     if (t === 'movie' || t === 'naps') return 'blanket';
     if (t === 'walk' || t === 'coffee') return 'mug';
@@ -181,7 +184,7 @@
   }
   function reasonFor(g, n) {
     if (S.composed && S.composed.reason && g === S.composed.gift) return S.composed.reason;
-    // Biscuit's mug reason repeats only the "together" answer the buyer picked; a typed answer
+    // Buddy's mug reason repeats only the "together" answer the buyer picked; a typed answer
     // or "Not sure" gets skip (Cowork report 15 Oct, section 3; 140 characters at most)
     var d = n.dog, r = n.rec;
     var MUG = {
@@ -202,17 +205,17 @@
 
   /* ---------------------------------------------------------------- the AI */
   function canCall(url) { return !!(cfg.ai && url && S.calls < MAX_CALLS && window.fetch); }
-  function callAI(url, body, ms) {
+  function callAI(url, body, ms, lateResult) {
     if (!canCall(url)) return Promise.resolve(null);
     S.calls++; save();
     body.session = sessionId();
     var ctrl = window.AbortController ? new AbortController() : null;
     var done = false;
     return new Promise(function (resolve) {
-      var t = setTimeout(function () { if (done) return; done = true; if (ctrl) ctrl.abort(); track('ai', { call: body.step || 'compose', result: 'timeout' }); resolve(null); }, ms);
-      window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' })
+      var t = setTimeout(function () { if (done) return; done = true; if (ctrl && !lateResult) ctrl.abort(); track('ai', { call: body.step || 'compose', result: 'timeout' }); resolve(null); }, ms);
+      Promise.resolve().then(function () { return window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', mode: 'cors' }); })
         .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) { if (done) return; done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: j ? 'ok' : 'error' }); resolve(j); })
+        .then(function (j) { if (done) { if (lateResult) lateResult(j); return; } done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: j ? 'ok' : 'error' }); resolve(j); })
         .catch(function () { if (done) return; done = true; clearTimeout(t); track('ai', { call: body.step || 'compose', result: 'error' }); resolve(null); });
     });
   }
@@ -302,7 +305,7 @@
     });
   }
   /* While the buyer types, a pause of 600 ms sends what they have so far. If they press Done
-     on the same words, that answer is already back (or on its way), so Biscuit replies at once.
+     on the same words, that answer is already back (or on its way), so Buddy replies at once.
      It spends from the same 8-call budget, so it never runs with fewer than 3 calls left. */
   var spec = null, specTimer = null;
   function typedParams(text) {
@@ -329,23 +332,94 @@
     return typedAnswer(step, question, text, prev);
   }
   function anyTyped() { return Object.keys(S.typed).some(function (k) { return !!S.typed[k]; }); }
-  /* Compose runs for every buyer now (Krish, 20 Oct: every gift a warm message with personality),
-     not only after a typed answer. The scripted lines show at once; the AI's arrive within 6 s. */
-  function compose() {
+  /* Copy requests only. Image generation and production acceptance are separate gates.
+     The chat's final button requests the first note; tone selection itself never calls AI. */
+  function composeBody(tone) {
     var n = names();
     var answers = [];
     var push = function (id, chip, label) { answers.push({ id: id, chip: chip && chip !== 'typed' && chip !== 'skip' ? chip : null, label: label || '', typed: S.typed[id] || null }); };
     push('home', S.home, ''); push('home_follow', S.follow, ''); push('spot', S.spot, ''); push('together', S.together, ''); push('meaning', S.meaning, '');
-    var asked = S.composeAsked = (S.composeAsked || 0) + 1;
-    callAI(cfg.composeUrl, { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: allLines(), default_gift: recGift() }, COMPOSE_MS).then(function (r) {
-      if (!r || !r.lines || asked !== S.composeAsked) return;
-      var lines = {};
-      ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = dogStyle(r.lines[k], k); if (l) lines[k] = l; });
-      S.composed = { lines: lines, gift: GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null, reason: typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '' };
-      if (S.composed.gift && !S.tabbed && S.screen === 'reveal') S.gift = S.composed.gift;
-      save();
-      if (S.screen === 'reveal' && !ui.editing) render();
-    });
+    return { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: S.baseLines || allLines(), default_gift: S.composeBaseGift || recGift(), note_tone: tone };
+  }
+  function composeKey(tone) { return JSON.stringify({ version: COMPOSE_VERSION, body: composeBody(tone) }); }
+  function toneStatus() {
+    if (S.composeRequest) return S.composeRequest.status === 'pending' ? 'Updating your note. Your edits stay as written.' : 'Your update has not been confirmed. Your words are safe; please keep this page open. Another update is paused.';
+    if (ui.toneStatus) return ui.toneStatus;
+    return S.appliedComposeKey === composeKey(S.noteTone) ? '' : 'Choose Update note to apply this tone. Your edits stay as written.';
+  }
+  function selectTone(tone) {
+    if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || tone === S.noteTone) return;
+    if (cfg.artworkCandidates && window.HSArtworkChoices) {
+      try { window.HSArtworkChoices.select({tone: tone}); }
+      catch (e) {
+        ui.toneStatus = 'Your shared choice could not be saved. Your previous tone is still selected. Please try again.';
+        if (frame) {
+          var index = {sentimental: 0, warm: 1, hilarious: 2}[S.noteTone];
+          var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][index];
+          var range = frame.querySelector('[data-hs3-tone]'), label = frame.querySelector('[data-hs3-tone-name]');
+          var error = frame.querySelector('#hs3-tone-status');
+          if (range) { range.value = index; range.setAttribute('aria-valuetext', name); }
+          if (label) label.textContent = name;
+          if (error) error.textContent = ui.toneStatus;
+        }
+        return;
+      }
+    }
+    S.noteTone = tone; ui.toneStatus = '';
+    track('tone_pick', { tone: tone }); save();
+    // Keep the range element mounted so repeated arrow keys retain focus.
+    if (frame) {
+      var status = frame.querySelector('#hs3-tone-status');
+      var button = frame.querySelector('[data-hs3="updateTone"]');
+      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Applies when you create the blanket artwork. No words are printed.' : toneStatus();
+      if (button) button.disabled = !!S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone);
+      fit();
+    }
+  }
+  function applyComposed(result, tone, key, rewrite) {
+    // User-owned edits always win in lineFor, including edits made during a request.
+    S.composed = result; S.appliedTone = tone; S.appliedComposeKey = key;
+    if (!rewrite && result.gift && !S.tabbed && S.screen === 'reveal') S.gift = result.gift;
+    ui.toneStatus = '';
+  }
+  function settleCompose(request, r) {
+    if (!S.composeRequest || S.composeRequest.id !== request.id) return;
+    if (!r) {
+      S.composeRequest.status = 'uncertain'; save(); if (!ui.editing) render(); return;
+    }
+    var lines = {};
+    ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines && dogStyle(r.lines[k], k); if (l) lines[k] = l; });
+    S.composeRequest = null;
+    if (Object.keys(lines).length !== 4 || (request.rewrite && r.source && r.source !== 'ai') || (request.tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
+      ui.toneStatus = 'Could not rewrite this note. Your words are unchanged.';
+    } else {
+      var old = S.composed;
+      var result = { lines: lines, gift: request.rewrite && old ? old.gift : (GIFTS.indexOf(r.recommended_gift) !== -1 ? r.recommended_gift : null), reason: request.rewrite && old ? old.reason : (typeof r.reason === 'string' && r.reason.length <= 140 ? r.reason : '') };
+      S.toneCache[request.key] = result;
+      if (composeKey(S.noteTone) === request.key) applyComposed(result, request.tone, request.key, request.rewrite);
+      else ui.toneStatus = 'Your earlier version is ready. Choose Update note to apply your selected tone.';
+    }
+    save(); if (!ui.editing) render();
+  }
+  function compose(tone, rewrite) {
+    tone = tone || 'warm';
+    if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || S.composeRequest) return;
+    if (!S.baseLines) S.baseLines = allLines();
+    if (!S.composeBaseGift) S.composeBaseGift = recGift();
+    var key = composeKey(tone);
+    if (S.appliedComposeKey === key) return;
+    if (S.toneCache[key]) { applyComposed(S.toneCache[key], tone, key, rewrite); save(); render(); return; }
+    if (!canCall(cfg.composeUrl)) { ui.toneStatus = 'Updates are unavailable right now. Your words are unchanged.'; render(); return; }
+    var body = composeBody(tone);
+    var id = sessionId() + '-note-' + (S.composeAsked = (S.composeAsked || 0) + 1);
+    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, status: 'pending' };
+    save();
+    // Persist before dispatch. If storage is unavailable, a reload would defeat the guard.
+    var persisted = false;
+    try { persisted = JSON.parse(window.sessionStorage.getItem(KEY)).composeRequest.id === id; } catch (e) { /* unavailable storage */ }
+    if (!persisted) { S.composeRequest = null; ui.toneStatus = 'Your browser could not save this update. Your words are unchanged.'; render(); return; }
+    render();
+    return callAI(cfg.composeUrl, body, COMPOSE_MS, function (r) { settleCompose(request, r); }).then(function (r) { settleCompose(request, r); });
   }
 
   /* ----------------------------------------------------------------- photo */
@@ -365,16 +439,51 @@
       };
     });
   }
-  function usePhoto(file) {
+  function usePhoto(file, t, transferable) {
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(file);
-    S.hasPhoto = true; save();
+    S.hasPhoto = transferable !== false; S.photoT = t; save();
     document.querySelectorAll('[data-hs3-photo]').forEach(function (img) { img.src = photoURL; });
   }
   function restorePhoto() {
-    return idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) {
-      if (rec && rec.file && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file);
-    }).catch(function () {});
+    return idb('readwrite', function (st) {
+      var req = st.get(PHOTO);
+      // Check and delete in one transaction, so cleanup cannot erase a newer photo.
+      req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= 3 * 864e5) st.delete(PHOTO); };
+      return req;
+    }).then(function (rec) {
+      if (rec && rec.file && S.hasPhoto && rec.t === S.photoT && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file, rec.t);
+      else { S.hasPhoto = false; S.photoT = 0; save(); }
+    }).catch(function () { S.hasPhoto = false; S.photoT = 0; save(); });
+  }
+  function photoStorageStatus() {
+    if (!frame) return;
+    var status = frame.querySelector('[data-hs3-photo-storage]');
+    var message = ui.photoSaving ? 'Saving your photo before you continue…' : S.photoStorageWarning;
+    if (!status && message) {
+      status = document.createElement('p'); status.className = 'hs3-small';
+      status.setAttribute('data-hs3-photo-storage', ''); status.setAttribute('role', 'status'); frame.appendChild(status);
+    }
+    if (status) { status.hidden = !message; status.textContent = message || ''; fit(); }
+  }
+  function attachPhoto(file) {
+    var t = Math.max(Date.now(), (ui.photoSaving || S.photoT || 0) + 1);
+    usePhoto(file, t, false);
+    // A local preview is not proof that another page can restore the photo.
+    S.hasPhoto = false; S.photoStorageWarning = ''; ui.photoSaving = t; save(); photoStorageStatus();
+    var timer;
+    var timeout = new Promise(function (_, reject) { timer = setTimeout(function () { reject(new Error('photo storage timeout')); }, 8000); });
+    return Promise.race([idb('readwrite', function (st) { return st.put({file: file, t: t}, PHOTO); }), timeout]).then(function () {
+      clearTimeout(timer);
+      if (ui.photoSaving !== t) return;
+      S.hasPhoto = true; ui.photoSaving = 0; save(); photoStorageStatus();
+    }).catch(function () {
+      clearTimeout(timer);
+      if (ui.photoSaving !== t) return;
+      S.hasPhoto = false; S.photoT = 0; ui.photoSaving = 0;
+      S.photoStorageWarning = 'Your browser could not save this photo. Choose it again on your gift, or try adding a photo here again.';
+      save(); photoStorageStatus();
+    });
   }
   // never a stranger's dog on the buyer's gift: no photo yet shows a paw placeholder
   function photoSrc() { return photoURL || ''; }
@@ -390,10 +499,14 @@
     st.person = S.rec ? n.rec : '';
     st.hs3_lines = allLines();
     st.hs3_mug_lines = mugLines();
+    st.hs3_copy_owner = Object.keys(S.edits || {}).some(function(k) { return S.edits[k] != null; }) ? 'user' : 'generated';
+    st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
     var kinds = {};
     GIFTS.forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) kinds[x.handle] = g; });
     st.hs3_kinds = kinds;
     st.hs_answers = answerSummary();
+    if (window.HSArtworkProfile) st.hs3_art_profile = window.HSArtworkProfile.fromChat(S);
+    if (cfg.artworkCandidates && window.HSArtworkChoices) st.hs3_art_choices = window.HSArtworkChoices.read();
     st.hs_ship_to = S.shipTo === 'me' ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
   }
@@ -410,7 +523,7 @@
   }
 
   /* ------------------------------------------------------------------ views */
-  var BISCUIT = '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g class="hs3-head"><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs3-ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>';
+  var BUDDY = '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g class="hs3-head"><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs3-ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>';
   var PAW = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><ellipse cx="6" cy="9" rx="2.4" ry="3.1"/><ellipse cx="10.5" cy="5.5" rx="2.4" ry="3.1"/><ellipse cx="15.5" cy="5.5" rx="2.4" ry="3.1"/><ellipse cx="20" cy="9" rx="2.4" ry="3.1"/><path d="M13 11c-4 0-7 4-7 7 0 2 1.6 3 3.4 3 1.6 0 2.4-.8 3.6-.8s2 .8 3.6.8c1.8 0 3.4-1 3.4-3 0-3-3-7-7-7z"/></svg>';
   var ICON = {
     mug: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h12v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16"/></svg>',
@@ -418,7 +531,7 @@
     print: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><circle cx="12" cy="10" r="3"/><path d="M8.5 16h7"/></svg>',
     ornament: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M10 7V5h4v2M12 5V2"/></svg>'
   };
-  function pills() { return '<div class="hs3-pills" aria-hidden="true">' + GIFTS.map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
+  function pills() { return '<div class="hs3-pills" aria-hidden="true">' + reviewGifts().map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
   function sign(n) { return '<span class="hs3-sign">Love, ' + esc(n.dog) + ' ' + PAW + '</span>'; }
   // the blanket, print and ornament print the paw centered under the signature (round two, 14 Oct)
   function signUnder(n) { return '<span class="hs3-sign hs3-sign--under">Love, ' + esc(n.dog) + PAW + '</span>'; }
@@ -427,6 +540,7 @@
 
   function render() {
     if (!frame) return;
+    var keepToneFocus = document.activeElement && document.activeElement.hasAttribute('data-hs3-tone');
     var n = names();
     frame.setAttribute('data-hs3-screen', S.screen);
     root.classList.toggle('hs3--app', S.screen !== 'hero');
@@ -435,8 +549,10 @@
     else if (S.screen === 'reveal') frame.innerHTML = revealView(n);
     else if (S.screen === 'choose') frame.innerHTML = chooseView(n);
     else if (S.screen === 'share') frame.innerHTML = shareView(n);
+    photoStorageStatus();
     bind();
     fit();
+    if (keepToneFocus) { var tone = frame.querySelector('[data-hs3-tone]'); if (tone) tone.focus(); }
   }
 
   /* One screen, no scroll (Krish, 21 Oct): every screen fits the window under the header on
@@ -483,11 +599,14 @@
 
   // ---- the chat
   var chatQ = null; // the current question: { prefix, question, chips, skip, next, input }
+  function hasArtworkFacts() {
+    return !!(window.HSArtworkProfile && window.HSArtworkProfile.fromChat(S).facts.length);
+  }
   function chatModel(n) {
     var m = { prefix: ui.prefix, question: '', chips: [], skip: false, next: null, nextLabel: 'Next', input: null, other: false };
     var step = S.step;
     if (step === 1) {
-      m.question = "Hi! I'm Biscuit. I sniff out gifts from dogs to the people they love. Who's your dog?";
+      m.question = "Hi! I'm Buddy. I sniff out gifts from dogs to the people they love. Who's your dog?";
       m.input = 'dog'; m.next = 'dog'; m.nextLabel = "That's my dog";
     } else if (step === 2) {
       m.prefix = m.prefix || n.dog + '! Great name. My tail is going.';
@@ -524,6 +643,10 @@
     } else {
       m.prefix = m.prefix || (S.meaning === 'skip' ? "That's plenty to go on." : 'Oh. That one got me right in the ears.');
       m.question = "I've sniffed it out. I know what " + n.dog + ' would get ' + n.rec + '.';
+      if (cfg.artworkCandidates && !hasArtworkFacts()) {
+        m.prefix = 'We can keep this simple.';
+        m.question = 'Without any habits to go on, the artwork will focus on ' + n.dog + '. You can go back to add a detail.';
+      }
       m.next = 'show'; m.nextLabel = 'Show me';
     }
     if (ui.flagged) m.prefix = '';
@@ -546,8 +669,8 @@
     h += '<div class="hs3-onany"><div class="hs3-small">At the end, put these words on any gift you like:</div>' + pills() + '</div></div>';
     h += '<div class="hs3-talk">';
     if (ui.echo && !ui.thinking) h += '<div class="hs3-echo">' + esc(ui.echo) + '</div>';
-    h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BISCUIT + '</span>';
-    if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Biscuit is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
+    h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BUDDY + '</span>';
+    if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Buddy is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
     else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + esc(m.prefix) + ' </span>' : '')) + esc(m.question) + '</div>';
     h += '</div></div>';
     h += '<div class="hs3-dock">';
@@ -560,10 +683,10 @@
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
       } else if (m.input === 'rec') {
-        h += '<div class="hs3-chips">' + [['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
+        h += '<div class="hs3-chips">' + [['self', 'Me'], ['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
           return '<button type="button" class="hs3-chip' + (S.rel === c[0] ? ' is-on' : '') + '" data-hs3="rel" data-v="' + c[0] + '" aria-pressed="' + (S.rel === c[0]) + '">' + esc(c[1]) + '</button>';
         }).join('') + '</div>';
-        h += '<label class="hs3-small" for="hs3-rec">Their first name</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
+        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
       } else if (ui.typing) {
         h += '<label class="hs3-small" for="hs3-typed">In your own words</label><div class="hs3-row hs3-row--typed"><input id="hs3-typed" class="hs3-field" type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-hs3-in="typed"><button type="button" class="hs3-btn hs3-btn--small" data-hs3="send">Done</button></div>' + privacy();
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
@@ -581,15 +704,24 @@
 
   // ---- the reveal
   function revealView(n) {
-    var g = S.gift || recGift();
+    var g = reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift();
+    var wordFree = cfg.artworkCandidates && g === 'blanket';
+    if (wordFree) ui.editing = false;
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Biscuit\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
     if (!ui.editing) {
-      h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + GIFTS.map(function (k) {
-        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Biscuit's pick" : '') + '</span></button>';
-      }).join('') + '</div><p class="hs3-small hs3-center">Same words on any of them. Tap to see each one, then pick as many as you like.</p>';
+      h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + reviewGifts().map(function (k) {
+        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : '') + '</span></button>';
+      }).join('') + '</div>';
+      var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
+      var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
+      var status = toneStatus();
+      if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
+      if (wordFree) {
+        h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><p id="hs3-tone-status" class="hs3-tone__status" role="status">Applies when you create the blanket artwork. No words are printed.</p></div>';
+      } else h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
@@ -601,14 +733,15 @@
       h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
       h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
-      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BISCUIT + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
+      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design made from your dog’s photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
     }
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button><button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button></div>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button>' + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
     return h;
   }
   function mockup(g, n, lines) {
     // laid out like the real print files (Cowork's fit test, 14 Oct): the name in normal case, signed with a paw
     if (g === 'mug') return mugFaces(n);
+    if (g === 'blanket' && cfg.artworkCandidates) return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Photo reference for your blanket', 'hs3-photo--blanket') + '</div></div><p class="hs3-small hs3-center">Photo reference only. Your word-free artwork is created on the product page.</p>';
     if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
@@ -864,29 +997,45 @@
     return p;
   }
   function fmt(p) { return '$' + (Math.round(p * 100) % 100 ? p.toFixed(2) : String(Math.round(p))); }
+  function reviewGifts() { return cfg.artworkCandidates ? GIFTS.filter(function (k) { return k !== 'ornament'; }) : GIFTS; }
+  function blanketPurchaseEnabled() { return !!(cfg.artworkCandidates && (cfg.blanketPurchase || cfg.corePurchase) && cfg.gifts && cfg.gifts.blanket && cfg.gifts.blanket.url); }
+  function giftPurchasable(k) { return !!(cfg.artworkCandidates && cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url && (cfg.corePurchase && ['mug', 'blanket', 'print'].indexOf(k) !== -1 || k === 'blanket' && blanketPurchaseEnabled())); }
+  function selectedGifts() {
+    var selected = reviewGifts().filter(function (k) { return S.sel[k]; });
+    // A draft cannot complete the cart step used by the multi-gift queue.
+    // Restored mixed selections display the purchasable blanket as the one choice.
+    return blanketPurchaseEnabled() ? selected.indexOf('blanket') !== -1 ? ['blanket'] : selected.slice(0, 1) : selected;
+  }
+  function selectGift(k, forceOn) {
+    var on = !!forceOn || selectedGifts().indexOf(k) === -1;
+    if (blanketPurchaseEnabled()) S.sel = {};
+    S.sel[k] = on;
+  }
   function chooseModel() {
     var others = ['mug', 'blanket', 'print'].filter(function (k) { return S.sel[k]; }).length;
-    var count = GIFTS.filter(function (k) { return S.sel[k]; }).length;
-    var total = GIFTS.reduce(function (a, k) { return a + (S.sel[k] ? priceOf(k, others) : 0); }, 0);
-    var missing = GIFTS.filter(function (k) { return S.sel[k] && !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
+    var selected = selectedGifts(), count = selected.length;
+    var total = selected.reduce(function (a, k) { return a + priceOf(k, others); }, 0);
+    var missing = selected.filter(function (k) { return !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
     return { others: others, count: count, total: total, missing: missing };
   }
   function chooseView(n) {
     var pick = recGift(), c = chooseModel();
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toReveal">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">Pick one or more. Your words go on each one.</p>';
+    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (cfg.corePurchase ? 'Choose one gift to personalize. Your photo and answers carry over.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('home') || lineFor('meaning') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
-    h += '<div class="hs3-opts">' + GIFTS.map(function (k) {
-      var on = !!S.sel[k];
+    h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
+      var on = selectedGifts().indexOf(k) !== -1;
       var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BISCUIT\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + fmt(priceOf(k, c.others)) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : fmt(priceOf(k, c.others))) + '</span></button>';
     }).join('') + '</div>';
-    if (S.sel.mug) h += mugSwatches();
+    if (selectedGifts().indexOf('mug') !== -1) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
     // Publish an order-by date only after Printful confirms the current year's cutoff for
     // every selected variant and fulfillment route, including any gift bundle.
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping. A person checks every order before it prints.</p>';
-    var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Add to cart · ' + fmt(c.total) : 'Add ' + c.count + ' gifts to cart · ' + fmt(c.total));
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">' + (blanketPurchaseEnabled() ? 'Delivery details appear on the product page.' : 'Free US shipping.') + ' A person checks every order before it prints.</p>';
+    var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
+    if (cfg.artworkCandidates) label = c.count ? 'Review selected drafts' : 'Pick a draft';
+    if (blanketPurchaseEnabled()) label = !c.count ? 'Pick a gift or draft' : giftPurchasable(selectedGifts()[0]) ? 'Personalize ' + {mug:'mug',blanket:'blanket',print:'portrait'}[selectedGifts()[0]] + ' · ' + fmt(priceOf(selectedGifts()[0], c.others)) : 'Review draft';
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
@@ -898,13 +1047,20 @@
     shareWithBridge();
     // the mug opens on the color picked here; Teeinblue follows the variant in the link
     var mc = mugColor();
-    var q = GIFTS.filter(function (k) { return S.sel[k]; }).map(function (k) {
+    var q = selectedGifts().map(function (k) {
       var u = cfg.gifts[k].url;
-      if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
+      if (cfg.artworkCandidates) {
+        // Liquid already supplies ?view=gift. Replace it; duplicate view values
+        // could otherwise send the draft journey back to the ordering template.
+        var draftUrl = new URL(u, window.location.href);
+        draftUrl.searchParams.set('view', giftPurchasable(k) ? {mug:'mug-native',blanket:'blanket-native',print:'portrait-native'}[k] : {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
+        if (k === 'mug' && mc && mc.id) draftUrl.searchParams.set('variant', mc.id);
+        u = draftUrl.pathname + draftUrl.search + draftUrl.hash;
+      } else if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
       return { url: u, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
-    track('add_to_cart', { gifts: q.length, picks: GIFTS.filter(function (k) { return S.sel[k]; }).join(',') });
+    track('personalize_gifts', { gifts: q.length, picks: selectedGifts().join(',') });
     window.location.href = q[0].url;
   }
 
@@ -1004,7 +1160,7 @@
     save(); render();
     if (S.step <= 6 && !S.meaning) stepEvent('shown');
   }
-  // a typed answer: Biscuit reacts, a line inks, and on the home question one follow-up
+  // a typed answer: Buddy reacts, a line inks, and on the home question one follow-up
   function sendTyped(text) {
     text = String(text || '').trim();
     if (!text) return;
@@ -1012,7 +1168,7 @@
     var key = ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step];
     if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
-    // the buyer's own words ink at once; Biscuit's version replaces them when it lands
+    // the buyer's own words ink at once; Buddy's version replaces them when it lands
     ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key), key) };
     ui.thinking = true; render();
     var q = chatQ ? chatQ.question : '';
@@ -1055,6 +1211,7 @@
     });
   }
   function next() {
+    if (ui.photoSaving) { photoStorageStatus(); return; }
     var n = names();
     if (S.step === 1) {
       if (!String(S.dog).trim()) { focusField('hs3-dog'); return; }
@@ -1065,7 +1222,7 @@
       stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; save(); render(); stepEvent('shown'); return;
     }
     // the end of the chat: the reveal
-    S.composed = null; S.tabbed = false; save();
+    S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
     track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
     compose();
     startReveal(recGift());
@@ -1119,8 +1276,8 @@
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
-      usePhoto(f);
-      idb('readwrite', function (st) { return st.put({ file: f, t: Date.now() }, PHOTO); }).catch(function () {});
+      attachPhoto(f);
+      file.value = ''; // Permit an explicit retry with the same file after storage failure.
       track('photo_attached', {});
       var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
       var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
@@ -1141,6 +1298,19 @@
         else { ui.editing = false; render(); }
       });
     });
+    var tone = frame.querySelector('[data-hs3-tone]');
+    if (cfg.artworkCandidates && window.HSArtworkChoices) window.HSArtworkChoices.mount(frame.querySelector('[data-hs-art-choices]'), {toneElsewhere: true});
+    if (tone) {
+      tone.addEventListener('input', function () {
+        var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][Number(tone.value)] || 'Warm with a wink';
+        tone.setAttribute('aria-valuetext', name);
+        var label = frame.querySelector('[data-hs3-tone-name]'); if (label) label.textContent = name;
+      });
+      tone.addEventListener('change', function () {
+        var name = ['sentimental', 'warm', 'hilarious'][Number(tone.value)] || 'warm';
+        selectTone(name);
+      });
+    }
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
@@ -1172,10 +1342,11 @@
       case 'edit': ui.editing = !ui.editing; ui.editKey = giftKeys(S.gift || recGift())[0]; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) { track('edit', {}); focusEdit(); } break;
       case 'editPrev': moveEdit(-1); break;
       case 'editNext': moveEdit(1); break;
+      case 'updateTone': compose(S.noteTone, true); break;
       case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'dog' ? 'note' : 'dog'); track('mug_turn', { side: ui.mugSide }); break;
-      case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; S.sel[g] = true; ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
+      case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; selectGift(g, true); ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
       case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
-      case 'sel': S.sel[v] = !S.sel[v]; save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
+      case 'sel': selectGift(v); save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
       case 'mugColor': setMugColor(v); break;
       case 'ship': S.shipTo = v === 'me' ? 'me' : 'rec'; save(); render(); break;
       case 'add': addToCart(); break;
@@ -1192,6 +1363,16 @@
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     heroHTML = frame.innerHTML;
+    if (cfg.artworkCandidates && window.HSArtworkChoices) S.noteTone = window.HSArtworkChoices.read().tone;
+    if (S.composeRequest) save();
+    var q = null;
+    try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
+    if (q && q.get('hs3') === 'reset') {
+      S = fresh();
+      try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
+      idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
+      save();
+    }
     if (S.screen === 'reveal') ui.revealN = 9;
     if (S.screen === 'chat' && S.step === 3 && S.fu && !S.fu.chips.length) ui.typing = true;
     if (S.screen === 'chat') warm(cfg.typedUrl);
@@ -1207,9 +1388,6 @@
     // hs2.js moves the section under Helio's header after this runs; follow the frame's top
     if (window.ResizeObserver) new ResizeObserver(refit).observe(root.parentNode || root);
     [300, 1200].forEach(function (t) { setTimeout(fit, t); });
-    var q = null;
-    try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
-    if (q && q.get('hs3') === 'reset') { S = fresh(); save(); render(); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests

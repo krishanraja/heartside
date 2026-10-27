@@ -2,7 +2,15 @@
 {%- render 'hs-schema', kind: 'product', product: product -%}
 {%- liquid
   assign s = section.settings
+  assign native_artwork = s.blanket_purchase
+  if s.native_artwork_kind != blank and s.native_artwork_kind != 'off'
+    assign native_artwork = true
+  endif
   assign current = product.selected_or_first_available_variant
+  assign artwork_preview = s.city_art_preview
+  if s.blanket_art_preview or s.mug_art_preview
+    assign artwork_preview = true
+  endif
 
   # Teeinblue's app block brings its own variant picker and add to cart, and only its button
   # attaches the print file. When it is on the page, ours stand down.
@@ -87,56 +95,17 @@
 
 <div class="hs2">
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
-  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy"{% if v3 %} data-hs2-v3{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
+  <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy" data-hs2-checkout-image-enabled="{{ s.checkout_image_enabled }}" data-hs2-checkout-image-endpoint="{{ s.checkout_image_endpoint | escape }}" data-hs2-checkout-image-cdn-prefix="{{ s.checkout_image_cdn_prefix | escape }}"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.native_artwork_kind != blank and s.native_artwork_kind != 'off' %} data-hs2-artwork-kind="{{ s.native_artwork_kind }}" data-hs2-purchase-enabled="{{ s.native_purchase_enabled }}"{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
 
-    <div class="hs2-product__media" data-hs2-media{% if s.open_on == 'photo' and product.media.size > 0 %} data-open="photo" data-show="photo"{% endif %}>
-      <div class="hs2-product__tib" data-hs2-tib-gallery></div>
-      {%- if s.show_poster -%}
-        <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
-      {%- endif -%}
-      {%- if product.media.size > 0 -%}
-        {%- comment -%} the chosen variant's own photo first (the mug's color), else the product's {%- endcomment -%}
-        {%- assign first = current.featured_media | default: product.featured_media -%}
-        {%- comment -%} A gift sold in colors (the mug) has a pair of photos per color, alt "…, black inside: …".
-          Only the chosen color's pair is shown; hs2.js swaps the pair when the color changes. {%- endcomment -%}
-        {%- assign color_key = '' -%}
-        {%- for opt in product.options_with_values -%}
-          {%- if opt.name == 'Color' and opt.values.size > 1 -%}
-            {%- assign color_key = current.options[forloop.index0] | downcase | prepend: ', ' | append: ' inside' -%}
-          {%- endif -%}
-        {%- endfor -%}
-        <div class="hs2-product__main">
-          <img data-hs2-main src="{{ first | image_url: width: 1200 }}"
-            srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
-            sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
-            {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
-        </div>
-        {%- comment -%} With Teeinblue's live preview on the page, it is the first picture and the product
-          photos sit behind it as thumbnails, so the page shows one picture at a time. {%- endcomment -%}
-        {%- if product.media.size > 1 or tib -%}
-          <div class="hs2-product__thumbs">
-            {%- if tib -%}
-              <button type="button" class="hs2-product__thumb-preview" data-hs2-thumb-preview aria-current="false" aria-label="Show your preview">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span>Yours</span>
-              </button>
-            {%- endif -%}
-            {%- for m in product.media limit: 12 -%}
-              {%- assign m_alt = m.alt | downcase -%}
-              <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
-                <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
-              </button>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-      {%- elsif s.show_poster == false -%}
-        <div class="hs2-product__main hs2-card__media">
-          <img src="{{ 'hs-photo-asleep-640.webp' | asset_url }}" alt="" width="640" height="640">
-          <div class="hs2-card__shot">{{ s.shot }}</div>
-        </div>
-      {%- endif -%}
-    </div>
+    {% if s.mug_art_preview %}
+    <figure class="hs-art-wrap-reference">
+      <img src="{{ 'hs-mug-wrap-reference.png' | asset_url }}" alt="Existing mug wrap concept: a large painted pug scene with a short handwritten note beside it" width="2011" height="782" fetchpriority="high">
+      <figcaption>Existing wrap concept. This is an art-direction reference, not your generated dog or an approved print file.</figcaption>
+    </figure>
+    {% else %}
+    {% render 'hs-product-gallery', product: product, current: current, s: s, tib: tib, v3: v3, artwork_preview: artwork_preview %}
 
+    {% endif %}
     <div class="hs2-product__info">
       {%- for block in section.blocks -%}
         {%- case block.type -%}
@@ -145,6 +114,9 @@
           {%- when 'title' -%}
             <h1 {{ block.shopify_attributes }}>{{ product.title }}</h1>
           {%- when 'price' -%}
+            {% if artwork_preview %}
+              <p class="hs-art-draft-status">Draft review only. Artwork generation and ordering are paused. Price is not approved.</p>
+            {% else %}
             <div {{ block.shopify_attributes }}>
               <div class="hs2-product__price" data-hs2-price>{{ current.price | money }}</div>
               {%- unless product.has_only_default_variant -%}
@@ -155,6 +127,7 @@
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
             </div>
+            {% endif %}
           {%- when 'description' -%}
             {%- if desc_pick > 0 -%}
               {%- if forloop.index == desc_pick -%}
@@ -164,19 +137,30 @@
               <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- endif -%}
           {%- when 'answers' -%}
+            {% if artwork_preview or native_artwork %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
+            {% if native_artwork %}{% render 'hs-native-artwork', settings: s %}{% endif %}
             {%- comment -%} The review's answers, short. Once they are in Teeinblue's preview, its copies of
               them fold away and "Edit details" opens them again. {%- endcomment -%}
             <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>
               <div class="hs2-answers__top">
                 <div class="hs2-answers__title">{{ block.settings.title }}</div>
-                <button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>
+              {% unless native_artwork %}<button type="button" class="hs2-answers__edit" data-hs2-tib-edit aria-expanded="false" hidden>Edit details</button>{% endunless %}
               </div>
-              <p class="hs2-answers__who">From <strong data-hs2="dog">Biscuit</strong><span data-hs2-person-wrap hidden> to <strong data-hs2="person">Sarah</strong></span></p>
+              <p class="hs2-answers__who">From <strong data-hs2="dog">Buddy</strong><span data-hs2-person-wrap hidden> to <strong data-hs2="person">Sarah</strong></span></p>
               {%- if block.settings.picks -%}
                 <p class="hs2-answers__picks"><span data-hs2="improvement">Leaving</span> · <span data-hs2="incident">The sock</span> · <span data-hs2="enemy">The mailman</span> · <span data-hs2="cupboard">1,412</span> treats</p>
               {%- endif -%}
               {%- if block.settings.note != blank -%}<div class="hs2-answers__note" data-hs2-bridge-note>{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-answers__status" data-hs2-bridge-status role="status" aria-live="polite" hidden></div>
+              {% if s.blanket_art_preview %}
+                <p>Inspired by what you told Buddy. No words on the blanket.</p>
+                <p data-hs2-artwork-status role="status">Preview only. Check their face, markings and personality.</p>
+                <a data-hs2-artwork-source data-hs2-artwork-layer="layer-292294" target="_blank" rel="noopener noreferrer" hidden>View artwork</a>
+              {% elsif s.city_art_preview %}
+                <p><span data-hs2-artwork-city>Somewhere quiet</span> · <button type="button" class="hs2-answers__edit" data-hs2-artwork-edit-city>Change place</button></p>
+                <p data-hs2-artwork-status role="status">Preview only. Check your dog, city and note before release.</p>
+                <a data-hs2-artwork-source data-hs2-artwork-layer="layer-747218" target="_blank" rel="noopener noreferrer" hidden>View artwork</a>
+              {% endif %}
               <div class="hs2-answers__photo" data-hs2-handoff hidden>
                 <img src="{{ 'hs-photo-headshot-480.webp' | asset_url }}" alt="" width="56" height="56" loading="lazy" data-hs2-handoff-img>
                 <button type="button" data-hs2-handoff-btn>{% render 'hs2-t', text: block.settings.photo_button %}</button>
@@ -207,8 +191,13 @@
                     </select>
                   </div>
                 {%- endif -%}
-                {%- if block.settings.v3 -%}
-                  {%- comment -%} v3 gifts: what the buyer told Biscuit and the words on the gift, for the person who checks the order {%- endcomment -%}
+                {%- if native_artwork -%}
+                  {% unless s.blanket_purchase %}<input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">{% endunless %}
+                  <input type="hidden" name="properties[_hs_art_profile]" data-hs2-prop="personality" value="">
+                  <input type="hidden" name="properties[_hs_art_style]" data-hs2-prop="art_style" value="">
+                  <input type="hidden" name="properties[_hs_art_tone]" data-hs2-prop="art_tone" value="">
+                {%- elsif block.settings.v3 -%}
+                  {%- comment -%} v3 gifts: what the buyer told Buddy and the words on the gift, for the person who checks the order {%- endcomment -%}
                   <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
                   <input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">
                   <input type="hidden" name="properties[_hs_ship_to]" data-hs2-prop="hs_ship_to" value="">
@@ -222,8 +211,8 @@
                 <input type="hidden" name="properties[_Read-aloud video]" data-hs2-prop="voice" value="">
                 {%- endif -%}
                 {%- unless tib -%}
-                  <button type="submit" name="add" class="hs2-btn" data-hs2-add{% unless current.available %} disabled{% endunless %}>
-                    {%- if current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
+                  <button type="{% if artwork_preview %}button{% else %}submit{% endif %}" name="add" class="hs2-btn" data-hs2-add{% if artwork_preview or current.available == false %} disabled{% endif %}>
+                    {%- if artwork_preview -%}Preview only{%- elsif current.available -%}{{ block.settings.label }}{%- else -%}Gone for now. We'll tell you when it's back.{%- endif -%}
                   </button>
                 {%- endunless -%}
               {%- endform -%}
@@ -270,6 +259,15 @@
   "tag": "section",
   "class": "hs2-section",
   "settings": [
+    { "type": "select", "id": "native_artwork_kind", "label": "Native artwork format", "options": [{"value":"off","label":"Off"},{"value":"mug","label":"Illustrated mug"},{"value":"print","label":"Portrait family"}], "default":"off" },
+    { "type": "checkbox", "id": "native_purchase_enabled", "label": "Enable tested native artwork ordering", "default": false },
+    { "type": "checkbox", "id": "checkout_image_enabled", "label": "Prepare personal checkout image", "default": false },
+    { "type": "text", "id": "checkout_image_endpoint", "label": "Checkout image registration endpoint", "info": "Same-store /apps/ proxy path. Enable only after the secured endpoint and checkout transformation pass testing." },
+    { "type": "text", "id": "checkout_image_cdn_prefix", "label": "Store's Shopify Files URL prefix", "info": "Exact https://cdn.shopify.com/s/files/1/.../files/ prefix for this store." },
+    { "type": "checkbox", "id": "blanket_purchase", "label": "Native word-free blanket", "info": "Explicit native photo upload, shared art choices and Buddy facts. Enable only on the linked word-free blanket product.", "default": false },
+    { "type": "checkbox", "id": "city_art_preview", "label": "City artwork acceptance preview", "info": "Isolated draft only. Disables ordering and automatic photo submission while artwork checks are pending.", "default": false },
+    { "type": "checkbox", "id": "blanket_art_preview", "label": "Personality blanket acceptance preview", "info": "Isolated draft only. Uses chat facts and blocks ordering while likeness and production checks are pending.", "default": false },
+    { "type": "checkbox", "id": "mug_art_preview", "label": "Illustrated mug acceptance preview", "info": "Shows the existing wrap reference with shared choices. No image generation or ordering.", "default": false },
     { "type": "checkbox", "id": "show_poster", "label": "Show the live review poster", "info": "On for the Annual Review products. It fills in from the shopper's homepage answers.", "default": false },
     {
       "type": "select", "id": "open_on", "label": "Gallery opens on", "default": "preview",

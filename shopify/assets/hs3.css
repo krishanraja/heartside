@@ -59,7 +59,7 @@
 .hs3-peek { position: absolute; left: 10px; bottom: 0; display: flex; align-items: flex-end; gap: 6px; animation: hs3-peek 4s ease-in-out infinite; }
 .hs3-bubble--peek { margin-bottom: 44px; font-size: 13.5px; padding: 8px 11px; }
 
-/* Biscuit */
+/* Buddy */
 .hs3-biscuit { display: inline-block; width: 54px; height: 54px; flex: none; }
 .hs3-biscuit--peek { width: 78px; height: 78px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z' fill='%237A4027'/%3E%3Crect x='44' y='84' width='40' height='7' rx='3.5' fill='%23F0C0C0'/%3E%3Cellipse cx='58' cy='58' rx='30' ry='27' fill='%238A4A2B'/%3E%3Cellipse cx='90' cy='66' rx='22' ry='13' fill='%2395553A'/%3E%3Cellipse cx='95' cy='70' rx='15' ry='8.5' fill='%23CFC4BA'/%3E%3Cellipse cx='110' cy='62' rx='6.5' ry='5.5' fill='%23121010'/%3E%3Ccircle cx='70' cy='50' r='4' fill='%23121010'/%3E%3Ccircle cx='71.3' cy='48.6' r='1.2' fill='%23FFFDF9'/%3E%3Cpath d='M64 42 Q 70 38 76 42' fill='none' stroke='%23CFC4BA' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M96 76 Q 102 79 107 75' fill='none' stroke='%235A2E1C' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z' fill='%236A3520'/%3E%3C/svg%3E"); }
 .hs3-biscuit svg { width: 100%; height: 100%; display: block; }
@@ -179,7 +179,18 @@
 .hs3-tab.is-on { border: 2px solid var(--ink); background: #fff; }
 .hs3-tab svg { width: 18px; height: 18px; }
 .hs3-tab__tag { font-family: var(--mono); font-size: 9.5px; font-weight: 400; color: var(--chestnut); min-height: 11px; letter-spacing: .04em; }
-.hs3-tabs + .hs3-small { padding: 0 16px; }
+.hs3-tone { margin: 2px 16px 0; font-family: var(--mono); font-size: 11px; color: #583427; }
+.hs3-tone__top, .hs3-tone__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hs3-tone__top strong { font-weight: 600; color: var(--chestnut); }
+.hs3-tone__row { margin-top: 3px; }
+.hs3-tone__row input { flex: 1; min-width: 30px; accent-color: var(--chestnut); cursor: pointer; }
+.hs3-tone__row input:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.hs3-tone__status { margin: 2px 0 0; font-size: 10px; }
+.hs3-tone__update { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.hs3-tone__update .hs3-tone__status { flex: 1; }
+.hs3-tone__button { flex: 0 0 auto; min-height: 44px; padding: 6px 12px; border: 1px solid var(--chestnut); border-radius: 8px; color: var(--chestnut); background: transparent; font: inherit; cursor: pointer; }
+.hs3-tone__button:disabled { opacity: .5; cursor: default; }
+.hs3-tone__button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .hs3-edit { padding: 12px 18px 0; display: flex; flex-direction: column; gap: 8px; }
 .hs3-edit__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .hs3-edit__arrow { appearance: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--ink); font-size: 24px; line-height: 1; cursor: pointer; }
@@ -292,7 +303,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3-peek { left: 4%; }
   .hs3-bubble--peek { font-size: 15px; }
   .hs3--app .hs3__frame { max-width: 600px; }
-  /* the chat: the note the dog is writing on the left, Biscuit and the answers on the right */
+  /* the chat: the note the dog is writing on the left, Buddy and the answers on the right */
   .hs3 { scroll-margin-top: var(--hs2-head, 66px); }
   .hs3--app .hs3__frame[data-hs3-screen="chat"] { max-width: 1120px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "top top" "note talk" "note dock" "note ."; grid-template-rows: auto auto auto 1fr; align-content: start; column-gap: 56px; padding: 0 40px 32px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-top { grid-area: top; }
@@ -301,7 +312,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-talk { grid-area: talk; align-self: end; padding: 56px 0 8px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-dock { grid-area: dock; padding: 6px 0 10px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-bubble { max-width: 420px; font-size: 17px; }
-  /* the reveal: the gift large on the left, its name, the tabs, Biscuit's reason and the
+  /* the reveal: the gift large on the left, its name, the tabs, Buddy's reason and the
      buttons on the right */
   .hs3--app .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) { max-width: 1200px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 64px; align-content: start; padding: 0 40px 40px; }
   .hs3__frame[data-hs3-screen="reveal"] { grid-template-areas: "top top" "stage h2" "stage tabs" "stage note" "stage color" "stage says" "stage dock" "stage ."; grid-template-rows: auto auto auto auto auto auto auto 1fr; }
@@ -309,7 +320,7 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-top { grid-area: top; }
   .hs3__frame:is([data-hs3-screen="reveal"], [data-hs3-screen="choose"]) .hs3-h2 { grid-area: h2; padding: 28px 0 0; font-size: 44px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs { grid-area: tabs; padding: 18px 0 8px; }
-  .hs3__frame[data-hs3-screen="reveal"] .hs3-tabs + .hs3-small { grid-area: note; padding: 0; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-tone { grid-area: note; margin: 2px 0 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-stage { grid-area: stage; align-self: start; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); min-height: min(640px, calc(100svh - var(--hs2-head, 66px) - 120px)); padding: 24px 0; }
   .hs3__frame[data-hs3-screen="reveal"] :is(.hs3-says, .hs3-edit) { grid-area: says; padding: 22px 0 0; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-bubble { max-width: 460px; font-size: 17px; }
