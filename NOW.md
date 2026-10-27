@@ -43,6 +43,11 @@ The retained personalized cart changed quantity 2→1 with its exact component, 
 
 Release closeout still requires: reconcile and merge this branch to current main; publish the tested candidate theme; remove the storefront password; verify the public no-preview routes and payment/supplier settings; and run the separate CoWork live and Claude Code repository acceptance assignments in `docs/`. Krish will place the real sample blanket order himself when the store is available. Physical sample and real paid fulfillment remain future evidence, not launch claims.
 
+## What is next and what is waiting on Krish
+
+- **Next action:** merge the verified release branch, publish the tested theme, remove the storefront password, and verify the live customer routes. Krish then places the real blanket sample order. The separate CoWork and Claude Code prompts cover independent live and repository acceptance.
+- North Star check (2026-10-27): holds.
+
 ## Historical snapshots before the final compatibility order (superseded)
 
 **Latest cart follow-through:** The exact unpublished theme's cart still displayed the neutral product image and legacy recommendations despite the hosted checkout's correct personalized parent image. A bounded quantity increase exposed a Merge limitation: two component units became one parent bundle, leaving the ordinary decrease control disabled. The transformation was saved Inactive and the ordinary native cart was restored to one USD129 blanket. Scoped cart image, recommendation and quantity repair is in progress. The owner has now approved one final fee-free compatibility order, including the temporary gateway change and restoration of the three existing market prices; that approval is unused. Normal payments remain unchanged. The three private blanket checkout-image settings are backed up and temporarily reset to source defaults for guarded deployment, then must be restored before the test. These findings supersede earlier Active and approval-pending statements below.
