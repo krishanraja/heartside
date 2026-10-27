@@ -773,6 +773,7 @@
         var fq = homeQ(n)[S.home];
         m.question = fq.q;
         m.chips = fq.chips.map(function (c) { return { id: c[0], label: c[1] }; });
+        m.skip = true;
         answered(S.follow);
       } else {
         m.prefix = m.prefix || 'Lucky ' + n.rec + '.';
@@ -1062,7 +1063,7 @@
   }
   function chooseView(n) {
     var pick = recGift(), c = chooseModel(), core = cfg.artworkCandidates && cfg.corePurchase;
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     if (core && cfg.bundleOffer) h += '<p class="hs3-bundle' + (c.tier ? ' is-on' : '') + '" role="status">' + (c.tier ? c.count + ' gifts: ' + c.tier + '% off, taken at checkout.' : c.count === 1 ? 'Add a second gift and save 15%. Three saves 20%.' : 'Give two, save 15%. Give three, save 20%.') + '</p>';
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('meaning') || lineFor('home') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
@@ -1218,6 +1219,8 @@
     ui.echo = 'Not sure'; ui.flagged = ''; ui.typing = false;
     stepEvent('skipped');
     if (S.step === 3 && S.more && S.fu) { S.fu = null; ui.prefix = ''; S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
+    // a chip follow-up the buyer isn't sure about: the home answer stays, only the detail is skipped
+    if (S.step === 3 && S.more && S.home && S.home !== 'typed') { if (S.follow !== 'skip') answerChanged('home'); S.follow = 'skip'; S.more = false; ui.prefix = "That's okay, on we go."; S.step = 4; save(); render(); stepEvent('shown'); return; }
     if (S.step === 3) { if (S.home !== 'skip') answerChanged('home'); S.home = 'skip'; S.follow = null; S.fu = null; S.more = false; ui.prefix = "No problem. Let's sniff around somewhere else."; S.step = 4; }
     else if (S.step === 4) { if (S.spot !== 'skip') answerChanged('spot'); S.spot = 'skip'; ui.prefix = REACT5.skip; S.step = 5; }
     else if (S.step === 5) { if (S.together !== 'skip') answerChanged('together'); S.together = 'skip'; ui.prefix = REACT6.skip; S.step = 6; }

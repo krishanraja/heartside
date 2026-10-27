@@ -2189,8 +2189,19 @@
     var memo = document.querySelector('[data-hs-artist-variant]');
     if (!memo || !/^\/cart\/?$/.test(location.pathname)) return;
     var variant = memo.getAttribute('data-hs-artist-variant'), price = memo.getAttribute('data-hs-artist-price') || '';
-    var lines = [], taken = {};
-    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; } });
+    var lines = [], taken = {}, gifts = {};
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; if (f.personal && f.id) gifts[f.id] = true; } });
+    // an add-on whose gift has left the cart (removed, or replaced by a redo) says so, so nobody
+    // pays for a rework of a design they no longer have; removing it stays the buyer's tap
+    lines.forEach(function (l) {
+      if (!l.addonFor || gifts[l.addonFor] || l.row.querySelector('[data-hs2-artist-orphan]')) return;
+      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      if (!host) return;
+      var note = document.createElement('p');
+      note.className = 'hs2-artist__orphan'; note.setAttribute('data-hs2-artist-orphan', ''); note.setAttribute('role', 'status');
+      note.textContent = 'The design this rework was for is no longer in your cart. Remove this line unless you meant to keep it.';
+      host.appendChild(note);
+    });
     lines.forEach(function (l) {
       if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || taken[l.id] || l.row.querySelector('[data-hs2-artist]')) return;
       var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');

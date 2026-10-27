@@ -287,3 +287,6 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
 /* The Artist's touch is an add-on bought from the cart, never browsed: it stays published (so the
    cart can add it) but is hidden from the catalog grid, the menu's featured products and search */
 li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive-search-results__card):has(a[href*="/products/artists-touch"]) { display: none !important; }
+
+/* an Artist's touch line whose design has left the cart (hs2.js artistTouch) */
+.hs2-artist__orphan { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--hs-stamp, #8A4A2B); }
