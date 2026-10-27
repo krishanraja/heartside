@@ -84,6 +84,9 @@
     catch (e) { return false; }
   }
   function blanketPurchaseStatus(message) {
+    var buy = document.querySelector('#buy[data-hs2-artwork-kind]');
+    var unavailable = 'This gift is not available to order yet.';
+    if (buy && buy.getAttribute('data-hs2-purchase-enabled') !== 'true' && message.indexOf(unavailable) !== 0) message = unavailable + ' ' + message;
     var el = document.querySelector('[data-hs2-artwork-status]');
     if (el && el.textContent !== message) el.textContent = message;
   }
