@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: 280b809 (local core launch integration; unpublished deployment verification follows)
+head: ce0f135 (unpublished deployment and file hashes verified; full launch remains open)
 lifecycle: launch-preparation
 production_url: https://heartside.io
 state_doc: docs/HANDOFF.md
@@ -18,7 +18,7 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 
 ## What it is
 
-Heartside sells gifts from your dog: a mug, a sherpa blanket, a framed print and a tree ornament carrying a short message from the dog to the person it loves, in the dog's own voice, signed "Love, [dog]". A buyer answers six short questions in a chat with Buddy, the brand's AI dachshund host; an AI writes the note from those answers, and Printful makes the gift to order for US customers, with a person checking every order before it prints. A Shopify store (theme code in `shopify/`, deployed by GitHub workflow), Teeinblue for the personalised print file, and two n8n webhooks for the AI (`n8n/`). Lead line: "Your dog loves you too." (`docs/POSITIONING.md`). Heartside is a Mindmaker LLC company (`docs/HANDOFF.md` section 3).
+Heartside's current core is an illustrated mug, a word-free sherpa blanket, and a portrait available unframed or framed. The mug and portrait carry an approved short note and signature; the blanket carries illustrations without printed words. Buddy, the brand's dachshund host, gathers the buyer's details, and Teeinblue prepares personalized artwork for Printful production with manual order review. The ornament is on hold, the pillow is a conditional pilot, and the book is planned for2027. Theme code is in `shopify/` and text workflows in `n8n/`. Lead line: "Your dog loves you too." (`docs/POSITIONING.md`). Heartside is a Mindmaker LLC company (`docs/HANDOFF.md` section 3).
 
 ## Who it is for and why it matters for Mindmake
 
@@ -34,6 +34,8 @@ Angles a writer can use:
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
 ## Where it is right now (as of 2026-10-27)
+
+**Current integration:** Code through ce0f135 is deployed and hash-verified on the unpublished launch theme. Core variant prices/bindings, mug color/gallery and exact copy persistence, portrait dropdown/format/price switching, blanket gallery, and stale-art blocking pass bounded checks. Mug/portrait are restored to Draft after private QA; blanket stays Unlisted. Published article bodies/summaries, home meta description and AI provider disclosures are corrected. All three manual fulfillment holds are freshly verified. Actual-design checkout integration and its unpaid compatibility proof remain open; approval for that isolated test is pending. Store password remains on. See `docs/evidence/2026-10-27-core-launch-integration.md` for current evidence and explicit limits. Historical prices and checkout claims below are superseded.
 
 **Superseding owner ruling, October 27:** Finish the core products, pricing strategy, shared personalization and purchase flows before reopening Heartside. The owner will place a real customer order himself on the reopened store; the private sample checkout is no longer the next action. Checkout must show the actual design being purchased. The neutral thumbnail workaround below is rejected and remains a launch defect. Three parallel workers own engineering, product/supplier qualification and economics; the master owns integration and browser changes. No new generation, paid upgrade, payment or supplier release is authorized. Existing one-off artwork acceptance does not certify all AI outputs or physical print quality.
 
