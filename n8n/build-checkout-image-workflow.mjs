@@ -1,12 +1,12 @@
 import { writeFileSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { IMAGE_FILES_QUERY, IMAGE_CREATE_MUTATION, IMAGE_READ_QUERY } from './checkout-image.mjs';
-import { proxyGuard, proxyVerified, tokenStep, lookupStep, previewHeadStep, createStep, readyStep } from './checkout-image-steps.mjs';
+import { proxyGuard, proxyVerified, tokenStep, lookupStep, previewHeadStep, createStep, readyStep, admissionInput, admissionInserted, admissionDecision } from './checkout-image-steps.mjs';
 
 export function buildCheckoutImageWorkflow(config) {
   if (!config || !/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(config.shop) || !/^\/apps\/[a-z0-9-]+$/.test(config.proxyPath) || !/^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/$/.test(config.shopifyImagePrefix) || !Array.isArray(config.allowedVariantIds) || !config.allowedVariantIds.length || !config.allowedVariantIds.every(x => /^[0-9]+$/.test(x))) throw new Error('invalid_server_configuration');
-  if (Object.keys(config).some(k => !['shop', 'proxyPath', 'shopifyImagePrefix', 'allowedVariantIds', 'enabled', 'cryptoCredentialId', 'shopifyCredentialId'].includes(k))) throw new Error('unsupported_configuration_field');
-  for (const key of ['cryptoCredentialId', 'shopifyCredentialId']) if (config[key] !== undefined && !/^[A-Za-z0-9_-]{1,100}$/.test(config[key])) throw new Error('invalid_credential_reference');
+  if (Object.keys(config).some(k => !['shop', 'proxyPath', 'shopifyImagePrefix', 'allowedVariantIds', 'enabled', 'cryptoCredentialId', 'shopifyCredentialId', 'admissionTableId'].includes(k))) throw new Error('unsupported_configuration_field');
+  for (const key of ['cryptoCredentialId', 'shopifyCredentialId', 'admissionTableId']) if (config[key] !== undefined && !/^[A-Za-z0-9_-]{1,100}$/.test(config[key])) throw new Error('invalid_managed_reference');
   if (config.enabled && (!config.cryptoCredentialId || !config.shopifyCredentialId)) throw new Error('managed_credentials_required');
   const publicConfig = { shop: config.shop, proxyPath: config.proxyPath, shopifyImagePrefix: config.shopifyImagePrefix, allowedVariantIds: config.allowedVariantIds, enabled: config.enabled === true };
   const nodes = []; const connections = {};
@@ -27,6 +27,36 @@ export function buildCheckoutImageWorkflow(config) {
   add('Proxy HMAC', 'crypto', 2, { action: 'hmac', type: 'SHA256', binaryData: false, value: '={{ $json.canonical }}', dataPropertyName: 'computedSignature', encoding: 'hex' }, { onError: 'continueRegularOutput', ...(config.cryptoCredentialId ? { credentials: { crypto: { id: config.cryptoCredentialId } } } : {}) });
   code('Verified request', proxyVerified, `$('Proxy input').first().json, $input.first().json.computedSignature`);
   branch('Signature valid', '={{ !$json.httpStatus }}');
+  if (config.admissionTableId) {
+    const tableId = { __rl: true, mode: 'id', value: config.admissionTableId };
+    const table = (name, parameters, extra = {}) => add(name, 'dataTable', 1.1, { resource: 'row', dataTableId: tableId, ...parameters }, { retryOnFail: false, ...extra });
+    code('Admission input', admissionInput, '$input.first().json');
+    table('Append admission attempt', { operation: 'insert', columns: { mappingMode: 'defineBelow', value: { shopKey: '={{ $json.admission.shopKey }}', minuteBucket: '={{ $json.admission.minuteBucket }}' }, schema: [
+      { id: 'shopKey', displayName: 'shopKey', required: false, defaultMatch: false, display: true, type: 'string', canBeUsedToMatch: true },
+      { id: 'minuteBucket', displayName: 'minuteBucket', required: false, defaultMatch: false, display: true, type: 'number', canBeUsedToMatch: true },
+    ] }, options: { optimizeBulk: false } }, { alwaysOutputData: true, onError: 'continueRegularOutput' });
+    code('Admission inserted', admissionInserted, "$input.all().map(i => i.json), $('Admission input').first().json");
+    branch('Admission insert valid', '={{ !$json.httpStatus }}');
+    table('Read admission bucket', { operation: 'get', matchType: 'allConditions', filters: { conditions: [
+      { keyName: 'shopKey', condition: 'eq', keyValue: '={{ $json.admission.shopKey }}' },
+      { keyName: 'minuteBucket', condition: 'eq', keyValue: '={{ $json.admission.minuteBucket }}' },
+    ] }, returnAll: false, limit: 31, orderBy: true, orderByColumn: 'id', orderByDirection: 'ASC' }, { alwaysOutputData: true, onError: 'continueRegularOutput' });
+    code('Admission decision', admissionDecision, "$input.all().map(i => i.json), $('Admission inserted').first().json");
+    branch('Admission allowed', '={{ !$json.httpStatus }}');
+    for (const [from, to, output] of [
+      ['Admission input', 'Append admission attempt'], ['Append admission attempt', 'Admission inserted'], ['Admission inserted', 'Admission insert valid'],
+      ['Admission insert valid', 'Read admission bucket', 0], ['Admission insert valid', 'Respond', 1], ['Read admission bucket', 'Admission decision'],
+      ['Admission decision', 'Admission allowed'], ['Admission allowed', 'Acquire shop token', 0], ['Admission allowed', 'Respond', 1],
+    ]) link(from, to, output);
+    // Separate hourly trigger only cleans this shop's operational rows. It cannot
+    // touch current admission buckets, customizations, images or Shopify records.
+    add('Admission retention', 'scheduleTrigger', 1.2, { rule: { interval: [{ field: 'hours', hoursInterval: 1 }] } }, { disabled: config.enabled !== true });
+    table('Delete expired admission attempts', { operation: 'deleteRows', matchType: 'allConditions', filters: { conditions: [
+      { keyName: 'shopKey', condition: 'eq', keyValue: config.shop },
+      { keyName: 'minuteBucket', condition: 'lt', keyValue: '={{ Math.floor(Date.now() / 60000) - 120 }}' },
+    ] }, options: { dryRun: false } });
+    link('Admission retention', 'Delete expired admission attempts');
+  }
   add('Acquire shop token', 'httpRequest', 4.2, { method: 'POST', url: `https://${config.shop}/admin/oauth/access_token`,
     authentication: 'genericCredentialType', genericAuthType: 'httpCustomAuth', sendBody: true, specifyBody: 'json',
     jsonBody: JSON.stringify({ grant_type: 'client_credentials' }), options: responseOptions },
@@ -48,7 +78,7 @@ export function buildCheckoutImageWorkflow(config) {
 
   for (const [from, to, output] of [
     ['Webhook', 'Proxy input'], ['Proxy input', 'Input allowed'], ['Input allowed', 'Proxy HMAC', 0], ['Input allowed', 'Respond', 1],
-    ['Proxy HMAC', 'Verified request'], ['Verified request', 'Signature valid'], ['Signature valid', 'Acquire shop token', 0], ['Signature valid', 'Respond', 1],
+    ['Proxy HMAC', 'Verified request'], ['Verified request', 'Signature valid'], ['Signature valid', config.admissionTableId ? 'Admission input' : 'Acquire shop token', 0], ['Signature valid', 'Respond', 1],
     ['Acquire shop token', 'Shop token valid'], ['Shop token valid', 'Shop authenticated'], ['Shop authenticated', 'Find image', 0], ['Shop authenticated', 'Respond', 1],
     ['Find image', 'Lookup decision'], ['Lookup decision', 'Lookup valid'], ['Lookup valid', 'Image exists', 0], ['Lookup valid', 'Respond', 1],
     ['Image exists', 'Read image', 0], ['Read image', 'Ready response'], ['Ready response', 'Respond'],

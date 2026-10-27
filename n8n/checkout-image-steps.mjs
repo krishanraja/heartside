@@ -60,6 +60,31 @@ export function tokenStep(response, context) {
   return context;
 }
 
+export function admissionInput(context, now = Date.now()) {
+  return { ...context, admission: { shopKey: context.config.shop, minuteBucket: Math.floor(now / 60000) } };
+}
+
+export function admissionInserted(rows, context) {
+  const row = rows?.[0];
+  if (rows?.length !== 1 || !Number.isSafeInteger(row?.id) || row.id < 1 || row.shopKey !== context.admission.shopKey || row.minuteBucket !== context.admission.minuteBucket) {
+    return { httpStatus: 429, body: { state: 'error', code: 'image_preparation_busy', retryAfterSeconds: 60 } };
+  }
+  return { ...context, admission: { ...context.admission, rowId: row.id } };
+}
+
+export function admissionDecision(rows, context, now = Date.now()) {
+  const deny = { httpStatus: 429, body: { state: 'error', code: 'image_preparation_busy', retryAfterSeconds: 60 } };
+  const admission = context.admission;
+  if (!Array.isArray(rows) || !rows.length || rows.length > 30 || Math.floor(now / 60000) !== admission.minuteBucket) return deny;
+  const ids = new Set();
+  for (const row of rows) {
+    if (!Number.isSafeInteger(row?.id) || row.id < 1 || ids.has(row.id) || row.shopKey !== admission.shopKey || row.minuteBucket !== admission.minuteBucket) return deny;
+    ids.add(row.id);
+  }
+  // Read-your-own-committed-insert is required; an empty/stale read is not admission.
+  return ids.has(admission.rowId) ? context : deny;
+}
+
 export function previewHeadStep(response, context) {
   const headers = response.headers || {};
   const mime = String(headers['content-type'] || '').split(';')[0].trim().toLowerCase();
