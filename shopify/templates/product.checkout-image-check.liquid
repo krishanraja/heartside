@@ -25,6 +25,7 @@
     <form id="hs-retained-cart">
       <p><label>Retained cart ID <input name="cartId" type="password" required autocomplete="off"></label></p>
       <button type="submit">Read retained cart</button>
+      <button type="button" id="hs-retained-native" disabled>Read retained native components</button>
       <p><label>Existing native line ID <input name="lineId" autocomplete="off"></label></p>
       <p><label>Desired native quantity <input name="quantity" type="number" min="1" max="10" step="1" value="1"></label></p>
       <button type="button" id="hs-retained-update" disabled>Update retained native quantity</button>
@@ -38,6 +39,8 @@
       var retainedForm = document.getElementById('hs-retained-cart');
       var retainedResult = document.getElementById('hs-retained-result');
       var retainedUpdate = document.getElementById('hs-retained-update');
+      var retainedNativeButton = document.getElementById('hs-retained-native');
+      var retainedNativeCart = null;
       var checkedCartId = '';
       function retainedRuntime() {
         return { readyState: document.readyState, getCart: typeof window.Shopify?.actions?.getCart === 'function', updateCart: typeof window.Shopify?.actions?.updateCart === 'function' };
@@ -61,10 +64,10 @@
           lines: lines.map(function (line) { return { id: line.id, quantity: line.quantity, cost: line.cost }; })
         }, null, 2);
       }
-      retainedForm.elements.cartId.addEventListener('input', function () { checkedCartId = ''; retainedUpdate.disabled = true; });
+      retainedForm.elements.cartId.addEventListener('input', function () { checkedCartId = ''; retainedNativeCart = null; retainedUpdate.disabled = true; retainedNativeButton.disabled = true; });
       retainedForm.addEventListener('submit', async function (event) {
         event.preventDefault();
-        retainedUpdate.disabled = true; checkedCartId = '';
+        retainedUpdate.disabled = true; retainedNativeButton.disabled = true; checkedCartId = ''; retainedNativeCart = null;
         var cartId = retainedForm.elements.cartId.value.trim();
         var stage = 'read_request';
         if (!retainedRuntime().getCart) { retainedResult.textContent = JSON.stringify({ classification: 'runtime_unavailable', runtime: retainedRuntime(), cartChanged: false }); return; }
@@ -72,8 +75,27 @@
           var response = await window.Shopify.actions.getCart({ cartId: cartId });
           stage = 'read_response';
           showRetainedCart(response.cart);
-          if (response.cart) { checkedCartId = cartId; retainedUpdate.disabled = false; }
+          if (response.cart) { checkedCartId = cartId; retainedUpdate.disabled = false; retainedNativeButton.disabled = false; }
         } catch (error) { retainedFailure(stage, error); }
+      });
+      retainedNativeButton.addEventListener('click', async function () {
+        if (retainedNativeButton.disabled || !checkedCartId || checkedCartId !== retainedForm.elements.cartId.value.trim()) return;
+        retainedNativeButton.disabled = true; retainedNativeCart = null;
+        var query = 'query HeartsideRetainedNative($id:ID!){cart(id:$id){lines(first:20){pageInfo{hasNextPage}nodes{__typename id quantity merchandise{...on ProductVariant{id}} ...on CartLine{viewKey attributes{key value}} ...on ComponentizableCartLine{viewKey lineComponents{id viewKey quantity attributes{key value} merchandise{...on ProductVariant{id}}}}}}}}';
+        try {
+          var response = await fetch('/api/2026-07/graphql.json', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: query, variables: { id: checkedCartId } }) });
+          if (!response.ok) throw new Error('SFAPI ' + response.status, { cause: { status: response.status } });
+          var data = await response.json();
+          if (data.errors && data.errors.length) { retainedResult.textContent = JSON.stringify({ stage: 'native_read', rejected: true, errors: data.errors.map(function (error) { return { code: error.extensions && error.extensions.code || 'GRAPHQL_ERROR' }; }), cartChanged: false }); return; }
+          var cart = data.data && data.data.cart;
+          if (!cart || !cart.lines || !Array.isArray(cart.lines.nodes) || cart.lines.pageInfo.hasNextPage) throw new Error('Unexpected cart lines shape');
+          retainedNativeCart = cart;
+          function summarizeNative(line) {
+            var attributes = line.attributes || [], image = attributes.find(function (entry) { return entry.key === '_hs_checkout_image'; });
+            return { id: line.id, viewKey: line.viewKey, quantity: line.quantity, variantId: line.merchandise && line.merchandise.id, attributeKeys: attributes.map(function (entry) { return entry.key; }), image: image && /^https:\/\/cdn\.shopify\.com\/s\/files\//.test(image.value) ? image.value : null };
+          }
+          retainedResult.textContent = JSON.stringify({ nativeRead: true, cartChanged: false, lines: cart.lines.nodes.map(function (line) { var summary = summarizeNative(line); if (line.lineComponents) summary.components = line.lineComponents.map(summarizeNative); return summary; }) }, null, 2);
+        } catch (error) { retainedFailure('native_read', error); }
       });
       retainedUpdate.addEventListener('click', async function () {
         if (retainedUpdate.disabled || !checkedCartId || checkedCartId !== retainedForm.elements.cartId.value.trim()) return;
