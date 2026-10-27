@@ -19,11 +19,57 @@
     <button id="hs-add-prepared" type="button" disabled>Add prepared test item to cart</button>
     <pre id="hs-adapter-result" role="status" style="white-space:pre-wrap"></pre>
     <a href="{{ routes.cart_url }}" target="_blank" rel="noopener">Open test cart</a>
+    <hr>
+    <h2>Retained cart quantity check</h2>
+    <p>Read the retained cart, then update one existing line. This does not add a product, generate artwork or place an order.</p>
+    <form id="hs-retained-cart">
+      <p><label>Retained cart ID <input name="cartId" type="password" required autocomplete="off"></label></p>
+      <button type="submit">Read retained cart</button>
+      <p><label>Existing native line ID <input name="lineId" autocomplete="off"></label></p>
+      <p><label>Desired native quantity <input name="quantity" type="number" min="1" max="10" step="1" value="1"></label></p>
+      <button type="button" id="hs-retained-update" disabled>Update retained native quantity</button>
+    </form>
+    <pre id="hs-retained-result" role="status" style="white-space:pre-wrap"></pre>
   </main>
   <script src="{{ 'hs-checkout-image.js' | asset_url }}" defer="defer"></script>
   <script>
     (function () {
       var form = document.getElementById('hs-image-check');
+      var retainedForm = document.getElementById('hs-retained-cart');
+      var retainedResult = document.getElementById('hs-retained-result');
+      var retainedUpdate = document.getElementById('hs-retained-update');
+      var checkedCartId = '';
+      function showRetainedCart(cart) {
+        retainedResult.textContent = JSON.stringify({
+          found: !!cart,
+          totalQuantity: cart && cart.totalQuantity,
+          total: cart && cart.cost && cart.cost.totalAmount,
+          lines: cart && cart.lines && cart.lines.map(function (line) { return { id: line.id, quantity: line.quantity, cost: line.cost }; })
+        }, null, 2);
+      }
+      retainedForm.elements.cartId.addEventListener('input', function () { checkedCartId = ''; retainedUpdate.disabled = true; });
+      retainedForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        retainedUpdate.disabled = true; checkedCartId = '';
+        var cartId = retainedForm.elements.cartId.value.trim();
+        try {
+          var response = await Shopify.actions.getCart({ cartId: cartId });
+          showRetainedCart(response.cart);
+          if (response.cart) { checkedCartId = cartId; retainedUpdate.disabled = false; }
+        } catch (_) { retainedResult.textContent = 'Cart read failed. No change made.'; }
+      });
+      retainedUpdate.addEventListener('click', async function () {
+        if (retainedUpdate.disabled || !checkedCartId || checkedCartId !== retainedForm.elements.cartId.value.trim()) return;
+        var lineId = retainedForm.elements.lineId.value.trim(), quantity = Number(retainedForm.elements.quantity.value);
+        if (!lineId || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) { retainedResult.textContent = 'Enter the exact existing native line ID and a quantity from 1 to 10.'; return; }
+        retainedUpdate.disabled = true;
+        try {
+          var response = await Shopify.actions.updateCart({ cartId: checkedCartId, lines: [{ id: lineId, quantity: quantity }] });
+          if (response.userErrors && response.userErrors.length) { retainedResult.textContent = JSON.stringify({ rejected: true, errors: response.userErrors.map(function (error) { return { code: error.code, message: error.message }; }) }, null, 2); return; }
+          var readback = await Shopify.actions.getCart({ cartId: checkedCartId });
+          showRetainedCart(readback.cart);
+        } catch (_) { retainedResult.textContent = 'Could not confirm the update. Read the retained cart before trying again. No automatic retry.'; }
+      });
       var result = document.getElementById('hs-image-result');
       var preview = document.getElementById('hs-image-preview');
       form.addEventListener('submit', async function (event) {

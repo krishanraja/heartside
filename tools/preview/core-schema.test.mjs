@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {Liquid} from 'liquidjs';
 const source=readFileSync(new URL('../../shopify/snippets/hs-schema.liquid',import.meta.url),'utf8');
 const engine=new Liquid();engine.registerFilter('json',v=>JSON.stringify(v));engine.registerFilter('asset_url',v=>'//cdn.example.test/'+v);engine.registerFilter('image_url',v=>'//cdn.example.test/'+v);
-const handles=['your-dogs-illustrated-mug','heartside-personality-blanket-draft-2026-10-23','heartside-city-screenprint-draft-2026-10-23'];
+const handles=['your-dogs-illustrated-mug','your-dogs-personality-blanket','your-dogs-portrait'];
 const catalog=Object.fromEntries(handles.map((handle,i)=>[handle,{title:['Illustrated mug','Word-free sherpa blanket','Portrait'][i],available:true,url:'/products/'+handle}]));
 async function render(data){const html=await engine.parseAndRender(source,data);return JSON.parse(html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1])['@graph'];}
 test('home schema lists only the three available core products and describes the word-free blanket',async()=>{

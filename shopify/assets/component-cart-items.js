@@ -20,7 +20,7 @@ import {
 } from '@shopify/events';
 
 // Presentation-only Heartside bundles contain one original native variant.
-// Quantity updates address that exact component key, never another line of the variant.
+// Storefront actions address that exact component key, never another line of the variant.
 function heartsideQuantityTarget(row) {
   if (!row) return '';
   const key = row.getAttribute('data-hs2-quantity-key');
@@ -32,6 +32,32 @@ function heartsideQuantityTarget(row) {
   if (!key || key !== component.key || key === data.key || String(component.variant_id) !== String(data.variant_id) || !key.startsWith(String(data.variant_id) + ':') || !Number.isInteger(component.quantity) || component.quantity < 1) return null;
   const image = component.properties?._hs_checkout_image;
   return /^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/heartside-checkout-[a-f0-9-]{36}\.jpg(?:\?v=[0-9]+)?$/i.test(image || '') ? key : null;
+}
+
+async function heartsideSetComponentQuantity(key, quantity) {
+  if (!Number.isInteger(quantity) || quantity < 0) throw new Error('Choose a whole-number quantity.');
+  if (typeof window.Shopify?.actions?.updateCart !== 'function') throw new Error('Your cart is still loading. Refresh the page and try again.');
+  // The Storefront action accepts an Ajax line key and preserves omitted attributes.
+  // Ajax change/update cannot address the original component of this merged line.
+  const result = await window.Shopify.actions.updateCart(
+    { lines: [{ id: key, quantity }] },
+    { event: { context: 'cart', detail: { source: 'heartside-component-quantity' } } }
+  );
+  if (result.userErrors?.length) throw new Error(result.userErrors[0].message || 'The quantity could not be updated.');
+  if (!result.cart) throw new Error('The cart update could not be confirmed. Refresh the page before trying again.');
+  return result;
+}
+
+function heartsideQuantityMatches(rows, key, quantity) {
+  let found = 0, units = 0;
+  for (const row of rows || []) {
+    let item;
+    try { item = JSON.parse(row.getAttribute('data-hs2-cart-line')); } catch { return false; }
+    for (const line of item.item_components?.length ? item.item_components : [item]) {
+      if (line.key === key) { found++; units += line.quantity; }
+    }
+  }
+  return quantity === 0 ? found === 0 : found === 1 && units === quantity;
 }
 
 /** @typedef {import('./utilities').TextComponent} TextComponent */
@@ -67,6 +93,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
   );
   /** @type {Promise<any> | null} */
   #pendingCartFetch = null;
+  #heartsideQuantityInFlight = false;
 
   /**
    * True when the event was dispatched from outside this cart-items-component (e.g.
@@ -323,6 +350,9 @@ export class CartItemsComponent extends createViewEventElement(Component) {
   async updateQuantity(config) {
     const cartPerformaceUpdateMarker = cartPerformance.createStartingMarker(`${config.action}:user-action`);
     const deferredUpdatePromise = CartLinesUpdateEvent.createPromise();
+    // The standard action dispatches its own event; a pre-dispatch failure must
+    // not leave this ordinary-Ajax promise as an unhandled rejection.
+    deferredUpdatePromise.promise.catch(() => {});
     let completeQuantityUpdate = () => {};
     /** @type {Promise<void>} */
     const quantityUpdate = new Promise((resolve) => {
@@ -350,11 +380,25 @@ export class CartItemsComponent extends createViewEventElement(Component) {
 
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
-      const requestUrl = componentKey
-        ? `${window.Shopify?.routes?.root || '/'}cart/update.js`
-        : `${Theme.routes.cart_change_url}`;
+      if (componentKey) {
+        cartTotal?.shimmer();
+        this.#heartsideQuantityInFlight = true;
+        try {
+          const result = await heartsideSetComponentQuantity(componentKey, quantity);
+          await this.#refreshCartSection();
+          if (!heartsideQuantityMatches(this.refs.cartItemRows, componentKey, quantity)) {
+            throw new Error('The requested quantity was not confirmed. Check the current cart before trying again.');
+          }
+          deferredUpdatePromise.resolve({ cart: result.cart, detail: { source: 'heartside-component-quantity' } });
+        } finally {
+          this.#heartsideQuantityInFlight = false;
+          resetShimmer(this);
+        }
+        return;
+      }
+      const requestUrl = `${Theme.routes.cart_change_url}`;
       const body = JSON.stringify({
-        ...(componentKey ? { updates: { [componentKey]: quantity } } : { line: line, quantity: quantity }),
+        line: line, quantity: quantity,
         sections: Array.from(sectionsToUpdate).join(','),
         sections_url: window.location.pathname,
       });
@@ -432,6 +476,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       this.#updateCartQuantitySelectorButtonStates();
     } catch (error) {
       console.error(error);
+      resetShimmer(this);
       deferredUpdatePromise.reject(error);
 
       this.dispatchEvent(
@@ -489,6 +534,9 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    */
   #handleCartUpdate = (event) => {
     if (event.target === this) return;
+    // The action emits synchronously when it starts. This instance owns and
+    // awaits its one render below; other cart instances still consume the event.
+    if (this.#heartsideQuantityInFlight) return;
 
     event.promise
       ?.then(async ({ detail }) => {
