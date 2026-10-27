@@ -20,7 +20,10 @@
         event.preventDefault();
         var button = form.querySelector('button');
         if (button.disabled || !form.reportValidity()) return;
-        var data = Object.fromEntries(new FormData(form));
+        var data = {
+          customizationId: form.elements.customizationId.value,
+          variantId: form.elements.variantId.value
+        };
         var endpoint = new URL('/apps/heartside-artwork', location.origin);
         endpoint.search = new URLSearchParams(data).toString();
         button.disabled = true;
