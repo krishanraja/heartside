@@ -39,12 +39,26 @@
       var retainedResult = document.getElementById('hs-retained-result');
       var retainedUpdate = document.getElementById('hs-retained-update');
       var checkedCartId = '';
+      function retainedRuntime() {
+        return { readyState: document.readyState, getCart: typeof window.Shopify?.actions?.getCart === 'function', updateCart: typeof window.Shopify?.actions?.updateCart === 'function' };
+      }
+      function retainedFailure(stage, error) {
+        var names = ['Error', 'TypeError', 'ReferenceError', 'SyntaxError', 'AbortError', 'ValidationError', 'CartActionError'];
+        var message = String(error && error.message || '');
+        var status = Number(error && error.cause && error.cause.status);
+        var classification = /lines shape/.test(message) ? 'unexpected_cart_shape' : /SFAPI \d{3}/.test(message) ? 'provider_http_error' : /fetch|network|load failed/i.test(message) ? 'network_error' : /unauthorized|access denied|forbidden/i.test(message) ? 'provider_access_rejected' : 'action_or_response_error';
+        retainedResult.textContent = JSON.stringify({ stage: stage, classification: classification, errorName: names.indexOf(error && error.name) >= 0 ? error.name : 'UnknownError', httpStatus: Number.isInteger(status) && status >= 100 && status <= 599 ? status : null, runtime: retainedRuntime(), automaticRetry: false }, null, 2);
+      }
       function showRetainedCart(cart) {
+        // The currently served standard-actions module returns lines.nodes;
+        // the public reference describes a flat array. Accept these two shapes.
+        var lines = !cart ? [] : Array.isArray(cart.lines) ? cart.lines : cart.lines && cart.lines.nodes;
+        if (!Array.isArray(lines)) throw new Error('Unexpected cart lines shape');
         retainedResult.textContent = JSON.stringify({
           found: !!cart,
           totalQuantity: cart && cart.totalQuantity,
           total: cart && cart.cost && cart.cost.totalAmount,
-          lines: cart && cart.lines && cart.lines.map(function (line) { return { id: line.id, quantity: line.quantity, cost: line.cost }; })
+          lines: lines.map(function (line) { return { id: line.id, quantity: line.quantity, cost: line.cost }; })
         }, null, 2);
       }
       retainedForm.elements.cartId.addEventListener('input', function () { checkedCartId = ''; retainedUpdate.disabled = true; });
@@ -52,23 +66,30 @@
         event.preventDefault();
         retainedUpdate.disabled = true; checkedCartId = '';
         var cartId = retainedForm.elements.cartId.value.trim();
+        var stage = 'read_request';
+        if (!retainedRuntime().getCart) { retainedResult.textContent = JSON.stringify({ classification: 'runtime_unavailable', runtime: retainedRuntime(), cartChanged: false }); return; }
         try {
-          var response = await Shopify.actions.getCart({ cartId: cartId });
+          var response = await window.Shopify.actions.getCart({ cartId: cartId });
+          stage = 'read_response';
           showRetainedCart(response.cart);
           if (response.cart) { checkedCartId = cartId; retainedUpdate.disabled = false; }
-        } catch (_) { retainedResult.textContent = 'Cart read failed. No change made.'; }
+        } catch (error) { retainedFailure(stage, error); }
       });
       retainedUpdate.addEventListener('click', async function () {
         if (retainedUpdate.disabled || !checkedCartId || checkedCartId !== retainedForm.elements.cartId.value.trim()) return;
         var lineId = retainedForm.elements.lineId.value.trim(), quantity = Number(retainedForm.elements.quantity.value);
         if (!lineId || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) { retainedResult.textContent = 'Enter the exact existing native line ID and a quantity from 1 to 10.'; return; }
         retainedUpdate.disabled = true;
+        var stage = 'update_request';
+        if (!retainedRuntime().updateCart || !retainedRuntime().getCart) { retainedResult.textContent = JSON.stringify({ classification: 'runtime_unavailable', runtime: retainedRuntime(), cartChanged: false }); return; }
         try {
-          var response = await Shopify.actions.updateCart({ cartId: checkedCartId, lines: [{ id: lineId, quantity: quantity }] });
+          var response = await window.Shopify.actions.updateCart({ cartId: checkedCartId, lines: [{ id: lineId, quantity: quantity }] });
           if (response.userErrors && response.userErrors.length) { retainedResult.textContent = JSON.stringify({ rejected: true, errors: response.userErrors.map(function (error) { return { code: error.code, message: error.message }; }) }, null, 2); return; }
-          var readback = await Shopify.actions.getCart({ cartId: checkedCartId });
+          stage = 'update_readback';
+          var readback = await window.Shopify.actions.getCart({ cartId: checkedCartId });
+          stage = 'update_response';
           showRetainedCart(readback.cart);
-        } catch (_) { retainedResult.textContent = 'Could not confirm the update. Read the retained cart before trying again. No automatic retry.'; }
+        } catch (error) { retainedFailure(stage, error); }
       });
       var result = document.getElementById('hs-image-result');
       var preview = document.getElementById('hs-image-preview');
