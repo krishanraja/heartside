@@ -350,9 +350,11 @@ export class CartItemsComponent extends createViewEventElement(Component) {
 
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
+      const requestUrl = componentKey
+        ? `${window.Shopify?.routes?.root || '/'}cart/update.js`
+        : `${Theme.routes.cart_change_url}`;
       const body = JSON.stringify({
-        ...(componentKey ? { id: componentKey } : { line: line }),
-        quantity: quantity,
+        ...(componentKey ? { updates: { [componentKey]: quantity } } : { line: line, quantity: quantity }),
         sections: Array.from(sectionsToUpdate).join(','),
         sections_url: window.location.pathname,
       });
@@ -369,7 +371,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
         })
       );
 
-      const response = await fetch(`${Theme.routes.cart_change_url}`, fetchConfig('json', { body }));
+      const response = await fetch(requestUrl, fetchConfig('json', { body }));
       const responseText = await response.text();
       const parsedResponseText = JSON.parse(responseText);
 

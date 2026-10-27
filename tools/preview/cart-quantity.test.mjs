@@ -13,18 +13,21 @@ const uuid='11111111-2222-4333-8444-555555555555';
 const image='https://cdn.shopify.com/s/files/1/1111/2222/3333/files/heartside-checkout-'+uuid+'.jpg?v=123';
 const component={key:'123:native',variant_id:123,quantity:2,properties:{_hs_checkout_image:image,_customization_id:uuid}};
 const item={key:'123:merged',variant_id:123,quantity:1,original_price:25800,final_price:25800,original_line_price:25800,final_line_price:25800,item_components:[component]};
-function body(data,quantity,minified,key=component.key){
+function requestFor(data,quantity,minified,key=component.key){
  const row={dataset:{key:data.key},getAttribute:k=>k==='data-hs2-cart-line'?JSON.stringify(data):key};
- const context={window:{location:{pathname:'/cart'}},line:1,quantity,sectionsToUpdate:new Set(['cart-main']),component:{refs:{cartItemRows:[row]}}};
- const code=helper+'\nresult=(function(){'+request+'\nreturn JSON.parse(body);}).call(component);';
+ const context={Theme:{routes:{cart_change_url:'/en/cart/change.js'}},window:{Shopify:{routes:{root:'/en/'}},location:{pathname:'/cart'}},line:1,quantity,sectionsToUpdate:new Set(['cart-main']),component:{refs:{cartItemRows:[row]}}};
+ const code=helper+'\nresult=(function(){'+request+'\nreturn {payload:JSON.parse(body),url:requestUrl};}).call(component);';
  vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,context);return JSON.parse(JSON.stringify(context.result));
 }
+const body=(...args)=>requestFor(...args).payload;
 for(const minified of [false,true]){
  const mode=minified?'minified':'source';
  test(mode+': exact native component key receives absolute quantity and removal without replacing properties',()=>{
-  for(const quantity of [0,1,2,3])assert.deepEqual(body(item,quantity,minified),{id:'123:native',quantity,sections:'cart-main',sections_url:'/cart'});
+  for(const quantity of [0,1,2,3])assert.deepEqual(body(item,quantity,minified),{updates:{'123:native':quantity},sections:'cart-main',sections_url:'/cart'});
   const other={...item,key:'123:other-parent',item_components:[{...component,key:'123:other-dog'}]};
-  assert.equal(body(other,1,minified,'123:other-dog').id,'123:other-dog');
+  assert.deepEqual(body(other,1,minified,'123:other-dog').updates,{'123:other-dog':1});
+  assert.equal(requestFor(item,1,minified).url,'/en/cart/update.js');
+  assert.equal(requestFor(item,1,minified,'').url,'/en/cart/change.js');
  });
  test(mode+': ordinary, ambiguous, different-variant and invalid provenance lines retain native line-position behavior',()=>{
   for(const data of [{...item,item_components:[]},{...item,item_components:[component,component]},{...item,variant_id:456},{...item,quantity:2},{...item,item_components:[{...component,properties:{}}]}]){
