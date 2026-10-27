@@ -3,13 +3,14 @@
     "gift": {
       "type": "hs3-chat",
       "settings": {
-        "product_mug": "the-morning-mug",
-        "product_blanket": "the-couch-blanket",
-        "product_print": "the-framed-print",
+        "product_mug": "",
+        "product_blanket": "heartside-personality-blanket-draft-2026-10-23",
+        "product_print": "heartside-city-screenprint-draft-2026-10-23",
         "product_ornament": "the-tree-ornament",
         "ornament_bundle": false,
         "artwork_candidates": true,
-        "ai_on": false
+        "ai_on": false,
+        "blanket_purchase": false
       }
     }
   },

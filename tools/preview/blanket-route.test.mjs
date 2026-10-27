@@ -51,3 +51,13 @@ test('blanket purchase setting is default off and reads product picker price and
   assert.match(liquid,/"blanketPurchase": {{ s.blanket_purchase \| json }}/);
   assert.match(liquid,/p\.price \| divided_by: 100\.0/);assert.match(liquid,/p\.url \| append: '\?view='/);
 });
+
+test('core Buddy entry points use verified revamp handles and cannot route to an unbound mug',()=>{
+  for(const name of ['index.json','index.gifts.json','index.landing.json','index.artwork-preview.json']) {
+    const config=JSON.parse(readFileSync(new URL('../../shopify/templates/'+name,import.meta.url),'utf8')).sections.gift.settings;
+    assert.equal(config.product_blanket,'heartside-personality-blanket-draft-2026-10-23');
+    assert.equal(config.product_print,'heartside-city-screenprint-draft-2026-10-23');
+    assert.equal(config.product_mug,'');assert.equal(config.artwork_candidates,true);
+    assert.equal(config.blanket_purchase,false);assert.equal(config.ornament_bundle,false);
+  }
+});
