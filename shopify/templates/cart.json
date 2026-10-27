@@ -248,7 +248,8 @@
         "background_color": "{{ settings.color_palette.color8 }}",
         "padding-block-start": 48,
         "padding-block-end": 100
-      }
+      },
+      "disabled": true
     }
   },
   "order": [

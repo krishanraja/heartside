@@ -1907,6 +1907,20 @@
   var CART_DROP_PROPS = /^available product$/i;
   var CART_DROP_VALUES = /^(default|default title|1 pc|one size)$/i;
   var cartImages = {};
+  function cartArtworkImage(item) {
+    if (!item) return '';
+    var own = function (line) {
+      var p = line.properties || {}, prepared = p._hs_checkout_image, native = p._customization_image;
+      if (/^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/heartside-checkout-[a-f0-9-]{36}\.jpg(?:\?v=[0-9]+)?$/i.test(prepared || '')) return prepared;
+      if (/^https:\/\/cdn\.teeinblue\.com\/customizations\/[a-f0-9-]{36}\.jpg(?:\?[^\s<>]*)?$/i.test(native || '')) return native;
+      return '';
+    };
+    var image = own(item), components = item.item_components;
+    if (image) return image;
+    // Only our one-variant presentation bundle can inherit its sole child's image.
+    if (Array.isArray(components) && components.length === 1 && item.variant_id != null && String(components[0].variant_id) === String(item.variant_id)) return own(components[0]);
+    return '';
+  }
   function cartTidy() {
     var run = function () {
       var rows = document.querySelectorAll('.cart-items__table-row[data-key]');
@@ -1930,7 +1944,13 @@
           var dt = p.querySelector('dt');
           if (dt && CART_DROP_PROPS.test(norm(dt.textContent))) p.hidden = true;
         });
-        var key = row.getAttribute('data-key');
+        var key = row.getAttribute('data-key'), snapshot = row.getAttribute('data-hs2-cart-line');
+        if (snapshot !== null) {
+          var current = null;
+          try { current = JSON.parse(snapshot); } catch (e) {}
+          cartPicture(row, current && current.key === key ? cartArtworkImage(current) : '');
+          return;
+        }
         if (cartImages[key]) cartPicture(row, cartImages[key]);
         else if (!(key in cartImages)) need = true;
       });
@@ -1945,8 +1965,7 @@
           .then(function (r) { return r.json(); })
           .then(function (cart) {
             (cart.items || []).forEach(function (it) {
-              var u = it.properties && (it.properties._customization_image || it.properties['_customization_image']);
-              cartImages[it.key] = /^https?:\/\//.test(u || '') ? u : '';
+              cartImages[it.key] = cartArtworkImage(it);
             });
           })
           .catch(function () {})
@@ -1965,7 +1984,19 @@
   }
   function cartPicture(row, url) {
     var img = row.querySelector('.cart-items__media img');
-    if (!img || img.getAttribute('data-hs2-src') === url) return;
+    if (!img) return;
+    if (!url) {
+      if (img.__hs2Original) {
+        img.src = img.__hs2Original.src;
+        if (img.__hs2Original.srcset) img.setAttribute('srcset', img.__hs2Original.srcset);
+        else img.removeAttribute('srcset');
+        img.removeAttribute('data-hs2-src'); img.classList.remove('hs2-cart-preview');
+        delete img.__hs2Original;
+      }
+      return;
+    }
+    if (img.getAttribute('data-hs2-src') === url) return;
+    if (!img.__hs2Original) img.__hs2Original = {src: img.getAttribute('src'), srcset: img.getAttribute('srcset')};
     img.setAttribute('data-hs2-src', url);
     img.src = url; img.removeAttribute('srcset');
     img.classList.add('hs2-cart-preview');
@@ -2762,7 +2793,7 @@
   // Every gift needs Teeinblue's photo and note. Helio's collection quick-add
   // submits a bare variant, so a catalog card must open the product form first.
   function personalizeCatalogCards() {
-    var handles = ['the-morning-mug', 'the-couch-blanket', 'the-framed-print', 'the-tree-ornament'];
+    var handles = ['your-dogs-illustrated-mug', 'your-dogs-personality-blanket', 'your-dogs-portrait', 'the-morning-mug', 'the-couch-blanket', 'the-framed-print', 'the-tree-ornament'];
     document.querySelectorAll('product-card quick-add-component').forEach(function (quick) {
       var card = quick.closest('product-card');
       var productLink = card && card.querySelector('a[href*="/products/"]');
