@@ -1,6 +1,6 @@
 # Heartside historical documentation
 
-Everything in this directory is dated evidence. It records prior offers, prices, product designs, implementation states, assumptions, approvals and task queues. **No file here is a current instruction, launch gate, price source or permission to act.** Read [`../../NOW.md`](../../NOW.md) for current status and next action, [`../continuation/2026-10-24/START-HERE.md`](../continuation/2026-10-24/START-HERE.md) for approved scope, and [`../continuation/2026-10-24/02-ECONOMICS.md`](../continuation/2026-10-24/02-ECONOMICS.md) for current economic policy and modeled limits.
+Everything in this directory is dated evidence. It records prior offers, prices, product designs, implementation states, assumptions, approvals and task queues. **No file here is a current instruction, launch gate, price source or permission to act.** Read [`../../NOW.md`](../../NOW.md) for current status and next action, [`../SCOPE.md`](../SCOPE.md) for approved scope, and [`../ECONOMICS.md`](../ECONOMICS.md) for current economic policy and modeled limits.
 
 - `NOW-SNAPSHOTS-THROUGH-2026-10-27.md` contains the pre-release paragraphs moved out of `NOW.md`.
 - `V3-GIFTS-FROM-YOUR-DOG-2026-10-13.md`, `HANDOFF-2026-10-21.md`, `POSITIONING-2026-10-21.md` and dated handovers preserve the earlier four-gift program.

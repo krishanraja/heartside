@@ -8,7 +8,7 @@ production_url: https://heartside.io
 state_doc: NOW.md
 history_log: docs/history/LOG.md
 truth_files: []
-authority_order: [docs/NORTH_STAR.md, NOW.md, docs/continuation/2026-10-24/START-HERE.md, docs/evidence/2026-10-26-pricing-ruling.md, docs/SYNC.md]
+authority_order: [docs/NORTH_STAR.md, NOW.md, docs/SCOPE.md, docs/ECONOMICS.md, docs/SYNC.md]
 steward: https://github.com/krishanraja/ai-harness/blob/main/docs/steward/RUNBOOK.md
 never_publish: [any credential or the name of any credential, the Shopify store handle and the live theme id, the n8n instance address and its webhook URLs, the Teeinblue campaign ids and Printful product ids, the Google Drive folder link, Krish's personal email address, any customer's order or chat answers or dog's name or photo]
 ---
@@ -16,7 +16,7 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 
 <!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":0,"current_as_of":"2026-10-24","current_source":"Shopify analytics September 27-October 24 plus order transaction readback: one $24 order fully refunded","urgency":4,"urgency_reason":"last measured zero net sales against the October 26 weekly target; fresh measurement pending"} --> **North Star number: U4 at the last measured checkpoint (24 October).** Shopify net sales, trailing four weeks: $0 after the recorded full refund versus the $250 target for the week of 26 October. This is a dated measurement, not a claim about today's sales. Refresh Shopify orders net of refunds before recalculating urgency.
 
-> This is the single current release-state and next-action record. `docs/continuation/2026-10-24/START-HERE.md` owns approved scope; the [26 October ruling](docs/evidence/2026-10-26-pricing-ruling.md) owns the economic decision: maximize expected total net operating profit subject to a 30% net operating margin floor after all attributable business costs. The earlier mandatory 50% floor is superseded. Configured prices and modeled margins are not realized margin. Later live readback beats this dated record. Earlier checkpoints have moved to [`docs/history/`](docs/history/README.md).
+> This is the single current release-state and next-action record. [`docs/SCOPE.md`](docs/SCOPE.md) owns approved scope; [`docs/ECONOMICS.md`](docs/ECONOMICS.md) records the 26 October economic decision: maximize expected total net operating profit subject to a 30% net operating margin floor after all attributable business costs. The earlier mandatory 50% floor is superseded. Configured prices and modeled margins are not realized margin. Later live readback beats this dated record. Earlier checkpoints have moved to [`docs/history/`](docs/history/README.md).
 
 ## What it is
 

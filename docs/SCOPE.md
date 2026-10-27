@@ -1,12 +1,12 @@
 # Heartside: current execution contract
 
-Owner: Krish. Issued October 24, 2026; reconciled October 27. Status: scope approved. Implementation is live; independent live/repository acceptance and the owner's real physical sample remain open. [`../../../NOW.md`](../../../NOW.md) owns current operational state and next action.
+Owner: Krish. Issued October 24, 2026; reconciled October 27. Status: scope approved. Implementation is live; independent live/repository acceptance and the owner's real physical sample remain open. [`../NOW.md`](../NOW.md) owns current operational state and next action.
 
-This file holds the approved scope and enduring product constraints for the revamp. Read it with [`../../../NOW.md`](../../../NOW.md) for release state, configured prices and the single next action. Older task queues, handoffs, initial economics scenarios and implementation snapshots were moved to [`../../history/`](../../history/README.md). Later explicit owner rulings take precedence.
+This file holds the approved scope and enduring product constraints for the revamp. Read it with [`../NOW.md`](../NOW.md) for release state, configured prices and the single next action. Older task queues, handoffs, initial economics scenarios and implementation snapshots are in [`history/`](history/README.md). Later explicit owner rulings take precedence.
 
 ## Outcome
 
-**Latest owner ruling (October 26):** Maximize expected total net operating profit, subject to a 30% net operating margin floor after all attributable business costs. The 26 October ruling supersedes the mandatory 50% floor; supplier-only margin is not net margin. Retrieve actual costs or use explicit conservative bounds without restarting the deferred labor interview. Exact future price/discount changes, spending and product acceptance retain their own gates. See the [ruling](../../evidence/2026-10-26-pricing-ruling.md). The earlier 50% instructions are retained only in [`../../history/ECONOMICS-2026-10-24.md`](../../history/ECONOMICS-2026-10-24.md).
+**Latest owner ruling (October 26):** Maximize expected total net operating profit, subject to a 30% net operating margin floor after all attributable business costs. The 26 October ruling supersedes the mandatory 50% floor; supplier-only margin is not net margin. Retrieve actual costs or use explicit conservative bounds without restarting the deferred labor interview. Exact future price/discount changes, spending and product acceptance retain their own gates. See the [ruling](evidence/2026-10-26-pricing-ruling.md). The earlier 50% instructions are retained only in [`history/ECONOMICS-2026-10-24.md`](history/ECONOMICS-2026-10-24.md).
 
 Finish a US-only gift range that convincingly looks like the buyer's actual dog, reflects its real personality, shares a choice of substantially different art styles and a sentimental-to-hilarious control, is simple to personalize, and is priced to maximize **total net operating profit subject to at least30% net operating margin after all attributable business costs**. Net margin is a release requirement, not an outcome already achieved. Confirm the accounting treatment of business income taxes from available records or with Krish if necessary before certifying net margin; owner personal income taxes are not assumed to be product costs.
 
@@ -25,7 +25,7 @@ The work serves Heartside's North Star: a recognizable, shareable gift business 
 | Later development | Compact dog-narrated book for 2027 |
 | Outside this launch | Calendar, shaped pillow and broad novelty accessories/apparel |
 
-The scope is approved. Do not ask Krish to approve it again. Current configured core retail prices are USD45 mug, USD129 blanket, USD59 unframed portrait and USD119 framed portrait; [`../../../NOW.md`](../../../NOW.md) owns the dated price readback. A future price or offer change requires fresh economics and its own authorization. Modeled margins do not certify realized net margin. The pillow pilot and conditional ornament are not automatically core launch products.
+The scope is approved. Do not ask Krish to approve it again. Current configured core retail prices are USD45 mug, USD129 blanket, USD59 unframed portrait and USD119 framed portrait; [`../NOW.md`](../NOW.md) owns the dated price readback. A future price or offer change requires fresh economics and its own authorization. Modeled margins do not certify realized net margin. The pillow pilot and conditional ornament are not automatically core launch products.
 
 ## Non-negotiable instructions
 
@@ -42,15 +42,15 @@ The scope is approved. Do not ask Krish to approve it again. Current configured 
 
 ## Read order and ownership
 
-1. [`../../../NOW.md`](../../../NOW.md): current release state, configured prices, evidence limits and one next action.
+1. [`../NOW.md`](../NOW.md): current release state, configured prices, evidence limits and one next action.
 2. This file: approved scope and enduring product constraints.
-3. [`02-ECONOMICS.md`](02-ECONOMICS.md): current owner ruling and modeled sensitivity; dated 50% calculations are in [`../../history/ECONOMICS-2026-10-24.md`](../../history/ECONOMICS-2026-10-24.md).
-4. [`../../history/README.md`](../../history/README.md): dated creative studies, queues, handoffs and implementation evidence. No archived checklist is active.
+3. [`ECONOMICS.md`](ECONOMICS.md): current owner ruling and modeled sensitivity; dated 50% calculations are in [`history/ECONOMICS-2026-10-24.md`](history/ECONOMICS-2026-10-24.md).
+4. [`history/README.md`](history/README.md): dated creative studies, queues, handoffs and implementation evidence. No archived checklist is active.
 
 The three supplied reference images are approved portrait direction, approved blanket direction and an explicitly **unapproved six-style candidate board**. They establish different things. Do not present the style board as production acceptance or as a supplier mockup.
 
 ## Current action
 
-Use the single next action in [`../../../NOW.md`](../../../NOW.md). The old six-style billing canary and unpublished-theme handoff are archived and must not be repeated from this document. No new image generation, order or supplier confirmation is authorized by reading this brief.
+Use the single next action in [`../NOW.md`](../NOW.md). The old six-style billing canary and unpublished-theme handoff are archived and must not be repeated from this document. No new image generation, order or supplier confirmation is authorized by reading this brief.
 
 Use only the Codex in-app browser for any browser work. Do not control the user's native desktop or open a system file picker; ask the owner to handle a picker or authentication step when actually needed.

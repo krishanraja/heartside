@@ -4,8 +4,8 @@ Updated 27 October 2026. This replaces the 15 October map, which pointed Canva a
 
 ## Current sources
 
-- [`NOW.md`](../NOW.md) is the only current release-state, price-readback and next-action record. [`continuation/2026-10-24/START-HERE.md`](continuation/2026-10-24/START-HERE.md) holds approved scope; [`continuation/2026-10-24/02-ECONOMICS.md`](continuation/2026-10-24/02-ECONOMICS.md) holds the current economics procedure. Older project documentation is in [`history/`](history/README.md), and the independent review assignments are in [`review/`](review/).
-- The approved product scope is `docs/continuation/2026-10-24/START-HERE.md`. Live Shopify product records establish current prices, variants, descriptions and availability.
+- [`NOW.md`](../NOW.md) is the only current release-state, price-readback and next-action record. [`SCOPE.md`](SCOPE.md) holds approved scope; [`ECONOMICS.md`](ECONOMICS.md) holds the current economics procedure. Older project documentation is in [`history/`](history/README.md), and the independent review assignments are in [`review/`](review/).
+- Live Shopify product records establish current prices, variants, descriptions and availability; the repo records the dated readback in `NOW.md`.
 - The current storefront's visual tokens are in `shopify/assets/hs3.css`; font loading is in `shopify/snippets/hs2-head.liquid`.
 - `design/CANVA-SOURCES.md` is the current written Canva brand-kit handoff. The matching Drive file is `00_Brand-Assets/01_Identity/CANVA-BRAND-KIT-GUIDE.md`.
 - [`docs/history/BRAND-SYSTEM-PRE-REVAMP.md`](history/BRAND-SYSTEM-PRE-REVAMP.md) preserves the old October brand system. It is not the current product or social brief.

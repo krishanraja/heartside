@@ -1,6 +1,6 @@
 # Historical Heartside economics model, 24 October 2026
 
-> Superseded 50% policy and decision-time assumptions. Current policy and modeled sensitivity: [02-ECONOMICS.md](../continuation/2026-10-24/02-ECONOMICS.md). Do not use these numbers as live prices or a release gate.
+> Superseded 50% policy and decision-time assumptions. Current policy and modeled sensitivity: [ECONOMICS.md](../ECONOMICS.md). Do not use these numbers as live prices or a release gate.
 
 ## Historical working instruction, October24 (superseded)
 
