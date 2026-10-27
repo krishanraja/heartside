@@ -6,6 +6,21 @@ Maximize expected total net operating profit, subject to a 30% net operating mar
 
 Recommended starting prices and inactive offers are in [the pricing ruling](../../evidence/2026-10-26-pricing-ruling.md). The all-cost model calibration now uses0.30; missing inputs continue to block certification. The old supplier-cost report remains explicitly historical. All October24 calculations below preserve decision-time assumptions and are superseded as current policy.
 
+## Function Studio recurring-cost sensitivity, October27
+
+The owner-approved Function Studio Advanced plan is installed at USD69/month with a five-day trial ending November1. Retention after the compatibility test determines whether the recurring cost continues. The updated private economics report, `FUNCTION-STUDIO-CANDIDATE-SENSITIVITY.md` and its arithmetic JSON, conservatively includes the full USD69 even during the trial, in addition to the existing USD200 monthly operating-cost scenario. Historical filenames do not mean installation is still hypothetical. Current test status is in the [integration evidence](../../evidence/2026-10-27-core-launch-integration.md).
+
+The added allocation is USD2.76/order at25 monthly orders or USD1.38/order at50. With the same conservative supplier, refund/remake, payment, USD5 support and USD2.50 prepurchase-AI assumptions and no paid acquisition, representative aggregate scenarios are:
+
+| Monthly one-item order mix: mug/unframed/framed/blanket | Net revenue | Modeled operating profit | Modeled margin |
+|---|---:|---:|---:|
+|6/6/6/7,25 orders|USD2196.18|USD705.01|32.10%|
+|13/12/12/13,50 orders|USD4310.04|USD1640.60|38.06%|
+|10/5/5/5,25 orders, mug-heavy|USD1945.30|USD579.12|29.77%|
+|0/0/0/25,25 blanket orders|USD3160.50|USD1102.11|34.87%|
+
+These scenarios allocate fixed costs once across the store; they are not demand forecasts or simultaneous product-level allocations. The balanced25-order case has only USD46.15 headroom above the30% floor; the mug-heavy case misses it by USD4.47. Do not introduce paid acquisition, percentage discounts or bundle offers without recalculating the aggregate condition. Reconcile actual mix and attributable costs at20 fulfilled orders, monthly and after material cost changes, honoring paid orders while reviewing promotions if margin falls below the floor. No realized net-margin certification or change to the approved prices is made here.
+
 ## Historical working instruction, October24 (superseded)
 
 Krish subsequently directed: "Dont worry about that for now, just cost price + margin" in response to the labor-rate question. Use a provisional delivered-supplier-cost view now and defer labor calibration. Carry the existing 50% target into this view: price = (product + shipping + surcharge + supplier tax) / 0.50. This is supplier-cost margin, not all-cost net margin; no unknown operating cost becomes zero. Do not keep requesting labor inputs at this stage. Exact live prices remain approval-gated. The all-cost definition below is retained for later reconciliation, not used to block independent product work.
