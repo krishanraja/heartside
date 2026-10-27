@@ -1,0 +1,55 @@
+{% comment %}Temporary private theme-editor diagnostic. Remove before launch.{% endcomment %}
+{% if request.design_mode %}
+  <main style="max-width:48rem;margin:2rem auto;padding:1rem">
+    <h1>Existing artwork preparation check</h1>
+    <p>This checks one saved design. It does not generate artwork, change the cart, place an order or take payment.</p>
+    <form id="hs-image-check">
+      <p><label>Existing customization ID <input name="customizationId" required pattern="[a-f0-9-]{36}" autocomplete="off"></label></p>
+      <p><label>Original variant ID <input name="variantId" required pattern="[0-9]+" autocomplete="off"></label></p>
+      <button type="submit">Check existing artwork preparation</button>
+    </form>
+    <pre id="hs-image-result" role="status" style="white-space:pre-wrap"></pre>
+    <img id="hs-image-preview" alt="Saved design returned by the artwork preparation service" hidden style="max-width:100%;max-height:32rem">
+  </main>
+  <script>
+    (function () {
+      var form = document.getElementById('hs-image-check');
+      var result = document.getElementById('hs-image-result');
+      var preview = document.getElementById('hs-image-preview');
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var button = form.querySelector('button');
+        if (button.disabled || !form.reportValidity()) return;
+        var data = Object.fromEntries(new FormData(form));
+        var endpoint = new URL('/apps/heartside-artwork', location.origin);
+        endpoint.search = new URLSearchParams(data).toString();
+        button.disabled = true;
+        result.textContent = 'Checking the saved design…';
+        preview.hidden = true;
+        var controller = new AbortController();
+        var timer = setTimeout(function () { controller.abort(); }, 32000);
+        try {
+          var response = await fetch(endpoint.href, {
+            method: 'POST', credentials: 'same-origin', redirect: 'error',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data), signal: controller.signal
+          });
+          if (!(response.headers.get('content-type') || '').includes('application/json')) throw new Error('Unexpected response type');
+          var body = await response.json();
+          result.textContent = JSON.stringify({ httpStatus: response.status, result: body }, null, 2);
+          if (body.state === 'ready' && body.customizationId === data.customizationId && body.variantId === data.variantId && /^https:\/\/cdn\.shopify\.com\/s\/files\//.test(body.imageUrl || '')) {
+            preview.src = body.imageUrl;
+            preview.hidden = false;
+          }
+        } catch (error) {
+          result.textContent = 'The check did not complete. No automatic retry. ' + (error.name === 'AbortError' ? 'Request timed out.' : 'Inspect the service or storefront access state.');
+        } finally {
+          clearTimeout(timer);
+          button.disabled = false;
+        }
+      });
+    }());
+  </script>
+{% else %}
+  <p>This diagnostic is available only in the private theme editor.</p>
+{% endif %}
