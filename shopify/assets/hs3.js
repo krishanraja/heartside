@@ -170,7 +170,7 @@
   }
   function mugLines() { var o = {}; giftKeys('mug').forEach(function (k) { o[k] = evenBreak(lineFor(k) || ''); }); return o; }
   function recGift() {
-    if (S.composed && GIFTS.indexOf(S.composed.gift) !== -1) return S.composed.gift;
+    if (S.composed && reviewGifts().indexOf(S.composed.gift) !== -1) return S.composed.gift;
     var t = S.together;
     if (t === 'movie' || t === 'naps') return 'blanket';
     if (t === 'walk' || t === 'coffee') return 'mug';
@@ -371,7 +371,7 @@
     if (frame) {
       var status = frame.querySelector('#hs3-tone-status');
       var button = frame.querySelector('[data-hs3="updateTone"]');
-      if (status) status.textContent = toneStatus();
+      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Applies when you create the blanket artwork. No words are printed.' : toneStatus();
       if (button) button.disabled = !!S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone);
       fit();
     }
@@ -499,7 +499,7 @@
     print: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="1.5"/><circle cx="12" cy="10" r="3"/><path d="M8.5 16h7"/></svg>',
     ornament: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M10 7V5h4v2M12 5V2"/></svg>'
   };
-  function pills() { return '<div class="hs3-pills" aria-hidden="true">' + GIFTS.map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
+  function pills() { return '<div class="hs3-pills" aria-hidden="true">' + reviewGifts().map(function (g) { return '<span class="hs3-pill">' + ICON[g] + SHORT[g] + '</span>'; }).join('') + '</div>'; }
   function sign(n) { return '<span class="hs3-sign">Love, ' + esc(n.dog) + ' ' + PAW + '</span>'; }
   // the blanket, print and ornament print the paw centered under the signature (round two, 14 Oct)
   function signUnder(n) { return '<span class="hs3-sign hs3-sign--under">Love, ' + esc(n.dog) + PAW + '</span>'; }
@@ -566,6 +566,9 @@
 
   // ---- the chat
   var chatQ = null; // the current question: { prefix, question, chips, skip, next, input }
+  function hasArtworkFacts() {
+    return !!(window.HSArtworkProfile && window.HSArtworkProfile.fromChat(S).facts.length);
+  }
   function chatModel(n) {
     var m = { prefix: ui.prefix, question: '', chips: [], skip: false, next: null, nextLabel: 'Next', input: null, other: false };
     var step = S.step;
@@ -607,6 +610,10 @@
     } else {
       m.prefix = m.prefix || (S.meaning === 'skip' ? "That's plenty to go on." : 'Oh. That one got me right in the ears.');
       m.question = "I've sniffed it out. I know what " + n.dog + ' would get ' + n.rec + '.';
+      if (cfg.artworkCandidates && !hasArtworkFacts()) {
+        m.prefix = 'We can keep this simple.';
+        m.question = 'Without any habits to go on, the artwork will focus on ' + n.dog + '. You can go back to add a detail.';
+      }
       m.next = 'show'; m.nextLabel = 'Show me';
     }
     if (ui.flagged) m.prefix = '';
@@ -664,20 +671,24 @@
 
   // ---- the reveal
   function revealView(n) {
-    var g = S.gift || recGift();
+    var g = reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift();
+    var wordFree = cfg.artworkCandidates && g === 'blanket';
+    if (wordFree) ui.editing = false;
     var pick = recGift();
     var keys = giftKeys(g);
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
     if (!ui.editing) {
-      h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + GIFTS.map(function (k) {
+      h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + reviewGifts().map(function (k) {
         return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : '') + '</span></button>';
       }).join('') + '</div>';
       var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
       var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
       var status = toneStatus();
       if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
-      h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
+      if (wordFree) {
+        h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><p id="hs3-tone-status" class="hs3-tone__status" role="status">Applies when you create the blanket artwork. No words are printed.</p></div>';
+      } else h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
@@ -689,14 +700,15 @@
       h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
       h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
-      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(reasonFor(g, n)) + '</div></div>';
+      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design made from your dog’s photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
     }
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button><button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button></div>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button>' + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
     return h;
   }
   function mockup(g, n, lines) {
     // laid out like the real print files (Cowork's fit test, 14 Oct): the name in normal case, signed with a paw
     if (g === 'mug') return mugFaces(n);
+    if (g === 'blanket' && cfg.artworkCandidates) return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Photo reference for your blanket', 'hs3-photo--blanket') + '</div></div><p class="hs3-small hs3-center">Photo reference only. Your word-free artwork is created on the product page.</p>';
     if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';

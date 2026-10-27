@@ -103,7 +103,7 @@
       </div>
       <div class="hs3-hero__foot">
         <div class="hs3-pills" aria-hidden="true">
-          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span><span class="hs3-pill" data-icon="ornament">Ornament</span>
+          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span>{% unless s.artwork_candidates %}<span class="hs3-pill" data-icon="ornament">Ornament</span>{% endunless %}
         </div>
         <p class="hs3-small">{{ s.gifts_note }}</p>
         <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
