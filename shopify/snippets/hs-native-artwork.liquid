@@ -2,8 +2,13 @@
 <p>{% if s.blanket_purchase %}Inspired by what you told Buddy. No words on the blanket.{% else %}Your dog, the details you shared with Buddy, and your exact note.{% endif %}</p>
               <p data-hs2-checkout-image-status role="status" aria-live="polite" hidden></p>
               <div data-hs2-blanket-photo hidden>
-                <img data-hs2-blanket-photo-img alt="Your dog's photo" width="80" height="80">
-                <button type="button" data-hs2-blanket-create>Create artwork with this photo</button>
+                <img data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="80" height="80">
+                <button type="button" data-hs2-blanket-create>Paint it from the photo you gave Buddy</button>
+              </div>
+              {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog the detector missed {%- endcomment -%}
+              <div class="hs-photo-check" data-hs2-photo-check hidden>
+                <p data-hs2-photo-check-text role="alert"></p>
+                <button type="button" data-hs2-photo-override hidden>It's my dog. Use this photo.</button>
               </div>
               <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
               <a data-hs2-artwork-source data-hs2-artwork-layer="{% if s.native_artwork_kind == 'mug' %}layer-696867{% elsif s.native_artwork_kind == 'print' %}layer-747218{% else %}layer-292294{% endif %}" target="_blank" rel="noopener noreferrer" hidden>View your artwork</a>

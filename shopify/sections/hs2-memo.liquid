@@ -11,19 +11,21 @@
   elsif msg contains '[DATE]'
     assign msg = s.text_undated
   endif
-  assign native_templates = 'blanket-native,mug-native,portrait-native' | split: ','
-  if template.name == 'product' and native_templates contains template.suffix
-    assign msg = 'Shipping calculated at checkout.'
-  endif
+  # The shipping line is the same on every page (Krish, 27 Oct 2026). A memo saved in the theme
+  # editor before then can still end "Free US shipping."; finish it.
+  assign msg = msg | replace: 'Free US shipping.', 'Free US shipping on every order.'
 -%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the
   site (hs2.js reads them from data-* here): the confirmed last order date and the
   launch offer window. With no last order date, the countdowns count to Christmas
   morning, which is always true.
+  It shows as one 32px strip on night above the cream header, on every page and on
+  phones too (hs-brand.css, "the announcement strip").
 {%- endcomment -%}
 <div class="hs2">
-  <div class="hs2-memo" data-hs2-memo data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+  {%- assign artist = s.artist_touch_product -%}
+  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
         <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
@@ -37,14 +39,21 @@
   "name": "HS memo bar",
   "tag": "section",
   "class": "hs2-section",
-  "enabled_on": { "templates": ["*"], "groups": ["header"] },
+  "enabled_on": {
+    "templates": [
+      "*"
+    ],
+    "groups": [
+      "header"
+    ]
+  },
   "settings": [
     {
       "type": "text",
       "id": "text",
       "label": "Memo",
       "info": "One message: the order-by date and free shipping. [DATE] becomes the last order date below, once it is set.",
-      "default": "Order by [DATE] for Christmas delivery. Free US shipping."
+      "default": "Order by [DATE] for Christmas delivery. Free US shipping on every order."
     },
     {
       "type": "text",
@@ -53,7 +62,10 @@
       "info": "Shows while the date below is empty, so the bar never shows [DATE].",
       "default": "Free US shipping on every order."
     },
-    { "type": "header", "content": "Countdowns (whole site)" },
+    {
+      "type": "header",
+      "content": "Countdowns (whole site)"
+    },
     {
       "type": "text",
       "id": "deadline",
@@ -67,9 +79,36 @@
       "info": "YYYY-MM-DD. docs/V2-FROM-THE-DOG.md section 4: the read-aloud video is free with any order from 20 October to 1 November. Empty switches the offer off.",
       "default": "2026-10-20"
     },
-    { "type": "text", "id": "offer_end", "label": "Free video offer ends (last day)", "default": "2026-11-01" },
-    { "type": "text", "id": "offer_label", "label": "Offer wording on the read-aloud button", "default": "Free until November 1" }
+    {
+      "type": "text",
+      "id": "offer_end",
+      "label": "Free video offer ends (last day)",
+      "default": "2026-11-01"
+    },
+    {
+      "type": "text",
+      "id": "offer_label",
+      "label": "Offer wording on the read-aloud button",
+      "default": "Free until November 1"
+    },
+    {
+      "type": "checkbox",
+      "id": "bundle_offer_live",
+      "label": "Show the bundle saving (15% off two gifts, 20% off three)",
+      "info": "The one switch for the chat, the product pages and the cart. Tick only once the Shopify automatic discount exists and matches; until then no saving is shown anywhere.",
+      "default": false
+    },
+    {
+      "type": "product",
+      "id": "artist_touch_product",
+      "label": "Artist's touch add-on",
+      "info": "The paid hand rework offered on each personalised cart line (adds 5 days). Empty, or a product that isn't available, hides the offer everywhere."
+    }
   ],
-  "presets": [{ "name": "HS memo bar" }]
+  "presets": [
+    {
+      "name": "HS memo bar"
+    }
+  ]
 }
 {% endschema %}

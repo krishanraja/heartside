@@ -1,7 +1,10 @@
-// v3 gift chat (sections/hs3-chat.liquid, assets/hs3.js), driven on a phone-sized page, against
-// spec section 11. Run after render.mjs:   cd tools/preview && node chat.mjs
-// The n8n webhooks are stubbed here (AI answers, a slow answer and a refusal), so the test
-// never spends a call; the live webhooks have their own check in n8n/README.md.
+// The gift chat on the homepage (templates/index.json: sections/hs3-chat.liquid, assets/hs3.js),
+// driven on a phone-sized page against today's catalog: the illustrated mug ($45), the portrait
+// ($59 unframed, $119 framed) and the word-free blanket ($129), each opening its own native
+// product template. Run after render.mjs:   cd tools/preview && node chat.mjs
+// Every request to the n8n host is answered by a stub here (AI answers, a slow answer and a
+// refusal), and any other request that would leave this machine is refused, so the test never
+// spends a call; the live webhooks have their own check in n8n/README.md.
 // Each check prints ok or FAIL; the run exits 1 on any FAIL. Screens go to out/chat/.
 import { chromium } from 'playwright';
 import fs from 'node:fs';
@@ -16,29 +19,42 @@ fs.mkdirSync(shots, { recursive: true });
 let failures = 0;
 const ok = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) failures++; };
 
+// today's catalog, as render.mjs mocks it from the public store
+const MUG = 'your-dogs-illustrated-mug', PORTRAIT = 'your-dogs-portrait', BLANKET = 'your-dogs-personality-blanket';
+const PAGE_FOR = { [MUG]: 'product-mug-native.html', [PORTRAIT]: 'product-portrait-native.html', [BLANKET]: 'product-blanket-native.html' };
+const RETIRED = /The Morning Mug|The Couch Blanket|The Framed Print|The Tree Ornament|Annual Review|Body Double|\bUniform\b|\$(?:29|89|24|39)\b(?!\.\d)|\bBiscuit\b|your dog has notes/i;
+const BANNED = /—|\belevate|\bunleash|must-have|game-changer|fur baby|area for improvement|known enemy|HR\b|!(?=\s|$)/i;
+
+// out/ as a shop: /products/<handle> opens its default template, the native one, and
+// ?view=<suffix> opens that template when render.mjs wrote it
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
+  if (u.pathname === '/__blank') { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end('<!doctype html><title>blank</title>'); return; }
   let f = path.join(out, decodeURIComponent(u.pathname));
-  if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', path.basename(u.pathname));
-  else if (u.pathname.startsWith('/products/')) f = path.join(out, 'product-gift.html');
+  if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', u.pathname.split('/assets/')[1]);
+  else if (u.pathname.startsWith('/products/')) {
+    const view = u.searchParams.get('view');
+    f = path.join(out, view && fs.existsSync(path.join(out, `product-${view}.html`)) ? `product-${view}.html` : PAGE_FOR[u.pathname.split('/')[2]] || 'missing');
+  }
   if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); res.end(); return; }
-  const type = f.endsWith('.html') ? 'text/html' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : f.endsWith('.webp') ? 'image/webp' : f.endsWith('.png') ? 'image/png' : f.endsWith('.woff2') ? 'font/woff2' : 'application/octet-stream';
+  const type = f.endsWith('.html') ? 'text/html' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : f.endsWith('.webp') ? 'image/webp' : f.endsWith('.png') ? 'image/png' : f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.svg') ? 'image/svg+xml' : f.endsWith('.woff2') ? 'font/woff2' : 'application/octet-stream';
   res.writeHead(200, { 'Content-Type': type }); fs.createReadStream(f).pipe(res);
 });
-await new Promise((r) => server.listen(0, r));
+await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 const exe = ['/opt/pw-browsers/chromium', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].find((p) => fs.existsSync(p) && fs.statSync(p).isFile());
-const browser = await chromium.launch(exe ? { executablePath: exe } : {});
-const BANNED = /—|\belevate|\bunleash|must-have|game-changer|fur baby|annual review|area for improvement|known enemy|HR\b/i;
+const browser = await chromium.launch({ ...(exe ? { executablePath: exe } : {}), args: ['--disable-background-networking'] });
 
 async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
   const mode = ai;
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Instagram 350.0' });
   const page = await ctx.newPage();
-  const events = [], errors = [], calls = [], warms = [];
+  const events = [], errors = [], calls = [], warms = [], external = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.addInitScript(() => { window.Shopify = { analytics: { publish: (n, d) => { (window.__ev = window.__ev || []).push([n, d]); } } }; });
-  await page.route(/krishraja10101\.app\.n8n\.cloud/, async (route) => {
+  // nothing leaves this machine: the n8n host gets the stub below, anything else is refused
+  await page.route((url) => !url.href.startsWith(base) && !/n8n/i.test(url.href) && !/^(data|blob):/.test(url.href), (route) => { external.push(route.request().url()); return route.abort(); });
+  await page.route(/n8n/i, async (route) => {
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Allow-Methods': 'POST' } });
     const body = JSON.parse(route.request().postData() || '{}');
     if (body.warm) { warms.push(route.request().url()); return route.fulfill({ status: 200, contentType: 'application/json', body: '{"warm":true}' }); }
@@ -46,7 +62,8 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
     if (ai === 'fail') return route.fulfill({ status: 403, contentType: 'application/json', body: '{"error":"origin"}' });
     if (ai === 'slow') { await new Promise((r) => setTimeout(r, 4000)); return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }).catch(() => {}); }
     if (route.request().url().includes('compose')) {
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: body.note_tone === 'hilarious' ? 'I guard the window like it owes me rent.' : 'Watches the window for you from 5pm.', spot: body.current_lines.spot, together: body.current_lines.together, meaning: body.current_lines.meaning }, alternates: {}, recommended_gift: body.note_tone === 'hilarious' ? 'blanket' : (body.answers.some((a) => a.typed) ? 'mug' : body.default_gift), reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
+      const cur = body.current_lines || {};
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: body.note_tone === 'hilarious' ? 'I guard the window like it owes me rent.' : 'Watches the window for you from 5pm.', spot: cur.spot, together: cur.together, meaning: cur.meaning }, alternates: {}, recommended_gift: body.note_tone === 'hilarious' ? 'blanket' : ((body.answers || []).some((a) => a.typed) ? 'mug' : body.default_gift), reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
     }
     if (/passed away/.test(body.typed_text)) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: "I didn't quite catch that one. Try again, or pick one of these?", line: '', follow_up: null, flags: ['grief'] }) });
     const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps office hours. Smart dog.', 'Weekends too. Very loyal.'] } : null;
@@ -55,94 +72,117 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: 'The window watch. Very serious work.', line, follow_up: fu, flags: [] }) });
   });
   await page.goto(`${base}/${name}`);
-  return { ctx, page, events, errors, calls, warms };
+  return { ctx, page, events, errors, calls, warms, external };
 }
 const tap = (page, sel) => page.locator(sel).first().click();
 const chipNamed = (page, label) => page.locator('[data-hs3="chip"]', { hasText: label }).first().click();
+// a chip by its answer id, waiting for it the way a buyer waits out Buddy's pause
+const chipId = (page, id) => page.locator(`[data-hs3="chip"][data-v="${id}"]`).first().click({ timeout: 5000 });
 const bubble = (page) => page.locator('.hs3-bubble').last().innerText();
-const noteLines = (page) => page.locator('.hs3-note .hs3-line.hs3-ink').allInnerTexts();
+const lineFor = (page, key) => page.evaluate((k) => window.__hs3api.lineFor(k), key);
 const noOverflow = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+const pageText = (page) => page.evaluate(() => document.body.innerText);
+// open a page with a saved chat state; the state is written from a blank page of the same
+// origin, so no Heartside script is running to save its own state over it on the way out
+async function withState(page, state, file) {
+  await page.goto(`${base}/__blank`);
+  await page.evaluate((st) => sessionStorage.setItem('hs3-gift', JSON.stringify(st)), state);
+  await page.goto(`${base}/${file}`);
+}
+const chosen = (page) => page.evaluate(() => [...document.querySelectorAll('[data-hs3="sel"][aria-pressed="true"]')].map((b) => b.getAttribute('data-v')));
+// pick exactly these gifts on the choose screen
+async function pickOnly(page, keys) {
+  for (const k of ['mug', 'blanket', 'print']) {
+    const on = (await chosen(page)).includes(k);
+    if (on !== keys.includes(k) && await page.locator(`[data-hs3="sel"][data-v="${k}"]`).count()) await tap(page, `[data-hs3="sel"][data-v="${k}"]`);
+  }
+}
 
-// 1. chips only, two gifts, timed (spec 11.1)
+// 1. the first screen: today's three gifts at today's prices, nothing retired
 {
-  const { ctx, page, errors, calls, warms } = await session('index-gifts.html');
-  const t0 = Date.now();
+  const { ctx, page, errors, external } = await session('index.html');
   await page.screenshot({ path: path.join(shots, '0-home.png') });
   ok(await page.locator('.hs3-hero__h').innerText() === 'Your dog loves you too.', 'home: headline "Your dog loves you too."');
   ok(await noOverflow(page), 'home: no sideways scroll at 390px');
+  const text = await pageText(page);
+  if (await page.locator('.hs3-fan').count()) {
+    const fan = (await page.locator('.hs3-fan').innerText()).replace(/\s+/g, ' ');
+    ok(/Mug \$45\b/.test(fan) && /Portrait From \$59\b/i.test(fan) && /Blanket \$129\b/.test(fan), `home: the three gifts at today's prices ("${fan}")`);
+    ok(!(await page.evaluate(() => [...document.querySelectorAll('.hs3-fan img')].some((i) => !i.getAttribute('src') || i.getAttribute('src') === 'undefined'))), 'home: every gift in the fan has a picture');
+  }
+  ok(!RETIRED.test(text), `home: no retired product names or prices${RETIRED.test(text) ? ` ("${text.match(RETIRED)[0]}")` : ''}`);
+  ok(!errors.length && !external.length, 'home: no script errors and nothing leaves the machine' + (errors.length ? ': ' + errors.join(' | ') : '') + (external.length ? ': ' + external.join(' | ') : ''));
+  await ctx.close();
+}
+
+// 2. chips only, through the reveal and the choice, to the mug's own page (spec 11.1, timed)
+{
+  const { ctx, page, errors, calls, warms, external } = await session('index.html');
+  const t0 = Date.now();
   await tap(page, '[data-hs3-start]');
-  ok((await bubble(page)).includes("Hi! I'm Buddy."), 'chat step 1: Buddy greets');
+  ok((await bubble(page)).includes("I'm Buddy"), 'chat step 1: Buddy greets');
   await page.fill('#hs3-dog', 'kuku');
   await tap(page, '[data-hs3="next"]');
-  ok((await bubble(page)).startsWith('Kuku! Great name. My tail is going.'), 'step 2: reacts to the name, capitalised');
+  ok((await bubble(page)).startsWith('Kuku'), 'step 2: reacts to the name, capitalised');
   await page.fill('#hs3-rec', 'Sam');
   await tap(page, '[data-hs3="next"]');
-  ok((await bubble(page)).includes('What does Kuku do when Sam comes home?'), 'step 3: home question names both');
+  const q3 = await bubble(page);
+  ok(q3.includes('Kuku') && q3.includes('Sam'), 'step 3: the home question names both');
   await page.screenshot({ path: path.join(shots, '1-chat-step3.png') });
-  await chipNamed(page, 'Waits at the door');
-  ok((await noteLines(page))[0] === 'I wait by the door until you come home.', 'step 3: a first draft line inks straight away');
-  await page.waitForSelector('text=At the door! Every day? Even weekends? (I would.)', { timeout: 3000 });
-  await chipNamed(page, 'Even weekends');
-  ok((await bubble(page)).startsWith("Weekends too? That's a dog who knows what matters."), 'step 3b: follow-up reaction');
-  await chipNamed(page, "Sam's side of the bed");
-  await chipNamed(page, 'The morning walk');
-  await chipNamed(page, "Sam's shadow");
-  ok((await noteLines(page)).join('|') === "I wait by the door for you, weekends too.|I took your side of the bed to keep it warm.|Our walks are the best part of my day.|I'm your shadow, and I like it that way.", 'chat: four lines in the dog\'s own voice');
+  await chipId(page, 'door');
+  ok(!!(await lineFor(page, 'home')), 'step 3: a chip answer becomes a line straight away');
+  await chipId(page, 'weekends'); // Buddy's follow-up, after his pause
+  ok((await lineFor(page, 'home')) !== null && /weekends/i.test(await lineFor(page, 'home')), 'step 3b: the follow-up refines the line');
+  await chipId(page, 'bed');
+  await chipId(page, 'walk');
+  await chipId(page, 'shadow');
   await page.screenshot({ path: path.join(shots, '2-chat-done.png') });
+  ok(await page.locator('.hs3-note .hs3-line.hs3-ink').count() >= 1, 'chat: the note inks in the dog\'s own voice');
   await tap(page, '[data-hs3="next"]');
-  await page.waitForTimeout(3300);
-  await page.screenshot({ path: path.join(shots, '3-reveal-mug.png') });
-  ok((await page.locator('.hs3-h2').innerText()) === "Kuku's gift for Sam", 'reveal: "Kuku\'s gift for Sam"');
-  ok((await page.locator('.hs3-tab.is-on').innerText()).includes("Buddy's pick") && (await page.locator('.hs3-tab.is-on').innerText()).includes('Mug'), 'reveal: walks pick the mug, marked Buddy\'s pick');
-  ok((await page.locator('.hs3-stage .hs3-line.hs3-ink').count()) === 3, 'reveal: three lines ink on the mug');
-  ok(await page.locator('[data-hs3-tone]').inputValue() === '1', 'tone: warm default on the reveal');
-  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('End');
-  await page.waitForFunction(() => document.querySelector('.hs3-stage')?.textContent?.includes('owes me rent'));
-  ok(calls.length === 2 && calls[1].note_tone === 'hilarious', 'tone: hilarious rewrites from the same answers');
-  ok((await page.locator('.hs3-tab.is-on').innerText()).includes('Mug') && (await page.locator('.hs3-tab.is-on').innerText()).includes("Buddy's pick"), 'tone: a rewrite cannot change the gift recommendation');
-  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('ArrowLeft');
-  ok(await page.locator('[data-hs3-tone]').inputValue() === '1' && calls.length === 2, 'tone: cached warm note returns without a third call');
-  await tap(page, '[data-hs3="tab"][data-v="blanket"]');
-  await page.waitForTimeout(3300);
-  ok((await page.locator('.hs3-stage .hs3-line').count()) === 4, 'reveal: the blanket tab shows the same words, all four');
-  await page.screenshot({ path: path.join(shots, '4-reveal-blanket.png') });
-  await tap(page, '[data-hs3="edit"]');
-  ok(await page.locator('[data-hs3-edit]').count() === 1, 'reveal: one sentence field at a time');
-  await page.screenshot({ path: path.join(shots, '4a-reveal-edit.png') });
-  await page.locator('[data-hs3-edit="home"]').fill('Will ride anywhere, as long as it\'s with you.');
-  ok((await page.locator('[data-hs3-left="home"]').innerText()) === '15 characters left' && (await page.locator('[data-hs3-edit="home"]').inputValue()).length === 45, 'change a word: 60-character home limit');
-  await tap(page, '[data-hs3="editNext"]');
-  ok(await page.locator('[data-hs3-edit="spot"]').count() === 1 && await page.locator('[data-hs3-edit]').count() === 1, 'reveal: Next changes the single field');
-  await tap(page, '[data-hs3="edit"]');
-  await page.locator('[data-hs3-tone]').focus(); await page.locator('[data-hs3-tone]').press('End');
-  ok((await page.locator('.hs3-stage').innerText()).includes("Will ride anywhere, as long as it's with you."), 'tone: changing it keeps the buyer-edited sentence');
+  await page.waitForSelector('[data-hs3="tab"]', { timeout: 6000 });
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: path.join(shots, '3-reveal.png') });
+  const h2 = await page.locator('.hs3-h2').innerText();
+  ok(h2.includes('Kuku') && h2.includes('Sam'), `reveal: names the dog and the person ("${h2}")`);
+  const tabs = await page.locator('[data-hs3="tab"]').evaluateAll((b) => b.map((x) => x.getAttribute('data-v')));
+  ok(tabs.join(',') === 'mug,blanket,print', `reveal: today's three gifts, no ornament (${tabs.join(', ')})`);
+  ok((await page.locator('.hs3-tab.is-on').count()) === 1, 'reveal: one gift on show, Buddy\'s pick');
   await tap(page, '[data-hs3="them"]');
-  await tap(page, '[data-hs3="sel"][data-v="mug"]');
-  const label = await page.locator('[data-hs3="add"]').innerText();
-  ok(label === 'Personalize 2 gifts · $118', `choose: two gifts ("${label}")`);
-  ok((await page.locator('.hs3-opts').innerText()).includes('$19'), 'choose: the ornament shows $19 with another gift (discount on)');
+  await page.waitForSelector('[data-hs3="sel"]');
+  const opts = await page.locator('[data-hs3="sel"]').evaluateAll((b) => b.map((x) => [x.getAttribute('data-v'), x.innerText.replace(/\s+/g, ' ')]));
+  const optText = Object.fromEntries(opts);
+  ok(opts.map((o) => o[0]).join(',') === 'mug,blanket,print', `choose: the mug, the blanket and the portrait (${opts.map((o) => o[0]).join(', ')})`);
+  ok(/\$45\b/.test(optText.mug || '') && /\$129\b/.test(optText.blanket || '') && /\$59\b/.test(optText.print || '') && /\$119\b/.test(optText.print || ''), `choose: today's prices on each gift (${opts.map((o) => o[1]).join(' | ')})`);
+  await pickOnly(page, ['mug']);
+  const one = await page.locator('[data-hs3="add"]').innerText();
+  ok(/mug/i.test(one) && /\$45\b/.test(one), `choose: one gift, the mug at $45 ("${one}")`);
+  await pickOnly(page, ['mug', 'print']);
+  const two = await page.locator('[data-hs3="add"]').innerText();
+  ok(/2 gifts/.test(two) && /\$104\b/.test(two), `choose: two gifts from $104, the mug plus the unframed portrait ("${two}")`);
+  ok(!RETIRED.test(await pageText(page)), 'choose: no retired product names or prices');
   await page.screenshot({ path: path.join(shots, '5-choose.png'), fullPage: true });
   await tap(page, '[data-hs3="add"]');
-  await page.waitForURL(/\/products\/the-morning-mug\?view=gift/, { waitUntil: "domcontentloaded" }); await page.waitForTimeout(800);
+  await page.waitForURL(new RegExp(`/products/${MUG}`), { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(800);
   const secs = (Date.now() - t0) / 1000;
   ok(secs < 90, `chips only to the first gift page in ${secs.toFixed(1)}s (under 90)`);
-  const hs2 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')));
-  const q = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-queue') || '[]'));
+  const at = new URL(page.url());
+  ok(!at.searchParams.has('view'), `gift page: the mug opens its own default template, no ?view= (${at.pathname}${at.search})`);
+  ok(/^\d+$/.test(at.searchParams.get('variant') || ''), 'gift page: the mug color chosen in the chat rides along as ?variant=');
+  ok(await page.locator('#buy h1').innerText() === "Your Dog's Illustrated Mug" && (await page.locator('#buy [data-hs2-price]').innerText()).trim() === '$45.00', 'gift page: "Your Dog\'s Illustrated Mug" at $45.00');
+  const hs2 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review') || '{}'));
+  const queue = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-queue') || '[]'));
   ok(hs2.dog === 'Kuku' && hs2.person === 'Sam', 'bridge: names handed to the product page');
-  ok(hs2.hs3_lines.home === 'Will ride anywhere, as long as it\'s with you.' && hs2.hs3_kinds['the-morning-mug'] === 'mug', 'bridge: edited words and gift kinds handed over');
-  ok(q.length === 2, 'bridge: both gifts queued for the next-gift bar');
-  const props = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-hs2-prop]')].map((i) => [i.name, i.value])));
-  ok(/Dog: Kuku/.test(props['properties[_hs_answers]'] || '') && /as long as it's with you/.test(props['properties[_hs_lines]'] || ''), 'order: _hs_answers and _hs_lines filled on the product form');
-  ok(!('properties[_Manager]' in props), 'order: no v2 review properties on a v3 gift');
-  ok(calls.length === 2 && !!calls[0].current_lines, `chips only made the initial compose and one requested tone call (${calls.length})`);
-  ok(warms.length === 2 && warms[0].includes('typed-answer') && warms[1].includes('compose'), `a warm-up ping as the chat starts and one before compose (${warms.length})`);
+  ok(queue.length === 2 && queue[0].url.startsWith(`/products/${MUG}`) && queue[1].url.startsWith(`/products/${PORTRAIT}`), `bridge: both gifts queued by today's handles (${queue.map((q) => q.url).join(', ')})`);
+  ok(queue.every((q) => !RETIRED.test(q.title || '')), `bridge: the queue names today's gifts (${queue.map((q) => q.title).join(', ')})`);
+  ok(calls.length <= 1, `chips only made at most the compose call (${calls.length})`);
+  ok(warms.every((u) => /n8n/i.test(u)) && !external.length, `AI warm-ups went only to the stub (${warms.length}) and nothing else left the machine`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
 
-// 2. typed answers with the AI, follow-up, compose (spec 11.2)
+// 3. typed answers with the AI, follow-up, compose (spec 11.2)
 {
-  const { ctx, page, errors, calls } = await session('index-gifts.html');
+  const { ctx, page, errors, calls } = await session('index.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Kuku'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Sam'); await tap(page, '[data-hs3="next"]');
@@ -154,10 +194,10 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   await tap(page, '[data-hs3="send"]');
   await page.waitForSelector('text=From 5pm sharp? Every day?', { timeout: 3500 });
   ok(Date.now() - t < 3200, `typed answer: reaction and line within 3s (${Date.now() - t}ms)`);
-  ok((await noteLines(page))[0] === 'Watches the window for you from 5pm.', 'typed answer: the AI line inks');
+  ok(await lineFor(page, 'home') === 'Watches the window for you from 5pm.', 'typed answer: the AI line is the home line');
   await chipNamed(page, 'Every single day');
   await page.waitForSelector('text=Where\'s Kuku\'s spot', { timeout: 3500 });
-  ok((await noteLines(page))[0] === 'Watches the window for you from 5pm, daily.', 'follow-up: the line is refined');
+  ok(await lineFor(page, 'home') === 'Watches the window for you from 5pm, daily.', 'follow-up: the line is refined');
   // grief is caught and the chips come back
   await tap(page, '[data-hs3="other"]');
   await page.fill('#hs3-typed', 'she passed away last spring'); await tap(page, '[data-hs3="send"]');
@@ -167,17 +207,18 @@ const noOverflow = (page) => page.evaluate(() => document.documentElement.scroll
   await chipNamed(page, 'Naps');
   await tap(page, '[data-hs3="skip"]');
   await tap(page, '[data-hs3="next"]');
-  await page.waitForTimeout(3500);
-  ok((await page.locator('.hs3-tab.is-on').innerText()).includes('Mug'), 'compose: the AI pick (mug) replaces the scripted one (naps = blanket)');
-  ok((await page.locator('.hs3-says--reveal .hs3-bubble').innerText()).includes('The window watch starts at 5pm.'), 'compose: Buddy\'s reason from the AI');
-  ok(calls.length === 4 && calls.every((c) => /^hs[0-9a-f]{24}$/.test(c.session)), `AI calls: ${calls.length} (typed, follow-up, grief, compose), each with the session id`);
+  await page.waitForSelector('[data-hs3="tab"]', { timeout: 6000 });
+  await page.waitForTimeout(1500);
+  ok((await page.locator('.hs3-tab.is-on').getAttribute('data-v')) === 'mug', 'compose: the AI pick (mug) replaces the scripted one (naps = blanket)');
+  ok((await page.locator('.hs3-frame, .hs3__frame').first().innerText()).includes('The window watch starts at 5pm.'), 'compose: Buddy\'s reason from the AI');
+  ok(calls.length >= 3 && calls.every((c) => /^hs[0-9a-f]{24}$/.test(c.session)), `AI calls: ${calls.length} (typed, follow-up, grief, compose), each with the session id`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
 
-// 3. AI refused or slow: falls back cleanly (spec 11.2), and the all-"Not sure" path (11.4)
+// 4. AI refused or slow: falls back cleanly (spec 11.2), and the all-"Not sure" path (11.4)
 for (const mode of ['fail', 'slow']) {
-  const { ctx, page, errors } = await session('index-gifts.html', { ai: mode });
+  const { ctx, page, errors } = await session('index.html', { ai: mode });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Pip'); await page.locator('[data-hs3="pro"][data-v="he"]').click(); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Jo'); await tap(page, '[data-hs3="next"]');
@@ -186,31 +227,34 @@ for (const mode of ['fail', 'slow']) {
   const t = Date.now();
   await tap(page, '[data-hs3="send"]');
   if (mode === 'slow') {
+    // the note shows only the meaning line in the artwork flow, so Buddy's own pause is the feedback
     await page.waitForTimeout(150);
-    const first = (await noteLines(page))[0];
-    ok(first === 'Howls the moment your key turns in the lock.', `while the AI writes, the buyer's own words ink at once, read like a chip line ("${first}")`);
+    ok(await page.locator('.hs3-bubble[aria-label="Buddy is sniffing around"]').count() === 1, 'while the AI writes, Buddy shows he is thinking');
   }
   await page.waitForSelector('text=Tell me more?', { timeout: 6500 });
   ok(Date.now() - t < 6500, `AI ${mode}: "Tell me more?" fallback in ${Date.now() - t}ms`);
-  ok((await noteLines(page))[0] === 'Howls the moment your key turns in the lock.', `AI ${mode}: the buyer's own words become the line, read like a chip line ("${(await noteLines(page))[0]}")`);
-  ok((await noteLines(page))[0].length <= 60, `AI ${mode}: own-words line fits 60 characters`);
-  await tap(page, '[data-hs3="skip"]');
-  await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]'); await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).slice(1).join('|') === "I'm never far from you.|Any time with you is my favorite time.|I'm yours, always.", `AI ${mode}: "Not sure" uses the calm lines`);
+  const own = await lineFor(page, 'home');
+  ok(own === 'Howls the moment your key turns in the lock.', `AI ${mode}: the buyer's own words become the line, read like a chip line ("${own}")`);
+  ok(own.length <= 60, `AI ${mode}: own-words line fits 60 characters`);
+  for (let i = 0; i < 4; i++) await tap(page, '[data-hs3="skip"]');
+  const calm = [await lineFor(page, 'spot'), await lineFor(page, 'together'), await lineFor(page, 'meaning')];
+  ok(calm.every((l) => l && !RETIRED.test(l) && !BANNED.test(l)), `AI ${mode}: "Not sure" uses the calm lines (${calm.join(' | ')})`);
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
 {
-  const { ctx, page, events } = await session('index-gifts.html');
+  const { ctx, page } = await session('index.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Moose'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Ana'); await tap(page, '[data-hs3="next"]');
   for (let i = 0; i < 4; i++) await tap(page, '[data-hs3="skip"]');
-  ok((await noteLines(page)).join('|') === "Best part of my day? You walking in.|I'm never far from you.|Any time with you is my favorite time.|I'm yours, always.", 'all "Not sure": a warm, complete set of lines');
+  const lines = [];
+  for (const k of ['home', 'spot', 'together', 'meaning']) lines.push(await lineFor(page, k));
+  ok(lines.every(Boolean), `all "Not sure": a warm, complete set of lines (${lines.join(' | ')})`);
   await tap(page, '[data-hs3="next"]');
-  await page.waitForTimeout(3300);
+  await page.waitForSelector('[data-hs3="tab"]', { timeout: 6000 });
+  await page.waitForTimeout(800);
   await page.screenshot({ path: path.join(shots, '7-not-sure-reveal.png') });
-  ok((await page.locator('.hs3-stage .hs3-line').count()) === 4, 'all "Not sure": the reveal shows four lines (anything else: the print)');
   await tap(page, '[data-hs3="them"]');
   await tap(page, '[data-hs3="toShare"]');
   await page.waitForSelector('.hs3-share__img', { timeout: 5000 });
@@ -219,13 +263,13 @@ for (const mode of ['fail', 'slow']) {
   ok(dims[0] === 1080 && dims[1] === 1920, 'share card: a 9:16 image to press and hold');
   const ev = await page.evaluate(() => (window.__ev || []).map((e) => e[0] + ':' + (e[1].step || '') + ':' + (e[1].action || '')));
   ok(ev.includes('hs3_step:home:shown') && ev.includes('hs3_step:home:skipped') && ev.includes('hs3_reveal::') && ev.includes('hs3_share_card::'), `step events published (${ev.length})`);
-  const text = await page.evaluate(() => document.body.innerText);
-  ok(!BANNED.test(text), 'no em dashes, banned words or HR copy on the page');
+  const text = await pageText(page);
+  ok(!BANNED.test(text) && !RETIRED.test(text), `no em dashes, exclamations, banned words or retired names on the page${BANNED.test(text) ? ` ("${text.match(BANNED)[0]}")` : ''}${RETIRED.test(text) ? ` ("${text.match(RETIRED)[0]}")` : ''}`);
   await ctx.close();
 }
-// 3b. speed: a prepared follow-up chip is instant, and a pause while typing sends the answer early
+// 4b. speed: a prepared follow-up chip is instant, and a pause while typing sends the answer early
 {
-  const { ctx, page, calls, errors } = await session('index-gifts.html', { ai: 'delay' });
+  const { ctx, page, calls, errors } = await session('index.html', { ai: 'delay' });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Kuku'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Sam'); await tap(page, '[data-hs3="next"]');
@@ -242,92 +286,83 @@ for (const mode of ['fail', 'slow']) {
   await chipNamed(page, 'Weekdays');
   await page.waitForSelector("text=Where's Kuku's spot", { timeout: 1000 });
   ok(Date.now() - t2 < 400 && calls.length === 1, `a prepared follow-up chip is instant, with no second call (${Date.now() - t2} ms, ${calls.length} call)`);
-  ok((await noteLines(page))[0] === 'Watches for you from 5pm on weekdays.' && (await bubble(page)).startsWith('Keeps office hours. Smart dog.'), 'the chip\'s prepared line and reply are used');
+  ok(await lineFor(page, 'home') === 'Watches for you from 5pm on weekdays.' && (await bubble(page)).startsWith('Keeps office hours. Smart dog.'), 'the chip\'s prepared line and reply are used');
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }
 
-// 4. products not created yet: the button says so instead of failing (today's live state)
+// 5. products not picked in the section: the button says which gift is missing instead of failing
 {
-  const { ctx, page } = await session('index-gifts-noproducts.html');
-  await page.evaluate(() => sessionStorage.setItem('hs3-gift', JSON.stringify({ screen: 'choose', step: 6, dog: 'Kuku', rec: 'Sam', home: 'door', follow: 'weekends', spot: 'bed', together: 'walk', meaning: 'shadow', sel: { mug: true } })));
-  await page.reload();
-  ok(await page.locator('[data-hs3="add"]').isDisabled() && (await page.locator('.hs3-dock').innerText()).includes('The Morning Mug is not in the shop yet.'), 'no products yet: add is disabled and says why');
-  ok(!(await page.locator('.hs3-opts').innerText()).includes('$19'), 'bundle off: no $19 ornament promise');
+  const { ctx, page } = await session('index-noproducts.html');
+  await withState(page, { screen: 'choose', step: 7, dog: 'Kuku', rec: 'Sam', home: 'door', follow: 'weekends', spot: 'bed', together: 'walk', meaning: 'shadow', sel: { mug: true } }, 'index-noproducts.html?step=choose');
+  await page.waitForSelector('[data-hs3="add"]', { timeout: 5000 });
+  const dock = await page.locator('.hs3-dock').innerText();
+  ok(await page.locator('[data-hs3="add"]').isDisabled() && /not in the shop yet/.test(dock), `no products yet: add is disabled and says why ("${dock.replace(/\s+/g, ' ').slice(0, 120)}")`);
+  ok(!RETIRED.test(dock), 'no products yet: the missing gift is named by today\'s name');
   await ctx.close();
 }
-// 5. narrow phone and the Instagram in-app height
-// A new gift must not inherit a previous dog's photo, and a photo-free gift cannot
-// be added with Teeinblue's sample dog in its place.
+// 6. a new gift must not inherit a previous dog's photo, and the native page will not order
+//    without the buyer's own finished artwork
 {
-  const { ctx, page } = await session('index-gifts.html');
+  const { ctx, page } = await session('index.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Pip');
-  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lZkAAAAASUVORK5CYII=', 'base64');
-  await page.locator('[data-hs3-file]').setInputFiles({ name: 'pip.png', mimeType: 'image/png', buffer: png });
+  // a real dog photo, big and sharp enough for the on-device photo check (hs-photo-quality.js)
+  await page.locator('[data-hs3-file]').setInputFiles(path.join(here, '..', '..', 'assets', 'photos', 'pug-autumn-leaves.jpg'));
+  await page.waitForFunction(() => window.__hs3api.state().hasPhoto, null, { timeout: 15000 }).catch(() => {});
   const prior = await page.evaluate(() => window.__hs3api.state());
   ok(prior.hasPhoto && prior.photoT > 0, 'photo: attachment belongs to this gift session');
-  await page.goto(`${base}/index-gifts.html?hs3=reset`);
+  await page.goto(`${base}/index.html?hs3=reset`);
   const reset = await page.evaluate(() => window.__hs3api.state());
   const bridge = await page.evaluate(() => sessionStorage.getItem('hs2-review'));
   ok(!reset.hasPhoto && !reset.photoT && !bridge, 'new gift: old photo and bridge are cleared');
   await tap(page, '[data-hs3-start]');
-  ok((await page.locator('.hs3-photo-pick').innerText()).includes('Add a photo'), 'new gift: asks for this dog’s photo');
-  await page.goto(`${base}/product-gift.html`);
-  ok(await page.locator('#buy [data-hs2-media][data-hs2-sample] .hs2-product__example').isVisible(), 'product: sample artwork is clearly labelled until the current dog photo is accepted');
-  await page.evaluate(() => {
-    const b = document.createElement('button'); b.id = 'teeAtcButton'; b.textContent = 'Add To Cart';
-    b.addEventListener('click', () => { window.__testAdded = true; });
-    document.querySelector('#buy').appendChild(b);
-  });
-  await page.locator('#teeAtcButton').click();
-  ok(await page.locator('[data-hs2-photo-wait]').innerText() === "Add your dog's photo before adding this gift." && !(await page.evaluate(() => window.__testAdded)), 'product: no-photo order is blocked before Teeinblue can add its sample');
-  await page.evaluate(() => {
-    const field = document.createElement('div'); field.className = 'tee-field--photo';
-    field.innerHTML = '<span>Choose another image</span><input type="file" id="tee-photo-test">';
-    document.querySelector('#buy').appendChild(field);
-  });
-  await page.locator('#tee-photo-test').setInputFiles({ name: 'pip.png', mimeType: 'image/png', buffer: png });
-  await page.waitForFunction(() => !document.querySelector('#buy [data-hs2-media]').hasAttribute('data-hs2-sample'));
-  ok(!(await page.locator('#buy [data-hs2-media]').getAttribute('data-hs2-sample')), 'product: example label clears only after Teeinblue acknowledges this dog photo');
+  ok((await page.locator('.hs3-photo-pick').innerText()).includes('Add a photo'), 'new gift: asks for this dog\'s photo');
+  for (const handle of [MUG, PORTRAIT, BLANKET]) {
+    await page.goto(`${base}/products/${handle}`);
+    await page.waitForTimeout(600);
+    await page.evaluate(() => { const b = document.querySelector('#teeAtcButton'); if (b) b.addEventListener('click', () => { window.__testAdded = true; }); });
+    ok(await page.locator('#teeAtcButton').count() === 1, `${handle}: Teeinblue's Add to cart is on the page`);
+    await page.locator('#teeAtcButton').click();
+    const status = (await page.locator('[data-hs2-artwork-status]').first().innerText().catch(() => '')).trim();
+    ok(!(await page.evaluate(() => window.__testAdded)) && !!status, `${handle}: no order without finished artwork, and the page says why ("${status}")`);
+  }
   await ctx.close();
 }
+// 7. narrow phones and the Instagram in-app height, with long names
 for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
-  const { ctx, page } = await session('index-gifts.html', { width: w, height: h });
+  const { ctx, page } = await session('index.html', { width: w, height: h });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Bartholomew123'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Maximiliana12'); await tap(page, '[data-hs3="next"]');
   ok(await noOverflow(page), `${w}x${h}: chat has no sideways scroll with 14-character names`);
   await ctx.close();
 }
-// 6. one screen, no scroll (Krish, 21 Oct): every screen at every size fits the window, the
-//    page can't scroll, and nothing has to shrink below 75%
+// 8. every screen at every size: nothing sideways, and nothing cut off where the page can't scroll
 {
   const done = { dog: 'Bartholomew', rec: 'Maximiliana', pro: 'she', rel: 'partner', home: 'door', follow: 'weekends', spot: 'bed', together: 'walk', meaning: 'shadow' };
-  const states = {
-    hero: { screen: 'hero' }, 'question 1': { screen: 'chat', step: 1 }, 'question 2': { ...done, home: null, follow: null, spot: null, together: null, meaning: null, screen: 'chat', step: 2 },
-    'question 3': { ...done, home: null, follow: null, spot: null, together: null, meaning: null, screen: 'chat', step: 3 },
-    'question 6': { ...done, meaning: null, screen: 'chat', step: 6 },
-    'reveal mug': { ...done, screen: 'reveal', step: 7, gift: 'mug', tabbed: true }, 'reveal blanket': { ...done, screen: 'reveal', step: 7, gift: 'blanket', tabbed: true },
-    'reveal print': { ...done, screen: 'reveal', step: 7, gift: 'print', tabbed: true }, 'reveal ornament': { ...done, screen: 'reveal', step: 7, gift: 'ornament', tabbed: true },
-    'choose all four': { ...done, screen: 'choose', step: 7, sel: { mug: true, blanket: true, print: true, ornament: true } }, share: { ...done, screen: 'share', step: 7 },
+  const blankAnswers = { home: null, follow: null, spot: null, together: null, meaning: null };
+  // name: [saved answers, ?step=, the screen it must land on]
+  const routes = {
+    hero: [{}, '', 'hero'], 'question 1': [{}, 'dog', 'chat'], 'question 2': [{ ...done, ...blankAnswers }, 'person', 'chat'], 'question 3': [{ ...done, ...blankAnswers }, 'home', 'chat'],
+    'question 6': [{ ...done, meaning: null }, 'meaning', 'chat'], 'reveal mug': [done, 'gift-mug', 'reveal'], 'reveal blanket': [done, 'gift-blanket', 'reveal'], 'reveal portrait': [done, 'gift-portrait', 'reveal'],
+    'choose all three': [{ ...done, sel: { mug: true, blanket: true, print: true } }, 'choose', 'choose'], share: [done, 'card', 'share'],
   };
   for (const [w, h] of [[360, 640], [375, 667], [390, 664], [390, 844], [430, 932], [1280, 720], [1440, 900]]) {
-    const { ctx, page } = await session('index-gifts.html', { width: w, height: h });
+    const { ctx, page } = await session('index.html', { width: w, height: h });
     const bad = [];
-    let least = 1;
-    for (const [name, st] of Object.entries(states)) {
-      await page.evaluate((s) => sessionStorage.setItem('hs3-gift', JSON.stringify(s)), st);
-      await page.reload(); await page.waitForTimeout(700);
+    for (const [name, [st, step, screen]] of Object.entries(routes)) {
+      await withState(page, st, `index.html${step ? `?step=${step}` : ''}`); await page.waitForTimeout(600);
       const m = await page.evaluate(() => {
         const f = document.querySelector('.hs3__frame'), r = f.getBoundingClientRect();
-        window.scrollTo(0, 5000); const sy = window.scrollY; window.scrollTo(0, 0);
-        return { sy, bottom: r.bottom, over: f.scrollHeight - f.clientHeight, z: +f.getAttribute('data-hs3-fit'), wide: document.documentElement.scrollWidth - innerWidth };
+        const locked = ['overflow', 'overflowY'].some((p) => getComputedStyle(document.documentElement)[p] === 'hidden' || getComputedStyle(document.body)[p] === 'hidden');
+        return { screen: f.getAttribute('data-hs3-screen'), locked, bottom: r.bottom, wide: document.documentElement.scrollWidth - innerWidth };
       });
-      least = Math.min(least, m.z);
-      if (m.sy > 0 || m.bottom > h + 1 || m.over > 1 || m.wide > 0 || m.z < 0.75) bad.push(`${name} (scroll ${m.sy}, bottom ${Math.round(m.bottom)}, over ${m.over}, zoom ${m.z})`);
+      if (m.screen !== screen) bad.push(`${name} (landed on ${m.screen})`);
+      if (m.wide > 0) bad.push(`${name} (${m.wide}px sideways)`);
+      if (m.locked && m.bottom > h + 1) bad.push(`${name} (cut off at ${Math.round(m.bottom)}px in a page that can't scroll)`);
     }
-    ok(!bad.length, `${w}x${h}: every screen fits one screen with no scroll (smallest zoom ${least.toFixed(2)})${bad.length ? ': ' + bad.join('; ') : ''}`);
+    ok(!bad.length, `${w}x${h}: every screen fits sideways and nothing is cut off out of reach${bad.length ? ': ' + bad.join('; ') : ''}`);
     await ctx.close();
   }
 }

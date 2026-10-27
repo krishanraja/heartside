@@ -139,7 +139,8 @@ test('dedicated purchase template keeps preview protections and worded gifts sep
   const t=JSON.parse(read('shopify/templates/product.blanket-native.json')).sections.main;
   assert.equal(t.settings.blanket_purchase,true);assert.equal(t.settings.blanket_art_preview,undefined);assert.equal(t.settings.city_art_preview,undefined);
   assert.equal(t.blocks.buy.settings.v3,false);assert.equal(t.blocks.answers.settings.title,'YOUR ARTWORK');assert.ok(t.block_order.includes('description'));
-  const preview=JSON.parse(read('shopify/templates/product.blanket-art-preview.json')).sections.main;assert.equal(preview.settings.blanket_art_preview,true);assert.equal(preview.settings.blanket_purchase,undefined);
+  // the draft preview template has moved (27 Oct): it only points to the current gifts
+  assert.deepEqual(Object.values(JSON.parse(read('shopify/templates/product.blanket-art-preview.json')).sections).map(x=>x.type),['hs-moved']);
   const liquid=read('shopify/sections/hs2-product.liquid');const props=liquid.slice(liquid.indexOf('{%- if native_artwork -%}'),liquid.indexOf('{%- elsif block.settings.v3 -%}'));
   assert.ok(props.includes('_hs_art_profile'));assert.ok(props.includes('_hs_art_style'));assert.ok(props.includes('_hs_art_tone'));assert.match(props, /unless s\.blanket_purchase.*_hs_lines.*endunless/);
 });

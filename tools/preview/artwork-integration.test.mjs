@@ -18,15 +18,16 @@ test('native note label retains the exact-copy bridge and legacy mapping',()=>{
 test('draft gift navigation excludes conditional ornament and keeps selected gifts on paused templates',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  const saved=new Map(), ctx={URL,cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug?view=gift&variant=999&keep=yes#art'},blanket:{url:'/products/test-blanket?view=gift'},print:{url:'/products/test-print?view=gift'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
-  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','giftPurchasable','selectedGifts','chooseModel','addToCart'].map(section).join('\n'),ctx);
+  const saved=new Map(), ctx={URL,cfg:{artworkCandidates:true,gifts:{mug:{url:'/products/test-mug?view=gift&variant=999&keep=yes#art'},blanket:{url:'/products/test-blanket?view=gift'},print:{url:'/products/test-print?view=gift'}}},S:{sel:{mug:true,blanket:true,print:true,ornament:true}},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait'},priceOf:()=>0,shareWithBridge:()=>{},save:()=>{},mugColor:()=>({id:123}),QKEY:'queue',track:()=>{},window:{location:{href:'https://example.test/review'},sessionStorage:{setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}}};
+  vm.runInNewContext(['reviewGifts','blanketPurchaseEnabled','giftPurchasable','multiOK','selectedGifts','bundleTier','chooseModel','addToCart'].map(section).join('\n'),ctx);
   assert.equal(ctx.chooseModel().count,3);ctx.addToCart();
   const queue=JSON.parse(saved.get('queue'));assert.equal(queue.length,3);
   for(const [i,view] of ['mug-art-preview','blanket-art-preview','city-art-preview'].entries()) assert.deepEqual(new URL(queue[i].url,'https://example.test').searchParams.getAll('view'),[view]);
   assert.equal(new URL(ctx.window.location.href,'https://example.test').searchParams.get('variant'),'123');
   assert.equal(new URL(ctx.window.location.href,'https://example.test').searchParams.get('keep'),'yes');
   assert.equal(new URL(ctx.window.location.href,'https://example.test').hash,'#art');
-  assert.equal(JSON.parse(readFileSync(new URL('../../shopify/templates/index.artwork-preview.json',import.meta.url),'utf8')).sections.gift.settings.ai_on,false);
+  // the draft entry point now only points to the current gifts (27 Oct), so it can never spend on AI
+  assert.deepEqual(Object.values(JSON.parse(readFileSync(new URL('../../shopify/templates/index.artwork-preview.json',import.meta.url),'utf8')).sections).map(x=>x.type),['hs-moved']);
 });
 function browser(minify, storage=new Map()) {
   const context = {TextEncoder, Uint8Array, structuredClone, sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}, CustomEvent:class {constructor(name,o){this.type=name;this.detail=o.detail;}}, window:{crypto:webcrypto,dispatchEvent:()=>{}}};
@@ -38,12 +39,17 @@ function browser(minify, storage=new Map()) {
 }
 for (const minify of [false,true]) {
   const mode=minify?'minified':'source';
-  test(mode+': browser and Node bind all 90 configurations to identical complete keys and prompts',async()=>{
-    const w=browser(minify);
-    for(const style of Object.keys(recipes.styles)) for(const tone of Object.keys(recipes.tones)) for(const format of Object.keys(recipes.formats)) {
-      const i={...input(),style,tone,format}, actual=await w.HSArtworkEngine.prepare(i);
+  test(mode+': browser and Node bind all 90 configurations, with and without energy and toy/accessory facts, to identical keys and prompts',async()=>{
+    const w=browser(minify), {energyFor}=await import('../print-art/artwork-system.mjs');
+    const tagged={version:1,facts:[{source:'spot',text:'Does not chase balls; rests by the door.'},{source:'toy',text:'Green squeaky hedgehog'},{source:'accessory',text:'Red plaid bandana'}]};
+    for(const style of Object.keys(recipes.styles)) for(const tone of Object.keys(recipes.tones)) for(const format of Object.keys(recipes.formats)) for(const energy of [null,'bold-cheeky']) {
+      const i={...input(),style,tone,format,energy,factsProfile:energy?tagged:input().factsProfile}, actual=await w.HSArtworkEngine.prepare(i);
       assert.deepEqual(JSON.parse(JSON.stringify(actual)),prepare(i));
     }
+    for(const archetype of Object.keys(recipes.energy.byArchetype)) for(const exact of [true,false]) assert.equal(w.HSArtworkEngine.energyFor({exact,kind:'breed',tone:archetype}),energyFor({exact,kind:'breed',tone:archetype}));
+    await assert.rejects(w.HSArtworkEngine.prepare({...input(),factsProfile:{version:1,facts:[{source:'breed',text:'Beagle'}]}}),/provenance/);
+    await assert.rejects(w.HSArtworkEngine.prepare({...input(),factsProfile:{version:1,facts:[{source:'energy',text:'bold-cheeky'}]}}),/provenance/);
+    await assert.rejects(w.HSArtworkEngine.prepare({...input(),energy:'Terrier Menace'}),/energy/);
   });
   test(mode+': choices cross reload and all formats without rewriting owned copy or dispatching',async()=>{
     const storage=new Map([['hs3-gift',JSON.stringify({noteTone:'sentimental',edits:{meaning:'My exact edit.'}})]]);
@@ -68,37 +74,57 @@ test('mug candidate expands art across wrap, removes cut-out mask and keeps one 
   const r=mugTemplate(source,{style:1,tone:2});
   const photo=r.layers.find(l=>l.type==='photo'); assert.equal(photo.width,2700);assert.equal(photo.height,1050);assert.equal(photo.masked_enable,false);
   assert.equal(r.layers.filter(l=>/^Line/.test(l.name)).length,1);assert.equal(source.layers[0].width,900);
-  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.equal(p.includes('{{Artwork tone}}'),!recipes.formats[f].words);assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
+  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.ok(p.includes('{{Artwork tone}}'));assert.ok(p.includes('{{Energy}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
 });
 
-for(const minify of [false,true]) test((minify?'minified':'source')+': tone and copy changes reuse text-product imagery but invalidate word-free imagery',async()=>{
+// 27 Oct ruling: tone (and breed energy) drive the imagery on every format. Exact words
+// alone still reuse a matching image, which never attests the current text layers.
+for(const minify of [false,true]) test((minify?'minified':'source')+': tone and energy change imagery on every format; exact-word edits reuse it',async()=>{
   const w=browser(minify);
   for(const format of Object.keys(recipes.formats)) {
     const a=await w.HSArtworkEngine.prepare({...input(),format,tone:'sentimental'});
-    const b=await w.HSArtworkEngine.prepare({...input(),format,tone:'hilarious',copy:{...input().copy,note:'Changed exact note.'}});
-    assert.notEqual(a.key,b.key);
-    assert.equal(a.imageKey===b.imageKey,recipes.formats[format].words);
-    assert.equal(a.prompt===b.prompt,recipes.formats[format].words);
+    const b=await w.HSArtworkEngine.prepare({...input(),format,tone:'hilarious'});
+    const c=await w.HSArtworkEngine.prepare({...input(),format,tone:'sentimental',copy:{...input().copy,note:'Changed exact note.'}});
+    const d=await w.HSArtworkEngine.prepare({...input(),format,tone:'sentimental',energy:'joyful-bouncy'});
+    assert.notEqual(a.imageKey,b.imageKey);assert.notEqual(a.prompt,b.prompt);assert.equal(b.imageTone,'hilarious');
+    assert.notEqual(a.imageKey,d.imageKey);assert.notEqual(a.prompt,d.prompt);
+    assert.equal(a.imageKey,c.imageKey);assert.equal(a.prompt,c.prompt);assert.notEqual(a.key,c.key);
     let state=w.HSArtworkEngine.newSession(a);
     state=w.HSArtworkEngine.begin(state,a,'test',true);
     state=w.HSArtworkEngine.selectRequest(state,b);
     state=w.HSArtworkEngine.settle(state,{key:a.imageKey,requestId:'test',providerReceipt:'synthetic',imageHash:'c'.repeat(64),width:100,height:100});
-    assert.equal(w.HSArtworkEngine.previewState(state).current,recipes.formats[format].words);
+    assert.equal(w.HSArtworkEngine.previewState(state).current,false,format+': a new tone needs a new version');
     assert.equal(w.HSArtworkEngine.previewState(state).purchaseEnabled,false);
-    if(recipes.formats[format].words) assert.throws(()=>w.HSArtworkEngine.begin(state,b,'again',true),/Reuse/);
+    state=w.HSArtworkEngine.selectRequest(state,c);
+    assert.equal(w.HSArtworkEngine.previewState(state).current,true,format+': exact words alone reuse the image');
+    assert.throws(()=>w.HSArtworkEngine.begin(state,c,'again',true),/Reuse/);
+    state=w.HSArtworkEngine.selectRequest(state,d);
+    assert.equal(w.HSArtworkEngine.previewState(state).current,false,format+': energy is part of image identity');
+    assert.equal(w.HSArtworkEngine.selectTone({...input(),format,tone:'sentimental'},'hilarious').newArtworkNeeded,true);
   }
 });
 
-test('native staleness key ignores note tone and exact words on portrait but follows blanket tone',()=>{
+function staleness(state={}) {
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  let wordFree=false, choice={style:'screenprint',tone:'sentimental'};
-  const ctx={productId:()=>1,usePhoto:{t:1},artworkFacts:()=>'{"version":1,"facts":[]}',state:{},blanketArtPreview:()=>wordFree,v3Kind:()=> 'portrait',document:{querySelector:()=>null},window:{HSArtworkChoices:{read:()=>choice},HSArtworkEngine:{recipeHash:'test',recipes}}};
+  const flags={wordFree:false}, choice={style:'screenprint',tone:'sentimental'};
+  const ctx={productId:()=>1,usePhoto:{t:1},artworkFacts:()=>'{"version":1,"facts":[]}',artworkEnergy:()=>ctx.state.hs3_energy||null,state,blanketArtPreview:()=>flags.wordFree,v3Kind:()=> 'portrait',document:{querySelector:()=>null},window:{HSArtworkChoices:{read:()=>choice},HSArtworkEngine:{recipeHash:'test',recipes}}};
   vm.runInNewContext(section('artRequestKey'),ctx);
-  const a=ctx.artRequestKey();choice.tone='hilarious';ctx.state.hs3_lines={meaning:'Exact new words'};
+  return {ctx,flags,choice};
+}
+test('native staleness key ignores exact words on portrait and follows style and blanket tone',()=>{
+  const {ctx,flags,choice}=staleness();
+  const a=ctx.artRequestKey();ctx.state.hs3_lines={meaning:'Exact new words'};
   assert.equal(ctx.artRequestKey(),a);
-  wordFree=true;const b=ctx.artRequestKey();choice.tone='sentimental';assert.notEqual(ctx.artRequestKey(),b);
-  wordFree=false;choice.style='ink';assert.notEqual(ctx.artRequestKey(),a);
+  flags.wordFree=true;const b=ctx.artRequestKey();choice.tone='hilarious';assert.notEqual(ctx.artRequestKey(),b);
+  flags.wordFree=false;choice.style='ink';assert.notEqual(ctx.artRequestKey(),a);
+});
+test('native staleness key follows tone and breed energy on mug and portrait too',()=>{
+  const {ctx,choice}=staleness({hs3_energy:null});
+  const a=ctx.artRequestKey();choice.tone='hilarious';
+  assert.notEqual(ctx.artRequestKey(),a,'portrait image staleness follows the selected tone');
+  const b=ctx.artRequestKey();ctx.state.hs3_energy='bold-cheeky';
+  assert.notEqual(ctx.artRequestKey(),b,'portrait image staleness follows breed energy');
 });
 test('unbound mug review never writes into the globally embedded legacy campaign',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
@@ -115,7 +141,7 @@ for (const minify of [false,true]) {
     const code=source.slice(start,source.indexOf('\n  function ',start+1));
     const state={hs3_lines:{meaning:'Original exact note'},hs3_copy_owner:'generated'};
     let signature='Love, Buddy', tone='warm', release, captured;
-    const ctx={state,usePhoto:{file:{}},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,artRequestKey:()=> 'unchanged-image',artworkFacts:()=>'{"version":1,"facts":[]}',answer:()=>signature,window:{HSArtworkPhoto:{prepare:async()=>({photo:{},file:{},width:10,height:10})},HSArtworkChoices:{read:()=>({style:'screenprint',tone}),prepare:request=>{captured=request;return new Promise(resolve=>{release=()=>resolve(request);});}}}};
+    const ctx={state,usePhoto:{file:{}},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,artRequestKey:()=> 'unchanged-image',artworkFacts:()=>'{"version":1,"facts":[]}',artworkEnergy:()=>null,answer:()=>signature,window:{HSArtworkPhoto:{prepare:async()=>({photo:{},file:{},width:10,height:10})},HSArtworkChoices:{read:()=>({style:'screenprint',tone}),prepare:request=>{captured=request;return new Promise(resolve=>{release=()=>resolve(request);});}}}};
     vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
     const pending=ctx.prepareCurrentArtwork('portrait','synthetic-variant','test-only');
     await new Promise(resolve=>setImmediate(resolve));assert.ok(captured);
@@ -190,7 +216,7 @@ for(const minify of [false,true]) test((minify?'minified':'source')+': native sh
 for (const minify of [false,true]) test((minify?'minified':'source')+': optional city stays absent and clears stale native defaults',()=>{
   const source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
   const section=name=>source.slice(source.indexOf('  function '+name+'('),source.indexOf('\n  function ',source.indexOf('  function '+name+'(')+1));
-  const ctx={state:{city:''},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,setValue:(el,v)=>{el.value=v;}};
+  const ctx={state:{city:''},cityArtPreview:()=>true,nativeArtworkPurchase:()=>false,blanketArtPreview:()=>false,document:{querySelector:()=>null},window:{},artworkFacts:()=>JSON.stringify({version:1,facts:[{source:'spot',text:'Does not chase balls.'}]}),bridge:{owned:{}},save:()=>{},render:()=>{},mugArtworkMismatch:()=>false,mayResend:()=>true,setValue:(el,v)=>{el.value=v;}};
   const code=['answer','nativeArtworkEvidence','watchField','fillField'].map(section).join('\n');vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
   assert.equal(ctx.answer('city'),'');assert.equal(JSON.parse(ctx.nativeArtworkEvidence()).place,null);
   const events={},inp={value:'Somewhere quiet',name:'city',tagName:'INPUT',addEventListener:(n,fn)=>events[n]=fn};

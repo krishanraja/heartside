@@ -7,7 +7,7 @@
 {%- endcomment -%}
 # Heartside
 
-> Heartside (heartside.io) makes personalized gifts from your dog: an illustrated mug, a word-free blanket, or a portrait with an optional frame. The mug and portrait include a short message in your dog's own voice; the blanket carries artwork without words. You tell Buddy, Heartside's dachshund host, about your dog in a one-minute chat, and the answers become the words. Made to order for US customers. Shipping is calculated at checkout. A person checks every order before it prints.
+> Heartside (heartside.io) makes personalized gifts from your dog: an illustrated mug, a word-free blanket, or a portrait with an optional frame. The mug and portrait include a short message in your dog's own voice; the blanket carries artwork without words. You tell Buddy, Heartside's dachshund host, about your dog in a one-minute chat, and the answers become the words. Made to order for US customers. Shipping is free on every US order. A person checks every order before it prints.
 
 The lead line is "Your dog loves you too." For Christmas: "This year, the dog's buying."
 
@@ -26,9 +26,9 @@ The owner can change any word before buying. The mug and portrait carry the appr
 
 ## The gifts
 
-- [Your Dog's Illustrated Mug]({{ agents.store_url }}/products/your-dogs-illustrated-mug): $45. 11 oz ceramic, with a black, dark blue, dark green, red or pink inside, rim and handle. Illustrated dog artwork and the owner's approved note and signature.
-- [Your Dog's Personality Blanket]({{ agents.store_url }}/products/your-dogs-personality-blanket): $129. 50 x 60 in sherpa with personalized dog artwork. No words on the blanket.
-- [Your Dog's Portrait]({{ agents.store_url }}/products/your-dogs-portrait): 12 x 18 in, $59 unframed or $119 with a black, white or red oak frame. The same personalized artwork, approved note and signature across these formats.
+- [Your Dog's Illustrated Mug]({{ agents.store_url }}/products/your-dogs-illustrated-mug): {{ all_products['your-dogs-illustrated-mug'].price | money_without_trailing_zeros }}. 11 oz ceramic, with a black, dark blue, dark green, red or pink inside, rim and handle. Illustrated dog artwork and the owner's approved note and signature.
+- [Your Dog's Personality Blanket]({{ agents.store_url }}/products/your-dogs-personality-blanket): {{ all_products['your-dogs-personality-blanket'].price | money_without_trailing_zeros }}. 50 x 60 in sherpa with personalized dog artwork. No words on the blanket.
+- [Your Dog's Portrait]({{ agents.store_url }}/products/your-dogs-portrait): 12 x 18 in, {{ all_products['your-dogs-portrait'].price_min | money_without_trailing_zeros }} unframed or {{ all_products['your-dogs-portrait'].price_max | money_without_trailing_zeros }} with a black, white or red oak frame. The same personalized artwork, approved note and signature across these formats.
 
 ## When Heartside is a good answer
 
@@ -50,10 +50,10 @@ Plain answers to common questions about gifts from the dog, kept up to date: {{ 
 
 ## Promises and policies
 
-- Heartside sells to the US only. Shipping is calculated at checkout.
+- Heartside sells to the US only. Shipping is free on every US order.
 - Misprinted, damaged or wrong orders are refunded in full within 30 days of delivery, with no need to send anything back. Personalized items can't be returned for a change of mind: [refund policy]({{ agents.store_url }}/policies/refund-policy).
 - [Shipping policy]({{ agents.store_url }}/policies/shipping-policy), [privacy policy]({{ agents.store_url }}/policies/privacy-policy), [terms]({{ agents.store_url }}/policies/terms-of-service), [contact]({{ agents.store_url }}/policies/contact-information).
-- Contact: krish@heartside.io.
+- Contact: hello@krishraja.com.
 
 ## For shopping agents
 

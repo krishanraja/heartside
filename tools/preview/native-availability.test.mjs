@@ -11,7 +11,7 @@ for(const minified of [false,true]) {
  const mode=minified?'minified':'source';
  test(mode+': disabled availability survives observer progress updates without hiding upload status',()=>{
   let enabled='false',pending=false;const status={textContent:''};
-  const c={updateRestoredArtworkReview(){},restoredArtworkAvailable:()=>false,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
+  const c={updateRestoredArtworkReview(){},answer:()=>'',restoredArtworkAvailable:()=>false,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
   run(['portraitSignatureChoice','updatePortraitSignatureRecovery','blanketPurchaseStatus','updateBlanketPurchaseStatus'],c,minified);
   c.blanketPurchaseStatus('This gift is not available to order yet.');
   c.updateBlanketPurchaseStatus();
@@ -26,7 +26,7 @@ for(const minified of [false,true]) {
   const thumbs=['black','dark blue','dark green','pink','red'].flatMap(color=>[0,1].map(index=>({hidden:false,attrs:{'data-hs2-color':color,'data-hs2-thumb':color+'.jpg','data-alt':color},getAttribute(k){return this.attrs[k];},setAttribute(k,v){this.attrs[k]=v;},addEventListener(){}})));
   const buy={classList:{contains:()=>true},querySelector:()=>idInput,addEventListener:(event,fn)=>events[event]=fn};
   const c={document:{getElementById:()=>buy,querySelector:s=>s==='[data-hs2-media]'?media:s==='[data-hs2-price]'?price:s==='[data-hs2-main]'?main:s.startsWith('[data-hs2-thumb="')?thumbs.find(b=>s.includes(b.attrs['data-hs2-thumb'])):null,querySelectorAll:s=>s==='[data-hs2-thumb-preview]'?[]:thumbs,addEventListener:(event,fn)=>events[event]=fn},window:{location:{search:'?variant=blue'}},URLSearchParams,setTimeout:fn=>timers.push(fn),swatchTib:()=>{},json:s=>s.includes('prices')?{blue:'$45',red:'$45'}:{blue:{src:'dark blue.jpg',alt:'Mug, dark blue inside: front'},red:{src:'red.jpg',alt:'Mug, red inside: front'}}};
-  run(['gallery'],c,minified);c.gallery();
+  run(['swapMain','gallery'],c,minified);c.gallery();
   events['teeinblue-event-variant-changed']();while(timers.length)timers.shift()();
   assert.equal(idInput.value,'blue');assert.equal(main.src,'dark blue.jpg');assert.equal(thumbs.filter(b=>!b.hidden).length,2);assert.ok(thumbs.filter(b=>!b.hidden).every(b=>b.attrs['data-hs2-color']==='dark blue'));
   c.window.location.search='?variant=red';events.change({target:{closest:()=>({})}});while(timers.length)timers.shift()();

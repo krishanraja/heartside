@@ -18,12 +18,17 @@ export function createHeartsideCartQuantity({ actions, readCart, storage, digest
     }
     return found;
   }
-  async function inspect(cartId, record) {
+  // Recovery compares only this design's identity, so an unrelated row changing never
+  // strands it. Only the check straight after removal, before anything is added, also
+  // requires the rest of the cart to be exactly as it was.
+  async function inspect(cartId, record, othersUnchanged = false) {
     if (await digest(cartId) !== record.cartHash) fail('Open the original cart to recover this saved change.');
     const cart = await readCart(cartId), matches = locate(cart, record.original);
     if (matches.length > 1) fail('Multiple matching designs found. No further change was made.');
-    const others = cart.lines.nodes.filter(line => !matches.some(match => match.parent === line));
-    if (await digest(fingerprint(others)) !== record.othersHash) fail('Other cart items changed. No further change was made.');
+    if (othersUnchanged) {
+      const others = cart.lines.nodes.filter(line => !matches.some(match => match.parent === line));
+      if (await digest(fingerprint(others)) !== record.othersHash) fail('Other cart items changed. No further change was made.');
+    }
     return { cart, match: matches[0] || null };
   }
   async function addOnce(cartId, record, quantity) {
@@ -60,13 +65,15 @@ export function createHeartsideCartQuantity({ actions, readCart, storage, digest
       const { parent, child } = candidates[0];
       const properties = Object.fromEntries((child.attributes || []).map(entry => [entry.key, entry.value]));
       if (parent.quantity !== 1 || parent.lineComponents?.length !== 1 || parent.merchandise.id !== child.merchandise.id || !properties._customization_id || !properties._tib_design_link_1 || !properties._hs_checkout_image) fail('This line cannot use the personalized quantity repair.');
+      // Two lines with this exact identity would make every later readback ambiguous.
+      if (locate(cart, child).length !== 1) fail('This design is in the cart more than once, so its quantity cannot be changed here. Nothing was changed.');
       if (child.quantity === quantity) return { cart, componentKey: child.viewKey };
       const record = { version: 1, phase: 'prepared', cartHash: await digest(cartId), othersHash: await digest(fingerprint(cart.lines.nodes.filter(line => line !== parent))), original: { merchandise: child.merchandise, attributes: child.attributes, quantity: child.quantity }, desiredQuantity: quantity };
       save(record); // If browser storage is unavailable, nothing is removed.
       let response, uncertain = false;
       try { response = await actions.updateCart({ cartId, lines: [{ id: parent.id, quantity: 0 }] }); } catch { uncertain = true; }
       let after;
-      try { after = await inspect(cartId, record); } catch {
+      try { after = await inspect(cartId, record, true); } catch {
         record.phase = 'uncertain_remove'; save(record);
         fail('The removal result could not be confirmed. Your design is saved; check the saved change.');
       }
@@ -85,21 +92,30 @@ export function createHeartsideCartQuantity({ actions, readCart, storage, digest
   }
   async function recover(cartId, mode = 'check') {
     if (busy) fail('A quantity change is still running.');
+    if (!['check', 'retry', 'restore', 'discard'].includes(mode)) fail('Unknown recovery action.');
     const record = load(); if (!record) return readCart(cartId);
     busy = true;
     try {
       const state = await inspect(cartId, record);
+      const removing = record.phase === 'prepared' || record.phase === 'uncertain_remove';
+      const adding = record.phase === 'adding' || record.phase === 'uncertain_add';
       if (state.match) {
-        if (record.phase === 'adding' || record.phase === 'uncertain_add') {
-          if (state.match.child.quantity === record.attemptQuantity) { clear(); return state.cart; }
-        } else if (record.phase === 'prepared' && state.match.child.quantity === record.original.quantity) { clear(); return state.cart; }
+        // An add verified absent beforehand has landed, or a removal never committed:
+        // the design is in the cart, so the backup has nothing left to protect.
+        if (adding || (removing && state.match.child.quantity === record.original.quantity)) { clear(); return state.cart; }
         fail('The cart needs review before another change. No automatic retry was made.');
       }
-      if (record.phase === 'prepared' || record.phase === 'uncertain_remove') { record.phase = 'removed'; save(record); }
-      if (record.phase !== 'removed') fail('An add may still have completed. Only a status check is safe; no retry was made.');
+      // A fresh read without the design is the same state as a confirmed removal.
+      if (removing) { record.phase = 'removed'; save(record); }
+      if (adding) {
+        // An unconfirmed add is never followed by another mutation in the same step. The
+        // status check records the proven absence; restore is offered after it.
+        if (mode !== 'check') fail('An add may still have completed. Only a status check is safe; no retry was made.');
+        record.phase = 'removed'; save(record); return state.cart;
+      }
+      if (record.phase !== 'removed') fail('The cart needs review before another change. No automatic retry was made.');
       if (mode === 'check') return state.cart;
       if (mode === 'discard') { clear(); return state.cart; }
-      if (mode !== 'restore' && mode !== 'retry') fail('Unknown recovery action.');
       const quantity = mode === 'restore' ? record.original.quantity : record.desiredQuantity;
       if (quantity === 0) { clear(); return state.cart; }
       return await addOnce(cartId, record, quantity);
@@ -118,35 +134,61 @@ export async function readHeartsideNativeCart(cartId) {
 }
 
 let lastCartId = '';
+// While a change is unconfirmed this document holds checkout and every cart quantity
+// control. A theme can gate only this document: another tab, a typed or bookmarked
+// /checkout URL, or a link opened from outside is beyond what it can block. The design
+// stays saved in this tab until the change is resolved here.
+const gatedControls = '[name="checkout"], shopify-accelerated-checkout-cart, .cart-items__quantity-controls input, .cart-items__quantity-controls button';
+const bannerText = 'Finish this change before checkout. Your design is saved in this tab.';
+const removedText = 'Your design is saved in this tab but is not in the cart. Restore it, retry the new quantity, or remove it.';
+function setGate(element, blocked) {
+  // Writes only on a change: the gate observer sees attribute writes, so a repeated
+  // write would wake it again.
+  if (blocked) {
+    if (!element.hasAttribute('data-hs-quantity-disabled')) element.setAttribute('data-hs-quantity-disabled', element.disabled ? 'already' : 'ours');
+    if ('disabled' in element && !element.disabled) element.disabled = true;
+    if (!element.inert) element.inert = true;
+  } else if (element.hasAttribute('data-hs-quantity-disabled')) {
+    if ('disabled' in element && element.getAttribute('data-hs-quantity-disabled') === 'ours') element.disabled = false;
+    element.inert = false; element.removeAttribute('data-hs-quantity-disabled');
+  }
+}
+let gateObserver = null, gateFrame = 0;
+function watchGate(blocked) {
+  // Section renders (quantity, discount, note, external updates, history restores) replace
+  // or morph the cart markup and drop disabled and inert, so the gate is re-applied after
+  // any of them while a record exists. Re-application waits for the next frame, which runs
+  // before paint, so a script that answers our writes can never spin this into a loop.
+  if (!blocked) { gateObserver?.disconnect(); gateObserver = null; return; }
+  if (gateObserver || typeof MutationObserver !== 'function') return;
+  const reapply = () => { gateFrame = 0; renderPending(HeartsideCartQuantity.pending()); };
+  gateObserver = new MutationObserver(records => {
+    if (gateFrame || records.every(entry => entry.target.nodeType === 1 && entry.target.closest('#hs-quantity-recovery'))) return;
+    gateFrame = typeof requestAnimationFrame === 'function' ? requestAnimationFrame(reapply) : setTimeout(reapply, 0);
+  });
+  gateObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'inert'] });
+}
 function renderPending(record) {
   const blocked = !!record;
-  document.querySelectorAll('[name="checkout"], shopify-accelerated-checkout-cart').forEach(element => {
-    if (blocked && !element.hasAttribute('data-hs-quantity-disabled')) {
-      element.setAttribute('data-hs-quantity-disabled', element.disabled ? 'already' : 'ours');
-      if ('disabled' in element) element.disabled = true;
-      element.inert = true;
-    } else if (!blocked && element.hasAttribute('data-hs-quantity-disabled')) {
-      if ('disabled' in element && element.getAttribute('data-hs-quantity-disabled') === 'ours') element.disabled = false;
-      element.inert = false; element.removeAttribute('data-hs-quantity-disabled');
-    }
-  });
+  document.querySelectorAll(gatedControls).forEach(element => setGate(element, blocked));
+  watchGate(blocked);
   let banner = document.getElementById('hs-quantity-recovery');
   if (!blocked) { banner?.remove(); return; }
   if (!banner) {
     banner = document.createElement('section'); banner.id = 'hs-quantity-recovery'; banner.setAttribute('role','status');
     banner.style.cssText = 'padding:1rem;margin:1rem;border:2px solid currentColor;background:var(--color-background,#fff);color:var(--color-foreground,#111)';
-    const message = document.createElement('p'); message.textContent = 'Your design is saved while its quantity change is checked. Checkout is paused until the cart is confirmed.'; banner.append(message);
+    const message = document.createElement('p'); message.textContent = bannerText; banner.append(message);
     for (const [mode, label] of [['check','Check saved change'],['retry','Retry requested quantity'],['restore','Restore original quantity'],['discard','Remove this saved item']]) {
       const button = document.createElement('button'); button.type = 'button'; button.textContent = label; button.dataset.recoveryMode = mode;
       button.addEventListener('click', async () => {
         button.disabled = true;
-        try { const id = lastCartId || (await window.Shopify.actions.getCart()).cart?.id; if (!id) throw new Error('Open the original cart to recover the saved change.'); await HeartsideCartQuantity.recover(id, mode); if (!HeartsideCartQuantity.pending()) location.reload(); else renderPending(HeartsideCartQuantity.pending()); }
+        try { const id = lastCartId || (await window.Shopify.actions.getCart()).cart?.id; if (!id) throw new Error('Open the original cart to recover the saved change.'); await HeartsideCartQuantity.recover(id, mode); const next = HeartsideCartQuantity.pending(); if (!next) location.reload(); else { message.textContent = next.phase === 'removed' ? removedText : bannerText; renderPending(next); } }
         catch (error) { message.textContent = error.message; renderPending(HeartsideCartQuantity.pending()); }
       }); banner.append(button);
     }
     (document.querySelector('cart-items-component') || document.querySelector('main') || document.body).prepend(banner);
   }
-  banner.querySelectorAll('button').forEach(button => { button.disabled = button.dataset.recoveryMode !== 'check' && record.phase !== 'removed'; });
+  banner.querySelectorAll('button').forEach(button => { const off = button.dataset.recoveryMode !== 'check' && record.phase !== 'removed'; if (button.disabled !== off) button.disabled = off; });
 }
 
 const existingRuntime = typeof window !== 'undefined' && window.HSCartQuantity;
@@ -170,6 +212,8 @@ if (runtime) {
     if (!runtime.pending()) return;
     if (event.target.closest?.('[name="checkout"],a[href*="/checkout"],shopify-accelerated-checkout-cart') || event.submitter?.name === 'checkout' || event.target.action?.includes('/checkout')) { event.preventDefault(); event.stopImmediatePropagation(); renderPending(runtime.pending()); }
   };
-  document.addEventListener('click',blockCheckout,true); document.addEventListener('submit',blockCheckout,true);
+  // Middle click opens a link in a new tab through auxclick, so it is held the same way.
+  document.addEventListener('click',blockCheckout,true); document.addEventListener('auxclick',blockCheckout,true); document.addEventListener('submit',blockCheckout,true);
+  window.addEventListener('pageshow',()=>renderPending(runtime.pending()));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',()=>renderPending(runtime.pending()),{once:true}); else renderPending(runtime.pending());
 }

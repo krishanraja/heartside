@@ -7,9 +7,9 @@ const source=readFileSync(new URL('../../shopify/assets/hs3.js',import.meta.url)
 const profile=readFileSync(new URL('../../shopify/assets/hs-artwork-profile.js',import.meta.url),'utf8');
 function section(name){const start=source.indexOf('  function '+name+'(');assert.notEqual(start,-1);return source.slice(start,source.indexOf('\n  function ',start+1));}
 function fixture(minified){
-  const ctx={window:{},cfg:{artworkCandidates:true},S:{step:7,home:'skip',spot:'skip',together:'skip',meaning:'skip',gift:'blanket',noteTone:'warm'},ui:{prefix:'',editing:false,revealN:4},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait',ornament:'Ornament'},SHORT:{mug:'Mug',blanket:'Blanket',print:'Portrait',ornament:'Ornament'},ICON:{},esc:String,img:alt=>'<img alt="'+alt+'">',signUnder:()=>'<span>legacy signature</span>',lineFor:()=> 'legacy note',toneStatus:()=> 'note status',composeKey:()=> 'key',reasonFor:()=> 'legacy gift reason',mugFaces:()=>'<div>mug</div>',mugSwatches:()=>'',BUDDY:'Buddy'};
+  const ctx={window:{},cfg:{artworkCandidates:true},S:{step:7,home:'skip',spot:'skip',together:'skip',meaning:'skip',gift:'blanket',noteTone:'warm'},ui:{prefix:'',editing:false,revealN:4},GIFTS:['mug','blanket','print','ornament'],GN:{mug:'Mug',blanket:'Blanket',print:'Portrait',ornament:'Ornament'},SHORT:{mug:'Mug',blanket:'Blanket',print:'Portrait',ornament:'Ornament'},ICON:{},esc:String,img:alt=>'<img alt="'+alt+'">',signUnder:()=>'<span>legacy signature</span>',lineFor:()=> 'legacy note',toneStatus:()=> 'note status',composeKey:()=> 'key',reasonFor:()=> 'legacy gift reason',mugFaces:()=>'<div>mug</div>',mugSwatches:()=>'',mugColor:()=>null,photoSrc:()=>'',PAW:'',sign:()=>'<span>signature</span>',BUDDY:'Buddy'};
   vm.runInNewContext(profile,ctx);
-  const code=['reviewGifts','recGift','giftKeys','hasArtworkFacts','chatModel','revealView','mockup','pills'].map(section).join('\n');
+  const code=['reviewGifts','recGift','giftKeys','hasArtworkFacts','chatModel','revealView','toneView','productStage','giftPhoto','paintFacts','mockup','pills','priceOf','priceLabel','fmt','possessiveName'].map(section).join('\n');
   vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,ctx);return ctx;
 }
 for(const minified of [false,true]) {

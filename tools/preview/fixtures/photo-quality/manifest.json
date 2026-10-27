@@ -1,0 +1,293 @@
+{
+ "about": "Analysis-size pixels exported from Chromium by HSPhotoQuality.pixels(), stored as 8-bit luminance ((77R+150G+29B)>>8), plus alpha when the source had transparency (pixels under alpha 128 zeroed, which measure() ignores). browser holds the metrics Chromium measured from the same pixels; detection is the recorded COCO-SSD lite_mobilenet_v2 output (null where a hard reject skipped detection). Sources: six stock dog photos and Pillow-degraded variants, 2026-10-27.",
+ "fixtures": [
+  {
+   "file": "golden-puppy-asleep--real.png",
+   "note": "real photo",
+   "originalWidth": 1589,
+   "originalHeight": 1053,
+   "browser": {
+    "shortSide": 1053,
+    "blur": 451.0115898120773,
+    "blurRaw": 87.04836174770294,
+    "mean": 132.48667957227138,
+    "nearBlack": 0.004269220132743363,
+    "nearWhite": 0,
+    "low": 33,
+    "high": 221,
+    "opaque": 1
+   },
+   "detection": {
+    "width": 512,
+    "height": 339,
+    "dogs": [
+     {
+      "score": 0.9842110276222229,
+      "bbox": [
+       32.730194091796875,
+       109.72906020283699,
+       386.6982421875,
+       142.67948850989342
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "golden-puppy-painted-cutout--real.png",
+   "note": "real photo, transparent cutout (softest real photo)",
+   "originalWidth": 1059,
+   "originalHeight": 1587,
+   "browser": {
+    "shortSide": 1059,
+    "blur": 147.10518772199808,
+    "blurRaw": 36.41100989385263,
+    "mean": 155.82169480636048,
+    "nearBlack": 0.014323371850228172,
+    "nearWhite": 0,
+    "low": 66,
+    "high": 215,
+    "opaque": 0.6044465003654971
+   },
+   "detection": {
+    "width": 342,
+    "height": 512,
+    "dogs": [
+     {
+      "score": 0.7497254610061646,
+      "bbox": [
+       12.269135355949402,
+       5.636444091796875,
+       327.37358808517456,
+       502.1444091796875
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "red-poodle-head-tilt--studio-white.png",
+   "note": "real photo at half size on a 252 white backdrop (71% near-white)",
+   "originalWidth": 1600,
+   "originalHeight": 1200,
+   "browser": {
+    "shortSide": 1200,
+    "blur": 959.7528726078632,
+    "blurRaw": 186.75362899086335,
+    "mean": 227.2274932861328,
+    "nearBlack": 0.006205240885416667,
+    "nearWhite": 0.7099863688151041,
+    "low": 98,
+    "high": 252,
+    "opaque": 1
+   },
+   "detection": {
+    "width": 512,
+    "height": 384,
+    "dogs": [
+     {
+      "score": 0.9882849454879761,
+      "bbox": [
+       180.60174560546875,
+       80.67059326171875,
+       138.32098388671875,
+       217.27530670166016
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "golden-puppy-painted-cutout--on-black.png",
+   "note": "cutout flattened on black (39% near-black)",
+   "originalWidth": 1059,
+   "originalHeight": 1587,
+   "browser": {
+    "shortSide": 1059,
+    "blur": 142.67411447318912,
+    "blurRaw": 44.23822191754169,
+    "mean": 93.84356154057018,
+    "nearBlack": 0.38503974780701755,
+    "nearWhite": 0,
+    "low": 0,
+    "high": 202,
+    "opaque": 1
+   },
+   "detection": {
+    "width": 342,
+    "height": 512,
+    "dogs": [
+     {
+      "score": 0.8310378789901733,
+      "bbox": [
+       23.367266535758972,
+       3.93878173828125,
+       313.6335883140564,
+       505.29229736328125
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "golden-puppy-painted-cutout--on-white.png",
+   "note": "cutout flattened on white (closest usable photo to the blur reject line)",
+   "originalWidth": 1059,
+   "originalHeight": 1587,
+   "browser": {
+    "shortSide": 1059,
+    "blur": 90.92360515115412,
+    "blurRaw": 26.565222047814988,
+    "mean": 195.13768389071637,
+    "nearBlack": 0.008554915935672515,
+    "nearWhite": 0.3828410544590643,
+    "low": 88,
+    "high": 255,
+    "opaque": 1
+   },
+   "detection": {
+    "width": 342,
+    "height": 512,
+    "dogs": [
+     {
+      "score": 0.9214611053466797,
+      "bbox": [
+       17.259504854679108,
+       9.080215454101562,
+       322.113588988781,
+       498.3553924560547
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "apricot-poodle-puppy--dim030.png",
+   "note": "brightness x0.30 (darkest dim variant)",
+   "originalWidth": 1589,
+   "originalHeight": 1053,
+   "browser": {
+    "shortSide": 1053,
+    "blur": 848.962021146144,
+    "blurRaw": 16.83670810732804,
+    "mean": 29.382829784292035,
+    "nearBlack": 0.459243639380531,
+    "nearWhite": 0,
+    "low": 8,
+    "high": 54,
+    "opaque": 1
+   },
+   "detection": {
+    "width": 512,
+    "height": 339,
+    "dogs": [
+     {
+      "score": 0.9751797318458557,
+      "bbox": [
+       152.86016845703125,
+       28.820064425468445,
+       179.7823486328125,
+       286.0523854494095
+      ]
+     }
+    ],
+    "others": []
+   }
+  },
+  {
+   "file": "golden-puppy-asleep--tiny400.png",
+   "note": "resized to 400 px on the long side",
+   "originalWidth": 400,
+   "originalHeight": 265,
+   "browser": {
+    "shortSide": 265,
+    "blur": 1086.4778075581155,
+    "blurRaw": 208.10277916468533,
+    "mean": 132.78650943396227,
+    "nearBlack": 0.005443396226415095,
+    "nearWhite": 0,
+    "low": 33,
+    "high": 222,
+    "opaque": 1
+   },
+   "detection": null
+  },
+  {
+   "file": "maltipoo-on-deck--blur6.png",
+   "note": "Gaussian blur radius 6 (sharpest blur6 variant)",
+   "originalWidth": 1589,
+   "originalHeight": 1189,
+   "browser": {
+    "shortSide": 1189,
+    "blur": 50.255173851356986,
+    "blurRaw": 8.866747163375141,
+    "mean": 132.42950901599218,
+    "nearBlack": 0.0019684236292428197,
+    "nearWhite": 0,
+    "low": 75,
+    "high": 197,
+    "opaque": 1
+   },
+   "detection": null
+  },
+  {
+   "file": "golden-puppy-asleep--dark008.png",
+   "note": "brightness x0.08 (brightest near-black variant)",
+   "originalWidth": 1589,
+   "originalHeight": 1053,
+   "browser": {
+    "shortSide": 1053,
+    "blur": 241.82735964555806,
+    "blurRaw": 1.782259542033988,
+    "mean": 9.837308720501476,
+    "nearBlack": 1,
+    "nearWhite": 0,
+    "low": 2,
+    "high": 18,
+    "opaque": 1
+   },
+   "detection": null
+  },
+  {
+   "file": "pug-autumn-leaves--blown6.png",
+   "note": "brightness x6 (fewest clipped pixels of the blown variants)",
+   "originalWidth": 1589,
+   "originalHeight": 1052,
+   "browser": {
+    "shortSide": 1052,
+    "blur": 3959.6367123641903,
+    "blurRaw": 246.74653392109005,
+    "mean": 240.78781803097345,
+    "nearBlack": 9.79443215339233e-05,
+    "nearWhite": 0.544316924778761,
+    "low": 213,
+    "high": 255,
+    "opaque": 1
+   },
+   "detection": null
+  },
+  {
+   "file": "red-poodle-head-tilt--blown6.png",
+   "note": "brightness x6 (darkest 5th percentile of the blown variants)",
+   "originalWidth": 1389,
+   "originalHeight": 1588,
+   "browser": {
+    "shortSide": 1389,
+    "blur": 2120.9450193734297,
+    "blurRaw": 202.21422667721797,
+    "mean": 246.99492536272322,
+    "nearBlack": 3.923688616071429e-05,
+    "nearWhite": 0.8865879603794643,
+    "low": 190,
+    "high": 255,
+    "opaque": 1
+   },
+   "detection": null
+  }
+ ]
+}

@@ -82,8 +82,9 @@ jobs:
       - name: Install
         if: steps.when.outputs.run == 'yes'
         run: |
+          sudo apt-get update -qq
           sudo apt-get install -y -qq libfribidi0 libharfbuzz0b   # Pillow's text layout (RAQM), as mug_qc draws it
-          pip install -q "pillow>=10" numpy
+          pip install -q "Pillow>=12,<13" "numpy>=2,<3"
           python3 -c "from PIL import features; assert features.check('raqm'), 'Pillow has no RAQM'"
 
       - name: Check the orders
@@ -95,42 +96,37 @@ jobs:
           # order_qc.py writes its own log.txt for the summary.
           python3 tools/qc/order_qc.py qc-out $dry
 
+      # This repository is public, so run summaries, artifacts and issues are readable by anyone
+      # signed in to GitHub. They carry counts only: no order names, print-file cards, dog art or
+      # note text (27 Oct 2026 acceptance review). Held orders are tagged qc-hold in Shopify, and
+      # the order's own note says why, so the review happens in Shopify admin.
       - name: Summary
         if: steps.when.outputs.run == 'yes' && always()
         run: |
-          if [ -f qc-out/log.txt ]; then
-            {
-              echo "### Order QC"
-              echo '```'
-              cat qc-out/log.txt
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f qc-out/summary.json ]; then
+            python3 - >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          import json
+          s = json.load(open('qc-out/summary.json'))
+          print('### Order QC')
+          print(f"Checked {len(s['checked'])}, held {len(s['holds'])}, waiting for a print file {len(s['waiting'])}, without a mug {s['no_mug']}{' (dry run)' if s.get('dry_run') else ''}.")
+          EOF
+          elif [ -f qc-out/auth-error.txt ]; then
+            echo "### Order QC: sign-in failed. No order was checked." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: actions/upload-artifact@v4
-        if: steps.when.outputs.run == 'yes' && always()
-        with:
-          name: order-qc-cards-run-${{ github.run_number }}
-          path: qc-out
-          retention-days: 30
-          if-no-files-found: ignore
-
       - name: Tell Krish about holds
-        if: steps.when.outputs.run == 'yes' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
+        if: always() && steps.when.outputs.run == 'yes' && hashFiles('qc-out/holds.json') != '' && !(github.event_name == 'workflow_dispatch' && inputs.dry_run)
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           n=$(python3 -c "import json;print(len(json.load(open('qc-out/holds.json'))))")
           if [ "$n" = "0" ]; then echo "No holds."; exit 0; fi
-          python3 - > body.md <<'EOF'
-          import json, os
-          holds = json.load(open('qc-out/holds.json'))
-          print('Order QC held these orders. Do not confirm them in Teeinblue until the print file is fixed.\n')
-          for h in holds:
-              print(f"- **{h['order']}**: {h['note']}")
-          print(f"\nCards (both faces of the mug, every check): the order-qc-cards artifact on {os.environ['RUN_URL']}")
-          EOF
+          {
+            echo "Order QC held $n order(s). They are tagged qc-hold in Shopify admin, and each order's note says which check failed."
+            echo ""
+            echo "Do not confirm them in Teeinblue until the print file is fixed. Run: $RUN_URL"
+          } > body.md
           gh issue create --repo "${{ github.repository }}" --assignee krishanraja \
             --title "Order QC: $n order(s) on hold" --body-file body.md
 

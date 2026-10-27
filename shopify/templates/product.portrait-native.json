@@ -11,7 +11,7 @@
         "checkout_image_enabled": true,
         "checkout_image_endpoint": "/apps/heartside-artwork",
         "checkout_image_cdn_prefix": "https://cdn.shopify.com/s/files/1/1025/2301/1454/files/",
-        "option_labels": "Color: Frame | Size: Size"
+        "option_labels": "Available Product: Framed or unframed | Color: Frame | Size: Size"
       },
       "blocks": {
         "title": {
@@ -20,7 +20,7 @@
         "price": {
           "type": "price",
           "settings": {
-            "note": "Shipping calculated at checkout."
+            "note": "Free US shipping on every order."
           }
         },
         "answers": {
@@ -35,7 +35,7 @@
           "type": "shopify://apps/teeinblue-product-personalizer/blocks/product-app-block/67212f31-32b0-450c-97dd-7e182a5fac7b",
           "settings": {
             "enable_design_mode": false,
-            "loading_background_color": "#000000",
+            "loading_background_color": "#FBF6F1",
             "show_price": false,
             "show_available_product": true,
             "show_color": true,

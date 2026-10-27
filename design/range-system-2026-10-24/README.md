@@ -1,6 +1,6 @@
 # Shared artwork system across the gift range
 
-> Current direction and approved scope: `docs/continuation/2026-10-24/START-HERE.md` and `03-CREATIVE-AND-UX.md`. The six-style board remains a candidate reference. The dated discussion below is historical and must not govern the current assortment or pricing.
+> Current direction and approved scope: `docs/SCOPE.md`; the 24 Oct creative brief is now `docs/history/CREATIVE-AND-UX-2026-10-24.md`. The six-style board remains a candidate reference. The dated discussion below is historical and must not govern the current assortment or pricing.
 
 Status: range-wide principle instructed by Krish; visual styles and revamped suite lock pending. October 24, 2026.
 

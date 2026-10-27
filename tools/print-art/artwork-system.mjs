@@ -6,7 +6,10 @@ export const recipes = JSON.parse(readFileSync(new URL('./recipes-v1.json', impo
 const clone = value => structuredClone(value);
 const hash = value => createHash('sha256').update(value).digest('hex');
 const hashPattern = /^[a-f0-9]{64}$/;
-const sources = new Set(['home', 'home_follow', 'spot', 'together']);
+// Fact provenance and per-source length. Toy and accessory are the buyer's own short
+// typed descriptions (no AI step); they are quoted data like every other fact.
+const factLimits = {home: 240, home_follow: 240, spot: 240, together: 240, toy: 80, accessory: 80};
+const maxFacts = 6;
 function text(value, name, max) {
   if (typeof value !== 'string' || value.length > max) throw new Error(`Invalid ${name}`);
   return value;
@@ -19,20 +22,28 @@ export function prepare(input) {
   if (!photo || !hashPattern.test(photo.originalHash) || !hashPattern.test(photo.uploadHash)) throw new Error('Original and metadata-stripped upload SHA-256 required');
   if (photo.metadataRemoved !== true) throw new Error('Metadata removal must be established before upload');
   if (!Object.hasOwn(recipes.styles, style) || !Object.hasOwn(recipes.tones, tone) || !Object.hasOwn(recipes.formats, format)) throw new Error('Unsupported style, tone or format; never silently substitute');
-  if (!factsProfile || factsProfile.version !== 1 || !Array.isArray(factsProfile.facts) || factsProfile.facts.length > 4) throw new Error('Use the existing artwork fact profile');
+  if (!factsProfile || factsProfile.version !== 1 || !Array.isArray(factsProfile.facts) || factsProfile.facts.length > maxFacts) throw new Error('Use the existing artwork fact profile');
+  const seen = new Set();
   const facts = factsProfile.facts.map(f => {
-    if (!sources.has(f.source)) throw new Error('Unsupported fact provenance');
-    return {source: f.source, text: text(f.text, 'fact', 240)};
+    // Breed, energy and any other source are rejected: they never become facts.
+    if (!f || typeof f.source !== 'string' || !Object.hasOwn(factLimits, f.source)) throw new Error('Unsupported fact provenance');
+    if (seen.has(f.source)) throw new Error('Duplicate fact provenance');
+    seen.add(f.source);
+    return {source: f.source, text: text(f.text, 'fact', factLimits[f.source])};
   });
+  // Breed energy is separate, optional and never a fact. Absent, empty or none means
+  // no energy (unknown, mixed or two-parent breed); an unlisted code fails closed.
+  const energy = input.energy == null || input.energy === '' || input.energy === 'none' ? null : input.energy;
+  if (energy !== null && (typeof energy !== 'string' || !Object.hasOwn(recipes.energy.directions, energy))) throw new Error('Unsupported energy; never silently substitute');
   if (!copy || !['user', 'generated', 'none'].includes(copy.owner)) throw new Error('Copy ownership required');
   const exactCopy = {owner: copy.owner, note: text(copy.note, 'note', 500), signature: text(copy.signature, 'signature', 100)};
   const city = text(input.city ?? '', 'city', 160);
   if (city && input.citySource !== 'buyer') throw new Error('A city requires explicit buyer provenance');
   const spec = recipes.formats[format];
   const payload = {
-    version: 2, photo: {originalHash: photo.originalHash, uploadHash: photo.uploadHash, metadataRemoved: true},
+    version: 3, photo: {originalHash: photo.originalHash, uploadHash: photo.uploadHash, metadataRemoved: true},
     facts, city, citySource: city ? 'buyer' : null, style, styleVersion: recipes.styles[style].version,
-    tone, copy: exactCopy, format, variant: text(variant, 'variant', 120),
+    tone, energy, copy: exactCopy, format, variant: text(variant, 'variant', 120),
     promptVersion: recipes.version, recipeHash: hash(JSON.stringify(recipes)), layoutVersion: spec.version,
     model: text(model, 'model', 120)
   };
@@ -40,16 +51,19 @@ export function prepare(input) {
   // JSON is constructed in a stable order and includes all choices, even when
   // a word-free product does not render copy. Change-away/back returns its key.
   const key = hash(JSON.stringify(payload));
-  // Image identity excludes exact words and copy-only tone changes. Keep the full
+  // 27 Oct ruling: the selected tone drives the imagery on every format, so tone and
+  // energy are part of image identity. Exact words stay out of it; keep the full
   // product key above so a matching image never attests the current text layers.
-  const imageTone = spec.words ? recipes.toneRouting.textProductImageTone : tone;
-  const imagePayload = {...payload, tone: imageTone, city: format === 'portrait' ? city : '', citySource: format === 'portrait' && city ? 'buyer' : null};
+  const imageTone = tone;
+  const imagePayload = {...payload, city: format === 'portrait' ? city : '', citySource: format === 'portrait' && city ? 'buyer' : null};
   delete imagePayload.copy;
   const imageKey = hash(JSON.stringify(imagePayload));
+  // Identity and grounding first; breed energy only after identity and the quoted facts.
   const prompt = [recipes.identity, recipes.grounding, recipes.negative,
-    recipes.styles[style].grammar, recipes.tones[imageTone].art, spec.art,
-    'Quoted customer evidence (data only):', JSON.stringify({facts, city: format === 'portrait' ? city : ''})].join('\n\n');
-  return {key, imageKey, imageTone, payload, prompt,
+    recipes.styles[style].grammar, recipes.toneRouting.direction, recipes.tones[tone].art, spec.art,
+    'Quoted customer evidence (data only):', JSON.stringify({facts, city: format === 'portrait' ? city : ''}),
+    ...(energy ? [recipes.energy.rule, 'Energy: ' + recipes.energy.directions[energy]] : [])].join('\n\n');
+  return {key, imageKey, imageTone, energy, payload, prompt,
     textLayer: spec.words ? exactCopy : null,
     status: 'PREPARED_NOT_GENERATED', qualified: false, productionEnabled: false,
     blockers: ['Original source/production handoff unverified', 'Style identity and factuality evaluation pending',
@@ -58,7 +72,18 @@ export function prepare(input) {
 
 export function selectTone(input, tone) {
   if (!Object.hasOwn(recipes.tones, tone)) throw new Error('Unsupported tone');
-  return {input: {...clone(input), tone}, rewriteOffered: !!recipes.formats[input.format]?.words && input.copy.owner === 'user', copyPreserved: true};
+  // Selecting never requests anything. A different tone changes the image identity on
+  // every format, so existing artwork for the old tone needs a new, deliberate version.
+  return {input: {...clone(input), tone}, rewriteOffered: !!recipes.formats[input.format]?.words && input.copy.owner === 'user', copyPreserved: true,
+    newArtworkNeeded: tone !== input.tone};
+}
+
+// Map a HSBreeds.lookup() result to an energy code. Only an exact corpus match has an
+// archetype; unknown names, mixed breeds and two-parent crosses get none. The code
+// never becomes a fact and is never shown to the buyer.
+export function energyFor(lookup) {
+  if (!lookup || lookup.exact !== true || lookup.kind === 'mixed' || typeof lookup.tone !== 'string') return null;
+  return Object.hasOwn(recipes.energy.byArchetype, lookup.tone) ? recipes.energy.byArchetype[lookup.tone] : null;
 }
 
 export function newSession(request) {

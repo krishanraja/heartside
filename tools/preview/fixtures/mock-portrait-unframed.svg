@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="2048" viewBox="0 0 2048 2048">
+  <!-- Preview stand-in for the unframed portrait photo (a 12 x 18 in print, no frame). The real
+       image is on Shopify's CDN; this keeps its size, ratio and role. -->
+  <defs>
+    <filter id="lift" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#4a3c36" flood-opacity="0.2"/></filter>
+  </defs>
+  <rect width="2048" height="2048" fill="#ece5dc"/>
+  <g filter="url(#lift)"><rect x="624" y="344" width="800" height="1200" fill="#fbf8f2"/></g>
+  <circle cx="1024" cy="804" r="250" fill="#d9c6ae"/>
+  <ellipse cx="1024" cy="860" rx="150" ry="170" fill="#b98e66"/>
+  <rect x="804" y="1150" width="440" height="22" rx="11" fill="#cbbcab"/>
+  <rect x="844" y="1200" width="360" height="22" rx="11" fill="#cbbcab"/>
+  <rect x="904" y="1290" width="240" height="26" rx="13" fill="#a8876c"/>
+</svg>

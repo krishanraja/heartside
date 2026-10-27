@@ -1,0 +1,29 @@
+{
+  "name": "Supplier tax sensitivity, stack after a base set: Printful supplier tax is borne at the amounts recorded in calibration.json (observed single-item and mixed-basket quotes; summed for unquoted baskets), as in the delivered-quote basis of docs/evidence/2026-10-26-pricing-ruling.md. working-sensitivity.json sets it to zero.",
+  "overrides": {
+    "orders.mug_black.seller_borne_tax": "1.35",
+    "orders.mug_red.seller_borne_tax": "1.35",
+    "orders.mug_pink.seller_borne_tax": "1.35",
+    "orders.mug_dark_blue.seller_borne_tax": "1.35",
+    "orders.mug_dark_green.seller_borne_tax": "1.35",
+    "orders.blanket_50x60.seller_borne_tax": "4.45",
+    "orders.frame_black_12x18.seller_borne_tax": "3.92",
+    "orders.frame_white_12x18.seller_borne_tax": "3.92",
+    "orders.frame_red_oak_12x18.seller_borne_tax": "3.92",
+    "orders.unframed_12x18.seller_borne_tax": "1.51",
+    "orders.pillow_16x16.seller_borne_tax": "2.30",
+    "orders.mug_and_frame.seller_borne_tax": "5.23",
+    "orders.mug_and_blanket.seller_borne_tax": "5.76",
+    "orders.mug_and_unframed.seller_borne_tax": "2.86",
+    "orders.unframed_and_blanket.seller_borne_tax": "5.96",
+    "orders.frame_and_blanket.seller_borne_tax": "8.37",
+    "orders.unframed_and_frame.seller_borne_tax": "5.43",
+    "orders.two_mugs.seller_borne_tax": "2.70",
+    "orders.two_unframed.seller_borne_tax": "3.02",
+    "orders.two_frames.seller_borne_tax": "7.84",
+    "orders.two_blankets.seller_borne_tax": "8.90",
+    "orders.mug_frame_blanket.seller_borne_tax": "9.72",
+    "orders.mug_unframed_blanket.seller_borne_tax": "7.31",
+    "orders.three_mugs.seller_borne_tax": "4.05"
+  }
+}

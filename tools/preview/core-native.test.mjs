@@ -20,7 +20,7 @@ for(const minified of [false,true]) {
     });
     test(`${mode}: ${kind} uses the single exact Buddy note and variant selection reuses artwork`,()=>{
       let variant='first',style='ink',facts='{"version":1,"facts":[]}';
-      const c={state:{hs3_lines:{meaning:'One exact note',home:'Other words'},dog:'Test dog'},V3_ORDER:{mug:['home','spot','meaning'],print:['home','spot','together','meaning']},nativeArtworkPurchase:()=>true,blanketArtPreview:()=>false,cityArtPreview:()=>false,v3Kind:()=>kind,productId:()=>1,usePhoto:{t:1},artworkFacts:()=>facts,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{}:s==='[data-hs2-variant-id]'?{value:variant}:null},window:{HSArtworkChoices:{read:()=>({style,tone:'warm'})},HSArtworkEngine:{recipeHash:'recipe'}}};
+      const c={state:{hs3_lines:{meaning:'One exact note',home:'Other words'},dog:'Test dog'},V3_ORDER:{mug:['home','spot','meaning'],print:['home','spot','together','meaning']},nativeArtworkPurchase:()=>true,blanketArtPreview:()=>false,cityArtPreview:()=>false,v3Kind:()=>kind,productId:()=>1,usePhoto:{t:1},artworkFacts:()=>facts,artworkEnergy:()=>null,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{}:s==='[data-hs2-variant-id]'?{value:variant}:null},window:{HSArtworkChoices:{read:()=>({style,tone:'warm'})},HSArtworkEngine:{recipeHash:'recipe'}}};
       run(['v3Answer','artRequestKey'],c,minified);
       assert.equal(c.v3Answer('line4'),'One exact note');assert.equal(c.v3Answer('hs_lines'),'One exact note');
       const first=c.artRequestKey();variant='another-frame-or-color';assert.equal(c.artRequestKey(),first);
@@ -56,7 +56,7 @@ test('release native templates enable ordering and actual-design checkout images
     assert.equal(t.settings.checkout_image_enabled,true);
     assert.equal(t.settings.checkout_image_endpoint,'/apps/heartside-artwork');
     assert.match(t.settings.checkout_image_cdn_prefix,/^https:\/\/cdn\.shopify\.com\/s\/files\/1\/[^\s]+\/files\/$/);
-    assert.equal(t.blocks.buy.settings.v3,false);assert.match(t.blocks.price.settings.note,/calculated at checkout/);
+    assert.equal(t.blocks.buy.settings.v3,false);assert.equal(t.blocks.price.settings.note,'Free US shipping on every order.');
     if(kind==='print')assert.equal(t.blocks.teeinblue_product_personalizer_product_app_block_UBn6nK.settings.show_available_product,true);
   }
   const liquid=readFileSync(new URL('../../shopify/snippets/hs-native-artwork.liquid',import.meta.url),'utf8');

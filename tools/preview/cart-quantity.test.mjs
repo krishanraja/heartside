@@ -83,10 +83,10 @@ for (const minified of [false,true]) test((minified?'minified':'source')+': in-f
  const start=source.indexOf('  #handleCartUpdate = (event) => {');
  const end=source.indexOf('\n\n  /**',start);
  const handler=source.slice(start,end);
- const code='class Harness { #heartsideQuantityInFlight=false; #refreshCartSection(){} #updateCartQuantitySelectorButtonStates(){} '+handler+' call(event,inFlight){this.#heartsideQuantityInFlight=inFlight;this.#handleCartUpdate(event);} } instance=new Harness();';
+ const code='class Harness { #heartsideQuantityOwner=null; #refreshCartSection(){} #updateCartQuantitySelectorButtonStates(){} '+handler+' call(event,inFlight){this.#heartsideQuantityOwner=inFlight?{}:null;this.#handleCartUpdate(event);} } instance=new Harness();';
  const context={}; vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,context);
  let listeners=0; const event={target:{},promise:{then(){listeners++;return {catch(){}};}}};
  context.instance.call(event,true); assert.equal(listeners,0);
  context.instance.call(event,false); assert.equal(listeners,1);
- assert.match(source,/finally \{\s+this.#heartsideQuantityInFlight = false;/);
+ assert.match(source,/finally \{\s+\/\/ Only the owning operation releases the cart, after its final render.\s+if \(heartsideOwner && this.#heartsideQuantityOwner === heartsideOwner\) this.#heartsideQuantityOwner = null;/);
 });

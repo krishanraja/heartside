@@ -1,0 +1,289 @@
+/* Heartside brand layer, from the brand book (27 Oct 2026). Loaded first by
+   snippets/hs2-head.liquid, before hs2.css, so it reaches every page that renders an HS section;
+   the memo strip in the header group renders one on every page.
+
+   1. Tokens: every colour, shape and size as an --hs- custom property on :root.
+   2. Focus: a 3px ink ring with a 2px offset, on our sections and Helio's header, cart and drawer.
+   3. The announcement strip (sections/hs2-memo.liquid).
+   4. Our own pieces: Buddy, the primary button, the footer (sections/hs-footer.liquid) and the
+      small pages (sections/hs-404.liquid, sections/hs-moved.liquid).
+   5. Helio's header, menu drawer, cart page and cart drawer, restyled in place from the markup in
+      tools/preview/fixtures/ and snippets/cart-products.liquid: colour, type, radius and shadow
+      only. Helio's markup and scripts stay as they are, and cart-icon and cart-drawer-component
+      (hs2.js announceAdd) are never hidden.
+
+   hs2.css loads after this file and Helio writes its colour schemes as inline <style> blocks
+   further down the page, so the rules below win on specificity, not on order. All motion sits
+   under prefers-reduced-motion: no-preference. */
+
+/* ---------------------------------------------------------------- tokens */
+:root {
+  --hs-cream: #fbf6f1;       /* the page; cream type on ink and night */
+  --hs-cream-rgb: 251 246 241;
+  --hs-paper: #fffdf9;       /* the printed note, the print face, a line in the cart */
+  --hs-white: #ffffff;
+  --hs-ink: #121010;         /* type, the primary button, print frames */
+  --hs-ink-rgb: 18 16 16;
+  --hs-body: #3e322d;
+  --hs-muted: #5a4a44;
+  --hs-line: #e2d4c8;
+  --hs-line-rgb: 226 212 200;
+  --hs-pencil: #b9ada4;      /* draft words only */
+  --hs-chestnut: #8a4a2b;    /* Buddy, eyebrow labels, the paw signature, warm shadows */
+  --hs-stamp: #a8284e;       /* headline italic accent, a field that needs an answer; never a button */
+  --hs-blush: #f0c0c0;       /* the customer's own replies, Buddy's collar */
+  --hs-night: #1e1714;       /* the strip and the share screen */
+  --hs-gold: #c9a048;
+  --hs-blanket-tan: #e3d3bf;
+  --hs-disabled: #cfc4bb;    /* a disabled primary goes flat */
+
+  --hs-serif: "HS Fraunces", "Fraunces", Georgia, serif;
+  --hs-sans: "HS DM Sans", "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hs-mono: "HS Courier Prime", "Courier Prime", "Courier New", monospace;
+
+  --hs-radius-note: 8px;
+  --hs-radius-field: 12px;
+  --hs-radius-control: 14px;
+  --hs-radius-card: 24px;
+  --hs-radius-hero: 28px;
+  --hs-radius-pill: 999px;
+  --hs-shadow-note: 0 16px 28px -18px rgba(30, 23, 20, 0.55), 0 0 0 1px #efe6dd;
+  --hs-shadow-bubble: 0 6px 14px -10px rgba(30, 23, 20, 0.4);
+  --hs-shadow-blanket: 0 26px 38px -22px rgba(30, 23, 20, 0.55);
+  --hs-shadow-print: 0 24px 36px -20px rgba(30, 23, 20, 0.55);
+  --hs-tilt-note: -0.8deg;
+  --hs-tilt-blanket: -2deg;
+  --hs-tilt-print: -1.5deg;
+
+  --hs-focus: var(--hs-ink);
+  --hs-focus-width: 3px;
+  --hs-focus-offset: 2px;
+
+  --hs-frame: 480px;
+  --hs-frame-wide: 1200px;
+  --hs-gutter: 22px;
+  --hs-touch: 44px;
+  --hs-button: 54px;
+  --hs-button-sm: 48px;
+  --hs-field: 48px;
+  --hs-gap-sm: 8px;
+  --hs-gap-md: 12px;
+  --hs-strip: 32px;
+  --hs-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ----------------------------------------------------------------- focus */
+/* The first two sit one step above hs2.css's generic rose rings (.hs2 :where(...):focus-visible
+   and .hs2 input:focus) and below its few component rings, which keep their own offsets. */
+.hs2 :is(a, button, summary, label):focus-visible,
+.hs2.hs2 :is(input, select, textarea):focus,
+:is(.hs-footer, .hs-lost) :is(a, button, [tabindex]):focus-visible,
+header-component :is(a, button, summary, input, [tabindex]):focus-visible,
+#cart-drawer :is(a, button, summary, input, select, textarea, [tabindex]):focus-visible,
+cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--hs-focus-width) solid var(--hs-focus);
+  outline-offset: var(--hs-focus-offset);
+}
+/* an ink ring vanishes on the dark surfaces, so the ring turns cream there */
+.hs2-memo, .hs2-management, .hs2-closure__scene, .hs2-buy, .hs2-shop__bar, .hs2-next, .hs2-phone { --hs-focus: var(--hs-cream); }
+
+/* ---------------------------------------------------- the announcement strip */
+/* One 32px line on night in cream Courier Prime capitals, the same voice as the chat's ribbon,
+   directly above the cream header. hs2.js turns a line too long for the screen into a ticker;
+   with reduced motion it stays still and wraps rather than hide words. */
+.hs2 .hs2-memo.hs-strip {
+  min-height: var(--hs-strip); background: var(--hs-night); color: var(--hs-cream);
+  font-family: var(--hs-mono); font-size: 12px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.hs2 .hs2-memo.hs-strip .hs2-memo__viewport { padding: 8px 16px; line-height: 16px; text-align: center; }
+.hs2 .hs2-memo.hs-strip.is-ticker .hs2-memo__viewport { padding: 8px 0; text-align: left; }
+.hs2 .hs2-memo.hs-strip .hs2-memo__count { color: var(--hs-cream); font-weight: 700; }
+.hs2 .hs2-memo.hs-strip .hs2-memo__count::before { color: var(--hs-cream); }
+@media (max-width: 600px) {
+  /* phones carry the shipping line alone, so the default line fits on one */
+  .hs2 .hs2-memo.hs-strip .hs2-memo__count { display: none; }
+}
+@media (max-width: 899px) {
+  /* hs2.css hides the memo on the v3 product page on phones; the strip now shows on every page */
+  html:has(#buy[data-hs2-v3]) [id$="__hs2_memo"].hs2-section { display: block !important; }
+}
+
+/* ------------------------------------------------------------------ Buddy */
+/* The chat's Buddy (assets/hs3.js BUDDY), drawn inline by the footer and the small pages */
+.hs-buddy { display: block; width: 100%; height: auto; overflow: visible; }
+.hs-buddy__ear { transform-origin: 44px 34px; }
+
+/* -------------------------------------------------------- primary button */
+/* 54px, ink, radius-control, DM Sans 600, named for what happens next. One per screen. */
+.hs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--hs-button); padding: 0 24px; border: 0; border-radius: var(--hs-radius-control);
+  background: var(--hs-ink); color: var(--hs-cream); font-family: var(--hs-sans); font-size: 17px; font-weight: 600; line-height: 1;
+  text-decoration: none; cursor: pointer;
+}
+.hs-btn:hover { background: var(--hs-night); color: var(--hs-cream); }
+
+/* ----------------------------------------------------------------- footer */
+/* sections/hs-footer.liquid: one quiet block on the page's own cream. Buddy looks over the rule. */
+.hs-footer, .hs-footer *, .hs-footer *::before, .hs-footer *::after { box-sizing: border-box; }
+.hs-footer {
+  padding: 56px var(--hs-gutter) 28px;
+  background: var(--hs-cream); color: var(--hs-body); font-family: var(--hs-sans); text-align: center;
+  view-timeline-name: --hs-footer;
+}
+.hs-footer__in { max-width: var(--hs-frame-wide); margin: 0 auto; border-top: 1px solid var(--hs-line); }
+.hs-footer__buddy { width: 64px; height: 46px; margin: -47px auto 0; overflow: hidden; }
+.hs-footer :where(p, ul) { margin: 0; padding: 0; }
+.hs-footer__line { padding-top: 22px; color: var(--hs-chestnut); font-family: var(--hs-mono); font-size: 12px; line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase; }
+.hs-footer__links ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 18px; margin-top: 6px; list-style: none; }
+.hs-footer__links a {
+  display: inline-flex; align-items: center; min-height: var(--hs-touch);
+  color: var(--hs-body); font-size: 13.5px; line-height: 1.45; text-decoration: underline; text-decoration-color: var(--hs-line); text-underline-offset: 3px;
+}
+.hs-footer__links a:hover { color: var(--hs-ink); text-decoration-color: currentColor; }
+.hs-footer__company { margin-top: 4px; color: var(--hs-muted); font-size: 12px; line-height: 1.45; }
+
+/* ------------------------------------------------- the 404 and moved pages */
+/* sections/hs-404.liquid and sections/hs-moved.liquid: Buddy, one Fraunces line, one button,
+   the three gifts as plain links */
+.hs-lost, .hs-lost *, .hs-lost *::before, .hs-lost *::after { box-sizing: border-box; }
+.hs-lost { background: var(--hs-cream); color: var(--hs-ink); font-family: var(--hs-sans); padding: 48px var(--hs-gutter) 72px; text-align: center; }
+.hs-lost__in { max-width: var(--hs-frame); margin: 0 auto; }
+.hs-lost__buddy { width: 112px; margin: 0 auto 20px; }
+.hs-lost h1 { margin: 0; font-family: var(--hs-serif); font-size: clamp(40px, 12vw, 52px); font-weight: 650; line-height: 0.98; letter-spacing: -0.01em; text-transform: none; color: var(--hs-ink); }
+.hs-lost__text { margin: 16px 0 0; color: var(--hs-body); font-size: 17px; line-height: 1.45; }
+.hs-lost__go { margin: 28px 0 0; }
+.hs-lost__links ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 20px; margin: 12px 0 0; padding: 0; list-style: none; }
+.hs-lost__links a { display: inline-flex; align-items: center; min-height: var(--hs-touch); color: var(--hs-ink); font-size: 15px; font-weight: 600; text-decoration: underline; text-decoration-color: var(--hs-line); text-underline-offset: 4px; }
+.hs-lost__links a:hover { text-decoration-color: currentColor; }
+.hs-lost noscript a { color: var(--hs-ink); }
+@media (min-width: 900px) {
+  .hs-lost { padding: 88px var(--hs-gutter) 112px; }
+  .hs-lost h1 { font-size: clamp(56px, 5.4vw, 84px); }
+  .hs-lost__text { font-size: 20px; }
+}
+
+/* Helio's grey page shows wherever a section ends short of the screen; the page is cream */
+body { background-color: var(--hs-cream); }
+
+/* ---------------------------------------------- Helio's colour tokens, ours */
+/* Helio paints each part from these variables; pointing them at the brand colours turns its
+   header, menu drawer, cart page and cart drawer cream with ink type. */
+.header .header__row,
+.header .menu-drawer,
+.header .overflow-menu,
+cart-items-component [class*="color-custom-"],
+#cart-drawer .theme-drawer__dialog {
+  --color-background: var(--hs-cream);
+  --color-background-rgb: var(--hs-cream-rgb);
+  --color: var(--hs-ink);
+  --color-rgb: var(--hs-ink-rgb);
+  --color-foreground: var(--hs-ink);
+  --color-foreground-rgb: var(--hs-ink-rgb);
+  --color-foreground-muted: var(--hs-muted);
+  --color-border: var(--hs-line);
+  --color-border-rgb: var(--hs-line-rgb);
+}
+
+/* ---------------------------------------------------------- Helio's header */
+/* fixtures/helio-header.html. The row colours are set inline on header-component (a style
+   attribute, hence !important); the rest in a <style> block inside the section. */
+header-component.header {
+  --color-background-top-row: var(--hs-cream) !important;
+  --color-background-bottom-row: var(--hs-cream) !important;
+  --cart-bubble-background: var(--hs-ink) !important;
+  --cart-bubble-text: var(--hs-cream) !important;
+  font-family: var(--hs-sans);
+}
+.header .header__row { background-color: var(--hs-cream); color: var(--hs-ink); box-shadow: inset 0 -1px 0 var(--hs-line); }
+.header .header__underlay { --color-submenu: var(--hs-cream); }
+.header .header-actions__action { color: var(--hs-ink); }
+.header .cart-bubble__text-count { font-family: var(--hs-sans); font-weight: 600; }
+/* The page is the menu: Home, Catalog and Contact go (the logo is home, Contact is in the
+   footer), and so does search, on desktop and in the phone drawer. Account and the cart icon
+   are untouched; the drawer keeps its three gift cards. */
+.header header-menu,
+.header search-button,
+.header .menu-drawer__navigation { display: none !important; }
+.header .menu-drawer { background-color: var(--hs-cream); color: var(--hs-ink); }
+.header .menu-drawer .resource-card__title { font-family: var(--hs-sans); font-weight: 600; text-transform: none; color: var(--hs-ink); }
+.header .menu-drawer .price { font-family: var(--hs-sans); color: var(--hs-body); }
+.header .menu-drawer .resource-card__media { border-radius: var(--hs-radius-field); overflow: hidden; }
+
+/* --------------------------------------------- Helio's cart page and drawer */
+/* fixtures/helio-cart-empty.html, fixtures/helio-drawer.html and snippets/cart-products.liquid */
+cart-items-component, #cart-drawer .theme-drawer__dialog { font-family: var(--hs-sans); color: var(--hs-ink); }
+#cart-drawer .theme-drawer__dialog { background-color: var(--hs-cream); }
+#cart-drawer .theme-drawer__dialog::backdrop { background: rgba(30, 23, 20, 0.45); }
+#cart-drawer .theme-drawer__close-button { color: var(--hs-ink); }
+.cart-page .cart-title :is(h1, h2),
+#cart-drawer .theme-drawer__title {
+  font-family: var(--hs-serif); font-weight: 650; letter-spacing: -0.01em; text-transform: none; color: var(--hs-ink);
+}
+.cart-page .cart-title :is(h1, h2) { font-size: 31px; line-height: 1.05; }
+#cart-drawer .theme-drawer__title { font-size: 26px; line-height: 1.1; }
+@media (min-width: 900px) { .cart-page .cart-title :is(h1, h2) { font-size: 44px; } }
+:is(cart-items-component, #cart-drawer) :is(.cart-primary-typography, .cart-secondary-typography) { font-family: var(--hs-sans); }
+:is(cart-items-component, #cart-drawer) .cart-items__wrapper p { color: var(--hs-body); font-size: 16px; line-height: 1.4; }
+:is(cart-items-component, #cart-drawer) .cart-items__wrapper p a { color: var(--hs-ink); }
+
+/* each line in the cart is a paper card; the grid inside it stays Helio's */
+cart-items-component .cart-items tbody > .cart-items__table-row:not(.cart-items__nested-line) {
+  padding: 16px; margin-bottom: var(--hs-gap-md); border-bottom: 0;
+  background: var(--hs-paper); border-radius: var(--hs-radius-card); box-shadow: var(--hs-shadow-note);
+}
+cart-items-component .cart-items__title { font-family: var(--hs-sans); font-weight: 600; text-transform: none; color: var(--hs-ink); text-decoration: none; }
+cart-items-component .cart-items__price { font-family: var(--hs-sans); font-weight: 600; color: var(--hs-ink); }
+cart-items-component .cart-items__remove { color: var(--hs-ink); min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; }
+cart-items-component .quantity-selector { min-height: 44px; }
+cart-items-component .quantity-selector :is(button, input) { min-height: 44px; min-width: 44px; }
+cart-items-component .quantity-selector { border-radius: var(--hs-radius-field); border-color: var(--hs-line); background-color: var(--hs-white); }
+
+/* the brand's primary button: continue shopping and checkout */
+:is(cart-items-component, #cart-drawer, .cart-page) :is(.cart-items__empty-button, [name="checkout"]) {
+  min-height: var(--hs-button); border: 0; border-radius: var(--hs-radius-control); box-shadow: none;
+  background: var(--hs-ink); color: var(--hs-cream);
+  font-family: var(--hs-sans); font-size: 17px; font-weight: 600; line-height: 1; letter-spacing: normal; text-transform: none; text-decoration: none;
+}
+:is(cart-items-component, #cart-drawer, .cart-page) :is(.cart-items__empty-button, [name="checkout"]) :is(span, .button-text) { color: inherit; font: inherit; }
+:is(cart-items-component, #cart-drawer, .cart-page) :is(.cart-items__empty-button, [name="checkout"]):hover { background: var(--hs-night); color: var(--hs-cream); }
+:is(cart-items-component, #cart-drawer, .cart-page) [name="checkout"]:disabled { background: var(--hs-disabled); color: var(--hs-ink); cursor: default; }
+/* Shop Pay and the other express buttons take Shopify's own size and corner variables */
+:is(cart-items-component, #cart-drawer, .cart-page) {
+  --shopify-accelerated-checkout-button-block-size: var(--hs-button);
+  --shopify-accelerated-checkout-button-border-radius: var(--hs-radius-control);
+}
+
+/* ----------------------------------------------------------------- motion */
+@media (prefers-reduced-motion: no-preference) {
+  .hs-btn,
+  .hs-footer__links a,
+  .hs-lost__links a,
+  :is(cart-items-component, #cart-drawer, .cart-page) :is(.cart-items__empty-button, [name="checkout"]) {
+    transition: background-color 0.2s var(--hs-ease), text-decoration-color 0.2s var(--hs-ease);
+  }
+  /* Buddy's ear: a wiggle now and then on the small pages, on hover in the footer */
+  .hs-lost .hs-buddy__ear { animation: hs-ear 3.2s ease-in-out infinite; }
+  .hs-footer__buddy:hover .hs-buddy__ear { animation: hs-ear 1.6s ease-in-out 1; }
+  /* and a slow peek over the footer's rule as it scrolls into view, where browsers can */
+  @supports (animation-timeline: view()) {
+    .hs-footer__buddy .hs-buddy { animation: hs-peek linear both; animation-timeline: --hs-footer; animation-range: entry 0% entry 100%; }
+  }
+}
+@keyframes hs-ear { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(9deg); } 88% { transform: rotate(-4deg); } }
+@keyframes hs-peek { from { transform: translateY(72%); } to { transform: none; } }
+
+/* the empty cart: Buddy and one line (snippets/cart-products) */
+.hs-cart-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 8px 0 16px; text-align: center; }
+.hs-cart-empty__buddy { width: 96px; }
+.hs-cart-empty__line { margin: 0; font-family: "HS Fraunces", Georgia, serif; font-weight: 650; font-size: 22px; line-height: 1.2; color: var(--hs-ink, #121010); }
+@media (prefers-reduced-motion: no-preference) { .hs-cart-empty .hs-buddy__ear { animation: hs-ear 3.2s ease-in-out infinite; } }
+
+/* Helio's cart says "Taxes and shipping calculated at checkout." in its own markup; it stays hidden
+   until hs2.js replaces it with the true line (free US shipping), and stays hidden if the script
+   never runs, rather than showing the wrong promise */
+.cart-totals__tax-note:not([data-hs-note]) { visibility: hidden; }
+
+/* The Artist's touch is an add-on bought from the cart, never browsed: it stays published (so the
+   cart can add it) but is hidden from the catalog grid, the menu's featured products and search */
+li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive-search-results__card):has(a[href*="/products/artists-touch"]) { display: none !important; }

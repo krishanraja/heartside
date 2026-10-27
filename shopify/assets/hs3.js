@@ -1,11 +1,14 @@
 /* Heartside v3: gifts from your dog. Loaded (deferred) by sections/hs3-chat.liquid.
    The chat with Buddy, the reveal, choose gifts and the share card, from the approved
    prototype (design/prototype-v3/Main.dc.html) and docs/V3-GIFTS-FROM-YOUR-DOG.md.
-   Buddy's lines and every gift line for a chip answer are the prototype's, word for word.
    Chip answers never call the AI. "Something else" sends the typed words to Krish's n8n
    (two webhooks, section 5.4), which answers in the JSON of section 5.2 or not at all; any
    slow or failed call falls back to the buyer's own words, so the chat never waits long.
    State lives in sessionStorage ("hs3-gift"), so a reload or a product page loses nothing.
+   Every step has its own address (/?step=spot, 27 Oct), so Back, Forward and reload land
+   where the buyer expects; Back never erases an answer. The page scrolls like any page: no
+   zoom-to-fit and no locked body (Krish, 27 Oct). Gifts, prices and photos come from the
+   Shopify products the section picks.
    The photo stays on the device (IndexedDB, the same store hs2.js hands to Teeinblue).
    Never use import() here: Shopify's minifier breaks it (docs/HANDOFF.md 5a). */
 (function () {
@@ -20,17 +23,21 @@
   var COMPOSE_VERSION = 'explicit-tone-v1';
   var TYPED_MS = 5000, COMPOSE_MS = 11000; // 22 Oct: Gemini 3.5 Flash answers typed replies (about 3 s); Claude writes the note and n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
+  // the chat's steps in order, as they appear in the address (?step=)
+  var ROUTES = ['dog', 'person', 'home', 'home-more', 'spot', 'together', 'meaning', 'ready'];
+  var GIFT_ROUTE = { mug: 'mug', blanket: 'blanket', print: 'portrait', ornament: 'ornament' };
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   var root, frame, cfg = {}, S = load(), photoURL = null, timers = [];
-  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'note', mugTurned: false, toneStatus: '' };
+  var ui = { prefix: '', echo: '', thinking: false, typing: false, revealN: 0, editing: false, editKey: '', flagged: '', inked: {}, mugSide: 'right', mugTurned: false, toneStatus: '', view: '' };
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
     return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
       home: null, follow: null, spot: null, together: null, meaning: null,
       typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, toneCache: {}, composeRequest: null, composeBaseGift: null, appliedComposeKey: '', noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
-      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, photoStorageWarning: '', mugColor: '' };
+      sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, photoStorageWarning: '', mugColor: '',
+      more: false, composeStarted: false, answersChanged: false, returnTo: '', lastRoute: '', toy: '', accessory: '' };
   }
   function load() {
     var s = null;
@@ -40,6 +47,10 @@
     Object.keys(f).forEach(function (k) { if (!(k in s)) s[k] = f[k]; });
     // A reload cannot establish whether a dispatched request was billed or completed.
     if (s.composeRequest) s.composeRequest.status = 'uncertain';
+    // sessions from before steps had addresses: the home follow-up and the "Show me" screen
+    if (s.step === 3 && (s.fu || (s.home && s.home !== 'skip' && s.home !== 'typed' && !s.follow))) s.more = true;
+    if (s.step === 6 && s.meaning) s.step = 7;
+    if (s.composed || s.appliedComposeKey || s.composeRequest) s.composeStarted = true;
     return s;
   }
   function save() {
@@ -71,6 +82,7 @@
     try { r = window.HSBreeds.lookup(b); } catch (e) { r = null; }
     return r && r.exact ? { name: r.name, tone: r.tone } : null;
   }
+  function possessiveName(d) { return /s$/i.test(d) ? d + "'" : d + "'s"; }
   function dogFor() { var n = names(), d = { name: n.dog, pronoun: n.she }, b = breedInfo(); if (b) { d.breed = b.name; d.tone = b.tone; } return d; }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clearTimers() { timers.forEach(function (t) { clearTimeout(t); }); timers = []; }
@@ -88,9 +100,9 @@
      Every line for a chip answer, word for word from the prototype (lineFor, homeQ). */
   function homeQ(n) {
     return {
-      door: { q: 'At the door! Every day? Even weekends? (I would.)', chips: [['weekends', 'Even weekends'], ['weekdays', 'Weekdays'], ['hears', 'Hears the car first']] },
+      door: { q: 'At the door. Every day? Even weekends? (I would.)', chips: [['weekends', 'Even weekends'], ['weekdays', 'Weekdays'], ['hears', 'Hears the car first']] },
       toy: { q: 'Ooh, a toy. The same one every time?', chips: [['same', 'Same one, always'], ['closest', 'Whatever is closest'], ['shoe', 'A shoe, honestly']] },
-      spin: { q: 'Spins! How many circles are we talking?', chips: [['few', 'Two or three'], ['many', 'Too many to count'], ['dizzy', 'Until ' + n.she + ' is dizzy']] },
+      spin: { q: 'Spins. How many circles are we talking?', chips: [['few', 'Two or three'], ['many', 'Too many to count'], ['dizzy', 'Until ' + n.she + ' is dizzy']] },
       cool: { q: 'Plays it cool? I could never. And then?', chips: [['follows', 'Follows ' + n.rec + ' everywhere'], ['lap', 'Climbs onto ' + n.rec + "'s lap"], ['sighs', 'Sighs until ' + n.rec + ' looks']] }
     };
   }
@@ -108,10 +120,11 @@
   var ME = { shadow: "I'm your shadow, and I like it that way.", best: "You're my best friend, and I'm yours.", hard: "On the hard days, I'll stay close to you.", boss: 'I run this house, but I love you most.', skip: "I'm yours, always." };
   var REACT4 = { weekends: "Weekends too? That's a dog who knows what matters.", weekdays: 'Every weekday, like clockwork. I respect that.', hears: "Hearing the car first is a dog's best trick.", same: 'A signature toy is a very classy move.', closest: 'Any present counts when it comes from the heart.', shoe: 'A shoe is a perfectly good present, if you ask me.', few: 'A tasteful little spin, I like it.', many: "That's a full spin cycle, which is my kind of dog.", dizzy: 'Spinning until dizzy is real commitment.', follows: 'Too cool for about a second, then right behind them.', lap: 'The slow climb into the lap is a classic move.', sighs: "The big sigh works every time, doesn't it." };
   var REACT5 = { feet: 'A built-in foot warmer, how thoughtful.', bed: "Their side of the bed? Bold, and I'd do the same.", couch: 'The couch spot is sacred, every dog knows that.', anywhere: 'A true shadow, which is the best kind of dog.', skip: "That's okay, on we go." };
-  var REACT6 = { walk: 'Walks are the best part of the day for any dog.', coffee: 'Coffee time, and hopefully some toast for the dog.', movie: 'A couch and a movie sounds like the dream.', naps: "Naps together, now we're talking.", car: 'Car rides, with ears out the window I hope!', skip: 'No worries at all.' };
-  var GN = { mug: 'The Morning Mug', blanket: 'The Couch Blanket', print: 'The Framed Print', ornament: 'The Tree Ornament' };
-  var SHORT = { mug: 'Mug', blanket: 'Blanket', print: 'Print', ornament: 'Ornament' };
-  var DS = { mug: '11 oz ceramic, blush inside', blanket: '50 by 60 in sherpa, so soft', print: '12 by 18 in, black, white or oak frame', ornament: 'Ceramic, for the tree' };
+  var REACT6 = { walk: 'Walks are the best part of the day for any dog.', coffee: 'Coffee time, and hopefully some toast for the dog.', movie: 'A couch and a movie sounds like the dream.', naps: "Naps together, now we're talking.", car: 'Car rides, with ears out the window, I hope.', skip: 'No worries at all.' };
+  // the range as the brand book names it (27 Oct); prices and photos come from Shopify
+  var GN = { mug: 'The mug', blanket: 'The blanket', print: 'The portrait', ornament: 'The ornament' };
+  var SHORT = { mug: 'Mug', blanket: 'Blanket', print: 'Portrait', ornament: 'Ornament' };
+  var DS = { mug: '11 oz, illustrated, inside color of your choice', blanket: '50 × 60 in tan sherpa, illustration only', print: '12 × 18 in, unframed or framed', ornament: 'Ceramic, for the tree' };
   var CATCH = "I didn't quite catch that one. Try again, or pick one of these?";
 
   function lineFor(key) {
@@ -178,6 +191,8 @@
     return 'print';
   }
   function giftKeys(g) {
+    // the native gifts print one line, the meaning line, and the blanket prints no words (27 Oct)
+    if (cfg.artworkCandidates) return g === 'blanket' ? [] : ['meaning'];
     if (g === 'mug') return ['home', 'spot', 'meaning'];
     if (g === 'ornament') return ['meaning'];
     return ['home', 'spot', 'together', 'meaning'];
@@ -279,6 +294,8 @@
     return t.charAt(0).toUpperCase() + t.slice(1);
   }
   function clip(t, n) { t = String(t || ''); return t.length > n ? t.slice(0, n) : t; }
+  // what the AI says on screen keeps the brand's level punctuation; the n8n contract is unchanged
+  function level(t) { return String(t || '').replace(/!+/g, '.').replace(/\s*[\u2014\u2013]\s*/g, ', ').replace(/\.{2,}/g, '.').replace(/\?\./g, '?'); }
   var GRIEF = /\b(died|dead|death|passed away|put down|put to sleep|rainbow bridge|cancer|funeral|in heaven)\b/i;
   var PROFANE = /\b(fuck|shit|bitch|cunt|asshole|bastard|whore|slut)\w*/i;
   // the typed-answer call (5.2); resolves to { reaction, line, follow_up, flags } or a fallback
@@ -289,12 +306,12 @@
     return callAI(cfg.typedUrl, body, TYPED_MS).then(function (r) {
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
         return {
-          reaction: clip(r.reaction, 70), line: r.line ? dogStyle(r.line, key) || ownWords(chipStyle(text, key), key) || previous || '' : '',
+          reaction: clip(level(r.reaction), 70), line: r.line ? dogStyle(r.line, key) || ownWords(chipStyle(text, key), key) || previous || '' : '',
           follow_up: r.follow_up && r.follow_up.question ? {
-            question: clip(r.follow_up.question, 70),
-            chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(c, 24); }),
+            question: clip(level(r.follow_up.question), 70),
+            chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(level(c), 24); }),
             lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' ? dogStyle(l, 'home') || null : null; }),
-            replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? x : null; })
+            replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? level(x) : null; })
           } : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
         };
@@ -343,9 +360,17 @@
   }
   function composeKey(tone) { return JSON.stringify({ version: COMPOSE_VERSION, body: composeBody(tone) }); }
   function toneStatus() {
-    if (S.composeRequest) return S.composeRequest.status === 'pending' ? 'Updating your note. Your edits stay as written.' : 'Your update has not been confirmed. Your words are safe; please keep this page open. Another update is paused.';
+    if (S.composeRequest) return S.composeRequest.status === 'pending' ? 'Updating your note. Your edits stay as written.' : "Your words are safe. The last update didn't come back.";
     if (ui.toneStatus) return ui.toneStatus;
-    return S.appliedComposeKey === composeKey(S.noteTone) ? '' : 'Choose Update note to apply this tone. Your edits stay as written.';
+    if (S.appliedComposeKey === composeKey(S.noteTone)) return '';
+    return S.answersChanged ? 'Your answers changed. Choose Update note when you want a new version.' : 'Choose Update note to apply this tone. Your edits stay as written.';
+  }
+  /* A request that never came back holds further updates, because a reload cannot tell whether
+     it was billed. The buyer can let it go and keep the words on screen; nothing is sent. */
+  function keepWords() {
+    if (!S.composeRequest || S.composeRequest.status !== 'uncertain') return;
+    S.composeRequest = null; ui.toneStatus = 'Kept your words as they are.';
+    track('keep_words', {}); save(); render();
   }
   function selectTone(tone) {
     if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || tone === S.noteTone) return;
@@ -371,20 +396,22 @@
     if (frame) {
       var status = frame.querySelector('#hs3-tone-status');
       var button = frame.querySelector('[data-hs3="updateTone"]');
-      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Applies when you create the blanket artwork. No words are printed.' : toneStatus();
+      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Sets the mood of the painting. No words are printed.' : toneStatus();
       if (button) button.disabled = !!S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone);
-      fit();
     }
   }
   function applyComposed(result, tone, key, rewrite) {
     // User-owned edits always win in lineFor, including edits made during a request.
-    S.composed = result; S.appliedTone = tone; S.appliedComposeKey = key;
+    S.composed = result; S.appliedTone = tone; S.appliedComposeKey = key; S.answersChanged = false;
     if (!rewrite && result.gift && !S.tabbed && S.screen === 'reveal') S.gift = result.gift;
     ui.toneStatus = '';
   }
   function settleCompose(request, r) {
     if (!S.composeRequest || S.composeRequest.id !== request.id) return;
     if (!r) {
+      // the reveal's own first note: the chat's lines stay, the slider stays free, and nothing
+      // is said; a later Update note still counts against the call cap
+      if (request.auto) { S.composeRequest = null; save(); if (!ui.editing) render(); return; }
       S.composeRequest.status = 'uncertain'; save(); if (!ui.editing) render(); return;
     }
     var lines = {};
@@ -401,7 +428,7 @@
     }
     save(); if (!ui.editing) render();
   }
-  function compose(tone, rewrite) {
+  function compose(tone, rewrite, auto) {
     tone = tone || 'warm';
     if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || S.composeRequest) return;
     if (!S.baseLines) S.baseLines = allLines();
@@ -412,7 +439,7 @@
     if (!canCall(cfg.composeUrl)) { ui.toneStatus = 'Updates are unavailable right now. Your words are unchanged.'; render(); return; }
     var body = composeBody(tone);
     var id = sessionId() + '-note-' + (S.composeAsked = (S.composeAsked || 0) + 1);
-    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, status: 'pending' };
+    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, auto: !!auto, status: 'pending' };
     save();
     // Persist before dispatch. If storage is unavailable, a reload would defeat the guard.
     var persisted = false;
@@ -452,7 +479,12 @@
       req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= 3 * 864e5) st.delete(PHOTO); };
       return req;
     }).then(function (rec) {
-      if (rec && rec.file && S.hasPhoto && rec.t === S.photoT && Date.now() - rec.t < 3 * 864e5) usePhoto(rec.file, rec.t);
+      // a photo added on a product page is newer than the chat's; hs2 records its time, so the
+      // chat adopts it instead of forgetting the photo for the next gift (27 Oct review)
+      var bridgeT = 0;
+      try { bridgeT = Number((JSON.parse(window.sessionStorage.getItem(HS2) || '{}') || {}).hs3_photo_t) || 0; } catch (e) { bridgeT = 0; }
+      var fresh = rec && rec.file && Date.now() - rec.t < 3 * 864e5;
+      if (fresh && ((S.hasPhoto && rec.t === S.photoT) || (bridgeT && rec.t === bridgeT))) usePhoto(rec.file, rec.t);
       else { S.hasPhoto = false; S.photoT = 0; save(); }
     }).catch(function () { S.hasPhoto = false; S.photoT = 0; save(); });
   }
@@ -464,7 +496,7 @@
       status = document.createElement('p'); status.className = 'hs3-small';
       status.setAttribute('data-hs3-photo-storage', ''); status.setAttribute('role', 'status'); frame.appendChild(status);
     }
-    if (status) { status.hidden = !message; status.textContent = message || ''; fit(); }
+    if (status) { status.hidden = !message; status.textContent = message || ''; }
   }
   function attachPhoto(file) {
     var t = Math.max(Date.now(), (ui.photoSaving || S.photoT || 0) + 1);
@@ -485,6 +517,38 @@
       save(); photoStorageStatus();
     });
   }
+  /* The same on-device check the product page runs (hs-photo-quality.js): a photo that can't make
+     good artwork is turned away here, with the reason, before it is saved for the gifts. A dog the
+     detector missed can still be used ("It's my dog"); a warning keeps the photo. */
+  function checkPhoto(f, done) {
+    if (!window.HSPhotoQuality) { done(); return; }
+    photoNote('Checking your photo on your device.');
+    window.HSPhotoQuality.check(f, { timeout: 4000 }).then(function (r) {
+      var say = r.reasons.map(function (x) { return x.message; }).join(' ');
+      if (r.verdict === 'reject') {
+        track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+        photoNote(say, r.overridable ? function () { track('photo_override', {}); photoNote(''); done(); } : null);
+        return;
+      }
+      photoNote(r.verdict === 'warn' ? say : '');
+      done();
+    });
+  }
+  function photoNote(message, override) {
+    if (!frame) return;
+    var box = frame.querySelector('[data-hs3-photo-note]');
+    if (!box && message) {
+      box = document.createElement('div'); box.className = 'hs3-photo-note'; box.setAttribute('data-hs3-photo-note', '');
+      box.innerHTML = '<p class="hs3-small" role="alert"></p><button type="button" class="hs3-quiet" hidden>It\'s my dog. Use this photo.</button>';
+      var dock = frame.querySelector('.hs3-dock'); (dock || frame).appendChild(box);
+    }
+    if (!box) return;
+    box.hidden = !message;
+    box.querySelector('p').textContent = message || '';
+    var btn = box.querySelector('button');
+    btn.hidden = !override;
+    btn.onclick = override ? function () { btn.hidden = true; override(); } : null;
+  }
   // never a stranger's dog on the buyer's gift: no photo yet shows a paw placeholder
   function photoSrc() { return photoURL || ''; }
 
@@ -500,12 +564,17 @@
     st.hs3_lines = allLines();
     st.hs3_mug_lines = mugLines();
     st.hs3_copy_owner = Object.keys(S.edits || {}).some(function(k) { return S.edits[k] != null; }) ? 'user' : 'generated';
-    st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
+    // never clobber a newer photo the buyer added on a product page (27 Oct review)
+    if (S.hasPhoto) st.hs3_photo_t = S.photoT;
+    else if (!(Number(st.hs3_photo_t) > (S.photoT || 0))) st.hs3_photo_t = 0;
     var kinds = {};
     GIFTS.forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) kinds[x.handle] = g; });
     st.hs3_kinds = kinds;
     st.hs_answers = answerSummary();
     if (window.HSArtworkProfile) st.hs3_art_profile = window.HSArtworkProfile.fromChat(S);
+    // the breed's energy for the painting: pose and expression only, never shown and never a fact
+    st.hs3_energy = '';
+    try { if (S.breed && window.HSArtworkEngine && window.HSBreeds) st.hs3_energy = window.HSArtworkEngine.energyFor(window.HSBreeds.lookup(String(S.breed))) || ''; } catch (e) { /* unknown breed: no energy */ }
     if (cfg.artworkCandidates && window.HSArtworkChoices) st.hs3_art_choices = window.HSArtworkChoices.read();
     st.hs_ship_to = S.shipTo === 'me' ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
@@ -538,12 +607,119 @@
   function img(alt, cls) { var src = photoSrc(); return src ? '<img data-hs3-photo src="' + esc(src) + '" alt="' + esc(alt) + '" class="hs3-photo ' + (cls || '') + '">' : '<span class="hs3-photo hs3-photo--empty ' + (cls || '') + '">' + PAW + '</span>'; }
   function privacy() { var p = root.querySelector('[data-hs3-privacy]'); return p ? '<p class="hs3-privacy">' + esc(p.textContent) + '</p>' : ''; }
 
+  /* ------------------------------------------------------------------ the address
+     Each step is a real page: /?step=spot. render() writes it (push when the buyer moves on,
+     replace when restoring), Back and Forward re-apply it, and a reload lands on it. A step the
+     answers don't reach yet clamps back to the furthest one they do, so a shared or stale link
+     can never skip a question. Other query parameters (utm_*) ride along untouched. */
+  var nav = { route: '', depth: 0, replace: false };
+  function historyOK() {
+    return !!(window.history && typeof window.history.pushState === 'function' && window.location && !(window.Shopify && window.Shopify.designMode));
+  }
+  function routeOf() {
+    if (S.screen === 'hero') return 'hero';
+    if (S.screen === 'reveal') { var g = reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift(); return 'gift-' + GIFT_ROUTE[g]; }
+    if (S.screen === 'choose') return 'choose';
+    if (S.screen === 'share') return 'card';
+    if (S.step === 3) return S.more ? 'home-more' : 'home';
+    return ROUTES[[0, 0, 1, 2, 4, 5, 6, 7][S.step] || 0];
+  }
+  function routeOK(r) {
+    var chip = S.home && S.home !== 'skip' && S.home !== 'typed';
+    switch (r) {
+      case 'hero': case 'dog': return true;
+      case 'person': return !!String(S.dog).trim();
+      case 'home': return !!(String(S.dog).trim() && String(S.rec).trim());
+      case 'home-more': return routeOK('home') && !!(chip || S.fu);
+      case 'spot': return routeOK('home') && !!S.home && !S.fu;
+      case 'together': return routeOK('spot') && !!S.spot;
+      case 'meaning': return routeOK('together') && !!S.together;
+      default: return routeOK('meaning') && !!S.meaning; // ready, the gifts, choose and the card
+    }
+  }
+  function clampRoute(r) {
+    var giftKey = null;
+    Object.keys(GIFT_ROUTE).forEach(function (k) { if (r === 'gift-' + GIFT_ROUTE[k] && reviewGifts().indexOf(k) !== -1) giftKey = k; });
+    if (r !== 'hero' && r !== 'choose' && r !== 'card' && ROUTES.indexOf(r) === -1 && !giftKey) return 'hero';
+    if (routeOK(r)) return r;
+    for (var i = ROUTES.length - 1; i >= 0; i--) if (ROUTES.indexOf(r) === -1 || i < ROUTES.indexOf(r)) { if (routeOK(ROUTES[i])) return ROUTES[i]; }
+    return 'dog';
+  }
+  // the state a route shows; answers are never part of it
+  function routeFor(r) {
+    if (r === 'hero') return { screen: 'hero' };
+    if (r === 'choose') return { screen: 'choose' };
+    if (r === 'card') return { screen: 'share' };
+    if (r.indexOf('gift-') === 0) {
+      var g = recGift();
+      Object.keys(GIFT_ROUTE).forEach(function (k) { if ('gift-' + GIFT_ROUTE[k] === r) g = k; });
+      return { screen: 'reveal', gift: g };
+    }
+    var i = ROUTES.indexOf(r);
+    return { screen: 'chat', step: [1, 2, 3, 3, 4, 5, 6, 7][i] || 1, more: r === 'home-more' };
+  }
+  function prevRoute(r) {
+    if (r === 'card') return 'choose';
+    if (r === 'choose') return 'gift-' + GIFT_ROUTE[reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift()];
+    if (r.indexOf('gift-') === 0) return 'ready';
+    if (r === 'spot') return S.fu || (S.home && S.home !== 'skip' && S.home !== 'typed') ? 'home-more' : 'home';
+    var i = ROUTES.indexOf(r);
+    return i > 0 ? ROUTES[i - 1] : 'hero';
+  }
+  function urlFor(r) {
+    var u = new URL(window.location.href);
+    if (r === 'hero') u.searchParams.delete('step'); else u.searchParams.set('step', r);
+    ['hs3', 'gift', 'return'].forEach(function (k) { u.searchParams.delete(k); });
+    return u.pathname + u.search + u.hash;
+  }
+  function routeFromURL() {
+    var q = null;
+    try { q = new URLSearchParams(window.location.search); } catch (e) { return ''; }
+    return q.get('step') || '';
+  }
+  function writeHistory() {
+    if (!historyOK()) return;
+    var r = routeOf();
+    if (r === nav.route) return;
+    try {
+      if (!nav.route || nav.replace) window.history.replaceState({ hs3: r, depth: nav.depth }, '', urlFor(r));
+      else {
+        // remember where the buyer was on the page they leave, for Back
+        window.history.replaceState({ hs3: nav.route, depth: nav.depth, y: window.scrollY || 0 }, '');
+        nav.depth++;
+        window.history.pushState({ hs3: r, depth: nav.depth }, '', urlFor(r));
+      }
+    } catch (e) { /* a sandboxed frame can refuse */ }
+    nav.route = r; nav.replace = false;
+    // where "Pick up where you left off" returns to; saved now, since render runs after save
+    if (r !== 'hero' && S.lastRoute !== r) { S.lastRoute = r; save(); }
+  }
+  // show a route without touching any answer; replace keeps the browser's history as it is
+  function applyRoute(r, replace) {
+    var o = routeFor(clampRoute(r));
+    clearTimers();
+    ui.thinking = false; ui.typing = false; ui.flagged = ''; ui.prefix = ''; ui.echo = ''; ui.editing = false; ui.pending = null;
+    if (o.screen === 'reveal') ui.revealN = 9;
+    if (o.screen === 'chat' && o.step === 3 && o.more && S.fu && !(S.fu.chips && S.fu.chips.length)) ui.typing = true;
+    nav.replace = !!replace;
+    Object.keys(o).forEach(function (k) { S[k] = o[k]; });
+    save(); render();
+  }
+
   function render() {
     if (!frame) return;
     var keepToneFocus = document.activeElement && document.activeElement.hasAttribute('data-hs3-tone');
+    // a buyer working in the chat keeps their place: the control they pressed is about to be redrawn
+    var hadFocus = !!(document.activeElement && frame.contains(document.activeElement));
     var n = names();
+    writeHistory();
+    // animations play when a new view arrives, never on a re-render of the same one
+    var view = routeOf() + (ui.thinking ? ':t' : '') + (ui.typing ? ':y' : '') + (ui.editing ? ':e' : '');
+    frame.classList.toggle('is-new', view !== ui.view);
+    ui.view = view;
     frame.setAttribute('data-hs3-screen', S.screen);
     root.classList.toggle('hs3--app', S.screen !== 'hero');
+    document.documentElement.classList.remove('hs3-routed');
     if (S.screen === 'hero') { frame.innerHTML = heroHTML; bindHero(); return; }
     if (S.screen === 'chat') frame.innerHTML = chatView(n);
     else if (S.screen === 'reveal') frame.innerHTML = revealView(n);
@@ -551,51 +727,22 @@
     else if (S.screen === 'share') frame.innerHTML = shareView(n);
     photoStorageStatus();
     bind();
-    fit();
     if (keepToneFocus) { var tone = frame.querySelector('[data-hs3-tone]'); if (tone) tone.focus(); }
-  }
-
-  /* One screen, no scroll (Krish, 21 Oct): every screen fits the window under the header on
-     every device. hs3.css locks the page and gives each screen one flexible area (ART); this
-     sizes the frame to the window, scales that area's picture to the room it gets, and if the
-     rest still doesn't fit, zooms the screen's content down until it does. Not while the
-     keyboard is up: the browser moves the page to the field, and fit runs again on blur. */
-  var ART = { hero: '.hs3-hero__art > .hs3-mugwrap', chat: null, reveal: '.hs3-stage > *', choose: null, share: '.hs3-share__card > *' };
-  function typing_() { var a = document.activeElement; return !!(a && frame && frame.contains(a) && /^(INPUT|TEXTAREA)$/.test(a.tagName)); }
-  function fit() {
-    if (!frame || typing_()) return;
-    var de = document.documentElement;
-    try { window.scrollTo(0, 0); } catch (e) { /* old browser */ }
-    var top = frame.getBoundingClientRect().top;
-    de.style.setProperty('--hs3-h', Math.max(320, Math.floor(window.innerHeight - top)) + 'px');
-    var kids = Array.prototype.slice.call(frame.children);
-    kids.forEach(function (k) { k.style.zoom = ''; });
-    var sel = ART[frame.getAttribute('data-hs3-screen')], art = sel ? frame.querySelector(sel) : null;
-    var artFit = function () {
-      if (!art) return;
-      art.style.zoom = '';
-      var box = art.parentNode, cs = window.getComputedStyle(box);
-      var h = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-      var w = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      var z = Math.min(cfgZoom(art), h / (art.offsetHeight || 1), w / (art.offsetWidth || 1));
-      if (z > 0 && Math.abs(z - 1) > 0.01) art.style.zoom = Math.max(0.3, z).toFixed(3);
-    };
-    var fits = function (z) {
-      kids.forEach(function (k) { k.style.zoom = z === 1 ? '' : z.toFixed(3); });
-      artFit();
-      return frame.scrollHeight <= frame.clientHeight + 1;
-    };
-    // zoomed content also wraps less, so search for the largest zoom that fits
-    var z = 1;
-    if (!fits(1)) {
-      var lo = 0.4, hi = 1;
-      for (var i = 0; i < 7; i++) { var mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-      z = lo; fits(z);
+    // a new step: focus lands on Buddy's question (read once, so its live region steps aside),
+    // never on the page, so a screen reader hears the question and keyboard users carry on
+    else if (hadFocus && frame.classList.contains('is-new') && !frame.contains(document.activeElement)) {
+      var q = frame.querySelector('.hs3-bubble') || frame.querySelector('h1, h2');
+      if (q) { q.removeAttribute('aria-live'); q.setAttribute('tabindex', '-1'); try { q.focus({ preventScroll: true }); } catch (e) { q.focus(); } }
     }
-    frame.setAttribute('data-hs3-fit', z.toFixed(2));
   }
-  // the picture may grow up to this much on a roomy screen (the desktop reveal draws large)
-  function cfgZoom(art) { return art.closest('.hs3-stage') && window.innerWidth >= 1000 ? 1.35 : 1; }
+  // a new step starts where its top is in view; the header stays where it is
+  function toView() {
+    if (!frame || !frame.getBoundingClientRect) return;
+    var top = frame.getBoundingClientRect().top;
+    if (top < 0 || top > window.innerHeight * 0.4) {
+      try { frame.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' }); } catch (e) { /* old browser */ }
+    }
+  }
 
   // ---- the chat
   var chatQ = null; // the current question: { prefix, question, chips, skip, next, input }
@@ -603,43 +750,49 @@
     return !!(window.HSArtworkProfile && window.HSArtworkProfile.fromChat(S).facts.length);
   }
   function chatModel(n) {
-    var m = { prefix: ui.prefix, question: '', chips: [], skip: false, next: null, nextLabel: 'Next', input: null, other: false };
+    var m = { prefix: ui.prefix, question: '', chips: [], skip: false, next: null, nextLabel: 'Next', input: null, other: false, on: null };
     var step = S.step;
+    var answered = function (v) { if (v) { m.on = v; m.next = 'fwd'; } };
     if (step === 1) {
-      m.question = "Hi! I'm Buddy. I sniff out gifts from dogs to the people they love. Who's your dog?";
+      m.question = "Hi, I'm Buddy. I sniff out gifts from dogs to the people they love. Who's your dog?";
       m.input = 'dog'; m.next = 'dog'; m.nextLabel = "That's my dog";
     } else if (step === 2) {
-      m.prefix = m.prefix || n.dog + '! Great name. My tail is going.';
+      m.prefix = m.prefix || n.dog + '. Great name. My tail is going.';
       m.question = 'So who does ' + n.dog + ' love most?';
       m.input = 'rec'; m.next = 'rec';
     } else if (step === 3) {
-      if (S.fu) {
+      if (S.more && S.fu) {
         m.question = S.fu.question;
         m.chips = (S.fu.chips || []).map(function (c, i) { return { id: 'fu' + i, label: c }; });
         m.skip = true; m.other = true;
         if (!m.chips.length) ui.typing = true;
-      } else if (!S.home || S.home === 'skip' || S.home === 'typed') {
-        m.prefix = m.prefix || n.rec + '! Lucky human.';
-        m.question = 'What does ' + n.dog + ' do when ' + n.rec + ' comes home?';
-        m.chips = [['door', 'Waits at the door'], ['toy', 'Brings ' + n.rec + ' a toy'], ['spin', 'Spins in circles'], ['cool', 'Plays it cool']].map(function (c) { return { id: c[0], label: c[1] }; });
-        m.skip = true; m.other = true;
-      } else {
+      } else if (S.more && S.home && homeQ(n)[S.home]) {
         var fq = homeQ(n)[S.home];
         m.question = fq.q;
         m.chips = fq.chips.map(function (c) { return { id: c[0], label: c[1] }; });
+        answered(S.follow);
+      } else {
+        m.prefix = m.prefix || 'Lucky ' + n.rec + '.';
+        m.question = 'What does ' + n.dog + ' do when ' + n.rec + ' comes home?';
+        m.chips = [['door', 'Waits at the door'], ['toy', 'Brings ' + n.rec + ' a toy'], ['spin', 'Spins in circles'], ['cool', 'Plays it cool']].map(function (c) { return { id: c[0], label: c[1] }; });
+        m.skip = true; m.other = true;
+        answered(S.home);
       }
     } else if (step === 4) {
       m.question = "Where's " + n.dog + "'s spot when " + n.rec + "'s around?";
       m.chips = [['feet', 'On ' + n.rec + "'s feet"], ['bed', n.rec + "'s side of the bed"], ['couch', 'Next to ' + n.rec + ' on the couch'], ['anywhere', 'Wherever ' + n.rec + ' is']].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
+      answered(S.spot);
     } else if (step === 5) {
       m.question = 'What do ' + n.dog + ' and ' + n.rec + ' do together, just the two of them?';
       m.chips = [['walk', 'The morning walk'], ['coffee', 'Coffee time'], ['movie', 'Couch and a movie'], ['naps', 'Naps'], ['car', 'Car rides']].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
-    } else if (step === 6 && !S.meaning) {
+      answered(S.together);
+    } else if (step === 6) {
       m.question = 'Last one. What is ' + n.dog + ' to ' + n.rec + '?';
       m.chips = [['shadow', n.rec + "'s shadow"], ['best', n.rec + "'s best friend"], ['hard', 'There on the hard days'], ['boss', 'The boss of the house']].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
+      answered(S.meaning);
     } else {
       m.prefix = m.prefix || (S.meaning === 'skip' ? "That's plenty to go on." : 'Oh. That one got me right in the ears.');
       m.question = "I've sniffed it out. I know what " + n.dog + ' would get ' + n.rec + '.';
@@ -652,21 +805,38 @@
     if (ui.flagged) m.prefix = '';
     return m;
   }
+  // what the painting will draw on: the buyer's own answers, never the breed
+  function paintFacts() {
+    if (!window.HSArtworkProfile) return [];
+    try { return window.HSArtworkProfile.forBuyer(S); } catch (e) { return []; }
+  }
   function chatView(n) {
     var m = chatQ = chatModel(n);
     var dots = '';
     for (var i = 1; i <= 6; i++) dots += '<span class="hs3-dot' + (i <= S.step ? ' is-on' : '') + '"></span>';
-    var note = ['home', 'spot', 'together', 'meaning'].map(function (k) {
-      var t = ui.pending && ui.pending.key === k && ui.pending.line ? ui.pending.line : lineFor(k);
-      var fresh_ = t && ui.inked[k] !== t; if (t) ui.inked[k] = t;
-      return t ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(t) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>';
-    }).join('');
     var h = '';
     h += '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-dots" role="img" aria-label="Question ' + Math.min(S.step, 6) + ' of 6">' + dots + '</span><span class="hs3-count">' + Math.min(S.step, 6) + ' of 6</span></div>';
-    h += '<div class="hs3-note-wrap"><div class="hs3-label">' + esc(S.step >= 3 ? 'What ' + n.dog + ' wants ' + n.rec + ' to know' : 'What ' + n.dog + ' wants to say') + '</div>';
-    h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
-    h += '<div class="hs3-note__lines">' + note + '</div>' + sign(n) + '</div>';
-    h += '<div class="hs3-onany"><div class="hs3-small">At the end, put these words on any gift you like:</div>' + pills() + '</div></div>';
+    if (cfg.artworkCandidates) {
+      // the note shows what prints (one line and the signature); the rest of the answers feed the painting
+      var meaning = ui.pending && ui.pending.key === 'meaning' && ui.pending.line ? ui.pending.line : lineFor('meaning');
+      var fresh_ = meaning && ui.inked.meaning !== meaning; if (meaning) ui.inked.meaning = meaning;
+      var facts = paintFacts();
+      var open = ui.noteOpen == null ? window.innerWidth >= 1000 : ui.noteOpen;
+      h += '<details class="hs3-note-wrap"' + (open ? ' open' : '') + ' data-hs3-notebox><summary class="hs3-label">What ' + esc(n.dog) + ' is writing<span class="hs3-note-wrap__more" aria-hidden="true">' + (facts.length ? facts.length + ' to paint' : '') + '</span></summary>';
+      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
+      h += '<div class="hs3-note__lines">' + (meaning ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(meaning) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>') + '</div>' + sign(n) + '</div>';
+      h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is. Your answers add the details.</p>') + '</div></details>';
+    } else {
+      var note = ['home', 'spot', 'together', 'meaning'].map(function (k) {
+        var t = ui.pending && ui.pending.key === k && ui.pending.line ? ui.pending.line : lineFor(k);
+        var fresh2 = t && ui.inked[k] !== t; if (t) ui.inked[k] = t;
+        return t ? '<div class="hs3-line hs3-ink' + (fresh2 ? ' hs3-ink--new' : '') + '">' + esc(t) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>';
+      }).join('');
+      h += '<div class="hs3-note-wrap"><div class="hs3-label">' + esc(S.step >= 3 ? 'What ' + n.dog + ' wants ' + n.rec + ' to know' : 'What ' + n.dog + ' wants to say') + '</div>';
+      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
+      h += '<div class="hs3-note__lines">' + note + '</div>' + sign(n) + '</div>';
+      h += '<div class="hs3-onany"><div class="hs3-small">At the end, put these words on any gift you like:</div>' + pills() + '</div></div>';
+    }
     h += '<div class="hs3-talk">';
     if (ui.echo && !ui.thinking) h += '<div class="hs3-echo">' + esc(ui.echo) + '</div>';
     h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BUDDY + '</span>';
@@ -691,37 +861,49 @@
         h += '<label class="hs3-small" for="hs3-typed">In your own words</label><div class="hs3-row hs3-row--typed"><input id="hs3-typed" class="hs3-field" type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-hs3-in="typed"><button type="button" class="hs3-btn hs3-btn--small" data-hs3="send">Done</button></div>' + privacy();
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
       } else if (m.chips.length || m.other) {
-        h += '<div class="hs3-chips">' + m.chips.map(function (c) { return '<button type="button" class="hs3-chip" data-hs3="chip" data-v="' + esc(c.id) + '">' + esc(c.label) + '</button>'; }).join('');
-        if (m.other) h += '<button type="button" class="hs3-chip hs3-chip--other" data-hs3="other">Something else</button>';
+        // a step the buyer comes back to shows the answer they gave
+        h += '<div class="hs3-chips">' + m.chips.map(function (c) { var on = m.on === c.id; return '<button type="button" class="hs3-chip' + (on ? ' is-on' : '') + '" data-hs3="chip" data-v="' + esc(c.id) + '" aria-pressed="' + on + '">' + esc(c.label) + '</button>'; }).join('');
+        if (m.other) h += '<button type="button" class="hs3-chip hs3-chip--other' + (m.on === 'typed' ? ' is-on' : '') + '" data-hs3="other" aria-pressed="' + (m.on === 'typed') + '">Something else</button>';
         h += '</div>';
       }
       if (m.skip && (!ui.typing || S.fu)) h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="skip">Not sure</button></div>';
-      if (m.next) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+      if (S.step === 7 && cfg.artworkCandidates) {
+        // optional, typed as plain words with no AI step: they become facts the painting may use
+        var lim = (window.HSArtworkProfile && window.HSArtworkProfile.limits) || { toy: 80, accessory: 80 };
+        h += '<details class="hs3-extras"' + (S.toy || S.accessory ? ' open' : '') + '><summary>Anything I should paint with ' + esc(n.dog) + '? (optional)</summary>';
+        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="A squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
+        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="A red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
+      }
+      if (m.next && !ui.typing) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+      if (S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url && S.step > 1) h += '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>';
     }
     h += '</div>';
     return h;
   }
 
   // ---- the reveal
+  function toneView(n, wordFree) {
+    var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
+    var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
+    if (wordFree) return '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><p id="hs3-tone-status" class="hs3-tone__status" role="status">Sets the mood of the painting. No words are printed.</p></div>';
+    var status = toneStatus(), stuck = S.composeRequest && S.composeRequest.status === 'uncertain';
+    return '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p>' + (stuck ? '<button type="button" class="hs3-tone__button" data-hs3="keepWords">Keep these words</button>' : '<button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button>') + '</div></div>';
+  }
   function revealView(n) {
     var g = reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift();
     var wordFree = cfg.artworkCandidates && g === 'blanket';
     if (wordFree) ui.editing = false;
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toChat">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
     h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
     if (!ui.editing) {
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + reviewGifts().map(function (k) {
-        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : '') + '</span></button>';
+        var price = cfg.artworkCandidates ? priceLabel(k) : '';
+        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : esc(price)) + '</span></button>';
       }).join('') + '</div>';
-      var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
-      var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
-      var status = toneStatus();
       if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
-      if (wordFree) {
-        h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><p id="hs3-tone-status" class="hs3-tone__status" role="status">Applies when you create the blanket artwork. No words are printed.</p></div>';
-      } else h += '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p><button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button></div></div>';
+      h += toneView(n, wordFree);
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
@@ -730,41 +912,54 @@
       var editIndex = keys.indexOf(ui.editKey);
       if (editIndex < 0) { editIndex = 0; ui.editKey = keys[0]; }
       var editText = lineFor(ui.editKey) || '';
-      h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
+      if (keys.length > 1) h += '<div class="hs3-edit"><div class="hs3-edit__nav"><button type="button" class="hs3-edit__arrow" data-hs3="editPrev" aria-label="Previous sentence"' + (editIndex === 0 ? ' disabled' : '') + '>‹</button><span>Sentence ' + (editIndex + 1) + ' of ' + keys.length + '</span><button type="button" class="hs3-edit__arrow" data-hs3="editNext" aria-label="Next sentence"' + (editIndex === keys.length - 1 ? ' disabled' : '') + '>›</button></div>';
+      else h += '<div class="hs3-edit">';
       h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
       h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design made from your dog’s photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
     }
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p><button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button>' + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
+    var ret = S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url ? '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>' : '';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p>' + (ret && !ui.editing ? ret : '<button type="button" class="hs3-btn" data-hs3="them">Choose ' + esc(possessiveName(n.dog)) + ' gifts</button>') + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
     return h;
   }
+  /* The gift as it arrives: the real product photo (labelled Example, it is someone else's dog),
+     with the buyer's own photo beside it, the words that print on a paper note, and the details
+     the painting will use. The artwork itself is made on the product page, from the photo. */
+  function productStage(g, n) {
+    var photo = giftPhoto(g), src = photoSrc();
+    var h = '<figure class="hs3-product hs3-product--' + g + '"><span class="hs3-example">EXAMPLE</span>';
+    h += photo ? '<img class="hs3-product__img" src="' + esc(photo.src) + '" alt="' + esc(photo.alt) + '" width="800" height="800" decoding="async">' : '<span class="hs3-product__img hs3-product__img--none" aria-hidden="true">' + ICON[g] + '</span>';
+    h += '<span class="hs3-inset">' + (src ? '<img data-hs3-photo src="' + esc(src) + '" alt="Your photo of ' + esc(n.dog) + '" class="hs3-photo hs3-photo--inset">' : '<span class="hs3-photo hs3-photo--inset hs3-photo--empty">' + PAW + '</span>') + '<span class="hs3-inset__label">' + (src ? 'Your photo' : 'Your photo goes here') + '</span></span>';
+    if (g === 'mug' && giftPhoto('mug', ui.mugSide === 'left' ? 'right' : 'left')) h += '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>';
+    h += '</figure>';
+    if (g === 'blanket') h += '<p class="hs3-small hs3-center">Example design. Photo reference only: your word-free blanket is painted from your photo on the next step.</p>';
+    else h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.rec) + '</div><div class="hs3-note__lines"><span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor('meaning') || '') + '</span></div>' + sign(n) + '</div>';
+    // what gets painted: open on a wide screen, one tap away on a phone so the button stays in view
+    var facts = paintFacts();
+    h += '<details class="hs3-paint"' + (window.innerWidth >= 1000 ? ' open' : '') + '><summary class="hs3-label">What I\'ll paint' + (facts.length ? ' (' + facts.length + ')' : '') + '</summary>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is.</p>') + '</details>';
+    return h;
+  }
+  // a product photo for the gift from Shopify: the mug in the chosen color and side, the portrait's first example
+  function giftPhoto(g, side) {
+    var x = cfg.gifts && cfg.gifts[g];
+    if (!x) return null;
+    if (g === 'mug') {
+      var c = mugColor();
+      var s = side || (ui.mugSide === 'left' ? 'left' : 'right');
+      if (c && c[s]) return { src: c[s], alt: 'Example mug, ' + c.name.toLowerCase() + ' inside' };
+    }
+    return x.images && x.images[0] ? x.images[0] : null;
+  }
   function mockup(g, n, lines) {
+    if (cfg.artworkCandidates) return productStage(g, n);
     // laid out like the real print files (Cowork's fit test, 14 Oct): the name in normal case, signed with a paw
     if (g === 'mug') return mugFaces(n);
-    if (g === 'blanket' && cfg.artworkCandidates) return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Photo reference for your blanket', 'hs3-photo--blanket') + '</div></div><p class="hs3-small hs3-center">Photo reference only. Your word-free artwork is created on the product page.</p>';
     if (g === 'blanket') return '<div class="hs3-blanket"><div class="hs3-blanket__in">' + img('Your dog on the blanket', 'hs3-photo--blanket') + '<div class="hs3-blanket__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     if (g === 'print') return '<div class="hs3-print"><div class="hs3-print__in">' + img('Your dog on the print', 'hs3-photo--print') + '<div class="hs3-print__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
     return '<div class="hs3-orn"><span class="hs3-orn__string"></span><span class="hs3-orn__cap"></span><div class="hs3-orn__ball">' + img('Your dog on the ornament', 'hs3-photo--orn') + '<div class="hs3-orn__name">' + esc(n.dog) + '</div>' + lines + signUnder(n) + '</div></div>';
   }
-  /* The mug as it prints (mug v3, approved 15 Oct). The reveal draws it the way the approved
-     Shopify images were made (tools/realphoto/shopify_mug_images.py): the print file's face is
-     laid out at print size in the fonts Teeinblue prints with, then wrapped around the cylinder
-     of Printful's photo, so rows bow and narrow toward the edge and the glaze shading runs through
-     the ink. tools/preview/mockup-gate.mjs holds it to that render. The dog is on the face others
-     see (handle left) and the note on the drinker's face (handle right). A phone can't show both
-     faces side by side at a readable size, so the mug turns. Teeinblue removes the photo's
-     background on the product page; here the photo sits whole, with soft edges. If a browser
-     can't draw it, the flat layout underneath shows instead. */
-  // RIM_TOP and RIM_BOT: how far a row rises at the mug's edge, at the top and the bottom of the
-  // print. Measured from Printful's photo (15 Oct): the rim's front edge sags 18 px and the base
-  // 59 px (700 px photo), so lower rows curve about three times as much, as in any photo taken
-  // from slightly above. One constant for every row looked flat and tilted (Krish, 15 Oct).
-  var MUG = { W: 2700, H: 1050, RPX: 487.5, R: 330, TOP: 260.5714, BAND: 742.2857, RIM_TOP: 34.0171, RIM_BOT: 97.9695, Y0: 150, CROP: 1060, OUT: 640, OUTH: 549, DS: 0.5,
-    dog: { cx: 726, x0: 80, centre: 585 }, note: { cx: 472.2857, x0: 60, centre: 2115 } };
-  var mugCache = {}, mugAssets = {}, mugPhoto = { src: '', p: null };
-  /* The mug's colors (inside and handle), one Shopify variant each, Black first (Krish, 19 Oct,
-     after Mowgli's pink mug). The section lists only the colors the product has, with each
-     one's variant and its recolored photo layers (tools/realphoto/recolor_mug.py). */
+  /* The mug's colors (inside and handle), one Shopify variant each, Black first (Krish, 19 Oct),
+     each with its handle-left and handle-right product photos (matched by alt text in the section). */
   function mugColors() { return (cfg.mug && cfg.mug.colors) || []; }
   function mugColor() {
     var cs = mugColors();
@@ -787,256 +982,103 @@
     track('mug_color', { color: v });
   }
   function mugLineTexts() { return giftKeys('mug').map(function (k) { return evenBreak(lineFor(k) || ''); }); }
+  // the earlier word-mug layout, for the legacy (non-candidate) reveal: the product photo with the words beside it
   function mugFaces(n) {
-    var m = cfg.mug || {}, c = mugColor() || {}, side = ui.mugSide === 'dog' ? 'dog' : 'note', src = photoSrc(), texts = mugLineTexts();
-    var layer = function (url, cls) { return url ? '<img src="' + esc(url) + '" alt="" width="640" height="549" class="' + cls + '">' : ''; };
-    var canvas = function (face, label) { return '<canvas class="hs3-mugface__canvas" width="' + MUG.OUT + '" height="' + MUG.OUTH + '" data-hs3-mug="' + face + '" role="img" aria-label="' + esc(label) + '"></canvas>'; };
-    var dog = src ? '<img data-hs3-photo src="' + esc(src) + '" alt="" class="hs3-mugface__dog">' : '<span class="hs3-mugface__nodog">' + PAW + '</span>';
-    var lines = texts.map(function (t, i) {
-      return '<span class="hs3-line hs3-mugface__line hs3-mugface__line--' + (i + 1) + ' ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(t) + '</span>';
-    }).join('');
-    var h = '<div class="hs3-mugwrap"><div class="hs3-mugs" data-side="' + side + '">';
-    h += '<div class="hs3-mugface hs3-mugface--dog"' + (side === 'dog' ? '' : ' aria-hidden="true"') + '>' + layer(c.dog || m.dog, 'hs3-mugface__base') + layer(m.dogShade, 'hs3-mugface__shade');
-    h += '<span class="hs3-mugface__flat" aria-hidden="true"><span class="hs3-mugface__photo">' + dog + '</span></span>' + canvas('dog', src ? n.dog + ' on the mug' : "Your dog's photo goes here") + '</div>';
-    h += '<div class="hs3-mugface hs3-mugface--note"' + (side === 'note' ? '' : ' aria-hidden="true"') + '>' + layer(c.note || m.note, 'hs3-mugface__base') + layer(m.noteShade, 'hs3-mugface__shade');
-    h += '<span class="hs3-mugface__flat" aria-hidden="true">' + lines + '<span class="hs3-mugface__sign">' + PAW + '<span>Love, ' + esc(n.dog) + '</span></span></span>' + canvas('note', texts.join(' ').replace(/\n/g, ' ') + ' Love, ' + n.dog) + '</div>';
-    h += '</div>' + (ui.editing ? '' : '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>') + '</div>';
-    return h;
-  }
-  function loadImg(src) {
-    return new Promise(function (resolve, reject) { var i = new Image(); i.onload = function () { resolve(i); }; i.onerror = reject; i.src = src; });
-  }
-  function loadMugAssets(color) {
-    var c = color || mugColor() || {}, key = c.name || '';
-    if (mugAssets[key]) return mugAssets[key];
-    var m = cfg.mug || {};
-    var font = function (name, url) {
-      if (!window.FontFace || !document.fonts || !url) return Promise.reject(new Error('no font'));
-      return new window.FontFace(name, 'url(' + url + ')').load().then(function (f) { document.fonts.add(f); });
-    };
-    var p = Promise.all([loadImg(c.dog || m.dog), loadImg(m.dogShade), loadImg(c.note || m.note), loadImg(m.noteShade), loadImg(m.paw), font('HS Note Text', m.fontText), font('HS Note Italic', m.fontItalic)])
-      .then(function (r) { return { dog: { base: r[0], shade: r[1] }, note: { base: r[2], shade: r[3] }, paw: r[4] }; });
-    mugAssets[key] = p;
-    p.catch(function () { delete mugAssets[key]; });
-    return p;
-  }
-  function mugKey(face) {
-    var c = (mugColor() || {}).name || '';
-    if (face === 'dog') return c + '|dog|' + photoSrc();
-    return c + '|note|' + JSON.stringify([mugLineTexts(), Math.min(ui.revealN, 3), names().dog]);
-  }
-  // the note face at print size: lines 1 to 3 (58 px, 70 px rows, centred in 190 px boxes),
-  // the paw, and "Love, [dog]" (96 px, shrunk to fit 775 px as Teeinblue does)
-  function drawNote(d, a, spec) {
-    var texts = spec.texts, ink = spec.ink, sig = 'Love, ' + spec.name;
-    d.textBaseline = 'alphabetic';
-    d.font = NOTE_PX + 'px "HS Note Text"';
-    [130, 345, 560].forEach(function (top, i) {
-      var rows = String(texts[i] || '').split('\n');
-      d.fillStyle = i < ink ? '#121010' : '#CDC2B9';
-      rows.forEach(function (r, j) { d.fillText(r, 1685, top + 95 + (j - (rows.length - 1) / 2) * NOTE_LH + 22); });
-    });
-    d.drawImage(a.paw, 1685, 833, 72, 69);
-    var size = 96;
-    d.font = '96px "HS Note Italic"';
-    var w = d.measureText(sig).width;
-    if (w > 775) { size = 96 * 775 / w; d.font = size.toFixed(2) + 'px "HS Note Italic"'; }
-    d.fillStyle = '#8A4A2B';
-    d.fillText(sig, 1774, 855 + 34 * size / 96); // Teeinblue sets it 4 px into its box at 1770
-  }
-  // the dog face: the photo layer (900 x 1000 at 135, 50), fitted whole ("Contain"), soft edges
-  function drawDog(d, a, photo) {
-    var L = 135, T = 50, BW = 900, BH = 1000;
-    if (!photo) { d.globalAlpha = 0.2; d.drawImage(a.paw, L + BW / 2 - 150, T + BH / 2 - 144, 300, 288); d.globalAlpha = 1; return; }
-    var s = Math.min(BW / photo.width, BH / photo.height), w = photo.width * s, h = photo.height * s;
-    var tmp = document.createElement('canvas');
-    tmp.width = Math.max(1, Math.round(w * MUG.DS)); tmp.height = Math.max(1, Math.round(h * MUG.DS));
-    var t = tmp.getContext('2d');
-    t.drawImage(photo, 0, 0, tmp.width, tmp.height);
-    t.globalCompositeOperation = 'destination-in';
-    var fade = function (g, stops) { stops.forEach(function (st) { g.addColorStop(st[0], st[1] ? '#000' : 'rgba(0,0,0,0)'); }); return g; };
-    t.fillStyle = fade(t.createLinearGradient(0, 0, tmp.width, 0), [[0, 0], [0.1, 1], [0.9, 1], [1, 0]]); t.fillRect(0, 0, tmp.width, tmp.height);
-    t.fillStyle = fade(t.createLinearGradient(0, 0, 0, tmp.height), [[0, 0], [0.08, 1], [0.84, 1], [1, 0]]); t.fillRect(0, 0, tmp.width, tmp.height);
-    d.drawImage(tmp, L + (BW - w) / 2, T + (BH - h) / 2, w, h);
-  }
-  // wrap the print-size design around the mug in the photo: arcsin mapping, each row's curve
-  // growing from the rim to the base, edge fade, shading and glaze (golden_reveal_mug.py is the
-  // same in Python), 2 x 2 samples per pixel
-  function wrapOnto(base, design, g) {
-    var bd = base.data, dd = design.data, BW = base.width, BH = base.height, DW = design.width, DH = design.height;
-    var k = MUG.OUT / MUG.CROP, s = MUG.DS, sub = [0.25, 0.75], dA = MUG.RIM_BOT - MUG.RIM_TOP;
-    for (var x = 0; x < BW; x++) {
-      var cols = [];
-      for (var i = 0; i < 2; i++) {
-        var t = ((x + sub[i]) / k + g.x0 - g.cx) / MUG.R;
-        if (Math.abs(t) >= 0.995) continue;
-        var u = (g.centre + Math.asin(t) * MUG.RPX) * s;
-        if (u < 0 || u >= DW - 1) continue;
-        var cv = 1 - Math.sqrt(1 - t * t);
-        // a print row v sits at y = TOP + v/H * BAND - (RIM_TOP + dA * v/H) * cv; solved for v
-        cols.push(u, MUG.TOP - MUG.RIM_TOP * cv, MUG.H * s / (MUG.BAND - dA * cv), Math.min(1, (0.995 - Math.abs(t)) / 0.07));
-      }
-      if (!cols.length) continue;
-      for (var y = 0; y < BH; y++) {
-        var pr = 0, pg = 0, pb = 0, pa = 0;
-        for (var c = 0; c < cols.length; c += 4) {
-          for (var j = 0; j < 2; j++) {
-            var v = ((y + sub[j]) / k + MUG.Y0 - cols[c + 1]) * cols[c + 2];
-            if (v < 0 || v >= DH - 1) continue;
-            var u0 = cols[c] | 0, v0 = v | 0, fx = cols[c] - u0, fy = v - v0;
-            var p = (v0 * DW + u0) * 4, q = p + DW * 4;
-            var w0 = (1 - fx) * (1 - fy), w1 = fx * (1 - fy), w2 = (1 - fx) * fy, w3 = fx * fy;
-            var a0 = dd[p + 3] * w0, a1 = dd[p + 7] * w1, a2 = dd[q + 3] * w2, a3 = dd[q + 7] * w3, lim = cols[c + 3] / 255;
-            pr += (dd[p] * a0 + dd[p + 4] * a1 + dd[q] * a2 + dd[q + 4] * a3) * lim;
-            pg += (dd[p + 1] * a0 + dd[p + 5] * a1 + dd[q + 1] * a2 + dd[q + 5] * a3) * lim;
-            pb += (dd[p + 2] * a0 + dd[p + 6] * a1 + dd[q + 2] * a2 + dd[q + 6] * a3) * lim;
-            pa += (a0 + a1 + a2 + a3) * lim;
-          }
-        }
-        if (pa <= 0) continue;
-        var A = pa / 4, o = (y * BW + x) * 4, lum = (bd[o] + bd[o + 1] + bd[o + 2]) / 3;
-        var shade = Math.pow(Math.min(Math.max(lum / 250, 0), 1.05), 1.15), spec = Math.min(Math.max((lum - 246) / 9, 0), 1) * 0.35;
-        for (var ch = 0; ch < 3; ch++) {
-          var col = (ch === 0 ? pr : ch === 1 ? pg : pb) / pa * shade, out = bd[o + ch] * (1 - A) + col * A;
-          if (A > 0.01) out = out * (1 - spec) + 255 * spec;
-          bd[o + ch] = out;
-        }
-      }
-    }
-  }
-  // spec (for tools/preview/mockup-gate.mjs): { texts, ink, name } for the note, or { print }, a
-  // whole 2700 x 1050 print file to wrap as it is; otherwise the buyer's own words and photo
-  function renderFace(face, a, photo, spec) {
-    spec = spec || { texts: mugLineTexts(), ink: Math.min(ui.revealN, 3), name: names().dog };
-    var bg = document.createElement('canvas');
-    bg.width = MUG.OUT; bg.height = MUG.OUTH;
-    var b = bg.getContext('2d');
-    b.drawImage(a[face].base, 0, 0, MUG.OUT, MUG.OUTH);
-    b.drawImage(a[face].shade, 0, 0, MUG.OUT, MUG.OUTH);
-    var dz = document.createElement('canvas');
-    dz.width = Math.round(MUG.W * MUG.DS); dz.height = Math.round(MUG.H * MUG.DS);
-    var d = dz.getContext('2d');
-    d.scale(MUG.DS, MUG.DS);
-    if (spec.print) d.drawImage(spec.print, 0, 0, MUG.W, MUG.H);
-    else if (face === 'note') drawNote(d, a, spec);
-    else drawDog(d, a, photo);
-    var base = b.getImageData(0, 0, MUG.OUT, MUG.OUTH);
-    wrapOnto(base, d.getImageData(0, 0, dz.width, dz.height), MUG[face]);
-    b.putImageData(base, 0, 0);
-    return bg;
-  }
-  // the first screen's example mug: the same real-photo mug as the reveal, with Teeinblue's sample
-  // dog and the dog's own words (the chip lines), turning between the dog's face and the note
-  var HERO_MUG = { texts: [H.door.weekends, SP.bed, ME.shadow], name: 'Kuku' };
-  function heroMug() {
-    var box = frame && frame.querySelector('[data-hs3-hero-mug]'), m = cfg.mug || {};
-    if (!box || !m.sample) return;
-    Promise.all([loadMugAssets(mugColors()[0]), loadImg(m.sample)]).then(function (r) {
-      var spec = { texts: HERO_MUG.texts.map(evenBreak), ink: 3, name: HERO_MUG.name };
-      box.querySelectorAll('canvas[data-hs3-heromug]').forEach(function (c) {
-        var face = c.getAttribute('data-hs3-heromug');
-        c.getContext('2d').drawImage(renderFace(face, r[0], face === 'dog' ? r[1] : null, spec), 0, 0);
-        c.classList.add('is-drawn');
-      });
-      var mugs = box.querySelector('.hs3-mugs');
-      if (reduced) { mugs.setAttribute('data-side', 'note'); return; }
-      clearInterval(heroMug.t);
-      heroMug.t = setInterval(function () {
-        if (!mugs.isConnected) { clearInterval(heroMug.t); return; }
-        mugs.setAttribute('data-side', mugs.getAttribute('data-side') === 'dog' ? 'note' : 'dog');
-      }, 3200);
-    }).catch(function () { /* the plain mug photo stays */ });
-  }
-  function paintMugs() {
-    var cvs = frame ? Array.prototype.slice.call(frame.querySelectorAll('canvas[data-hs3-mug]')) : [];
-    if (!cvs.length) return;
-    var src = photoSrc();
-    if (src && mugPhoto.src !== src) mugPhoto = { src: src, p: loadImg(src) };
-    Promise.all([loadMugAssets(), src ? mugPhoto.p : null]).then(function (r) {
-      cvs.forEach(function (c) {
-        if (!c.isConnected) return;
-        var face = c.getAttribute('data-hs3-mug'), key = mugKey(face);
-        if (!mugCache[key]) { if (Object.keys(mugCache).length > 16) mugCache = {}; mugCache[key] = renderFace(face, r[0], r[1]); }
-        var x = c.getContext('2d');
-        x.clearRect(0, 0, c.width, c.height);
-        x.drawImage(mugCache[key], 0, 0);
-        c.classList.add('is-drawn');
-      });
-    }).catch(function () { var m = frame && frame.querySelector('.hs3-mugs'); if (m) m.classList.add('is-flat'); });
+    var photo = giftPhoto('mug');
+    var lines = mugLineTexts().map(function (t, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(t.replace(/\n/g, ' ')) + '</span>'; }).join('');
+    return '<div class="hs3-mugwrap">' + (photo ? '<img class="hs3-product__img" src="' + esc(photo.src) + '" alt="' + esc(photo.alt) + '">' : '') + '<div class="hs3-note">' + lines + sign(n) + '</div></div>';
   }
   function turnMug(side) {
-    ui.mugSide = side;
-    var m = frame && frame.querySelector('.hs3-mugs');
-    if (!m) return;
-    m.setAttribute('data-side', side);
-    var dog = m.querySelector('.hs3-mugface--dog'), note = m.querySelector('.hs3-mugface--note');
-    if (side === 'dog') { dog.removeAttribute('aria-hidden'); note.setAttribute('aria-hidden', 'true'); } else { note.removeAttribute('aria-hidden'); dog.setAttribute('aria-hidden', 'true'); }
+    ui.mugSide = side === 'left' ? 'left' : 'right';
+    var im = frame && frame.querySelector('.hs3-product--mug .hs3-product__img'), photo = giftPhoto('mug');
+    if (im && photo) { im.src = photo.src; im.alt = photo.alt; }
   }
   function startReveal(g) {
     clearTimers();
-    ui.editing = false; ui.revealN = reduced ? 9 : 0;
-    // the mug opens on the buyer's dog, then turns to the note; with no photo yet, on the note
-    var turn = g === 'mug' && !reduced && !!photoSrc();
-    ui.mugSide = turn ? 'dog' : 'note'; ui.mugTurned = false;
-    S.screen = 'reveal'; S.gift = g; save(); render();
+    ui.editing = false; ui.revealN = reduced ? 9 : 0; ui.mugSide = 'right'; ui.mugTurned = false;
+    S.screen = 'reveal'; S.gift = g; save(); render(); toView();
     if (reduced) return;
-    var lag = turn ? 1400 : 0;
-    if (turn) later(function () { if (!ui.mugTurned) turnMug('note'); }, lag - 250);
-    var k = giftKeys(g).length;
-    for (var i = 1; i <= k; i++) (function (x) { later(function () { ui.revealN = x; inkLines(); }, lag + 450 + x * 650); })(i);
+    var k = Math.max(1, giftKeys(g).length);
+    for (var i = 1; i <= k; i++) (function (x) { later(function () { ui.revealN = x; inkLines(); }, 450 + x * 650); })(i);
   }
   function inkLines() {
     frame.querySelectorAll('.hs3-stage .hs3-line').forEach(function (el, i) { if (i < ui.revealN && !el.classList.contains('hs3-ink')) { el.classList.remove('hs3-pencil'); el.classList.add('hs3-ink', 'hs3-ink--new'); } });
-    paintMugs();
   }
 
   // ---- choose gifts
+  // prices come from the Shopify products the section picks; a gift without one shows no price
   function priceOf(k, others) {
-    var p = Number(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].price) || ({ mug: 29, blanket: 89, print: 89, ornament: 24 })[k];
+    var p = Number(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].price) || 0;
     if (k === 'ornament' && cfg.ornamentBundle && others > 0) p = Math.max(0, p - 5);
     return p;
+  }
+  function priceLabel(k) {
+    var x = cfg.gifts && cfg.gifts[k], p = priceOf(k, 0);
+    if (!p) return '';
+    return x && Number(x.priceMax) > p ? 'From ' + fmt(p) : fmt(p);
   }
   function fmt(p) { return '$' + (Math.round(p * 100) % 100 ? p.toFixed(2) : String(Math.round(p))); }
   function reviewGifts() { return cfg.artworkCandidates ? GIFTS.filter(function (k) { return k !== 'ornament'; }) : GIFTS; }
   function blanketPurchaseEnabled() { return !!(cfg.artworkCandidates && (cfg.blanketPurchase || cfg.corePurchase) && cfg.gifts && cfg.gifts.blanket && cfg.gifts.blanket.url); }
   function giftPurchasable(k) { return !!(cfg.artworkCandidates && cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url && (cfg.corePurchase && ['mug', 'blanket', 'print'].indexOf(k) !== -1 || k === 'blanket' && blanketPurchaseEnabled())); }
+  // several gifts go through together once each has its own native page (27 Oct); the paused
+  // blanket-only route still takes one at a time, so a draft never sits in the cart queue
+  function multiOK() { return !cfg.artworkCandidates || !!cfg.corePurchase || !blanketPurchaseEnabled(); }
   function selectedGifts() {
     var selected = reviewGifts().filter(function (k) { return S.sel[k]; });
-    // A draft cannot complete the cart step used by the multi-gift queue.
+    if (multiOK()) return selected;
     // Restored mixed selections display the purchasable blanket as the one choice.
-    return blanketPurchaseEnabled() ? selected.indexOf('blanket') !== -1 ? ['blanket'] : selected.slice(0, 1) : selected;
+    return selected.indexOf('blanket') !== -1 ? ['blanket'] : selected.slice(0, 1);
   }
   function selectGift(k, forceOn) {
     var on = !!forceOn || selectedGifts().indexOf(k) === -1;
-    if (blanketPurchaseEnabled()) S.sel = {};
+    if (!multiOK()) S.sel = {};
     S.sel[k] = on;
+  }
+  // the bundle (Krish, 27 Oct): 15% off two gifts, 20% off three, shown only once the real
+  // automatic discount exists (bundle_offer_live); the cart shows the saving Shopify applies
+  function bundleTier(count) { return !cfg.bundleOffer ? 0 : count >= 3 ? 20 : count === 2 ? 15 : 0; }
+  function daysToChristmas() {
+    var now = new Date(), day = 864e5, xmas = new Date(now.getFullYear(), 11, 25);
+    var d = Math.floor((xmas - now) / day); // whole days, as the product pages count them
+    return d > 0 && d <= 75 ? d : 0;
   }
   function chooseModel() {
     var others = ['mug', 'blanket', 'print'].filter(function (k) { return S.sel[k]; }).length;
     var selected = selectedGifts(), count = selected.length;
     var total = selected.reduce(function (a, k) { return a + priceOf(k, others); }, 0);
     var missing = selected.filter(function (k) { return !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
-    return { others: others, count: count, total: total, missing: missing };
+    var range = selected.some(function (k) { return Number(cfg.gifts[k] && cfg.gifts[k].priceMax) > priceOf(k, 0); });
+    return { others: others, count: count, total: total, missing: missing, tier: bundleTier(count), range: range };
+  }
+  function giftDesc(k) {
+    if (k === 'mug' && mugColor()) return '11 oz, illustrated, ' + mugColor().name.toLowerCase() + ' inside';
+    if (k === 'print' && cfg.gifts && cfg.gifts.print && Number(cfg.gifts.print.priceMax) > priceOf('print', 0)) return '12 × 18 in. Unframed ' + fmt(priceOf('print', 0)) + ', framed ' + fmt(Number(cfg.gifts.print.priceMax));
+    if (k === 'ornament') return cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : DS.ornament;
+    return DS[k];
   }
   function chooseView(n) {
-    var pick = recGift(), c = chooseModel();
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="toReveal">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (cfg.corePurchase ? 'Choose one gift to personalize. Your photo and answers carry over.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
-    h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('home') || lineFor('meaning') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
+    var pick = recGift(), c = chooseModel(), core = cfg.artworkCandidates && cfg.corePurchase;
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-brand">Heartside</span><span class="hs3-spacer"></span></div>';
+    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
+    if (core && cfg.bundleOffer) h += '<p class="hs3-bundle' + (c.tier ? ' is-on' : '') + '" role="status">' + (c.tier ? c.count + ' gifts: ' + c.tier + '% off, taken at checkout.' : c.count === 1 ? 'Add a second gift and save 15%. Three saves 20%.' : 'Give two, save 15%. Give three, save 20%.') + '</p>';
+    h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('meaning') || lineFor('home') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
     h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
-      var on = selectedGifts().indexOf(k) !== -1;
-      var desc = k === 'mug' && mugColor() ? '11 oz ceramic, ' + mugColor().name.toLowerCase() + ' inside' : k === 'ornament' ? (cfg.ornamentBundle ? 'For the tree. ' + fmt(priceOf('ornament', 1)) + ' with another gift' : 'Ceramic, for the tree') : DS[k];
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span><span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(desc) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : fmt(priceOf(k, c.others))) + '</span></button>';
+      var on = selectedGifts().indexOf(k) !== -1, photo = cfg.artworkCandidates ? giftPhoto(k) : null;
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (photo ? '<img class="hs3-opt__img" src="' + esc(photo.src) + '" alt="" width="64" height="64" loading="lazy">' : '') + '<span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(giftDesc(k)) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : esc(priceLabel(k))) + '</span></button>';
     }).join('') + '</div>';
     if (selectedGifts().indexOf('mug') !== -1) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
     // Publish an order-by date only after Printful confirms the current year's cutoff for
     // every selected variant and fulfillment route, including any gift bundle.
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">' + (blanketPurchaseEnabled() ? 'Delivery details appear on the product page.' : 'Free US shipping.') + ' A person checks every order before it prints.</p>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping on every order. A person checks every design before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
-    if (cfg.artworkCandidates) label = c.count ? 'Review selected drafts' : 'Pick a draft';
-    if (blanketPurchaseEnabled()) label = !c.count ? 'Pick a gift or draft' : giftPurchasable(selectedGifts()[0]) ? 'Personalize ' + {mug:'mug',blanket:'blanket',print:'portrait'}[selectedGifts()[0]] + ' · ' + fmt(priceOf(selectedGifts()[0], c.others)) : 'Review draft';
+    if (core && c.count) label = c.count === 1 ? 'Personalize the ' + SHORT[selectedGifts()[0]].toLowerCase() + ' · ' + priceLabel(selectedGifts()[0]) : 'Personalize ' + c.count + ' gifts · ' + (c.range ? 'from ' : '') + fmt(c.total);
+    else if (cfg.artworkCandidates && !blanketPurchaseEnabled()) label = c.count ? 'Review selected drafts' : 'Pick a draft';
+    else if (cfg.artworkCandidates) label = !c.count ? 'Pick a gift or draft' : giftPurchasable(selectedGifts()[0]) ? 'Personalize ' + {mug:'mug',blanket:'blanket',print:'portrait'}[selectedGifts()[0]] + ' · ' + fmt(priceOf(selectedGifts()[0], c.others)) : 'Review draft';
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
+    var days = daysToChristmas();
+    if (days && core) h += '<p class="hs3-small hs3-center hs3-countdown">' + days + (days === 1 ? ' day' : ' days') + ' to Christmas morning. Made to order, checked by a person, then shipped.</p>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
     h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
     return h;
@@ -1048,19 +1090,20 @@
     // the mug opens on the color picked here; Teeinblue follows the variant in the link
     var mc = mugColor();
     var q = selectedGifts().map(function (k) {
-      var u = cfg.gifts[k].url;
+      var u = new URL(cfg.gifts[k].url, window.location.href);
       if (cfg.artworkCandidates) {
-        // Liquid already supplies ?view=gift. Replace it; duplicate view values
-        // could otherwise send the draft journey back to the ordering template.
-        var draftUrl = new URL(u, window.location.href);
-        draftUrl.searchParams.set('view', giftPurchasable(k) ? {mug:'mug-native',blanket:'blanket-native',print:'portrait-native'}[k] : {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
-        if (k === 'mug' && mc && mc.id) draftUrl.searchParams.set('variant', mc.id);
-        u = draftUrl.pathname + draftUrl.search + draftUrl.hash;
-      } else if (k === 'mug' && mc && mc.id) u += (u.indexOf('?') < 0 ? '?' : '&') + 'variant=' + mc.id;
-      return { url: u, title: GN[k] };
+        // each gift's own address: the native template is its default, so no ?view= unless
+        // the gift is a draft (or the paused blanket-only route), and never two view values
+        u.searchParams.delete('view');
+        if (!giftPurchasable(k)) u.searchParams.set('view', {mug:'mug-art-preview',blanket:'blanket-art-preview',print:'city-art-preview'}[k]);
+        else if (!cfg.corePurchase) u.searchParams.set('view', {mug:'mug-native',blanket:'blanket-native',print:'portrait-native'}[k]);
+      }
+      if (k === 'mug' && mc && mc.id) u.searchParams.set('variant', mc.id);
+      return { url: u.pathname + u.search + u.hash, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
     track('personalize_gifts', { gifts: q.length, picks: selectedGifts().join(',') });
+    S.returnTo = ''; save();
     window.location.href = q[0].url;
   }
 
@@ -1122,43 +1165,62 @@
 
   /* ---------------------------------------------------------------- actions */
   function think(ms, fn) { ui.thinking = true; render(); later(function () { ui.thinking = false; fn(); }, reduced ? 0 : ms); }
+  /* A step the buyer comes back to and answers differently: that answer's line, and any word
+     edit or AI version of it, no longer fits, so only that one goes. Nothing is sent: the note
+     offers Update note on the reveal, and the product page sees new facts (new artwork). */
+  function answerChanged(key) {
+    if (S.composed && S.composed.lines) { delete S.composed.lines[key]; if (key === 'home') delete S.composed.lines.home_follow; }
+    if (S.edits) delete S.edits[key];
+    S.baseLines = null;
+    if (S.composeStarted) S.answersChanged = true;
+  }
+  // move on from an answered step without changing its answer
+  function forward() {
+    if (S.step === 3 && !S.more && S.home && S.home !== 'skip' && (S.fu || S.home !== 'typed')) { S.more = true; }
+    else if (S.step >= 3 && S.step < 7) { S.more = false; S.step++; }
+    ui.prefix = ''; ui.echo = '';
+    save(); render(); toView(); stepEvent('shown');
+  }
   function chip(id) {
     var n = names(), m = chatQ, label = '';
     (m.chips || []).forEach(function (c) { if (c.id === id) label = c.label; });
     ui.echo = label; ui.flagged = '';
     stepEvent('answered', { kind: 'chip', value: id });
-    if (S.step === 3 && S.fu) {
+    if (S.step === 3 && S.more && S.fu) {
       var i = Number(String(id).slice(2)), ready = S.fu.lines && S.fu.lines[i];
       if (!ready) { followAnswer(label, true); return; }
       stepEvent('answered', { kind: 'chip', sub: 'follow', value: 'prepared' });
       S.typed.home_follow = label; S.follow = 'typed';
       S.ai.home_follow = { line: ready, reaction: (S.fu.replies && S.fu.replies[i]) || '' };
       ui.prefix = (S.fu.replies && S.fu.replies[i]) || '';
-      S.fu = null; S.step = 4; save(); render(); stepEvent('shown');
+      S.fu = null; S.more = false; S.step = 4; save(); render(); stepEvent('shown');
       return;
     }
-    if (S.step === 3 && (!S.home || S.home === 'skip')) {
-      S.home = id; S.follow = null; save();
+    if (S.step === 3 && !S.more) {
+      if (S.home !== id) { answerChanged('home'); S.home = id; S.follow = null; S.fu = null; }
+      S.more = true; save();
       ui.prefix = '';
+      // a follow-up the buyer already answered comes straight back; a new one gets Buddy's pause
+      if (S.follow) { render(); stepEvent('shown', { sub: 'follow' }); return; }
       think(1300, function () { render(); stepEvent('shown', { sub: 'follow' }); });
       return;
     }
-    if (S.step === 3) { S.follow = id; ui.prefix = REACT4[id] || ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 4) { S.spot = id; ui.prefix = REACT5[id] || ''; S.step = 5; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 5) { S.together = id; ui.prefix = REACT6[id] || ''; S.step = 6; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 6) { S.meaning = id; ui.prefix = ''; save(); render(); warm(cfg.composeUrl); return; }
+    if (S.step === 3) { if (S.follow !== id) answerChanged('home'); S.follow = id; ui.prefix = REACT4[id] || ''; S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 4) { if (S.spot !== id) answerChanged('spot'); S.spot = id; ui.prefix = REACT5[id] || ''; S.step = 5; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 5) { if (S.together !== id) answerChanged('together'); S.together = id; ui.prefix = REACT6[id] || ''; S.step = 6; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 6) { if (S.meaning !== id) answerChanged('meaning'); S.meaning = id; ui.prefix = ''; S.step = 7; save(); render(); warm(cfg.composeUrl); return; }
     void n;
   }
   function skip() {
     ui.echo = 'Not sure'; ui.flagged = ''; ui.typing = false;
     stepEvent('skipped');
-    if (S.step === 3 && S.fu) { S.fu = null; ui.prefix = ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 3) { S.home = 'skip'; S.follow = null; ui.prefix = "No problem. Let's sniff around somewhere else."; S.step = 4; }
-    else if (S.step === 4) { S.spot = 'skip'; ui.prefix = REACT5.skip; S.step = 5; }
-    else if (S.step === 5) { S.together = 'skip'; ui.prefix = REACT6.skip; S.step = 6; }
-    else if (S.step === 6) { S.meaning = 'skip'; ui.prefix = ''; }
+    if (S.step === 3 && S.more && S.fu) { S.fu = null; ui.prefix = ''; S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 3) { if (S.home !== 'skip') answerChanged('home'); S.home = 'skip'; S.follow = null; S.fu = null; S.more = false; ui.prefix = "No problem. Let's sniff around somewhere else."; S.step = 4; }
+    else if (S.step === 4) { if (S.spot !== 'skip') answerChanged('spot'); S.spot = 'skip'; ui.prefix = REACT5.skip; S.step = 5; }
+    else if (S.step === 5) { if (S.together !== 'skip') answerChanged('together'); S.together = 'skip'; ui.prefix = REACT6.skip; S.step = 6; }
+    else if (S.step === 6) { if (S.meaning !== 'skip') answerChanged('meaning'); S.meaning = 'skip'; ui.prefix = ''; S.step = 7; }
     save(); render();
-    if (S.step <= 6 && !S.meaning) stepEvent('shown');
+    if (S.step <= 6) stepEvent('shown');
   }
   // a typed answer: Buddy reacts, a line inks, and on the home question one follow-up
   function sendTyped(text) {
@@ -1166,7 +1228,7 @@
     if (!text) return;
     ui.typing = false; ui.echo = text; ui.flagged = '';
     var key = ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step];
-    if (S.step === 3 && S.fu) { followAnswer(text, false); return; }
+    if (S.step === 3 && S.more && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
     // the buyer's own words ink at once; Buddy's version replaces them when it lands
     ui.pending = GRIEF.test(text) || PROFANE.test(text) ? null : { key: key, line: ownWords(chipStyle(text, key), key) };
@@ -1177,6 +1239,7 @@
       if (r.flags.some(function (f) { return f === 'grief' || f === 'profanity' || f === 'unclear'; })) {
         ui.flagged = CATCH; ui.echo = ''; render(); stepEvent('flagged'); return;
       }
+      answerChanged(key);
       S.typed[key] = text;
       S.ai[key] = { line: r.line, reaction: r.reaction };
       S[key] = 'typed';
@@ -1184,12 +1247,12 @@
         S.follow = null; S.ai.home_follow = null;
         S.fu = r.follow_up && (r.follow_up.chips.length || !r.ai) ? r.follow_up : null;
         ui.prefix = r.reaction && r.reaction !== 'Tell me more?' ? r.reaction : '';
-        if (!S.fu) { S.step = 4; }
+        if (S.fu) S.more = true; else { S.more = false; S.step = 4; }
         save(); render(); stepEvent('shown', S.fu ? { sub: 'follow' } : null);
         return;
       }
       ui.prefix = r.reaction && r.reaction !== 'Tell me more?' ? r.reaction : '';
-      if (key === 'spot') S.step = 5; else if (key === 'together') S.step = 6;
+      if (key === 'spot') S.step = 5; else if (key === 'together') S.step = 6; else if (key === 'meaning') S.step = 7;
       if (key === 'meaning') warm(cfg.composeUrl);
       save(); render();
       if (key !== 'meaning') stepEvent('shown');
@@ -1200,7 +1263,7 @@
     S.typed.home_follow = text; S.follow = 'typed';
     var prev = (S.ai.home && S.ai.home.line) || '';
     var aiFollow = !!(S.fu && S.fu.chips && S.fu.chips.length);
-    S.fu = null; save();
+    S.fu = null; S.more = false; save();
     if (!aiFollow) { ui.prefix = ''; S.step = 4; save(); render(); stepEvent('shown'); return; }
     ui.thinking = true; render();
     answerFor('home_follow', chatQ ? chatQ.question : '', text, prev).then(function (r) {
@@ -1219,45 +1282,78 @@
     }
     if (S.step === 2) {
       if (!String(S.rec).trim()) { focusField('hs3-rec'); return; }
-      stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; save(); render(); stepEvent('shown'); return;
+      stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; S.more = false; save(); render(); stepEvent('shown'); return;
     }
-    // the end of the chat: the reveal
-    S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; save();
-    track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
-    compose();
-    startReveal(recGift());
+    if (S.step < 7) { forward(); return; }
+    // the end of the chat: the reveal. The first time, the button asks for the note; after
+    // that, coming back here never sends anything (Update note on the reveal does, on request)
+    if (!S.composeStarted) {
+      S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; S.composeStarted = true; save();
+      track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
+      compose('warm', false, true);
+    }
+    startReveal(reviewGifts().indexOf(S.gift) !== -1 && S.tabbed ? S.gift : recGift());
   }
+  // Back goes to the previous step with its answer still there, through the browser's own history
   function back() {
     ui.flagged = ''; ui.typing = false; ui.prefix = ''; ui.echo = '';
-    if (S.step <= 1) { set({ screen: 'hero' }); return; }
-    if (S.step === 3 && S.fu) { set({ fu: null, home: null, follow: null }); return; }
-    if (S.step === 3 && S.home && S.home !== 'skip' && S.home !== 'typed' && !S.follow) { set({ home: null }); return; }
-    if (S.step === 6 && S.meaning) { set({ meaning: null }); return; }
-    var map = { 2: {}, 3: { home: null, follow: null }, 4: { home: null, follow: null, fu: null }, 5: { spot: null }, 6: { together: null } };
-    var o = map[S.step] || {};
-    o.step = S.step - 1;
-    set(o);
+    if (historyOK() && nav.depth > 0) { window.history.back(); return; }
+    applyRoute(prevRoute(routeOf()), true);
   }
   function focusField(id) { var f = document.getElementById(id); if (f) { f.focus(); f.classList.add('is-need'); } }
 
   /* ------------------------------------------------------------------ binding */
   var heroHTML = '';
   function bindHero() {
-    heroMug();
-    var b = frame.querySelector('[data-hs3-start]');
-    if (b) b.addEventListener('click', function () {
+    var start = frame.querySelector('[data-hs3-start]'), resume = frame.querySelector('[data-hs3-resume]');
+    var going = !!String(S.dog || '').trim() && !!S.lastRoute;
+    if (resume) {
+      // a returning buyer: their answers are still here, so the one button picks up where they left off
+      frame.querySelectorAll('[data-hs3-resume]').forEach(function (r) { r.hidden = !going; });
+      var who = frame.querySelector('[data-hs3-resume-dog]');
+      if (who) who.textContent = names().dog;
+      if (going && start) start.textContent = 'Pick up where you left off';
+    }
+    if (start) start.addEventListener('click', function () {
+      if (going) { track('resume', { step: S.lastRoute }); applyRoute(S.lastRoute); toView(); return; }
       track('start', {});
-      S.screen = 'chat'; if (S.step > 6 || S.step < 1) S.step = 1; ui.echo = ''; ui.prefix = ''; save(); render(); stepEvent('shown');
+      applyRoute('dog'); stepEvent('shown');
       warm(cfg.typedUrl);
-      scrollTop();
+      toView();
     });
+    var cd = frame.querySelector('[data-hs3-countdown]'), days = daysToChristmas();
+    if (cd && days) { cd.textContent = days + (days === 1 ? ' day' : ' days') + ' to Christmas morning. Every gift is made to order, then shipped.'; cd.hidden = false; }
+    var over = frame.querySelector('[data-hs3-restart]');
+    if (over) over.addEventListener('click', function () { track('start_over', {}); restart(); });
+    // the signature feature on the first screen: slide the example note from sentimental to hilarious
+    var demo = frame.querySelector('[data-hs3-demo]');
+    if (demo) {
+      var lines = frame.querySelectorAll('[data-hs3-demo-line]'), names_ = ['Sentimental', 'Warm with a wink', 'Hilarious'];
+      var show = function () {
+        var i = Number(demo.value) || 0, label = frame.querySelector('[data-hs3-demo-name]');
+        lines.forEach(function (l) { l.hidden = Number(l.getAttribute('data-hs3-demo-line')) !== i; });
+        demo.setAttribute('aria-valuetext', names_[i]);
+        if (label) label.textContent = names_[i];
+      };
+      demo.addEventListener('input', show);
+      demo.addEventListener('change', function () { track('demo_tone', { tone: names_[Number(demo.value) || 0] }); });
+      show();
+    }
   }
-  // the page is locked to one screen (fit), so going to the top is all a new screen needs
-  function scrollTop() { try { window.scrollTo(0, 0); } catch (e) { /* old browser */ } }
+  // Start over: a fresh chat, nothing kept from the last one (the photo is deleted from this device)
+  function restart() {
+    S = fresh();
+    try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
+    idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
+    if (photoURL) { URL.revokeObjectURL(photoURL); photoURL = null; }
+    applyRoute('dog'); stepEvent('shown');
+  }
   function bind() {
     frame.querySelectorAll('[data-hs3]').forEach(function (el) {
       el.addEventListener('click', function () { act(el.getAttribute('data-hs3'), el.getAttribute('data-v')); });
     });
+    var box = frame.querySelector('[data-hs3-notebox]');
+    if (box) box.addEventListener('toggle', function () { ui.noteOpen = box.open; });
     frame.querySelectorAll('[data-hs3-in]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-in');
       inp.addEventListener('input', function () {
@@ -1265,22 +1361,29 @@
         if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, 14); save(); }
         if (k === 'breed') { S.breed = inp.value.slice(0, 40); save(); }
+        if (k === 'toy' || k === 'accessory') { S[k] = inp.value.slice(0, 80); save(); }
       });
       inp.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
         e.preventDefault();
-        if (k === 'typed') sendTyped(inp.value); else next();
+        if (k === 'typed') sendTyped(inp.value); else if (k === 'toy' || k === 'accessory') inp.blur(); else next();
       });
     });
     var file = frame.querySelector('[data-hs3-file]');
+    // the dog detector starts loading as the buyer reaches for a photo, so the no-dog check is
+    // ready by the time they have picked one
+    var pick = file && file.closest ? file.closest('label') : null;
+    if (pick) pick.addEventListener('pointerdown', function () { try { if (window.HSPhotoQuality) window.HSPhotoQuality.loadDetector(); } catch (e) { /* the check fails open */ } }, { once: true });
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
-      attachPhoto(f);
       file.value = ''; // Permit an explicit retry with the same file after storage failure.
-      track('photo_attached', {});
-      var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
-      var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
+      checkPhoto(f, function () {
+        attachPhoto(f);
+        track('photo_attached', {});
+        var lab = frame.querySelector('.hs3-photo-pick span'); if (lab) lab.textContent = 'Change photo';
+        var later_ = frame.querySelector('.hs3-later'); if (later_) later_.remove();
+      });
     });
     frame.querySelectorAll('[data-hs3-edit]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-edit');
@@ -1288,8 +1391,7 @@
         S.edits[k] = inp.value.slice(0, maxFor(k)); save();
         var left = frame.querySelector('[data-hs3-left="' + k + '"]'); if (left) left.textContent = (maxFor(k) - inp.value.length) + ' characters left';
         var g = S.gift || recGift(), i = giftKeys(g).indexOf(k), l = frame.querySelectorAll('.hs3-stage .hs3-line')[i];
-        if (l) l.textContent = g === 'mug' ? evenBreak(inp.value) : inp.value;
-        if (g === 'mug') { clearTimeout(ui.paintT); ui.paintT = setTimeout(paintMugs, 120); }
+        if (l) l.textContent = inp.value;
       });
       inp.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
@@ -1314,7 +1416,6 @@
     var typed = frame.querySelector('#hs3-typed');
     if (typed) typed.focus();
     if (S.screen === 'share') drawCard();
-    if (frame.querySelector('canvas[data-hs3-mug]')) paintMugs();
   }
   function focusEdit() {
     var inp = frame.querySelector('[data-hs3-edit]');
@@ -1329,30 +1430,30 @@
   function act(a, v) {
     var n = names();
     switch (a) {
-      case 'back': back(); break;
+      case 'back': case 'toChat': case 'toReveal': case 'toChoose': back(); break;
       case 'pro': S.pro = v === 'he' ? 'he' : 'she'; save(); render(); break;
       case 'rel': S.rel = v; save(); render(); break;
       case 'next': next(); break;
       case 'chip': chip(v); break;
       case 'skip': skip(); break;
       case 'other': warm(cfg.typedUrl); ui.typing = true; ui.flagged = ''; render(); stepEvent('something_else'); break;
-      case 'untype': ui.typing = false; if (S.fu && !S.fu.chips.length) { skip(); return; } render(); break;
+      case 'untype': ui.typing = false; if (S.more && S.fu && !S.fu.chips.length) { skip(); return; } render(); break;
       case 'send': var t = frame.querySelector('#hs3-typed'); sendTyped(t ? t.value : ''); break;
-      case 'tab': S.tabbed = true; track('gift_tab', { gift: v }); startReveal(v); break;
-      case 'edit': ui.editing = !ui.editing; ui.editKey = giftKeys(S.gift || recGift())[0]; ui.revealN = 9; ui.mugSide = 'note'; ui.mugTurned = true; render(); if (ui.editing) { track('edit', {}); focusEdit(); } break;
+      // tabs show the same step, so they replace the address rather than add to Back
+      case 'tab': S.tabbed = true; track('gift_tab', { gift: v }); nav.replace = true; startReveal(v); break;
+      case 'edit': ui.editing = !ui.editing; ui.editKey = giftKeys(S.gift || recGift())[0]; ui.revealN = 9; ui.mugTurned = true; render(); if (ui.editing) { track('edit', {}); focusEdit(); } break;
       case 'editPrev': moveEdit(-1); break;
       case 'editNext': moveEdit(1); break;
       case 'updateTone': compose(S.noteTone, true); break;
-      case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'dog' ? 'note' : 'dog'); track('mug_turn', { side: ui.mugSide }); break;
-      case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; selectGift(g, true); ui.editing = false; S.screen = 'choose'; save(); render(); scrollTop(); track('choose', { gift: g }); break;
-      case 'toChat': clearTimers(); S.screen = 'chat'; save(); render(); break;
+      case 'keepWords': keepWords(); break;
+      case 'turn': ui.mugTurned = true; turnMug(ui.mugSide === 'left' ? 'right' : 'left'); track('mug_turn', { side: ui.mugSide }); break;
+      case 'them': var g = S.gift || recGift(); S.sel = S.sel || {}; selectGift(g, true); ui.editing = false; S.screen = 'choose'; save(); render(); toView(); track('choose', { gift: g }); break;
       case 'sel': selectGift(v); save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
       case 'mugColor': setMugColor(v); break;
       case 'ship': S.shipTo = v === 'me' ? 'me' : 'rec'; save(); render(); break;
       case 'add': addToCart(); break;
-      case 'toReveal': ui.revealN = 9; S.screen = 'reveal'; save(); render(); break;
-      case 'toShare': S.screen = 'share'; save(); render(); scrollTop(); break;
-      case 'toChoose': S.screen = 'choose'; save(); render(); break;
+      case 'toShare': S.screen = 'share'; save(); render(); toView(); break;
+      case 'returnTo': var u = cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url; if (u) { shareWithBridge(); track('return_to_gift', { gift: S.returnTo }); window.location.href = u; } break;
     }
     void n;
   }
@@ -1362,6 +1463,8 @@
     if (!root) return;
     frame = root.querySelector('.hs3__frame');
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
+    // the bundle saving shows only when the memo strip's one switch says the real discount exists
+    cfg.bundleOffer = !!(cfg.bundleOffer || document.querySelector('[data-hs-bundle-live]'));
     heroHTML = frame.innerHTML;
     if (cfg.artworkCandidates && window.HSArtworkChoices) S.noteTone = window.HSArtworkChoices.read().tone;
     if (S.composeRequest) save();
@@ -1373,23 +1476,42 @@
       idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
       save();
     }
+    // from a product page: that gift is picked, and a "Change" link brings the buyer back to it
+    var giftKey = { mug: 'mug', blanket: 'blanket', portrait: 'print' };
+    var giftQ = q && giftKey[q.get('gift')], ret = q && giftKey[q.get('return')];
+    if (giftQ && reviewGifts().indexOf(giftQ) !== -1) { S.sel = S.sel || {}; S.sel[giftQ] = true; S.gift = giftQ; }
+    if (ret) S.returnTo = ret; else if (!(q && q.get('step'))) S.returnTo = '';
+    var want = routeFromURL(), o = routeFor(want ? clampRoute(want) : 'hero');
+    Object.keys(o).forEach(function (k) { S[k] = o[k]; });
     if (S.screen === 'reveal') ui.revealN = 9;
-    if (S.screen === 'chat' && S.step === 3 && S.fu && !S.fu.chips.length) ui.typing = true;
+    if (S.screen === 'chat' && S.step === 3 && S.more && S.fu && !S.fu.chips.length) ui.typing = true;
     if (S.screen === 'chat') warm(cfg.typedUrl);
+    try { nav.depth = (window.history && window.history.state && window.history.state.depth) || 0; } catch (e) { nav.depth = 0; }
+    save();
     render();
     restorePhoto().then(function () { if (S.screen !== 'hero') render(); });
-    var refit = function () { clearTimeout(fit.t); fit.t = setTimeout(fit, 80); };
-    window.addEventListener('resize', refit);
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', refit);
-    window.addEventListener('load', refit);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
-    document.addEventListener('focusout', function () { setTimeout(fit, 150); });
-    frame.addEventListener('load', refit, true); // images that arrive after the first fit
-    // hs2.js moves the section under Helio's header after this runs; follow the frame's top
-    if (window.ResizeObserver) new ResizeObserver(refit).observe(root.parentNode || root);
-    [300, 1200].forEach(function (t) { setTimeout(fit, t); });
+    if (!historyOK()) return;
+    // Back and Forward show the step they land on, with its answer; nothing is sent
+    window.addEventListener('popstate', function (e) {
+      var st = e.state || {}, was = nav.depth, want = st.hs3 || routeFromURL() || 'hero';
+      nav.depth = st.depth || 0;
+      // a step the answers no longer reach (a typed answer's follow-up, once answered) is passed
+      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere
+      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was) {
+        try { if (nav.depth < was && nav.depth > 0) { window.history.back(); return; } if (nav.depth > was) { window.history.forward(); return; } } catch (err) { /* show the clamped step below */ }
+      }
+      nav.route = '';
+      applyRoute(want, true);
+      if (typeof st.y === 'number') { try { window.scrollTo(0, st.y); } catch (err) { /* old browser */ } } else toView();
+    });
+    // back from a product page through the browser's cache: re-read the answers that page may have used
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted) return;
+      S = load(); nav.route = '';
+      applyRoute(routeFromURL() || 'hero', true);
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   // for tools/preview tests
-  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle, mug: { MUG: MUG, drawNote: drawNote, drawDog: drawDog, wrapOnto: wrapOnto, loadMugAssets: loadMugAssets, renderFace: renderFace, mugColors: mugColors, mugColor: mugColor } };
+  window.__hs3api = { state: function () { return S; }, lineFor: lineFor, recGift: recGift, typedAnswer: typedAnswer, names: names, evenBreak: evenBreak, noteWidth: noteWidth, chipStyle: chipStyle, route: { routeOf: routeOf, clampRoute: clampRoute, routeFor: routeFor, prevRoute: prevRoute, urlFor: urlFor, applyRoute: applyRoute, back: back, chip: chip, act: act }, mugColors: mugColors, mugColor: mugColor };
 })();

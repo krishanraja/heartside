@@ -1,0 +1,68 @@
+{%- comment -%}
+  Heartside's own quiet footer, in place of Helio's (Krish's ruling, 27 Oct 2026: the brand
+  book's "one quiet line", with the legally needed policy links kept small). Buddy looks over the
+  rule, then the shipping line, the store policies from Settings > Policies with Contact and the
+  Answers link approved on 21 Oct, Instagram, and the company note in the words fixed on 19 Oct
+  (sections/hs-company-note.liquid, which this replaces). Styles: hs-brand.css, "footer".
+  The theme push's "footer_heartside" option adds it to the footer group and switches Helio's
+  footer and the company note off (.github/scripts/footer-heartside.mjs, which can --restore
+  them); "switched_off" below is that script's record.
+{%- endcomment -%}
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs-footer">
+  <div class="hs-footer__in">
+    {%- if s.show_buddy -%}
+      <div class="hs-footer__buddy" aria-hidden="true">
+        <svg class="hs-buddy" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs-buddy__ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>
+      </div>
+    {%- endif -%}
+    {%- if s.shipping_line != blank -%}
+      <p class="hs-footer__line">{{ s.shipping_line | escape }}</p>
+    {%- endif -%}
+    <nav class="hs-footer__links" aria-label="Store policies and contact">
+      <ul>
+        {%- for policy in shop.policies -%}
+          <li><a href="{{ policy.url }}">{{ policy.title | escape }}</a></li>
+        {%- endfor -%}
+        {%- if s.contact_url != blank -%}
+          <li><a href="{{ s.contact_url | escape }}">{{ s.contact_label | escape }}</a></li>
+        {%- endif -%}
+        {%- if s.answers_url != blank -%}
+          <li><a href="{{ s.answers_url | escape }}">{{ s.answers_label | escape }}</a></li>
+        {%- endif -%}
+        {%- if s.instagram_url != blank -%}
+          <li><a href="{{ s.instagram_url | escape }}" target="_blank" rel="noopener noreferrer">Instagram<span class="hs2-sr"> (opens in a new tab)</span></a></li>
+        {%- endif -%}
+      </ul>
+    </nav>
+    <p class="hs-footer__company">Heartside is a Mindmaker LLC company. Mindmaker Ltd in the UK.</p>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HS footer",
+  "class": "hs-footer-section",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "checkbox", "id": "show_buddy", "label": "Buddy looks over the footer", "default": true },
+    { "type": "text", "id": "shipping_line", "label": "Shipping line", "default": "Free US shipping on every order." },
+    { "type": "header", "content": "Links" },
+    { "type": "paragraph", "content": "The store policies come from Settings > Policies in Shopify admin." },
+    { "type": "text", "id": "contact_label", "label": "Contact link text", "default": "Contact" },
+    { "type": "text", "id": "contact_url", "label": "Contact link (a path on this store)", "default": "/pages/contact" },
+    { "type": "text", "id": "answers_label", "label": "Answers link text", "default": "Answers" },
+    { "type": "text", "id": "answers_url", "label": "Answers link (a path on this store)", "default": "/blogs/answers" },
+    { "type": "text", "id": "instagram_url", "label": "Instagram link", "info": "Leave empty to hide it.", "default": "https://www.instagram.com/yourdoghasnotes/" },
+    { "type": "header", "content": "Theme push" },
+    {
+      "type": "text",
+      "id": "switched_off",
+      "label": "Footer sections the theme push switched off",
+      "info": "Written by .github/scripts/footer-heartside.mjs so its --restore option can switch them back on. Leave as is."
+    }
+  ],
+  "presets": [{ "name": "HS footer" }]
+}
+{% endschema %}

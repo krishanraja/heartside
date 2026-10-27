@@ -43,18 +43,22 @@ One approved fee-free compatibility order passed for a single $129 blanket with 
 
 The retained personalized cart changed quantity 2→1 with its exact component, attributes and prepared image intact; checkout read back $129 and the actual accepted design as its main image. The typed-answer workflow's self-recipient correction is published and independently matches `n8n/prompts.json`. The temporary checkout-image QA template was removed from the candidate theme and from the source tree. The Drive brand folder has been cleaned into the existing identity, imagery, social, decks and historical sections. The current Canva handoff is `design/CANVA-SOURCES.md`, mirrored to Drive `01_Identity/CANVA-BRAND-KIT-GUIDE.md`. Product mockups sit by mug, blanket and portrait under `02_Imagery`; the blank blanket template and technical records are separate from social-use images. The existing Canva Brand Kit has been identified but not edited.
 
-Release source was merged to main at `45d927b40797f67962d240a9997e8c75afe84991`; theme publication and password removal are complete. Closeout still requires independent public no-preview product and checkout review plus the separate CoWork live and Claude Code repository acceptance assignments in `docs/`. Krish will place the real sample blanket order himself. Physical sample and real paid fulfillment remain future evidence, not launch claims.
+Release source was merged to main at `45d927b40797f67962d240a9997e8c75afe84991`; theme publication and password removal are complete. Krish will place the real sample blanket order himself. Physical sample and real paid fulfillment remain future evidence, not launch claims.
+
+**The 27 October redesign is built, not published.** Branch `claude/eager-cray-mi55gq` (pull request open, unmerged, nothing deployed) answers Krish's 27 October brief: one Heartside around every page instead of a site within a site, every chat step at its own address so Back, Forward and reload land where expected, the product image glitch fixed, Shopify's prices and photos everywhere, "Free US shipping on every order.", the pink heart favicon, an on-device photo check before any upload, tone-driven imagery on all three gifts with breed energy, the story and slider demo, a Christmas countdown, a bundle line and an Artist's touch add-on (both switched off until Krish creates the discount and the product), one redo per gift after carting, and Buddy's 404 and empty cart. What changed and what is proved: [`docs/evidence/2026-10-27-journey-redesign.md`](docs/evidence/2026-10-27-journey-redesign.md). The Claude Code repository acceptance ran on `bea22ce` and its fixes are on the same branch, with a new CI workflow that runs every offline check: [`docs/evidence/2026-10-27-repository-acceptance.md`](docs/evidence/2026-10-27-repository-acceptance.md). Two High findings stay open for Krish: no print check yet covers the current products, and the $45 mug sits below the 30% floor in every modeled case.
 
 The earlier handoffs, execution queues, pricing scenarios, module notes and pre-release NOW checkpoints have been moved to [`docs/history/`](docs/history/README.md). They preserve provenance and must not be used as a current product, price or operations source.
 
 ## What changed recently
 
+- **27 October:** The journey redesign, the repository acceptance and its fixes, tone-driven imagery, bundle economics, the photo check and the new favicon were built on `claude/eager-cray-mi55gq` for review on an unpublished preview theme. Krish's rulings are in the commit bodies. The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) is rewritten in three parts: the preview theme, production after publishing, and operator tasks on his word.
 - **27 October:** The three core products and reviewed theme went live with normal payments. The fee-free blanket compatibility order confirmed the accepted artwork reached Teeinblue and produced an inspectable print file; physical print quality and a real paid order still await Krish's sample. See the release checkpoint above and the [live acceptance assignment](docs/review/COWORK-LIVE-ACCEPTANCE.md).
 - **27 October:** The current scope and economics were moved to stable documents because dated continuation notes and older price briefs could mislead a reviewer. The active sources are [scope](docs/SCOPE.md) and [economics](docs/ECONOMICS.md); older material is indexed in [history](docs/history/README.md).
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** complete independent live customer-route and repository acceptance using [`CoWork`](docs/review/COWORK-LIVE-ACCEPTANCE.md) and [`Claude Code`](docs/review/CLAUDE-CODE-REPOSITORY-ACCEPTANCE.md), then Krish places the real blanket sample order. Do not claim physical quality or paid-order fulfillment until that sample is inspected.
+- **Next action:** Krish approves pushing the redesign branch to an unpublished copy of the live theme (the approval gates are listed in the pull request), then CoWork runs Part A of [the acceptance prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) on that preview before he decides to publish. The redesign targets conversion and order value; it moves the number only once published, and the number is still $0 as last measured.
+- **Waiting on Krish:** the Artist's touch price and product; the bundle discount per basket (two mugs alone fail the 30% floor); the mug price; whether the Artist's touch may name him; whether the six Drive dog photos may be public; the example batch (route A on his computer, or route B with an OpenAI key); the real blanket sample order. Do not claim physical quality or paid-order fulfillment until that sample is inspected.
 - North Star check (2026-10-27): holds.
 
 ## Read next
@@ -63,7 +67,7 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 - [Current scope](docs/SCOPE.md): products, buyer experience and release boundaries.
 - [Economics](docs/ECONOMICS.md): current prices, modeled costs and margin decision.
 - [Sync](docs/SYNC.md): repository and Drive source mapping.
-- [Live acceptance](docs/review/COWORK-LIVE-ACCEPTANCE.md) and [repository acceptance](docs/review/CLAUDE-CODE-REPOSITORY-ACCEPTANCE.md): independent checks still to run.
+- [Live acceptance](docs/review/COWORK-LIVE-ACCEPTANCE.md): the preview, production and operator checks still to run. [Repository acceptance](docs/review/CLAUDE-CODE-REPOSITORY-ACCEPTANCE.md): the brief, answered in [the 27 October report](docs/evidence/2026-10-27-repository-acceptance.md).
 
 ## Do not trust
 

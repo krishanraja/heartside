@@ -2,7 +2,8 @@
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const dir = fileURLToPath(new URL('.', import.meta.url));
-const shared = fs.readFileSync(dir + 'shared.js', 'utf8');
+// Normalize line endings so a Windows checkout and a Linux checkout build identical artifacts.
+const shared = fs.readFileSync(dir + 'shared.js', 'utf8').replace(/\r\n?/g, '\n');
 const CRED = { id: 'LtlmaVHoTQdTTngQ', name: 'Google Gemini(PaLM) - Heartside' };
 // 22 Oct (Krish): Claude Sonnet writes the whole note; Gemini 3.5 Flash answers typed replies and backs Claude up.
 const MODEL = process.env.HS_MODEL || 'models/gemini-3.5-flash';

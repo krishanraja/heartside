@@ -1,0 +1,14 @@
+{
+  "note": "Copy offenses already in the theme when copy lint started (2026-10-27). CI runs copy-lint.mjs --baseline, which fails only on offenses not listed here. Remove an entry when its copy is fixed; never add one for new copy.",
+  "known": [
+    "retired-name shopify/sections/hs2-benefits.liquid The Body Double",
+    "retired-name shopify/sections/hs2-closure.liquid The Body Double",
+    "retired-price shopify/sections/hs2-faq.liquid Make {dogs} poster · $39",
+    "retired-price shopify/sections/hs2-hero.liquid PERSONALIZED POSTER · $39 · FREE US SHIPPING",
+    "retired-price shopify/sections/hs2-leak.liquid $39 poster · Free US shipping",
+    "retired-price shopify/sections/hs2-ornament.liquid Hang {dog} on the tree · $24",
+    "retired-price shopify/sections/hs2-review.liquid $39",
+    "retired-price shopify/sections/hs2-signoff.liquid Make {dogs} poster · $39",
+    "retired-price shopify/sections/hs2-sticky.liquid Make my poster · $39"
+  ]
+}

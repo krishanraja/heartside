@@ -1,0 +1,58 @@
+{%- comment -%}
+  Retired alternate templates (index.classic, product.gift, the art-preview views and the rest)
+  render only this. Someone arriving by an old ?view= link goes straight to the same page without
+  it, which opens the current template; every other query parameter, utm_* included, comes along.
+  Without a view parameter (a product whose default template is retired) nothing redirects, so
+  it can never loop: the page shows Buddy and the way to the current gifts. Styles:
+  hs-brand.css, "the 404 and moved pages".
+{%- endcomment -%}
+{%- liquid
+  if template.name == 'product' and product
+    assign target = product.url
+  else
+    assign target = routes.root_url
+  endif
+-%}
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    if (!q.has('view')) return;
+    q.delete('view');
+    var rest = q.toString();
+    location.replace({{ target | json }} + (rest ? '?' + rest : '') + location.hash);
+  })();
+</script>
+{%- render 'hs2-head' -%}
+{%- assign s = section.settings -%}
+<div class="hs-lost hs-moved">
+  <div class="hs-lost__in">
+    <div class="hs-lost__buddy" aria-hidden="true">
+      <svg class="hs-buddy" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><g><path d="M34 120 C 34 96, 44 86, 58 84 L 74 84 C 84 88, 88 100, 88 120 Z" fill="#7A4027"/><rect x="44" y="84" width="40" height="7" rx="3.5" fill="#F0C0C0"/><ellipse cx="58" cy="58" rx="30" ry="27" fill="#8A4A2B"/><ellipse cx="90" cy="66" rx="22" ry="13" fill="#95553A"/><ellipse cx="95" cy="70" rx="15" ry="8.5" fill="#CFC4BA"/><ellipse cx="110" cy="62" rx="6.5" ry="5.5" fill="#121010"/><circle cx="70" cy="50" r="4" fill="#121010"/><circle cx="71.3" cy="48.6" r="1.2" fill="#FFFDF9"/><path d="M64 42 Q 70 38 76 42" fill="none" stroke="#CFC4BA" stroke-width="2.5" stroke-linecap="round"/><path d="M96 76 Q 102 79 107 75" fill="none" stroke="#5A2E1C" stroke-width="2" stroke-linecap="round"/><g class="hs-buddy__ear"><path d="M44 34 C 24 36, 20 72, 32 88 C 40 98, 54 90, 54 74 C 54 58, 54 42, 44 34 Z" fill="#6A3520"/></g></g></svg>
+    </div>
+    <h1>{{ s.heading | escape }}</h1>
+    {%- if s.text != blank -%}<p class="hs-lost__text">{{ s.text | escape }}</p>{%- endif -%}
+    <noscript><p class="hs-lost__text"><a href="{{ target }}">Go to the current page</a></p></noscript>
+    <p class="hs-lost__go"><a class="hs-btn" href="{{ routes.root_url }}">{{ s.button_label | escape }}</a></p>
+    <nav class="hs-lost__links" aria-label="Gifts">
+      <ul>
+        <li><a href="/products/your-dogs-illustrated-mug">The mug</a></li>
+        <li><a href="/products/your-dogs-personality-blanket">The blanket</a></li>
+        <li><a href="/products/your-dogs-portrait">The portrait</a></li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HS moved",
+  "class": "hs-moved-section",
+  "enabled_on": { "templates": ["index", "product"] },
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Headline", "default": "This page has moved." },
+    { "type": "text", "id": "text", "label": "Line under it", "default": "The gifts are all still here." },
+    { "type": "text", "id": "button_label", "label": "Button (goes to the start)", "default": "Start with your dog" }
+  ],
+  "presets": [{ "name": "HS moved" }]
+}
+{% endschema %}

@@ -1,9 +1,9 @@
 {%- comment -%}
-  Heartside v3: gifts from your dog. The whole journey on one screen, phone first:
-  home, the chat with Buddy, the reveal, choose gifts and the share card.
-  Built from the approved prototype (design/prototype-v3/Main.dc.html) against
-  docs/V3-GIFTS-FROM-YOUR-DOG.md. Behaviour lives in assets/hs3.js; this file holds the
-  first screen (so it shows before the script runs) and the settings.
+  Heartside v3: gifts from your dog, phone first: the first screen, the chat with Buddy,
+  the reveal, choose gifts and the share card, each step at its own address (/?step=).
+  Built from the approved prototype (design/prototype-v3/Main.dc.html) and redesigned on
+  27 Oct around the real products. Behaviour lives in assets/hs3.js; this file holds the
+  first screen (so it shows before the script runs), the gifts from Shopify and the settings.
 {%- endcomment -%}
 {%- render 'hs2-head' -%}
 {%- render 'hs-schema', kind: 'home' -%}
@@ -13,26 +13,32 @@
 <script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs3.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
+{%- comment -%} A reload or a shared link to a step (/?step=spot) paints the step, not the first screen
+  and then the step: hs3.js removes this class once it has drawn the step (27 Oct). {%- endcomment -%}
+<script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hs3-routed');setTimeout(function(){document.documentElement.classList.remove('hs3-routed')},3500);}</script>
 {%- comment -%} The mug's colors, Black first (Krish, 19 Oct): only those the picked product has as a
-  variant, each with its recolored photo layers (tools/realphoto/recolor_mug.py). Hex from
-  Printful's catalog. The first one is the example mug's color too. {%- endcomment -%}
-{%- assign mug_hex = '#050505,#1b1b51,#226653,#e32a2d,#f6a1b1' | split: ',' -%}
+  variant, each with its handle-left and handle-right product photos, matched by alt text
+  ("Illustrated mug, black inside: handle-left view."). Hex from the brand book's mug interiors. {%- endcomment -%}
+{%- assign mug_hex = '#050505,#191A4D,#216251,#D9292C,#E49EAA' | split: ',' -%}
 {%- assign mug_order = 'Black,Dark Blue,Dark Green,Red,Pink' | split: ',' -%}
 {%- assign mug_n = 0 -%}
-{%- assign mug_first = '' -%}
 {%- capture mug_colors -%}
   {%- if s.product_mug != blank -%}
     {%- for c in mug_order -%}
       {%- assign ci = forloop.index0 -%}
+      {%- assign needle = c | downcase | append: ' inside' -%}
       {%- for v in s.product_mug.variants -%}
         {%- if v.options contains c -%}
-          {%- assign suffix = '' -%}
-          {%- unless c == 'Pink' -%}{%- assign suffix = c | handleize | prepend: '-' -%}{%- endunless -%}
-          {%- if mug_n == 0 -%}{%- assign mug_first = suffix -%}{%- endif -%}
+          {%- assign left = '' -%}{%- assign right = '' -%}
+          {%- for m in s.product_mug.media -%}
+            {%- assign a = m.alt | downcase -%}
+            {%- if m.media_type == 'image' and a contains needle -%}
+              {%- if a contains 'handle-left' -%}{%- assign left = m | image_url: width: 900 -%}{%- endif -%}
+              {%- if a contains 'handle-right' -%}{%- assign right = m | image_url: width: 900 -%}{%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
           {%- if mug_n > 0 -%},{%- endif -%}
-          {%- assign dog_f = 'hs-mug-dog-base' | append: suffix | append: '.webp' -%}
-          {%- assign note_f = 'hs-mug-note-base' | append: suffix | append: '.webp' -%}
-          { "name": {{ c | json }}, "hex": {{ mug_hex[ci] | json }}, "id": {{ v.id | json }}, "dog": {{ dog_f | asset_url | json }}, "note": {{ note_f | asset_url | json }} }
+          { "name": {{ c | json }}, "hex": {{ mug_hex[ci] | json }}, "id": {{ v.id | json }}, "left": {{ left | json }}, "right": {{ right | json }} }
           {%- assign mug_n = mug_n | plus: 1 -%}
           {%- break -%}
         {%- endif -%}
@@ -40,9 +46,6 @@
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
-{%- assign hero_dog = 'hs-mug-dog-base' | append: mug_first | append: '.webp' -%}
-{%- assign hero_note = 'hs-mug-note-base' | append: mug_first | append: '.webp' -%}
-{%- capture example_photo -%}{%- if s.example_photo != blank -%}{{ s.example_photo | image_url: width: 400 }}{%- else -%}{{ 'hs-photo-headshot-480.webp' | asset_url }}{%- endif -%}{%- endcapture -%}
 <div class="hs3" data-hs3 id="gift-{{ section.id }}">
   <script type="application/json" data-hs3-config>
     {
@@ -53,35 +56,40 @@
       "blanketPurchase": {{ s.blanket_purchase | json }},
       "corePurchase": {{ s.core_purchase | json }},
       "ornamentBundle": {{ s.ornament_bundle | json }},
-      "examplePhoto": {{ example_photo | strip | json }},
-      "mug": {
-        "colors": [{{ mug_colors | strip }}],
-        "dog": {{ 'hs-mug-dog-base.webp' | asset_url | json }},
-        "dogShade": {{ 'hs-mug-dog-shade.webp' | asset_url | json }},
-        "note": {{ 'hs-mug-note-base.webp' | asset_url | json }},
-        "noteShade": {{ 'hs-mug-note-shade.webp' | asset_url | json }},
-        "paw": {{ 'hs-mug-paw.png' | asset_url | json }},
-        "fontText": {{ 'hs-note-text.woff2' | asset_url | json }},
-        "fontItalic": {{ 'hs-note-italic.woff2' | asset_url | json }},
-        "sample": {% if s.example_photo != blank %}{{ example_photo | strip | json }}{% else %}{{ 'hs-mug-sample.webp' | asset_url | json }}{% endif %}
-      },
+      "mug": { "colors": [{{ mug_colors | strip }}] },
       "gifts": {
+        {%- comment -%} Each gift straight from its Shopify product: its own address, its lowest and
+          highest variant price, and up to four labelled photos. The blank technical reference
+          ("shown in your cart") and unlabelled photos never show. {%- endcomment -%}
         {%- assign keys = 'mug,blanket,print,ornament' | split: ',' -%}
         {%- for k in keys -%}
           {%- assign pid = 'product_' | append: k -%}
-          {%- assign pp = 'price_' | append: k -%}
           {%- assign p = s[pid] -%}
           "{{ k }}": {
-            "url": {% if p != blank %}{{ p.url | append: '?view=' | append: s.product_view | json }}{% else %}null{% endif %},
-            "handle": {% if p != blank %}{{ p.handle | json }}{% else %}null{% endif %},
-            "price": {% if p != blank %}{{ p.price | divided_by: 100.0 | json }}{% else %}{{ s[pp] | json }}{% endif %}
+            {%- if p != blank -%}
+              "url": {{ p.url | json }}, "handle": {{ p.handle | json }}, "title": {{ p.title | json }},
+              "price": {{ p.price_min | divided_by: 100.0 | json }}, "priceMax": {{ p.price_max | divided_by: 100.0 | json }},
+              "images": [
+                {%- assign n = 0 -%}
+                {%- for m in p.media -%}
+                  {%- assign a = m.alt | downcase -%}
+                  {%- if m.media_type == 'image' and n < 4 and m.alt != blank -%}
+                    {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}
+                      {%- if n > 0 -%},{%- endif -%}{ "src": {{ m | image_url: width: 900 | json }}, "alt": {{ m.alt | json }} }
+                      {%- assign n = n | plus: 1 -%}
+                    {%- endunless -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              ]
+            {%- else -%}
+              "url": null, "handle": null, "price": null
+            {%- endif -%}
           }{%- unless forloop.last -%},{%- endunless -%}
         {%- endfor -%}
       }
     }
   </script>
   <div class="hs3__frame" data-hs3-screen="hero">
-    {%- if s.ribbon != blank -%}<div class="hs3-ribbon">{{ s.ribbon }}</div>{%- endif -%}
     <div class="hs3-hero">
       <div class="hs3-hero__copy">
         <div class="hs3-eyebrow">{{ s.eyebrow }}</div>
@@ -89,13 +97,28 @@
         <p class="hs3-hero__p">{{ s.intro }}</p>
       </div>
       <div class="hs3-hero__art">
-        {%- comment -%} the example mug: the reveal's real-photo mug (hs3.js heroMug), turning between the dog and the note {%- endcomment -%}
-        <div class="hs3-mugwrap hs3-mugwrap--hero" data-hs3-hero-mug aria-hidden="true">
+        {%- comment -%} the real range, labelled Example: someone else's dog, today's Shopify prices {%- endcomment -%}
+        <div class="hs3-fan">
           <span class="hs3-example">EXAMPLE</span>
-          <div class="hs3-mugs" data-side="dog">
-            <div class="hs3-mugface hs3-mugface--dog"><img src="{{ hero_dog | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-dog-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="dog"></canvas></div>
-            <div class="hs3-mugface hs3-mugface--note"><img src="{{ hero_note | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__base" loading="eager"><img src="{{ 'hs-mug-note-shade.webp' | asset_url }}" alt="" width="640" height="549" class="hs3-mugface__shade" loading="eager"><canvas class="hs3-mugface__canvas" width="640" height="549" data-hs3-heromug="note"></canvas></div>
-          </div>
+          {%- assign fan = 'print,mug,blanket' | split: ',' -%}
+          {%- for k in fan -%}
+            {%- assign pid = 'product_' | append: k -%}
+            {%- assign p = s[pid] -%}
+            {%- if p != blank -%}
+              {%- assign shot = nil -%}
+              {%- for m in p.media -%}
+                {%- assign a = m.alt | downcase -%}
+                {%- if m.media_type == 'image' and m.alt != blank -%}
+                  {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
+                {%- endif -%}
+              {%- endfor -%}
+              <a class="hs3-fan__item hs3-fan__item--{{ k }}" href="{{ p.url }}">
+                {%- if shot -%}{{ shot | image_url: width: 600 | image_tag: alt: shot.alt, loading: 'eager', sizes: '(min-width: 1000px) 240px, 34vw', class: 'hs3-fan__img' }}{%- endif -%}
+                <span class="hs3-fan__name">{% case k %}{% when 'mug' %}Mug{% when 'print' %}Portrait{% else %}Blanket{% endcase %}</span>
+                <span class="hs3-fan__price">{% if p.price_varies %}From {% endif %}{{ p.price_min | money_without_trailing_zeros }}</span>
+              </a>
+            {%- endif -%}
+          {%- endfor -%}
         </div>
         <div class="hs3-peek">
           <span class="hs3-biscuit hs3-biscuit--peek" aria-hidden="true"></span>
@@ -103,23 +126,45 @@
         </div>
       </div>
       <div class="hs3-hero__foot">
-        <div class="hs3-pills" aria-hidden="true">
-          <span class="hs3-pill" data-icon="mug">Mug</span><span class="hs3-pill" data-icon="blanket">Blanket</span><span class="hs3-pill" data-icon="print">Print</span>{% unless s.artwork_candidates %}<span class="hs3-pill" data-icon="ornament">Ornament</span>{% endunless %}
-        </div>
-        <p class="hs3-small">{{ s.gifts_note }}</p>
+        <p class="hs3-resume" data-hs3-resume hidden>Welcome back. <span data-hs3-resume-dog></span>'s answers are still here.</p>
         <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
-        {%- comment -%} the page is one screen (no footer), so the policies and the company note live here (Krish, 21 Oct) {%- endcomment -%}
-        <p class="hs3-legal">
-          {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
-          {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
-          {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
-          {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a> · {% endif -%}
-          {{ s.legal_note }}
-        </p>
+        <p class="hs3-resume hs3-resume--quiet" data-hs3-resume hidden><button type="button" class="hs3-quiet" data-hs3-restart>Start over</button></p>
+        <p class="hs3-small hs3-trust">{{ s.trust_line }}</p>
+        <p class="hs3-small hs3-countdown" data-hs3-countdown hidden></p>
       </div>
+      <ol class="hs3-beats">
+        <li><span class="hs3-beats__n">1</span>{{ s.beat_one }}</li>
+        <li><span class="hs3-beats__n">2</span>{{ s.beat_two }}</li>
+        <li><span class="hs3-beats__n">3</span>{{ s.beat_three }}</li>
+      </ol>
+      {%- comment -%} The signature feature, free to try before anything is asked: one example note at
+        each end of the slider and in between (Krish, 27 Oct). Labelled Example. {%- endcomment -%}
+      <div class="hs3-demo">
+        <div class="hs3-demo__head"><span class="hs3-label">{{ s.demo_label }}</span><strong data-hs3-demo-name>Sentimental</strong></div>
+        <div class="hs3-note hs3-note--demo">
+          <span class="hs3-example">EXAMPLE</span>
+          <div class="hs3-note__for">For {{ s.demo_for }}</div>
+          <div class="hs3-note__lines">
+            <span class="hs3-line hs3-ink" data-hs3-demo-line="0">{{ s.demo_sentimental }}</span>
+            <span class="hs3-line hs3-ink" data-hs3-demo-line="1" hidden>{{ s.demo_warm }}</span>
+            <span class="hs3-line hs3-ink" data-hs3-demo-line="2" hidden>{{ s.demo_hilarious }}</span>
+          </div>
+          <span class="hs3-sign">Love, {{ s.demo_dog }}</span>
+        </div>
+        <div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="0" aria-label="Try the tone" aria-valuetext="Sentimental" data-hs3-demo><span>Hilarious</span></div>
+        <p class="hs3-small">{{ s.demo_note }}</p>
+      </div>
+      {%- comment -%} the policies stay one tap away; Heartside's own footer replaces this line once it is placed {%- endcomment -%}
+      <p class="hs3-legal">
+        {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
+        {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
+        {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
+        {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a> · {% endif -%}
+        {{ s.legal_note }}
+      </p>
     </div>
   </div>
-  <noscript><p class="hs3-small">Buddy needs JavaScript to chat. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
+  <noscript><p class="hs3-small">Buddy needs JavaScript to chat. Turn it on, or email hello@krishraja.com and a person will help.</p></noscript>
   <p class="hs3-privacy" data-hs3-privacy hidden>{{ s.privacy }}</p>
 </div>
 
@@ -129,38 +174,219 @@
   "tag": "section",
   "class": "hs3-section",
   "settings": [
-    { "type": "checkbox", "id": "core_purchase", "label": "Enable tested core native product routes", "default": false },
-    { "type": "checkbox", "id": "artwork_candidates", "label": "Draft shared artwork choices", "default": false, "info": "Candidate controls only. Does not enable image generation or qualified previews." },
-    { "type": "paragraph", "content": "Gifts from your dog: the chat with Buddy, the reveal and the gift picker. Copy and flow from docs/V3-GIFTS-FROM-YOUR-DOG.md section 4. Buddy's lines are in assets/hs3.js, word for word from the approved prototype." },
-    { "type": "header", "content": "First screen" },
-    { "type": "text", "id": "ribbon", "label": "Ribbon", "default": "This year, the dog's buying." },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
-    { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
-    { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "textarea", "id": "intro", "label": "Line under the headline", "default": "Tell Buddy about your dog and the person they love most. We'll make something from your dog that they'll use every day." },
-    { "type": "text", "id": "peek", "label": "Buddy's first bubble", "default": "Psst. Who does your dog love most?" },
-    { "type": "text", "id": "gifts_note", "label": "Under the gift pills", "default": "Chat for a minute, then put your words on any of these. Pick one, or a few." },
-    { "type": "text", "id": "start", "label": "Button", "default": "Start with your dog" },
-    { "type": "image_picker", "id": "example_photo", "label": "Example dog photo", "info": "Shown on the example mug. A cut-out PNG looks best. Empty uses the sample dog." },
-    { "type": "header", "content": "Buddy's AI (n8n)" },
-    { "type": "checkbox", "id": "ai_on", "label": "Use the AI for typed answers", "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.", "default": true },
-    { "type": "text", "id": "typed_url", "label": "Typed answer webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer" },
-    { "type": "text", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" },
-    { "type": "text", "id": "legal_note", "label": "Company note under the first screen", "info": "The homepage is one screen with no footer, so this line carries the policies and the company note.", "default": "Heartside is a Mindmaker LLC company." },
-    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.", "default": "Your answers, including choices you select, are processed through n8n using Google Gemini and Anthropic Claude to write your note. Your photo and artwork instructions are processed through Teeinblue using OpenAI. We don't send your email, address or payment details to the text-writing services." },
-    { "type": "header", "content": "The gifts" },
-    { "type": "text", "id": "product_view", "label": "Product template for the gifts", "info": "Opens each gift with ?view= this.", "default": "gift" },
-    { "type": "product", "id": "product_mug", "label": "The Morning Mug" },
-    { "type": "product", "id": "product_blanket", "label": "The Couch Blanket" },
-    { "type": "checkbox", "id": "blanket_purchase", "label": "Enable native blanket purchase route", "default": false, "info": "With shared artwork choices enabled, sends only the selected blanket product to blanket-native. Enable after its native campaign, price and purchase flow are verified." },
-    { "type": "product", "id": "product_print", "label": "The Framed Print" },
-    { "type": "product", "id": "product_ornament", "label": "The Tree Ornament" },
-    { "type": "number", "id": "price_mug", "label": "Mug price until the product is picked", "default": 29 },
-    { "type": "number", "id": "price_blanket", "label": "Blanket price until the product is picked", "default": 89 },
-    { "type": "number", "id": "price_print", "label": "Print price until the product is picked", "default": 89 },
-    { "type": "number", "id": "price_ornament", "label": "Ornament price until the product is picked", "default": 24 },
-    { "type": "checkbox", "id": "ornament_bundle", "label": "Show the ornament at $19 with another gift", "info": "Tick only once a Shopify automatic discount takes $5 off the ornament when another gift is in the cart. Until then the page shows $24, so it never promises a price the cart won't charge.", "default": false }
+    {
+      "type": "checkbox",
+      "id": "core_purchase",
+      "label": "Enable tested core native product routes",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "artwork_candidates",
+      "label": "Draft shared artwork choices",
+      "default": false,
+      "info": "Candidate controls only. Does not enable image generation or qualified previews."
+    },
+    {
+      "type": "paragraph",
+      "content": "Gifts from your dog: the chat with Buddy, the reveal and the gift picker. Each step has its own address (/?step=). Buddy's lines are in assets/hs3.js. Prices and photos come from the products picked below."
+    },
+    {
+      "type": "header",
+      "content": "First screen"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Gifts from your dog"
+    },
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Your dog"
+    },
+    {
+      "type": "text",
+      "id": "headline_em",
+      "label": "Headline, italic part",
+      "default": "loves you too."
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Line under the headline",
+      "default": "Tell Buddy about your dog and the person they love most. We'll make something from your dog that they'll use every day."
+    },
+    {
+      "type": "text",
+      "id": "peek",
+      "label": "Buddy's first bubble",
+      "default": "Psst. Who does your dog love most?"
+    },
+    {
+      "type": "text",
+      "id": "gifts_note",
+      "label": "Under the gift pills",
+      "default": "Chat for a minute, then put your words on any of these. Pick one, or a few."
+    },
+    {
+      "type": "text",
+      "id": "start",
+      "label": "Button",
+      "default": "Start with your dog"
+    },
+    {
+      "type": "text",
+      "id": "trust_line",
+      "label": "Under the button",
+      "default": "Free US shipping on every order. A person checks every design before it prints."
+    },
+    {
+      "type": "text",
+      "id": "beat_one",
+      "label": "Step 1",
+      "default": "Tell Buddy about your dog."
+    },
+    {
+      "type": "text",
+      "id": "beat_two",
+      "label": "Step 2",
+      "default": "Add a photo, now or on the gift."
+    },
+    {
+      "type": "text",
+      "id": "beat_three",
+      "label": "Step 3",
+      "default": "Slide from sentimental to hilarious."
+    },
+    {
+      "type": "header",
+      "content": "Try the slider (example)"
+    },
+    {
+      "type": "text",
+      "id": "demo_label",
+      "label": "Label",
+      "default": "Try the slider"
+    },
+    {
+      "type": "text",
+      "id": "demo_for",
+      "label": "Example person",
+      "default": "Sarah"
+    },
+    {
+      "type": "text",
+      "id": "demo_dog",
+      "label": "Example dog",
+      "default": "Milo"
+    },
+    {
+      "type": "text",
+      "id": "demo_sentimental",
+      "label": "Sentimental line",
+      "default": "I'd choose you every time. Even when you leave."
+    },
+    {
+      "type": "text",
+      "id": "demo_warm",
+      "label": "Warm with a wink line",
+      "default": "You're my favorite person. The fridge is a close second."
+    },
+    {
+      "type": "text",
+      "id": "demo_hilarious",
+      "label": "Hilarious line",
+      "default": "I ate one sock for you. Just the one. You're welcome."
+    },
+    {
+      "type": "text",
+      "id": "demo_note",
+      "label": "Under the slider",
+      "default": "Every gift gets a slider like this. It sets the words and the painting."
+    },
+    {
+      "type": "header",
+      "content": "Buddy's AI (n8n)"
+    },
+    {
+      "type": "checkbox",
+      "id": "ai_on",
+      "label": "Use the AI for typed answers",
+      "info": "Off: typed answers become lines in the buyer's own words, with no AI call. Chip answers never call the AI.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "typed_url",
+      "label": "Typed answer webhook",
+      "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-typed-answer"
+    },
+    {
+      "type": "text",
+      "id": "compose_url",
+      "label": "Compose webhook",
+      "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose"
+    },
+    {
+      "type": "text",
+      "id": "legal_note",
+      "label": "Company note under the first screen",
+      "info": "A quiet line under the first screen with the policy links, until the Heartside footer is placed.",
+      "default": "Heartside is a Mindmaker LLC company."
+    },
+    {
+      "type": "textarea",
+      "id": "privacy",
+      "label": "AI privacy note",
+      "info": "Shows wherever the buyer can type. Keep it true to the privacy policy.",
+      "default": "Your answers, including choices you select, are processed through n8n using Google Gemini and Anthropic Claude to write your note. Your photo and artwork instructions are processed through Teeinblue using OpenAI. We don't send your email, address or payment details to the text-writing services."
+    },
+    {
+      "type": "header",
+      "content": "The gifts"
+    },
+    {
+      "type": "product",
+      "id": "product_mug",
+      "label": "Mug product"
+    },
+    {
+      "type": "product",
+      "id": "product_blanket",
+      "label": "Blanket product"
+    },
+    {
+      "type": "checkbox",
+      "id": "blanket_purchase",
+      "label": "Enable native blanket purchase route",
+      "default": false,
+      "info": "With shared artwork choices enabled, sends only the selected blanket product to blanket-native. Enable after its native campaign, price and purchase flow are verified."
+    },
+    {
+      "type": "product",
+      "id": "product_print",
+      "label": "Portrait product"
+    },
+    {
+      "type": "product",
+      "id": "product_ornament",
+      "label": "Ornament product (held)"
+    },
+    {
+      "type": "checkbox",
+      "id": "ornament_bundle",
+      "label": "Show the ornament at $19 with another gift",
+      "info": "Tick only once a Shopify automatic discount takes $5 off the ornament when another gift is in the cart. Until then the page shows $24, so it never promises a price the cart won't charge.",
+      "default": false
+    }
   ],
-  "presets": [{ "name": "HS3 gift chat" }]
+  "presets": [
+    {
+      "name": "HS3 gift chat"
+    }
+  ]
 }
 {% endschema %}

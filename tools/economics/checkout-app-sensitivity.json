@@ -1,0 +1,18 @@
+{
+  "name": "Checkout app sensitivity, stack after a base set: the owner-approved Function Studio Advanced plan at USD69 per 30 days, included in full as docs/ECONOMICS.md (October 27) does for its scenarios, even during the trial ending November 1. Remove only if the app is uninstalled after the trial.",
+  "additions": {
+    "overhead.checkout_app": {
+      "amount": {
+        "value": "69",
+        "status": "assumption",
+        "source": "docs/ECONOMICS.md October 27 2026: Function Studio Advanced plan installed at USD69/month with a five-day trial ending November 1; retention undecided. Repository record, not re-read from Shopify billing in this run."
+      },
+      "period_days": 30,
+      "heartside_share": {
+        "value": "1",
+        "status": "assumption",
+        "source": "Installed on the Heartside store only"
+      }
+    }
+  }
+}

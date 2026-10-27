@@ -19,4 +19,16 @@ assert.equal(facts({home:'typed',typed:{home:injection}})[0].text,injection, 'un
 assert.deepEqual(facts({home:'typed',typed:{home:'x'.repeat(241)}}), [], 'oversized fact is omitted rather than cutting its qualifier');
 assert.ok(serialize(fromChat({home:'typed',spot:'typed',together:'typed',typed:{home:'"'.repeat(240),home_follow:'"'.repeat(240),spot:'"'.repeat(240),together:'"'.repeat(240)}})).length<=1600);
 assert.ok(!JSON.stringify(facts({dog:'Private name',rec:'Private recipient',rel:'partner',breed:'Pug',together:'naps'})).includes('Private'));
-console.log('PASS: source-only habits, no breed/note inference, branch changes, negations, privacy and bounded payload. These checks do not certify image-model behavior.');
+// 27 Oct: buyer-tagged favorite toy and collar or accessory, typed in their own words.
+assert.deepEqual(facts({toy:'  Green squeaky\thedgehog ',accessory:'Red plaid bandana'}), [{source:'toy',text:'Green squeaky hedgehog'},{source:'accessory',text:'Red plaid bandana'}]);
+assert.deepEqual(facts({toy:'x'.repeat(81),accessory:'y'.repeat(81)}), [], 'an over-long description is omitted, never cut');
+assert.equal(facts({toy:'x'.repeat(80)})[0].text.length, 80);
+assert.deepEqual(facts({toy:'   ',accessory:['bandana'],typed:{toy:'Typed toy outside the tag'}}), [], 'only plain s.toy and s.accessory strings count');
+assert.deepEqual(facts({breed:'Jack Russell',energy:'bold-cheeky',tone:'Terrier Menace'}), [], 'breed and its energy are never facts');
+assert.deepEqual(JSON.parse(serialize({version:1,facts:[{source:'energy',text:'bold-cheeky'},{source:'breed',text:'Beagle'},{source:'toy',text:'Rope'},{source:'toy',text:'Second rope'}]})).facts, [{source:'toy',text:'Rope'}], 'unknown provenance and duplicate sources are dropped');
+const six = facts({home:'typed',spot:'typed',together:'typed',typed:{home:'a'.repeat(240),home_follow:'b'.repeat(240),spot:'c'.repeat(240),together:'d'.repeat(240)},toy:'e'.repeat(80),accessory:'f'.repeat(80)});
+assert.deepEqual(six.map(f=>f.source), ['home','home_follow','spot','together','toy','accessory'], 'toy and accessory fit alongside the existing four');
+assert.ok(serialize(fromChat({home:'typed',spot:'typed',together:'typed',typed:{home:'"'.repeat(240),home_follow:'"'.repeat(240),spot:'"'.repeat(240),together:'"'.repeat(240)},toy:'"'.repeat(80),accessory:'"'.repeat(80)})).length<=1600);
+assert.equal(facts({toy:injection})[0].text, injection, 'a typed toy stays quoted data');
+assert.deepEqual({...context.window.HSArtworkProfile.limits}, {facts:6,serialized:1600,toy:80,accessory:80});
+console.log('PASS: source-only habits, buyer-typed toy and accessory within limits, no breed/energy/note inference, branch changes, negations, privacy and bounded payload. These checks do not certify image-model behavior.');

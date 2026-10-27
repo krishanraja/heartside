@@ -27,6 +27,11 @@
       "status": "unknown",
       "source": "Measure artwork, copy, abandoned sessions and all failed/retried calls; historical image sample is not per-sale cost"
     },
+    "ai_per_customization_line": {
+      "value": null,
+      "status": "unknown",
+      "source": "Generation allowance charged once per customized line (gift), such as the owner-decided free in-cart artwork redo of October 27 2026 (at most one extra generation per gift). Observed provider usage is about USD 0.123-0.127 per artwork generation (docs/evidence/2026-10-23-native-artwork-cost-and-resolution.md, 2026-10-24-first-native-screenprint.md); redo take-up is unmeasured. Set per scenario."
+    },
     "review_support_labor_per_order": {
       "value": null,
       "status": "unknown",
@@ -680,6 +685,405 @@
         "value": null,
         "status": "unknown",
         "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_and_unframed": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "11.68",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 11oz mug + 12x18 unframed: 6.69 + 4.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "2.86",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.35 + 1.51) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "unframed_and_blanket": {
+      "items": [
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "18.98",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (12x18 unframed + 50x60 sherpa: 4.99 + 13.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "5.96",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.51 + 4.45) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "frame_and_blanket": {
+      "items": [
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "24.88",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 12x18 frame + 50x60 sherpa: 10.89 + 13.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "8.37",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (3.92 + 4.45) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "unframed_and_frame": {
+      "items": [
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "15.88",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (12x18 unframed + black 12x18 frame: 4.99 + 10.89) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "5.43",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.51 + 3.92) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "two_mugs": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "13.38",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 11oz mug + black 11oz mug: 6.69 + 6.69) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "2.70",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.35 + 1.35) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "two_unframed": {
+      "items": [
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "9.98",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (12x18 unframed + 12x18 unframed: 4.99 + 4.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "3.02",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.51 + 1.51) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "two_frames": {
+      "items": [
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "21.78",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 12x18 frame + black 12x18 frame: 10.89 + 10.89) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "7.84",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (3.92 + 3.92) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "two_blankets": {
+      "items": [
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "27.98",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (50x60 sherpa + 50x60 sherpa: 13.99 + 13.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "8.90",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (4.45 + 4.45) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_frame_blanket": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "frame_black_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "31.57",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 11oz mug + black 12x18 frame + 50x60 sherpa: 6.69 + 10.89 + 13.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "9.72",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.35 + 3.92 + 4.45) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "mug_unframed_blanket": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "unframed_12x18",
+          "quantity": 1
+        },
+        {
+          "variant": "blanket_50x60",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "25.67",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 11oz mug + 12x18 unframed + 50x60 sherpa: 6.69 + 4.99 + 13.99) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "7.31",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.35 + 1.51 + 4.45) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    },
+    "three_mugs": {
+      "items": [
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        },
+        {
+          "variant": "mug_black",
+          "quantity": 1
+        }
+      ],
+      "shipping": {
+        "value": "20.07",
+        "status": "assumption",
+        "source": "Conservative sum of single-item supplier shipping (black 11oz mug + black 11oz mug + black 11oz mug: 6.69 + 6.69 + 6.69) from the authenticated Printful Basic-order unpaid Brooklyn NY quotes of October 24 2026; no combined-basket quote exists. Both observed mixed-basket quotes (mug+frame 17.58, mug+blanket 20.68) equaled the sum of their single-item shipping; same-product additional-item rates may be lower. Each line is a separate personalized gift. Teeinblue route parity unverified."
+      },
+      "holiday_surcharge": {
+        "value": "0.40",
+        "status": "assumption",
+        "source": "One USD 0.40 Printful US holiday surcharge per Printful order (account email October 15, read October 24; October 15 2026-January 17 2027). Assumes the basket ships as one Printful order, as both observed mixed-basket quotes did; reconfirm actual routing."
+      },
+      "seller_borne_tax": {
+        "value": "4.05",
+        "status": "assumption",
+        "source": "Sum of single-item supplier tax (1.35 + 1.35 + 1.35) from the same October 24 2026 Brooklyn NY quotes; the two observed mixed baskets were 0.04 below their sums. Supplier tax only; does not establish Shopify customer sales tax."
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Tax excluded from revenue but processing fee can apply to tax collected"
+      }
+    }
+  },
+  "services": {
+    "artists_touch": {
+      "note": "Owner decision October 27 2026: paid Artist's touch add-on in which Krish reworks one gift's design by hand, adding 5 days; candidate prices USD 19, 24 or 29. Not a live product; creating it or setting its price needs explicit owner approval.",
+      "supplier_and_shipping": {
+        "value": "0",
+        "status": "assumption",
+        "source": "Separate service line with no Printful item, shipping or surcharge; the gift it modifies keeps its own supplier cost on its own line. Revisit if a reworked design forces a supplier remake."
+      },
+      "labor_minutes_low": {
+        "value": null,
+        "status": "unknown",
+        "source": "Measure Krish's actual rework, file handling and buyer contact minutes per add-on; labor calibration deferred by owner October 24 2026"
+      },
+      "labor_minutes_high": {
+        "value": null,
+        "status": "unknown",
+        "source": "Measure Krish's actual rework, file handling and buyer contact minutes per add-on; labor calibration deferred by owner October 24 2026"
+      },
+      "labor_hourly_value": {
+        "value": null,
+        "status": "unknown",
+        "source": "Labor calibration deferred by owner October 24 2026; set a stated planning value per scenario, never zero"
+      },
+      "extra_ai_per_service": {
+        "value": null,
+        "status": "unknown",
+        "source": "Any extra artwork generation the rework uses; about USD 0.127 per generation observed"
+      },
+      "collected_sales_tax_rate": {
+        "value": null,
+        "status": "unknown",
+        "source": "Taxability of the service line by state is unconfirmed; processing fee can apply to tax collected"
       }
     }
   },
