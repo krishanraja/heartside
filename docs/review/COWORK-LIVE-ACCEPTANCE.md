@@ -29,11 +29,11 @@ Run `cd tools/preview && node preview-acceptance.mjs --theme <id>` first; it cov
 7. **Teeinblue still matches.** Read-only DOM check on each product page: a file input exists under `.tee-field--photo` or with an id starting `tee-photo`. The on-device photo check and the location-metadata stripping both rely on it. If neither exists, report it as blocking.
 8. **Photo check (owner-assisted, optional).** Only if Krish chooses to, he picks a deliberately unusable photo (a tiny screenshot, or a very dark or blurred one) on a product page. Expected: a plain reason ("This photo is too blurry for me to see your dog clearly...") and no request to Teeinblue in the network panel. Never pick a usable photo in this part.
 9. **Cart.** With an existing accepted-artwork QA session if the owner supplies one: the line shows the real design, "Format: Framed" or "Unframed" for a portrait, "Not quite right? Make another version." once, and the Artist's touch offer at $29 once per gift. Quantity 1→2→1 reads back from the cart each time. The empty cart shows Buddy and "Nothing in here yet. I checked twice." with "Start with your dog".
-10. **Copy.** No exclamation marks, no em dashes, no retired names (Morning Mug, Couch Blanket, Framed Print, Tree Ornament, Annual Review, Body Double, Uniform) or prices ($29, $89, $24, $39) anywhere a buyer can reach, and no "calculated at checkout".
+10. **Copy.** No exclamation marks, no em dashes, no retired names (Morning Mug, Couch Blanket, Framed Print, Tree Ornament, Annual Review, Body Double, Uniform) or prices ($89, $24, $39, and $29 anywhere except the Artist's touch add-on) anywhere a buyer can reach, and no "calculated at checkout".
 
 Conclude Part A with **ready for Krish to publish**, **hold for the listed defects**, or **insufficient evidence at the named boundary**.
 
-## Part B: production (after Krish publishes)
+## Part B: production (due now: the redesign is live)
 
 1. **Production is the surface.** Open https://heartside.io/, the three product pages (`/products/your-dogs-illustrated-mug`, `/products/your-dogs-personality-blanket`, `/products/your-dogs-portrait`) and `/cart` with no preview parameter, at both sizes, and record the final URL, time and whether a password wall appears.
 2. **Repeat Part A, items 1 to 7 and 10, on production.** Report any difference from the preview.
@@ -50,7 +50,7 @@ Each runs only after Krish says yes to that task in the session that does it, wi
 
 1. **Teeinblue prompts.** Apply `tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md` to the mug, portrait and blanket campaigns, including the hidden Energy text field (default `none`); read each prompt back and compare its SHA-256 with the spec. The prompts are about 9,100 characters; report any length limit.
 2. **Toy reference test (optional).** Switch on the campaign reference image for one test only, if Krish wants to try a favorite-toy reference; switch it off again afterwards.
-3. **Example batch.** Run `docs/evidence/2026-10-27-example-batch-spec.md`: three Drive dogs × Sentimental and Hilarious × three products, 18 generations, cap 20, about $2.50; results to Drive `02_Imagery/Examples-2026-10-27`, every image labelled Example, reviewed by a person before use.
+3. **Example batch.** Krish runs it from a local Claude session through Codex: the 19 jobs in `design/examples-2026-10-27/` (cap 20), the brief in its README, results pushed to branch `examples/2026-10-27` with a `review.md` line per image. Every image is labelled Example and reviewed by a person before use. The cloud session brings the kept images into the site.
 4. **Christmas cut-offs.** When Printful publishes its 2026 US holiday cut-offs, put the earliest one that covers all three products into the memo strip's "Last order date for Christmas" on the theme Krish names, and read the strip back.
 
 Report each task as done with readback, not run, or blocked, with the reason.
