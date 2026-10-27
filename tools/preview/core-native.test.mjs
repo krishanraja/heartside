@@ -27,6 +27,23 @@ for(const minified of [false,true]) {
       style='comic';assert.notEqual(c.artRequestKey(),first);style='ink';facts='{"version":1,"facts":[{"source":"spot","text":"Rests by the door"}]}';assert.notEqual(c.artRequestKey(),first);
     });
   }
+  test(mode+': optional blank note and signature require visibly rendered empty text',()=>{
+    let layerPresent=true, textPresent=true, rendered='';
+    const text={querySelectorAll:()=>[],get textContent(){return rendered;}};
+    const c={nativeArtworkPurchase:()=>true,mugProduct:()=>false,answer:()=>'',document:{querySelector:()=>({getAttribute:()=> 'true'}),getElementById:()=>layerPresent?{querySelector:()=>textPresent?text:null}:null},tibFields:()=>['line4','signed'].map(k=>({rule:{k},el:{querySelector:()=>({name:k,value:''})}}))};
+    run(['mugArtworkValue','nativePurchaseReady'],c,minified);
+    assert.equal(c.nativePurchaseReady(),true);
+    rendered='Old note';assert.equal(c.nativePurchaseReady(),false);rendered='';
+    textPresent=false;assert.equal(c.nativePurchaseReady(),false);textPresent=true;
+    layerPresent=false;assert.equal(c.nativePurchaseReady(),false);
+  });
+  test(mode+': disabled native purchase gives shopper availability copy without starting a request',()=>{
+    let click, message='', blocked=0;
+    const c={document:{addEventListener:(event,fn)=>{if(event==='click')click=fn;},querySelector:()=>({getAttribute:()=> 'false'})},nativeArtworkPurchase:()=>true,cityArtPreview:()=>false,giftView:()=>false,nativePurchaseReady:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketReviewAccepted:()=>true,blanketPurchaseStatus:s=>message=s};
+    run(['guardGiftPhoto'],c,minified);c.guardGiftPhoto();
+    click({target:{closest:s=>s.includes('recustomize')?null:{}},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});
+    assert.equal(blocked,1);assert.equal(message,'This gift is not available to order yet.');
+  });
   test(mode+': new native mug bypasses only the legacy four-line proof gate',()=>{
     let click;const c={document:{addEventListener:(_,fn)=>click=fn},mugProduct:()=>true,nativeArtworkPurchase:()=>true,tibFields:()=>{throw Error('legacy four-line gate must not run');}};
     run(['guardMugProof'],c,minified);c.guardMugProof();click({target:{closest:()=>({})}});
@@ -41,4 +58,12 @@ test('new native templates are disabled by default and use their real photo laye
   }
   const liquid=readFileSync(new URL('../../shopify/snippets/hs-native-artwork.liquid',import.meta.url),'utf8');
   assert.match(liquid,/native_artwork_kind == 'mug'.*layer-696867.*native_artwork_kind == 'print'.*layer-747218/);
+});
+
+test('shopper recovery copy does not imply an API charge or expose enablement settings',()=>{
+  const liquid=readFileSync(new URL('../../shopify/snippets/hs-native-artwork.liquid',import.meta.url),'utf8');
+  assert.doesNotMatch(liquid,/charge again|API|billing/);
+  assert.match(liquid,/will not start a new artwork until you choose a photo again/);
+  assert.doesNotMatch(source,/Ordering must also be enabled/);
+  assert.match(source,/This gift is not available to order yet/);
 });

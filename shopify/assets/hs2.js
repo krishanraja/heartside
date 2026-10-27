@@ -1059,7 +1059,8 @@
       if (nativeArtworkPurchase()) {
         if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted() && nativePurchaseReady()) { syncBlanketProperties(); return; }
         e.preventDefault(); e.stopImmediatePropagation();
-        blanketPurchaseStatus('Finish and save artwork for your current choices, then tick the artwork review before adding this gift. Ordering must also be enabled. Resolve any error shown by the personalizer.');
+        var nativeBuy = document.querySelector('#buy[data-hs2-artwork-kind]');
+        blanketPurchaseStatus(nativeBuy && nativeBuy.getAttribute('data-hs2-purchase-enabled') !== 'true' ? 'This gift is not available to order yet.' : 'Finish and save your artwork, then tick the artwork review before adding this gift. If an error appears, follow the instructions beside your artwork.');
         return;
       }
       // This isolated template is for acceptance testing. AI completion, raw-photo
