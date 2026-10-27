@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Heartside brand assets
 
 Three files supplied by Krish, and two built from them. Use the supplied files as given. Do not redraw, retype or recolour them.

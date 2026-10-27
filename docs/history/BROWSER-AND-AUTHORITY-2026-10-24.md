@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Codex browser and autonomous execution rules
 
 ## Browser operating procedure

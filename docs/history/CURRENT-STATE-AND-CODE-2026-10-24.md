@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Current implementation checkpoint
 
 Latest resumption checkpoint: read `07-SESSION-HANDOFF.md` and repository `NOW.md` first when reconciling this older baseline. Six-style recipes/shared controls and approved tone routing are now implemented in the unpublished theme; the six actual generated outputs are still NOT RUN. The baseline table below is dated implementation history, not a direction to rebuild completed work. Exact latest native versions are in the private addendum.

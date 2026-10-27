@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Current evidence and release matrix
 
 This matrix defines acceptance, not a competing task checklist. Use the expanded `01-EXECUTION-QUEUE.md` for remaining work and `07-SESSION-HANDOFF.md` plus the linked October 24 evidence for the latest checkpoint. Supplier quotes and unpublished routing have advanced beyond the initial status column; actual six-style generation, production-source qualification and physical acceptance have not passed.

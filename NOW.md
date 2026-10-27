@@ -2,8 +2,8 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-10-27
-head: 45d927b40797f67962d240a9997e8c75afe84991; later closeout update may advance main
-lifecycle: live acceptance
+head: 785e0d7f609c3146ea46020a042d4ac6dc1e4853
+lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
 history_log: docs/history/LOG.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Current release checkpoint (27 October 2026)
+## Where it is right now (as of 2026-10-27)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119), and word-free sherpa blanket ($129). Old duplicate products have been archived or held, and the old core handles redirect to the clean ones. The reviewed theme, with native purchase and actual-design checkout settings enabled for all three products, was published on 27 October. The storefront password was removed. Independent uncookied public readback returned HTTP 200 without a password page for the homepage and all three clean product URLs, confirmed the reviewed theme as live, and found all ten current variants available at the expected prices. This is route/configuration acceptance, not a fresh interactive checkout. Normal Shopify Payments is accepting payments; its test gateway is off, and the three pre-existing $49 US market prices remain intact.
 
@@ -47,7 +47,24 @@ Release source was merged to main at `45d927b40797f67962d240a9997e8c75afe84991`;
 
 The earlier handoffs, execution queues, pricing scenarios, module notes and pre-release NOW checkpoints have been moved to [`docs/history/`](docs/history/README.md). They preserve provenance and must not be used as a current product, price or operations source.
 
+## What changed recently
+
+- **27 October:** The three core products and reviewed theme went live with normal payments. The fee-free blanket compatibility order confirmed the accepted artwork reached Teeinblue and produced an inspectable print file; physical print quality and a real paid order still await Krish's sample. See the release checkpoint above and the [live acceptance assignment](docs/review/COWORK-LIVE-ACCEPTANCE.md).
+- **27 October:** The current scope and economics were moved to stable documents because dated continuation notes and older price briefs could mislead a reviewer. The active sources are [scope](docs/SCOPE.md) and [economics](docs/ECONOMICS.md); older material is indexed in [history](docs/history/README.md).
+
 ## What is next and what is waiting on Krish
 
 - **Next action:** complete independent live customer-route and repository acceptance using [`CoWork`](docs/review/COWORK-LIVE-ACCEPTANCE.md) and [`Claude Code`](docs/review/CLAUDE-CODE-REPOSITORY-ACCEPTANCE.md), then Krish places the real blanket sample order. Do not claim physical quality or paid-order fulfillment until that sample is inspected.
 - North Star check (2026-10-27): holds.
+
+## Read next
+
+- [North Star](docs/NORTH_STAR.md): owner-approved ambition and measurement.
+- [Current scope](docs/SCOPE.md): products, buyer experience and release boundaries.
+- [Economics](docs/ECONOMICS.md): current prices, modeled costs and margin decision.
+- [Sync](docs/SYNC.md): repository and Drive source mapping.
+- [Live acceptance](docs/review/COWORK-LIVE-ACCEPTANCE.md) and [repository acceptance](docs/review/CLAUDE-CODE-REPOSITORY-ACCEPTANCE.md): independent checks still to run.
+
+## Do not trust
+
+The dated V2/V3 briefs, old CoWork prompts, 50% margin calculations, pre-release handoffs and old module guides were superseded by the 27 October current sources above. They are retained under [history](docs/history/README.md) for provenance only.

@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Prompt for Claude Cowork: everything left before launch (7 October)
 
 Paste everything below the line into the Cowork session. It replaces nothing: part A points at the 6 October prompt, which is still the spec for the Teeinblue work.

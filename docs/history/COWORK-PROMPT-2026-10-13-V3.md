@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Prompt for Claude Cowork: everything left before the v3 launch (13 October)
 
 Paste everything below the line into a Cowork session on Krish's computer, with these tabs open and logged in:

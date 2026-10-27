@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Creative system and customer experience
 
 The customer's dog is the protagonist. Buddy is the host. The gift note speaks as the dog to the recipient. One shared profile drives the range, with format-specific composition.

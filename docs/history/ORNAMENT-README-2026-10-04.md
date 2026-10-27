@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # The "Their Person" ornament: print files and Printify setup
 
 > **Out of the range in v2** (`docs/V2-FROM-THE-DOG.md` section 3). Kept for reference; the v2 "Tiny Me" ornament is a different design, specified in `docs/TEEINBLUE-SETUP.md`.

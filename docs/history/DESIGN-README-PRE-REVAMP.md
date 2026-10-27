@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # Design reference: "Heartside: From the dog" canvas
 
 These are the source files of the approved design canvas, exported so Claude Code can read them (the canvas itself is a private claude.ai page).

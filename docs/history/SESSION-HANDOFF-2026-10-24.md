@@ -1,3 +1,7 @@
+> **Historical.** Archived 2026-10-27. Not current guidance.
+> Replaced by: NOW.md, docs/SCOPE.md and docs/ECONOMICS.md.
+> Reason: records a superseded product, price, execution plan or source state.
+
 # New-session brief: finish the art, then samples, then launch
 
 Prepared October 24, 2026 at Krish's explicit request. This is a resumption brief, not a second checklist. **01-EXECUTION-QUEUE.md contains the 185 detailed tasks and their acceptance conditions.** START-HERE retains scope authority. NOW.md owns current venture status; this document records the handoff checkpoint.
