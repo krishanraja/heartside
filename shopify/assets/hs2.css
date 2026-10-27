@@ -1121,3 +1121,24 @@ product-card quick-add-component button { display: none !important; }
 .hs-photo-check[hidden] { display: none; }
 .hs-photo-check p { margin: 0; font-size: 15px; line-height: 1.45; }
 .hs-photo-check button { align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #121010; background: transparent; font: inherit; font-weight: 600; cursor: pointer; }
+
+/* The product page as the chat's last step (snippets/hs-journey, hs2.js journeyCard): Buddy's
+   bar, the card of what carries over with its Change links, and a direct visit's offer */
+.hs-journey { display: flex; flex-direction: column; gap: 12px; }
+.hs-journey__bar { display: flex; align-items: center; gap: 10px; }
+.hs-journey__buddy { width: 52px; flex: none; }
+.hs-journey__line { margin: 0; font-family: var(--serif, "HS Fraunces", Georgia, serif); font-weight: 650; font-size: 20px; line-height: 1.2; }
+.hs-journey__intro { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; }
+.hs-journey__intro[hidden], .hs-journey__card[hidden] { display: none; }
+.hs-journey__intro p { margin: 0; font-size: 16px; line-height: 1.45; }
+.hs-journey__go { display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; background: #121010; color: #FBF6F1; font-weight: 600; font-size: 17px; text-decoration: none; }
+.hs-journey__here { min-height: 44px; border: 0; background: none; color: #5A4A44; font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.hs-journey__card { display: flex; flex-direction: column; border-radius: 18px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; padding: 4px 16px; }
+.hs-journey__row { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 10px 0; border-top: 1px dashed #E2D4C8; font-size: 15px; line-height: 1.4; }
+.hs-journey__row:first-child { border-top: 0; }
+.hs-journey__k { font-family: "HS Courier Prime", "Courier New", monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A4A2B; }
+.hs-journey__note { font-family: "HS Courier Prime", "Courier New", monospace; }
+.hs-journey__v em { font-family: "HS Fraunces", Georgia, serif; color: #8A4A2B; }
+.hs-journey__row a { font-size: 14px; color: #121010; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
+.hs-journey__warn { margin: 0; padding: 0 0 10px; font-size: 13.5px; color: #5A4A44; }
+@media (max-width: 420px) { .hs-journey__row { grid-template-columns: minmax(0, 1fr) auto; } .hs-journey__k { grid-column: 1 / -1; } }

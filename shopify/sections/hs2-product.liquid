@@ -107,6 +107,7 @@
 
     {% endif %}
     <div class="hs2-product__info">
+      {%- if native_artwork -%}{% render 'hs-journey', s: s %}{%- endif -%}
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when 'stamp' -%}
@@ -144,7 +145,7 @@
               <div class="hs2-product__desc" {{ block.shopify_attributes }}>{{ product.description }}</div>
             {%- endif -%}
           {%- when 'answers' -%}
-            {% if artwork_preview or native_artwork %}<div class="hs-art-choices" data-hs-art-choices></div>{% endif %}
+            {% if artwork_preview or native_artwork %}<div class="hs-art-choices" id="hs-art-choices" data-hs-art-choices></div>{% endif %}
             {% if native_artwork %}{% render 'hs-native-artwork', settings: s %}{% endif %}
             {%- comment -%} The review's answers, short. Once they are in Teeinblue's preview, its copies of
               them fold away and "Edit details" opens them again. {%- endcomment -%}
@@ -241,6 +242,7 @@
             {%- endif -%}
           {%- when 'fine' -%}
             <div class="hs2-product__fine" {{ block.shopify_attributes }}>
+              {%- if block.settings.line_ai != blank -%}<div>{{ block.settings.line_ai }}</div>{%- endif -%}
               {%- if block.settings.line_1 != blank -%}<div>{{ block.settings.line_1 }}</div>{%- endif -%}
               {%- if block.settings.line_2 != blank -%}<div>{{ block.settings.line_2 }}</div>{%- endif -%}
               {%- if block.settings.link_label != blank -%}<div><a href="{{ routes.root_url }}#closure">{{ block.settings.link_label }}</a></div>{%- endif -%}
@@ -328,6 +330,7 @@
     {
       "type": "fine", "name": "Policy lines", "limit": 1,
       "settings": [
+        { "type": "text", "id": "line_ai", "label": "How it is made", "info": "Keep it true: no claim of a uniquely trained model.", "default": "Painted with the most capable AI image models available, guided by Heartside's own breed and personality notes." },
         { "type": "text", "id": "line_1", "label": "Line 1", "default": "A person checks every design before it prints." },
         { "type": "text", "id": "line_2", "label": "Line 2", "default": "Misprinted or damaged? Full refund or a free remake." },
         { "type": "text", "id": "link_label", "label": "Link to the Christmas order dates", "info": "Empty hides it. It goes to the homepage's Christmas order dates, so leave it empty while that section is off." }

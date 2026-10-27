@@ -455,9 +455,55 @@
     var personWrap = document.querySelector('[data-hs2-person-wrap]');
     if (personWrap) personWrap.hidden = !answer('person');
     bridgeSoon();
+    journeyCard();
     exhibits();
     leakUI();
     drawSoon();
+  }
+  /* The product page as the chat's last step (27 Oct): Buddy's bar and the journey card show what
+     the buyer told Buddy (from, to, the printed words, what gets painted, style and tone), each
+     with a Change link back to that exact chat step, which returns here (&return=). */
+  function journeyCard() {
+    var box = document.querySelector('[data-hs-journey]');
+    if (!box) return;
+    var gift = box.getAttribute('data-gift'), dog = answer('dog'), person = answer('person');
+    var line = box.querySelector('[data-hs-journey-line]'), intro = box.querySelector('[data-hs-journey-intro]'), card = box.querySelector('[data-hs-journey-card]');
+    var here = box.querySelector('[data-hs-journey-here]');
+    if (here && !here.__hs2) {
+      here.__hs2 = true;
+      here.addEventListener('click', function () {
+        journeyCard.here = true; journeyCard(); track('journey_fill_here', { gift: gift });
+        var form = document.querySelector('.tee-form-wrapper, [data-hs2-tib-gallery]');
+        if (form && form.scrollIntoView) form.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
+    }
+    if (!(dog && state.hs3_lines)) {
+      if (line) line.textContent = journeyCard.here ? "Fill it in below. I'll be right here." : "Hi, I'm Buddy. I help dogs pick gifts for their people.";
+      if (intro) intro.hidden = !!journeyCard.here;
+      if (card) card.hidden = true;
+      return;
+    }
+    if (intro) intro.hidden = true;
+    var want = 'Last step. Let\'s make ' + possessive(dog) + ' ' + gift + '.';
+    if (line && line.textContent !== want) line.textContent = want;
+    if (!card) return;
+    var esc_ = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+    var change = function (step) { return shopRoot() + '?step=' + step + '&return=' + gift; };
+    var facts = [];
+    try { facts = JSON.parse(artworkFacts()).facts.map(function (f) { return f.text; }); } catch (e) { facts = []; }
+    var style = '', tone = '';
+    try {
+      var choice = window.HSArtworkChoices && window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine && window.HSArtworkEngine.recipes;
+      if (choice && recipes) { style = recipes.styles[choice.style].label; tone = recipes.tones[choice.tone].label; }
+    } catch (e) { /* the choices load after this page's first paint */ }
+    var row = function (k, v, href, label) { return '<div class="hs-journey__row"><span class="hs-journey__k">' + k + '</span><span class="hs-journey__v">' + v + '</span>' + (href ? '<a href="' + esc_(href) + '">' + (label || 'Change') + '</a>' : '') + '</div>'; };
+    var html = row('From', esc_(dog) + (person ? ' for ' + esc_(person) : ''), change(person ? 'person' : 'dog'));
+    html += gift === 'blanket' ? row('Words', 'None. The blanket is all painting.') : row('Words', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>' + esc_(answer('signed')) + '</em>', change('gift-' + gift));
+    html += row('What I\'ll paint', facts.length ? facts.map(esc_).join(' · ') : esc_(dog) + ', just as they are.', change('home'));
+    if (style) html += row('Style and tone', esc_(style) + ' · ' + esc_(tone), '#hs-art-choices', 'Change below');
+    if (cityArtSaved()) html += '<p class="hs-journey__warn">Changing these means painting new artwork.</p>';
+    if (card.innerHTML !== html) card.innerHTML = html;
+    card.hidden = false;
   }
   function answerParams() {
     var p = new URLSearchParams();
@@ -2805,6 +2851,9 @@
       .then(function (r) { if (!r.ok) throw new Error('cart ' + r.status); return r.json(); })
       .then(function (cart) {
         settle.resolve({ cart: cartForEvent(cart), detail: { items: cart.items, itemCount: cart.item_count, source: 'hs2-personalizer', didError: false } });
+        // read back, then say it: the gift is in the cart, and the other gifts are one tap away
+        var dog = answer('dog');
+        if (!list && (cart.items || []).length) showNext(dog ? possessive(dog) + ' gift is in your cart.' : 'Your gift is in your cart.', 'Free US shipping on every order.', shopRoot() + '?step=choose', 'Add another gift');
       })
       .catch(function (e) { settle.reject(e); fallback(); });
   }
@@ -2949,7 +2998,7 @@
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
-    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); guardMugProof();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); window.addEventListener('hs-artwork-choices', function () { journeyCard(); }); guardMugProof();
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
