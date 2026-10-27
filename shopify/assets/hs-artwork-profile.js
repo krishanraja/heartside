@@ -52,6 +52,19 @@
     var value = JSON.stringify({ version: 1, facts: facts });
     return value.length <= MAX_SERIALIZED ? value : JSON.stringify({ version: 1, facts: [] });
   }
-  window.HSArtworkProfile = { fromChat: fromChat, serialize: serialize,
+  // What a buyer reads under "What I'll paint". The chip facts carry instructions for the image
+  // model after a semicolon ("do not depict distress", "the toy type is unspecified"); a buyer
+  // sees only the habit. Words the buyer typed are shown exactly as typed.
+  var CHIP_TEXT = {};
+  [HOME, SPOT, TOGETHER].concat(Object.keys(FOLLOW).map(function (k) { return FOLLOW[k]; })).forEach(function (map) {
+    Object.keys(map).forEach(function (k) { CHIP_TEXT[map[k]] = true; });
+  });
+  function plain(text) {
+    return CHIP_TEXT[text] ? text.split(';')[0].replace(/[\s.]+$/, '') + '.' : text;
+  }
+  function forBuyer(s) {
+    return fromChat(s).facts.map(function (f) { return plain(f.text); });
+  }
+  window.HSArtworkProfile = { fromChat: fromChat, serialize: serialize, forBuyer: forBuyer, plain: plain,
     limits: { facts: MAX_FACTS, serialized: MAX_SERIALIZED, toy: LIMITS.toy, accessory: LIMITS.accessory } };
 }());

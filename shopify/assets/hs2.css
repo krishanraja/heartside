@@ -1142,6 +1142,14 @@ product-card quick-add-component button { display: none !important; }
 .hs-journey__row a { font-size: 14px; color: #121010; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; display: inline-flex; align-items: center; }
 .hs-journey__warn { margin: 0; padding: 0 0 10px; font-size: 13.5px; color: #5A4A44; }
 @media (max-width: 420px) { .hs-journey__row { grid-template-columns: minmax(0, 1fr) auto; } .hs-journey__k { grid-column: 1 / -1; } }
+.hs-journey button.hs-journey__photo { width: 100%; margin: 6px 0 12px; border: 0; font-family: inherit; cursor: pointer; }
+/* a direct visit on a phone: Buddy's offer and its button fit in the first screen */
+@media (max-width: 600px) {
+  .hs-journey { gap: 8px; }
+  .hs-journey__intro { gap: 8px; padding: 12px 14px; }
+  .hs-journey__intro p { font-size: 15px; line-height: 1.4; }
+  .hs-journey__line { font-size: 18px; }
+}
 
 /* one redo per gift, in the cart (hs2.js redoOffers) */
 .hs2-redo { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-size: 14px; line-height: 1.4; }
@@ -1159,3 +1167,7 @@ product-card quick-add-component button { display: none !important; }
 .hs2-artist__photo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 .hs2-artist [data-hs2-artist-add] { min-height: 48px; padding: 0 16px; border: 0; border-radius: 14px; background: #121010; color: #FBF6F1; font: inherit; font-weight: 600; cursor: pointer; }
 .hs2-artist [data-hs2-artist-add]:disabled { background: #CFC4BB; }
+
+/* "Example" on every product photo (the live "Your design" layer has none) */
+/* .hs2-product__main is already position: relative */
+.hs2-product__tag { position: absolute; z-index: 2; top: 10px; left: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(18, 16, 16, .82); color: #fff; font: 700 11px/1.4 "HS DM Sans", "DM Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }

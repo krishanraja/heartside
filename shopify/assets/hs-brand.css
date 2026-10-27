@@ -234,7 +234,9 @@ cart-items-component .cart-items tbody > .cart-items__table-row:not(.cart-items_
 }
 cart-items-component .cart-items__title { font-family: var(--hs-sans); font-weight: 600; text-transform: none; color: var(--hs-ink); text-decoration: none; }
 cart-items-component .cart-items__price { font-family: var(--hs-sans); font-weight: 600; color: var(--hs-ink); }
-cart-items-component .cart-items__remove { color: var(--hs-ink); }
+cart-items-component .cart-items__remove { color: var(--hs-ink); min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; }
+cart-items-component .quantity-selector { min-height: 44px; }
+cart-items-component .quantity-selector :is(button, input) { min-height: 44px; min-width: 44px; }
 cart-items-component .quantity-selector { border-radius: var(--hs-radius-field); border-color: var(--hs-line); background-color: var(--hs-white); }
 
 /* the brand's primary button: continue shopping and checkout */
@@ -276,3 +278,8 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
 .hs-cart-empty__buddy { width: 96px; }
 .hs-cart-empty__line { margin: 0; font-family: "HS Fraunces", Georgia, serif; font-weight: 650; font-size: 22px; line-height: 1.2; color: var(--hs-ink, #121010); }
 @media (prefers-reduced-motion: no-preference) { .hs-cart-empty .hs-buddy__ear { animation: hs-ear 3.2s ease-in-out infinite; } }
+
+/* Helio's cart says "Taxes and shipping calculated at checkout." in its own markup; it stays hidden
+   until hs2.js replaces it with the true line (free US shipping), and stays hidden if the script
+   never runs, rather than showing the wrong promise */
+.cart-totals__tax-note:not([data-hs-note]) { visibility: hidden; }

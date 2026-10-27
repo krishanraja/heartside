@@ -82,6 +82,7 @@
     try { r = window.HSBreeds.lookup(b); } catch (e) { r = null; }
     return r && r.exact ? { name: r.name, tone: r.tone } : null;
   }
+  function possessiveName(d) { return /s$/i.test(d) ? d + "'" : d + "'s"; }
   function dogFor() { var n = names(), d = { name: n.dog, pronoun: n.she }, b = breedInfo(); if (b) { d.breed = b.name; d.tone = b.tone; } return d; }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clearTimers() { timers.forEach(function (t) { clearTimeout(t); }); timers = []; }
@@ -408,6 +409,9 @@
   function settleCompose(request, r) {
     if (!S.composeRequest || S.composeRequest.id !== request.id) return;
     if (!r) {
+      // the reveal's own first note: the chat's lines stay, the slider stays free, and nothing
+      // is said; a later Update note still counts against the call cap
+      if (request.auto) { S.composeRequest = null; save(); if (!ui.editing) render(); return; }
       S.composeRequest.status = 'uncertain'; save(); if (!ui.editing) render(); return;
     }
     var lines = {};
@@ -424,7 +428,7 @@
     }
     save(); if (!ui.editing) render();
   }
-  function compose(tone, rewrite) {
+  function compose(tone, rewrite, auto) {
     tone = tone || 'warm';
     if (['sentimental', 'warm', 'hilarious'].indexOf(tone) === -1 || S.composeRequest) return;
     if (!S.baseLines) S.baseLines = allLines();
@@ -435,7 +439,7 @@
     if (!canCall(cfg.composeUrl)) { ui.toneStatus = 'Updates are unavailable right now. Your words are unchanged.'; render(); return; }
     var body = composeBody(tone);
     var id = sessionId() + '-note-' + (S.composeAsked = (S.composeAsked || 0) + 1);
-    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, status: 'pending' };
+    var request = S.composeRequest = { id: id, key: key, tone: tone, rewrite: !!rewrite, auto: !!auto, status: 'pending' };
     save();
     // Persist before dispatch. If storage is unavailable, a reload would defeat the guard.
     var persisted = false;
@@ -705,6 +709,8 @@
   function render() {
     if (!frame) return;
     var keepToneFocus = document.activeElement && document.activeElement.hasAttribute('data-hs3-tone');
+    // a buyer working in the chat keeps their place: the control they pressed is about to be redrawn
+    var hadFocus = !!(document.activeElement && frame.contains(document.activeElement));
     var n = names();
     writeHistory();
     // animations play when a new view arrives, never on a re-render of the same one
@@ -722,6 +728,12 @@
     photoStorageStatus();
     bind();
     if (keepToneFocus) { var tone = frame.querySelector('[data-hs3-tone]'); if (tone) tone.focus(); }
+    // a new step: focus lands on Buddy's question (read once, so its live region steps aside),
+    // never on the page, so a screen reader hears the question and keyboard users carry on
+    else if (hadFocus && frame.classList.contains('is-new') && !frame.contains(document.activeElement)) {
+      var q = frame.querySelector('.hs3-bubble') || frame.querySelector('h1, h2');
+      if (q) { q.removeAttribute('aria-live'); q.setAttribute('tabindex', '-1'); try { q.focus({ preventScroll: true }); } catch (e) { q.focus(); } }
+    }
   }
   // a new step starts where its top is in view; the header stays where it is
   function toView() {
@@ -796,7 +808,7 @@
   // what the painting will draw on: the buyer's own answers, never the breed
   function paintFacts() {
     if (!window.HSArtworkProfile) return [];
-    try { return window.HSArtworkProfile.fromChat(S).facts.map(function (f) { return f.text; }); } catch (e) { return []; }
+    try { return window.HSArtworkProfile.forBuyer(S); } catch (e) { return []; }
   }
   function chatView(n) {
     var m = chatQ = chatModel(n);
@@ -907,7 +919,7 @@
       h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design made from your dog’s photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
     }
     var ret = S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url ? '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>' : '';
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p>' + (ret && !ui.editing ? ret : '<button type="button" class="hs3-btn" data-hs3="them">That\'s them. Choose gifts</button>') + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
+    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p>' + (ret && !ui.editing ? ret : '<button type="button" class="hs3-btn" data-hs3="them">Choose ' + esc(possessiveName(n.dog)) + ' gifts</button>') + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
     return h;
   }
   /* The gift as it arrives: the real product photo (labelled Example, it is someone else's dog),
@@ -1278,7 +1290,7 @@
     if (!S.composeStarted) {
       S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; S.composeStarted = true; save();
       track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
-      compose();
+      compose('warm', false, true);
     }
     startReveal(reviewGifts().indexOf(S.gift) !== -1 && S.tabbed ? S.gift : recGift());
   }
@@ -1358,6 +1370,10 @@
       });
     });
     var file = frame.querySelector('[data-hs3-file]');
+    // the dog detector starts loading as the buyer reaches for a photo, so the no-dog check is
+    // ready by the time they have picked one
+    var pick = file && file.closest ? file.closest('label') : null;
+    if (pick) pick.addEventListener('pointerdown', function () { try { if (window.HSPhotoQuality) window.HSPhotoQuality.loadDetector(); } catch (e) { /* the check fails open */ } }, { once: true });
     if (file) file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f || !/^image\//.test(f.type || 'image/')) return;
@@ -1477,9 +1493,15 @@
     if (!historyOK()) return;
     // Back and Forward show the step they land on, with its answer; nothing is sent
     window.addEventListener('popstate', function (e) {
-      var st = e.state || {};
-      nav.depth = st.depth || 0; nav.route = '';
-      applyRoute(st.hs3 || routeFromURL() || 'hero', true);
+      var st = e.state || {}, was = nav.depth, want = st.hs3 || routeFromURL() || 'hero';
+      nav.depth = st.depth || 0;
+      // a step the answers no longer reach (a typed answer's follow-up, once answered) is passed
+      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere
+      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was) {
+        try { if (nav.depth < was && nav.depth > 0) { window.history.back(); return; } if (nav.depth > was) { window.history.forward(); return; } } catch (err) { /* show the clamped step below */ }
+      }
+      nav.route = '';
+      applyRoute(want, true);
       if (typeof st.y === 'number') { try { window.scrollTo(0, st.y); } catch (err) { /* old browser */ } } else toView();
     });
     // back from a product page through the browser's cache: re-read the answers that page may have used

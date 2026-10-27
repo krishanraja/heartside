@@ -44,7 +44,7 @@
 .hs3-field { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 17px; font-family: var(--sans); background: #fff; color: var(--ink); min-height: 48px; }
 .hs3-field--mono { font-family: var(--mono); font-size: 15px; padding: 10px 12px; min-height: 44px; }
 .hs3-field.is-need { border-color: var(--stamp); }
-.hs3 :is(.hs3-btn, .hs3-ghost, .hs3-quiet, .hs3-chip, .hs3-tab, .hs3-opt, .hs3-field):focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.hs3 :is(.hs3-btn, .hs3-ghost, .hs3-quiet, .hs3-chip, .hs3-tab, .hs3-opt, .hs3-field, .hs3-fan__item, .hs3-swatch, .hs3-bubble, summary, input[type="range"], a):focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 
 .hs3-pills { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
 .hs3-pill { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; line-height: 1; }
@@ -171,7 +171,7 @@ details.hs3-note-wrap[open] > summary { margin-bottom: 8px; }
 .hs3-inset { position: absolute; left: -6px; bottom: -14px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .hs3-photo--inset { width: 76px; height: 76px; box-shadow: 0 0 0 4px var(--cream), 0 10px 18px -10px rgba(30, 23, 20, .6); }
 .hs3-inset__label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--chestnut); background: var(--cream); padding: 1px 6px; border-radius: 4px; }
-.hs3-turn { display: block; margin: 18px auto 0; font-size: 13.5px; }
+.hs3-turn { display: block; margin: 18px auto 0; font-size: 13.5px; min-height: 44px; }
 .hs3-note--print { width: min(340px, 100%); }
 .hs3-note--print .hs3-line { font-size: 16px; min-height: 22px; margin-top: 6px; }
 .hs3-stage .hs3-paint { width: min(360px, 100%); margin-top: 0; }
@@ -208,19 +208,20 @@ details.hs3-note-wrap[open] > summary { margin-bottom: 8px; }
 .hs3-tone__top, .hs3-tone__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .hs3-tone__top strong { font-weight: 600; color: var(--chestnut); }
 .hs3-tone__row { margin-top: 3px; }
-.hs3-tone__row input { flex: 1; min-width: 30px; accent-color: var(--chestnut); cursor: pointer; }
-.hs3-tone__row input:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+/* the slider is the signature control: a full 44px touch target, not a 16px line */
+.hs3-tone__row input { flex: 1; min-width: 30px; min-height: 44px; accent-color: var(--chestnut); cursor: pointer; }
+.hs3-tone__row input:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
 .hs3-tone__status { margin: 2px 0 0; font-size: 10px; }
 .hs3-tone__update { display: flex; align-items: center; gap: 10px; min-height: 44px; }
 .hs3-tone__update .hs3-tone__status { flex: 1; }
 .hs3-tone__button { flex: 0 0 auto; min-height: 44px; padding: 6px 12px; border: 1px solid var(--chestnut); border-radius: 8px; color: var(--chestnut); background: transparent; font: inherit; cursor: pointer; }
 .hs3-tone__button:disabled { opacity: .5; cursor: default; }
-.hs3-tone__button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.hs3-tone__button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hs3-edit { padding: 12px 18px 0; display: flex; flex-direction: column; gap: 8px; }
 .hs3-edit__nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .hs3-edit__arrow { appearance: none; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--ink); font-size: 24px; line-height: 1; cursor: pointer; }
 .hs3-edit__arrow:disabled { opacity: .35; cursor: default; }
-.hs3-edit__arrow:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.hs3-edit__arrow:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hs3-edit__row { display: flex; flex-direction: column; gap: 3px; }
 .hs3-edit__row .hs3-small { font-size: 11.5px; }
 
@@ -234,7 +235,7 @@ details.hs3-note-wrap[open] > summary { margin-bottom: 8px; }
 .hs3-swatch { appearance: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; display: grid; place-items: center; }
 .hs3-swatch::before { content: ""; width: 30px; height: 30px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 1px rgba(18, 16, 16, .18); }
 .hs3-swatch.is-on::before { box-shadow: 0 0 0 2px var(--cream, #FBF6F1), 0 0 0 4px var(--ink, #121010); }
-.hs3-swatch:focus-visible { outline: 3px solid var(--ink, #121010); outline-offset: 0; }
+.hs3-swatch:focus-visible { outline: 3px solid var(--ink, #121010); outline-offset: 2px; }
 .hs3-opts { padding: 14px 16px 0; display: flex; flex-direction: column; gap: 8px; }
 .hs3-opt { appearance: none; display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 1.5px solid var(--line); border-radius: 14px; padding: 11px 14px; min-height: 64px; cursor: pointer; }
 .hs3-opt.is-on { background: #fff; border: 2px solid var(--ink); }
@@ -295,7 +296,7 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-photo--inset { width: 58px; height: 58px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-note--print { padding: 12px 16px 10px; }
   .hs3__frame[data-hs3-screen="reveal"] .hs3-note--print .hs3-note__for { font-size: 22px; }
-  .hs3__frame[data-hs3-screen="reveal"] .hs3-turn { margin: 6px 0 0 auto; min-height: 36px; }
+  .hs3__frame[data-hs3-screen="reveal"] .hs3-turn { margin: 6px 0 0 auto; min-height: 44px; }
   .hs3-top { min-height: 48px; padding: 6px 14px 4px 8px; }
   .hs3-hero__copy { padding-top: 18px; gap: 8px; }
   .hs3-hero__art { padding: 22px 12px 2px; }
@@ -386,3 +387,6 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
 .hs3-extras > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 15px; color: var(--body); text-decoration: underline; text-underline-offset: 3px; }
 .hs3-extras[open] > summary { margin-bottom: 4px; }
 .hs3-extras .hs3-field { margin-bottom: 6px; }
+
+/* the blanket's caption under the example keeps the 16px gutter on a phone */
+.hs3-product + .hs3-small.hs3-center { padding: 0 16px; }

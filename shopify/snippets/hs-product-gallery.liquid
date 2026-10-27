@@ -46,6 +46,9 @@
               srcset="{{ first | image_url: width: 600 }} 600w, {{ first | image_url: width: 900 }} 900w, {{ first | image_url: width: 1200 }} 1200w"
               sizes="(min-width: 900px) 50vw, 100vw" alt="{{ first.alt | default: product.title | escape }}" width="1200" height="1200"
               {% if s.show_poster %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+            {%- comment -%} every product photo shows an example dog, so it says so; the live preview
+              ("Your design") sits on its own layer and never carries this label {%- endcomment -%}
+            <span class="hs2-product__tag" aria-hidden="true">Example</span>
             {% if s.blanket_purchase %}<p class="hs2-product__placement-note">Example placement only. Upload your dog to preview your blanket.</p>{% endif %}
           </div>
         {%- elsif product.media.size == 0 and s.show_poster == false -%}

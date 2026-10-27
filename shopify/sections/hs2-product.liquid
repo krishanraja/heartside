@@ -130,7 +130,7 @@
               {%- unless product.has_only_default_variant -%}
                 <script type="application/json" data-hs2-prices>{ {%- for v in product.variants -%}{{ v.id | append: '' | json }}: {{ v.price | money | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }</script>
                 {%- comment -%} each variant's own photo, so the picture follows the color chosen in Teeinblue {%- endcomment -%}
-                <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- for v in product.variants -%}{%- if v.featured_media -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endif -%}{%- endfor -%} }</script>
+                <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- assign v_hide = section.settings.hide_media_alt | default: 'shown in your cart' | downcase -%}{%- for v in product.variants -%}{%- assign v_alt = v.featured_media.alt | downcase -%}{%- assign v_mid = v.featured_media.id | append: '' -%}{%- if v.featured_media -%}{%- unless v_alt contains v_hide or v_alt contains 'blank ' or v_mid == '71850515169662' or v_mid == '71856697049470' -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endunless -%}{%- endif -%}{%- endfor -%} }</script>
               {%- endunless -%}
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
@@ -330,7 +330,7 @@
     {
       "type": "fine", "name": "Policy lines", "limit": 1,
       "settings": [
-        { "type": "text", "id": "line_ai", "label": "How it is made", "info": "Keep it true: no claim of a uniquely trained model.", "default": "Painted with the most capable AI image models available, guided by Heartside's own breed and personality notes." },
+        { "type": "text", "id": "line_ai", "label": "How it is made", "info": "Keep it true: no claim of a uniquely trained model.", "default": "Painted with leading AI image models, guided by Heartside's own breed and personality notes." },
         { "type": "text", "id": "line_1", "label": "Line 1", "default": "A person checks every design before it prints." },
         { "type": "text", "id": "line_2", "label": "Line 2", "default": "Misprinted or damaged? Full refund or a free remake." },
         { "type": "text", "id": "link_label", "label": "Link to the Christmas order dates", "info": "Empty hides it. It goes to the homepage's Christmas order dates, so leave it empty while that section is off." }

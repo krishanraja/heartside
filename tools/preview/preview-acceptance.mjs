@@ -53,7 +53,9 @@ function chrome(ship) {
     calculated: /calculated at checkout/i.test(text),
     favicon: fav.some((h) => /heartside-favicon-heart/.test(h)),
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
-    locked: [document.documentElement, document.body].some((el) => getComputedStyle(el).overflowY === 'hidden' || getComputedStyle(el).overflow === 'hidden'),
+    // Helio scrolls inside .page-wrapper on desktop, with html and body hidden: that scrolls
+    locked: [document.documentElement, document.body].some((el) => getComputedStyle(el).overflowY === 'hidden' || getComputedStyle(el).overflow === 'hidden')
+      && !(() => { const w = document.querySelector('.page-wrapper'); return w && /auto|scroll/.test(getComputedStyle(w).overflowY) && w.scrollHeight > w.clientHeight; })(),
   };
 }
 const step = (page) => new URL(page.url()).searchParams.get('step');
@@ -77,6 +79,8 @@ for (const v of views) {
     if (!['GET', 'HEAD'].includes(req.method())) { refused++; return route.abort(); }
     return route.continue();
   });
+  // Shopify's preview bar (preview links only, never shown to buyers) covers the bottom of a phone
+  if (THEME) await ctx.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { const st = document.createElement('style'); st.textContent = '#PBarNextFrameWrapper,#preview-bar-iframe{display:none!important}'; document.head.appendChild(st); }); });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).split('\n')[0]));

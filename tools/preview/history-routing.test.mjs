@@ -119,6 +119,29 @@ for (const minified of [false, true]) {
     } finally { await browser.close(); }
   });
 
+  test(`${minified ? 'minified' : 'source'}: after a typed answer and its follow-up, every Back and Forward press moves`, async () => {
+    const {browser, tab, errors} = await open(minified);
+    try {
+      await tab.goto('http://localhost/');
+      await tab.click('[data-hs3-start]');
+      await tab.fill('#hs3-dog', 'Pip'); await tab.click('[data-hs3="next"]');
+      await tab.fill('#hs3-rec', 'Alex'); await tab.click('[data-hs3="next"]');
+      await tab.click('[data-hs3="other"]'); await tab.fill('#hs3-typed', 'She brings me a sock');
+      await tab.click('[data-hs3="send"]'); await tab.waitForSelector('#hs3-typed');
+      assert.equal(step(tab), 'home-more', 'the follow-up has its own address');
+      await tab.fill('#hs3-typed', 'Always the left one'); await tab.click('[data-hs3="send"]');
+      await tab.waitForFunction(() => new URL(location.href).searchParams.get('step') === 'spot');
+      // the answered follow-up is no longer a step; Back passes over it in one press
+      await move(tab, 'back', 'home');
+      await move(tab, 'back', 'person');
+      await move(tab, 'forward', 'home');
+      await move(tab, 'forward', 'spot');
+      const s = await state(tab);
+      assert.equal(s.typed.home, 'She brings me a sock'); assert.equal(s.typed.home_follow, 'Always the left one', 'nothing erased');
+      assert.deepEqual(errors, []);
+    } finally { await browser.close(); }
+  });
+
   test(`${minified ? 'minified' : 'source'}: a link to a step the answers don't reach clamps back, and Start over clears`, async () => {
     const {browser, tab, errors} = await open(minified);
     try {

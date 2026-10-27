@@ -9,12 +9,13 @@ import {transformSync} from 'esbuild';
 
 const source = readFileSync(new URL('../../shopify/assets/hs2.js', import.meta.url), 'utf8');
 const section = name => { const i = source.indexOf('  function ' + name + '('); assert.notEqual(i, -1, name); return source.slice(i, source.indexOf('\n  function ', i + 1)); };
-function page(gift, state, saved = false) {
-  const el = () => ({hidden: false, textContent: '', innerHTML: '', addEventListener() {}});
+function page(gift, state, saved = false, queue = []) {
+  const el = () => ({hidden: false, textContent: '', innerHTML: '', addEventListener() {}, querySelector: () => null});
   const parts = {'[data-hs-journey-line]': el(), '[data-hs-journey-intro]': el(), '[data-hs-journey-card]': Object.assign(el(), {hidden: true}), '[data-hs-journey-here]': el()};
   const box = {getAttribute: () => gift, querySelector: s => parts[s]};
   return {parts, ctx: {state, document: {querySelector: s => s === '[data-hs-journey]' ? box : null}, possessive: n => /s$/i.test(n) ? n + "'" : n + "'s",
-    answer: k => ({dog: state.dog || '', person: state.person || '', signed: state.dog ? 'Love, ' + state.dog : ''})[k], shopRoot: () => '/', track() {}, cityArtSaved: () => saved, redoMode: {id: ''},
+    answer: k => ({dog: state.dog || '', person: state.person || '', signed: state.dog ? 'Love, ' + state.dog : ''})[k], shopRoot: () => '/', track() {},
+    queueGet: () => queue, handleOf: u => (/\/products\/([^/?#]+)/.exec(u || '') || [])[1] || '', location: {pathname: '/products/your-dogs-' + gift}, cityArtSaved: () => saved, redoMode: {id: ''},
     artworkFacts: () => JSON.stringify({version: 1, facts: [{source: 'spot', text: "Rests on their person's side of the bed."}]}),
     window: {HSArtworkChoices: {read: () => ({style: 'ink', tone: 'hilarious'})}, HSArtworkEngine: {recipes: {styles: {ink: {label: 'Fine ink drawing'}}, tones: {hilarious: {label: 'Hilarious'}}}}}}};
 }
@@ -34,6 +35,11 @@ for (const minified of [false, true]) {
     assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /Changing these means painting new artwork\./);
     const redo = page('mug', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}); redo.ctx.redoMode.id = 'a'.repeat(36); run(redo.ctx);
     assert.equal(redo.parts['[data-hs-journey-line]'].textContent, 'Another version, then. Your first design stays in your cart until you choose.');
+    // the first action on the page: go to the photo step
+    assert.match(html, /data-hs-journey-photo>Add Pip&#39;s photo</);
+    // several gifts from the chat: which one this is, not "last step"
+    const two = page('mug', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}, false, [{url: '/products/your-dogs-mug'}, {url: '/products/your-dogs-blanket'}]); run(two.ctx);
+    assert.equal(two.parts['[data-hs-journey-line]'].textContent, "Gift 1 of 2. Let's make Pip's mug.");
   });
   test(`${minified ? 'minified' : 'source'}: a direct visit gets Buddy's offer and no stranger's names`, () => {
     const {parts, ctx} = page('portrait', {});

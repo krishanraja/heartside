@@ -143,12 +143,28 @@
   function warmPhotoCheck() {
     if (warmPhotoCheck.done || !nativeArtworkPurchase()) return;
     warmPhotoCheck.done = true;
-    var go = function (e) {
-      if (!window.HSPhotoQuality || !e.target || !e.target.closest || !e.target.closest('.tee-field--photo, [data-hs2-blanket-create]')) return;
+    var load = function () {
+      if (load.done || !window.HSPhotoQuality) return;
+      load.done = true;
       document.removeEventListener('pointerdown', go, true);
       try { window.HSPhotoQuality.loadDetector(); } catch (err) { /* the check fails open without it */ }
     };
+    var go = function (e) {
+      if (e.target && e.target.closest && e.target.closest('.tee-field--photo, [data-hs2-blanket-create]')) load();
+    };
     document.addEventListener('pointerdown', go, true);
+    // the dog detector needs a few seconds to arrive, so it also starts once the photo step is on
+    // screen (not on a data saver), giving the no-dog check time to run before a photo is picked
+    var conn = navigator.connection || {};
+    if (conn.saveData || /2g/.test(conn.effectiveType || '') || !('IntersectionObserver' in window)) return;
+    var tries = 0, wait = setInterval(function () {
+      var field = document.querySelector('.tee-field--photo');
+      if (!field && ++tries < 30) return;
+      clearInterval(wait);
+      if (!field) return;
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { io.disconnect(); load(); } });
+      io.observe(field);
+    }, 1000);
   }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
@@ -485,13 +501,18 @@
       return;
     }
     if (intro) intro.hidden = true;
-    var want = redoMode.id ? 'Another version, then. Your first design stays in your cart until you choose.' : 'Last step. Let\'s make ' + possessive(dog) + ' ' + gift + '.';
+    // several gifts picked in the chat: say which one this is, not "last step"
+    var q = queueGet(), at = -1;
+    q.forEach(function (it, i) { if (at === -1 && handleOf(it.url) === handleOf(location.pathname)) at = i; });
+    var lead = q.length > 1 && at !== -1 ? 'Gift ' + (at + 1) + ' of ' + q.length + '.' : 'Last step.';
+    var want = redoMode.id ? 'Another version, then. Your first design stays in your cart until you choose.' : lead + ' Let\'s make ' + possessive(dog) + ' ' + gift + '.';
     if (line && line.textContent !== want) line.textContent = want;
     if (!card) return;
     var esc_ = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
     var change = function (step) { return shopRoot() + '?step=' + step + '&return=' + gift; };
     var facts = [];
-    try { facts = JSON.parse(artworkFacts()).facts.map(function (f) { return f.text; }); } catch (e) { facts = []; }
+    // the buyer's reading of each fact, without the image model's instructions
+    try { facts = JSON.parse(artworkFacts()).facts.map(function (f) { return window.HSArtworkProfile && window.HSArtworkProfile.plain ? window.HSArtworkProfile.plain(f.text) : f.text; }); } catch (e) { facts = []; }
     var style = '', tone = '';
     try {
       var choice = window.HSArtworkChoices && window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine && window.HSArtworkEngine.recipes;
@@ -500,10 +521,26 @@
     var row = function (k, v, href, label) { return '<div class="hs-journey__row"><span class="hs-journey__k">' + k + '</span><span class="hs-journey__v">' + v + '</span>' + (href ? '<a href="' + esc_(href) + '">' + (label || 'Change') + '</a>' : '') + '</div>'; };
     var html = row('From', esc_(dog) + (person ? ' for ' + esc_(person) : ''), change(person ? 'person' : 'dog'));
     html += gift === 'blanket' ? row('Words', 'None. The blanket is all painting.') : row('Words', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>' + esc_(answer('signed')) + '</em>', change('gift-' + gift));
-    html += row('What I\'ll paint', facts.length ? facts.map(esc_).join(' · ') : esc_(dog) + ', just as they are.', change('home'));
+    // the pronoun the chat used ("Until she is dizzy"), so the two pages agree
+    var isNow = 'they are';
+    try { var chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}'); if (chat.dog) isNow = chat.pro === 'he' ? 'he is' : 'she is'; } catch (e) { /* no chat in this tab */ }
+    html += row('What I\'ll paint', facts.length ? facts.map(esc_).join(' · ') : esc_(dog) + ', just as ' + isNow + '.', change('home'));
     if (style) html += row('Style and tone', esc_(style) + ' · ' + esc_(tone), '#hs-art-choices', 'Change below');
     if (cityArtSaved()) html += '<p class="hs-journey__warn">Changing these means painting new artwork.</p>';
+    // the first thing to do on this page, in the first screen: go to the photo step
+    else html += '<button type="button" class="hs-journey__go hs-journey__photo" data-hs-journey-photo>Add ' + esc_(possessive(dog)) + ' photo</button>';
     if (card.innerHTML !== html) card.innerHTML = html;
+    var go = card.querySelector('[data-hs-journey-photo]');
+    if (go && !go.__hs2) {
+      go.__hs2 = true;
+      go.addEventListener('click', function () {
+        var target = document.querySelector('.tee-field--photo, [data-hs2-photo-step], .tee-form-wrapper');
+        if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        var file = target && target.querySelector && target.querySelector('button, label, input');
+        if (file && file.focus) { try { file.focus({ preventScroll: true }); } catch (e) { /* old browser */ } }
+        track('journey_photo', { gift: gift });
+      });
+    }
     card.hidden = false;
   }
   function answerParams() {
@@ -1044,6 +1081,8 @@
         if (idIn) idIn.value = id;
         // the variant's own photo (the mug in that color) becomes the product picture
         var img = json('script[data-hs2-vimages]')[id], main = document.querySelector('[data-hs2-main]');
+        // the blank technical reference never becomes the product picture (the page already hides it)
+        if (img && /shown in your cart|(^|\s)blank\s/i.test(img.alt || '')) img = null;
         // a gift sold in colors shows only that color's pair of photos
         var col = img && /, (.+?) inside/i.exec(img.alt || '');
         if (col) document.querySelectorAll('[data-hs2-thumb][data-hs2-color]').forEach(function (b) { b.hidden = b.getAttribute('data-hs2-color') !== col[1].toLowerCase(); });
@@ -2195,7 +2234,8 @@
     var form = document.getElementById('hs2-product-form');
     if (!nativeArtworkPurchase() || !form || !/^[a-f0-9-]{36}$/i.test(id)) return;
     var inp = document.createElement('input');
-    inp.type = 'hidden'; inp.name = 'properties[_hs_redo_of]'; inp.value = id;
+    // data-hs2-prop: hsProps() copies only marked inputs into Teeinblue's add request
+    inp.type = 'hidden'; inp.name = 'properties[_hs_redo_of]'; inp.value = id; inp.setAttribute('data-hs2-prop', '');
     form.appendChild(inp);
     redoMode.id = id;
     resetBlanketUpload(); // the one new upload this redo allows; still started by the buyer's click
@@ -2249,6 +2289,9 @@
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
         var want = 'Free US shipping on every order. Tax is added at checkout.';
         if (n.textContent.trim() !== want) n.textContent = want;
+        // hs-brand.css keeps Helio's "calculated at checkout" hidden until this line replaces it
+        var box = n.closest ? n.closest('.cart-totals__tax-note') : null;
+        if (box && !box.hasAttribute('data-hs-note')) box.setAttribute('data-hs-note', '');
       });
       if (need && !cartTidy.busy) {
         cartTidy.busy = true;

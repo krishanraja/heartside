@@ -43,7 +43,7 @@
     var toneHelp = options && options.toneElsewhere ? 'Tone sets the mood of the painting on every gift and of the words on gifts that have them.' : options && options.wordFree ? 'Tone sets the mood of the painting. This gift has no words.' : 'Tone sets the mood of the painting and the words.';
     if (options && options.nativeUpload && !options.wordFree) toneHelp = 'Tone sets the mood of the painting and the words. Your note stays as written here. To rewrite it in a new tone, return to Buddy and choose Update note.';
     toneHelp += ' After you create artwork, changing the tone means making a new version.';
-    var updateHelp = options && options.nativeUpload ? ' Create artwork with your photo below when these choices are ready.' : ' Artwork updates are paused while these styles are tested.';
+    var updateHelp = options && options.nativeUpload ? ' Create artwork with your photo below when these choices are ready.' : ' Your painting follows these choices when you add your photo on the gift page.';
     status.textContent = toneHelp + updateHelp;
     host.appendChild(status);
     function changed() {

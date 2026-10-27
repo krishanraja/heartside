@@ -47,12 +47,17 @@ for (const minified of [false, true]) {
     for (const [search, expect] of [['?variant=11&redo=' + A, A], ['?variant=11&redo=not-an-id', null], ['?variant=11', null]]) {
       const added = [], adds = [];
       const form = {appendChild: n => { added.push(n); n.parentNode = {removeChild: x => added.splice(added.indexOf(x), 1)}; }};
-      const ctx = {URLSearchParams, window: {location: {search}}, document: {getElementById: () => form, createElement: () => ({})}, nativeArtworkPurchase: () => true,
-        resetBlanketUpload: () => true, journeyCard() {}, onCartAdd: fn => adds.push(fn)};
-      vm.runInNewContext(minified ? transformSync(section('redoMode'), {minify: true}).code : section('redoMode'), ctx);
+      const element = () => ({attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }});
+      // hsProps() reads only the form's inputs marked data-hs2-prop
+      const marked = () => added.filter(n => 'data-hs2-prop' in n.attrs);
+      const ctx = {URLSearchParams, window: {location: {search}}, document: {getElementById: () => form, createElement: element, querySelectorAll: () => marked()}, nativeArtworkPurchase: () => true,
+        restoredArtworkChosen: () => false, resetBlanketUpload: () => true, journeyCard() {}, onCartAdd: fn => adds.push(fn)};
+      const code = section('redoMode') + '\n' + section('hsProps');
+      vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, ctx);
       ctx.redoMode();
       if (!expect) { assert.equal(added.length, 0, search); continue; }
       assert.equal(added.length, 1); assert.equal(added[0].name, 'properties[_hs_redo_of]'); assert.equal(added[0].value, expect);
+      assert.equal(ctx.hsProps()._hs_redo_of, expect, "the redo link rides into Teeinblue's add request");
       adds[0](); assert.equal(added.length, 0, 'gone once the new version is in the cart');
     }
   });

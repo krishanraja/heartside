@@ -8,7 +8,7 @@ import { transformSync } from 'esbuild';
 const source = fs.readFileSync(new URL('../../shopify/assets/hs3.js', import.meta.url), 'utf8');
 const instrumented = source.replace('// for tools/preview tests', `window.__toneTest = {
   select: selectTone, update: function () { return compose(S.noteTone, true); },
-  initial: function () { return compose(); }, status: toneStatus,
+  initial: function () { return compose('warm', false, true); }, status: toneStatus,
   typed: function () { return callAI('/fixture-typed', {step: 'spot'}, 5000); },
   configure: function (v) { cfg = v; }, keep: keepWords
 }; // for tools/preview tests`);
@@ -118,6 +118,12 @@ for (const [build, code] of [['source', instrumented], ['minified', transformSyn
   test(`${build}: unavailable storage or exhausted budget prevents dispatch`, async () => {
     const f = fixture(code, {storageFails: true}); f.api.update(); await flush(); assert.equal(f.calls.length, 0);
     const g = fixture(code); g.state.calls = 8; g.api.update(); await flush(); assert.equal(g.calls.length, 0);
+  });
+  test(`${build}: the reveal's own first note failing says nothing and leaves the slider free`, async () => {
+    const f = fixture(code); const p = f.api.initial(); await flush(); f.calls[0].reject(Error('lost response')); await p;
+    assert.equal(f.state.composeRequest, null, 'no uncertain request holds the slider');
+    assert.doesNotMatch(f.api.status(), /didn't come back/);
+    f.api.update(); await flush(); assert.equal(f.calls.length, 2, "the buyer's own Update note still sends, once");
   });
   test(`${build}: first note reuses identical completed context after reload`, async () => {
     const f = fixture(code); const p = f.api.initial(); await flush(); f.calls[0].respond(reply()); await p;
