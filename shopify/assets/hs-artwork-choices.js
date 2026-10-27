@@ -38,8 +38,11 @@
       tone.value = choice.tone; tl.appendChild(tone); host.appendChild(tl);
     }
     var status = document.createElement('p'); status.setAttribute('role', 'status');
-    var toneHelp = options && options.toneElsewhere ? 'Tone changes the note on gifts with words and the imagery on word-free gifts.' : options && options.wordFree ? 'Tone changes the imagery. This gift has no words.' : 'Tone changes the note. Your artwork stays the same.';
-    if (options && options.nativeUpload && !options.wordFree) toneHelp = 'Your exact note stays unchanged here. To apply a different note tone, return to Buddy and choose Update note. Your artwork stays the same.';
+    // 27 Oct ruling: tone sets the mood of the painting on every gift, and of the words
+    // where a gift has them. A tone change after artwork exists needs a new version.
+    var toneHelp = options && options.toneElsewhere ? 'Tone sets the mood of the painting on every gift and of the words on gifts that have them.' : options && options.wordFree ? 'Tone sets the mood of the painting. This gift has no words.' : 'Tone sets the mood of the painting and the words.';
+    if (options && options.nativeUpload && !options.wordFree) toneHelp = 'Tone sets the mood of the painting and the words. Your note stays as written here. To rewrite it in a new tone, return to Buddy and choose Update note.';
+    toneHelp += ' After you create artwork, changing the tone means making a new version.';
     var updateHelp = options && options.nativeUpload ? ' Create artwork with your photo below when these choices are ready.' : ' Artwork updates are paused while these styles are tested.';
     status.textContent = toneHelp + updateHelp;
     host.appendChild(status);

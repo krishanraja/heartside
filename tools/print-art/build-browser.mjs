@@ -20,7 +20,7 @@ async function hash(value) {
 ${body}
 window.HSArtworkEngine = {recipes: recipes, recipeHash: RECIPE_HASH,
   prepare: async function(input) { var r = prepare(input); r.key = await r.key; r.imageKey = await r.imageKey; return r; },
-  selectTone, newSession, selectRequest, begin, timeout, settle, reconcileFailure, previewState};
+  selectTone, energyFor, newSession, selectRequest, begin, timeout, settle, reconcileFailure, previewState};
 }());
 `;
 const target = new URL('../../shopify/assets/hs-artwork-engine.js', import.meta.url);

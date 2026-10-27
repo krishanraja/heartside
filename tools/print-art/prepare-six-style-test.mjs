@@ -30,7 +30,9 @@ const cases = plan.caseOrder.map((style, i) => {
     factsProfile:facts, style, tone:plan.route.tone, format:plan.route.format, city:plan.fixture.city,
     variant:'private-portrait-12x18-screen', model:plan.route.model, copy:plan.fixture.copy});
   // Expected substitution of stored form values, not a claim of provider parity.
-  const values = {'Artwork style':style, 'Artwork tone':plan.route.tone, Personality:JSON.stringify(facts), City:plan.fixture.city};
+  // Global options carry their labels (hs2.js selects by label). The fixture has no
+  // breed, so Energy is none. Since 27 Oct the portrait prompt reads the tone too.
+  const values = {'Artwork style':recipes.styles[style].label, 'Artwork tone':recipes.tones[plan.route.tone].label, Personality:JSON.stringify(facts), City:plan.fixture.city, Energy:'none'};
   const nativePromptExpected = rawNativePrompt.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     assert.ok(Object.hasOwn(values, key), `Unknown native field ${key}`); return values[key];
   });

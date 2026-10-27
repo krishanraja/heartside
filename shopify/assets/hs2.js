@@ -48,8 +48,9 @@
     if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[blanketArtPreview() ? choice.tone : recipes.toneRouting.textProductImageTone].label;
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
     }
+    if (k === 'art_energy' && (cityArtPreview() || nativeArtworkPurchase())) return artworkEnergy() || 'none';
     if (k === 'city' && (cityArtPreview() || nativeArtworkPurchase())) return String(state.city || '').trim();
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
@@ -160,7 +161,10 @@
   }
   function nativeBlanketInputsReady() {
     var fields = tibFields();
-    return ['personality', 'art_style', 'art_tone'].every(function (key) {
+    // a campaign without the Energy field is still ready; one that has it must carry the code
+    var keys = ['personality', 'art_style', 'art_tone'];
+    if (fields.some(function (f) { return f.rule.k === 'art_energy'; })) keys.push('art_energy');
+    return keys.every(function (key) {
       var field = fields.find(function (f) { return f.rule.k === key; });
       if (!field) return false;
       var text = field.el.querySelector('input[type="text"], input:not([type]), textarea');
@@ -210,6 +214,11 @@
     }
     return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
   }
+  // The breed's energy code, worked out in the chat (HSBreeds only loads there). Never a fact.
+  function artworkEnergy() {
+    var code = state.hs3_energy, engine = window.HSArtworkEngine;
+    return code && engine && engine.recipes.energy && Object.prototype.hasOwnProperty.call(engine.recipes.energy.directions, code) ? code : null;
+  }
   function nativeArtworkEvidence() {
     var evidence = JSON.parse(artworkFacts());
     // Transport projection only: the buyer's optional place is not a personality fact.
@@ -223,17 +232,21 @@
     // UI staleness key only. This timestamp cannot attest photo bytes; the engine
     // requires original/upload hashes before a production request can be prepared.
     var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
-    return 'hs2-art-request:' + productId() + ':candidate-v3-optional-place:' + JSON.stringify({
+    var key = {
       photoSession: usePhoto.t, facts: artworkFacts(), city: blanketArtPreview() ? '' : state.city || '',
-      choices: choice ? {style: choice.style, tone: blanketArtPreview() ? choice.tone : 'warm'} : null,
+      choices: choice ? {style: choice.style, tone: choice.tone} : null,
       variant: document.querySelector('#buy[data-hs2-artwork-kind]') ? v3Kind() + '-native-family' : document.querySelector('[data-hs2-variant-id]') && document.querySelector('[data-hs2-variant-id]').value,
       format: blanketArtPreview() ? 'blanket' : v3Kind() || 'portrait',
       recipe: window.HSArtworkEngine && window.HSArtworkEngine.recipeHash
-    });
+    };
+    // energy only when set, so a Warm, no-breed session keeps the key it had
+    var energy = artworkEnergy();
+    if (energy) key.energy = energy;
+    return 'hs2-art-request:' + productId() + ':candidate-v3-optional-place:' + JSON.stringify(key);
   }
   async function prepareCurrentArtwork(format, variant, exactModel) {
     if (!cityArtPreview() || !window.HSArtworkPhoto || !window.HSArtworkChoices) throw new Error('Draft artwork preparation only');
-    // The image reuse key intentionally ignores words and text-product tone.
+    // The image reuse key ignores words only: tone and breed energy change the painting.
     // Preparation must still bind the exact copy and choices across both awaits.
     function preparationRevision() {
       return JSON.stringify([artRequestKey(), window.HSArtworkChoices.read(),
@@ -244,7 +257,7 @@
     var prepared = await window.HSArtworkPhoto.prepare(file);
     if (file !== usePhoto.file || revision !== preparationRevision()) throw new Error('Your choices changed during preparation');
     var request = await window.HSArtworkChoices.prepare({photo: prepared.photo,
-      factsProfile: JSON.parse(artworkFacts()), city: String(state.city || ''), citySource: state.city ? 'buyer' : null,
+      factsProfile: JSON.parse(artworkFacts()), city: String(state.city || ''), citySource: state.city ? 'buyer' : null, energy: artworkEnergy(),
       format: format, variant: variant, model: exactModel,
       copy: {owner: state.hs3_copy_owner || 'generated', note: String((state.hs3_lines || {}).meaning || ''), signature: answer('signed')}});
     if (file !== usePhoto.file || revision !== preparationRevision()) throw new Error('Your choices changed during preparation');
@@ -992,6 +1005,7 @@
     { k: 'personality', re: /^\s*personality\b/i },
     { k: 'art_style', re: /^\s*artwork style\b/i, choice: true },
     { k: 'art_tone', re: /^\s*artwork tone\b/i, choice: true },
+    { k: 'art_energy', re: /^\s*energy\b/i },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
     { k: 'cupboard', re: /cupboard|treat/i },
@@ -1227,7 +1241,7 @@
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
-    if ((cityArtPreview() || nativeArtworkPurchase()) && ['art_style', 'art_tone', 'personality'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
+    if ((cityArtPreview() || nativeArtworkPurchase()) && ['art_style', 'art_tone', 'personality', 'art_energy'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
@@ -1237,6 +1251,12 @@
         var facts = nativeArtworkEvidence();
         if (text.value !== facts) setValue(text, facts);
         return { name: name, value: facts };
+      }
+      if (k === 'art_energy' && (cityArtPreview() || nativeArtworkPurchase())) {
+        // always written, "none" included, so a cleared breed never leaves an old code behind
+        var code = answer('art_energy');
+        if (text.value !== code) setValue(text, code);
+        return { name: name, value: code };
       }
       watchField(text, k);
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };

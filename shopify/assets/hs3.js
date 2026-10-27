@@ -506,6 +506,9 @@
     st.hs3_kinds = kinds;
     st.hs_answers = answerSummary();
     if (window.HSArtworkProfile) st.hs3_art_profile = window.HSArtworkProfile.fromChat(S);
+    // the breed's energy for the painting: pose and expression only, never shown and never a fact
+    st.hs3_energy = '';
+    try { if (S.breed && window.HSArtworkEngine && window.HSBreeds) st.hs3_energy = window.HSArtworkEngine.energyFor(window.HSBreeds.lookup(String(S.breed))) || ''; } catch (e) { /* unknown breed: no energy */ }
     if (cfg.artworkCandidates && window.HSArtworkChoices) st.hs3_art_choices = window.HSArtworkChoices.read();
     st.hs_ship_to = S.shipTo === 'me' ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
