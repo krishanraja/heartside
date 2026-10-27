@@ -2034,7 +2034,8 @@
     var header = document.querySelector('.header-section, header.shopify-section');
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
-    box.style.paddingTop = '';
+    // a box's own padding never moves its top edge, so measure without clearing it first: the
+    // clear-then-pad used to make the page jump on every resize and load (27 Oct)
     var top = box.getBoundingClientRect().top;
     /* The drawn header can extend past its section box (Helio draws the row as an overlay, so
        the section measures 0 px). Measure the row itself, never what hangs off it: walking every
@@ -2048,10 +2049,12 @@
       if (r.width && r.height) bottom = Math.max(bottom, r.bottom);
     });
     bottom = Math.min(bottom, top + 200); // never more than a header can be tall
-    var overlap = bottom - top;
-    if (overlap > 0) box.style.paddingTop = Math.ceil(overlap + 12) + 'px';
+    var overlap = bottom - top, want = overlap > 0 ? Math.ceil(overlap + 12) : 0;
+    // write only a real change (more than 1 px), so a repeat measurement never shifts the page
+    if (Math.abs(want - (parseFloat(box.style.paddingTop) || 0)) > 1) box.style.paddingTop = want ? want + 'px' : '';
     // a sticky gallery has to stop below the same line, or it slides back under the logo on scroll
-    document.documentElement.style.setProperty('--hs2-clear', Math.max(0, Math.ceil(bottom)) + 'px');
+    var de = document.documentElement, clear = Math.max(0, Math.ceil(bottom));
+    if (Math.abs(clear - (parseFloat(de.style.getPropertyValue('--hs2-clear')) || 0)) > 1) de.style.setProperty('--hs2-clear', clear + 'px');
   }
 
   /* =================================================================== screens

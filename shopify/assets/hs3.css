@@ -1,7 +1,9 @@
 /* Heartside v3: gifts from your dog (sections/hs3-chat.liquid, assets/hs3.js).
-   The approved prototype's look: cream paper, ink, stamp red, chestnut, Courier for the
+   The brand book's look (27 Oct): cream paper, ink, stamp red, chestnut, Courier for the
    words that print, Fraunces for names and the signature. Phone first; on a wide screen
-   the journey sits in a phone-width column. Fonts come from snippets/hs2-head. */
+   the journey sits in a roomier column. The page scrolls like any page: one idea per screen,
+   the primary action in the first phone viewport, no zoom and no locked body (Krish, 27 Oct).
+   Fonts come from snippets/hs2-head. */
 .hs3 {
   --cream: #FBF6F1; --paper: #FFFDF9; --ink: #121010; --body: #3E322D; --muted: #5A4A44;
   --line: #E2D4C8; --chestnut: #8A4A2B; --stamp: #A8284E; --blush: #F0C0C0; --pencil: #B9ADA4;
@@ -15,7 +17,6 @@
 .hs3__frame { max-width: 480px; margin: 0 auto; min-height: min(100svh, 900px); display: flex; flex-direction: column; padding: 0 0 16px; }
 .hs3--app .hs3__frame { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 
-.hs3-ribbon { background: #1E1714; color: var(--cream); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; padding: 10px 16px; }
 .hs3-eyebrow, .hs3-label { font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chestnut); }
 .hs3-label { font-size: 11px; letter-spacing: 0.09em; }
 .hs3-small { font-size: 13.5px; line-height: 1.45; color: var(--muted); margin: 0; }
@@ -52,12 +53,38 @@
 .hs3-hero__h { font-weight: 650; font-size: clamp(40px, 12vw, 52px); line-height: 0.98; letter-spacing: -0.025em; }
 .hs3-hero__h em { font-style: italic; font-weight: 400; color: var(--stamp); }
 .hs3-hero__p { margin: 0; font-size: 17px; line-height: 1.45; color: var(--body); }
-.hs3-hero__art { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 280px; padding: 30px 0 70px; }
+.hs3-hero__art { position: relative; display: flex; align-items: center; justify-content: center; padding: 26px 16px 64px; }
 .hs3-hero__foot { padding: 6px 22px 8px; display: flex; flex-direction: column; gap: 10px; }
 .hs3-hero__foot .hs3-small { text-align: center; }
-.hs3-example { position: absolute; top: -26px; right: 30px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--chestnut); border: 1px dashed #C9A48E; border-radius: 4px; padding: 3px 7px; transform: rotate(6deg); }
+.hs3-example { position: absolute; top: -12px; right: 18px; z-index: 2; background: var(--cream); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--chestnut); border: 1px dashed #C9A48E; border-radius: 4px; padding: 3px 7px; transform: rotate(6deg); }
 .hs3-peek { position: absolute; left: 10px; bottom: 0; display: flex; align-items: flex-end; gap: 6px; animation: hs3-peek 4s ease-in-out infinite; }
 .hs3-bubble--peek { margin-bottom: 44px; font-size: 13.5px; padding: 8px 11px; }
+.hs3-fan { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 440px; align-items: end; }
+.hs3-fan__item { display: flex; flex-direction: column; gap: 2px; color: var(--ink); text-decoration: none; background: var(--paper); border-radius: 18px; padding: 6px 6px 9px; box-shadow: 0 16px 28px -18px rgba(30, 23, 20, .55), 0 0 0 1px #EFE6DD; transition: transform .25s ease; }
+.hs3-fan__item--print { transform: rotate(-4deg) translateY(6px); }
+.hs3-fan__item--blanket { transform: rotate(4deg) translateY(6px); }
+.hs3-fan__item--mug { position: relative; z-index: 1; transform: translateY(-6px); }
+.hs3-fan__img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 13px; display: block; background: #EFE6DD; }
+.hs3-fan__name { font-weight: 600; font-size: 14px; padding: 4px 4px 0; }
+.hs3-fan__price { font-size: 13px; color: var(--muted); padding: 0 4px; }
+.hs3-trust, .hs3-countdown { text-align: center; }
+.hs3-countdown { color: var(--chestnut); }
+.hs3-resume { margin: 0; text-align: center; font-size: 15px; color: var(--body); }
+.hs3-resume--quiet { margin-top: -4px; }
+.hs3-beats { list-style: none; margin: 18px 22px 0; padding: 14px 0 0; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 10px; }
+.hs3-beats li { display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--body); }
+.hs3-beats__n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--cream); font-family: var(--mono); font-size: 13px; display: grid; place-items: center; }
+.hs3-demo { margin: 22px 16px 0; padding: 18px 16px 16px; background: #fff; border-radius: 24px; box-shadow: 0 0 0 1px #EFE6DD; display: flex; flex-direction: column; gap: 12px; }
+.hs3-demo__head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.hs3-demo__head strong { font-family: var(--mono); font-size: 13px; color: var(--chestnut); font-weight: 600; }
+.hs3-note--demo { position: relative; }
+.hs3-note--demo .hs3-line { font-size: 16px; min-height: 42px; }
+.hs3-demo .hs3-tone__row { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.hs3-demo input[type="range"] { flex: 1; accent-color: var(--chestnut); min-height: 44px; cursor: pointer; }
+.hs3-legal { margin: 18px 0 0; padding: 4px 16px 8px; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+.hs3-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+/* Heartside's own footer carries the policies once it is placed */
+html:has(.hs-footer) .hs3-legal { display: none; }
 
 /* Buddy */
 .hs3-biscuit { display: inline-block; width: 54px; height: 54px; flex: none; }
@@ -81,6 +108,15 @@
 .hs3-brand { font-family: var(--serif); font-weight: 650; font-size: 18px; }
 .hs3-note-wrap { padding: 4px 18px 0; }
 .hs3-note-wrap .hs3-label { margin-bottom: 8px; }
+details.hs3-note-wrap > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-height: 44px; margin-bottom: 0; }
+details.hs3-note-wrap > summary::-webkit-details-marker { display: none; }
+details.hs3-note-wrap > summary::after { content: "Show"; font-family: var(--sans); font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+details.hs3-note-wrap[open] > summary::after { content: "Hide"; }
+details.hs3-note-wrap[open] > summary { margin-bottom: 8px; }
+.hs3-note-wrap__more { margin-left: auto; margin-right: 10px; color: var(--muted); letter-spacing: .04em; }
+.hs3-paint { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.hs3-paint__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.hs3-paint__list li { font-size: 13.5px; line-height: 1.3; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; color: var(--body); }
 .hs3-note { background: var(--paper); border-radius: 8px; box-shadow: 0 16px 28px -18px rgba(30, 23, 20, .55), 0 0 0 1px #EFE6DD; padding: 18px 18px 14px; transform: rotate(-0.8deg); }
 .hs3-note__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .hs3-note__for { font-family: var(--serif); font-weight: 650; font-size: 27px; letter-spacing: -0.01em; }
@@ -120,37 +156,23 @@
 .hs3-hero .hs3-photo { width: 86px; height: 86px; }
 
 /* gift mockups (CSS, like the prototype; the real print comes from Teeinblue) */
-.hs3-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 14px 0; min-height: 300px; }
-/* the reveal's mug: the live Teeinblue preview's photo (hs3.js mugFaces). Positions are the
-   print file's, in % of the photo, from tools/realphoto/build_reveal_mugs.py */
-.hs3-mugwrap { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; }
-.hs3-mugs { position: relative; width: min(330px, 90%); aspect-ratio: 1060 / 910; }
-.hs3-mugface { position: absolute; inset: 0; container-type: inline-size; transition: opacity .45s ease, transform .45s ease; }
-.hs3-mugs[data-side="dog"] .hs3-mugface--note, .hs3-mugs[data-side="note"] .hs3-mugface--dog { opacity: 0; transform: scaleX(.86); pointer-events: none; }
-.hs3-mugface__base, .hs3-mugface__shade { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hs3-mugface__shade { pointer-events: none; }
-/* the wrapped render (hs3.js paintMugs) covers the photo layers once drawn; the flat layout
-   under it is only for a browser that can't draw it */
-.hs3-mugface__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .25s ease; }
-.hs3-mugface__canvas.is-drawn { opacity: 1; }
-.hs3-mugface__flat { position: absolute; inset: 0; }
-.hs3-mugs:not(.is-flat) .hs3-mugface__flat { inset: auto; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.hs3-mugs.is-flat .hs3-mugface__canvas { display: none; }
-.hs3-mugface__photo { position: absolute; left: 34%; top: 16.03%; width: 53.88%; height: 77.69%; display: flex; align-items: center; justify-content: center; }
-.hs3-mugface__dog { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 8%, #000 82%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent), linear-gradient(180deg, transparent, #000 8%, #000 82%, transparent); mask-composite: intersect; }
-.hs3-mugface__nodog { width: 38%; color: #D9CCC1; display: flex; }
-.hs3-mugface__nodog svg { width: 100%; height: auto; fill: currentColor; }
-.hs3 .hs3-mugface__line { position: absolute; left: 13.15%; width: 51.49%; height: 14.76%; display: flex; align-items: center; font-family: var(--serif); font-weight: 400; font-variation-settings: "opsz" 24; font-size: 12.5px; font-size: 4.191cqw; line-height: 1.337; white-space: pre; overflow-wrap: normal; }
-.hs3-mugface__line--1 { top: 22.25%; }
-.hs3-mugface__line--2 { top: 38.95%; }
-.hs3-mugface__line--3 { top: 55.65%; }
-.hs3-mugface__sign { position: absolute; left: 13.15%; top: 73.52%; height: 10.1%; display: flex; align-items: center; gap: .84cqw; font-family: var(--serif); font-style: italic; font-variation-settings: "opsz" 48; color: var(--chestnut); font-size: 17px; font-size: 5.747cqw; line-height: 1; white-space: nowrap; }
-.hs3-mugface__sign svg { width: 4.31cqw; height: 4.31cqw; min-width: 12px; min-height: 12px; fill: currentColor; flex: none; }
-.hs3-turn { font-size: 13.5px; }
-.hs3-mugwrap--hero { position: relative; }
-.hs3-mugwrap--hero .hs3-mugs { width: min(310px, 82%); }
-.hs3-mugwrap--hero .hs3-example { top: -24px; right: 6%; z-index: 1; }
-.hs3-hero__art:has(.hs3-mugwrap--hero) { padding-bottom: 100px; }
+.hs3-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 14px 18px; }
+/* the gift as it arrives: the real product photo (Example), the buyer's photo beside it, the
+   words that print on a paper note, and what gets painted (hs3.js productStage) */
+.hs3-product { position: relative; margin: 0; width: min(360px, 100%); }
+.hs3-product__img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 24px; background: #EFE6DD; box-shadow: 0 24px 36px -20px rgba(30, 23, 20, .55); }
+.hs3-product__img--none { display: grid; place-items: center; color: var(--pencil); }
+.hs3-product__img--none svg { width: 30%; height: 30%; fill: none; stroke: currentColor; stroke-width: 1.4; }
+.hs3-product--blanket .hs3-product__img { transform: rotate(-2deg); }
+.hs3-product--print .hs3-product__img { transform: rotate(-1.5deg); }
+.hs3-inset { position: absolute; left: -6px; bottom: -14px; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.hs3-photo--inset { width: 76px; height: 76px; box-shadow: 0 0 0 4px var(--cream), 0 10px 18px -10px rgba(30, 23, 20, .6); }
+.hs3-inset__label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--chestnut); background: var(--cream); padding: 1px 6px; border-radius: 4px; }
+.hs3-turn { display: block; margin: 18px auto 0; font-size: 13.5px; }
+.hs3-note--print { width: min(340px, 100%); }
+.hs3-note--print .hs3-line { font-size: 16px; min-height: 22px; margin-top: 6px; }
+.hs3-stage .hs3-paint { width: min(360px, 100%); margin-top: 0; }
+.hs3-mugwrap { display: flex; flex-direction: column; align-items: center; gap: 12px; width: min(340px, 100%); }
 .hs3-blanket { width: 350px; max-width: 94%; min-height: 282px; border-radius: 28px; background-color: #E3D3BF; background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, .6) 1.2px, transparent 1.7px); background-size: 6px 6px; padding: 14px; box-shadow: 0 26px 38px -22px rgba(30, 23, 20, .55); transform: rotate(-2deg); }
 .hs3-blanket__in { background: var(--paper); border-radius: 18px; min-height: 100%; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; text-align: center; padding: 14px 16px; }
 .hs3-blanket__name { font-family: var(--serif); font-weight: 650; font-size: 18px; }
@@ -218,7 +240,10 @@
 .hs3-opt__body { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .hs3-opt__name { font-weight: 600; font-size: 16px; }
 .hs3-opt__pick { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--chestnut); margin-left: 8px; letter-spacing: .06em; white-space: nowrap; }
-.hs3-opt__price { font-weight: 600; font-size: 16px; }
+.hs3-opt__price { font-weight: 600; font-size: 16px; white-space: nowrap; }
+.hs3-opt__img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex: none; background: #EFE6DD; }
+.hs3-bundle { margin: 12px 16px 0; padding: 10px 14px; border-radius: 12px; border: 1.5px dashed var(--chestnut); color: var(--chestnut); font-size: 15px; font-weight: 600; text-align: center; }
+.hs3-bundle.is-on { border-style: solid; background: var(--paper); }
 .hs3-ship { padding: 12px 16px 0; }
 .hs3-ship .hs3-small { font-size: 14px; margin-right: 4px; }
 .hs3-promise { color: var(--body); font-size: 13px; line-height: 1.5; }
@@ -232,7 +257,8 @@
 .hs3-share__img { width: 300px; max-width: 80vw; height: auto; border-radius: 18px; display: block; -webkit-touch-callout: default; user-select: auto; }
 .hs3-share__how { margin: 0; padding: 12px 22px 18px; text-align: center; color: var(--line); font-size: 14px; }
 
-.hs3-pop { animation: hs3-pop .35s ease-out; }
+/* a view animates once, when it arrives (hs3.js marks the frame is-new), never on a re-render */
+.hs3__frame.is-new .hs3-pop { animation: hs3-pop .35s ease-out; }
 @keyframes hs3-pop { 0% { opacity: 0; transform: translateY(6px) scale(.98); } 100% { opacity: 1; transform: none; } }
 @keyframes hs3-ink { 0% { opacity: .25; transform: translateY(3px); } 100% { opacity: 1; transform: none; } }
 @keyframes hs3-ear { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(9deg); } 88% { transform: rotate(-4deg); } }
@@ -241,24 +267,16 @@
 @media (prefers-reduced-motion: reduce) { .hs3 *, .hs3 *::before, .hs3 *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 380px) {
 }
-/* One screen, no scroll, on every device (Krish, 21 Oct). The page is locked and the frame is
-   exactly the window under the header (--hs3-h, set by hs3.js fit). Each screen has one flexible
-   area that takes the room left over; fit scales its picture to that room and, if the rest still
-   doesn't fit, zooms the screen down. The footer is replaced by one quiet line on the first
-   screen; on phones the memo bar goes too. */
-html:has(.hs3), html:has(.hs3) body { height: 100%; overflow: hidden; overscroll-behavior: none; }
-html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
-.hs3 .hs3__frame { height: var(--hs3-h, calc(100svh - var(--hs2-clear, 72px) - 12px)); min-height: 0; overflow: hidden; }
-.hs3__frame > * { flex-shrink: 0; }
-.hs3-hero__art, .hs3-stage, .hs3-share__card { flex: 1 1 0; min-height: 0; overflow: hidden; }
-.hs3-share { min-height: 0; }
-.hs3-legal { margin: 0; padding: 4px 16px 0; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
-.hs3-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+/* A step opened from its address paints as itself, not the first screen first (hs3-chat.liquid) */
+html.hs3-routed .hs3__frame[data-hs3-screen="hero"] { visibility: hidden; }
+/* Helio's own footer never shows here; Heartside's footer shows on the first screen only */
+html:has(.hs3) .shopify-section-group-footer-group > .shopify-section:not(:has(.hs-footer)) { display: none !important; }
+html:has(.hs3--app) .shopify-section-group-footer-group { display: none !important; }
+.hs3 { scroll-margin-top: var(--hs2-head, 92px); }
 @media (max-width: 999px) {
-  html:has(.hs3) [id$="__hs2_memo"] { display: none !important; }
   .hs3-top { min-height: 48px; padding: 6px 14px 4px 8px; }
   .hs3-hero__copy { padding-top: 18px; gap: 8px; }
-  .hs3-hero__art, .hs3-hero__art:has(.hs3-mugwrap--hero) { padding: 28px 0 64px; }
+  .hs3-hero__art { padding: 24px 12px 60px; }
   .hs3-bubble--peek { margin-bottom: 30px; }
   .hs3-note-wrap .hs3-label { margin-bottom: 6px; }
   .hs3-note { padding: 13px 16px 11px; }
@@ -289,8 +307,13 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
 @media (min-width: 1000px) {
   .hs3__frame[data-hs3-screen="hero"] { max-width: 1200px; border: 0; padding: 0 56px 40px; }
   .hs3 { overflow-x: clip; }
-  .hs3__frame[data-hs3-screen="hero"] .hs3-ribbon { margin: 0 calc(50% - 50vw); }
-  .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art"; grid-template-rows: 1fr 1fr; column-gap: 64px; align-items: center; }
+  .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art" "beats demo" "legal legal"; grid-template-rows: auto auto auto auto; column-gap: 64px; align-items: center; }
+  .hs3-beats { grid-area: beats; margin: 40px 0 0; align-self: start; }
+  .hs3-demo { grid-area: demo; margin: 40px 0 0; }
+  .hs3-legal { grid-area: legal; }
+  .hs3-fan { max-width: 620px; gap: 14px; }
+  .hs3-fan__name { font-size: 16px; } .hs3-fan__price { font-size: 15px; }
+  .hs3-trust, .hs3-countdown, .hs3-resume { text-align: left; }
   .hs3-hero__copy { grid-area: copy; align-self: end; padding: 32px 0 0; gap: 18px; }
   .hs3-hero__h { font-size: clamp(56px, 5.4vw, 84px); }
   .hs3-hero__p { font-size: 20px; max-width: 30em; }
@@ -298,13 +321,10 @@ html:has(.hs3) .shopify-section-group-footer-group { display: none !important; }
   .hs3-hero__foot .hs3-small { text-align: left; font-size: 15px; }
   .hs3-hero__foot .hs3-pills { justify-content: flex-start; }
   .hs3-hero__art { grid-area: art; min-height: 0; padding: 40px 0 110px; }
-  .hs3-hero__art:has(.hs3-mugwrap--hero) { padding-bottom: 110px; }
-  .hs3-mugwrap--hero .hs3-mugs { width: min(560px, 100%); }
   .hs3-peek { left: 4%; }
   .hs3-bubble--peek { font-size: 15px; }
   .hs3--app .hs3__frame { max-width: 600px; }
   /* the chat: the note the dog is writing on the left, Buddy and the answers on the right */
-  .hs3 { scroll-margin-top: var(--hs2-head, 66px); }
   .hs3--app .hs3__frame[data-hs3-screen="chat"] { max-width: 1120px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "top top" "note talk" "note dock" "note ."; grid-template-rows: auto auto auto 1fr; align-content: start; column-gap: 56px; padding: 0 40px 32px; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-top { grid-area: top; }
   .hs3__frame[data-hs3-screen="chat"] .hs3-note-wrap { grid-area: note; align-self: start; padding: 24px 0 0; position: sticky; top: calc(var(--hs2-head, 66px) + 16px); }

@@ -10,7 +10,7 @@ const instrumented = source.replace('// for tools/preview tests', `window.__tone
   select: selectTone, update: function () { return compose(S.noteTone, true); },
   initial: function () { return compose(); }, status: toneStatus,
   typed: function () { return callAI('/fixture-typed', {step: 'spot'}, 5000); },
-  configure: function (v) { cfg = v; }
+  configure: function (v) { cfg = v; }, keep: keepWords
 }; // for tools/preview tests`);
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const reply = (label = 'wait') => ({source: 'ai', recommended_gift: 'mug', reason: '', lines: {
@@ -66,7 +66,14 @@ for (const [build, code] of [['source', instrumented], ['minified', transformSyn
     assert.equal(f.state.composeRequest.status, 'uncertain'); f.api.update();
     const reloaded = fixture(code, {store: f.store}); reloaded.api.update(); await flush();
     assert.equal(f.calls.length, 1); assert.equal(reloaded.calls.length, 0);
-    assert.match(reloaded.api.status(), /not been confirmed/);
+    assert.match(reloaded.api.status(), /Your words are safe\. The last update didn't come back\./);
+  });
+  test(`${build}: keeping the words lets an uncertain request go without sending anything`, async () => {
+    const f = fixture(code); const p = f.api.update(); await flush(); f.timeout(); await p;
+    assert.equal(f.state.composeRequest.status, 'uncertain');
+    f.api.keep(); await flush();
+    assert.equal(f.state.composeRequest, null); assert.equal(f.calls.length, 1);
+    assert.match(f.api.status(), /Kept your words/);
   });
   test(`${build}: reload while pending pauses further dispatch`, async () => {
     const f = fixture(code); f.api.update(); await flush();
