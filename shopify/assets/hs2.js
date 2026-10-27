@@ -1039,12 +1039,19 @@
     var buy = document.querySelector('#buy[data-hs2-artwork-kind]');
     if (!buy) return true; // Existing blanket route retains its separate opt-in contract.
     if (buy.getAttribute('data-hs2-purchase-enabled') !== 'true') return false;
-    return ['line4', 'signed'].every(function (key) {
+    var portrait = buy.getAttribute('data-hs2-artwork-kind') === 'print';
+    return ['line4', portrait ? 'dog' : 'signed'].every(function (key) {
       var field = tibFields().filter(function (f) { return f.rule.k === key; })[0];
       var input = field && field.el.querySelector('input[type="text"], input:not([type]), textarea');
       if (!input) return false;
-      var shown = mugArtworkValue(input.name || input.id);
       var exact = function (value) { return String(value || '').replace(/\s+/g, ' ').trim(); };
+      if (portrait && key === 'dog') {
+        // Artwork 1378371 renders Signed from the form-only dog name; there is no Signed input.
+        // Keep any owned signature override in the comparison rather than silently losing it.
+        var signature = mugArtworkValue('layer-501370');
+        return input.name === 'layer-209591' && exact(input.value) !== '' && exact(input.value) === exact(answer('dog')) && signature !== null && exact(signature) === exact('Love, ' + input.value) && exact(signature) === exact(answer('signed'));
+      }
+      var shown = mugArtworkValue(input.name || input.id);
       return shown !== null && exact(input.value) === exact(answer(key)) && exact(shown) === exact(answer(key));
     });
   }

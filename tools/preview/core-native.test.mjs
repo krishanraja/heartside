@@ -9,9 +9,9 @@ function run(names,ctx,minified){const code=names.map(section).join('\n');vm.run
 for(const minified of [false,true]) {
   const mode=minified?'minified':'source';
   for(const kind of ['mug','print']) {
-    test(`${mode}: ${kind} purchase requires enabled flag and exact rendered note/signature`,()=>{
+    if (kind === 'mug') test(`${mode}: ${kind} editable-signature adapter requires enabled flag and exact rendered note/signature`,()=>{
       let enabled='false',shown={line4:'My exact note',signed:'Love, Test dog'},inputs={...shown};
-      const c={document:{querySelector:()=>({getAttribute:()=>enabled})},answer:k=>k==='line4'?'My exact note':'Love, Test dog',mugArtworkValue:k=>shown[k],tibFields:()=>['line4','signed'].map(k=>({rule:{k},el:{querySelector:()=>({name:k,value:inputs[k]})}}))};
+      const c={document:{querySelector:()=>({getAttribute:k=>k==='data-hs2-artwork-kind'?'mug':enabled})},answer:k=>k==='line4'?'My exact note':'Love, Test dog',mugArtworkValue:k=>shown[k],tibFields:()=>['line4','signed'].map(k=>({rule:{k},el:{querySelector:()=>({name:k,value:inputs[k]})}}))};
       run(['nativePurchaseReady'],c,minified);assert.equal(c.nativePurchaseReady(),false);
       enabled='true';assert.equal(c.nativePurchaseReady(),true);
       shown.line4='Old default note';assert.equal(c.nativePurchaseReady(),false);shown.line4=inputs.line4;
