@@ -145,6 +145,26 @@
 
           <tbody role="rowgroup">
             {% for item in cart.items %}
+              {%- liquid
+                assign hs_quantity_item = item
+                assign hs_quantity_key = ''
+                assign hs_unit_original_price = item.original_price
+                assign hs_unit_final_price = item.final_price
+                if item.quantity == 1 and item.item_components.size == 1
+                  assign hs_component = item.item_components.first
+                  assign hs_prepared = hs_component.properties._hs_checkout_image
+                  assign hs_image_origin = hs_prepared | slice: 0, 34
+                  assign hs_native_id = hs_component.properties._customization_id
+                  assign hs_expected_filename = 'heartside-checkout-' | append: hs_native_id | append: '.jpg'
+                  assign hs_image_filename = hs_prepared | split: '?' | first | split: '/' | last
+                  if hs_component.variant_id == item.variant_id and hs_component.quantity > 0 and hs_native_id != blank and hs_image_origin == 'https://cdn.shopify.com/s/files/1/' and hs_image_filename == hs_expected_filename
+                    assign hs_quantity_item = hs_component
+                    assign hs_quantity_key = hs_component.key
+                    assign hs_unit_original_price = item.original_line_price | divided_by: hs_component.quantity
+                    assign hs_unit_final_price = item.final_line_price | divided_by: hs_component.quantity
+                  endif
+                endif
+              -%}
               {%- comment -%} Current-row artwork and quantity evidence only; no cart token or buyer answers. {%- endcomment -%}
               {%- capture hs_cart_line -%}
                 {"key":{{ item.key | json }},"variant_id":{{ item.variant_id | json }},"quantity":{{ item.quantity | json }},
@@ -162,6 +182,7 @@
                 data-parent-key="{{ item.parent_relationship.parent.key }}"
                 data-key="{{ item.key }}"
                 data-hs2-cart-line="{{ hs_cart_line | escape }}"
+                data-hs2-quantity-key="{{ hs_quantity_key | escape }}"
               >
                 <td
                   class="cart-items__media"
@@ -312,31 +333,31 @@
 
                   <div class="cart-items__unit-price-wrapper">
                     <div>
-                      {% if item.original_price != item.final_price %}
+                      {% if hs_unit_original_price != hs_unit_final_price %}
                         <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
                         <span
-                          ><bdi>{{ item.final_price | money }}</bdi></span
+                          ><bdi>{{ hs_unit_final_price | money }}</bdi></span
                         >
                         <span class="visually-hidden">{{ 'content.price_regular' | t }}</span>
                         <s class="compare-at-price">
-                          {% if item.variant.compare_at_price > item.original_price %}
+                          {% if item.variant.compare_at_price > hs_unit_original_price %}
                             <bdi>{{ item.variant.compare_at_price | money }}</bdi>
                           {% else %}
-                            <bdi>{{ item.original_price | money }}</bdi>
+                            <bdi>{{ hs_unit_original_price | money }}</bdi>
                           {% endif %}
                         </s>
                       {% else %}
-                        {% if item.variant.compare_at_price > item.original_price %}
+                        {% if item.variant.compare_at_price > hs_unit_original_price %}
                           <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
                         {% else %}
                           <span class="visually-hidden">{{ 'content.price' | t }}</span>
                         {% endif %}
 
                         <span
-                          ><bdi>{{ item.original_price | money }}</bdi></span
+                          ><bdi>{{ hs_unit_original_price | money }}</bdi></span
                         >
 
-                        {% if item.variant.compare_at_price > item.original_price %}
+                        {% if item.variant.compare_at_price > hs_unit_original_price %}
                           <span class="visually-hidden">{{ 'content.price_regular' | t }}</span>
                           <s class="compare-at-price"
                             ><bdi>{{ item.variant.compare_at_price | money }}</bdi></s
@@ -355,17 +376,18 @@
                   {% assign can_update_quantity = item.instructions.can_update_quantity
                     | default: true, allow_false: true
                   %}
+                  {% if hs_quantity_item.instructions.can_update_quantity == false %}{% assign can_update_quantity = false %}{% endif %}
                   <div class="cart-items__quantity-controls">
                     {% render 'volume-pricing-info',
                       variant: item.variant,
                       unique_id: item.index,
-                      quantity: item.quantity
+                      quantity: hs_quantity_item.quantity
                     %}
 
                     {% render 'quantity-selector',
                       product: item.product,
                       variant: item.variant,
-                      in_cart_quantity: item.quantity,
+                      in_cart_quantity: hs_quantity_item.quantity,
                       line_index: item.index,
                       class: 'cart-primary-typography',
                       can_update_quantity: can_update_quantity
