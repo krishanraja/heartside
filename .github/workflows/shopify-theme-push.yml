@@ -39,6 +39,17 @@ on:
         required: false
         default: false
         type: boolean
+      bundle_offer:
+        description: "Memo bar: show the bundle saving (only once the Shopify discount exists). keep leaves it as it is."
+        required: false
+        default: "keep"
+        type: choice
+        options: ["keep", "on", "off"]
+      artist_touch_product:
+        description: "Memo bar: the Artist's touch add-on product handle, or none to clear it. Leave empty to keep it."
+        required: false
+        default: ""
+        type: string
       footer_company_note:
         description: "Also put the company note (Mindmaker LLC, Mindmaker Ltd) at the bottom of the footer"
         required: false
@@ -158,14 +169,25 @@ jobs:
           fi
 
       - name: Put the memo bar at the top of the header
-        if: ${{ inputs.header_memo_bar && !inputs.pull_only }}
+        if: ${{ (inputs.header_memo_bar || inputs.bundle_offer == 'on' || inputs.bundle_offer == 'off' || inputs.artist_touch_product != '') && !inputs.pull_only }}
+        # the switches reach the script through the environment and are checked before use
+        env:
+          BUNDLE: ${{ inputs.bundle_offer }}
+          ARTIST: ${{ inputs.artist_touch_product }}
         run: |
           if [ ! -f backup/sections/header-group.json ]; then
             echo "::error::The theme has no sections/header-group.json, so the header was left alone."
             exit 1
           fi
+          if [ -n "$ARTIST" ] && ! [[ "$ARTIST" =~ ^(none|[a-z0-9][a-z0-9-]{0,99})$ ]]; then
+            echo "::error::artist_touch_product must be a product handle (lowercase letters, digits, hyphens) or none."
+            exit 1
+          fi
+          args=()
+          if [ "$BUNDLE" = "on" ] || [ "$BUNDLE" = "off" ]; then args+=(--bundle "$BUNDLE"); fi
+          if [ -n "$ARTIST" ]; then args+=(--artist "$ARTIST"); fi
           cp backup/sections/header-group.json shopify/sections/header-group.json
-          node .github/scripts/header-memo.mjs shopify/sections/header-group.json
+          node .github/scripts/header-memo.mjs shopify/sections/header-group.json "${args[@]}"
 
       - name: Put the company note at the bottom of the footer
         if: ${{ inputs.footer_company_note && !inputs.pull_only }}
