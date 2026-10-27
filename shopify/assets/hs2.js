@@ -329,7 +329,7 @@
     if (!box) {
       box = document.createElement('div'); box.setAttribute('data-hs2-restored-artwork', '');
       var message = document.createElement('p'); message.setAttribute('role', 'status');
-      message.textContent = 'Artwork was restored from an earlier visit. Its original style and details are not verified. You can review this exact design without creating another image. Current style and tone choices do not change this saved artwork.';
+      message.textContent = 'We found artwork from your earlier visit. Review this saved design before adding your gift. Changing style or tone requires new artwork.';
       var button = document.createElement('button'); button.type = 'button'; button.textContent = 'Review this saved artwork';
       button.addEventListener('click', function () {
         if (!restoredArtworkAvailable()) return;
