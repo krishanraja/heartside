@@ -49,6 +49,11 @@ on:
         required: false
         default: false
         type: boolean
+      footer_heartside:
+        description: "Also put the HS footer in place of Helio's footer and the company note (switched off, not deleted)"
+        required: false
+        default: false
+        type: boolean
       favicon:
         description: "Also set the theme's favicon to this file in Shopify Files (e.g. heartside-favicon.png). Leave empty to keep it."
         required: false
@@ -182,6 +187,17 @@ jobs:
           # build on the company-note step's copy when both are ticked
           [ -f shopify/sections/footer-group.json ] || cp backup/sections/footer-group.json shopify/sections/footer-group.json
           node .github/scripts/footer-signup.mjs shopify/sections/footer-group.json
+
+      - name: Put the HS footer in place of Helio's
+        if: ${{ inputs.footer_heartside && !inputs.pull_only }}
+        run: |
+          if [ ! -f backup/sections/footer-group.json ]; then
+            echo "::error::The theme has no sections/footer-group.json, so the footer was left alone."
+            exit 1
+          fi
+          # build on the other footer steps' copy when they are ticked too
+          [ -f shopify/sections/footer-group.json ] || cp backup/sections/footer-group.json shopify/sections/footer-group.json
+          node .github/scripts/footer-heartside.mjs shopify/sections/footer-group.json
 
       - name: Set the favicon
         if: ${{ inputs.favicon != '' && !inputs.pull_only }}

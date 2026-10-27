@@ -1,20 +1,11 @@
 {
   "sections": {
-    "gift": {
-      "type": "hs3-chat",
-      "settings": {
-        "product_mug": "your-dogs-illustrated-mug",
-        "product_blanket": "your-dogs-personality-blanket",
-        "product_print": "your-dogs-portrait",
-        "product_ornament": "the-tree-ornament",
-        "ornament_bundle": false,
-        "artwork_candidates": true,
-        "ai_on": false,
-        "blanket_purchase": false
-      }
+    "moved": {
+      "type": "hs-moved",
+      "settings": {}
     }
   },
   "order": [
-    "gift"
+    "moved"
   ]
 }

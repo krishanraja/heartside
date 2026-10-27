@@ -56,6 +56,14 @@ const norm = (v) => Array.isArray(v) ? v.map(norm) : v && typeof v === 'object'
   : v;
 const key = (v) => JSON.stringify(norm(withoutDefaults(v)));
 
+// Templates this repo takes over from Helio. The theme already has Helio's own copy, which no
+// committed version ever matched, so the first push would read it as a theme-editor edit and
+// stop. While the store copy is still Helio's (none of its sections is one of ours) there is no
+// edit of ours to protect, and the backup artifact keeps Helio's copy. Once our version is in the
+// theme, the check below applies to it like any other template.
+const takeover = new Set(['404.json']);
+const helioCopy = (tpl) => !Object.values((tpl && tpl.sections) || {}).some((s) => /^hs[\d-]/.test(String(s.type)));
+
 let edited = 0;
 for (const f of fs.readdirSync('shopify/templates')) {
   const path = 'shopify/templates/' + f;
@@ -67,6 +75,7 @@ for (const f of fs.readdirSync('shopify/templates')) {
   const now = key(parse(fs.readFileSync(path, 'utf8')));
   if (key(store) === now) console.log(`templates/${f}: unchanged`);
   else if (known.has(key(store))) console.log(`templates/${f}: updated from an earlier deploy, no theme-editor edits`);
+  else if (takeover.has(f) && helioCopy(store)) console.log(`templates/${f}: Helio's own copy, taken over by this repo (kept in the backup)`);
   else { edited++; console.log(`::warning::templates/${f} was edited in the theme editor and the repo does not have those edits yet.`); fs.appendFileSync('editor-edits.txt', f + '\n'); }
 }
 if (!edited) console.log('No theme-editor edits to lose.');

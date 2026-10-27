@@ -11,19 +11,20 @@
   elsif msg contains '[DATE]'
     assign msg = s.text_undated
   endif
-  assign native_templates = 'blanket-native,mug-native,portrait-native' | split: ','
-  if template.name == 'product' and native_templates contains template.suffix
-    assign msg = 'Shipping calculated at checkout.'
-  endif
+  # The shipping line is the same on every page (Krish, 27 Oct 2026). A memo saved in the theme
+  # editor before then can still end "Free US shipping."; finish it.
+  assign msg = msg | replace: 'Free US shipping.', 'Free US shipping on every order.'
 -%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the
   site (hs2.js reads them from data-* here): the confirmed last order date and the
   launch offer window. With no last order date, the countdowns count to Christmas
   morning, which is always true.
+  It shows as one 32px strip on night above the cream header, on every page and on
+  phones too (hs-brand.css, "the announcement strip").
 {%- endcomment -%}
 <div class="hs2">
-  <div class="hs2-memo" data-hs2-memo data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+  <div class="hs2-memo hs-strip" data-hs2-memo data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
         <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
@@ -44,7 +45,7 @@
       "id": "text",
       "label": "Memo",
       "info": "One message: the order-by date and free shipping. [DATE] becomes the last order date below, once it is set.",
-      "default": "Order by [DATE] for Christmas delivery. Free US shipping."
+      "default": "Order by [DATE] for Christmas delivery. Free US shipping on every order."
     },
     {
       "type": "text",
