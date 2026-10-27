@@ -3,13 +3,44 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { buildCheckoutImageWorkflow } from './build-checkout-image-workflow.mjs';
+import { IMAGE_FILES_QUERY, IMAGE_READ_QUERY, IMAGE_CREATE_MUTATION } from './checkout-image.mjs';
 import { proxyGuard, proxyVerified, admissionDecision } from './checkout-image-steps.mjs';
+// n8n2.43.5 uses Tournament1.14.0. Exercise its actual delimiter/parser path,
+// not only JavaScript evaluation after stripping the expression wrapper.
+const require = createRequire(new URL('../tools/preview/package.json', import.meta.url));
+const { Tournament } = require('@n8n/tournament');
+const tournament = new Tournament(error => { throw error; });
 
 const config = () => ({ shop: 'example-shop.myshopify.com', proxyPath: '/apps/heartside-artwork', shopifyImagePrefix: 'https://cdn.shopify.com/s/files/1/1111/2222/3333/files/', allowedVariantIds: ['12345'], enabled: true, cryptoCredentialId: 'test_crypto', shopifyCredentialId: 'test_shopify' });
 const uuid = '11111111-2222-4333-8444-555555555555';
 const secret = 'synthetic-local-test-only';
 const runtimeToken = 'synthetic_runtime_access_token_only';
+for (const [name, expected] of [
+  ['Find image', { query: 'filename:synthetic.jpg' }],
+  ['Read image', { id: 'gid://shopify/MediaImage/99' }],
+  ['Create image once', { files: [{ originalSource: 'https://example.invalid/native.jpg', filename: 'synthetic.jpg', alt: 'synthetic-marker', contentType: 'IMAGE', duplicateResolutionMode: 'RAISE_ERROR' }] }],
+]) test(`real n8n expression parser: ${name} body preserves GraphQL variables and rejects old adjacent braces`, () => {
+  const body = buildCheckoutImageWorkflow(config()).nodes.find(n => n.name === name).parameters.jsonBody;
+  const scope = { JSON, $json: { filename: 'synthetic.jpg', fileId: 'gid://shopify/MediaImage/99', source: 'https://example.invalid/native.jpg', marker: 'synthetic-marker' } };
+  const result = JSON.parse(tournament.execute(body.slice(1), scope));
+  assert.deepEqual(result.variables, expected);
+  assert.equal(result.query, { 'Find image': IMAGE_FILES_QUERY, 'Read image': IMAGE_READ_QUERY, 'Create image once': IMAGE_CREATE_MUTATION }[name]);
+  assert.equal((body.match(/\}\}/g) || []).length, 1, 'only the final n8n delimiter remains');
+  const broken = body.replace(/variables:\((.*)\)\}\) \}\}$/, 'variables:$1}) }}');
+  assert.notEqual(broken, body);
+  // This is valid JavaScript; n8n splits it prematurely at the inner }}.
+  assert.doesNotThrow(() => vm.runInNewContext(broken.slice(3, -2), scope));
+  assert.throws(() => tournament.execute(broken.slice(1), scope));
+});
+test('real n8n splitter also rejects closing delimiters inside quoted GraphQL text', () => {
+  const query = 'query { files { id }}';
+  const expression = literal => '{{ JSON.stringify({query:' + literal + ',variables:({})}) }}';
+  assert.throws(() => tournament.execute(expression(JSON.stringify(query)), { JSON }));
+  const protectedQuery = JSON.stringify(query).replace(/}/g, '\\u007d');
+  assert.equal(JSON.parse(tournament.execute(expression(protectedQuery), { JSON })).query, query);
+});
 function signedInput() {
   const body = { customizationId: uuid, variantId: '12345' };
   const query = { ...body, shop: config().shop, path_prefix: config().proxyPath, logged_in_customer_id: '', timestamp: String(Math.floor(Date.now() / 1000)), extra: ['a', 'b'], signature: '0'.repeat(64) };
@@ -54,7 +85,7 @@ async function runGraph(flow, input, runtime) {
     const first = value => Array.isArray(value) ? value[0] : value;
     const Clock = class extends Date { static now() { return runtime.now; } };
     const scope = { $input: { first: () => ({ json: first(current) }), all: () => (Array.isArray(current) ? current : [current]).map(json => ({ json })) }, $json: first(current), $: n => ({ first: () => ({ json: first(outputs.get(n)) }) }), Date: Clock, Buffer };
-    const expression = value => typeof value === 'string' && value.startsWith('={{') ? vm.runInNewContext(value.slice(3, -2), scope) : value;
+    const expression = value => typeof value === 'string' && value.startsWith('={{') ? tournament.execute(value.slice(1), { ...scope, JSON, Math }) : value;
     const resolve = value => Array.isArray(value) ? value.map(resolve) : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([k, v]) => [k, resolve(v)])) : expression(value);
     if (node.type.endsWith('.code')) current = vm.runInNewContext(`(function(){${node.parameters.jsCode}})()`, scope)[0].json;
     else if (node.type.endsWith('.crypto')) current = { ...current, computedSignature: createHmac('sha256', secret).update(expression(node.parameters.value)).digest('hex') };

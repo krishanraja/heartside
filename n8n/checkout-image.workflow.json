@@ -242,7 +242,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImages($query: String!) {\\n  files(first: 10, query: $query) { nodes {\\n    id alt fileStatus fileErrors { code }\\n    ... on MediaImage { image { url width height } }\\n  } pageInfo { hasNextPage } }\\n}\",variables:{query:'filename:'+$json.filename}}) }}",
+        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImages($query: String!) {\\n  files(first: 10, query: $query) { nodes {\\n    id alt fileStatus fileErrors { code \\u007d\\n    ... on MediaImage { image { url width height \\u007d \\u007d\\n  \\u007d pageInfo { hasNextPage \\u007d \\u007d\\n\\u007d\",variables:({query:'filename:'+$json.filename})}) }}",
         "options": {
           "timeout": 6000,
           "redirect": {
@@ -368,7 +368,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImage($id: ID!) {\\n  node(id: $id) { ... on MediaImage {\\n    id alt fileStatus fileErrors { code } image { url width height }\\n  } }\\n}\",variables:{id:$json.fileId}}) }}",
+        "jsonBody": "={{ JSON.stringify({query:\"query CheckoutImage($id: ID!) {\\n  node(id: $id) { ... on MediaImage {\\n    id alt fileStatus fileErrors { code \\u007d image { url width height \\u007d\\n  \\u007d \\u007d\\n\\u007d\",variables:({id:$json.fileId})}) }}",
         "options": {
           "timeout": 6000,
           "redirect": {
@@ -506,7 +506,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({query:\"mutation CheckoutImageCreate($files: [FileCreateInput!]!) {\\n  fileCreate(files: $files) { files { id alt fileStatus } userErrors { code field } }\\n}\",variables:{files:[{originalSource:$json.source,filename:$json.filename,alt:$json.marker,contentType:'IMAGE',duplicateResolutionMode:'RAISE_ERROR'}]}}) }}",
+        "jsonBody": "={{ JSON.stringify({query:\"mutation CheckoutImageCreate($files: [FileCreateInput!]!) {\\n  fileCreate(files: $files) { files { id alt fileStatus \\u007d userErrors { code field \\u007d \\u007d\\n\\u007d\",variables:({files:[{originalSource:$json.source,filename:$json.filename,alt:$json.marker,contentType:'IMAGE',duplicateResolutionMode:'RAISE_ERROR'}]})}) }}",
         "options": {
           "timeout": 6000,
           "redirect": {

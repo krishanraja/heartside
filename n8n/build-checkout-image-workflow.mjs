@@ -18,7 +18,9 @@ export function buildCheckoutImageWorkflow(config) {
   const http = (name, query, variables) => add(name, 'httpRequest', 4.2, { method: 'POST', url: `https://${config.shop}/admin/api/2026-10/graphql.json`,
     authentication: 'none', sendHeaders: true,
     headerParameters: { parameters: [{ name: 'X-Shopify-Access-Token', value: "={{ $('Acquire shop token').first().json.body.access_token }}" }] },
-    sendBody: true, specifyBody: 'json', jsonBody: `={{ JSON.stringify({query:${JSON.stringify(query)},variables:${variables}}) }}`,
+    // n8n splits at }} even within quoted strings. Encode query closing braces
+    // without changing the GraphQL text, and separate the nested variables object.
+    sendBody: true, specifyBody: 'json', jsonBody: `={{ JSON.stringify({query:${JSON.stringify(query).replace(/}/g, '\\u007d')},variables:(${variables})}) }}`,
     options: responseOptions }, { retryOnFail: false, onError: 'continueRegularOutput' });
 
   add('Webhook', 'webhook', 2.1, { httpMethod: 'POST', path: 'heartside-checkout-image', authentication: 'none', responseMode: 'responseNode', options: {} });
