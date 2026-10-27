@@ -1131,7 +1131,7 @@ product-card quick-add-component button { display: none !important; }
 .hs-journey__intro { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; }
 .hs-journey__intro[hidden], .hs-journey__card[hidden] { display: none; }
 .hs-journey__intro p { margin: 0; font-size: 16px; line-height: 1.45; }
-.hs-journey__go { display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; background: #121010; color: #FBF6F1; font-weight: 600; font-size: 17px; text-decoration: none; }
+.hs-journey .hs-journey__go, .hs-journey .hs-journey__go:visited { display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; background: #121010; color: #FBF6F1; font-weight: 600; font-size: 17px; text-decoration: none; }
 .hs-journey__here { min-height: 44px; border: 0; background: none; color: #5A4A44; font: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hs-journey__card { display: flex; flex-direction: column; border-radius: 18px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; padding: 4px 16px; }
 .hs-journey__row { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 10px 0; border-top: 1px dashed #E2D4C8; font-size: 15px; line-height: 1.4; }

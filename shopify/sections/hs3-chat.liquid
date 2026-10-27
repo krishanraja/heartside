@@ -74,7 +74,7 @@
                 {%- for m in p.media -%}
                   {%- assign a = m.alt | downcase -%}
                   {%- if m.media_type == 'image' and n < 4 and m.alt != blank -%}
-                    {%- unless a contains 'shown in your cart' or a contains 'blank' -%}
+                    {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}
                       {%- if n > 0 -%},{%- endif -%}{ "src": {{ m | image_url: width: 900 | json }}, "alt": {{ m.alt | json }} }
                       {%- assign n = n | plus: 1 -%}
                     {%- endunless -%}
@@ -105,15 +105,15 @@
             {%- assign pid = 'product_' | append: k -%}
             {%- assign p = s[pid] -%}
             {%- if p != blank -%}
-              {%- assign shot = blank -%}
+              {%- assign shot = nil -%}
               {%- for m in p.media -%}
                 {%- assign a = m.alt | downcase -%}
                 {%- if m.media_type == 'image' and m.alt != blank -%}
-                  {%- unless a contains 'shown in your cart' or a contains 'blank' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
+                  {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
                 {%- endif -%}
               {%- endfor -%}
               <a class="hs3-fan__item hs3-fan__item--{{ k }}" href="{{ p.url }}">
-                {%- if shot != blank -%}{{ shot | image_url: width: 600 | image_tag: alt: shot.alt, loading: 'eager', sizes: '(min-width: 1000px) 240px, 34vw', class: 'hs3-fan__img' }}{%- endif -%}
+                {%- if shot -%}{{ shot | image_url: width: 600 | image_tag: alt: shot.alt, loading: 'eager', sizes: '(min-width: 1000px) 240px, 34vw', class: 'hs3-fan__img' }}{%- endif -%}
                 <span class="hs3-fan__name">{% case k %}{% when 'mug' %}Mug{% when 'print' %}Portrait{% else %}Blanket{% endcase %}</span>
                 <span class="hs3-fan__price">{% if p.price_varies %}From {% endif %}{{ p.price_min | money_without_trailing_zeros }}</span>
               </a>

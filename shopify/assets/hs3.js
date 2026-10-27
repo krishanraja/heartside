@@ -922,8 +922,9 @@
     h += '</figure>';
     if (g === 'blanket') h += '<p class="hs3-small hs3-center">Example design. Photo reference only: your word-free blanket is painted from your photo on the next step.</p>';
     else h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.rec) + '</div><div class="hs3-note__lines"><span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor('meaning') || '') + '</span></div>' + sign(n) + '</div>';
+    // what gets painted: open on a wide screen, one tap away on a phone so the button stays in view
     var facts = paintFacts();
-    h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is.</p>') + '</div>';
+    h += '<details class="hs3-paint"' + (window.innerWidth >= 1000 ? ' open' : '') + '><summary class="hs3-label">What I\'ll paint' + (facts.length ? ' (' + facts.length + ')' : '') + '</summary>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is.</p>') + '</details>';
     return h;
   }
   // a product photo for the gift from Shopify: the mug in the chosen color and side, the portrait's first example
@@ -1027,7 +1028,7 @@
   function bundleTier(count) { return !cfg.bundleOffer ? 0 : count >= 3 ? 20 : count === 2 ? 15 : 0; }
   function daysToChristmas() {
     var now = new Date(), day = 864e5, xmas = new Date(now.getFullYear(), 11, 25);
-    var d = Math.ceil((xmas - now) / day);
+    var d = Math.floor((xmas - now) / day); // whole days, as the product pages count them
     return d > 0 && d <= 75 ? d : 0;
   }
   function chooseModel() {

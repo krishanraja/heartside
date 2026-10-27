@@ -1,0 +1,100 @@
+/* Stand-ins for the two stylesheets that live only on Shopify: Helio's (the theme around our
+   sections) and Teeinblue's (its app block). Just enough that the captured header, cart drawer,
+   cart page and footer (fixtures/helio-*.html) sit where they do on the live store, a 66px header
+   row on Helio's grey page, and that render.mjs's Teeinblue stand-in lays out like the app. Our
+   sections bring their own CSS (hs2.css, hs3.css), which still wins wherever it styles the same
+   classes. Preview only. */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #f9f9f9; color: #0f0f0f; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; --icon-stroke-width: 1.5px; }
+template { display: none; }
+.hidden { display: none !important; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.list-unstyled, .menu-drawer__menu, overflow-list { list-style: none; margin: 0; padding: 0; }
+.button-unstyled { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.svg-wrapper { display: inline-flex; width: 20px; height: 20px; align-items: center; justify-content: center; }
+.svg-wrapper svg { width: 100%; height: 100%; }
+
+/* header group: the memo bar, then Helio's header, sticky */
+#header-group > .header-section { position: sticky; top: 0; z-index: 30; }
+header-component { display: block; background: var(--color-background-top-row, #f9f9f9); }
+.header__underlay { display: none; }
+.header__columns { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; min-height: 66px; max-width: 1400px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+.header__column { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.header__column--right { justify-content: flex-end; }
+.header-logo { display: inline-flex; color: inherit; text-decoration: none; }
+.header-logo__image { display: block; height: 41px; width: auto; }
+.header-menu .menu-list { display: block; }
+.header-menu overflow-list { display: flex; gap: 22px; }
+.header-menu li[slot="more"] { display: none; }
+.menu-list__link { color: inherit; text-decoration: none; font-size: 0.875rem; }
+.header__icon--summary { list-style: none; cursor: pointer; display: inline-flex; }
+.header__icon--summary::-webkit-details-marker { display: none; }
+.header-drawer-icon--close { display: none; }
+header-actions { display: flex; align-items: center; gap: 14px; }
+.header-actions__action { display: inline-flex; align-items: center; color: inherit; }
+.account-button__icon { width: 18px; height: 18px; }
+.header__drawer, .search-action--hidden-on-menu { display: none; }
+@media (max-width: 749px) {
+  .header__columns { grid-template-columns: 1fr auto; padding: 0 16px; }
+  .header__column--center, .search-action--hidden-on-drawer { display: none; }
+  .header__drawer, .search-action--hidden-on-menu { display: inline-flex; }
+  .header-logo__image { height: 34px; }
+}
+
+/* cart drawer: a closed dialog on every page */
+theme-drawer dialog:not([open]) { display: none; }
+
+/* cart page: Helio's main-cart around our cart-products snippet */
+.section--page-width { max-width: 1200px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+.cart-page { display: grid; gap: 24px; padding-block: 24px 48px; }
+.cart-page--empty { text-align: center; }
+.cart-title h1 { font-size: 1.6rem; margin: 0; }
+@media (min-width: 750px) { .cart-page:not(.cart-page--empty) { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; } .cart-page__title { grid-column: 1 / -1; } }
+.cart-summary { background: #f2f2f2; border-radius: 0; padding: 20px; display: grid; gap: 12px; }
+.cart-totals__total { display: flex; justify-content: space-between; font-weight: 600; }
+.cart-items__media-image { width: 90px; height: auto; display: block; }
+.cart-items__remove { background: none; border: 0; padding: 4px; cursor: pointer; }
+a.button, .cart__checkout-button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 24px; border: 0; border-radius: 999px; background: #0f0f0f; color: #f9f9f9; font: 600 15px system-ui, sans-serif; text-decoration: none; cursor: pointer; }
+.cart__checkout-button { width: 100%; }
+quantity-selector-component { display: inline-flex; align-items: center; border: 1px solid #ccc; border-radius: 999px; }
+quantity-selector-component button { background: none; border: 0; width: 36px; height: 36px; cursor: pointer; }
+quantity-selector-component input { width: 36px; border: 0; text-align: center; background: none; font: inherit; }
+
+/* footer group: Helio's utilities row on its dark background */
+.shopify-section-group-footer-group.footer-utilities { position: relative; background: #0f0f0f; color: #f9f9f9; }
+.footer-utilities .section { max-width: 1400px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
+.utilities { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px 0 32px; font-size: 0.75rem; }
+.utilities a, .policy-list-trigger { color: inherit; }
+.terms-policies-popover { color: #0f0f0f; }
+.social-icons__icon-wrapper a { display: inline-flex; color: inherit; }
+.social-icons__icon { width: 20px; height: 20px; fill: currentColor; }
+.social-icons__icon-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* a Helio section this repo cannot render, shown as a labelled gap */
+.hs-preview-missing { max-width: 1200px; margin: 24px auto; padding: 24px 20px; border: 1px dashed #b9aea5; color: #5a4a44; font: 13px system-ui, sans-serif; text-align: center; box-sizing: border-box; }
+
+/* Teeinblue: options as chips with the native radio hidden, one-value options for screen readers
+   only, the live preview fitted to its column, its buttons and fields at a usable size */
+.sr-only { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tee-option { margin: 0 0 14px; }
+.tee-option__title { display: block; margin-bottom: 6px; }
+.tee-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tee-radio { position: relative; }
+.tee-radio input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tee-radio-label { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid #d6c8bd; border-radius: 12px; cursor: pointer; }
+.tee-ap-thumbnail { width: 32px; height: 32px; object-fit: cover; border-radius: 6px; }
+.tee-mockup { position: relative; }
+.tee-mockup-image { display: block; width: 100%; height: auto; }
+.tee-printarea { position: absolute; inset: 20% 24%; pointer-events: none; }
+.tee-field { display: grid; gap: 6px; }
+.tee-field__header { display: flex; justify-content: space-between; align-items: baseline; }
+.tee-field__total-characters { font-size: 12px; color: #6b5e57; }
+.tee-field__input, .tee-field__select { width: 100%; min-height: 44px; box-sizing: border-box; padding: 0 12px; font: inherit; }
+.tee-photo-placeholder { display: flex; justify-content: center; padding: 18px; cursor: pointer; }
+.tee-checkbox-wrapper { margin: 8px 0; }
+.tee-checkbox__label { display: inline-flex; align-items: center; gap: 8px; }
+button.tee-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border: 0; border-radius: 12px; background: #121010; color: #fbf6f1; font: 700 15px system-ui, sans-serif; cursor: pointer; }
+.tee-form-actions { display: flex; gap: 10px; align-items: stretch; margin-top: 8px; }
+.tee-form-action:last-child { flex: 1; }
+.tee-form-action:last-child button.tee-btn { width: 100%; }
+.tee-quantity input { width: 64px; min-height: 48px; box-sizing: border-box; text-align: center; font: inherit; }
