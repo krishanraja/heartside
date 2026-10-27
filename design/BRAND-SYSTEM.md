@@ -1,6 +1,8 @@
-# Heartside brand system
+# Heartside brand system — historical October 12 snapshot
 
-> **Positioning (12 October 2026).** Display name **Heartside: Personalized Dog Gifts**. Lead line **"Your dog loves you too."** One-line offer: "Personalized posters, ornaments and pillows made from their photo." Krish's rule: business headlines must never be lame or dumb. [`docs/POSITIONING.md`](../docs/POSITIONING.md) wins over this file on headlines and brand copy. This file is canonical in the GitHub repo (`design/BRAND-SYSTEM.md`); the Drive copies mirror it.
+> **Superseded for current Canva and social work.** This file records the previous Annual Review, ornament, pillow and Biscuit system. Do not use its product list, prices, host identity or social templates for the current store. The current Canva handoff is [`CANVA-SOURCES.md`](CANVA-SOURCES.md); the current storefront's visual tokens are in `shopify/assets/hs3.css` and its fonts in `shopify/snippets/hs2-head.liquid`. The approved product scope is in `docs/continuation/2026-10-24/START-HERE.md`.
+
+> **Positioning recorded 12 October 2026; historical.** Display name **Heartside: Personalized Dog Gifts**. Lead line **"Your dog loves you too."** One-line offer at that time: "Personalized posters, ornaments and pillows made from their photo." [`docs/POSITIONING.md`](../docs/POSITIONING.md) and the current continuation win over this snapshot on current headlines, product scope and brand copy.
 
 Heartside makes personalized gifts for people whose dog is their person. The hero product is **The Annual Review**: a 12 × 18 inch poster in which the dog reviews their human's year. The store is **heartside.io** (Shopify, Printful for every product, Teeinblue for personalization). Social accounts run as **@yourdoghasnotes**, display name **Heartside: Personalized Dog Gifts**.
 
