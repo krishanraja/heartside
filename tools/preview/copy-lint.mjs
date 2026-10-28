@@ -13,7 +13,9 @@
 //     {% comment %}, {% doc %}, {% # %} and <!-- -->; quoted strings inside Liquid tags; string
 //     literals inside <script> and {% javascript %}. Not <style> or {% stylesheet %}. In
 //     {% schema %} only setting defaults count: info, label and content are for the theme editor.
-//   - shopify/assets/hs*.js: string and template literals. Comments and code are not copy.
+//   - shopify/assets/hs*.js, and the Helio scripts we own and override (OWNED_ASSETS: the cart's
+//     component-cart-items.js, whose refusal copy a buyer reads): string and template literals.
+//     Comments and code are not copy.
 //   - shopify/templates/*.json: setting values, since words saved into a template are delivered as is.
 //
 // What it flags:
@@ -26,6 +28,10 @@
 //   retired-price           $29, $89, $24, $39 in copy, and those numbers as a price setting's default
 //   biscuit-host            Biscuit, the old host. Buddy hosts now.
 //   your-dog-has-notes      the retired tagline
+//   us-spelling             plain US spelling: colour, favourite, personalise, organise, grey,
+//                           centre, labelled, cancelled, catalogue, behaviour, realise, recognise,
+//                           honour, jewellery and their forms. Comments and theme-editor info are
+//                           not copy, so they are left alone like every other rule.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -47,7 +53,10 @@ export const RULES = [
   { id: 'retired-price', re: new RegExp(`\\$\\s?(?:${RETIRED_PRICES.join('|')})(?:\\.00)?(?!\\d)(?!\\.\\d)`, 'g') },
   { id: 'biscuit-host', re: /\bBiscuit\b/g },
   { id: 'your-dog-has-notes', re: /your dog has notes/gi },
+  { id: 'us-spelling', re: /\b(?:colour(?:s|ed|ful|ing|ways?)?|favourites?|personalis(?:e|ed|es|ing|ations?)|organis(?:e|ed|es|ers?|ing|ations?)|grey(?:s|ed|ish)?|centre(?:s|d)?|labell(?:ed|ing)|cancell(?:ed|ing)|catalogues?|behaviour(?:s|al)?|realis(?:e|ed|es|ing|ation)|recognis(?:e|ed|es|ing|able|ably)|honour(?:s|ed|ing|able)?|jewellery)\b/gi },
 ];
+// Helio scripts we override and own: their copy is delivered like ours
+export const OWNED_ASSETS = ['component-cart-items.js'];
 
 // ------------------------------------------------------------ text helpers
 const lineStarts = (src) => {
@@ -257,7 +266,7 @@ const walk = (dir) => (fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes:
 export function deliveredFiles(root = repo) {
   const theme = path.join(root, 'shopify');
   const liquid = ['sections', 'snippets', 'templates', 'layout', 'blocks'].flatMap((d) => walk(path.join(theme, d))).filter((f) => f.endsWith('.liquid'));
-  const js = walk(path.join(theme, 'assets')).filter((f) => /^hs.*\.js$/.test(path.basename(f)));
+  const js = walk(path.join(theme, 'assets')).filter((f) => /^hs.*\.js$/.test(path.basename(f)) || OWNED_ASSETS.includes(path.basename(f)));
   const json = walk(path.join(theme, 'templates')).filter((f) => f.endsWith('.json'));
   return [...liquid, ...js, ...json].sort();
 }

@@ -8,9 +8,16 @@
 # 5 October and chose to deploy to it directly from then on; the box keeps every
 # live push deliberate. Publishing is Krish's step, in Shopify admin.
 #
-# Before pushing it saves the theme's templates and section groups as a run
-# artifact ("theme-backup-..."), because pushing templates/*.json replaces any
-# theme-editor changes to them. Tick "header_memo_bar" to put the HS memo bar at
+# Before pushing it reads the store's product addresses (tools/preview/handle-check.mjs,
+# no browser): a broken one stops the run before anything is written, because a push
+# would carry index.json product settings that point at the clean handles. After the
+# push it reads the store back the same way, with the pushed theme's home page and
+# phone menu. It saves the theme's templates and section groups as a run artifact
+# ("theme-backup-run-..."), because pushing templates/*.json replaces any
+# theme-editor changes to them.
+#
+# This repository is public, so the logs, summary and artifact names carry no theme
+# id and no preview address: the target is named by its role and theme name only. Tick "header_memo_bar" to put the HS memo bar at
 # the top of the header and retire the v1 offer bar (.github/scripts/header-memo.mjs).
 # Tick "footer_company_note" to put the company note last in the footer group
 # (.github/scripts/footer-note.mjs). Tick "footer_remove_signup" to switch off Helio's email
@@ -114,6 +121,10 @@ jobs:
             echo "::error::theme_id must be digits only, for example 141234567890."
             exit 1
           fi
+          # the theme id and the store's address never reach this public log, not even inside the
+          # Shopify CLI's own output (its push report prints a preview address)
+          echo "::add-mask::$THEME_ID"
+          echo "::add-mask::$SHOPIFY_FLAG_STORE"
 
       - uses: actions/checkout@v4
         with:
@@ -131,20 +142,39 @@ jobs:
           shopify theme list --json > themes.json
           role=$(node -e 'const t=require("./themes.json").find(x=>String(x.id)===process.env.THEME_ID); console.log(t ? t.role : "missing")')
           name=$(node -e 'const t=require("./themes.json").find(x=>String(x.id)===process.env.THEME_ID); console.log(t ? t.name : "")')
-          echo "Target theme: $THEME_ID \"$name\" (role: $role)"
+          echo "Target theme: \"$name\" (role: $role)"
           if [ "$role" = "missing" ]; then
-            echo "::error::No theme with ID $THEME_ID in the store. Check the ID in the Customize URL."
+            echo "::error::No theme with that ID in the store. Check the ID in the Customize URL."
             exit 1
           fi
           if [ "$role" = "live" ] || [ "$role" = "main" ]; then
             if [ "${{ inputs.allow_live_theme }}" != "true" ]; then
-              echo "::error::Theme $THEME_ID is the LIVE theme. Tick allow_live_theme to push to it on purpose, or push to an unpublished copy."
+              echo "::error::The target is the LIVE theme. Tick allow_live_theme to push to it on purpose, or push to an unpublished copy."
               exit 1
             fi
-            echo "::warning::Theme $THEME_ID is the LIVE theme, and allow_live_theme is ticked. Shoppers see this push as soon as it lands."
+            echo "::warning::The target is the LIVE theme, and allow_live_theme is ticked. Shoppers see this push as soon as it lands."
           fi
           if [ "$name" != "$THEME_NAME" ]; then
-            echo "::error::Theme $THEME_ID is named \"$name\", not \"$THEME_NAME\". Nothing was pushed."
+            echo "::error::The target theme is named \"$name\", not \"$THEME_NAME\". Nothing was pushed."
+            exit 1
+          fi
+
+      # The product addresses, read from the public store without a browser. Exit 1 (a renamed
+      # handle, a 404, a lost template, the chat or phone menu pointing at nothing) stops here,
+      # before the backup and the push. Exit 2 (Cloudflare or the network kept it from reading
+      # the store) only warns. Pictures (the blank base, the Artist's touch stand-in) warn too:
+      # they are product media in Shopify admin, which this push cannot change.
+      - name: Check the product addresses before pushing
+        if: ${{ !inputs.pull_only }}
+        run: |
+          set +e
+          node tools/preview/handle-check.mjs --warn-media
+          code=$?
+          set -e
+          if [ "$code" = "2" ]; then
+            echo "::warning::The store could not be read from here (a Cloudflare challenge or a network error), so the product addresses were not checked. The push goes ahead; read the store back with the gates afterwards."
+          elif [ "$code" != "0" ]; then
+            echo "::error::A product address is broken (see above). Nothing was pushed."
             exit 1
           fi
 
@@ -156,7 +186,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: theme-backup-${{ inputs.theme_id }}-run-${{ github.run_number }}
+          name: theme-backup-run-${{ github.run_number }}
           path: backup
           retention-days: 30
 
@@ -255,13 +285,29 @@ jobs:
             exit 1
           fi
 
+      # The same check after the push, with the pushed theme's own home page and phone menu,
+      # read through Shopify's theme preview; the id never reaches the log
+      - name: Read the store back
+        if: ${{ success() && !inputs.pull_only }}
+        run: |
+          sleep 10
+          set +e
+          node tools/preview/handle-check.mjs --theme "$THEME_ID" --warn-media
+          code=$?
+          set -e
+          if [ "$code" = "2" ]; then
+            echo "::warning::The store could not be read back from here (a Cloudflare challenge or a network error). Run preview-acceptance.mjs, live-gate.mjs and handle-check.mjs from a session."
+          elif [ "$code" != "0" ]; then
+            echo "::error::After the push, a product address, the chat's gift list or the phone menu is broken (see above)."
+            exit 1
+          fi
+
       - name: Summary
         if: success()
         run: |
           {
-            if [ "${{ inputs.pull_only }}" = "true" ]; then echo "### Saved theme $THEME_ID (nothing pushed)"; else echo "### Pushed to theme $THEME_ID"; fi
+            if [ "${{ inputs.pull_only }}" = "true" ]; then echo "### Saved the theme \"$THEME_NAME\" (nothing pushed)"; else echo "### Pushed to the theme \"$THEME_NAME\""; fi
             echo ""
-            echo "Open Shopify admin > Online Store > Themes > the copy > Customize to finish setup."
+            echo "Open the copy from Shopify admin > Themes to preview it, or Customize it to finish setup."
             echo "The theme's templates and section groups from before this push are saved under Artifacts."
-            echo "Preview: https://bnf1em-ge.myshopify.com/?preview_theme_id=$THEME_ID"
           } >> "$GITHUB_STEP_SUMMARY"
