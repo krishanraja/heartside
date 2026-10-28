@@ -48,6 +48,15 @@ for (const k of ['typed', 'compose']) {
   ok(P[k].indexOf('No exclamation marks.') !== -1 && !/at most one exclamation mark/i.test(P[k]), k + ' prompt allows no exclamation marks');
 }
 ok(P.typed.indexOf('Never offer Not sure or Something else as a chip; the page adds them.') !== -1, 'typed prompt leaves the non-answer chips to the page');
+// 28 Oct review: the Guard sends they when no pronoun was tapped, so the prompts follow dog.pronoun
+// and no example guesses she; a gift for the buyer ("Me") speaks to them as you
+for (const k of ['typed', 'compose']) {
+  ok(P[k].indexOf("In Buddy's words, call the dog by its name or by dog.pronoun. When dog.pronoun is they, say they and them, never a guessed he or she.") !== -1, k + ' prompt follows dog.pronoun in Buddy\'s words');
+  ok(!/puts her right there/.test(P[k]), k + ' prompt has no example that guesses she');
+}
+ok(P.compose.indexOf('Reason example: "Kuku\'s mornings start with Sam and a coffee, so a mug puts Kuku right there in every one of them."') !== -1, 'compose reason example names the dog');
+ok(P.typed.indexOf('When recipient.relation is self, the person is the buyer Buddy is talking to, so the reaction, question, chips and replies say you and your, never their name: "Follows you everywhere".') !== -1, 'typed prompt speaks to the buyer as you for a gift for themselves');
+ok(P.compose.indexOf('When recipient.relation is self, the person is the buyer, so the reason talks to them as you and your, never by their name') !== -1, 'compose prompt speaks to the buyer as you for a gift for themselves');
 const answers = (o) => ['home', 'home_follow', 'spot', 'together', 'meaning'].map(id => ({ id, chip: (o[id] && o[id].chip) || null, label: '', typed: (o[id] && o[id].typed) || null }));
 const coffee = {input:{dog:{name:'Ruby',tone:'Retriever'},recipient:{name:'Sam',relation:'partner'},answers:answers({home:{chip:'door'},home_follow:{chip:'weekdays'},spot:{chip:'couch'},together:{chip:'coffee'},meaning:{chip:'best'}}),current_lines:{home:"I'm at the door every weekday, waiting.",spot:'I keep your spot on the couch warm for you.',together:'You have your coffee and I wait for toast.',meaning:"You're my best friend, and I'm yours."},default_gift:'mug',note_tone:'warm'}};
 const toastLines = {home:"I'm at the door every weekday, waiting.",spot:'I keep your spot on the couch warm for you.',together:'You have your coffee and I wait for toast.',meaning:'I wait for toast and for you, always.'};
