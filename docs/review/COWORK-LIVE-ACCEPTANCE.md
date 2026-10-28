@@ -6,7 +6,7 @@ Work in four parts, in this order:
 
 0. **Payments.** Make sure real buyers can pay. Do this first: the store cannot take money while Shopify Payments is off.
 1. **Platforms.** Bring Teeinblue, n8n and Shopify admin in line with the merged code.
-2. **The theme release.** Push to a copy, run the gates, test the photo fix on Krish's own phones, then push live.
+2. **The theme release.** Push to a copy, run the gates, test the photo fix on Krish's own phones, push live, then put the checkout pictures on and run the gates on production.
 3. **Five mock orders.** Run them with test payments, with every edge case below. Then restore payments and clean up.
 
 The new one-screen journey (Track B) is not part of this run. Its mock-ups go to Krish first.
@@ -96,7 +96,10 @@ cd tools/preview && npm ci && npx playwright install chromium
   - Never press Update or Sync in Teeinblue without its own [approval], even when another step there was approved.
   - Back up the campaign privately before any change.
   - The live portrait product belongs to the campaign **"Heartside City Screenprint - DRAFT 2026-10-23"**. The campaign called "Your Dog's Portrait" points at a draft reference product and errors on Update; leave it alone.
-  - After every Teeinblue change, read back the three product handles in Shopify admin (`your-dogs-illustrated-mug`, `your-dogs-portrait`, `your-dogs-personality-blanket`), then run `node tools/preview/handle-check.mjs`.
+  - After every Teeinblue change, read back the three product handles in Shopify admin (`your-dogs-illustrated-mug`, `your-dogs-portrait`, `your-dogs-personality-blanket`), then run `node tools/preview/handle-check.mjs --warn-media`.
+    - It ends "all clear" with exit 0 when every handle, price and address is intact.
+    - Until the checkout tiles go on in Part 2.5, it also prints `warn` lines for the blank variant pictures and the Artist's touch stand-in. Those are expected there.
+    - Exit 1 and a `FAIL` line mean a handle, price or address broke.
   - On 28 October a campaign Update renamed two handles to the campaign title, with every sync flag off. If a handle changed, restore it in Shopify admin on [approval], run the check again, then stop and report.
 - **Never, in any part:**
   - confirm, release or pay for a Printful order, or press a fulfillment control;
@@ -188,34 +191,7 @@ For each workflow:
 
 Order 1's typed answer in Part 3 is the live check.
 
-### 1.4 Shopify: checkout tiles and the Artist's touch picture **[approval, once per product]**
-
-Shopify draws each gift's component line at checkout with its variant's own picture. That picture is still the blank supplier base, so buyers see a blank white thumbnail under their design. The Artist's touch shows the heart favicon as a stand-in.
-
-The tiles are in [`design/checkout-tiles/`](../../design/checkout-tiles/README.md), with the exact alt text for each. The theme hides any photo whose alt text says "checkout tile", so a tile never shows on the product page.
-
-1. Run `node tools/preview/handle-check.mjs` and note which variants it reports as showing the blank base, by product and variant name.
-2. For each gift with a blank variant, on **[approval]**:
-   - upload that gift's tile to the product, with its alt text exactly as in the README;
-   - set it as the picture for only those blank variants;
-   - leave the product's first photo, and every other variant's photo, as they are. The mug's colors keep their own photos.
-3. For the Artist's touch, on **[approval]**:
-   - upload `artists-touch.png` with its alt text;
-   - make it the product's first picture;
-   - keep the heart stand-in, moved to a later position, unless Krish says to remove it.
-4. **Read back:**
-   - `node tools/preview/handle-check.mjs` reports no blank picture and no stand-in;
-   - each product page on heartside.io shows no tile in its gallery;
-   - a fresh checkout with one gift shows the tile on the component line, under the design.
-5. **Rollback:** point the variants back at their previous picture, and the Artist's touch back at the heart.
-
-Also read and record these for the Claude Code session, which adds them to `tools/preview/catalog.mjs`:
-
-- **Blank file names:** the file name of each blank supplier base picture, as shown in Shopify's Files.
-- **Stand-in:** the file name of the heart stand-in.
-- **Redirects:** every URL redirect in Online Store, Navigation, URL redirects whose source starts with `/products/`, as from and to.
-
-### 1.5 Shopify: checkout look and the thank-you line **[approval for each]**
+### 1.4 Shopify: checkout look and the thank-you line **[approval for each]**
 
 1. **Checkout branding.** In Settings, Checkout, Customize, change these:
    - colors: background cream `#FBF6F1`, main buttons ink `#121010` with cream text, accents stamp red `#A8284E`;
@@ -229,7 +205,7 @@ Also read and record these for the Claude Code session, which adds them to `tool
    - **Readback:** an order in Part 3 shows it.
 3. **Rollback:** both can be reset in the same screens.
 
-### 1.6 Function Studio: kept through Christmas **[approval only if a control is needed]**
+### 1.5 Function Studio: kept through Christmas **[approval only if a control is needed]**
 
 Ruling (Krish, 28 October): keep the checkout-merge app through Christmas at $69 a month, then review it in January against measured conversion.
 
@@ -237,8 +213,11 @@ Ruling (Krish, 28 October): keep the checkout-merge app through Christmas at $69
 2. If keeping it needs an action, such as accepting a charge, ask first.
 3. Read and record the active rule's status, and how it sets the output quantity. The store keeps every design at one unit, so it is not changed.
 
-### 1.7 Read only, for the record
+### 1.6 Read only, for the record
 
+- **For `catalog.mjs`.** Record these for the Claude Code session, which adds them to `tools/preview/catalog.mjs`:
+  - **Blank file names:** the file name of each blank supplier base picture, as shown in Shopify's Files.
+  - **Redirects:** every URL redirect in Online Store, Navigation, URL redirects whose source starts with `/products/`, as from and to.
 - **Discounts.** Record:
   - the automatic bundle discount (15% for two gifts, 20% for three or more, gifts only);
   - the free shipping discount and the regions it covers (Alaska, Hawaii and Puerto Rico included or not);
@@ -277,10 +256,10 @@ From `tools/preview`, run:
 ```
 node preview-acceptance.mjs --theme <copy id>
 node live-gate.mjs --query "preview_theme_id=<copy id>"
-node handle-check.mjs --theme <copy id>
+node handle-check.mjs --theme <copy id> --warn-media
 ```
 
-The live gate includes Krish's Android Edge size, 360×640. Each command ends with exit 0 and "all clear".
+The live gate includes Krish's Android Edge size, 360×640. Each command ends with exit 0 and "all clear". The handle check may also print `warn` lines for the blank variant pictures and the Artist's touch stand-in: those are fixed in 2.5, after the live push, and are expected here.
 
 - **Exit 2** means Cloudflare challenged a page. That is inconclusive, never a pass: wait a few minutes and run it again, or run it from another network.
 - **Exit 1** means a failure. Stop and report it. Do not push live.
@@ -318,30 +297,60 @@ The live gate includes Krish's Android Edge size, 360×640. Each command ends wi
 
 **Teeinblue's chrome, on both Android browsers:** its fixed Personalize bar never covers the page, and the photo field, the style and tone, and Add to cart are all reachable.
 
-**iPhone in Safari:** the chat, then the portrait, then one real photo. Painting 4.
-- The photo adds in one tap, or the page says why where Krish is looking.
+**iPhone in Safari:** the chat, then the portrait, with `?hsdebug=photo` on the product page, then one real photo from Krish's camera roll. Painting 4.
+- **Checkpoint:** the photo adds in one tap and the painting starts. Safari writes its own photos differently from Chrome, and this is the only test of it, so a refusal here is a defect even when the page says why.
 - The portrait page opens on Unframed $59 when it comes from the chat.
+- Copy the log.
 
 **Report for each browser:**
 - "adds in one tap", or what it said instead, and where;
 - the log's stage names in order (`picker`, `change`, `check`, `prepare`, `vendor` and the rest);
 - any stage that stalls.
 
-A photo that is picked but never adds, with no message, is the 28 October defect. It blocks the live push.
+A photo that is picked but never adds, with no message, is the 28 October defect. A real dog photo that is refused is a defect too. Either one blocks the live push.
 
 ### 2.4 Push live **[approval]**
 
-Only when 2.2 is all clear and 2.3 shows the photo adding, or saying why, on both Android browsers:
+Only when 2.2 is all clear, and in 2.3 a real photo added and painted on all three browsers (Android in Edge, Android in Chrome, iPhone in Safari), and every refused test photo said why under the button:
 
 1. Run the same action with the live theme's id and exact name, and `allow_live_theme` ticked. Leave every other switch at its default.
-2. On heartside.io, with no preview parameter, run the three commands from 2.2 without `--theme` or `--query`. All clear.
-3. In GitHub Actions, run "Storefront guard" once by hand. All clear, with no new issue.
-   - Before 1.4's tiles are in place, the guard opens one issue, "Storefront guard: a storefront check failed", about the blank picture and the stand-in.
-   - Once a run is all clear, Krish closes that issue.
+2. Read the run's result line, then go straight on to 2.5.
 
 **Rollback:** the run saved the live theme's templates as a backup artifact. Krish can also publish the previous theme from Online Store, Themes.
 
-### 2.5 Christmas cut-off **[approval]**
+### 2.5 Checkout tiles and the Artist's touch picture **[approval, once per product]**
+
+Do this right after the live push. Only the theme pushed in 2.4 hides the tiles from the product pages, so a tile attached earlier would show to buyers as a product photo.
+
+Shopify draws each gift's component line at checkout with its variant's own picture. For some variants that picture is still the blank supplier base, so buyers see a blank white thumbnail under their design. The Artist's touch shows a pink heart as a stand-in: it is stored as `artists-touch.png`, with the alt text "Artist's touch by Heartside".
+
+The tiles are in [`design/checkout-tiles/`](../../design/checkout-tiles/README.md), with the exact alt text for each. The live theme now hides any photo whose alt text says "checkout tile".
+
+1. Run `node tools/preview/handle-check.mjs --warn-media`. Its `warn` lines name each variant that shows the blank base, by product and variant name.
+2. For each gift with a blank variant, on **[approval]**:
+   - upload that gift's tile to the product, with its alt text exactly as in the README;
+   - set it as the picture for only the variants the check named;
+   - leave the product's first photo, and every other variant's photo, as they are. The mug's colors keep their own photos.
+3. For the Artist's touch, on **[approval]**:
+   - upload `artists-touch-tile.png` with its alt text;
+   - make it the product's first picture;
+   - keep the heart stand-in, moved to a later position, unless Krish says to remove it.
+4. **Read back:**
+   - in Shopify admin, the Artist's touch's first picture is the new tile, and each gift's blank variants show their gift's tile;
+   - each product page on heartside.io shows no tile in its gallery, including after choosing each variant;
+   - the tile on a component line at checkout is checked in order 1 of Part 3, which paints. Do not paint for it here.
+5. **Rollback:** point the variants back at their previous picture, and the Artist's touch back at the heart.
+
+### 2.6 The gates on production (read only)
+
+1. On heartside.io, with no preview parameter, run the three commands from 2.2 without `--theme`, `--query` or `--warn-media`. Each ends "all clear", and the handle check prints no `warn` line.
+2. In GitHub Actions, run "Storefront guard" once by hand. All clear, with no new issue.
+   - Since the merge, the hourly guard will have opened one issue, "Storefront guard: a storefront check failed", about the blank pictures and the stand-in.
+   - Once a run is all clear, Krish closes that issue.
+
+If a gate fails here, stop and report. The rollback is in 2.4.
+
+### 2.7 Christmas cut-off **[approval]**
 
 1. On Printful's own site, find the published 2026 US holiday order cut-offs, with standard shipping, for:
    - the 11 oz mug;
@@ -355,7 +364,7 @@ Only when 2.2 is all clear and 2.3 shows the photo adding, or saying why, on bot
 
    If any date is missing, leave the setting empty and say so.
 
-Do this after 2.4, so the push and the editor change never cross.
+Do this after 2.6, so the push and the editor change never cross.
 
 ## Part 3: five mock orders on heartside.io (Krish records)
 
@@ -399,16 +408,17 @@ Do this after 2.4, so the push and the editor change never cross.
 | # | Gift | Where | Dog (photo) | Style, tone | Ship to | Paintings |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Sherpa blanket | 390×844 | Honey, Golden Retriever, she (`golden-puppy-asleep.jpg`) | Cut-paper collage, Sentimental | New York | 1 |
-| 2 | Portrait, framed red oak | 1280×900, a direct visit | Sir Biscuit O'Malley, Pug, he (`pug-autumn-leaves.jpg`) | Comic book, Hilarious | Anchorage | 1 |
+| 2 | Portrait, framed red oak | 1280×900, a direct visit | Bo O'Malley, Pug, he (`pug-autumn-leaves.jpg`) | Comic book, Hilarious | Anchorage | 1 |
 | 3 | Mug, dark green inside, plus the Artist's touch | 390×844 | RUBY, typed in capitals, Poodle (typed "toy poodle"), no pronoun tapped (`red-poodle-head-tilt.jpg`) | Painterly, Warm with a wink | Honolulu | 1 |
 | 4 | Mug (red inside), unframed portrait and blanket, plus one redo | 1280×900 | Pickle, Cavapoo, he (`apricot-poodle-puppy.jpg`) | Vintage screenprint, Hilarious | San Juan, else Chicago | 4 |
 | 5 | Mug, pink inside | Krish's Android phone in Edge, with `?hsdebug=photo` | Mochi, Maltipoo, she (bad photos first, then `maltipoo-on-deck.jpg`) | Fine ink drawing, Sentimental | Toronto, then Chicago | 1 |
 
 **Order 1: a typed answer, the stated toy and one tick.**
 
-- **Chat.** Start on the home page with a clean session. Use chips everywhere except the home question, where you type: "she waits by the door!! every single day". The recipient is a partner, "Sam".
-  - **Checkpoint: the note.** While Buddy writes, it says so. If the line changes after you have read it, the note says it changed. "What I'll paint" shows the typed words tidied: "Waits by the door. Every single day."
-  - Choose Sentimental on the slider, then "Show me", then the blanket.
+- **Chat.** Start on the home page with a clean session. Use chips everywhere except the home question, where you type: "she waits by the door!! every single day". The recipient is a partner, "Sam". Then press "Show me".
+  - **Checkpoint: the note,** on Buddy's pick screen, on the mug or portrait tab. While Buddy writes, the note says "Buddy is writing your note…". If the line changes after you have read it, the note says it changed. "What I'll paint" shows the typed words tidied: "Waits by the door. Every single day."
+  - Tap the Blanket tab. Set its "Artwork tone" slider to Sentimental.
+  - Press "Choose Honey's gifts", leave only the blanket selected, then press the Personalize button, which names the blanket and $129.
 - **Product page.**
   - Buddy's card shows "Sentimental", the tone you chose.
   - Favorite toy: "Green squeaky hedgehog". Collar or accessory: "Red plaid bandana".
@@ -428,10 +438,12 @@ Do this after 2.4, so the push and the editor change never cross.
   - In a fresh private window, go straight to `/products/your-dogs-portrait`. Buddy's offer shows, with no earlier names and no flash of another card.
   - Choose Framed, then red oak. The price is $119.
   - Type "Sir Biscuit O'Malley" into the dog's name field.
-    - **Checkpoint:** record what the field keeps (at most 14 letters print in "Love, …"). The line under it reads "Signed on the print: Love, <what it keeps>".
+    - **Checkpoint: a long name.** The field stops at 14 characters, "Sir Biscuit O'". Under it: "Signed on the print: Love, Sir Biscuit O'" and "That's the most that fits. Up to 14 fit in the signature."
+  - Clear the field and type "Bo O'Malley".
+    - **Checkpoint:** the line under it reads "Signed on the print: Love, Bo O'Malley".
   - In the note field, type "For Pat & Jo, who saved me the good chair". Style Comic book, tone Hilarious.
   - Upload the photo, check the painting and the tick, then add.
-  - Every place the names show (preview, cart, checkout, order) shows `O'Malley` and `&`, never `&#39;` or `&amp;`.
+  - Every place the names show (preview, cart, checkout, order) shows `Bo O'Malley` and `&`, never `&#39;` or `&amp;`.
 - **Checkout.**
   - Pay with card `2`. The decline message is plain, and no order is placed.
   - Then pay with card `1`.
@@ -460,19 +472,21 @@ Do this after 2.4, so the push and the editor change never cross.
 **Order 4: three gifts from one chat, the bundle, and a redo that keeps both designs.**
 
 - **Chat.**
-  - One chat for Pickle, a Cavapoo, he. The recipient is a friend, "Jo-anne".
-  - The name never splits across lines, in the heading, Buddy's bubble or the chips.
+  - One chat for a Cavapoo, he. The recipient is a friend, "Jo-anne".
+  - For the dog's name, type "Pickle Fitzgerald" first.
+    - **Checkpoint: a long name in the chat.** From 11 letters a count shows under the box. At 17 letters, Next waits and the hint reads `"Pickle Fitzgerald" is 17 letters. 14 fit in "Love, …" on the gift.`, with a "Pickle" chip. Tap it. The dog is Pickle from here on.
+  - The name Jo-anne never splits across lines, in the heading, Buddy's bubble or the chips.
   - A Cavapoo is a cross whose parents do not match, so the hidden Energy field reads `none`. Read it in the browser's developer tools on the product page.
   - Pick all three gifts. The button shows the price after the saving.
-- **Make the three gifts** from the product pages, in order: the mug (red inside), then the portrait, which opens on Unframed $59, then the blanket.
-  - **Checkpoint:** after two gifts, the cart takes 15% off: $45 + $59 = $104, less $15.60, so $88.40.
+- **Make the three gifts** from the product pages, in the order the app sends you, using the "Next" bar after each add: the mug (red inside), then the blanket, then the portrait, which opens on Unframed $59.
+  - **Checkpoint:** after two gifts, the cart takes 15% off: $45 + $129 = $174, less $26.10, so $147.90.
   - **Checkpoint:** after three, it takes 20% off: $233, less $46.60, so $186.40.
   - Each add shows one confirmation, and "All 3 gifts are in your cart" appears only after the third add.
 - **Redo the mug.**
   - In the cart, use "Not quite right? Make another version." on the mug and make a new version.
   - **Checkpoint:** "Your new version is in your cart. Choose which one to keep." The cart then holds both mug designs, and the first says "You made a new version of this gift. Keep the new one?".
   - Press "Remove this version" on the first.
-  - **Checkpoint: cart.** Three gifts, each at one unit, with 20% applied and every picture steady.
+  - **Checkpoint: cart.** Three gifts, each at one unit, with 20% applied ($186.40 again) and every picture steady.
 - **Checkout.**
   - Ship to San Juan. If Puerto Rico cannot be shipped to, or is charged for shipping, record exactly what checkout says, then use Chicago.
   - The thank-you line names no one.
@@ -535,12 +549,13 @@ Write it for the Claude Code session, with nothing from the private list.
 2. **Part 1.** The table, plus:
    - the three new prompt hashes as read back;
    - the n8n comparison result for each workflow;
-   - the blank file names, the stand-in file name and the product redirects, for `catalog.mjs`;
+   - the blank file names and the product redirects, for `catalog.mjs`;
    - the Function Studio dates;
    - the Christmas dates with links.
 3. **Part 2.**
    - The push runs' result lines.
    - The three gates on the copy and on production, each all clear or the failing lines.
+   - The checkout tiles and the Artist's touch picture: what was attached to which variant, and the readback.
    - For each phone browser: "adds in one tap" or what happened, and the photo log.
    - The storefront guard's run.
 4. **Part 3, for each order.**

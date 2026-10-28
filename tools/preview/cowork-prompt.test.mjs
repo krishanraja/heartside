@@ -8,6 +8,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync} from 'node:fs';
 import {RULES} from './copy-lint.mjs';
+import {CORE} from './catalog.mjs';
 
 const root = new URL('../../', import.meta.url);
 const prompt = readFileSync(new URL('docs/review/COWORK-LIVE-ACCEPTANCE.md', root), 'utf8');
@@ -23,7 +24,7 @@ test('payments come first, then the platforms, the release and the mock orders, 
 });
 
 test('every step that changes a platform asks Krish first', () => {
-  for (const h of ['### 1.1', '### 1.2', '### 1.3', '### 1.4', '### 1.5', '### 2.1', '### 2.3', '### 2.4', '### 2.5', '### 3.2', '### 3.3']) {
+  for (const h of ['### 1.1', '### 1.2', '### 1.3', '### 1.4', '### 1.5', '### 2.1', '### 2.3', '### 2.4', '### 2.5', '### 2.7', '### 3.2', '### 3.3']) {
     const line = headings.find(x => x.startsWith(h));
     assert.ok(line && line.includes('[approval'), `${h} is marked [approval]: ${line}`);
   }
@@ -77,6 +78,49 @@ test('every file it names is in the repository', () => {
     assert.ok(prompt.includes(f.split('/').pop()), `the prompt names ${f}`);
   }
   for (const m of prompt.matchAll(/\]\((\.\.\/[^)#]+)\)/g)) assert.ok(existsSync(new URL(m[1], new URL('docs/review/', root))), m[1]);
+});
+
+// Review of PR #65: the tiles were set to go on in Part 1, while only the theme pushed in Part 2
+// hides them from the product pages, and the handle check had no --warn-media before them, so
+// every Teeinblue readback in Part 1 printed FAIL on pictures that are fixed later
+test('the checkout tiles go on right after the live push, and the handle check only warns on pictures before them', () => {
+  const at = t => headings.findIndex(h => h.startsWith(t));
+  assert.ok(at('### 2.4 Push live') !== -1 && at('### 2.4 Push live') < at('### 2.5 Checkout tiles') && at('### 2.5 Checkout tiles') < at('### 2.6 The gates on production'));
+  assert.deepEqual(headings.filter(h => /^### 1\./.test(h) && /tile/i.test(h)), []);
+  assert.match(prompt.slice(prompt.indexOf('**The Teeinblue rule.**'), prompt.indexOf('## Part 0')), /handle-check\.mjs --warn-media/);
+  assert.match(section('### 2.2'), /handle-check\.mjs --theme <copy id> --warn-media/);
+  assert.match(section('### 2.6'), /without `--theme`, `--query` or `--warn-media`/);
+});
+
+// a real photo must add on all three phone browsers before the live push: Safari encodes its own
+// JPEGs, and "the page says why" would have let a Safari-wide refusal through
+test('the live push waits for a real photo to add on Android Edge, Android Chrome and iPhone Safari', () => {
+  const p24 = section('### 2.4');
+  for (const b of ['Android in Edge', 'Android in Chrome', 'iPhone in Safari']) assert.ok(p24.includes(b), b);
+  assert.match(section('### 2.3'), /a refusal here is a defect even when the page says why/);
+});
+
+// order 4 follows the order the chat queues the gifts in (hs3.js GIFTS), and its bundle sums are
+// the catalog's prices less 15% for two gifts and 20% for three
+test('order 4 makes the gifts in the app\'s order, and its bundle checkpoints add up', () => {
+  const hs3 = readFileSync(new URL('shopify/assets/hs3.js', root), 'utf8');
+  const gifts = JSON.parse(hs3.match(/var GIFTS = (\[[^\]]*\]);/)[1].replace(/'/g, '"')).filter(g => g !== 'ornament');
+  const name = {mug: 'the mug (red inside)', blanket: 'the blanket', print: 'the portrait'};
+  const o4 = prompt.slice(prompt.indexOf('**Order 4:'), prompt.indexOf('**Order 5:'));
+  assert.ok(o4.includes(gifts.map(g => name[g]).join(', then ')), gifts.join(' > '));
+  const min = Object.fromEntries(CORE.map(c => [c.chat, c.min]));
+  const usd = c => '$' + (c / 100).toFixed(2).replace(/\.00$/, '');
+  const two = min[gifts[0]] + min[gifts[1]], three = two + min[gifts[2]];
+  assert.ok(o4.includes(`${usd(two)}, less ${usd(two * 0.15)}, so ${usd(two * 0.85)}`), `two gifts: ${usd(two)} less 15%`);
+  assert.ok(o4.includes(`${usd(three)}, less ${usd(three * 0.2)}, so ${usd(three * 0.8)}`), `three gifts: ${usd(three)} less 20%`);
+});
+
+// the portrait's name field holds 14, and direct-visit typing is left alone, so order 2's dog
+// must fit in 14 for its apostrophe check to mean anything
+test('order 2\'s dog fits the 14-letter signature and carries an apostrophe', () => {
+  const row = prompt.split('\n').find(l => l.startsWith('| 2 |'));
+  const dog = row.split('|')[4].trim().split(',')[0];
+  assert.ok(dog.length <= 14 && dog.includes("'"), dog);
 });
 
 test('the photo test and the painting cap are in it', () => {
