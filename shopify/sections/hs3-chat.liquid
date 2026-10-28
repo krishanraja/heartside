@@ -69,6 +69,13 @@
             {%- if p != blank -%}
               "url": {{ p.url | json }}, "handle": {{ p.handle | json }}, "title": {{ p.title | json }},
               "price": {{ p.price_min | divided_by: 100.0 | json }}, "priceMax": {{ p.price_max | divided_by: 100.0 | json }},
+              {%- comment -%} the first available variant at the lowest price, so a gift with more than one
+                price opens on the price the choose screen shows (28 Oct: the portrait opened Framed) {%- endcomment -%}
+              {%- assign min_variant = nil -%}
+              {%- for v in p.variants -%}
+                {%- if v.available and v.price == p.price_min -%}{%- assign min_variant = v.id -%}{%- break -%}{%- endif -%}
+              {%- endfor -%}
+              "minVariant": {{ min_variant | json }},
               "images": [
                 {%- assign n = 0 -%}
                 {%- for m in p.media -%}
