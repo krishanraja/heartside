@@ -1209,6 +1209,7 @@ product-card quick-add-component button { display: none !important; }
 @container cart-items (max-width: 599px) {
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) {
     grid-template-columns: clamp(4.5rem, 26cqi, 6.5rem) minmax(0, 1fr);
+    column-gap: 14px; /* the design never touches its title, whatever the theme's own gap */
     grid-template-rows: repeat(4, min-content) 1fr;
     grid-template-areas: 'media info' 'media price' 'media variants' 'media unit' 'media .' 'quantity quantity' 'error error' 'redo redo' 'artist artist';
   }
@@ -1230,6 +1231,7 @@ product-card quick-add-component button { display: none !important; }
 @container cart-items (min-width: 600px) {
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) {
     grid-template-columns: clamp(5rem, 15cqi, 7.5rem) minmax(0, 1fr) minmax(var(--cart-item-price-width, 6rem), auto);
+    column-gap: 20px;
     grid-template-rows: repeat(7, min-content) 1fr;
     grid-template-areas: 'media info price' 'media variants variants' 'media unit unit' 'media quantity quantity' 'media error error' 'media redo redo' 'media artist artist' 'media . .';
   }

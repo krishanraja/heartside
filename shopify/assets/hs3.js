@@ -123,6 +123,15 @@
   }
   // house style (28 Oct): a name ending in s takes only an apostrophe, "Buttons'"; a stray
   // trailing apostrophe never doubles ("Sir Biscuit O'" never reads "O''s")
+  // a name in Buddy's words or on a chip stays on one line, hyphen and all ("Jo-/anne" on 28 Oct)
+  function keepNames(t) {
+    var html = esc(t), n = names();
+    [n.dog, n.rec].filter(function (x) { return x && /[\s\-\u2010]/.test(x); }).sort(function (a, b) { return b.length - a.length; }).forEach(function (x) {
+      var e = esc(x);
+      if (html.indexOf('<span class="hs3-nm">' + e) === -1) html = html.split(e).join('<span class="hs3-nm">' + e + '</span>');
+    });
+    return html;
+  }
   function possessiveName(d) { d = String(d == null ? '' : d).replace(/['’]+$/, ''); return /s$/i.test(d) ? d + "'" : d + "'s"; }
   function dogFor() { var n = names(), d = { name: n.dog, pronoun: n.she }, b = breedInfo(); if (b) { d.breed = b.name; d.tone = b.tone; } return d; }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
@@ -1065,7 +1074,7 @@
     if (ui.echo && !ui.thinking) h += '<div class="hs3-echo">' + esc(ui.echo) + '</div>';
     h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BUDDY + '</span>';
     if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Buddy is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
-    else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + esc(m.prefix) + ' </span>' : '')) + esc(m.question) + '</div>';
+    else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + keepNames(m.prefix) + ' </span>' : '')) + keepNames(m.question) + '</div>';
     h += '</div></div>';
     h += '<div class="hs3-dock">';
     if (!ui.thinking) {
@@ -1093,7 +1102,7 @@
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
       } else if (m.chips.length || m.other) {
         // a step the buyer comes back to shows the answer they gave
-        h += '<div class="hs3-chips">' + m.chips.map(function (c) { var on = m.on === c.id; return '<button type="button" class="hs3-chip' + (on ? ' is-on' : '') + '" data-hs3="chip" data-v="' + esc(c.id) + '" aria-pressed="' + on + '">' + esc(c.label) + '</button>'; }).join('');
+        h += '<div class="hs3-chips">' + m.chips.map(function (c) { var on = m.on === c.id; return '<button type="button" class="hs3-chip' + (on ? ' is-on' : '') + '" data-hs3="chip" data-v="' + esc(c.id) + '" aria-pressed="' + on + '">' + keepNames(c.label) + '</button>'; }).join('');
         if (m.other) h += '<button type="button" class="hs3-chip hs3-chip--other' + (m.on === 'typed' ? ' is-on' : '') + '" data-hs3="other" aria-pressed="' + (m.on === 'typed') + '">Something else</button>';
         h += '</div>';
       }
@@ -1127,7 +1136,8 @@
     if (wordFree) ui.editing = false;
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
+    // the tabs say which gift is on show and which is Buddy's pick, so the top bar holds only Back (28 Oct)
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-spacer"></span></div>';
     // a name in a heading never splits across lines, not even at its hyphen (Jo-anne); the span keeps
     // the real hyphen, since Fraunces has no non-breaking hyphen (U+2011 would draw from another font)
     h += '<h2 class="hs3-h2"><span class="hs3-nm">' + esc(possessiveName(n.dog)) + '</span> gift for <span class="hs3-nm">' + esc(n.them) + '</span></h2>';

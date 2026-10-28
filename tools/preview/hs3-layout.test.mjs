@@ -256,7 +256,17 @@ for (const mode of MODES) test(`${mode}: the chat opens on Buddy, with no peek o
       check(JSON.stringify(order) === JSON.stringify(['hs3-dog', 'next', 'hs3-breed']), `${w}x${h}: Next straight under the name field (${order.join(', ')})`);
       const hints = await tab.evaluate(() => [...document.querySelectorAll('#hs3-dog, #hs3-breed, #hs3-rec')].map(i => i.id + ':' + i.getAttribute('enterkeyhint')).join(' '));
       check(hints === 'hs3-dog:next hs3-breed:next', `${w}x${h}: the keyboard's Enter key says next (${hints})`);
+      // the sticky Next's cream halo (a box-shadow spread) never reaches the fields beside it
+      const edges = async sel => tab.evaluate(s => {
+        const f = document.querySelector(s).getBoundingClientRect(), nx = document.querySelector('.hs3-dock > [data-hs3="next"]');
+        const spread = Math.max(0, ...(getComputedStyle(nx).boxShadow.match(/-?[\d.]+px/g) || []).filter((_, i) => i % 4 === 3).map(parseFloat));
+        const n = nx.getBoundingClientRect();
+        return f.bottom <= n.top ? n.top - spread - f.bottom : f.top - (n.bottom + spread);
+      }, sel);
+      for (const sel of ['#hs3-dog', '#hs3-breed']) { const gap = await edges(sel); check(gap >= 0, `${w}x${h}: Next's halo stays off ${sel} (${gap.toFixed(1)}px clear)`); }
       // a short step fits under the header without scrolling, so the memo strip is never cut (the 12px clear)
+      await load(tab, {dog: 'Honey', pro: 'she'}, 'person');
+      { const gap = await edges('#hs3-rec'); check(gap >= 0, `${w}x${h}: Next's halo stays off #hs3-rec (${gap.toFixed(1)}px clear)`); }
       await load(tab, {...done, ...blank}, 'home');
       const page = await tab.evaluate(() => ({height: document.documentElement.scrollHeight, memo: document.querySelector('[data-memo]').getBoundingClientRect().top}));
       if (w < 1000) check(page.height <= h, `${w}x${h}: question 3 needs no scrolling (${page.height}px of ${h})`);
@@ -342,7 +352,7 @@ for (const mode of MODES) test(`${mode}: moving on from a scrolled screen lands 
 });
 
 // ---------------------------------------------------------------- Buddy's pick
-for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each with its price, the art's labels inside it, one gutter, a centered top bar`, async () => {
+for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each with its price, the art's labels inside it, one gutter, Buddy's pick said once`, async () => {
   const {bad, check} = checks();
   for (const [w, h] of SIZES) {
     const {context, tab, errors, offsite} = await open(mode, w, h);
@@ -355,8 +365,7 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
           const list = all('.hs3-tab'), widths = list.map(t => t.getBoundingClientRect().width);
           const picks = all('.hs3-tab__pick'), pick = picks[0], pickTab = pick && pick.closest('.hs3-tab');
           const img = q('.hs3-product__img'), stamp = q('.hs3-product > .hs3-example'), label = q('.hs3-inset__label');
-          const note = q('.hs3-note--print'), turn = q('.hs3-turn'), top = q('.hs3-top'), mid = q('.hs3-top > :nth-child(2)');
-          const center = el => { const r = el.getBoundingClientRect(); return (r.left + r.right) / 2; };
+          const note = q('.hs3-note--print'), turn = q('.hs3-turn');
           const contentLeft = el => el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft);
           const backText = (() => { const r = document.createRange(); r.selectNodeContents(q('[data-hs3="back"]')); return r.getBoundingClientRect().left; })();
           return {
@@ -365,7 +374,7 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
             pickClear: pick ? [...pickTab.querySelectorAll('span:not(.hs3-tab__pick), svg')].every(x => window.__overlap(pick, x) <= 1) : false,
             stampTabs: window.__overlap(stamp, tabs), stampIn: window.__inside(stamp, img, 6),
             labelIn: window.__inside(label, img, 2), labelNote: note ? window.__overlap(label, note) : 0, labelTurn: turn ? window.__overlap(label, turn) : 0,
-            mid: center(mid) - center(top),
+            said: document.querySelector('.hs3__frame').innerText.split(/Buddy.s pick/i).length - 1,
             paint: window.__box(q('.hs3-paint')), note: note && window.__box(note),
             lefts: {back: backText, h2: contentLeft(q('.hs3-h2')), tabs: contentLeft(tabs), tone: q('.hs3-tone').getBoundingClientRect().left, dock: contentLeft(q('.hs3-dock'))},
             h2: window.__lines(q('.hs3-h2')), names: all('.hs3-h2 .hs3-nm').map(n => window.__lineCount(n)),
@@ -379,7 +388,7 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
         check(m.picks === 1 && m.pickLines === 1 && m.pickInView && m.pickClear, `${at}: one Buddy's pick badge, on one line, clear of its tab's words`);
         check(m.stampTabs <= 1 && m.stampIn, `${at}: the Example stamp sits inside the art, off the tabs`);
         check(m.labelIn && m.labelNote <= 1 && m.labelTurn <= 1, `${at}: "Your photo" sits inside the art, clear of the note and Turn the mug`);
-        check(Math.abs(m.mid) <= 1, `${at}: the top bar's middle is centered (${m.mid.toFixed(1)}px off)`);
+        check(m.said === 1, `${at}: Buddy's pick is said once, on its tab, not again in the top bar (${m.said})`);
         if (w < 1000) {
           check(m.paint.left >= 15 && m.paint.right <= w - 15, `${at}: What I'll paint keeps the gutter (${m.paint.left}-${m.paint.right})`);
           if (m.note) check(m.note.left >= 15 && m.note.right <= w - 15, `${at}: the note keeps the gutter (${m.note.left}-${m.note.right})`);
@@ -390,6 +399,28 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
         check(m.names.length === 2 && m.names.every(n => n === 1), `${at}: each name in the heading on one line`);
         check(m.wide <= 0, `${at}: no sideways scroll`);
       }
+      assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
+    } finally { await context.close(); }
+  }
+  assert.deepEqual(bad, []);
+});
+
+// ---------------------------------------------------------------- names in Buddy's words
+for (const mode of MODES) test(`${mode}: chat: a hyphenated name stays whole in Buddy's question and on the chips`, async () => {
+  const {bad, check} = checks();
+  for (const [w, h] of SIZES) {
+    const {context, tab, errors, offsite} = await open(mode, w, h);
+    try {
+      await load(tab, {...done, ...blank, dog: 'Honey', rec: 'Jo-anne'}, 'home');
+      const m = await tab.evaluate(() => {
+        const cut = el => { const out = []; const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          for (let n; (n = walk.nextNode());) { let at = -1; while ((at = n.data.indexOf('Jo-anne', at + 1)) !== -1) { const range = document.createRange(); range.setStart(n, at); range.setEnd(n, at + 7); out.push(new Set([...range.getClientRects()].filter(x => x.width).map(x => Math.round(x.top))).size); } }
+          return out; };
+        return {bubble: cut(document.querySelector('.hs3-bubble')), chips: [...document.querySelectorAll('[data-hs3="chip"]')].flatMap(cut), wide: document.documentElement.scrollWidth - innerWidth};
+      });
+      check(m.bubble.length >= 1 && m.bubble.every(n => n === 1), `${w}x${h}: "Jo-anne" is whole in the question (${JSON.stringify(m.bubble)})`);
+      check(m.chips.every(n => n === 1), `${w}x${h}: "Jo-anne" is whole on every chip (${JSON.stringify(m.chips)})`);
+      check(m.wide <= 0, `${w}x${h}: no sideways scroll`);
       assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
     } finally { await context.close(); }
   }

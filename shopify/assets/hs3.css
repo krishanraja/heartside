@@ -367,7 +367,8 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
      and a field being typed in keeps room under it for Next (28 Oct) */
   .hs3-talk { flex: 0 0 auto; min-height: 0; padding: 10px var(--g) 4px; }
   .hs3--app .hs3__frame[data-hs3-screen="chat"] { padding-bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--hs3-kb, 0px)); }
-  .hs3__frame[data-hs3-screen="chat"] .hs3-dock > [data-hs3="next"] { position: sticky; bottom: calc(var(--hs3-kb, 0px) + max(10px, env(safe-area-inset-bottom))); z-index: 2; box-shadow: 0 0 0 10px var(--cream); }
+  /* its cream halo stays inside the dock's 8px gap, so it never clips the field beside it (28 Oct QA) */
+  .hs3__frame[data-hs3-screen="chat"] .hs3-dock > [data-hs3="next"] { position: sticky; bottom: calc(var(--hs3-kb, 0px) + max(10px, env(safe-area-inset-bottom))); z-index: 2; box-shadow: 0 0 0 6px var(--cream); }
   .hs3__frame[data-hs3-screen="chat"] .hs3-dock .hs3-field { scroll-margin-bottom: calc(var(--hs3-kb, 0px) + 84px); }
   /* radical simplicity on a phone: the gift pills, the photo-later hint and the words strip on
      the gift list repeat what the screen already says */
