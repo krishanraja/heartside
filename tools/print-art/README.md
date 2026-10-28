@@ -15,7 +15,7 @@ write words into the image. `build.py` creates the exact note and decorative
 paw on a separate layer so model spelling cannot reach the print. A generic
 paw silhouette is illustration, not a claimed impression of that dog's paw.
 
-The current route is: paid Shopify order remains unfulfilled; operator obtains
+This trial's route, not the live one, is: paid Shopify order remains unfulfilled; operator obtains
 the photo and note from that order; image generation and 300 DPI preparation;
 human likeness check; `build.py` creates 3600 x 5400 PNG; human checks the
 entire file at final size; operator uses Teeinblue's **Upload custom design**
@@ -86,12 +86,9 @@ Before launch, test at least five varied dog photos and places with the same
 prompt and output route. Reject changed markings, distorted anatomy, wrong
 landmarks, unreadable note, missing words, trim conflicts, more than 60 MiB,
 and any discrepancy between the Shopify order, Teeinblue replacement and
-Printful draft. Time and cost each stage on those same cases. Use the current
-framed print until the full route, buyer-facing preview honesty and a physical
-sample pass.
+Printful draft. Time and cost each stage on those same cases. Keep live orders on the native Teeinblue route until this trial's full route, buyer-facing preview honesty and a physical sample pass.
 
-The exact original-photo URL and line-item structure in a paid Shopify order
-have not been proven because no new v3 order has been placed. Do not automate
+The exact original-photo URL and line-item structure this adapter would read in a paid Shopify order have not been proven. The test orders placed on 27 and 28 October used Shopify's test gateway and did not run this adapter. Do not automate
 order intake by guessing those properties. The first real sample, scheduled
 last in the revamp, must read back the source photo, four exact lines, name,
 and replacement design under the same order reference before this adapter is
@@ -108,11 +105,9 @@ signature to the dog's name. The older four-line local compositor above
 remains a test route, not the current native design target.
 
 The native proof renderer verified changed wording and a long signature, but
-does not execute upload effects. A real photo upload is the next test. The
+does not execute upload effects. Real photo uploads have run since: the first native Screenprint on 24 October in a private campaign, then Krish's own test and four of CoWork's five mock orders on 28 October through the live campaigns. The fifth, on Android, failed because the photo never added. The
 account's five-upload-per-buyer-per-option hourly limit is not a financial
-hard cap, and account auto fallback can change the actual model. Generation
-before payment still needs measured latency, cost and abuse controls before
-any live campaign release. The draft campaign is not published to Shopify.
+hard cap, and account auto fallback can change the actual model. Generation before payment has been live since the 27 October release, at about $0.13 a painting (`docs/ECONOMICS.md`). Generations per order are still to be measured from provider usage, and painting latency and abuse controls are still unmeasured. The draft campaign now carries the live portrait product.
 
 Primary supplier instructions, checked 23 October 2026:
 

@@ -26,3 +26,18 @@ for(const minified of [false,true]){
  });
  test(mode+': malformed payload remains untouched',()=>{assert.equal(setup().withHsProps('invalid'),'invalid');});
 }
+// 28 Oct, orders #1005 to #1008: what the buyer told Buddy and who it ships to never reached a native
+// order. The inputs are read from the native branch of the product section, as the store renders it.
+const liquid=readFileSync(new URL('../../shopify/sections/hs2-product.liquid',import.meta.url),'utf8');
+const nativeBranch=liquid.slice(liquid.indexOf('{%- form '),liquid.indexOf('{%- elsif block.settings.v3 -%}'));
+for(const minified of [false,true]) test((minified?'minified':'source')+': a native gift add carries the chat answers and the ship-to choice',()=>{
+ const inputs=[...nativeBranch.matchAll(/<input type="hidden" name="(properties\[[^\]]+\])" data-hs2-prop="([^"]+)"/g)].map(m=>({name:m[1],value:'',getAttribute:()=>m[2]}));
+ const said={hs_answers:'Home: spins | Spot: the couch',hs_ship_to:'Riley',personality:'{"version":1,"facts":[]}',art_style:'Fine ink drawing',art_tone:'Warm with a wink',hs_lines:'Your shadow'};
+ const c={restoredArtworkChosen:()=>false,nativeArtworkPurchase:()=>true,answer:k=>said[k]||'',document:{querySelectorAll:()=>inputs}};
+ const code=['syncBlanketProperties','hsProps','withHsProps'].map(section).join('\n');vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);
+ c.syncBlanketProperties();
+ const sent=JSON.parse(c.withHsProps(JSON.stringify({id:1,quantity:1,properties:{_customization_id:'12345678-1234-1234-1234-123456789abc'}}))).properties;
+ assert.equal(sent._hs_answers,said.hs_answers);assert.equal(sent._hs_ship_to,'Riley');
+ assert.equal(sent._hs_art_style,'Fine ink drawing');assert.equal(sent._customization_id,'12345678-1234-1234-1234-123456789abc');
+ assert.equal('Gift' in sent,false,'the visible Gift line waits for Track B');
+});

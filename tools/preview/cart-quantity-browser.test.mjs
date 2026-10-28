@@ -9,6 +9,8 @@ import {transformSync} from 'esbuild';
 // the cart, the Storefront read and Shopify.actions are an in-page fake.
 // Shopify minifies theme JavaScript on its CDN, so every case also runs the minified modules.
 const asset=(name,minified)=>{const code=readFileSync(new URL('../../shopify/assets/'+name,import.meta.url),'utf8');return minified?transformSync(code,{minify:true,format:'esm'}).code:code;};
+// The plus cart-products.liquid serves a design and an Artist's touch (one per design), read from the snippet itself.
+const onePerPlus=/replace: 'name="plus"', '([^']+)'/.exec(readFileSync(new URL('../../shopify/snippets/cart-products.liquid',import.meta.url),'utf8'))[1];
 const stubs={
  'component.js':`export class Component extends HTMLElement{get refs(){const refs={cartItemRows:[...this.querySelectorAll('[ref="cartItemRows[]"]')],quantitySelectors:[...this.querySelectorAll('[ref="quantitySelectors[]"]')]};for(const el of this.querySelectorAll('[ref]')){const name=el.getAttribute('ref');if(!name.endsWith('[]'))refs[name]=el;}return refs;}connectedCallback(){}disconnectedCallback(){}}`,
  'utilities.js':`export const fetchConfig=(type,{body})=>({method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body});export const debounce=fn=>fn;export const onAnimationEnd=(el,cb)=>cb();export const prefersReducedMotion=()=>true;export const resetShimmer=()=>{};export const startViewTransition=cb=>cb();`,
@@ -24,30 +26,52 @@ const page=`<!doctype html><html><head><meta charset="utf-8"><script type="impor
 <script type="module">import '/assets/component-cart-items.js';window.__ready=true;</script></body></html>`;
 
 // Runs in the page before any theme script. `setup` picks the server order, the (possibly stale)
-// rendered order, and an optional recovery record already saved in this tab.
+// rendered order, and an optional recovery record already saved in this tab. With `hsLine`, rows are
+// drawn the way cart-products.liquid draws them since 28 Oct: in Heartside's order (`domOrder`, each
+// Artist's touch after its gift) on every render, each carrying its own line number (data-hs-line)
+// and its line's refs; `noInput` names a kind of row served with no quantity input at all. A design's and an
+// Artist's touch's plus are the snippet's (`onePerPlus`). With `liveSelector`, the rows' selectors are Helio's
+// cart selector as the live theme runs it (component-cart-quantity-selector.js, read 28 Oct): it manages its
+// buttons client-side and turns a plus served disabled back on, as it connects and on every updateButtonStates.
 function fakeStore(setup){
  const cartId='gid://shopify/Cart/browser-test?key=never-persist',variant='gid://shopify/ProductVariant/123';
  const image='https://cdn.shopify.com/s/files/1/1111/2222/3333/files/heartside-checkout-11111111-2222-4333-8444-555555555555.jpg?v=1';
  const attributes=[{key:'_customization_id',value:'browser-design'},{key:'_tib_design_link_1',value:'https://example.invalid/design.png'},{key:'_hs_checkout_image',value:image},{key:'Dog name',value:'Test dog'}];
  const design={kind:'design',id:'gid://shopify/CartLine/design-1',key:'123:bundle-1',childId:'gid://shopify/CartLine/design-1-child',childKey:'123:native',quantity:setup.designQuantity||2};
  const ordinary={kind:'ordinary',id:'gid://shopify/CartLine/ordinary',key:'456:ordinary',quantity:1};
- const server=window.__server={cartId,lines:setup.serverOrder.map(kind=>kind==='design'?design:ordinary),renders:0,requests:[],updates:[],errors:[],aborts:[],next:1,addGate:null,addMode:'ok'};
+ const addon={kind:'addon',id:'gid://shopify/CartLine/addon',key:'789:addon',quantity:setup.addonQuantity||1};
+ const byKind={design,ordinary,addon};
+ const server=window.__server={cartId,lines:setup.serverOrder.map(kind=>byKind[kind]),renders:0,requests:[],updates:[],errors:[],aborts:[],next:1,addGate:null,addMode:'ok'};
  if(setup.record)sessionStorage.setItem('heartside.quantity.pending.v1',JSON.stringify(setup.record));
  const esc=value=>String(value).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
  const row=(line,index)=>{
-  const n=index+1,data=line.kind==='design'
+  const n=setup.hsLine?server.lines.indexOf(line)+1:index+1,data=line.kind==='design'
    ?{key:line.key,variant_id:123,quantity:1,properties:{_hs_checkout_image:null,_customization_image:null},item_components:[{key:line.childKey,variant_id:123,quantity:line.quantity,properties:{_hs_checkout_image:image,_customization_image:null}}]}
-   :{key:line.key,variant_id:456,quantity:line.quantity,properties:{_hs_checkout_image:null,_customization_image:null},item_components:[]};
-  return `<tr ref="cartItemRows[]" data-kind="${line.kind}" data-key="${esc(line.key)}" data-hs2-cart-line="${esc(JSON.stringify(data))}" data-hs2-quantity-key="${line.kind==='design'?esc(line.childKey):''}"><td><div class="cart-items__quantity-controls"><cart-quantity-selector-component ref="quantitySelectors[]"><button type="button" name="minus">-</button><input type="number" value="${line.quantity}"><button type="button" name="plus">+</button></cart-quantity-selector-component><button class="button cart-items__remove" type="button">Remove</button></div></td><td class="hidden" ref="cartItemErrorContainer-${n}"><small ref="cartItemError-${n}"></small></td></tr>`;
+   :{key:line.key,variant_id:line.kind==='addon'?789:456,quantity:line.quantity,properties:{_hs_checkout_image:null,_customization_image:null,_hs_addon_for:line.kind==='addon'?'browser-design':null},item_components:[]};
+  const plus=line.kind==='ordinary'?'name="plus"':setup.onePerPlus;
+  const control=setup.noInput===line.kind?'':`<cart-quantity-selector-component ref="quantitySelectors[]"><button type="button" name="minus">-</button><input type="number" value="${line.quantity}"><button type="button" ${plus}>+</button></cart-quantity-selector-component>`;
+  return `<tr ref="cartItemRows[]" data-kind="${line.kind}" data-key="${esc(line.key)}"${setup.hsLine?` data-hs-line="${n}"`:''} data-hs2-cart-line="${esc(JSON.stringify(data))}" data-hs2-quantity-key="${line.kind==='design'?esc(line.childKey):''}"><td><div class="cart-items__quantity-controls">${control}<button class="button cart-items__remove" type="button">Remove</button></div></td><td class="hidden" ref="cartItemErrorContainer-${n}"><small ref="cartItemError-${n}"></small></td></tr>`;
  };
- window.__renderDom=(lines=setup.domOrder?setup.domOrder.map(kind=>kind==='design'?design:ordinary):server.lines)=>{
+ if(setup.liveSelector)customElements.define('cart-quantity-selector-component',class extends HTMLElement{
+  get refs(){return {minusButton:this.querySelector('[name="minus"]'),plusButton:this.querySelector('[name="plus"]'),quantityInput:this.querySelector('input')};}
+  // the base selector notes a served-off plus here (serverDisabledPlus); the cart's override never reads it
+  connectedCallback(){this.updateButtonStates();}
+  updateButtonStates(){
+   const {minusButton,plusButton,quantityInput}=this.refs,int=(value,fallback)=>{const n=parseInt(value,10);return Number.isNaN(n)?fallback:n;};
+   const min=int(quantityInput.min,1),value=int(quantityInput.value,0),max=int(quantityInput.max,null);
+   minusButton.disabled=value<=min;plusButton.disabled=max!==null&&value>=max;
+  }
+ });
+ const shown=()=>setup.hsLine?setup.domOrder.map(kind=>byKind[kind]).filter(line=>server.lines.includes(line)):server.lines;
+ window.__renderDom=(lines=setup.domOrder?setup.domOrder.map(kind=>byKind[kind]):server.lines)=>{
+  if(setup.hsLine)lines=shown();
   document.querySelector('cart-items-component').innerHTML=`<table><tbody>${lines.map(row).join('')}</tbody></table>`;
   document.getElementById('summary').innerHTML='<form id="cart-form" action="/cart" method="post"><button type="submit" name="checkout">Check out</button></form><a id="checkout-link" href="/checkout">Checkout</a><shopify-accelerated-checkout-cart></shopify-accelerated-checkout-cart>';
  };
  window.__renderSection=async()=>{server.renders++;await new Promise(resolve=>setTimeout(resolve,0));window.__renderDom(server.lines);};
  const cart=()=>({id:cartId,lines:{pageInfo:{hasNextPage:false},nodes:server.lines.map(line=>line.kind==='design'
   ?{id:line.id,quantity:1,attributes:[],merchandise:{id:variant},viewKey:line.key,lineComponents:[{id:line.childId,viewKey:line.childKey,quantity:line.quantity,attributes,merchandise:{id:variant}}]}
-  :{id:line.id,quantity:line.quantity,attributes:[],merchandise:{id:'gid://shopify/ProductVariant/456'},viewKey:line.key})}});
+  :{id:line.id,quantity:line.quantity,attributes:[],merchandise:{id:'gid://shopify/ProductVariant/'+(line.kind==='addon'?789:456)},viewKey:line.key})}});
  const json=body=>new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
  window.fetch=async(url,init={})=>{
   const path=new URL(url,location.href).pathname;
@@ -86,6 +110,7 @@ for(const minified of [false,true]){
 const mode=minified?'minified':'source';
 async function open(setup){
  const tab=await browser.newPage();
+ tab.__errors=[];tab.on('pageerror',error=>tab.__errors.push(String(error)));
  await tab.route('**/*',route=>{
   const url=new URL(route.request().url());
   if(url.pathname==='/cart')return route.fulfill({contentType:'text/html',body:page});
@@ -93,16 +118,17 @@ async function open(setup){
   if(url.pathname.startsWith('/stubs/'))return route.fulfill({contentType:'text/javascript',body:stubs[url.pathname.slice(7)]});
   return route.abort();
  });
- await tab.addInitScript(fakeStore,setup);
+ await tab.addInitScript(fakeStore,{onePerPlus,...setup});
  await tab.goto('https://shop.example/cart');
  await tab.waitForFunction(()=>window.__ready&&customElements.get('cart-items-component'));
  return tab;
 }
-// Fires the quantity selector event exactly as the theme's selector does, from inside a row.
+// Fires the quantity selector event exactly as the theme's selector does, from inside a row. The
+// selector names its cart line (line_index + 1), which is the row's own number once rows carry one.
 const changeRow=(tab,kind,quantity)=>tab.evaluate(async({kind,quantity})=>{
  const {QuantitySelectorUpdateEvent}=await import('/stubs/events.js');
  const rows=[...document.querySelectorAll('[ref="cartItemRows[]"]')],index=rows.findIndex(row=>row.dataset.kind===kind);
- rows[index].querySelector('input').dispatchEvent(new QuantitySelectorUpdateEvent(quantity,index+1));
+ (rows[index].querySelector('input')||rows[index].querySelector('td')).dispatchEvent(new QuantitySelectorUpdateEvent(quantity,Number(rows[index].dataset.hsLine||index+1)));
 },{kind,quantity});
 const settle=tab=>tab.evaluate(async()=>{for(let i=0;i<3;i++){await Promise.all(customElements.get('cart-items-component').pendingQuantityUpdates);await new Promise(requestAnimationFrame);}});
 const controls=tab=>tab.evaluate(()=>{
@@ -191,6 +217,76 @@ test(mode+': 6: a design already above one (an older cart) can come down but not
   const server=await tab.evaluate(()=>window.__server);
   assert.equal(server.updates.length,0);assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['design',2],['ordinary',1]]);
   assert.match(await tab.evaluate(()=>document.querySelector('[ref="cartItemError-1"]').textContent),/Each design is one gift/);
+ }finally{await tab.close();}
+});
+
+// A9a (28 Oct): the cart lists each Artist's touch right after its gift, so rows are not in line order.
+// Every action must find its row by line number: by position, removing the ordinary line removed the design.
+test(mode+': 7: rows out of line order are found by their own line number, never by position',{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['ordinary','design'],domOrder:['design','ordinary'],hsLine:true});
+ try{
+  await changeRow(tab,'ordinary',0);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.deepEqual(server.requests.map(request=>[request.id,request.quantity]),[['456:ordinary',0]]);
+  assert.equal(server.updates.length,0,'the design is never touched');
+  assert.deepEqual(server.lines.map(line=>line.kind),['design']);
+  assert.deepEqual(await tab.evaluate(()=>[...document.querySelectorAll('[ref="cartItemRows[]"]')].map(row=>row.dataset.kind)),['design']);
+  assert.deepEqual(tab.__errors,[]);
+ }finally{await tab.close();}
+});
+
+// A9c (28 Oct): one rework of one design could become 2 x $29. The add-on refuses above one, as a design does,
+// whether it sits after its gift (out of line order) or not.
+for(const [name,setup] of [['after its gift',{serverOrder:['addon','design'],domOrder:['design','addon'],hsLine:true,designQuantity:1}],['in line order',{serverOrder:['design','addon'],designQuantity:1}]])
+test(mode+": 8: an artist's touch never goes above one ("+name+')',{timeout:30000},async()=>{
+ const tab=await open(setup);
+ try{
+  await changeRow(tab,'addon',2);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.requests.length,0,'nothing posted');assert.equal(server.updates.length,0,'nothing removed or added');
+  assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),setup.serverOrder.map(kind=>[kind,1]));
+  const shown=await tab.evaluate(()=>{const row=document.querySelector('[data-kind="addon"]'),error=row.querySelector('[ref^="cartItemError-"]');return {text:error.textContent,hidden:error.parentElement.classList.contains('hidden')};});
+  assert.equal(shown.text,"One artist's touch per design. Nothing was changed.",'said in its own row');assert.equal(shown.hidden,false);
+  assert.ok(server.errors.some(error=>/One artist's touch per design/.test(error)));
+  assert.deepEqual(tab.__errors,[]);
+ }finally{await tab.close();}
+});
+
+// A row served without a quantity control still says why a change was refused (it threw before).
+test(mode+': 9: a refusal on a row with no quantity input is still said in that row',{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['ordinary','design'],designQuantity:1,noInput:'design'});
+ try{
+  await changeRow(tab,'design',2);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.updates.length,0);
+  assert.match(await tab.evaluate(()=>document.querySelector('[ref="cartItemError-2"]').textContent),/Each design is one gift/);
+  assert.equal(server.errors.some(error=>/Quantity input not found/.test(error)),false);
+  assert.deepEqual(tab.__errors,[]);
+ }finally{await tab.close();}
+});
+
+// 28 Oct review: the live selector turned the served-off plus back on, so the buyer saw a plus to press. A design's
+// plus and an Artist's touch's plus stay off once the selectors connect and after every redraw of a row.
+test(mode+": 10: a design's plus and an artist's touch's plus stay off after the cart redraws a row",{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['addon','design','ordinary'],domOrder:['design','addon','ordinary'],hsLine:true,designQuantity:1,liveSelector:true});
+ try{
+  const pluses=()=>tab.evaluate(()=>Object.fromEntries(['design','addon','ordinary'].map(kind=>{
+   const plus=document.querySelector(`[data-kind="${kind}"] [name="plus"]`);
+   return [kind,plus&&{disabled:plus.disabled,inert:plus.inert,label:plus.getAttribute('aria-disabled')}];
+  })));
+  const off={disabled:true,inert:true,label:'true'},on={disabled:false,inert:false,label:null};
+  await settle(tab);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},'once the selectors connect; the ordinary line shows they manage the plus');
+  await changeRow(tab,'design',2);await settle(tab);
+  assert.equal(await tab.evaluate(()=>window.__server.renders),1,'the refusal redrew the rows');
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},"after the design's refusal");
+  await changeRow(tab,'addon',2);await settle(tab);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},"after the artist's touch's refusal");
+  await changeRow(tab,'ordinary',0);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.renders,3);assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['addon',1],['design',1]]);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:null},'after another line is removed');
+  assert.deepEqual(tab.__errors,[]);
  }finally{await tab.close();}
 });
 

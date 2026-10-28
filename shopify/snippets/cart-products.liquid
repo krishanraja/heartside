@@ -147,7 +147,41 @@
           </thead>
 
           <tbody role="rowgroup">
-            {% for item in cart.items %}
+            {%- comment -%} Each Artist's touch right after the gift it reworks (Krish, 28 Oct: it sat above its gift).
+              Shopify lists the newest line first and keeps its own line numbers, so each row carries its number
+              (data-hs-line) and component-cart-items.js finds a row by that number, never by position. A design's
+              id is the line's own _customization_id, else its first component's. Written with filters, not
+              branches (Theme Check's complexity limit): ",DESIGN=INDEX," finds a gift by its design; a row's
+              sort key is "GIFT.KIND.OWN:INDEX" (the gift's index for an add-on whose gift is here, else its own;
+              1 for an add-on), so a gift's add-ons follow it and an add-on whose gift has left the cart keeps
+              its own place. {%- endcomment -%}
+            {%- liquid
+              assign hs_gifts = ','
+              assign hs_fors = ','
+              assign hs_redos = ','
+              for hs_line in cart.items
+                assign hs_design = hs_line.properties._customization_id | default: hs_line.item_components.first.properties._customization_id | default: ''
+                assign hs_gifts = hs_gifts | append: hs_design | append: '=' | append: forloop.index0 | append: ',' | replace: ',=', ',x'
+                assign hs_fors = hs_fors | append: hs_line.properties._hs_addon_for | append: ',' | replace: ',,', ','
+                assign hs_redo_of = hs_line.properties._hs_redo_of | default: hs_line.item_components.first.properties._hs_redo_of | default: ''
+                assign hs_redos = hs_redos | append: hs_redo_of | append: ',' | replace: ',,', ','
+              endfor
+              assign hs_keys = ''
+              for hs_line in cart.items
+                assign hs_find = ',' | append: hs_line.properties._hs_addon_for | append: '='
+                assign hs_base = hs_gifts | append: hs_find | append: 'x,' | split: hs_find
+                assign hs_base = hs_base[1] | split: ',' | first | replace: 'x', forloop.index0 | plus: 1000
+                assign hs_kind = hs_line.properties._hs_addon_for | size | at_most: 1
+                assign hs_own = forloop.index0 | plus: 1000
+                assign hs_keys = hs_keys | append: hs_base | append: '.' | append: hs_kind | append: '.' | append: hs_own | append: ':' | append: forloop.index0 | append: '|'
+              endfor
+              assign hs_rows = hs_keys | split: '|' | sort
+            -%}
+            {% for hs_row in hs_rows %}
+              {%- liquid
+                assign hs_n = hs_row | split: ':' | last | plus: 0
+                assign item = cart.items[hs_n]
+              -%}
               {%- liquid
                 assign hs_quantity_item = item
                 assign hs_quantity_key = ''
@@ -177,13 +211,46 @@
                   "properties":{"_hs_checkout_image":{{ component.properties._hs_checkout_image | json }},"_customization_image":{{ component.properties._customization_image | json }},"_customization_id":{{ component.properties._customization_id | json }},"_hs_redo_of":{{ component.properties._hs_redo_of | json }}}}{% unless forloop.last %},{% endunless %}
                 {%- endfor -%}]}
               {%- endcapture -%}
+              {%- comment -%} This line's Heartside facts, read the way hs2.js cartLineFacts reads them, as keys built
+                with filters (see the order above): its design, the gift an Artist's touch reworks (nil once that gift
+                has left the cart), the presentation bundle, and the redo and Artist's touch offers. {%- endcomment -%}
+              {%- liquid
+                assign hs_line_id = item.properties._customization_id | default: item.item_components.first.properties._customization_id | default: ''
+                assign hs_line_of = item.properties._hs_redo_of | default: item.item_components.first.properties._hs_redo_of | default: ''
+                assign hs_id_mark = ',' | append: hs_line_id | append: ','
+                # "36:" for a design id of 36 hex digits and dashes
+                assign hs_uuid = hs_line_id | downcase | remove: '0' | remove: '1' | remove: '2' | remove: '3' | remove: '4' | remove: '5' | remove: '6' | remove: '7' | remove: '8' | remove: '9' | remove: 'a' | remove: 'b' | remove: 'c' | remove: 'd' | remove: 'e' | remove: 'f' | remove: '-'
+                assign hs_uuid = hs_line_id | size | append: ':' | append: hs_uuid
+                # Heartside's one-component presentation bundle (its parent is the original variant) matches hs_presentation (N2);
+                # a line with no components is "0:"
+                assign hs_parts = item.item_components.size | append: ':' | append: item.item_components.first.variant_id
+                assign hs_presentation = '1:' | append: item.variant_id
+                assign hs_addon_for = item.properties._hs_addon_for | default: ''
+                assign hs_find = ',' | append: hs_addon_for | append: '='
+                assign hs_gift_at = hs_gifts | append: hs_find | append: 'x,' | split: hs_find
+                assign hs_gift_at = hs_gift_at[1] | split: ',' | first
+                assign hs_gift_n = hs_gift_at | replace: 'x', '9999' | plus: 0
+                assign hs_gift = cart.items[hs_gift_n]
+                # "1136:/" offers a redo: a personalized design (quantity key), one unit, a design id, not itself a redo
+                assign hs_personal = hs_quantity_key | size | at_most: 1
+                assign hs_redo_offer = hs_personal | append: item.quantity | append: hs_uuid | append: '/' | append: hs_line_of
+                # "136:/1" keeps the Artist's touch offer's place: a personalized design with no add-on yet
+                assign hs_taken = hs_fors | prepend: 'z' | append: 'z' | split: hs_id_mark | size
+                assign hs_artist_offer = hs_personal | append: hs_uuid | append: '/' | append: hs_taken
+                # "1x": an Artist's touch whose gift has left the cart
+                assign hs_orphan = hs_addon_for | size | at_most: 1 | append: hs_gift_at
+                # one per design, an Artist's touch too (A9c); "11" is an add-on at one
+                assign hs_one_per = hs_quantity_key | append: hs_addon_for
+                assign hs_addon_one = hs_addon_for | size | at_most: 1 | append: item.quantity
+              -%}
               <tr
                 id="CartItem-{{ item.key }}"
                 role="row"
-                class="cart-items__table-row{% if item.parent_relationship.parent != null %} cart-items__nested-line{% endif %}{% if context == 'drawer' %}{% unless item.unit_price_measurement %} cart-items__table-row--full-width-variants{% endunless %}{% endif %}"
+                class="cart-items__table-row{% if item.parent_relationship.parent != null %} cart-items__nested-line{% endif %}{% if context == 'drawer' %}{% unless item.unit_price_measurement %} cart-items__table-row--full-width-variants{% endunless %}{% endif %}{% if hs_gift != nil %} hs2-addon-line{% endif %}"
                 ref="cartItemRows[]"
                 data-parent-key="{{ item.parent_relationship.parent.key }}"
                 data-key="{{ item.key }}"
+                data-hs-line="{{ item.index | plus: 1 }}"
                 data-hs2-cart-line="{{ hs_cart_line | escape }}"
                 data-hs2-quantity-key="{{ hs_quantity_key | escape }}"
               >
@@ -192,7 +259,7 @@
                   role="cell"
                   headers="productImage"
                 >
-                  {% if item.image -%}
+                  {% if item.image or hs_gift != nil -%}
                     {% liquid
                       assign ratio = 1
                       assign border_opacity = settings.cart_thumbnail_border_opacity | divided_by: 100.0
@@ -204,7 +271,7 @@
                       if block_settings.image_ratio == 'portrait'
                         assign ratio = 0.8
                       elsif block_settings.image_ratio == 'adapt'
-                        assign ratio = item.image.aspect_ratio
+                        assign ratio = item.image.aspect_ratio | default: 1
                       endif
 
                       # The accepted design, drawn by the server (Krish, 28 Oct: the cart thumbnail
@@ -212,12 +279,19 @@
                       # swapped in the design and Teeinblue swapped that for its spinner, again on
                       # every re-render. Same sources as cartArtworkImage() in hs2.js: the line's
                       # prepared checkout image, else Teeinblue's, else its one matching component's.
-                      assign hs_design_line = item
-                      assign hs_design_prepared = item.properties._hs_checkout_image | default: ''
-                      assign hs_design_native = item.properties._customization_image | default: ''
-                      if hs_design_prepared == blank and hs_design_native == blank and item.item_components.size == 1
-                        assign hs_design_line = item.item_components.first
-                        if hs_design_line.variant_id == item.variant_id
+                      # An Artist's touch has no design of its own: it shows the design it reworks, its gift's (A9b).
+                      assign hs_design_item = item
+                      assign hs_design_alt = 'Your personalized artwork'
+                      if hs_gift != nil
+                        assign hs_design_item = hs_gift
+                        assign hs_design_alt = "Artist's touch for this design"
+                      endif
+                      assign hs_design_line = hs_design_item
+                      assign hs_design_prepared = hs_design_item.properties._hs_checkout_image | default: ''
+                      assign hs_design_native = hs_design_item.properties._customization_image | default: ''
+                      if hs_design_prepared == blank and hs_design_native == blank and hs_design_item.item_components.size == 1
+                        assign hs_design_line = hs_design_item.item_components.first
+                        if hs_design_line.variant_id == hs_design_item.variant_id
                           assign hs_design_prepared = hs_design_line.properties._hs_checkout_image | default: ''
                           assign hs_design_native = hs_design_line.properties._customization_image | default: ''
                         endif
@@ -257,8 +331,11 @@
                     >
                       {%- if hs_design != '' -%}
                         {%- comment -%} teeinblue-item--customization-images is Teeinblue's own "leave these thumbnails alone" container {%- endcomment -%}
-                        <img src="{{ hs_design_src | escape }}" alt="Your personalized artwork" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
-                      {%- else -%}
+                        <img src="{{ hs_design_src | escape }}" alt="{{ hs_design_alt }}" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
+                        {%- if hs_gift != nil -%}
+                          <span class="hs2-cart-addon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M16.5 3c1.2 0 4.5 3.3 4.5 4.5 0 1-5.3 6.7-7.3 8l-2-2c1.3-2 3.8-10.5 4.8-10.5Z" fill="currentColor"/><path d="M10.6 14.6l2 2c-.7 2-2.4 4-5.4 4-1.7 0-3.3-.7-4-1.3 2-.3 2.7-1.3 3-2.7.3-1.7 2.4-2.7 4.4-2Z" fill="currentColor"/></svg></span>
+                        {%- endif -%}
+                      {%- elsif item.image -%}
                       {%- liquid
                         echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
                       -%}
@@ -294,13 +371,18 @@
                         mode: 'trigger'
                       %}
                     </div>
+                    {%- comment -%} An Artist's touch names the gift it reworks (A9d). The delay shows as its Delivery
+                      property; a line added before that property existed says it here. {%- endcomment -%}
+                    {%- if hs_gift != nil -%}
+                      <p class="hs2-addon-for">For the {{ hs_gift.product.title | remove_first: "Your Dog's " | remove_first: 'Your Dog’s ' | escape }}{% if item.properties.Delivery == blank %}. Adds 5&nbsp;days.{% endif %}</p>
+                    {%- endif -%}
                     {% if item.product.vendor and block_settings.vendor %}
                       <p>
                         <bdi>{{ item.product.vendor }}</bdi>
                       </p>
                     {% endif %}
 
-                    {%- if item.item_components.size != 0 -%}
+                    {%- if item.item_components.size != 0 and hs_parts != hs_presentation -%}
                       <ul class="cart-items__bundle list-unstyled">
                         {%- for component in item.item_components -%}
                           <li>
@@ -319,7 +401,7 @@
                       or item.properties.size != 0
                       or item.selling_plan_allocation != null
                     -%}
-                      {%- if item.product.has_only_default_variant == false and item.item_components.size == 0 -%}
+                      {%- if hs_parts == '0:' or hs_parts == hs_presentation -%}{%- if item.product.has_only_default_variant == false -%}
                         <dl class="cart-items__variants">
                           {%- for option in item.options_with_values -%}
                             <div class="cart-items__variant">
@@ -331,7 +413,7 @@
                             </div>
                           {%- endfor -%}
                         </dl>
-                      {%- endif -%}
+                      {%- endif -%}{%- endif -%}
 
                       {%- liquid
                         assign has_visible_properties = false
@@ -351,10 +433,18 @@
                               <div class="cart-items__property">
                                 <dt>{{ property.first | escape_once }}:</dt>
                                 <dd>
-                                  {%- comment -%} Teeinblue pre-encodes some values, so escape_once; only https uploads link. {%- endcomment -%}
+                                  {%- comment -%} Teeinblue pre-encodes some values, so escape_once; only https uploads link.
+                                    An upload shows as a small picture and "View photo", never Shopify's hashed file name (A9e);
+                                    a format browsers cannot draw (HEIC) keeps the words alone. {%- endcomment -%}
                                   {%- assign hs_property_scheme = property.last | slice: 0, 8 -%}
                                   {%- if property.last contains '/uploads/' and hs_property_scheme == 'https://' -%}
-                                    <a href="{{ property.last | escape_once }}">{{ property.last | split: '/' | last | escape_once }}</a>
+                                    {%- assign hs_upload_type = property.last | split: '?' | first | split: '.' | last | downcase -%}
+                                    {%- assign hs_upload_mark = ',' | append: hs_upload_type | append: ',' -%}
+                                    <a class="hs2-cart-upload" href="{{ property.last | escape_once }}">
+                                      {%- if ',jpg,jpeg,png,webp,gif,' contains hs_upload_mark -%}
+                                        <img class="hs2-cart-upload__img" src="{{ property.last | escape_once }}" width="48" height="48" loading="lazy" alt="">
+                                      {%- endif -%}
+                                      <span>View photo</span></a>
                                   {%- else -%}
                                     {{ property.last | escape_once }}
                                   {%- endif -%}
@@ -384,6 +474,9 @@
                     {%- endif -%}
                   </div>
 
+                  {%- comment -%} The unit price only when it says something the line price does not (N3): several
+                    units, or a sale. Every design is one unit, so it only repeated the price beside it. {%- endcomment -%}
+                  {%- if hs_quantity_item.quantity > 1 or hs_unit_original_price != hs_unit_final_price or item.variant.compare_at_price > hs_unit_original_price -%}
                   <div class="cart-items__unit-price-wrapper">
                     <div>
                       {% if hs_unit_original_price != hs_unit_final_price %}
@@ -419,6 +512,28 @@
                       {% endif %}
                     </div>
                   </div>
+                  {%- endif -%}
+                  {%- comment -%} Drawn with the line, not added after paint (28 Oct: the cart filled in a second late
+                    and Check out jumped down). The redo offer exactly as hs2.js redoOffers writes it, which then
+                    takes it over; an Artist's touch whose gift has left the cart; and the place for the Artist's
+                    touch offer, which hs2.js artistTouch fills on the cart page. {%- endcomment -%}
+                  {%- liquid
+                    assign hs_redo_href = item.url | append: '?redo=' | append: hs_line_id
+                    if item.url contains '?'
+                      assign hs_redo_href = item.url | append: '&redo=' | append: hs_line_id
+                    endif
+                  -%}
+                  {%- if hs_redos contains hs_id_mark -%}
+                    <div class="hs2-redo" data-hs2-redo><p class="hs2-redo__tag">First version</p><p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button></div>
+                  {%- elsif hs_redo_offer == '1136:/' -%}
+                    <div class="hs2-redo" data-hs2-redo><a href="{{ hs_redo_href | escape }}" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span></div>
+                  {%- endif -%}
+                  {%- if hs_orphan == '1x' -%}
+                    <p class="hs2-artist__orphan" data-hs2-artist-orphan role="status">The design this rework was for is no longer in your cart. Remove this line unless you meant to keep it.</p>
+                  {%- endif -%}
+                  {%- if context != 'drawer' and hs_artist_offer == '136:/1' -%}
+                    <div class="hs2-artist-slot" data-hs2-artist-slot></div>
+                  {%- endif -%}
                 </td>
                 <td
                   class="cart-items__quantity"
@@ -434,6 +549,8 @@
                     into 4 ($516 in checkout). A design at one has no quantity control; one already above one keeps it, to
                     come back down (component-cart-items.js refuses anything higher). {%- endcomment -%}
                   {%- if hs_quantity_key != '' and hs_quantity_item.quantity == 1 -%}{%- assign can_update_quantity = false -%}{%- endif -%}
+                  {%- comment -%} One Artist's touch per design (A9c), the same way: at one it has no quantity control. {%- endcomment -%}
+                  {%- if hs_addon_one == '11' -%}{%- assign can_update_quantity = false -%}{%- endif -%}
                   <div class="cart-items__quantity-controls">
                     {% render 'volume-pricing-info',
                       variant: item.variant,
@@ -451,10 +568,12 @@
                         can_update_quantity: can_update_quantity
                       %}
                     {%- endcapture -%}
-                    {%- comment -%} A design never goes up (28 Oct): its plus is served disabled. The base selector records a plus
-                      that arrives disabled (serverDisabledPlus) and never turns it back on, so no re-render can. {%- endcomment -%}
-                    {%- if hs_quantity_key != '' -%}{{ hs_quantity_selector | replace: 'name="plus"', 'name="plus" disabled' }}{%- else -%}{{ hs_quantity_selector }}{%- endif -%}
-                    {%- if hs_quantity_key != '' -%}<p class="hs2-one-per">One per design</p>{%- endif -%}
+                    {%- comment -%} A design never goes up (28 Oct), nor does an Artist's touch: its plus is served disabled and
+                      inert. Helio's cart selector ignores a plus that arrives disabled: it turns it back on when it connects and
+                      after every redraw, as the line has no max. Inert keeps it unpressable all the same, and
+                      component-cart-items.js puts disabled back after each redraw (data-hs2-one-per). {%- endcomment -%}
+                    {%- if hs_one_per != '' -%}{{ hs_quantity_selector | replace: 'name="plus"', 'name="plus" disabled inert aria-disabled="true" data-hs2-one-per' }}{%- else -%}{{ hs_quantity_selector }}{%- endif -%}
+                    {%- if hs_one_per != '' -%}<p class="hs2-one-per">One per design</p>{%- endif -%}
 
                     <button
                       class="button cart-items__remove"

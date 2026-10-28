@@ -47,6 +47,27 @@ async function heartsideSetComponentQuantity(key, quantity) {
   return HeartsideCartQuantity.change(current.cart.id, key, quantity);
 }
 
+// An Artist's touch line (linked to its design by _hs_addon_for) and its units, or null.
+function heartsideAddonUnits(row) {
+  if (!row) return null;
+  try {
+    const data = JSON.parse(row.getAttribute('data-hs2-cart-line'));
+    return data?.properties?._hs_addon_for ? data.quantity : null;
+  } catch { return null; }
+}
+
+// One per design (28 Oct, A9c): cart-products.liquid serves the plus of a design and of an Artist's touch
+// disabled and inert, marked data-hs2-one-per. Helio's cart selector manages its buttons client-side: when it
+// connects and on every updateButtonStates it turns that plus back on, as the line has no max. Inert keeps it
+// unpressable meanwhile; this puts disabled back. Writes only on a change: the quantity gate watches both.
+function heartsideHoldOnePerPlus() {
+  for (const plus of document.querySelectorAll('cart-quantity-selector-component [name="plus"][data-hs2-one-per]')) {
+    if (!(plus instanceof HTMLButtonElement)) continue;
+    if (!plus.disabled) plus.disabled = true;
+    if (!plus.inert) plus.inert = true;
+  }
+}
+
 function heartsideQuantityMatches(rows, key, quantity) {
   let found = 0, units = 0;
   for (const row of rows || []) {
@@ -190,6 +211,8 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     document.addEventListener(StandardEvents.cartDiscountUpdate, this.#handleDiscountUpdate);
     document.addEventListener(StandardEvents.cartNoteUpdate, this.#handleNoteUpdate);
     window.addEventListener('pageshow', this.#handlePageShow);
+    // The cart's selectors turn a served-off plus back on as they connect; this runs after they have.
+    customElements.whenDefined('cart-quantity-selector-component').then(() => heartsideHoldOnePerPlus());
   }
 
   disconnectedCallback() {
@@ -280,7 +303,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       quantity,
       action: 'change',
     });
-    const lineItemRow = this.refs.cartItemRows[line - 1];
+    const lineItemRow = this.#row(line);
 
     if (!lineItemRow) return;
 
@@ -300,7 +323,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       action: 'clear',
     });
 
-    const cartItemRowToRemove = this.refs.cartItemRows[line - 1];
+    const cartItemRowToRemove = this.#row(line);
 
     if (!cartItemRowToRemove) return;
 
@@ -347,12 +370,25 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    * @param {string} config.action - The action.
    */
   #validateHeartsideQuantity(line) {
-    const blocked = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]) === null
+    const blocked = heartsideQuantityTarget(this.#row(line)) === null
       ? 'Your cart changed. Refresh the page and try again.'
       : this.#heartsideQuantityBlocked();
     if (!blocked) return true;
     this.#handleCartError(line, { errors: blocked });
     return false;
+  }
+
+  /**
+   * The row of a cart line, found by its line number. Heartside lists each Artist's touch right after
+   * its gift (cart-products.liquid), so the rows are not in line order: each carries its own number
+   * in data-hs-line. Markup without the numbers is still in line order.
+   * @param {number} line - The cart line, counted from 1.
+   * @returns {HTMLTableRowElement | undefined}
+   */
+  #row(line) {
+    const rows = this.refs.cartItemRows || [];
+    if (!rows.some((row) => row.dataset.hsLine)) return rows[line - 1];
+    return rows.find((row) => row.dataset.hsLine === String(line));
   }
 
   /**
@@ -406,12 +442,19 @@ export class CartItemsComponent extends createViewEventElement(Component) {
         sectionRenderer.abortRender(sectionId);
       }
 
-      const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
+      const row = this.#row(line);
+      const componentKey = heartsideQuantityTarget(row);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
       // One unit per design (28 Oct): Shopify's checkout merge turned 2 of a design ($258 in the cart)
       // into 4 ($516 in checkout). A design may come down to one but never go above one.
-      if (componentKey && quantity > 1 && quantity >= heartsideComponentUnits(this.refs.cartItemRows[line - 1])) {
-        const refused = 'Each design is one gift, so it stays at one. Nothing was changed.';
+      // An Artist's touch reworks one design once, so it follows the same rule (A9c).
+      const addonUnits = componentKey ? null : heartsideAddonUnits(row);
+      const refused = componentKey && quantity > 1 && quantity >= heartsideComponentUnits(row)
+        ? 'Each design is one gift, so it stays at one. Nothing was changed.'
+        : addonUnits !== null && quantity > 1 && quantity >= addonUnits
+          ? "One artist's touch per design. Nothing was changed."
+          : '';
+      if (refused) {
         await this.#refreshCartSection(); // put the number back as it was
         // Said in the row, as the other refusals are: a thrown error only ever reached the console.
         this.#handleCartError(line, { errors: refused });
@@ -437,7 +480,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       // Ordinary rows change by line key, never by position: a personalised change re-adds
       // its line at the end, and after a failed or aborted render a stale position could
       // name the re-added design.
-      const lineId = this.refs.cartItemRows[line - 1]?.dataset.key;
+      const lineId = row?.dataset.key;
       if (!lineId) throw new Error('Your cart changed. Refresh the page and try again.');
       const requestUrl = `${Theme.routes.cart_change_url}`;
       const body = JSON.stringify({
@@ -551,12 +594,11 @@ export class CartItemsComponent extends createViewEventElement(Component) {
    * @param {string} parsedResponseText.errors - The errors.
    */
   #handleCartError = (line, parsedResponseText) => {
-    const quantitySelector = this.refs.quantitySelectors[line - 1];
-    const quantityInput = quantitySelector?.querySelector('input');
+    // The line's own row, found by its number (rows are not in line order). A row served without a
+    // quantity control (one unit per design) still says why, so a missing input is not an error.
+    const quantityInput = this.#row(line)?.querySelector('[ref="quantitySelectors[]"] input, .cart-items__quantity input');
 
-    if (!quantityInput) throw new Error('Quantity input not found');
-
-    quantityInput.value = quantityInput.defaultValue;
+    if (quantityInput) quantityInput.value = quantityInput.defaultValue;
 
     const cartItemError = this.refs[`cartItemError-${line}`];
     const cartItemErrorContainer = this.refs[`cartItemErrorContainer-${line}`];
@@ -681,6 +723,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     for (const selector of document.querySelectorAll('cart-quantity-selector-component')) {
       /** @type {any} */ (selector).updateButtonStates?.();
     }
+    heartsideHoldOnePerPlus();
   }
 
   async fetchCartData() {

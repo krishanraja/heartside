@@ -2,7 +2,7 @@
 
 Ruling (Krish, 2026-10-27): the favicon and site icon are the pink watercolor heart with a white paw.
 
-**Status: built on 27 Oct 2026. Not uploaded to Shopify yet, so not live.**
+**Status: built on 27 Oct 2026, and live since that day's go-live: `heartside-favicon-heart.png` was uploaded to Shopify Files and set as the favicon by the theme push (`docs/evidence/2026-10-27-go-live.md`, steps 3 and 8).**
 
 The brand book says: "transparent PNG: 1024 px for app icons and avatars, 512 and 32 px for the site. Never recolor, outline or redraw it, and keep clear space of a quarter of its width."
 

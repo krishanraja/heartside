@@ -5,7 +5,8 @@ import {recipes} from './artwork-system.mjs';
 // each as its own hidden form-only text field the storefront fills (nativeFieldValues), and
 // Personality (quoted facts JSON). Listing every style, tone and energy and asking the model to
 // pick one left the tone invisible in the first example batch, so only the chosen text is sent.
-// tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md carries this exact text.
+// tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md carries this exact text (proposed: the
+// stated toy rule). PROMPT-SPEC-2026-10-27.md stays as the record of the prompts now live.
 export function nativePrompt(format) {
   if (!Object.hasOwn(recipes.formats, format)) throw new Error('Unknown format');
   return [recipes.identity,

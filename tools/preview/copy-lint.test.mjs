@@ -7,7 +7,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { lintLiquid, lintJs, lintTemplateJson, jsLiterals, compareBaseline, keyOf } from './copy-lint.mjs';
+import * as lint from './copy-lint.mjs';
+
+const { lintLiquid, lintJs, lintTemplateJson, jsLiterals, compareBaseline, keyOf, deliveredFiles } = lint;
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rules = (offenses) => offenses.map((o) => o.rule);
@@ -112,6 +114,35 @@ test('biscuit-host and your-dog-has-notes: the old host and tagline, not class n
   assert.deepEqual(lintLiquid('<a href="https://www.instagram.com/yourdoghasnotes/">Instagram</a>'), []);
 });
 
+test('us-spelling: British forms in copy are flagged, in every kind of delivered string', () => {
+  assert.deepEqual(rules(lintJs("var a = 'Pick a colour';")), ['us-spelling']);
+  assert.deepEqual(rules(lintLiquid('<p>Your favourite photo</p>')), ['us-spelling']);
+  assert.deepEqual(rules(lintLiquid("{% assign t = 'Personalised for Pip' %}")), ['us-spelling']);
+  assert.deepEqual(rules(lintLiquid('<img alt="A grey mug">')), ['us-spelling']);
+  assert.deepEqual(rules(lintTemplateJson('{ "settings": { "note": "Printed in the centre." } }')), ['us-spelling']);
+  assert.deepEqual(rules(lintLiquid('{% schema %}{ "settings": [ { "type": "text", "id": "t", "label": "T", "default": "Your catalogue" } ] }{% endschema %}')), ['us-spelling']);
+  for (const word of ['colours', 'coloured', 'favourites', 'personalise', 'personalisation', 'organised', 'greyish', 'centres', 'labelled', 'cancelled', 'catalogues', 'behaviour', 'realise', 'recognisable', 'honoured', 'jewellery', 'Colour', 'GREY']) {
+    assert.deepEqual(rules(lintJs(`var a = 'A ${word} here';`)), ['us-spelling'], word);
+  }
+});
+
+test('us-spelling: US forms, look-alike words, comments and theme-editor info are left alone', () => {
+  for (const word of ['color', 'colorful', 'favorite', 'personalize', 'personalization', 'organize', 'gray', 'center', 'labeled', 'canceled', 'catalog', 'behavior', 'realize', 'realistic', 'recognize', 'honor', 'jewelry', 'Greyhound', 'Italian Greyhound']) {
+    assert.deepEqual(lintJs(`var a = 'A ${word} here';`), [], word);
+  }
+  assert.deepEqual(lintLiquid('{% comment %}colour{% endcomment %}'), []);
+  assert.deepEqual(lintJs("// the personalised line\n/* grey */\nvar a = 'calm.';"), []);
+  assert.deepEqual(lintLiquid('{% schema %}{ "settings": [ { "type": "text", "id": "t", "label": "Colour", "info": "Behaviour of the favourite", "default": "Color" } ] }{% endschema %}'), []);
+  assert.deepEqual(lintLiquid('<style>.a { color: grey; }</style>'), []);
+});
+
+test('deliveredFiles: the Helio cart script we own is linted with our own scripts', () => {
+  const files = deliveredFiles().map((f) => path.basename(f));
+  assert.ok(files.includes('component-cart-items.js'), 'its refusal copy reaches buyers');
+  assert.ok(files.includes('hs2.js') && files.includes('hs3.js'));
+  assert.deepEqual(lint.OWNED_ASSETS, ['component-cart-items.js']);
+});
+
 test('template JSON: values with their line, never keys, and a leading /* */ note is skipped', () => {
   const json = `/*
  * auto-generated note, calculated at checkout!
@@ -158,6 +189,7 @@ test('CLI: lists file:line:offense, exits 1, and --baseline passes until somethi
     fs.writeFileSync(path.join(root, 'shopify', 'sections', 'a.liquid'), '<p>Old copy!</p>\n');
     fs.writeFileSync(path.join(root, 'shopify', 'assets', 'hs-a.js'), "var a = 'calm.';\n");
     fs.writeFileSync(path.join(root, 'shopify', 'assets', 'other.js'), "var a = 'Not ours!';\n");
+    fs.writeFileSync(path.join(root, 'shopify', 'assets', 'component-cart-items.js'), "var a = 'Pick a colour';\n");
     const cli = path.join(here, 'copy-lint.mjs');
     const base = path.join(root, 'baseline.json');
     const run = (...args) => spawnSync(process.execPath, [cli, '--root', root, ...args], { encoding: 'utf8' });
@@ -166,6 +198,7 @@ test('CLI: lists file:line:offense, exits 1, and --baseline passes until somethi
     assert.equal(plain.status, 1);
     assert.match(plain.stdout, /^shopify\/sections\/a\.liquid:1: exclamation: <p>Old copy!<\/p>$/m);
     assert.doesNotMatch(plain.stdout, /Not ours/);
+    assert.match(plain.stdout, /^shopify\/assets\/component-cart-items\.js:1: us-spelling: Pick a colour$/m);
 
     assert.equal(run('--write-baseline', base).status, 0);
     const known = run('--baseline', base);

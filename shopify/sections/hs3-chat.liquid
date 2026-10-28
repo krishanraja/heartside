@@ -69,12 +69,19 @@
             {%- if p != blank -%}
               "url": {{ p.url | json }}, "handle": {{ p.handle | json }}, "title": {{ p.title | json }},
               "price": {{ p.price_min | divided_by: 100.0 | json }}, "priceMax": {{ p.price_max | divided_by: 100.0 | json }},
+              {%- comment -%} the first available variant at the lowest price, so a gift with more than one
+                price opens on the price the choose screen shows (28 Oct: the portrait opened Framed) {%- endcomment -%}
+              {%- assign min_variant = nil -%}
+              {%- for v in p.variants -%}
+                {%- if v.available and v.price == p.price_min -%}{%- assign min_variant = v.id -%}{%- break -%}{%- endif -%}
+              {%- endfor -%}
+              "minVariant": {{ min_variant | json }},
               "images": [
                 {%- assign n = 0 -%}
                 {%- for m in p.media -%}
                   {%- assign a = m.alt | downcase -%}
                   {%- if m.media_type == 'image' and n < 4 and m.alt != blank -%}
-                    {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}
+                    {%- unless a contains 'shown in your cart' or a contains 'blank ' or a contains 'checkout tile' -%}
                       {%- if n > 0 -%},{%- endif -%}{ "src": {{ m | image_url: width: 900 | json }}, "alt": {{ m.alt | json }} }
                       {%- assign n = n | plus: 1 -%}
                     {%- endunless -%}
@@ -96,6 +103,16 @@
         <h1 class="hs3-hero__h">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
         <p class="hs3-hero__p">{{ s.intro }}</p>
       </div>
+      {%- comment -%} The button comes straight after the words, so it is in the first screen on every phone
+        and is read in the order it is seen; the gifts and Buddy's bubble follow it (28 Oct). On a wide
+        screen the grid places each part. The Christmas countdown lives in the memo bar, so the line under
+        the button is the trust line alone. {%- endcomment -%}
+      <div class="hs3-hero__foot">
+        <p class="hs3-resume" data-hs3-resume hidden>Welcome back. <span data-hs3-resume-dog></span>'s answers are still here.</p>
+        <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
+        <p class="hs3-resume hs3-resume--quiet" data-hs3-resume hidden><button type="button" class="hs3-quiet" data-hs3-restart>Start over</button></p>
+        <p class="hs3-small hs3-trust">{{ s.trust_line }}</p>
+      </div>
       <div class="hs3-hero__art">
         {%- comment -%} the real range, labelled Example: someone else's dog, today's Shopify prices {%- endcomment -%}
         <div class="hs3-fan">
@@ -109,7 +126,7 @@
               {%- for m in p.media -%}
                 {%- assign a = m.alt | downcase -%}
                 {%- if m.media_type == 'image' and m.alt != blank -%}
-                  {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
+                  {%- unless a contains 'shown in your cart' or a contains 'blank ' or a contains 'checkout tile' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
                 {%- endif -%}
               {%- endfor -%}
               <a class="hs3-fan__item hs3-fan__item--{{ k }}" href="{{ p.url }}">
@@ -124,13 +141,6 @@
           <span class="hs3-biscuit hs3-biscuit--peek" aria-hidden="true"></span>
           <span class="hs3-bubble hs3-bubble--peek">{{ s.peek }}</span>
         </div>
-      </div>
-      <div class="hs3-hero__foot">
-        <p class="hs3-resume" data-hs3-resume hidden>Welcome back. <span data-hs3-resume-dog></span>'s answers are still here.</p>
-        <button type="button" class="hs3-btn" data-hs3-start>{{ s.start }}</button>
-        <p class="hs3-resume hs3-resume--quiet" data-hs3-resume hidden><button type="button" class="hs3-quiet" data-hs3-restart>Start over</button></p>
-        <p class="hs3-small hs3-trust">{{ s.trust_line }}</p>
-        <p class="hs3-small hs3-countdown" data-hs3-countdown hidden></p>
       </div>
       <ol class="hs3-beats">
         <li><span class="hs3-beats__n">1</span>{{ s.beat_one }}</li>

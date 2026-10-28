@@ -1,6 +1,6 @@
 # Teeinblue native prompt spec, 27 October 2026 (single-direction form, 28 October)
 
-Status: **proposed vendor change, not applied.** No live or draft Teeinblue campaign has these prompts. Applying them is a vendor change that Krish makes in his own browser session, with his approval at that time, and it must be read back afterward. Nothing in this repository can apply it, and reading this file authorizes no change, generation or order.
+Status: **applied, the prompts live today.** CoWork applied these blocks to the three Heartside artworks on 28 October and reported the saved hashes matching the ones below. The stated-toy change that replaces them is [`PROMPT-SPEC-2026-10-28.md`](PROMPT-SPEC-2026-10-28.md), not yet applied. Its cross rule also corrects the energy note below. Keep the prompt blocks and hashes here as they are: they are the record of what is live. Nothing in this repository can change a campaign, and reading this file authorizes no change, generation or order.
 
 ## What it implements
 
@@ -9,7 +9,7 @@ Status: **proposed vendor change, not applied.** No live or draft Teeinblue camp
 - `Ruling (Krish, 2026-10-28): the store sends only the chosen style and tone text, in hidden fields like Energy, instead of one prompt listing every style and tone.` The 27 October form listed all six style definitions, all three tone directions and all ten energy directions and asked the model to use the matching one. In the first example batch (`design/examples-2026-10-27/review.md`) the tone barely changed the picture and one dog's style was ignored. The single-direction form puts the chosen mood first, then the chosen medium, and tells the model to use the photo for the dog's identity, not its composition.
 - Buyers can tag a favorite toy and a collar or accessory, each with a short plain-text description they type. No AI step touches it. It travels inside the existing Personality facts.
 
-The source of truth is `nativePrompt(format)` and `nativeFieldValues()` in `tools/print-art/native-candidate.mjs`, built from `tools/print-art/recipes-v1.json` version `actual-dog-recipes-v5-single-direction` (recipe SHA-256 `ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`). `tools/print-art/artwork-system.test.mjs` fails if any prompt block below differs from that function by a single character, or if its SHA-256 here is wrong. Change the recipes, rebuild and re-test; never edit the prompt by hand in the vendor editor.
+These blocks were built by `nativePrompt(format)` and `nativeFieldValues()` in `tools/print-art/native-candidate.mjs` from `tools/print-art/recipes-v1.json` version `actual-dog-recipes-v5-single-direction` (recipe SHA-256 `ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`). The recipes have since moved to v6, so this file is a fixed record and nothing rebuilds it. `node tools/print-art/example-batch.mjs --check` fails if a 28 October example prompt is not its block here with the fields filled, and `tools/print-art/artwork-system.test.mjs` fails if a hash or the recipe version goes missing. Never edit the prompt by hand in the vendor editor.
 
 ## Fields the prompts read
 
@@ -154,5 +154,5 @@ Rollback: restore each backed-up prompt, remove the three layers, validate, and 
 - That Teeinblue sends this exact substituted text to the image provider. Expected substitution is not provider-observed substitution.
 - How Teeinblue substitutes an empty or missing text layer. The storefront avoids the case by always writing a value.
 - Whether form-only layer values appear in cart or order properties a buyer can see. The texts are written to be safe if they do.
-- Likeness, tone legibility, humor quality and energy accuracy. The 28 October example batch (`design/examples-2026-10-28/`) tests the single-direction form, and a person reviews it.
+- Likeness, tone legibility, humor quality and energy accuracy on real orders. The 28 October example batch (`design/examples-2026-10-28/`) tested the single-direction form: a person kept 8 of its 10 images (`review.md`), and two read Warm instead of Hilarious.
 - The 24 October six-style screen packet. Its expected prompts and fingerprints change with this contract, and this spec does not amend that approval.

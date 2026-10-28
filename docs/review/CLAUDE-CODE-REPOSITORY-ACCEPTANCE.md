@@ -8,7 +8,7 @@ Independently audit the complete current Heartside repository, repair concrete r
 
 Read the applicable AGENTS.md files, canonical operating contract and required skills, then `docs/NORTH_STAR.md`, `NOW.md`, `docs/SCOPE.md`, `docs/ECONOMICS.md`, `docs/SYNC.md` and `docs/HARNESS_CONTEXT.md`. `NOW.md` is the single current state/price/next-action source; `SCOPE.md` holds approved scope; live provider readback establishes dynamic truth. The old V2/V3, positioning, handoff, queue, economics and module guides are in `docs/history/` and cannot override current facts even when their original words say "current". The generated `HARNESS_CONTEXT.md` must match its owning ai-harness profile; do not hand-edit its publisher-owned region.
 
-Expected release baseline to verify, not assume: five-color 11 oz illustrated mug at $45, word-free 50×60 sherpa blanket at $129, and 12×18 portrait at $59 unframed or $119 framed in black, white or red oak. Buddy is the host; the customer dog identity is independent. Ornament held, pillow conditional, book future. The October 26 owner ruling seeks maximum expected total net operating profit subject to a 30% all-attributable-costs net operating margin floor. Prior 50% figures and old $29/$89/$24 prices are historical. The core release was merged/published on 27 October; the owner has not yet placed or inspected the real paid blanket sample.
+Expected release baseline to verify, not assume: five-color 11 oz illustrated mug at $45, word-free 50×60 sherpa blanket at $129, and 12×18 portrait at $59 unframed or $119 framed in black, white or red oak. Buddy is the host; the customer dog identity is independent. Ornament held, pillow conditional, book future. The October 26 owner ruling seeks maximum expected total net operating profit subject to a 30% all-attributable-costs net operating margin floor. Prior 50% figures and the old $29, $89 and $24 product prices are historical; $29 is now only the price of the Artist's touch add-on. The add-on and the automatic bundle (15% off two gifts, 20% off three or more, gifts only) have been live since 27 October. The core release was merged/published on 27 October; the owner has not yet placed or inspected the real paid blanket sample. The 28 October acceptance fixes (PR #65) are in source but not live until CoWork pushes the theme, publishes the two n8n workflows and applies the 28 October Teeinblue prompt spec, each on the owner's yes; the same theme push ships PR #64's cart fix, which is merged but not live. Until then, drift between source and the live store that these changes explain is expected and is not a parity defect.
 
 ## Documentation consistency is a release check
 
@@ -28,17 +28,20 @@ Keep credentials, cart tokens, private runtime configuration, customer addresses
 
 ## 2. Execute and document the repository checks
 
-Use the checked-in lockfile for `tools/preview` dependencies (`npm ci` there when installation is needed). Record Node, Python, dependency and browser-tool versions. Check compatibility with the Node version used by CI, rather than assuming a locally newer runtime proves CI compatibility. Install only the dependencies actually required by existing project instructions; do not upgrade the stack merely to make a test pass.
+Use the checked-in lockfile for `tools/preview` dependencies (`npm ci` there when installation is needed, then `npx playwright install chromium` there, since `npm ci` does not download the Chromium that many of the Node tests and `chat.mjs` launch; CI runs it with `--with-deps`). Record Node, Python, dependency and browser-tool versions. Check compatibility with the Node version used by CI, rather than assuming a locally newer runtime proves CI compatibility. Install only the dependencies actually required by existing project instructions; do not upgrade the stack merely to make a test pass.
 
 From the repository root, these are the existing offline test entry points to inspect and run. Discover newly added tests too. Capture command, working directory, exit code and counts. PowerShell example for the Node test files:
 
 ```powershell
 $heartsideTests = @(Get-ChildItem tools/preview, tools/print-art -File -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
 node --test $heartsideTests
+node tools/preview/render.mjs; node tools/preview/chat.mjs
 node tools/preview/artwork-profile-test.mjs
 node tools/preview/minify-check.mjs
-node tools/preview/theme-check.mjs
+node tools/preview/theme-check.mjs --baseline
+node tools/preview/copy-lint.mjs --baseline tools/preview/copy-lint-baseline.json
 node tools/print-art/build-browser.mjs --check
+node tools/print-art/example-batch.mjs --check
 node n8n/test-rules.mjs
 node n8n/test-voice.mjs
 node n8n/test-checkout-image.mjs
@@ -48,10 +51,12 @@ python tools/print-art/test_generate.py
 python tools/qc/test_order_qc.py
 python tools/qc/test_mug_qc.py
 python tools/economics/test_net_margin.py
+python tools/print-art/example-assets.py --check
+node n8n/build.mjs; git diff --exit-code -- n8n/
 git diff --check
 ```
 
-Run commands individually or in a runner that preserves every exit code; do not let the final success hide earlier failures. Inspect the current versions before execution: the voice tests and image-generation contract test use local fixtures/mocks, and must remain offline. Missing fixture files, optional fonts or Python packages are explicit gaps, not passes. Do not run the actual generation, voice-lab, supplier/order processing or production webhook scripts to resolve a fixture failure. Some older test scripts print failures without necessarily setting a nonzero exit code; inspect their completion behavior and treat failure output as failure, correcting the harness if appropriate.
+Run commands individually or in a runner that preserves every exit code; do not let the final success hide earlier failures. Inspect the current versions before execution: the voice tests and image-generation contract test use local fixtures/mocks, and must remain offline. Missing fixture files, optional fonts or Python packages are explicit gaps, not passes. Do not run the actual generation, voice-lab, supplier/order processing or production webhook scripts to resolve a fixture failure. Since 28 October the n8n rule tests exit 1 on any failed case; still treat any failure output as failure. `.github/workflows/offline-tests.yml` is the list of offline checks CI runs; any command it runs that is missing above is a gap in this brief. CI also runs `.github/workflows/harness-repository-context.yml` on every pull request and every push to main. It checks the managed context hashes and word budgets in `AGENTS.md` and `docs/HARNESS_CONTEXT.md`, the `@AGENTS.md` entry in `CLAUDE.md` and the closeout hook's hash. On a pull request it also runs `node .claude/hooks/harness-closeout.mjs --ci --base <base sha> --head <head sha>`. That check fails a pull request that changes anything besides `NOW.md`, `docs/history/` or `docs/HARNESS_CONTEXT.md` unless `NOW.md` also changes, its `as_of` is set to the date of the work and it carries exactly one dated North Star check line under "What is next and what is waiting on Krish". A corrective PR must pass both workflows.
 
 Also validate relevant JS syntax, JSON/schema shape, Liquid references, CSS references, imported module paths and generated asset inclusion. Inspect all GitHub workflow checks and run the equivalent local commands where safe. For local rendered previews use `tools/preview`'s documented render/screenshots entry points after inspecting their inputs and destinations. A stub-rendered page is not the real Shopify page; report that boundary.
 
@@ -61,7 +66,7 @@ Theme Check runs against a partial Helio overlay with stub layout/config/locales
 
 Build a source map from homepage/navigation through conversation, photo/art acceptance, native product templates, cart, hosted-checkout handoff and order/QC contracts. Verify event wiring and failure behavior, not just the existence of helper functions.
 
-- Current core scope: 11oz illustrated mug with five offered colors; word-free 50×60 sherpa blanket; 12×18 portrait, unframed or framed in the approved finishes. Confirm the latest release packet against the USD baseline of45 mug,59 unframed portrait,119 framed portrait and129 blanket. The ornament is held; pillow is not automatically core; book is future scope. Do not reactivate excluded products.
+- Current core scope: 11oz illustrated mug with five offered colors; word-free 50×60 sherpa blanket; 12×18 portrait, unframed or framed in the approved finishes. Confirm the latest release packet against the USD baseline: $45 mug, $59 unframed portrait, $119 framed portrait and $129 blanket. The ornament is held; pillow is not automatically core; book is future scope. Do not reactivate excluded products.
 - Check ordinary default routes for `your-dogs-illustrated-mug`, `your-dogs-personality-blanket`, and `your-dogs-portrait`; a working `?view=` preview is insufficient. Review JSON template assignments and storefront navigation handoff requirements.
 - Buddy is the host; the customer's dog identity remains separate. Trace self-recipient `Me`/`Your first name`, other relationships, pronouns, back/forward/reload, state migration and safe field validation. Check shared personalization across products, supplied-only personality/location facts, selected style and note tone.
 - Trace photo normalization/storage, actual-dog identity, crop/orientation, obscured-body limitations, source replacement, and explicit accepted-art binding. Changing photo/style must invalidate stale acceptance. Restored artwork must not trigger a hidden generation or reuse approval for a different input. No-photo/no-accepted-art paths must fail closed, including quick-add, search, sticky and accelerated affordances.
@@ -74,7 +79,7 @@ Read `shopify/assets/component-cart-items.js`, `hs-cart-quantity.js`, the cart L
 
 Verify with meaningful fixtures and adversarial failure cases:
 
-- Exact native variant, all customization attributes, source/design references, selected options and accepted artwork survive quantity1→2→1. A129 blanket must correspond to129→258→129 before shipping/tax. Other cart lines remain identical.
+- Exact native variant, all customization attributes, source/design references, selected options and accepted artwork stay intact at one unit. Each design is one gift. Its plus is served disabled and inert, `component-cart-items.js` turns it off again after every redraw, and a raise is refused with "Each design is one gift, so it stays at one. Nothing was changed." A $129 blanket stays $129 before shipping and tax. Other cart lines remain identical. Lifting the cap is Krish's open decision.
 - A replacement can change the component view key. Post-refresh verification must use the fresh key from verified readback or an equally exact identity match, not the removed key. The actual persisted quantity and rendered row must agree.
 - The pending exact payload is saved before removal; unavailable storage prevents mutation. No raw cart token is persisted. Restore after refresh binds to the correct cart and preserves the existing design without AI.
 - Definitive rejection and uncertain network outcomes differ. An unknown add result must not cause a blind retry or duplicate; read-only reconciliation must settle it before another mutation. Changed other lines, ambiguous components and unavailable variants fail safely. Recovery offers an understandable route to retry/restore or explicitly abandon the saved item only where the outcome is known.
@@ -97,7 +102,7 @@ Scan tracked files and relevant release history for accidentally committed secre
 
 ## 6. Economics, print and operational contracts
 
-Audit current economics inputs and tests against the approved **30% modeled all-cost net operating margin floor**, not the superseded50% rule. Verify variant/format-specific product and shipping costs, payment fees, app allocation, AI/retry assumptions, discounts, taxes treatment, returns/remakes and sensitivity. Identify estimates and missing actual costs; do not invent a supplier quote or change retail pricing unilaterally. Model correctness does not prove willingness to pay.
+Audit current economics inputs and tests against the approved **30% modeled all-cost net operating margin floor**, not the superseded 50% rule. Verify variant/format-specific product and shipping costs, payment fees, app allocation, AI/retry assumptions, discounts, taxes treatment, returns/remakes and sensitivity. Identify estimates and missing actual costs; do not invent a supplier quote or change retail pricing unilaterally. Model correctness does not prove willingness to pay.
 
 Review print geometry, dimensions, resolution, fit, bleed/safe areas, mug wrap/text layout, blanket word-free output and framed/unframed mappings against current manifests and native contracts. Inspect whether order QC still encodes an obsolete photo-cutout mug layout and could falsely pass/reject the new design. Test fixtures must represent the current artwork system. Automated image/QC checks cannot certify likeness, invented anatomy, print sharpness or physical sample quality; hand those visual/physical gates to the proper reviewer.
 

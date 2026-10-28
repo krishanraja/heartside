@@ -1,40 +1,64 @@
 {%- assign s = settings -%}
-<p>{% if s.blanket_purchase %}Inspired by what you told Buddy. No words on the blanket.{% else %}Your dog, the details you shared with Buddy, and your exact note.{% endif %}</p>
+<p>{% if s.blanket_purchase %}Inspired by what you told Buddy.{% else %}Your dog, the details you shared with Buddy, and your exact note.{% endif %}</p>
               {%- comment -%} Their toy or collar, on the page where the photo goes (Krish, 28 Oct: "I cant seem to
                 upload any images of accessories"). The painter reads one photo, the dog's, so the words go into the
                 painting now; photos of the toy or collar go to our artist with the Artist's touch, added with the gift
-                (hs2.js bindExtras, extrasAfterAdd). {%- endcomment -%}
+                (hs2.js bindExtras, extrasAfterAdd). Words the chat already has show as one line with Change; the
+                examples read as examples, never as answers; the Artist's touch is a button with its price and its
+                5 days, then "Added. Remove" (28 Oct recordings). {%- endcomment -%}
               <div class="hs-extras" data-hs-extras hidden>
-                <p class="hs-extras__title">Paint their toy or collar too?</p>
-                <p class="hs-extras__hint">A few words is plenty. Optional.</p>
-                <div class="hs-extras__fields">
-                  <label>Favorite toy<input type="text" maxlength="80" autocomplete="off" placeholder="A squeaky duck" data-hs-extra="toy"></label>
-                  <label>Collar or accessory<input type="text" maxlength="80" autocomplete="off" placeholder="A red bandana" data-hs-extra="accessory"></label>
-                </div>
-                <details class="hs-extras__artist" data-hs-extras-artist hidden>
-                  <summary>Have photos of it? Our artist can paint it in by hand. Artist's touch, <span data-hs-extras-price></span>. Adds 5 days.</summary>
-                  <p>Added with your gift. Our artist reworks your design by hand from these photos and notes, and a person checks it before it prints.</p>
-                  <label>What should our artist add?<textarea maxlength="500" rows="2" data-hs-extras-notes placeholder="Her blue squeaky duck, in her mouth"></textarea></label>
-                  {%- for i in (1..3) -%}
-                  <div class="hs-extras__photo">
-                    <select aria-label="What photo {{ i }} shows" data-hs-extras-tag><option>Favorite toy</option><option>Collar or accessory</option><option>Another photo of my dog</option><option>Something else</option></select>
-                    <input type="file" accept="image/*" aria-label="Photo {{ i }}" data-hs-extras-file>
+                <p class="hs-extras__said" data-hs-extras-summary hidden><span><strong>In the painting too:</strong> <span data-hs-extras-said></span></span> <button type="button" class="hs-extras__change" data-hs-extras-change>Change</button></p>
+                <div class="hs-extras__ask" data-hs-extras-ask>
+                  <p class="hs-extras__title">Paint their toy or collar too?</p>
+                  <p class="hs-extras__hint">A few words is plenty. Optional.</p>
+                  <div class="hs-extras__fields">
+                    <label>Favorite toy<input type="text" maxlength="80" autocomplete="off" placeholder="For example, a squeaky duck" data-hs-extra="toy"></label>
+                    <label>Collar or accessory<input type="text" maxlength="80" autocomplete="off" placeholder="For example, a red bandana" data-hs-extra="accessory"></label>
                   </div>
-                  {%- endfor -%}
+                </div>
+                <div class="hs-extras__artist" data-hs-extras-artist data-hs-extras-state="off" hidden>
+                  <div class="hs-extras__offer" data-hs-extras-offer>
+                    <button type="button" class="hs-extras__add" data-hs-extras-add>Add our artist's touch, <span data-hs-extras-price></span></button>
+                    <p class="hs-extras__sub">Adds 5&nbsp;days. A person reworks your design by&nbsp;hand.</p>
+                  </div>
+                  <div class="hs-extras__on" data-hs-extras-on hidden>
+                    <p class="hs-extras__added">Added. <button type="button" class="hs-extras__remove" data-hs-extras-remove>Remove</button></p>
+                    <p>It goes in with your gift and adds 5&nbsp;days. Our artist reworks your design by hand from your notes and photos, and a person checks it before it prints.</p>
+                    <label>What should our artist add?<textarea maxlength="500" rows="2" data-hs-extras-notes placeholder="For example, the toy by the front paws"></textarea></label>
+                    {%- for i in (1..3) -%}
+                    <div class="hs-extras__photo">
+                      <select aria-label="What photo {{ i }} shows" data-hs-extras-tag><option{% if i == 1 %} selected{% endif %}>Favorite toy</option><option{% if i == 2 %} selected{% endif %}>Collar or accessory</option><option{% if i == 3 %} selected{% endif %}>Another photo of my dog</option><option>Something else</option></select>
+                      <label class="hs-file"><input type="file" accept="image/*" aria-label="Photo {{ i }}" data-hs-extras-file><span class="hs-file__text" data-hs-file-text data-hs-file-empty="Choose photo {{ i }}">Choose photo {{ i }}</span></label>
+                    </div>
+                    {%- endfor -%}
+                  </div>
                   <p class="hs-extras__status" data-hs-extras-status role="status" aria-live="polite"></p>
-                </details>
+                </div>
               </div>
               <p data-hs2-checkout-image-status role="status" aria-live="polite" hidden></p>
-              <div data-hs2-blanket-photo hidden>
-                <img data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="80" height="80">
-                <button type="button" data-hs2-blanket-create>Paint it from the photo you gave Buddy</button>
-              </div>
-              {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog the detector missed {%- endcomment -%}
-              <div class="hs-photo-check" data-hs2-photo-check hidden>
-                <p data-hs2-photo-check-text role="alert"></p>
+              {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog
+                the detector missed. hs2.js photoNote puts each outcome under the button the buyer tapped and right after
+                Teeinblue's photo field; this box holds it only while Teeinblue has not drawn that field. {%- endcomment -%}
+              <div class="hs-photo-check" data-hs2-photo-check aria-live="polite" hidden>
+                <p data-hs2-photo-check-text></p>
                 <button type="button" data-hs2-photo-override hidden>It's my dog. Use this photo.</button>
               </div>
               <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
+              {%- comment -%} The photo the buyer gave Buddy, as one choice (Krish, 28 Oct: "the UI should absolutely really be
+                asking if you want to add to that or use a different picture"). hs2.js updateBlanketPurchaseStatus names the dog;
+                the first button starts the painting, the second opens the phone's picker in the same tap. {%- endcomment -%}
+              <div class="hs-photo-choice" data-hs2-blanket-photo hidden>
+                <img class="hs-photo-choice__img" data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="64" height="64">
+                <div class="hs-photo-choice__body">
+                  <p class="hs-photo-choice__ask" data-hs2-blanket-photo-line>Paint your dog from this photo?</p>
+                  <p class="hs-photo-choice__hint">This starts the painting. It takes about a minute.</p>
+                  <div class="hs-photo-choice__actions">
+                    <button type="button" class="hs-photo-choice__use" data-hs2-blanket-create>Use your dog's photo</button>
+                    <button type="button" class="hs-photo-choice__other" data-hs2-photo-different>Use a different photo</button>
+                  </div>
+                  <div class="hs-photo-note" data-hs2-blanket-photo-status hidden><p data-hs-photo-note-text></p><button type="button" data-hs-photo-note-override hidden>It's my dog. Use this photo.</button></div>
+                </div>
+              </div>
               {%- comment -%} The painting, then the finished design with the review right under it (Krish, 28 Oct:
                 the wait "looks broken" and the tickbox sat above the picture where he barely saw it).
                 hs2.js artStage() runs it; the wait is honest: about a minute, never a fake finish. {%- endcomment -%}
@@ -49,7 +73,7 @@
                   <p class="hs-art__title" data-hs-art-title>Painting your dog</p>
                   <p class="hs-art__line" data-hs-art-line>Mixing the paint.</p>
                   <div class="hs-art__bar" data-hs-art-bar role="progressbar" aria-label="Painting" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
-                  <p class="hs-art__note">About a minute. Stay here and I'll show you the moment it's ready.</p>
+                  <p class="hs-art__note">About a minute, sometimes two. When it's done, check the framing, then Save.</p>
                 </div>
                 <div class="hs-art__done" data-hs-art-done hidden>
                   <p class="hs-art__title" data-hs-art-done-title tabindex="-1">Here's your dog.</p>
@@ -57,7 +81,7 @@
                   <label class="hs-art__accept" data-hs2-artwork-accept-wrap hidden>
                     <input type="checkbox" data-hs2-artwork-accept>
                     <span class="hs-art__box" aria-hidden="true"></span>
-                    <span><strong data-hs-art-yes>Yes, this is my dog.</strong> I checked every face, marking and paw{% unless s.blanket_purchase %}, and the note and signature{% endunless %}, and I want this design on my gift.</span>
+                    <span><strong data-hs-art-yes>Yes, this is my dog.</strong> I checked every face, marking and paw{% unless s.blanket_purchase %}, and the note and signature{% endunless %}, and I want this design on my gift. I'm responsible for the photo{% unless s.blanket_purchase %} and words{% endunless %} I chose.</span>
                   </label>
                   <p class="hs-art__redo">Not quite right? Choose another photo below to make a new version.</p>
                 </div>

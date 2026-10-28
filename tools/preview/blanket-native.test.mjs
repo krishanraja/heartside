@@ -17,9 +17,9 @@ function uploadHarness(minified) {
   const raw={type:'image/jpeg',name:'original-with-location.jpg'},clean={type:'image/png',name:'dog-artwork-source.png'},vendor=[];
   const usePhoto=()=>{};usePhoto.file=raw;
   const input={type:'file',matches:()=>true,isConnected:true,files:[raw],value:'chosen',dispatchEvent:event=>{event.target=input;listener(event);if(!event.blocked)vendor.push(input.files[0]);}};
-  const ctx={window:{HSArtworkPhoto:{prepare:()=>{preparations++;return new Promise((resolve,reject)=>{release=fail=>fail?reject(Error('decode')):resolve({file:clean,photo:{metadataRemoved:true,originalHash:'original',uploadHash:'clean'},width:10,height:20});});}}},document:{addEventListener:(name,fn)=>listener=fn},doHandoff:{},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>true,beginBlanketUpload:()=>{if(pending)return false;pending=true;return true;},artRequestKey:()=>key,photoInput:()=>input,blanketPurchaseStatus:()=>{},usePhoto,markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>marked++,state:{},save:()=>{},savePhoto:()=>{},track:()=>{},DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type){this.type=type;}preventDefault(){this.blocked=true;}stopImmediatePropagation(){this.blocked=true;}}};
+  const ctx={answer:()=> 'Pip',possessive:n=>n+"'s",photoNote:()=>{},photoLog:()=>{},photoLogOn:()=>false,photoLogFile:()=>({}),photoLogLock:()=> '',blanketUploadSent:()=>true,photoHeld:()=> 'held',photoReason:()=> 'reason',window:{HSArtworkPhoto:{prepare:()=>{preparations++;return new Promise((resolve,reject)=>{release=fail=>fail?reject(Error('decode')):resolve({file:clean,photo:{metadataRemoved:true,originalHash:'original',uploadHash:'clean'},width:10,height:20});});}}},document:{addEventListener:(name,fn)=>listener=fn},doHandoff:{},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>true,beginBlanketUpload:()=>{if(pending)return false;pending=true;return true;},artRequestKey:()=>key,photoInput:()=>input,blanketPurchaseStatus:()=>{},usePhoto,markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>marked++,state:{},save:()=>{},savePhoto:()=>{},track:()=>{},DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type){this.type=type;}preventDefault(){this.blocked=true;}stopImmediatePropagation(){this.blocked=true;}}};
   ctx.resetBlanketUpload=()=>{pending=false;ctx.keepTibPhoto.preparing=null;return true;};
-  run(['keepTibPhoto','sendBlanketPhoto'],ctx,minified);ctx.keepTibPhoto();
+  run(['keepTibPhoto','sendBlanketPhoto'].concat(source.includes('  function livePhotoInput(')?['livePhotoInput']:[]),ctx,minified);ctx.keepTibPhoto();
   return {ctx,input,clean,vendor,pending:()=>pending,marked:()=>marked,preparations:()=>preparations,release:fail=>release(fail),changeKey:()=>{key='changed';}};
 }
 
@@ -44,15 +44,52 @@ for(const minified of [false,true]) {
     run(['nativeBlanketInputsReady'],ctx,minified);assert.equal(ctx.nativeBlanketInputsReady(),false);actual='ink';assert.equal(ctx.nativeBlanketInputsReady(),true);
     ctx.tibFields=()=>[];assert.equal(ctx.nativeBlanketInputsReady(),false);
   });
+  const lockSections=['blanketUploadPending','beginBlanketUpload'].concat(source.includes('  function blanketUploadSent(')?['blanketUploadSent']:[]);
   test(label+': pending upload survives reload and holds second request until a new saved result',()=>{
     const saved=new Map();let src='before',photo='before',modal=false,deny=false;
-    const ctx={productId:()=>7,cityArtSource:()=>src,nativeBlanketInputsReady:()=>true,window:{sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>{if(deny)throw Error('Quota');saved.set(k,v);},removeItem:k=>saved.delete(k)}},document:{querySelector:selector=>selector==='.vm--container'?(modal?{}:null):{getAttribute:()=>photo}}};
-    run(['blanketUploadPending','beginBlanketUpload'],ctx,minified);
+    const ctx={keepTibPhoto:{preparing:{key:'live'}},photoLog:()=>{},productId:()=>7,cityArtSource:()=>src,nativeBlanketInputsReady:()=>true,window:{sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>{if(deny)throw Error('Quota');saved.set(k,v);},removeItem:k=>saved.delete(k)}},document:{querySelector:selector=>selector==='.vm--container'?(modal?{}:null):{getAttribute:()=>photo}}};
+    run(lockSections,ctx,minified);
     assert.equal(ctx.beginBlanketUpload(),true);assert.equal(ctx.beginBlanketUpload(),false);
-    run(['blanketUploadPending','beginBlanketUpload'],ctx,minified);assert.equal(ctx.blanketUploadPending(),true);
+    // the photo reached Teeinblue: the lock reads sent, and a reload (no preparation running) keeps it
+    if(ctx.blanketUploadSent)assert.equal(ctx.blanketUploadSent(),true);
+    ctx.keepTibPhoto={};run(lockSections,ctx,minified);assert.equal(ctx.blanketUploadPending(),true);
     src='new';assert.equal(ctx.blanketUploadPending(),true);photo='new';modal=true;assert.equal(ctx.blanketUploadPending(),true);
     modal=false;assert.equal(ctx.blanketUploadPending(),false);assert.equal(saved.size,0);
     deny=true;assert.equal(ctx.beginBlanketUpload(),false);assert.equal(saved.size,0);
+  });
+  test(label+': a lock left in local preparation by a reload or a discarded tab sent nothing, so it clears',()=>{
+    const saved=new Map([['hs2-blanket-upload:7',JSON.stringify({before:'',stage:'preparing'})]]),logged=[];
+    const ctx={keepTibPhoto:{},photoLog:s=>logged.push(s),productId:()=>7,cityArtSource:()=> '',nativeBlanketInputsReady:()=>true,window:{sessionStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)}},document:{querySelector:()=>null}};
+    run(lockSections,ctx,minified);
+    assert.equal(ctx.blanketUploadPending(),false,'nothing was sent, so nothing holds the next photo');
+    assert.equal(saved.has('hs2-blanket-upload:7'),false,'the stale lock is removed');
+    // the same lock while this page is still preparing holds, and so does a sent or an older lock
+    for(const [lock,preparing] of [[{before:'',stage:'preparing'},{key:'live'}],[{before:'',stage:'sent'},null],[{before:''},null]]){
+      saved.set('hs2-blanket-upload:7',JSON.stringify(lock));ctx.keepTibPhoto.preparing=preparing;
+      assert.equal(ctx.blanketUploadPending(),true,JSON.stringify(lock));assert.equal(saved.has('hs2-blanket-upload:7'),true);
+    }
+  });
+  test(label+': the lock flips to sent synchronously before the one vendor change event, and a reload sends nothing',async()=>{
+    const saved=new Map(),events=[];let listener,release;
+    const raw={type:'image/jpeg',name:'PXL.jpg'},clean={type:'image/jpeg',name:'dog-artwork-source.jpg'};
+    const input={id:'tee-photo-1',type:'file',matches:()=>true,isConnected:true,files:[raw],value:'chosen',dispatchEvent(event){event.target=input;listener(event);if(!event.blocked)events.push({file:input.files[0],lock:JSON.parse(saved.get('hs2-blanket-upload:7')||'null')});}};
+    const session={getItem:k=>saved.has(k)?saved.get(k):null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)};
+    const make=()=>{const ctx={answer:()=> 'Pip',possessive:n=>n+"'s",photoNote:()=>{},photoLog:()=>{},photoLogOn:()=>false,photoLogFile:()=>({}),photoLogLock:()=> '',photoHeld:()=> 'held',photoReason:()=> 'reason',
+      window:{sessionStorage:session,HSArtworkPhoto:{prepare:()=>new Promise(resolve=>{release=()=>resolve({file:clean,photo:{metadataRemoved:true},width:4000,height:3000});})}},
+      document:{addEventListener:(name,fn)=>{if(name==='change')listener=fn;},querySelector:()=>null},doHandoff:{},nativeArtworkPurchase:()=>true,nativeBlanketInputsReady:()=>true,productId:()=>7,cityArtSource:()=> '',
+      artRequestKey:()=> 'key',photoInput:()=>input,blanketPurchaseStatus:()=>{},usePhoto:Object.assign(()=>{},{file:raw}),markHanded:()=>{},cityArtPreview:()=>false,markArtRequested:()=>{},state:{},save:()=>{},savePhoto:()=>{},track:()=>{},
+      resetBlanketUpload:()=>{saved.delete('hs2-blanket-upload:7');ctx.keepTibPhoto.preparing=null;return true;},
+      DataTransfer:class{constructor(){this.files=[];this.items={add:file=>this.files.push(file)};}},Event:class{constructor(type){this.type=type;}preventDefault(){this.blocked=true;}stopImmediatePropagation(){this.blocked=true;}}};
+      run(lockSections.concat(['keepTibPhoto','sendBlanketPhoto'],source.includes('  function livePhotoInput(')?['livePhotoInput']:[]),ctx,minified);ctx.keepTibPhoto();return ctx;};
+    const ctx=make();
+    input.dispatchEvent(new ctx.Event('change'));await new Promise(resolve=>setImmediate(resolve));
+    assert.deepEqual(JSON.parse(saved.get('hs2-blanket-upload:7')),{before:'',stage:'preparing'},'reserved while the photo is cleaned on the device');
+    release();await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(events.length,1,'one change event reaches Teeinblue for one pick');assert.equal(events[0].file,clean);
+    assert.equal(events[0].lock.stage,'sent','the lock already read sent when Teeinblue heard of the photo');
+    // a reload: fresh sections, no preparation running; the sent lock holds and nothing is dispatched
+    const again=make();assert.equal(again.blanketUploadPending(),true);again.sendBlanketPhoto();
+    await new Promise(resolve=>setImmediate(resolve));assert.equal(events.length,1,'none on reload');
   });
   test(label+': direct or Buddy upload removes metadata before exactly one vendor event',async()=>{
     for(const fromBuddy of [false,true]) {

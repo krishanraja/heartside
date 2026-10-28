@@ -82,6 +82,8 @@ const filters = {
   stylesheet_tag: (href) => `<link rel="stylesheet" href="${href}">`,
   json: (v) => JSON.stringify(v ?? null),
   handleize: (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+  // Shopify's form error list as one line; the stub form never posts, so it is rarely reached
+  default_errors: (e) => (Array.isArray(e) ? e.join(' ') : e ? String(e) : ''),
 };
 for (const [name, fn] of Object.entries(filters)) engine.registerFilter(name, fn);
 engine.registerTag('form', {
@@ -220,6 +222,12 @@ const withVariant = (p, test) => ({ ...p, selected_or_first_available_variant: p
 // cart row. The block settings decide which parts show, as on the store. Field labels are
 // placeholders: Teeinblue's real fields come from each campaign. Picking a radio puts the variant
 // in the URL and fires teeinblue-event-variant-changed, which is all Teeinblue tells the page.
+// The action row is what the live pages draw (Krish's 28 Oct recordings): a Preview button, the
+// quantity and Teeinblue's own "Add To Cart" in Title Case, and on a phone a Personalize bar
+// fixed to the bottom of the screen. So a local preview shows what a buyer meets, not a tidier
+// stand-in; the theme's own fixes for them are what the preview then checks.
+// fixtures/teeinblue-classes.json holds every class seen on the live pages, the Preview, Add To
+// Cart and Personalize bar classes from the 28 Oct recordings included
 const TEE_CLASSES = new Set(JSON.parse(fs.readFileSync(path.join(fixtures, 'teeinblue-classes.json'), 'utf8')));
 const tee = (...names) => {
   for (const n of names) if (n.startsWith('tee-') && !TEE_CLASSES.has(n)) throw new Error(`render.mjs: "${n}" is not a class Teeinblue renders (fixtures/teeinblue-classes.json)`);
@@ -256,7 +264,12 @@ function teeinblueBlock(settings, product) {
       + `<div class="${tee('tee-checkbox-wrapper')}"><label class="${tee('tee-checkbox__label')}"><input class="${tee('tee-checkbox__input')}" type="checkbox"><span class="${tee('tee-checkbox__pseudo')}"><span class="${tee('tee-checkbox__checkmark')}"><svg class="${tee('tee-clipart-checkmark__check')}" viewBox="0 0 12 10" width="12" height="10" aria-hidden="true"><path d="M1 5l3 3 7-7" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></span>I approve my design</label></div>`
       + '</form></div>');
   }
-  if (settings.show_action_buttons) parts.push(`<div class="${tee('tee-form-actions')}"><div class="${tee('tee-form-action')}"><div class="${tee('tee-quantity')}"><input type="number" value="1" min="1" aria-label="Quantity"></div></div><div class="${tee('tee-form-action')}"><button type="button" class="${tee('tee-btn')}" id="teeAtcButton">Add to cart</button></div></div>`);
+  if (settings.show_action_buttons) {
+    parts.push(`<div class="${tee('tee-form-actions')}"><div class="${tee('tee-form-action')}"><button type="button" class="${tee('tee-btn', 'tee-btn--preview')}">Preview</button></div><div class="${tee('tee-form-action')}"><div class="${tee('tee-quantity')}"><input type="number" value="1" min="1" aria-label="Quantity"></div></div><div class="${tee('tee-form-action')}"><button type="button" class="${tee('tee-btn', 'tee-btn--atc')}" id="teeAtcButton">Add To Cart</button></div></div>`);
+    // on a phone Teeinblue pins a Personalize bar to the bottom of the screen; tapping it scrolls
+    // to its form. The 750px breakpoint is the stand-in's; Teeinblue's own was not captured.
+    parts.push(`<style>.tee-btn-wrapper--personalize{display:none}@media (max-width:749px){.tee-btn-wrapper--personalize{display:block;position:fixed;left:0;right:0;bottom:0;z-index:20}.tee-btn-wrapper--personalize .tee-btn{width:100%}}</style><div class="${tee('tee-btn-wrapper--personalize')}"><button type="button" class="${tee('tee-btn', 'tee-btn--personalize')}" data-tee-stub-personalize>Personalize</button></div>`);
+  }
   const variants = JSON.stringify(product.variants.map((v) => ({ id: v.id, options: v.options })));
   return `<div class="shopify-app-block" data-tee-stub><div class="${tee('tee-form-wrapper')}"><div class="${tee('tee-campaign')}">${parts.join('')}</div></div><template data-tee-stub-gallery>${gallery}</template><script>(function () {
     var vs = ${variants}, box = document.currentScript.parentNode;
@@ -267,6 +280,11 @@ function teeinblueBlock(settings, product) {
       if (to && tpl && !to.querySelector('.tee-gallery-wrapper')) to.appendChild(tpl.content.cloneNode(true));
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', put); else put();
+    box.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-tee-stub-personalize]')) return;
+      var form = box.querySelector('.tee-customize-main-form');
+      if (form) form.scrollIntoView({ block: 'start' });
+    });
     box.addEventListener('change', function (e) {
       if (!e.target.matches('.tee-radio input')) return;
       var picked = {};

@@ -3,7 +3,7 @@
 The 27 October batch (`../examples-2026-10-27/`) showed that the tone barely changed the picture: the pug's Sentimental, Warm and Hilarious portraits read the same, and both Hilarious mugs read Sentimental. The golden puppy mostly came out photographic instead of Cut-paper collage, and every image was padded with solid bars. The prompts listed every style, tone and energy and asked the model to pick one; the 28 October prompts carry only the chosen mood, medium and energy, put the mood first, and tell the model to use the photo for who the dog is, not for how the picture looks.
 
 - `jobs.json`: 10 jobs in two stages, cap 10. **Stage 1** (cap 3): the pug portrait at Sentimental, Warm with a wink and Hilarious. **Stage 2** (cap 7), only after a person has seen stage 1 show three clearly different moods: the pug and poodle Hilarious mugs, and the golden puppy's mug, portrait and blanket at Sentimental and its mug and portrait at Hilarious, all in Cut-paper collage.
-- `prompts/<id>.txt`: the complete prompt for each job, built by `tools/print-art/example-batch.mjs` from `nativePrompt` and `nativeFieldValues` in `tools/print-art/native-candidate.mjs`. Never edit a prompt by hand.
+- `prompts/<id>.txt`: the complete prompt for each job, built by `tools/print-art/example-batch.mjs` from the single-direction prompts in `tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md`, the ones these images were painted from. The batch is closed: the script no longer rewrites it, and `node tools/print-art/example-batch.mjs --check` fails if a prompt is not its spec block with the fields filled. Never edit a prompt by hand.
 
 Every image is an Example on the site, and a person reviews each one before it is used.
 

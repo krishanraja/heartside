@@ -20,6 +20,9 @@
   var HS2 = 'hs2-review';
   var QKEY = 'hs2-queue';
   var MAX_CALLS = 8;
+  // the portrait's Dog's name layer holds 14, because "Love, " plus 14 fills its 20-character
+  // Signed layer (Teeinblue layer-209591 and layer-501370); the mug's Signed is 20 too
+  var NAME_MAX = 14;
   var COMPOSE_VERSION = 'explicit-tone-v1';
   var TYPED_MS = 5000, COMPOSE_MS = 11000; // 22 Oct: Gemini 3.5 Flash answers typed replies (about 3 s); Claude writes the note and n8n hands over to Gemini at 7.5 s
   var GIFTS = ['mug', 'blanket', 'print', 'ornament'];
@@ -33,7 +36,8 @@
 
   /* ------------------------------------------------------------------ state */
   function fresh() {
-    return { screen: 'hero', step: 1, dog: '', breed: '', pro: 'she', rec: '', rel: 'partner',
+    // no pronoun until the buyer taps one (28 Oct); the copy says "they" meanwhile
+    return { screen: 'hero', step: 1, dog: '', breed: '', breedId: '', pro: '', rec: '', rel: 'partner', noteSeen: '', notePolished: false,
       home: null, follow: null, spot: null, together: null, meaning: null,
       typed: {}, ai: {}, fu: null, edits: {}, composed: null, baseLines: null, toneDrafts: {}, toneCache: {}, composeRequest: null, composeBaseGift: null, appliedComposeKey: '', noteTone: 'warm', appliedTone: 'warm', gift: null, tabbed: false,
       sel: {}, shipTo: 'rec', calls: 0, session: '', hasPhoto: false, photoT: 0, photoStorageWarning: '', mugColor: '',
@@ -69,20 +73,66 @@
 
   /* ---------------------------------------------------------------- helpers */
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function cap(x, d) { x = String(x || '').trim(); if (!x) return d; return x.charAt(0).toUpperCase() + x.slice(1); }
+  /* A chat name as it will print (Krish, 28 Oct): spaces collapse, a stray apostrophe or hyphen
+     at either end goes, and only a name typed all lowercase, or all caps with more than two
+     letters, is recased: "PICKLE" and "pickle" print "Pickle", "jo-anne" "Jo-Anne", "o'malley"
+     "O'Malley", "mcdonald" "McDonald". "JJ", "BB-8", "McFluffy" and "DeeDee" stay as typed, with
+     the first letter up. Latin-1 letters, so "ZOË" prints "Zoë". Names typed on a product page are
+     left alone. */
+  function nameCase(x, d) {
+    x = String(x == null ? '' : x).replace(/\s+/g, ' ').trim().replace(/^['’\- ]+|['’\- ]+$/g, '');
+    if (!x) return d;
+    var letters = x.replace(/[^A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/g, '');
+    var lower = x === x.toLowerCase() && x !== x.toUpperCase();
+    var upper = x === x.toUpperCase() && x !== x.toLowerCase() && letters.length > 2;
+    if (!lower && !upper) return x.charAt(0).toUpperCase() + x.slice(1);
+    return x.toLowerCase().split(/([ \-])/).map(function (part) {
+      if (part === ' ' || part === '-' || !part) return part;
+      var t = part.charAt(0).toUpperCase() + part.slice(1);
+      if (/^[od]['’][a-z\u00DF-\u00F6\u00F8-\u00FF]/i.test(t)) t = t.slice(0, 2) + t.charAt(2).toUpperCase() + t.slice(3);
+      else if (/^mc[a-z\u00DF-\u00F6\u00F8-\u00FF]/i.test(t) && t.length > 3) t = 'Mc' + t.charAt(2).toUpperCase() + t.slice(3);
+      return t;
+    }).join('');
+  }
   function names() {
-    return { dog: cap(S.dog, 'Your dog'), rec: cap(S.rec, 'them'), she: S.pro === 'he' ? 'he' : 'she', her: S.pro === 'he' ? 'him' : 'her' };
+    var self = S.rel === 'self', rec = nameCase(S.rec, 'them');
+    // she, her and is follow the pronoun the buyer tapped; none tapped reads "they" (28 Oct). When
+    // the gift is for the buyer ("Me"), Buddy says you: them is "you" and theirs is "your".
+    return { dog: nameCase(S.dog, 'Your dog'), rec: rec, she: S.pro === 'he' ? 'he' : S.pro === 'she' ? 'she' : 'they', her: S.pro === 'he' ? 'him' : S.pro === 'she' ? 'her' : 'them', is: S.pro === 'he' || S.pro === 'she' ? 'is' : 'are',
+      self: self, them: self ? 'you' : rec, theirs: self ? 'your' : possessiveName(rec) };
   }
+  function upFirst(t) { t = String(t || ''); return t.charAt(0).toUpperCase() + t.slice(1); }
   /* The breed, if the buyer gave one, through the corpus lookup (breeds-corpus/lookup). Only an
-     exact match counts; its archetype (tone) is a light signal for the dog's voice, never shown. */
-  function breedInfo() {
-    var b = String(S.breed || '').trim();
-    if (!b || !window.HSBreeds) return null;
+     exact match counts; its archetype (tone) is a light signal for the dog's voice, never shown.
+     A breed picked from the list (S.breedId, 28 Oct) is that row; typed words count only when
+     they are an exact name. A picked cross keeps its parents, which decide its energy. */
+  function breedRow() {
+    var B = window.HSBreeds, b = String(S.breed || '').trim();
+    if (!B || (!b && !S.breedId)) return null;
     var r = null;
-    try { r = window.HSBreeds.lookup(b); } catch (e) { r = null; }
-    return r && r.exact ? { name: r.name, tone: r.tone } : null;
+    try {
+      if (S.breedId && typeof B.byId === 'function') r = B.byId(S.breedId);
+      if (!r) r = B.lookup(b);
+      if (r && S.breedId) r = r.id === S.breedId ? { id: r.id, name: r.name, kind: r.kind, exact: true, tone: r.tone, parents: r.parents } : null;
+    } catch (e) { r = null; }
+    return r;
   }
-  function possessiveName(d) { return /s$/i.test(d) ? d + "'" : d + "'s"; }
+  function breedInfo() {
+    var r = breedRow();
+    return r && r.exact && r.kind !== 'mixed' ? { name: r.name, tone: r.tone } : null;
+  }
+  // house style (28 Oct): a name ending in s takes only an apostrophe, "Buttons'"; a stray
+  // trailing apostrophe never doubles ("Sir Biscuit O'" never reads "O''s")
+  // a name in Buddy's words or on a chip stays on one line, hyphen and all ("Jo-/anne" on 28 Oct)
+  function keepNames(t) {
+    var html = esc(t), n = names();
+    [n.dog, n.rec].filter(function (x) { return x && /[\s\-\u2010]/.test(x); }).sort(function (a, b) { return b.length - a.length; }).forEach(function (x) {
+      var e = esc(x);
+      if (html.indexOf('<span class="hs3-nm">' + e) === -1) html = html.split(e).join('<span class="hs3-nm">' + e + '</span>');
+    });
+    return html;
+  }
+  function possessiveName(d) { d = String(d == null ? '' : d).replace(/['’]+$/, ''); return /s$/i.test(d) ? d + "'" : d + "'s"; }
   function dogFor() { var n = names(), d = { name: n.dog, pronoun: n.she }, b = breedInfo(); if (b) { d.breed = b.name; d.tone = b.tone; } return d; }
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clearTimers() { timers.forEach(function (t) { clearTimeout(t); }); timers = []; }
@@ -102,8 +152,8 @@
     return {
       door: { q: 'At the door. Every day? Even weekends? (I would.)', chips: [['weekends', 'Even weekends'], ['weekdays', 'Weekdays'], ['hears', 'Hears the car first']] },
       toy: { q: 'Ooh, a toy. The same one every time?', chips: [['same', 'Same one, always'], ['closest', 'Whatever is closest'], ['shoe', 'A shoe, honestly']] },
-      spin: { q: 'Spins. How many circles are we talking?', chips: [['few', 'Two or three'], ['many', 'Too many to count'], ['dizzy', 'Until ' + n.she + ' is dizzy']] },
-      cool: { q: 'Plays it cool? I could never. And then?', chips: [['follows', 'Follows ' + n.rec + ' everywhere'], ['lap', 'Climbs onto ' + n.rec + "'s lap"], ['sighs', 'Sighs until ' + n.rec + ' looks']] }
+      spin: { q: 'Spins. How many circles are we talking?', chips: [['few', 'Two or three'], ['many', 'Too many to count'], ['dizzy', 'Until ' + n.she + ' ' + n.is + ' dizzy']] },
+      cool: { q: 'Plays it cool? I could never. And then?', chips: [['follows', 'Follows ' + n.them + ' everywhere'], ['lap', 'Climbs onto ' + n.theirs + ' lap'], ['sighs', 'Sighs until ' + (n.self ? 'you look' : n.rec + ' looks')]] }
     };
   }
   /* The gift lines are the dog talking to the person (Krish, 20 Oct): I is the dog, you is the
@@ -115,12 +165,18 @@
     cool: { follows: 'I act cool, then follow you everywhere.', lap: "I play it cool until I'm in your lap.", sighs: 'I act cool, then sigh until you look at me.' }
   };
   var BASE = { door: 'I wait by the door until you come home.', toy: "I bring you a present whenever you're back.", spin: "When you walk in, I spin like it's a party.", cool: 'I play it cool for about four seconds.' };
-  var SP = { feet: 'Your feet make the best pillow I know.', bed: 'I took your side of the bed to keep it warm.', couch: 'I keep your spot on the couch warm for you.', anywhere: 'Wherever you go, I go, even the bathroom.', skip: "I'm never far from you." };
-  var TG = { walk: 'Our walks are the best part of my day.', coffee: 'You have your coffee and I wait for toast.', movie: 'Movie night is better with me beside you.', naps: 'My best naps are the ones next to you.', car: "Any car ride is a good one if you're in it.", skip: 'Any time with you is my favorite time.' };
+  // Buddy never names a food, toy, object or place the buyer didn't (28 Oct: "hopefully some toast")
+  var SP = { feet: 'Your feet make the best pillow I know.', bed: 'I took your side of the bed to keep it warm.', couch: 'I keep your spot on the couch warm for you.', anywhere: 'Wherever you go, I go.', skip: "I'm never far from you." };
+  var TG = { walk: 'Our walks are the best part of my day.', coffee: 'Coffee with you is the best part of my morning.', movie: 'Movie night is better with me beside you.', naps: 'My best naps are the ones next to you.', car: "Any car ride is a good one if you're in it.", skip: 'Any time with you is my favorite time.' };
   var ME = { shadow: "I'm your shadow, and I like it that way.", best: "You're my best friend, and I'm yours.", hard: "On the hard days, I'll stay close to you.", boss: 'I run this house, but I love you most.', skip: "I'm yours, always." };
   var REACT4 = { weekends: "Weekends too? That's a dog who knows what matters.", weekdays: 'Every weekday, like clockwork. I respect that.', hears: "Hearing the car first is a dog's best trick.", same: 'A signature toy is a very classy move.', closest: 'Any present counts when it comes from the heart.', shoe: 'A shoe is a perfectly good present, if you ask me.', few: 'A tasteful little spin, I like it.', many: "That's a full spin cycle, which is my kind of dog.", dizzy: 'Spinning until dizzy is real commitment.', follows: 'Too cool for about a second, then right behind them.', lap: 'The slow climb into the lap is a classic move.', sighs: "The big sigh works every time, doesn't it." };
   var REACT5 = { feet: 'A built-in foot warmer, how thoughtful.', bed: "Their side of the bed? Bold, and I'd do the same.", couch: 'The couch spot is sacred, every dog knows that.', anywhere: 'A true shadow, which is the best kind of dog.', skip: "That's okay, on we go." };
-  var REACT6 = { walk: 'Walks are the best part of the day for any dog.', coffee: 'Coffee time, and hopefully some toast for the dog.', movie: 'A couch and a movie sounds like the dream.', naps: "Naps together, now we're talking.", car: 'Car rides, with ears out the window, I hope.', skip: 'No worries at all.' };
+  var REACT6 = { walk: 'Walks are the best part of the day for any dog.', coffee: 'Coffee time with company is the best kind.', movie: 'A couch and a movie sounds like the dream.', naps: "Naps together, now we're talking.", car: 'Car rides together are a big deal for any dog.', skip: 'No worries at all.' };
+  // a reaction that talks about the person says you when the gift is for the buyer ("Me")
+  function react(map, id, n) {
+    var t = map[id] || '';
+    return n && n.self ? t.replace(/\bthem\b/g, 'you').replace(/\bTheir\b/g, 'Your').replace(/\btheir\b/g, 'your') : t;
+  }
   // the range as the brand book names it (27 Oct); prices and photos come from Shopify
   var GN = { mug: 'The mug', blanket: 'The blanket', print: 'The portrait', ornament: 'The ornament' };
   var SHORT = { mug: 'Mug', blanket: 'Blanket', print: 'Portrait', ornament: 'Ornament' };
@@ -201,20 +257,22 @@
     if (S.composed && S.composed.reason && g === S.composed.gift) return S.composed.reason;
     // Buddy's mug reason repeats only the "together" answer the buyer picked; a typed answer
     // or "Not sure" gets skip (Cowork report 15 Oct, section 3; 140 characters at most)
-    var d = n.dog, r = n.rec;
+    // when the gift is for the buyer ("Me"), Buddy says you (28 Oct)
+    var d = n.dog, r = n.self ? 'you' : n.rec, s = n.self ? '' : 's';
     var MUG = {
       walk: d + ' lives for the morning walk. Good dog. The mug keeps ' + d + ' with ' + r + ' for the rest of the morning.',
       coffee: d + ' already keeps ' + r + ' company over coffee. Now ' + d + ' gets to be on the cup too.',
-      movie: d + ' has movie night covered. The mug is for mornings, so ' + r + ' gets ' + d + ' with every cup.',
+      movie: d + ' has movie night covered. The mug is for mornings, so ' + r + ' get' + s + ' ' + d + ' with every cup.',
       naps: d + ' naps best with ' + r + ' around. The mug keeps ' + d + ' close for the awake parts.',
       car: d + ' would ride anywhere with ' + r + '. With the mug, ' + d + ' comes along to every morning cup too.',
-      skip: d + ' goes on one side, the note on the other. So ' + r + ' starts every morning with both.'
+      skip: d + ' goes on one side, the note on the other. So ' + r + ' start' + s + ' every morning with both.'
     };
     return {
       mug: MUG[S.together] || MUG.skip,
-      blanket: 'For the couch they share. Warm, soft, and ' + n.dog + ' is already on it.',
-      print: 'For the wall by the door, so ' + n.rec + ' sees ' + n.dog + ' the minute they get home.',
-      ornament: 'For the tree. ' + n.dog + ' comes out every December, right where ' + n.rec + ' will see.'
+      blanket: 'For the couch ' + (n.self ? 'you' : 'they') + ' share. Warm, soft, and ' + n.dog + ' is already on it.',
+      // no door, window or couch the buyer never named (28 Oct): the portrait hangs on a wall at home
+      print: 'For a wall at home, so ' + r + ' see' + s + ' ' + n.dog + ' every day.',
+      ornament: 'For the tree. ' + n.dog + ' comes out every December, right where ' + r + ' will see.'
     }[g];
   }
 
@@ -252,7 +310,9 @@
   function maxFor(key) { return MAX_LINE[key] || 44; }
   function ownWords(t, key) {
     var cap = maxFor(key) - 1;
-    t = String(t || '').replace(/[\u2014\u2013]/g, ', ').replace(/\s+/g, ' ').trim().replace(/[.!?]+$/, '');
+    // 28 Oct: a run of exclamation marks inside the words never prints; it becomes one period
+    t = String(t || '').replace(/[\u2014\u2013]/g, ', ').replace(/\s+/g, ' ').trim().replace(/!+/g, '.').replace(/\.{2,}/g, '.').replace(/[.!?]+$/, '');
+    t = t.replace(/([.?]\s+)([a-z])/g, function (m, p, c) { return p + c.toUpperCase(); });
     if (!t) return '';
     if (t.length > cap) {
       var fit = function (parts, join) { var out = ''; for (var i = 0; i < parts.length; i++) { var next = out ? out + join + parts[i] : parts[i]; if (next.length > cap) break; out = next; } return out; };
@@ -274,7 +334,7 @@
   var YOURS = { 'i am': 'you are', 'i was': 'you were', "i'm": "you're", "i've": "you've", "i'd": "you'd", "i'll": "you'll", i: 'you', me: 'you', my: 'your', mine: 'yours', myself: 'yourself' };
   var PLAIN = { home: 'Best part of my day? You walking in.', spot: SP.skip, together: TG.skip, meaning: ME.skip };
   function chipStyle(line, key) {
-    var t = String(line || '').replace(/[‘’]/g, "'").trim();
+    var t = String(line || '').replace(/[‘’]/g, "'").trim().replace(/!+(?=.*\S)/g, '.').replace(/\.{2,}/g, '.');
     if (!t) return t;
     var dog = String(S.dog || '').trim(), rest = t.replace(LEAD, '');
     if (rest === t && dog && t.toLowerCase().indexOf(dog.toLowerCase() + ' ') === 0) rest = t.slice(dog.length + 1).replace(/^(is|was)\s+/i, '');
@@ -287,7 +347,9 @@
      the dog instead (he, she, its name: "Pretends he doesn't.") is the wrong voice and is dropped. */
   var THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
   function dogStyle(line, key) {
-    var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').trim();
+    // an ellipsis or doubled period is one period, and the word after it starts a sentence (28 Oct:
+    // "I wait at the window... until your car pulls in." printed "window. until"), as n8n's clean()
+    var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').replace(/\.{2,}\s*([a-z])/g, function (m, c) { return '. ' + c.toUpperCase(); }).replace(/\.{2,}/g, '.').trim();
     if (!t || t.length > maxFor(key) || THIRD.test(t)) return '';
     var dog = String(S.dog || '').trim().toLowerCase();
     if (dog && t.toLowerCase().indexOf(dog) !== -1) return '';
@@ -298,6 +360,52 @@
   function level(t) { return String(t || '').replace(/!+/g, '.').replace(/\s*[\u2014\u2013]\s*/g, ', ').replace(/\.{2,}/g, '.').replace(/\?\./g, '?'); }
   var GRIEF = /\b(died|dead|death|passed away|put down|put to sleep|rainbow bridge|cancer|funeral|in heaven)\b/i;
   var PROFANE = /\b(fuck|shit|bitch|cunt|asshole|bastard|whore|slut)\w*/i;
+  // a chip that only says "I don't know": the page adds its own "Not sure" (28 Oct), the same rule as hs-artwork-profile.js
+  var NONANSWER = /^(not sure|unsure|no idea|(i )?don['’]?t know|idk|dunno|skip|none|nothing|n\/?a|other|something else)[.!?]*$/i;
+  /* Buddy never names a food, treat, toy, object or place the buyer didn't (Krish, 28 Oct: "For
+     coffee time he replied hopefully some toast"). A closed list of concrete things, the same idea
+     as the n8n guard: a reaction or reply that names one the buyer never said is dropped, and a
+     line goes back to the buyer's own words. Singular forms; plurals are matched too. */
+  var PROPS = {};
+  ('toast bacon cheese croissant pizza sandwich steak chicken burger fry pancake waffle cookie cracker cake cupcake muffin bagel donut doughnut egg sausage ham turkey carrot apple banana berry peanut butter popcorn cereal kibble treat snack bone chew jerky biscuit crumb leftover breakfast lunch dinner food ' +
+    'ball frisbee rope stick squeaky squeaker plush stuffie stuffy teddy duck hedgehog bunny squirrel kong ' +
+    'sock shoe slipper boot sneaker blanket pillow cushion sofa couch bed rug carpet remote laptop phone key leash collar bandana sweater scarf hat glove towel newspaper mail chair table cup mug bowl basket crate door window car truck ' +
+    'park beach lake river ocean sea pond forest wood mountain hill trail garden yard backyard porch balcony kitchen bathroom bedroom office store cafe vet groomer').split(' ').forEach(function (w) { PROPS[w] = true; });
+  function propForms(w) {
+    var out = [w];
+    if (/ies$/.test(w)) out.push(w.slice(0, -3) + 'y');
+    if (/es$/.test(w)) out.push(w.slice(0, -2));
+    if (/s$/.test(w)) out.push(w.slice(0, -1));
+    return out;
+  }
+  // what a word the buyer used already brings with it: coffee comes in a cup, never with food
+  var IMPLIES = { coffee: ['cup', 'mug'], tea: ['cup', 'mug'], walk: ['leash'], drive: ['car'], ride: ['car'] };
+  function invents(text, hay) {
+    var said = {};
+    String(hay || '').toLowerCase().split(/[^a-z\u00DF-\u00FF]+/).forEach(function (w) { if (w) propForms(w).forEach(function (f) { said[f] = true; (IMPLIES[f] || []).forEach(function (x) { said[x] = true; }); }); });
+    return String(text || '').toLowerCase().replace(/['’]s\b/g, '').split(/[^a-z\u00DF-\u00FF]+/).some(function (w) {
+      if (!w) return false;
+      var forms = propForms(w), prop = forms.some(function (f) { return PROPS[f]; });
+      return prop && !forms.some(function (f) { return said[f]; });
+    });
+  }
+  // the AI's follow-up: no non-answer chips (each chip keeps its own line and reply), and no
+  // question, chip, reply or line that names something the buyer never said. A question that
+  // does ("Does Honey hear Sam's car?" when the buyer said only the door) is no follow-up at all,
+  // the same rule as n8n's Enforce (28 Oct)
+  function followUp(f, hay) {
+    var out = { question: clip(level(f.question), 70), chips: [], lines: [], replies: [] };
+    if (invents(out.question, hay)) return null;
+    (f.chips || []).slice(0, 3).forEach(function (c, i) {
+      c = clip(level(c), 24);
+      if (!String(c).trim() || NONANSWER.test(String(c).trim()) || invents(c, hay)) return;
+      var h = hay + ' ' + c, l = f.lines && f.lines[i], x = f.replies && f.replies[i];
+      l = typeof l === 'string' ? dogStyle(l, 'home') || null : null;
+      x = typeof x === 'string' && x.length <= 50 ? level(x) : null;
+      out.chips.push(c); out.lines.push(l && !invents(l, h) ? l : null); out.replies.push(x && !invents(x, h) ? x : null);
+    });
+    return out;
+  }
   // the typed-answer call (5.2); resolves to { reaction, line, follow_up, flags } or a fallback
   function typedAnswer(step, question, text, previous) {
     var n = names();
@@ -305,14 +413,13 @@
     var key = step === 'home_follow' ? 'home' : step;
     return callAI(cfg.typedUrl, body, TYPED_MS).then(function (r) {
       if (r && typeof r === 'object' && (typeof r.line === 'string' || (r.flags && r.flags.length))) {
+        // what the buyer said: their words, the line they are answering, the question and the names
+        var hay = [text, previous, question, S.dog, S.rec].join(' ');
+        var reaction = clip(level(r.reaction), 70), line = r.line ? dogStyle(r.line, key) : '';
         return {
-          reaction: clip(level(r.reaction), 70), line: r.line ? dogStyle(r.line, key) || ownWords(chipStyle(text, key), key) || previous || '' : '',
-          follow_up: r.follow_up && r.follow_up.question ? {
-            question: clip(level(r.follow_up.question), 70),
-            chips: (r.follow_up.chips || []).slice(0, 3).map(function (c) { return clip(level(c), 24); }),
-            lines: (r.follow_up.lines || []).slice(0, 3).map(function (l) { return typeof l === 'string' ? dogStyle(l, 'home') || null : null; }),
-            replies: (r.follow_up.replies || []).slice(0, 3).map(function (x) { return typeof x === 'string' && x.length <= 50 ? level(x) : null; })
-          } : null,
+          reaction: invents(reaction, hay) ? '' : reaction,
+          line: r.line ? (line && !invents(line, hay) ? line : '') || ownWords(chipStyle(text, key), key) || previous || '' : '',
+          follow_up: r.follow_up && r.follow_up.question ? followUp(r.follow_up, hay) : null,
           flags: Array.isArray(r.flags) ? r.flags : [], ai: true
         };
       }
@@ -359,11 +466,29 @@
     return { dog: dogFor(), recipient: { name: n.rec, relation: S.rel }, answers: answers, current_lines: S.baseLines || allLines(), default_gift: S.composeBaseGift || recGift(), note_tone: tone };
   }
   function composeKey(tone) { return JSON.stringify({ version: COMPOSE_VERSION, body: composeBody(tone) }); }
+  function toneName(tone) { return { sentimental: 'Sentimental', warm: 'Warm with a wink', hilarious: 'Hilarious' }[tone] || 'Warm with a wink'; }
+  /* Only what is true right now (28 Oct): Buddy's first note shows as "Buddy is writing your
+     note" at the note itself, an update says it is writing, and a tone the note isn't in yet
+     names both tones. */
   function toneStatus() {
-    if (S.composeRequest) return S.composeRequest.status === 'pending' ? 'Updating your note. Your edits stay as written.' : "Your words are safe. The last update didn't come back.";
+    if (S.composeRequest) return S.composeRequest.status === 'pending' ? (S.composeRequest.auto ? '' : 'Buddy is writing your note…') : "Your words are safe. The last update didn't come back.";
     if (ui.toneStatus) return ui.toneStatus;
     if (S.appliedComposeKey === composeKey(S.noteTone)) return '';
-    return S.answersChanged ? 'Your answers changed. Choose Update note when you want a new version.' : 'Choose Update note to apply this tone. Your edits stay as written.';
+    if (S.answersChanged) return 'Your answers changed. Choose Update note when you want a new version.';
+    return (S.appliedComposeKey ? 'This note is ' + toneName(S.appliedTone) + '. ' : '') + 'Update note asks Buddy for a ' + toneName(S.noteTone) + ' version.';
+  }
+  /* One tone everywhere (28 Oct: the slider said Warm with a wink, the product page Sentimental):
+     the shared choice the product pages read is the slider's tone and the first note's tone. */
+  function syncTone() {
+    if (!cfg.artworkCandidates || !window.HSArtworkChoices) return S.noteTone;
+    try { var t = window.HSArtworkChoices.read().tone; if (['sentimental', 'warm', 'hilarious'].indexOf(t) !== -1) S.noteTone = t; } catch (e) { /* keep the chat's own */ }
+    return S.noteTone;
+  }
+  /* While Buddy writes the first note, the note says so instead of showing a draft line that is
+     about to change (28 Oct: order 3's line changed 3 seconds after the buyer read it). A word
+     the buyer changed is theirs and always shows. */
+  function writing(key) {
+    return !!(S.composeRequest && S.composeRequest.auto && S.composeRequest.status === 'pending' && !(S.edits && S.edits[key] != null));
   }
   /* A request that never came back holds further updates, because a reload cannot tell whether
      it was billed. The buyer can let it go and keep the words on screen; nothing is sent. */
@@ -396,12 +521,15 @@
     if (frame) {
       var status = frame.querySelector('#hs3-tone-status');
       var button = frame.querySelector('[data-hs3="updateTone"]');
-      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Sets the mood of the painting. No words are printed.' : toneStatus();
+      if (status) status.textContent = cfg.artworkCandidates && (S.gift || recGift()) === 'blanket' ? 'Sets the mood of the painting.' : toneStatus();
       if (button) button.disabled = !!S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone);
     }
   }
   function applyComposed(result, tone, key, rewrite) {
     // User-owned edits always win in lineFor, including edits made during a request.
+    // A line the buyer already read that changes now says so at the note (28 Oct).
+    var now = S.edits && S.edits.meaning != null ? S.edits.meaning : result.lines && result.lines.meaning;
+    S.notePolished = !!(S.noteSeen && now && now !== S.noteSeen);
     S.composed = result; S.appliedTone = tone; S.appliedComposeKey = key; S.answersChanged = false;
     if (!rewrite && result.gift && !S.tabbed && S.screen === 'reveal') S.gift = result.gift;
     ui.toneStatus = '';
@@ -435,6 +563,7 @@
     if (!S.composeBaseGift) S.composeBaseGift = recGift();
     var key = composeKey(tone);
     if (S.appliedComposeKey === key) return;
+    S.notePolished = false;
     if (S.toneCache[key]) { applyComposed(S.toneCache[key], tone, key, rewrite); save(); render(); return; }
     if (!canCall(cfg.composeUrl)) { ui.toneStatus = 'Updates are unavailable right now. Your words are unchanged.'; render(); return; }
     var body = composeBody(tone);
@@ -559,7 +688,8 @@
     var st = {};
     try { st = JSON.parse(window.sessionStorage.getItem(HS2) || '{}') || {}; } catch (e) { st = {}; }
     var n = names();
-    st.dog = S.dog ? n.dog : '';
+    // a name longer than the signature holds never reaches the product page (28 Oct: it printed cut)
+    st.dog = S.dog && n.dog.length <= NAME_MAX ? n.dog : '';
     st.person = S.rec ? n.rec : '';
     st.hs3_lines = allLines();
     st.hs3_mug_lines = mugLines();
@@ -574,9 +704,9 @@
     if (window.HSArtworkProfile) st.hs3_art_profile = window.HSArtworkProfile.fromChat(S);
     // the breed's energy for the painting: pose and expression only, never shown and never a fact
     st.hs3_energy = '';
-    try { if (S.breed && window.HSArtworkEngine && window.HSBreeds) st.hs3_energy = window.HSArtworkEngine.energyFor(window.HSBreeds.lookup(String(S.breed))) || ''; } catch (e) { /* unknown breed: no energy */ }
+    try { if ((S.breed || S.breedId) && window.HSArtworkEngine && window.HSBreeds) st.hs3_energy = window.HSArtworkEngine.energyFor(breedRow()) || ''; } catch (e) { /* unknown breed: no energy */ }
     if (cfg.artworkCandidates && window.HSArtworkChoices) st.hs3_art_choices = window.HSArtworkChoices.read();
-    st.hs_ship_to = S.shipTo === 'me' ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
+    st.hs_ship_to = S.shipTo === 'me' || n.self ? 'Me (the buyer)' : (S.rec ? n.rec : 'Them');
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
   }
   function answerSummary() {
@@ -624,12 +754,15 @@
     if (S.step === 3) return S.more ? 'home-more' : 'home';
     return ROUTES[[0, 0, 1, 2, 4, 5, 6, 7][S.step] || 0];
   }
+  // the dog's name as Next lets it through: there, and no longer than the signature holds (28 Oct:
+  // the browser's Forward once carried a 23-letter name past Next, and the gift went unsigned)
+  function dogOK() { var d = nameCase(S.dog, ''); return !!d && d.length <= NAME_MAX; }
   function routeOK(r) {
     var chip = S.home && S.home !== 'skip' && S.home !== 'typed';
     switch (r) {
       case 'hero': case 'dog': return true;
-      case 'person': return !!String(S.dog).trim();
-      case 'home': return !!(String(S.dog).trim() && String(S.rec).trim());
+      case 'person': return dogOK();
+      case 'home': return !!(dogOK() && String(S.rec).trim());
       case 'home-more': return routeOK('home') && !!(chip || S.fu);
       case 'spot': return routeOK('home') && !!S.home && !S.fu;
       case 'together': return routeOK('spot') && !!S.spot;
@@ -776,30 +909,30 @@
         m.skip = true;
         answered(S.follow);
       } else {
-        m.prefix = m.prefix || 'Lucky ' + n.rec + '.';
-        m.question = 'What does ' + n.dog + ' do when ' + n.rec + ' comes home?';
-        m.chips = [['door', 'Waits at the door'], ['toy', 'Brings ' + n.rec + ' a toy'], ['spin', 'Spins in circles'], ['cool', 'Plays it cool']].map(function (c) { return { id: c[0], label: c[1] }; });
+        m.prefix = m.prefix || 'Lucky ' + n.them + '.';
+        m.question = 'What does ' + n.dog + ' do when ' + (n.self ? 'you come' : n.rec + ' comes') + ' home?';
+        m.chips = [['door', 'Waits at the door'], ['toy', 'Brings ' + n.them + ' a toy'], ['spin', 'Spins in circles'], ['cool', 'Plays it cool']].map(function (c) { return { id: c[0], label: c[1] }; });
         m.skip = true; m.other = true;
         answered(S.home);
       }
     } else if (step === 4) {
-      m.question = "Where's " + n.dog + "'s spot when " + n.rec + "'s around?";
-      m.chips = [['feet', 'On ' + n.rec + "'s feet"], ['bed', n.rec + "'s side of the bed"], ['couch', 'Next to ' + n.rec + ' on the couch'], ['anywhere', 'Wherever ' + n.rec + ' is']].map(function (c) { return { id: c[0], label: c[1] }; });
+      m.question = "Where's " + possessiveName(n.dog) + ' spot when ' + (n.self ? "you're" : n.rec + ' is') + ' around?';
+      m.chips = [['feet', 'On ' + n.theirs + ' feet'], ['bed', upFirst(n.theirs) + ' side of the bed'], ['couch', 'Next to ' + n.them + ' on the couch'], ['anywhere', 'Wherever ' + (n.self ? 'you are' : n.rec + ' is')]].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
       answered(S.spot);
     } else if (step === 5) {
-      m.question = 'What do ' + n.dog + ' and ' + n.rec + ' do together, just the two of them?';
+      m.question = n.self ? 'What do you and ' + n.dog + ' do together, just the two of you?' : 'What do ' + n.dog + ' and ' + n.rec + ' do together, just the two of them?';
       m.chips = [['walk', 'The morning walk'], ['coffee', 'Coffee time'], ['movie', 'Couch and a movie'], ['naps', 'Naps'], ['car', 'Car rides']].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
       answered(S.together);
     } else if (step === 6) {
-      m.question = 'Last one. What is ' + n.dog + ' to ' + n.rec + '?';
-      m.chips = [['shadow', n.rec + "'s shadow"], ['best', n.rec + "'s best friend"], ['hard', 'There on the hard days'], ['boss', 'The boss of the house']].map(function (c) { return { id: c[0], label: c[1] }; });
+      m.question = 'Last one. What is ' + n.dog + ' to ' + n.them + '?';
+      m.chips = [['shadow', upFirst(n.theirs) + ' shadow'], ['best', upFirst(n.theirs) + ' best friend'], ['hard', 'There on the hard days'], ['boss', 'The boss of the house']].map(function (c) { return { id: c[0], label: c[1] }; });
       m.skip = true; m.other = true;
       answered(S.meaning);
     } else {
       m.prefix = m.prefix || (S.meaning === 'skip' ? "That's plenty to go on." : 'Oh. That one got me right in the ears.');
-      m.question = "I've sniffed it out. I know what " + n.dog + ' would get ' + n.rec + '.';
+      m.question = "I've sniffed it out. I know what " + n.dog + ' would get ' + n.them + '.';
       if (cfg.artworkCandidates && !hasArtworkFacts()) {
         m.prefix = 'We can keep this simple.';
         m.question = 'Without any habits to go on, the artwork will focus on ' + n.dog + '. You can go back to add a detail.';
@@ -809,10 +942,111 @@
     if (ui.flagged) m.prefix = '';
     return m;
   }
-  // what the painting will draw on: the buyer's own answers, never the breed
-  function paintFacts() {
+  // what the painting will draw on: the buyer's own answers, never the breed; a home answer and
+  // its follow-up read as one line, naming the person (28 Oct)
+  function paintFacts(n) {
     if (!window.HSArtworkProfile) return [];
-    try { return window.HSArtworkProfile.forBuyer(S); } catch (e) { return []; }
+    try { return window.HSArtworkProfile.forBuyer(S, { rec: S.rec && n ? n.rec : '', self: !!(n && n.self) }); } catch (e) { return []; }
+  }
+  /* The dog's name prints in "Love, <name>", which holds 14 (NAME_MAX). From 11 letters the box
+     counts down; over 14, Next waits and one tap picks a short form (Krish, 28 Oct: never cut a
+     name without saying). The recipient's box holds 14 and counts the same way. */
+  var TITLE = /^(sir|lady|lord|dame|mr|mrs|ms|miss|mister|dr|doctor|captain|capt|prince|princess|king|queen|duke|duchess|baron|baroness|count|countess|sergeant|sgt|major|general|professor|prof|saint|st)\.?$/i;
+  function shortNames(name) {
+    var words = String(name || '').split(' '), out = [], pre = '';
+    for (var i = 0; i < words.length; i++) { var t = pre ? pre + ' ' + words[i] : words[i]; if (t.length > NAME_MAX) break; pre = t; }
+    pre = pre.replace(/['’\-]+$/, '');
+    if (pre && pre !== name && !TITLE.test(pre)) out.push(pre);
+    for (var j = 0; j < words.length; j++) {
+      var w = words[j].replace(/^['’\-]+|['’\-]+$/g, '');
+      if (w && w.length <= NAME_MAX && !TITLE.test(w)) { if (out.indexOf(w) === -1 && w !== name) out.push(w); break; }
+    }
+    return out;
+  }
+  function nameHintHTML(k) {
+    var name = nameCase(S[k], ''), len = name.length, left = NAME_MAX - len;
+    if (len < 11) return '';
+    var fits = k === 'dog' ? ' Up to ' + NAME_MAX + ' fit in the signature.' : '';
+    if (left >= 0) return '<p class="hs3-small">' + (left === 0 ? 'No letters left.' : left + (left === 1 ? ' letter left.' : ' letters left.')) + fits + '</p>';
+    return '<p class="hs3-small">"' + esc(name) + '" is ' + len + ' letters. ' + NAME_MAX + ' fit in "Love, …" on the gift.</p>' +
+      '<div class="hs3-chips">' + shortNames(name).map(function (s) { return '<button type="button" class="hs3-chip" data-hs3="short" data-v="' + esc(s) + '">' + esc(s) + '</button>'; }).join('') + '</div>';
+  }
+  // the count updates as the buyer types, without redrawing the box they are typing in
+  function nameHint(k) {
+    if (!frame) return;
+    var box = frame.querySelector('[data-hs3-name-hint="' + k + '"]');
+    if (!box) return;
+    var html = nameHintHTML(k);
+    if (box.innerHTML === html) return;
+    box.innerHTML = html;
+    box.querySelectorAll('[data-hs3]').forEach(function (el) { el.addEventListener('click', function () { act(el.getAttribute('data-hs3'), el.getAttribute('data-v')); }); });
+  }
+  /* Breed: a list to pick from as the buyer types (Krish, 28 Oct: "I bet tonnes of people will
+     spell things wrong"), at most five, "Mixed or not sure" always last, from HSBreeds.suggest.
+     A picked row is S.breedId with its name in S.breed; words that match nothing are kept, and
+     Buddy goes by the photo and answers. */
+  var breedUI = { options: [], active: -1 };
+  function breedOptions(q) {
+    var B = window.HSBreeds, list = [];
+    q = String(q || '').trim();
+    if (!q || !B || typeof B.suggest !== 'function') return [];
+    try { list = B.suggest(q, 5) || []; } catch (e) { list = []; }
+    list = list.filter(function (o) { return o && o.id && o.name; });
+    var mixed = list.filter(function (o) { return o.id === 'mixed-breed'; })[0] || { id: 'mixed-breed', name: 'Mixed or not sure' };
+    return list.filter(function (o) { return o.id !== 'mixed-breed'; }).slice(0, 4).concat([mixed]);
+  }
+  function breedUnmatched() {
+    return !!(String(S.breed || '').trim() && !S.breedId && !breedInfo() && window.HSBreeds);
+  }
+  function breedListHTML() {
+    return breedUI.options.map(function (o, i) {
+      return '<button type="button" class="hs3-chip' + (i === breedUI.active ? ' is-on' : '') + '" role="option" id="hs3-breed-opt-' + i + '" tabindex="-1" aria-selected="' + (i === breedUI.active) + '" data-hs3-opt="' + i + '">' + esc(o.name) + '</button>';
+    }).join('');
+  }
+  function breedShow(inp, open) {
+    if (!frame) return;
+    var list = frame.querySelector('#hs3-breed-list'), note = frame.querySelector('[data-hs3-breed-note]');
+    var on = !!open && breedUI.options.length > 0;
+    if (list) {
+      list.innerHTML = on ? breedListHTML() : '';
+      list.hidden = !on;
+      list.querySelectorAll('[data-hs3-opt]').forEach(function (el) {
+        // the box keeps focus while a finger or mouse picks, so the list doesn't close under it
+        el.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        el.addEventListener('click', function () { breedPick(Number(el.getAttribute('data-hs3-opt'))); });
+      });
+    }
+    if (inp) {
+      inp.setAttribute('aria-expanded', String(on));
+      if (on && breedUI.active >= 0) inp.setAttribute('aria-activedescendant', 'hs3-breed-opt-' + breedUI.active); else inp.removeAttribute('aria-activedescendant');
+    }
+    if (note) note.hidden = on || !breedUnmatched() || (inp && document.activeElement === inp);
+  }
+  function breedPick(i) {
+    var o = breedUI.options[i];
+    if (!o) return;
+    S.breedId = o.id; S.breed = o.name; save();
+    var inp = frame && frame.querySelector('#hs3-breed');
+    if (inp) inp.value = o.name;
+    breedUI.options = []; breedUI.active = -1;
+    breedShow(inp, false);
+    stepEvent('breed', { pick: o.id === 'mixed-breed' ? 'mixed' : 'listed' });
+  }
+  function breedTyped(inp) {
+    S.breed = inp.value.slice(0, 40); S.breedId = ''; save();
+    breedUI.options = breedOptions(S.breed); breedUI.active = -1;
+    breedShow(inp, true);
+  }
+  // arrows move through the list, Enter picks, Escape closes; true when the key was the list's
+  function breedKey(e, inp) {
+    var n = breedUI.options.length, open = inp.getAttribute('aria-expanded') === 'true';
+    if (e.key === 'Escape' && open) { breedShow(inp, false); return true; }
+    if (!n || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter')) return false;
+    if (e.key === 'Enter') { if (!open || breedUI.active < 0) return false; e.preventDefault(); breedPick(breedUI.active); return true; }
+    e.preventDefault();
+    breedUI.active = (breedUI.active + (e.key === 'ArrowDown' ? 1 : n - 1) + (breedUI.active < 0 && e.key === 'ArrowUp' ? 1 : 0)) % n;
+    breedShow(inp, true);
+    return true;
   }
   function chatView(n) {
     var m = chatQ = chatModel(n);
@@ -820,17 +1054,21 @@
     for (var i = 1; i <= 6; i++) dots += '<span class="hs3-dot' + (i <= S.step ? ' is-on' : '') + '"></span>';
     var h = '';
     h += '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-dots" role="img" aria-label="Question ' + Math.min(S.step, 6) + ' of 6">' + dots + '</span><span class="hs3-count">' + Math.min(S.step, 6) + ' of 6</span></div>';
-    if (cfg.artworkCandidates) {
+    // on a phone the note waits until there is something to show (step 3), so the first questions
+    // open on Buddy; a wide screen keeps its note column from the start
+    if (cfg.artworkCandidates && (S.step >= 3 || window.innerWidth >= 1000)) {
       // the note shows what prints (one line and the signature); the rest of the answers feed the painting
       var meaning = ui.pending && ui.pending.key === 'meaning' && ui.pending.line ? ui.pending.line : lineFor('meaning');
       var fresh_ = meaning && ui.inked.meaning !== meaning; if (meaning) ui.inked.meaning = meaning;
-      var facts = paintFacts();
+      var facts = paintFacts(n);
       var open = ui.noteOpen == null ? window.innerWidth >= 1000 : ui.noteOpen;
+      // a line the buyer has read; if Buddy's note later differs, the note says so
+      if (open && meaning) S.noteSeen = meaning;
       h += '<details class="hs3-note-wrap"' + (open ? ' open' : '') + ' data-hs3-notebox><summary class="hs3-label">What ' + esc(n.dog) + ' is writing<span class="hs3-note-wrap__more" aria-hidden="true">' + (facts.length ? facts.length + ' to paint' : '') + '</span></summary>';
       h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
       h += '<div class="hs3-note__lines">' + (meaning ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(meaning) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>') + '</div>' + sign(n) + '</div>';
-      h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is. Your answers add the details.</p>') + '</div></details>';
-    } else {
+      h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' ' + n.is + '. Your answers add the details.</p>') + '</div></details>';
+    } else if (!cfg.artworkCandidates) {
       var note = ['home', 'spot', 'together', 'meaning'].map(function (k) {
         var t = ui.pending && ui.pending.key === k && ui.pending.line ? ui.pending.line : lineFor(k);
         var fresh2 = t && ui.inked[k] !== t; if (t) ui.inked[k] = t;
@@ -845,14 +1083,20 @@
     if (ui.echo && !ui.thinking) h += '<div class="hs3-echo">' + esc(ui.echo) + '</div>';
     h += '<div class="hs3-says"><span class="hs3-biscuit' + (ui.thinking ? ' is-tilt' : '') + '">' + BUDDY + '</span>';
     if (ui.thinking) h += '<div class="hs3-bubble" aria-label="Buddy is sniffing around"><span class="hs3-dotty"></span><span class="hs3-dotty"></span><span class="hs3-dotty"></span></div>';
-    else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + esc(m.prefix) + ' </span>' : '')) + esc(m.question) + '</div>';
+    else h += '<div class="hs3-bubble hs3-pop" aria-live="polite">' + (ui.flagged ? '<span class="hs3-prefix">' + esc(ui.flagged) + ' </span>' : (m.prefix ? '<span class="hs3-prefix">' + keepNames(m.prefix) + ' </span>' : '')) + keepNames(m.question) + '</div>';
     h += '</div></div>';
     h += '<div class="hs3-dock">';
     if (!ui.thinking) {
       if (m.input === 'dog') {
         // the field names sit inside the fields, so the first question is two boxes and a button
-        h += '<input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Your dog\'s name" aria-label="Your dog\'s name" value="' + esc(S.dog) + '" data-hs3-in="dog">';
-        h += '<input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="Breed, if you know it" aria-label="Breed, if you know it (optional)" value="' + esc(S.breed) + '" data-hs3-in="breed">';
+        // the box takes a long name so nothing is cut while typing; Next asks for 14 or fewer
+        h += '<input id="hs3-dog" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Your dog\'s name" aria-label="Your dog\'s name" aria-describedby="hs3-dog-hint" value="' + esc(S.dog) + '" data-hs3-in="dog">';
+        h += '<div id="hs3-dog-hint" role="status" aria-live="polite" data-hs3-name-hint="dog">' + nameHintHTML('dog') + '</div>';
+        // Next sits straight under the name, the one thing this step needs; the breed and photo are optional
+        if (m.next) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+        h += '<input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Breed, if you know it" aria-label="Breed, if you know it (optional)" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="hs3-breed-list" value="' + esc(S.breed) + '" data-hs3-in="breed">';
+        h += '<div id="hs3-breed-list" class="hs3-chips hs3-breeds" role="listbox" aria-label="Breeds" hidden></div>';
+        h += '<p class="hs3-small" data-hs3-breed-note' + (breedUnmatched() ? '' : ' hidden') + '>I\'ll go by your photo and answers.</p>';
         h += '<div class="hs3-row"><button type="button" class="hs3-chip' + (S.pro === 'she' ? ' is-on' : '') + '" data-hs3="pro" data-v="she" aria-pressed="' + (S.pro === 'she') + '">She</button><button type="button" class="hs3-chip' + (S.pro === 'he' ? ' is-on' : '') + '" data-hs3="pro" data-v="he" aria-pressed="' + (S.pro === 'he') + '">He</button>';
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
@@ -860,13 +1104,14 @@
         h += '<div class="hs3-chips">' + [['self', 'Me'], ['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
           return '<button type="button" class="hs3-chip' + (S.rel === c[0] ? ' is-on' : '') + '" data-hs3="rel" data-v="' + c[0] + '" aria-pressed="' + (S.rel === c[0]) + '">' + esc(c[1]) + '</button>';
         }).join('') + '</div>';
-        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
+        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="' + NAME_MAX + '" autocomplete="off" autocapitalize="words" enterkeyhint="go" aria-describedby="hs3-rec-hint" value="' + esc(S.rec) + '" data-hs3-in="rec">';
+        h += '<div id="hs3-rec-hint" role="status" aria-live="polite" data-hs3-name-hint="rec">' + nameHintHTML('rec') + '</div>';
       } else if (ui.typing) {
         h += '<label class="hs3-small" for="hs3-typed">In your own words</label><div class="hs3-row hs3-row--typed"><input id="hs3-typed" class="hs3-field" type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-hs3-in="typed"><button type="button" class="hs3-btn hs3-btn--small" data-hs3="send">Done</button></div>' + privacy();
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
       } else if (m.chips.length || m.other) {
         // a step the buyer comes back to shows the answer they gave
-        h += '<div class="hs3-chips">' + m.chips.map(function (c) { var on = m.on === c.id; return '<button type="button" class="hs3-chip' + (on ? ' is-on' : '') + '" data-hs3="chip" data-v="' + esc(c.id) + '" aria-pressed="' + on + '">' + esc(c.label) + '</button>'; }).join('');
+        h += '<div class="hs3-chips">' + m.chips.map(function (c) { var on = m.on === c.id; return '<button type="button" class="hs3-chip' + (on ? ' is-on' : '') + '" data-hs3="chip" data-v="' + esc(c.id) + '" aria-pressed="' + on + '">' + keepNames(c.label) + '</button>'; }).join('');
         if (m.other) h += '<button type="button" class="hs3-chip hs3-chip--other' + (m.on === 'typed' ? ' is-on' : '') + '" data-hs3="other" aria-pressed="' + (m.on === 'typed') + '">Something else</button>';
         h += '</div>';
       }
@@ -875,10 +1120,10 @@
         // optional, typed as plain words with no AI step: they become facts the painting may use
         var lim = (window.HSArtworkProfile && window.HSArtworkProfile.limits) || { toy: 80, accessory: 80 };
         h += '<details class="hs3-extras"' + (S.toy || S.accessory ? ' open' : '') + '><summary>Anything I should paint with ' + esc(n.dog) + '? (optional)</summary>';
-        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="A squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
-        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="A red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
+        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="For example, a squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
+        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="For example, a red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
       }
-      if (m.next && !ui.typing) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+      if (m.next && !ui.typing && m.input !== 'dog') h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
       if (S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url && S.step > 1) h += '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>';
     }
     h += '</div>';
@@ -889,29 +1134,34 @@
   function toneView(n, wordFree) {
     var toneIndex = { sentimental: 0, warm: 1, hilarious: 2 }[S.noteTone] || 0;
     var toneName = ['Sentimental', 'Warm with a wink', 'Hilarious'][toneIndex];
-    if (wordFree) return '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><p id="hs3-tone-status" class="hs3-tone__status" role="status">Sets the mood of the painting. No words are printed.</p></div>';
+    if (wordFree) return '<div class="hs3-tone"><div class="hs3-tone__top"><span>Artwork tone</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Artwork tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><p id="hs3-tone-status" class="hs3-tone__status" role="status">Sets the mood of the painting.</p></div>';
     var status = toneStatus(), stuck = S.composeRequest && S.composeRequest.status === 'uncertain';
     return '<div class="hs3-tone"><div class="hs3-tone__top"><span>Make it sound more like ' + esc(n.dog) + '</span><strong data-hs3-tone-name>' + toneName + '</strong></div><div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="' + toneIndex + '" aria-label="Note tone" aria-valuetext="' + toneName + '" aria-describedby="hs3-tone-status" data-hs3-tone><span>Hilarious</span></div><div class="hs3-tone__update"><p id="hs3-tone-status" class="hs3-tone__status" role="status">' + esc(status) + '</p>' + (stuck ? '<button type="button" class="hs3-tone__button" data-hs3="keepWords">Keep these words</button>' : '<button type="button" class="hs3-tone__button" data-hs3="updateTone"' + (S.composeRequest || S.appliedComposeKey === composeKey(S.noteTone) ? ' disabled' : '') + '>Update note</button>') + '</div></div>';
   }
   function revealView(n) {
+    syncTone();
     var g = reviewGifts().indexOf(S.gift) !== -1 ? S.gift : recGift();
     var wordFree = cfg.artworkCandidates && g === 'blanket';
     if (wordFree) ui.editing = false;
     var pick = recGift();
     var keys = giftKeys(g);
-    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
+    // the tabs say which gift is on show and which is Buddy's pick, so the top bar holds only Back (28 Oct)
+    var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-spacer"></span></div>';
+    // a name in a heading never splits across lines, not even at its hyphen (Jo-anne); the span keeps
+    // the real hyphen, since Fraunces has no non-breaking hyphen (U+2011 would draw from another font)
+    h += '<h2 class="hs3-h2"><span class="hs3-nm">' + esc(possessiveName(n.dog)) + '</span> gift for <span class="hs3-nm">' + esc(n.them) + '</span></h2>';
     if (!ui.editing) {
+      // every tab shows its price; Buddy's pick is a badge on its tab, not a stand-in for the price
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + reviewGifts().map(function (k) {
         var price = cfg.artworkCandidates ? priceLabel(k) : '';
-        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : esc(price)) + '</span></button>';
+        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + esc(price) + '</span>' + (k === pick ? '<span class="hs3-tab__pick">Buddy\'s pick</span>' : '') + '</button>';
       }).join('') + '</div>';
       if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
       h += toneView(n, wordFree);
     }
     var lines = keys.map(function (k, i) { return '<span class="hs3-line ' + (i < ui.revealN ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor(k) || '') + '</span>'; }).join('');
+    // the mug's color is asked on the choose screen, once the mug is chosen (F05, 28 Oct)
     h += '<div class="hs3-stage">' + mockup(g, n, lines) + '</div>';
-    if (g === 'mug' && !ui.editing) h += mugSwatches();
     if (ui.editing) {
       var editIndex = keys.indexOf(ui.editKey);
       if (editIndex < 0) { editIndex = 0; ui.editKey = keys[0]; }
@@ -920,10 +1170,11 @@
       else h += '<div class="hs3-edit">';
       h += '<label class="hs3-edit__row" for="hs3-edit-line"><span class="hs3-sr">Change sentence ' + (editIndex + 1) + '</span><input id="hs3-edit-line" class="hs3-field hs3-field--mono" type="text" maxlength="' + maxFor(ui.editKey) + '" value="' + esc(editText) + '" data-hs3-edit="' + ui.editKey + '"><span class="hs3-small hs3-right" data-hs3-left="' + ui.editKey + '">' + (maxFor(ui.editKey) - editText.length) + ' characters left</span></label></div>';
     } else {
-      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design made from your dog’s photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
+      h += '<div class="hs3-says hs3-says--reveal"><span class="hs3-biscuit">' + BUDDY + '</span><div class="hs3-bubble hs3-pop"><strong>' + esc(GN[g]) + '.</strong> ' + esc(wordFree ? 'A word-free design, painted from ' + possessiveName(n.dog) + ' photo and the details you share.' : reasonFor(g, n)) + '</div></div>';
     }
     var ret = S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url ? '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>' : '';
-    h += '<div class="hs3-dock"><p class="hs3-small hs3-center">' + (wordFree ? 'The blanket has no note, name or signature.' : ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p>' + (ret && !ui.editing ? ret : '<button type="button" class="hs3-btn" data-hs3="them">Choose ' + esc(possessiveName(n.dog)) + ' gifts</button>') + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
+    // the blanket says it has no words once on this screen, in Buddy's bubble (28 Oct)
+    h += '<div class="hs3-dock">' + (wordFree ? '' : '<p class="hs3-small hs3-center">' + (ui.editing ? 'Your changes appear on the gift as you type.' : 'Written from your answers. Change any word.') + '</p>') + (ret && !ui.editing ? ret : '<button type="button" class="hs3-btn" data-hs3="them">Choose ' + esc(possessiveName(n.dog)) + ' gifts</button>') + (wordFree ? '' : '<button type="button" class="hs3-ghost" data-hs3="edit">' + (ui.editing ? 'Done' : 'Change a word') + '</button>') + '</div>';
     return h;
   }
   /* The gift as it arrives: the real product photo (labelled Example, it is someone else's dog),
@@ -936,11 +1187,17 @@
     h += '<span class="hs3-inset">' + (src ? '<img data-hs3-photo src="' + esc(src) + '" alt="Your photo of ' + esc(n.dog) + '" class="hs3-photo hs3-photo--inset">' : '<span class="hs3-photo hs3-photo--inset hs3-photo--empty">' + PAW + '</span>') + '<span class="hs3-inset__label">' + (src ? 'Your photo' : 'Your photo goes here') + '</span></span>';
     if (g === 'mug' && giftPhoto('mug', ui.mugSide === 'left' ? 'right' : 'left')) h += '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>';
     h += '</figure>';
-    if (g === 'blanket') h += '<p class="hs3-small hs3-center">Example design. Photo reference only: your word-free blanket is painted from your photo on the next step.</p>';
-    else h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.rec) + '</div><div class="hs3-note__lines"><span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(lineFor('meaning') || '') + '</span></div>' + sign(n) + '</div>';
+    if (g === 'blanket') h += '<p class="hs3-small hs3-center">Example design. Photo reference only: yours is painted from your photo on the next step.</p>';
+    else {
+      // Buddy's first note: "writing" until it settles, never a draft that is about to change;
+      // a line the buyer already read that changed says so here (28 Oct)
+      var w = writing('meaning'), line = lineFor('meaning') || '';
+      if (!w && line) S.noteSeen = line;
+      h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.rec) + '</div><div class="hs3-note__lines">' + (w ? '<span class="hs3-line hs3-pencil" data-hs3-writing>Buddy is writing your note…</span>' : '<span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(line) + '</span>') + '</div>' + sign(n) + (!w && S.notePolished && !(S.edits && S.edits.meaning != null) ? '<p class="hs3-small" data-hs3-polished>Buddy polished this.</p>' : '') + '</div>';
+    }
     // what gets painted: open on a wide screen, one tap away on a phone so the button stays in view
-    var facts = paintFacts();
-    h += '<details class="hs3-paint"' + (window.innerWidth >= 1000 ? ' open' : '') + '><summary class="hs3-label">What I\'ll paint' + (facts.length ? ' (' + facts.length + ')' : '') + '</summary>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is.</p>') + '</details>';
+    var facts = paintFacts(n);
+    h += '<details class="hs3-paint"' + (window.innerWidth >= 1000 ? ' open' : '') + '><summary class="hs3-label">What I\'ll paint' + (facts.length ? ' (' + facts.length + ')' : '') + '</summary>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' ' + n.is + '.</p>') + '</details>';
     return h;
   }
   // a product photo for the gift from Shopify: the mug in the chosen color and side, the portrait's first example
@@ -1006,7 +1263,7 @@
     for (var i = 1; i <= k; i++) (function (x) { later(function () { ui.revealN = x; inkLines(); }, 450 + x * 650); })(i);
   }
   function inkLines() {
-    frame.querySelectorAll('.hs3-stage .hs3-line').forEach(function (el, i) { if (i < ui.revealN && !el.classList.contains('hs3-ink')) { el.classList.remove('hs3-pencil'); el.classList.add('hs3-ink', 'hs3-ink--new'); } });
+    frame.querySelectorAll('.hs3-stage .hs3-line').forEach(function (el, i) { if (i < ui.revealN && !el.classList.contains('hs3-ink') && !el.hasAttribute('data-hs3-writing')) { el.classList.remove('hs3-pencil'); el.classList.add('hs3-ink', 'hs3-ink--new'); } });
   }
 
   // ---- choose gifts
@@ -1053,7 +1310,9 @@
     var total = selected.reduce(function (a, k) { return a + priceOf(k, others); }, 0);
     var missing = selected.filter(function (k) { return !(cfg.gifts && cfg.gifts[k] && cfg.gifts[k].url); });
     var range = selected.some(function (k) { return Number(cfg.gifts[k] && cfg.gifts[k].priceMax) > priceOf(k, 0); });
-    return { others: others, count: count, total: total, missing: missing, tier: bundleTier(count), range: range };
+    // the total after the bundle saving, to the cent (28 Oct: three gifts read $186.40 after 20% off)
+    var tier = bundleTier(count), after = Math.round(total * (100 - tier)) / 100;
+    return { others: others, count: count, total: total, missing: missing, tier: tier, range: range, after: after };
   }
   function giftDesc(k) {
     if (k === 'mug' && mugColor()) return '11 oz, illustrated, ' + mugColor().name.toLowerCase() + ' inside';
@@ -1063,28 +1322,31 @@
   }
   function chooseView(n) {
     var pick = recGift(), c = chooseModel(), core = cfg.artworkCandidates && cfg.corePurchase;
+    var gifts = c.count === 1 ? 'gift' : 'gifts'; // one gift chosen reads "gift" (28 Oct)
+    ui.opening = false; // a fresh button, after a return through the browser's cache
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
+    h += '<h2 class="hs3-h2"><span class="hs3-nm">' + esc(possessiveName(n.dog)) + '</span> ' + gifts + ' for <span class="hs3-nm">' + esc(n.them) + '</span></h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     if (core && cfg.bundleOffer) h += '<p class="hs3-bundle' + (c.tier ? ' is-on' : '') + '" role="status">' + (c.tier ? c.count + ' gifts: ' + c.tier + '% off, taken at checkout.' : c.count === 1 ? 'Add a second gift and save 15%. Three saves 20%.' : 'Give two, save 15%. Give three, save 20%.') + '</p>';
-    h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('meaning') || lineFor('home') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
+    h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(writing('meaning') ? 'Buddy is writing your note…' : lineFor('meaning') || lineFor('home') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
     h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
       var on = selectedGifts().indexOf(k) !== -1, photo = cfg.artworkCandidates ? giftPhoto(k) : null;
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (photo ? '<img class="hs3-opt__img" src="' + esc(photo.src) + '" alt="" width="64" height="64" loading="lazy">' : '') + '<span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(giftDesc(k)) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : esc(priceLabel(k))) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (photo ? '<img class="hs3-opt__img" src="' + esc(photo.src) + '" alt="" width="64" height="64" loading="lazy">' : '') + '<span class="hs3-opt__body">' + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '<span class="hs3-opt__name">' + esc(GN[k]) + '</span><span class="hs3-small">' + esc(giftDesc(k)) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : esc(priceLabel(k))) + '</span></button>';
     }).join('') + '</div>';
     if (selectedGifts().indexOf('mug') !== -1) h += mugSwatches();
-    h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
+    // a gift for the buyer ("Me") ships to them; the choice would ask twice (28 Oct)
+    if (!n.self) h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
     // Publish an order-by date only after Printful confirms the current year's cutoff for
     // every selected variant and fulfillment route, including any gift bundle.
     h += '<div class="hs3-dock"><p class="hs3-small hs3-center hs3-promise">Free US shipping on every order. A person checks every design before it prints.</p>';
     var label = c.count === 0 ? 'Pick a gift' : (c.count === 1 ? 'Personalize gift · ' + fmt(c.total) : 'Personalize ' + c.count + ' gifts · ' + fmt(c.total));
-    if (core && c.count) label = c.count === 1 ? 'Personalize the ' + SHORT[selectedGifts()[0]].toLowerCase() + ' · ' + priceLabel(selectedGifts()[0]) : 'Personalize ' + c.count + ' gifts · ' + (c.range ? 'from ' : '') + fmt(c.total);
+    if (core && c.count) label = c.count === 1 ? 'Personalize the ' + SHORT[selectedGifts()[0]].toLowerCase() + ' · ' + priceLabel(selectedGifts()[0]) : 'Personalize ' + c.count + ' gifts · ' + (c.range ? 'from ' : '') + (c.tier ? fmt(c.after) + ' after ' + c.tier + '% off' : fmt(c.total));
     else if (cfg.artworkCandidates && !blanketPurchaseEnabled()) label = c.count ? 'Review selected drafts' : 'Pick a draft';
     else if (cfg.artworkCandidates) label = !c.count ? 'Pick a gift or draft' : giftPurchasable(selectedGifts()[0]) ? 'Personalize ' + {mug:'mug',blanket:'blanket',print:'portrait'}[selectedGifts()[0]] + ' · ' + fmt(priceOf(selectedGifts()[0], c.others)) : 'Review draft';
     h += '<button type="button" class="hs3-btn" data-hs3="add"' + (c.count === 0 || c.missing.length ? ' disabled' : '') + '>' + esc(label) + '</button>';
     var days = daysToChristmas();
     if (days && core) h += '<p class="hs3-small hs3-center hs3-countdown">' + days + (days === 1 ? ' day' : ' days') + ' to Christmas morning. Made to order, checked by a person, then shipped.</p>';
     if (c.missing.length) h += '<p class="hs3-small hs3-center" role="status">' + esc(c.missing.map(function (k) { return GN[k]; }).join(' and ')) + (c.missing.length > 1 ? ' are' : ' is') + ' not in the shop yet.</p>';
-    h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(n.dog) + '\'s gift to your story</button></div>';
+    h += '<button type="button" class="hs3-ghost" data-hs3="toShare">Save ' + esc(possessiveName(n.dog)) + ' ' + gifts + ' to your story</button></div>';
     return h;
   }
   function addToCart() {
@@ -1103,12 +1365,28 @@
         else if (!cfg.corePurchase) u.searchParams.set('view', {mug:'mug-native',blanket:'blanket-native',print:'portrait-native'}[k]);
       }
       if (k === 'mug' && mc && mc.id) u.searchParams.set('variant', mc.id);
+      // a gift with more than one price opens on the price the choose screen showed (28 Oct: the
+      // portrait said from $59 and opened Framed at $119); a variant already in the link stays
+      var x = cfg.gifts[k];
+      if (x.minVariant && Number(x.priceMax) > Number(x.price) && !u.searchParams.get('variant')) u.searchParams.set('variant', String(x.minVariant));
       return { url: u.pathname + u.search + u.hash, title: GN[k] };
     });
     try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
     track('personalize_gifts', { gifts: q.length, picks: selectedGifts().join(',') });
     S.returnTo = ''; save();
     window.location.href = q[0].url;
+    return selectedGifts()[0];
+  }
+  // the button answers the tap at once, pressed and busy, while the gift's page opens (28 Oct:
+  // the product page took about 8 seconds behind an unchanged button); a second tap does nothing
+  function opening(k) {
+    if (!k || !frame) return;
+    var b = frame.querySelector('[data-hs3="add"]');
+    if (!b) return;
+    ui.opening = true;
+    b.classList.add('is-on', 'is-busy');
+    b.setAttribute('aria-busy', 'true'); b.setAttribute('aria-disabled', 'true');
+    b.textContent = 'Opening ' + possessiveName(names().dog) + ' ' + (SHORT[k] || '').toLowerCase() + '…';
   }
 
   // ---- the share card (9:16, drawn in the browser, pressed and held to save)
@@ -1201,7 +1479,7 @@
       return;
     }
     if (S.step === 3 && !S.more) {
-      if (S.home !== id) { answerChanged('home'); S.home = id; S.follow = null; S.fu = null; }
+      if (S.home !== id) { answerChanged('home'); S.home = id; S.follow = null; S.fu = null; delete S.typed.home_follow; }
       S.more = true; save();
       ui.prefix = '';
       // a follow-up the buyer already answered comes straight back; a new one gets Buddy's pause
@@ -1209,19 +1487,20 @@
       think(1300, function () { render(); stepEvent('shown', { sub: 'follow' }); });
       return;
     }
-    if (S.step === 3) { if (S.follow !== id) answerChanged('home'); S.follow = id; ui.prefix = REACT4[id] || ''; S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 4) { if (S.spot !== id) answerChanged('spot'); S.spot = id; ui.prefix = REACT5[id] || ''; S.step = 5; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 5) { if (S.together !== id) answerChanged('together'); S.together = id; ui.prefix = REACT6[id] || ''; S.step = 6; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 3) { if (S.follow !== id) answerChanged('home'); S.follow = id; ui.prefix = react(REACT4, id, n); S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 4) { if (S.spot !== id) answerChanged('spot'); S.spot = id; ui.prefix = react(REACT5, id, n); S.step = 5; save(); render(); stepEvent('shown'); return; }
+    if (S.step === 5) { if (S.together !== id) answerChanged('together'); S.together = id; ui.prefix = react(REACT6, id, n); S.step = 6; save(); render(); stepEvent('shown'); return; }
     if (S.step === 6) { if (S.meaning !== id) answerChanged('meaning'); S.meaning = id; ui.prefix = ''; S.step = 7; save(); render(); warm(cfg.composeUrl); return; }
     void n;
   }
   function skip() {
-    ui.echo = 'Not sure'; ui.flagged = ''; ui.typing = false;
+    // no "Not sure" bubble under the list: Buddy's own words acknowledge it (28 Oct)
+    ui.echo = ''; ui.flagged = ''; ui.typing = false;
     stepEvent('skipped');
     if (S.step === 3 && S.more && S.fu) { S.fu = null; ui.prefix = ''; S.more = false; S.step = 4; save(); render(); stepEvent('shown'); return; }
     // a chip follow-up the buyer isn't sure about: the home answer stays, only the detail is skipped
     if (S.step === 3 && S.more && S.home && S.home !== 'typed') { if (S.follow !== 'skip') answerChanged('home'); S.follow = 'skip'; S.more = false; ui.prefix = "That's okay, on we go."; S.step = 4; save(); render(); stepEvent('shown'); return; }
-    if (S.step === 3) { if (S.home !== 'skip') answerChanged('home'); S.home = 'skip'; S.follow = null; S.fu = null; S.more = false; ui.prefix = "No problem. Let's sniff around somewhere else."; S.step = 4; }
+    if (S.step === 3) { if (S.home !== 'skip') answerChanged('home'); S.home = 'skip'; S.follow = null; S.fu = null; delete S.typed.home_follow; S.more = false; ui.prefix = "No problem. Let's sniff around somewhere else."; S.step = 4; }
     else if (S.step === 4) { if (S.spot !== 'skip') answerChanged('spot'); S.spot = 'skip'; ui.prefix = REACT5.skip; S.step = 5; }
     else if (S.step === 5) { if (S.together !== 'skip') answerChanged('together'); S.together = 'skip'; ui.prefix = REACT6.skip; S.step = 6; }
     else if (S.step === 6) { if (S.meaning !== 'skip') answerChanged('meaning'); S.meaning = 'skip'; ui.prefix = ''; S.step = 7; }
@@ -1250,7 +1529,8 @@
       S.ai[key] = { line: r.line, reaction: r.reaction };
       S[key] = 'typed';
       if (key === 'home') {
-        S.follow = null; S.ai.home_follow = null;
+        // a new home answer: its old follow-up no longer fits (28 Oct: a stale "Not sure" survived)
+        S.follow = null; S.ai.home_follow = null; delete S.typed.home_follow;
         S.fu = r.follow_up && (r.follow_up.chips.length || !r.ai) ? r.follow_up : null;
         ui.prefix = r.reaction && r.reaction !== 'Tell me more?' ? r.reaction : '';
         if (S.fu) S.more = true; else { S.more = false; S.step = 4; }
@@ -1283,20 +1563,28 @@
     if (ui.photoSaving) { photoStorageStatus(); return; }
     var n = names();
     if (S.step === 1) {
-      if (!String(S.dog).trim()) { focusField('hs3-dog'); return; }
+      var dog = nameCase(S.dog, '');
+      if (!dog) { focusField('hs3-dog'); return; }
+      // longer than the signature holds: Next waits, and the hint offers short forms (28 Oct)
+      if (dog.length > NAME_MAX) { focusField('hs3-dog'); nameHint('dog'); stepEvent('name_long', { letters: dog.length }); return; }
+      // the name as it will print, so Back shows it the same way
+      S.dog = dog; n = names();
       stepEvent('answered'); ui.echo = n.dog; ui.prefix = ''; S.step = 2; save(); render(); stepEvent('shown'); return;
     }
     if (S.step === 2) {
-      if (!String(S.rec).trim()) { focusField('hs3-rec'); return; }
+      var rec = nameCase(S.rec, '');
+      if (!rec) { focusField('hs3-rec'); return; }
+      S.rec = rec.slice(0, NAME_MAX); n = names();
       stepEvent('answered'); ui.echo = n.rec; ui.prefix = ''; S.step = 3; S.more = false; save(); render(); stepEvent('shown'); return;
     }
     if (S.step < 7) { forward(); return; }
     // the end of the chat: the reveal. The first time, the button asks for the note; after
     // that, coming back here never sends anything (Update note on the reveal does, on request)
     if (!S.composeStarted) {
-      S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; S.noteTone = cfg.artworkCandidates && window.HSArtworkChoices ? window.HSArtworkChoices.read().tone : 'warm'; S.appliedTone = 'warm'; S.tabbed = false; S.composeStarted = true; save();
+      // the first note is written in the tone the slider and the product pages show (28 Oct)
+      S.composed = null; S.baseLines = allLines(); S.composeBaseGift = null; S.appliedComposeKey = ''; syncTone(); S.appliedTone = S.noteTone; S.notePolished = false; S.tabbed = false; S.composeStarted = true; save();
       track('reveal', { typed: anyTyped() ? 'yes' : 'no' });
-      compose('warm', false, true);
+      compose(S.noteTone, false, true);
     }
     startReveal(reviewGifts().indexOf(S.gift) !== -1 && S.tabbed ? S.gift : recGift());
   }
@@ -1327,8 +1615,6 @@
       warm(cfg.typedUrl);
       toView();
     });
-    var cd = frame.querySelector('[data-hs3-countdown]'), days = daysToChristmas();
-    if (cd && days) { cd.textContent = days + (days === 1 ? ' day' : ' days') + ' to Christmas morning. Every gift is made to order, then shipped.'; cd.hidden = false; }
     var over = frame.querySelector('[data-hs3-restart]');
     if (over) over.addEventListener('click', function () { track('start_over', {}); restart(); });
     // the signature feature on the first screen: slide the example note from sentimental to hilarious
@@ -1365,21 +1651,23 @@
       el.addEventListener('click', function () { act(el.getAttribute('data-hs3'), el.getAttribute('data-v')); });
     });
     var box = frame.querySelector('[data-hs3-notebox]');
-    if (box) box.addEventListener('toggle', function () { ui.noteOpen = box.open; });
+    if (box) box.addEventListener('toggle', function () { ui.noteOpen = box.open; if (box.open && lineFor('meaning')) S.noteSeen = lineFor('meaning'); });
     frame.querySelectorAll('[data-hs3-in]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs3-in');
       inp.addEventListener('input', function () {
         inp.classList.remove('is-need');
         if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
-        if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, 14); save(); }
-        if (k === 'breed') { S.breed = inp.value.slice(0, 40); save(); }
+        if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, k === 'dog' ? 40 : NAME_MAX); save(); nameHint(k); }
+        if (k === 'breed') breedTyped(inp);
         if (k === 'toy' || k === 'accessory') { S[k] = inp.value.slice(0, 80); save(); }
       });
       inp.addEventListener('keydown', function (e) {
+        if (k === 'breed' && breedKey(e, inp)) return;
         if (e.key !== 'Enter') return;
         e.preventDefault();
         if (k === 'typed') sendTyped(inp.value); else if (k === 'toy' || k === 'accessory') inp.blur(); else next();
       });
+      if (k === 'breed') inp.addEventListener('blur', function () { breedUI.options = []; breedUI.active = -1; breedShow(inp, false); });
     });
     var file = frame.querySelector('[data-hs3-file]');
     // the dog detector starts loading as the buyer reaches for a photo, so the no-dog check is
@@ -1463,17 +1751,39 @@
       case 'sel': selectGift(v); save(); render(); track('gift_pick', { gift: v, on: S.sel[v] ? 'yes' : 'no' }); break;
       case 'mugColor': setMugColor(v); break;
       case 'ship': S.shipTo = v === 'me' ? 'me' : 'rec'; save(); render(); break;
-      case 'add': addToCart(); break;
+      case 'add': if (!ui.opening) opening(addToCart()); break;
+      case 'short': if (v) { S.dog = v; save(); render(); var dogBox = frame && frame.querySelector('#hs3-dog'); if (dogBox) dogBox.focus(); } break;
       case 'toShare': S.screen = 'share'; save(); render(); toView(); break;
       case 'returnTo': var u = cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url; if (u) { shareWithBridge(); track('return_to_gift', { gift: S.returnTo }); window.location.href = u; } break;
     }
     void n;
   }
 
+  /* The keyboard never covers Next (Krish's phone, 28 Oct). Chromium on Android resizes the page for
+     the keyboard once the viewport asks it to: this page only, so the product pages keep their
+     one-screen sizes. Where only the visual viewport shrinks (Safari), --hs3-kb carries the
+     keyboard's height to the CSS that pins Next above it, and the field being typed in is brought
+     into view with room for Next under it. Pinch zoom is not a keyboard. */
+  function keyboardRoom() {
+    var vp = document.querySelector('meta[name="viewport"]'), was = vp ? vp.getAttribute('content') || '' : '';
+    if (vp && !/interactive-widget/.test(was)) vp.setAttribute('content', (was ? was + ', ' : '') + 'interactive-widget=resizes-content');
+    var vv = window.visualViewport;
+    var lift = function (panned) {
+      var kb = vv && Math.abs((vv.scale || 1) - 1) < 0.01 ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+      root.style.setProperty('--hs3-kb', kb + 'px');
+      if (panned) return;
+      var f = document.activeElement;
+      if (f && frame && frame.contains(f) && /^(INPUT|TEXTAREA)$/.test(f.tagName)) { try { f.scrollIntoView({ block: 'nearest' }); } catch (e) { /* old browser */ } }
+    };
+    if (vv && vv.addEventListener) { vv.addEventListener('resize', function () { lift(false); }); vv.addEventListener('scroll', function () { lift(true); }); }
+    window.addEventListener('resize', function () { lift(false); });
+  }
+
   function init() {
     root = document.querySelector('[data-hs3]');
     if (!root) return;
     frame = root.querySelector('.hs3__frame');
+    keyboardRoom();
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     // the bundle saving shows only when the memo strip's one switch says the real discount exists
     cfg.bundleOffer = !!(cfg.bundleOffer || document.querySelector('[data-hs-bundle-live]'));
@@ -1508,8 +1818,9 @@
       var st = e.state || {}, was = nav.depth, want = st.hs3 || routeFromURL() || 'hero';
       nav.depth = st.depth || 0;
       // a step the answers no longer reach (a typed answer's follow-up, once answered) is passed
-      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere
-      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was) {
+      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere.
+      // A dog's name Next would refuse reaches no later step, so the buyer lands on the name instead.
+      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was && dogOK()) {
         try { if (nav.depth < was && nav.depth > 0) { window.history.back(); return; } if (nav.depth > was) { window.history.forward(); return; } } catch (err) { /* show the clamped step below */ }
       }
       nav.route = '';

@@ -130,7 +130,7 @@
               {%- unless product.has_only_default_variant -%}
                 <script type="application/json" data-hs2-prices>{ {%- for v in product.variants -%}{{ v.id | append: '' | json }}: {{ v.price | money | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }</script>
                 {%- comment -%} each variant's own photo, so the picture follows the color chosen in Teeinblue {%- endcomment -%}
-                <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- assign v_hide = section.settings.hide_media_alt | default: 'shown in your cart' | downcase -%}{%- for v in product.variants -%}{%- assign v_alt = v.featured_media.alt | downcase -%}{%- assign v_mid = v.featured_media.id | append: '' -%}{%- if v.featured_media -%}{%- unless v_alt contains v_hide or v_alt contains 'blank ' or v_mid == '71850515169662' or v_mid == '71856697049470' -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endunless -%}{%- endif -%}{%- endfor -%} }</script>
+                <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- assign v_hide = section.settings.hide_media_alt | default: 'shown in your cart' | downcase -%}{%- for v in product.variants -%}{%- assign v_alt = v.featured_media.alt | downcase -%}{%- assign v_mid = v.featured_media.id | append: '' -%}{%- if v.featured_media -%}{%- unless v_alt contains v_hide or v_alt contains 'blank ' or v_alt contains 'checkout tile' or v_mid == '71850515169662' or v_mid == '71856697049470' -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endunless -%}{%- endif -%}{%- endfor -%} }</script>
               {%- endunless -%}
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
               <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
@@ -204,6 +204,10 @@
                   <input type="hidden" name="properties[_hs_art_profile]" data-hs2-prop="personality" value="">
                   <input type="hidden" name="properties[_hs_art_style]" data-hs2-prop="art_style" value="">
                   <input type="hidden" name="properties[_hs_art_tone]" data-hs2-prop="art_tone" value="">
+                  {%- comment -%} what the buyer told Buddy and who it ships to, for the person who checks the order:
+                    they never reached a native order before (28 Oct, orders #1005 to #1008). hs2.js syncBlanketProperties fills them. {%- endcomment -%}
+                  <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
+                  <input type="hidden" name="properties[_hs_ship_to]" data-hs2-prop="hs_ship_to" value="">
                 {%- elsif block.settings.v3 -%}
                   {%- comment -%} v3 gifts: what the buyer told Buddy and the words on the gift, for the person who checks the order {%- endcomment -%}
                   <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">

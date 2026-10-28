@@ -22,7 +22,7 @@ const config = {
   }
 };
 // the first screen as hs3-chat.liquid draws it, reduced to what the script binds
-const page = js => `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+const page = (js, pre = '') => `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
 <script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hs3-routed');}</script>
 <style>html.hs3-routed .hs3__frame[data-hs3-screen="hero"]{visibility:hidden}</style></head><body>
 <header><a href="/" id="logo">Heartside</a></header>
@@ -33,9 +33,9 @@ const page = js => `<!doctype html><html><head><meta name="viewport" content="wi
 <p data-hs3-resume hidden><button type="button" data-hs3-restart>Start over</button></p>
 <p data-hs3-countdown hidden></p></div></div>
 <p data-hs3-privacy hidden>Privacy note.</p></div>
-<script>${js}</script></body></html>`;
+${pre ? `<script>${pre}</script>` : ''}<script>${js}</script></body></html>`;
 
-async function open(minified) {
+async function open(minified, pre = '') {
   const browser = await chromium.launch();
   const context = await browser.newContext({viewport: {width: 390, height: 844}, reducedMotion: 'reduce'});
   const tab = await context.newPage();
@@ -45,7 +45,7 @@ async function open(minified) {
   await tab.route('**/*', route => {
     const url = new URL(route.request().url());
     if (url.hostname !== 'localhost') { offsite.push(url.href); return route.abort(); }
-    if (url.pathname === '/') return route.fulfill({contentType: 'text/html', body: page(js)});
+    if (url.pathname === '/') return route.fulfill({contentType: 'text/html', body: page(js, pre)});
     return route.fulfill({status: 404, body: ''});
   });
   return {browser, tab, errors, offsite};
@@ -58,6 +58,22 @@ async function move(tab, how, want) {
   await tab.waitForTimeout(30);
 }
 const screen = tab => tab.getAttribute('.hs3__frame', 'data-hs3-screen');
+// the breed corpus as hs-breeds.js offers it (suggest returns at most n rows, "Mixed or not sure"
+// last; lookup is exact), and the engine's energy rule, reduced to one breed
+const BREEDS = `window.HSBreeds = {
+  suggest: function (q, n) {
+    var all = [{id: 'golden-retriever', name: 'Golden Retriever'}, {id: 'goldendoodle', name: 'Goldendoodle'}, {id: 'golden-mountain-dog', name: 'Golden Mountain Dog'}, {id: 'goldador', name: 'Goldador'}, {id: 'golden-cocker', name: 'Golden Cocker Retriever'}, {id: 'gordon-setter', name: 'Gordon Setter'}];
+    q = String(q).toLowerCase().slice(0, 3);
+    var out = all.filter(function (o) { return o.name.toLowerCase().indexOf(q) === 0; }).slice(0, n - 1);
+    out.push({id: 'mixed-breed', name: 'Mixed or not sure'});
+    return out;
+  },
+  lookup: function (t) {
+    if (String(t).trim().toLowerCase() === 'golden retriever') return {id: 'golden-retriever', name: 'Golden Retriever', kind: 'breed', exact: true, tone: 'Retriever'};
+    return {id: 'mixed-breed', name: 'Mixed Breed', kind: 'mixed', exact: false, tone: 'Parent Envelope'};
+  }
+};
+window.HSArtworkEngine = {energyFor: function (r) { return r && r.exact === true && r.kind !== 'mixed' && r.id === 'golden-retriever' ? 'eager-open' : null; }};`;
 const state = tab => tab.evaluate(() => JSON.parse(sessionStorage.getItem('hs3-gift')));
 const pressed = (tab, v) => tab.getAttribute(`[data-hs3="chip"][data-v="${v}"]`, 'aria-pressed');
 
@@ -156,6 +172,46 @@ for (const minified of [false, true]) {
       await move(tab, 'back', 'home-more');
       assert.equal(await pressed(tab, 'weekends'), 'false');
       assert.deepEqual(errors, []);
+    } finally { await browser.close(); }
+  });
+
+  // Ruling (Krish, 28 Oct): "There should be some sort of check because I bet tonnes of people will
+  // spell things wrong and put in really weird breed names."
+  test(`${minified ? 'minified' : 'source'}: the breed box offers a checked list, keeps the pick, and lets unmatched words stand`, async () => {
+    const {browser, tab, errors, offsite} = await open(minified, BREEDS);
+    try {
+      await tab.goto('http://localhost/');
+      await tab.click('[data-hs3-start]');
+      await tab.fill('#hs3-dog', 'Pip');
+      assert.equal(await tab.getAttribute('#hs3-breed', 'role'), 'combobox');
+      await tab.fill('#hs3-breed', 'golden retr');
+      await tab.waitForSelector('#hs3-breed-list [role=option]');
+      const options = await tab.$$eval('#hs3-breed-list [role=option]', els => els.map(e => e.textContent));
+      assert.ok(options.length <= 5, 'at most five'); assert.equal(options.at(-1), 'Mixed or not sure', 'always last');
+      assert.equal(await tab.getAttribute('#hs3-breed', 'aria-expanded'), 'true');
+      await tab.click('#hs3-breed-list [role=option]:has-text("Golden Retriever")');
+      let s = await state(tab);
+      assert.equal(s.breedId, 'golden-retriever'); assert.equal(s.breed, 'Golden Retriever');
+      assert.equal(await tab.inputValue('#hs3-breed'), 'Golden Retriever');
+      assert.equal(await tab.isVisible('#hs3-breed-list'), false, 'the list closes on a pick');
+      assert.equal(await tab.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs3_energy), 'eager-open');
+      // the keyboard: arrows move, Enter picks, and the box keeps focus
+      await tab.fill('#hs3-breed', 'mix');
+      await tab.press('#hs3-breed', 'ArrowUp');
+      assert.equal(await tab.getAttribute('#hs3-breed', 'aria-activedescendant'), await tab.getAttribute('#hs3-breed-list [role=option]:last-child', 'id'));
+      await tab.press('#hs3-breed', 'Enter');
+      s = await state(tab); assert.equal(s.breedId, 'mixed-breed'); assert.equal(step(tab), 'dog', 'Enter picked; it did not move on');
+      assert.equal(await tab.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs3_energy), '');
+      // words that match nothing stay, with a quiet note, and Next still works
+      await tab.fill('#hs3-breed', 'Fluffy wolf thing');
+      await tab.press('#hs3-breed', 'Escape');
+      await tab.click('#hs3-dog');
+      assert.equal(await tab.isVisible('text=I\'ll go by your photo and answers.'), true);
+      s = await state(tab); assert.equal(s.breed, 'Fluffy wolf thing'); assert.equal(s.breedId, '');
+      await tab.click('[data-hs3="next"]'); assert.equal(step(tab), 'person');
+      await move(tab, 'back', 'dog');
+      assert.equal(await tab.inputValue('#hs3-breed'), 'Fluffy wolf thing', 'Back keeps the words');
+      assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
     } finally { await browser.close(); }
   });
 

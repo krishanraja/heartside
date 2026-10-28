@@ -2,15 +2,24 @@
    Nothing about the photo leaves the device: pixels are read from a local canvas, and the
    optional dog detector runs in the browser (its scripts and weights are downloads only).
 
-   window.HSPhotoQuality.check(file, {detect, timeout, limits}) resolves
-     {verdict: 'ok'|'warn'|'reject', overridable, reasons: [{code, message}], metrics, detection}.
-   Hard rejects (never overridable): size, blur, dark, bright, unreadable.
+   window.HSPhotoQuality.check(file, {detect, timeout, checkTimeout, limits}) resolves
+     {verdict: 'ok'|'warn'|'reject', overridable, reasons: [{code, message}], metrics, detection, timedOut}.
+   Hard rejects (never overridable): size, blur, dark, bright, unreadable, heic.
+   HEIC or HEIF (by type or file name) is refused before any decode, with guidance to choose a JPEG
+   (Krish, 28 Oct). The whole check gets 10 seconds (checkTimeout; Krish's ruling: "a 10-second
+   limit, then the photo goes on"). Decoding may use all of it; a decode past it
+   fails open with verdict ok and timedOut true, and the photo goes on, where the painter's own
+   minimum size check still applies. A decode that never settles used to hold every later pick.
+   The detector gets what is left, at most its own timeout: it used to start a fresh 4 seconds
+   after a slow decode, so a check could take 14 seconds or more.
    Overridable rejects (detectors miss unusual dogs): nodog, far.
    Warnings: small, soft, dim, glare, dogs. Detection null (off, no WebGL, offline, slower than
-   the timeout) skips the dog checks. Call loadDetector() early, for example when the upload step
-   opens, so the first check does not time out while about 19 MB of model downloads. The first
-   load also compiles WebGL shaders on the main thread, which can pause the page for a moment and
-   hold check() past its timeout on that one call (7.3 s against 4 s with software WebGL).
+   the timeout) skips the dog checks. The product page loads the detector only once a photo is
+   picked (28 Oct): warming it as the photo step scrolled into view could put a 19 MB download and a
+   WebGL pause on a phone right before its picker opened. A cold first check can therefore
+   skip the dog checks. The first load also compiles WebGL shaders on the main thread, which can
+   pause the page for a moment and hold a timer past its time on that one call (7.3 s against
+   4 s with software WebGL); a detector that becomes ready after the deadline is not run.
 
    Calibration, 2026-10-27, headless Chromium through this file's own pixels() path.
    blur = variance of the 4-neighbor Laplacian on luminance, contrast-stretched (1st to 99th
@@ -66,7 +75,8 @@
     tileGrid: 8,         // blur is scored on the sharpest quarter of an 8 x 8 grid of tiles
     dogScore: 0.4,       // detector confidence a dog box needs to count
     dogMinShare: 0.05,   // largest dog box must cover this share of the photo
-    detectTimeout: 4000  // ms to wait for the detector before failing open
+    detectTimeout: 4000, // ms to wait for the detector before failing open, within checkTimeout
+    checkTimeout: 10000  // ms for the whole check; a decode past it fails open (verdict ok, timedOut)
   };
 
   // Buddy's words. Plain US English, no exclamation marks, no dashes.
@@ -82,7 +92,8 @@
     nodog: 'I couldn\'t spot a dog in this photo. If your dog is in it, you can still use it.',
     far: 'Your dog looks small in this photo. A closer one where your dog fills more of the frame works best, but you can still use this one.',
     dogs: 'I see more than one dog here. Your artwork works best with just your dog in the photo.',
-    unreadable: 'I couldn\'t open this photo. Try a JPEG or PNG from your camera roll.'
+    unreadable: 'I couldn\'t open this photo. Try a JPEG or PNG from your camera roll.',
+    heic: 'This photo is saved as HEIC, which I can\'t paint from. Choose a JPEG of your dog instead.'
   };
 
   // Pinned detector scripts, loaded only on first use. SRI computed from the exact files.
@@ -302,6 +313,19 @@
     return detectorPromise;
   }
 
+  // HEIC and HEIF: by type, or by name when a picker leaves the type empty
+  function isHeic(file) {
+    return !!file && (/^image\/hei[cf]/i.test(file.type || '') || /\.hei[cf]$/i.test(file.name || ''));
+  }
+
+  // pixels(), bounded: a decode that never settles rejects with timedOut set instead of hanging
+  function pixelsWithin(file, ms) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { var error = new Error('Photo check timed out'); error.timedOut = true; reject(error); }, ms);
+      pixels(file).then(function (px) { clearTimeout(timer); resolve(px); }, function (error) { clearTimeout(timer); reject(error); });
+    });
+  }
+
   function within(promise, ms) {
     return new Promise(function (resolve) {
       var timer = setTimeout(function () { resolve(null); }, ms);
@@ -313,15 +337,19 @@
   // Resolves {verdict, overridable, reasons, metrics, detection}. Never uploads anything.
   function check(file, options) {
     var opts = options || {};
-    return pixels(file).then(function (px) {
+    if (isHeic(file)) return Promise.resolve({verdict: 'reject', overridable: false, reasons: [reason('heic')], metrics: null, detection: null});
+    var limit = opts.checkTimeout || limitsWith(opts.limits).checkTimeout, started = Date.now();
+    return pixelsWithin(file, limit).then(function (px) {
       var metrics = measure(px.data, px.width, px.height, px.originalWidth, px.originalHeight);
       var first = decide(metrics, null, opts.limits);
       if (opts.detect === false || (first.verdict === 'reject' && !first.overridable)) {
         return Object.assign(first, {metrics: metrics, detection: null});
       }
-      // The first load compiles WebGL shaders on the main thread, which can hold this timer past
-      // the budget; a detector that becomes ready after the deadline is not run for this photo.
-      var budget = opts.timeout || limitsWith(opts.limits).detectTimeout, deadline = Date.now() + budget;
+      // The detector gets the time the decode left, at most its own timeout. The first load compiles
+      // WebGL shaders on the main thread, which can hold this timer past the budget; a detector that
+      // becomes ready after the deadline is not run for this photo.
+      var budget = Math.min(opts.timeout || limitsWith(opts.limits).detectTimeout, limit - (Date.now() - started)), deadline = Date.now() + budget;
+      if (budget <= 0) return Object.assign(first, {metrics: metrics, detection: null});
       var detection = within(loadDetector().then(function (detector) {
         return detector && Date.now() < deadline ? detector.detect(px.canvas) : null;
       }), budget);
@@ -329,13 +357,14 @@
         return Object.assign(decide(metrics, found, opts.limits), {metrics: metrics, detection: found});
       });
     }).catch(function (error) {
+      if (error && error.timedOut) return {verdict: 'ok', overridable: false, reasons: [], metrics: null, detection: null, timedOut: true};
       if (error && error.unreadable) return {verdict: 'reject', overridable: false, reasons: [reason('unreadable')], metrics: null, detection: null};
       // The photo decoded but could not be measured here: fail open and let the flow continue.
       return {verdict: 'ok', overridable: false, reasons: [], metrics: null, detection: null};
     });
   }
 
-  window.HSPhotoQuality = {check: check, measure: measure, decide: decide, dogsFrom: dogsFrom,
+  window.HSPhotoQuality = {check: check, measure: measure, decide: decide, dogsFrom: dogsFrom, isHeic: isHeic,
     analysisSize: analysisSize, percentile: percentile, pixels: pixels, loadDetector: loadDetector,
     limits: LIMITS, messages: MESSAGES, detectorScripts: DETECTOR_SCRIPTS};
 }());

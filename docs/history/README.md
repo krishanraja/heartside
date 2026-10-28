@@ -1,6 +1,6 @@
 # Heartside historical documentation
 
-Everything in this directory is dated evidence. It records prior offers, prices, product designs, implementation states, assumptions, approvals and task queues. **No file here is a current instruction, launch gate, price source or permission to act.** Read [`../../NOW.md`](../../NOW.md) for current status and next action, [`../SCOPE.md`](../SCOPE.md) for approved scope, and [`../ECONOMICS.md`](../ECONOMICS.md) for current economic policy and modeled limits.
+Everything in this directory is dated evidence. Only `LOG.md` is still added to: it is the history log that `NOW.md` names, the docs steward (or someone doing that job by hand) writes it newest first, and nothing in it describes current behavior. The rest of the directory is closed. It records prior offers, prices, product designs, implementation states, assumptions, approvals and task queues. **No file here is a current instruction, launch gate, price source or permission to act.** Read [`../../NOW.md`](../../NOW.md) for current status and next action, [`../SCOPE.md`](../SCOPE.md) for approved scope, and [`../ECONOMICS.md`](../ECONOMICS.md) for current economic policy and modeled limits.
 
 - `NOW-SNAPSHOTS-THROUGH-2026-10-27.md` contains the pre-release paragraphs moved out of `NOW.md`.
 - `V3-GIFTS-FROM-YOUR-DOG-2026-10-13.md`, `HANDOFF-2026-10-21.md`, `POSITIONING-2026-10-21.md` and dated handovers preserve the earlier four-gift program.
@@ -9,6 +9,6 @@ Everything in this directory is dated evidence. It records prior offers, prices,
 - `ECONOMICS-2026-10-24.md` and `pricing-scenarios-2026-10-24.csv` preserve the superseded 50% calculations.
 - `SHOPIFY-README-2026-10.md`, `N8N-README-2026-10.md`, `ORDER-QC-README-2026-10.md` and `BRAND-SYSTEM-PRE-REVAMP.md` preserve older technical and brand assumptions.
 - `V2-FROM-THE-DOG-2026-10-04.md`, `ASSETS-README-PRE-REVAMP.md`, `DESIGN-README-PRE-REVAMP.md` and the ornament files preserve retired source guidance.
-- All pre-release CoWork prompts and the October 24 `NEW-SESSION-PROMPT` have been moved here. The two current independent review assignments are in [`../review/`](../review/).
+- Most pre-release CoWork prompts are here: the original launch brief (`COWORK-PROMPT-ORIGINAL.md`) and the 6, 7, 13 and 14 October prompts, with the October 24 `NEW-SESSION-PROMPT`. So is `COWORK-PROMPT-2026-10-28.md`, the live acceptance prompt that found the 28 October defects. The 5 October prompts and the 6 October audit-fixes prompt are in [`../archive/`](../archive/README.md), and the prompts written with a dated evidence record (19 to 22 October) stay beside it in [`../evidence/`](../evidence/). The two current independent review assignments are in [`../review/`](../review/).
 
 Historical files retain their original wording and some original relative links for provenance. Their internal "current", "approved" and "next" labels refer to the date of that record, not today. The active public README and review prompts must never derive current product or pricing claims from these files.

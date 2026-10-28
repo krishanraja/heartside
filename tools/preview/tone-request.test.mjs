@@ -18,7 +18,7 @@ const reply = (label = 'wait') => ({source: 'ai', recommended_gift: 'mug', reaso
   together: 'Our walks are the best part of my day.', meaning: 'You are my favorite person.'
 }});
 
-function fixture(code, {store = {}, storageFails = false} = {}) {
+function fixture(code, {store = {}, storageFails = false, sharedTone = null} = {}) {
   const calls = [], timers = new Map();
   let timerId = 0, aborts = 0;
   class AbortController { signal = {}; abort() { aborts++; } }
@@ -34,15 +34,17 @@ function fixture(code, {store = {}, storageFails = false} = {}) {
         respond: value => resolve({ok: true, json: async () => value})});
     })
   };
+  // the shared style and tone choice the product pages read (hs-artwork-choices.js)
+  if (sharedTone) window.HSArtworkChoices = {read: () => ({version: 1, style: 'screenprint', tone: sharedTone}), select: c => { sharedTone = c.tone || sharedTone; return {tone: sharedTone}; }, mount() {}};
   const document = {readyState: 'complete', querySelector: () => null, querySelectorAll: () => [], addEventListener() {}};
   vm.runInNewContext(code, {window, document, URLSearchParams, console, AbortController,
     setTimeout: fn => { timers.set(++timerId, fn); return timerId; },
     clearTimeout: id => timers.delete(id)});
   const api = window.__toneTest, state = window.__hs3api.state();
-  api.configure({ai: true, composeUrl: '/fixture-compose'});
+  api.configure({ai: true, composeUrl: '/fixture-compose', artworkCandidates: !!sharedTone});
   if (!state.dog) Object.assign(state, {dog: 'Pip', rec: 'Alex', home: 'door', follow: 'weekends',
     spot: 'feet', together: 'walk', meaning: 'best', screen: 'reveal'});
-  return {api, state, calls, store, line: window.__hs3api.lineFor, aborts: () => aborts,
+  return {api, state, calls, store, line: window.__hs3api.lineFor, act: window.__hs3api.route.act, aborts: () => aborts,
     timeout: () => { for (const [id, fn] of timers) { timers.delete(id); fn(); } }};
 }
 
@@ -129,6 +131,41 @@ for (const [build, code] of [['source', instrumented], ['minified', transformSyn
     const f = fixture(code); const p = f.api.initial(); await flush(); f.calls[0].respond(reply()); await p;
     const reloaded = fixture(code, {store: f.store}); reloaded.api.initial(); await flush();
     assert.equal(reloaded.calls.length, 0); assert.equal(reloaded.state.composed.lines.home, 'I wait by the door for you.');
+  });
+  // 28 Oct: Buddy's pick said Warm with a wink, the product page Sentimental; the first note was always Warm
+  test(`${build}: the first note is written in the shared tone the slider and the product pages show`, async () => {
+    const f = fixture(code, {sharedTone: 'hilarious'});
+    Object.assign(f.state, {screen: 'chat', step: 7, noteTone: 'warm', composeStarted: false});
+    f.act('next'); await flush();
+    assert.equal(f.calls.length, 1); assert.equal(f.calls[0].body.note_tone, 'hilarious');
+    assert.equal(f.state.noteTone, 'hilarious', 'the slider shows the same tone');
+    f.calls[0].respond(reply()); await flush();
+    assert.equal(f.state.appliedTone, 'hilarious'); assert.equal(f.api.status(), '', 'the note is in the tone shown');
+  });
+  test(`${build}: the note's status says only what is true`, async () => {
+    const f = fixture(code); const p = f.api.update(); await flush();
+    assert.equal(f.api.status(), 'Buddy is writing your note…');
+    f.calls[0].respond(reply()); await p;
+    f.api.select('hilarious');
+    assert.equal(f.api.status(), 'This note is Warm with a wink. Update note asks Buddy for a Hilarious version.');
+    for (const g of [f, fixture(code)]) assert.doesNotMatch(g.api.status(), /Your edits stay as written|Choose Update note to apply this tone/);
+    const auto = fixture(code); auto.api.initial(); await flush();
+    assert.equal(auto.api.status(), '', 'the note itself says Buddy is writing');
+    const none = fixture(code); none.api.select('sentimental');
+    assert.equal(none.api.status(), 'Update note asks Buddy for a Sentimental version.');
+  });
+  test(`${build}: a line the buyer already read that Buddy then changes is flagged at the note`, async () => {
+    const f = fixture(code); f.state.noteSeen = "You're my best friend, and I'm yours.";
+    const p = f.api.initial(); await flush(); f.calls[0].respond(reply()); await p;
+    assert.equal(f.state.notePolished, true);
+    const same = fixture(code); same.state.noteSeen = 'You are my favorite person.';
+    const q = same.api.initial(); await flush(); same.calls[0].respond(reply()); await q;
+    assert.equal(same.state.notePolished, false, 'the same words: nothing to say');
+    const unseen = fixture(code); const r = unseen.api.initial(); await flush(); unseen.calls[0].respond(reply()); await r;
+    assert.equal(unseen.state.notePolished, false, 'a line never shown: nothing changed for the buyer');
+    const own = fixture(code); own.state.noteSeen = 'Mine.'; own.state.edits.meaning = 'Mine.';
+    const o = own.api.initial(); await flush(); own.calls[0].respond(reply()); await o;
+    assert.equal(own.state.notePolished, false, 'the buyer\'s own words win and did not change');
   });
   test(`${build}: adjacent typed-answer timeout still aborts and ignores late output`, async () => {
     const f = fixture(code); const p = f.api.typed(); await flush(); f.timeout();

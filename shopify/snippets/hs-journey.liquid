@@ -25,4 +25,18 @@
     <button type="button" class="hs-journey__here" data-hs-journey-here>I'll fill it in here</button>
   </div>
   <div class="hs-journey__card" data-hs-journey-card hidden></div>
+  {%- comment -%} Before first paint: a buyer arriving from the chat never sees the direct-visit offer
+    flash up for a second (28 Oct, Recording 4). The same test as hs2.js journeyCard, the chat's saved
+    dog and words; journeyCard then fills the card and the line. {%- endcomment -%}
+  <script>
+    (function (box) {
+      try {
+        var s = JSON.parse(window.sessionStorage.getItem('hs2-review') || '{}') || {};
+        if (!String(s.dog || '').trim() || !s.hs3_lines) return;
+        var intro = box.querySelector('[data-hs-journey-intro]'), line = box.querySelector('[data-hs-journey-line]');
+        if (intro) intro.hidden = true;
+        if (line) line.textContent = 'Getting your {{ gift }} ready.';
+      } catch (e) { /* the server's offer stays until hs2.js runs */ }
+    })(document.currentScript.parentNode);
+  </script>
 </div>
