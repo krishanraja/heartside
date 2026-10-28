@@ -2714,8 +2714,10 @@
       }
       if (!html) { if (slot) slot.remove(); return; }
       if (!slot) { slot = document.createElement('div'); slot.className = 'hs2-redo'; slot.setAttribute('data-hs2-redo', ''); host.appendChild(slot); }
-      if (slot.__html === html) return;
-      slot.__html = html; slot.innerHTML = html;
+      // a cart redraw can morph the slot back to the server's markup and keep the element, so the cache
+      // holds only while the slot still shows what was drawn here
+      if (slot.__html === html && slot.innerHTML === slot.__drawn) return;
+      slot.__html = html; slot.innerHTML = html; slot.__drawn = slot.innerHTML;
       var remove = slot.querySelector('[data-hs2-redo-remove]');
       if (remove) remove.addEventListener('click', function () {
         var own = l.row.querySelector('.cart-items__remove');

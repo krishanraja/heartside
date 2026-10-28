@@ -9,6 +9,8 @@ import {transformSync} from 'esbuild';
 // the cart, the Storefront read and Shopify.actions are an in-page fake.
 // Shopify minifies theme JavaScript on its CDN, so every case also runs the minified modules.
 const asset=(name,minified)=>{const code=readFileSync(new URL('../../shopify/assets/'+name,import.meta.url),'utf8');return minified?transformSync(code,{minify:true,format:'esm'}).code:code;};
+// The plus cart-products.liquid serves a design and an Artist's touch (one per design), read from the snippet itself.
+const onePerPlus=/replace: 'name="plus"', '([^']+)'/.exec(readFileSync(new URL('../../shopify/snippets/cart-products.liquid',import.meta.url),'utf8'))[1];
 const stubs={
  'component.js':`export class Component extends HTMLElement{get refs(){const refs={cartItemRows:[...this.querySelectorAll('[ref="cartItemRows[]"]')],quantitySelectors:[...this.querySelectorAll('[ref="quantitySelectors[]"]')]};for(const el of this.querySelectorAll('[ref]')){const name=el.getAttribute('ref');if(!name.endsWith('[]'))refs[name]=el;}return refs;}connectedCallback(){}disconnectedCallback(){}}`,
  'utilities.js':`export const fetchConfig=(type,{body})=>({method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body});export const debounce=fn=>fn;export const onAnimationEnd=(el,cb)=>cb();export const prefersReducedMotion=()=>true;export const resetShimmer=()=>{};export const startViewTransition=cb=>cb();`,
@@ -27,7 +29,10 @@ const page=`<!doctype html><html><head><meta charset="utf-8"><script type="impor
 // rendered order, and an optional recovery record already saved in this tab. With `hsLine`, rows are
 // drawn the way cart-products.liquid draws them since 28 Oct: in Heartside's order (`domOrder`, each
 // Artist's touch after its gift) on every render, each carrying its own line number (data-hs-line)
-// and its line's refs; `noInput` names a kind of row served with no quantity input at all.
+// and its line's refs; `noInput` names a kind of row served with no quantity input at all. A design's and an
+// Artist's touch's plus are the snippet's (`onePerPlus`). With `liveSelector`, the rows' selectors are Helio's
+// cart selector as the live theme runs it (component-cart-quantity-selector.js, read 28 Oct): it manages its
+// buttons client-side and turns a plus served disabled back on, as it connects and on every updateButtonStates.
 function fakeStore(setup){
  const cartId='gid://shopify/Cart/browser-test?key=never-persist',variant='gid://shopify/ProductVariant/123';
  const image='https://cdn.shopify.com/s/files/1/1111/2222/3333/files/heartside-checkout-11111111-2222-4333-8444-555555555555.jpg?v=1';
@@ -43,9 +48,20 @@ function fakeStore(setup){
   const n=setup.hsLine?server.lines.indexOf(line)+1:index+1,data=line.kind==='design'
    ?{key:line.key,variant_id:123,quantity:1,properties:{_hs_checkout_image:null,_customization_image:null},item_components:[{key:line.childKey,variant_id:123,quantity:line.quantity,properties:{_hs_checkout_image:image,_customization_image:null}}]}
    :{key:line.key,variant_id:line.kind==='addon'?789:456,quantity:line.quantity,properties:{_hs_checkout_image:null,_customization_image:null,_hs_addon_for:line.kind==='addon'?'browser-design':null},item_components:[]};
-  const control=setup.noInput===line.kind?'':`<cart-quantity-selector-component ref="quantitySelectors[]"><button type="button" name="minus">-</button><input type="number" value="${line.quantity}"><button type="button" name="plus">+</button></cart-quantity-selector-component>`;
+  const plus=line.kind==='ordinary'?'name="plus"':setup.onePerPlus;
+  const control=setup.noInput===line.kind?'':`<cart-quantity-selector-component ref="quantitySelectors[]"><button type="button" name="minus">-</button><input type="number" value="${line.quantity}"><button type="button" ${plus}>+</button></cart-quantity-selector-component>`;
   return `<tr ref="cartItemRows[]" data-kind="${line.kind}" data-key="${esc(line.key)}"${setup.hsLine?` data-hs-line="${n}"`:''} data-hs2-cart-line="${esc(JSON.stringify(data))}" data-hs2-quantity-key="${line.kind==='design'?esc(line.childKey):''}"><td><div class="cart-items__quantity-controls">${control}<button class="button cart-items__remove" type="button">Remove</button></div></td><td class="hidden" ref="cartItemErrorContainer-${n}"><small ref="cartItemError-${n}"></small></td></tr>`;
  };
+ if(setup.liveSelector)customElements.define('cart-quantity-selector-component',class extends HTMLElement{
+  get refs(){return {minusButton:this.querySelector('[name="minus"]'),plusButton:this.querySelector('[name="plus"]'),quantityInput:this.querySelector('input')};}
+  // the base selector notes a served-off plus here (serverDisabledPlus); the cart's override never reads it
+  connectedCallback(){this.updateButtonStates();}
+  updateButtonStates(){
+   const {minusButton,plusButton,quantityInput}=this.refs,int=(value,fallback)=>{const n=parseInt(value,10);return Number.isNaN(n)?fallback:n;};
+   const min=int(quantityInput.min,1),value=int(quantityInput.value,0),max=int(quantityInput.max,null);
+   minusButton.disabled=value<=min;plusButton.disabled=max!==null&&value>=max;
+  }
+ });
  const shown=()=>setup.hsLine?setup.domOrder.map(kind=>byKind[kind]).filter(line=>server.lines.includes(line)):server.lines;
  window.__renderDom=(lines=setup.domOrder?setup.domOrder.map(kind=>byKind[kind]):server.lines)=>{
   if(setup.hsLine)lines=shown();
@@ -102,7 +118,7 @@ async function open(setup){
   if(url.pathname.startsWith('/stubs/'))return route.fulfill({contentType:'text/javascript',body:stubs[url.pathname.slice(7)]});
   return route.abort();
  });
- await tab.addInitScript(fakeStore,setup);
+ await tab.addInitScript(fakeStore,{onePerPlus,...setup});
  await tab.goto('https://shop.example/cart');
  await tab.waitForFunction(()=>window.__ready&&customElements.get('cart-items-component'));
  return tab;
@@ -245,6 +261,31 @@ test(mode+': 9: a refusal on a row with no quantity input is still said in that 
   assert.equal(server.updates.length,0);
   assert.match(await tab.evaluate(()=>document.querySelector('[ref="cartItemError-2"]').textContent),/Each design is one gift/);
   assert.equal(server.errors.some(error=>/Quantity input not found/.test(error)),false);
+  assert.deepEqual(tab.__errors,[]);
+ }finally{await tab.close();}
+});
+
+// 28 Oct review: the live selector turned the served-off plus back on, so the buyer saw a plus to press. A design's
+// plus and an Artist's touch's plus stay off once the selectors connect and after every redraw of a row.
+test(mode+": 10: a design's plus and an artist's touch's plus stay off after the cart redraws a row",{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['addon','design','ordinary'],domOrder:['design','addon','ordinary'],hsLine:true,designQuantity:1,liveSelector:true});
+ try{
+  const pluses=()=>tab.evaluate(()=>Object.fromEntries(['design','addon','ordinary'].map(kind=>{
+   const plus=document.querySelector(`[data-kind="${kind}"] [name="plus"]`);
+   return [kind,plus&&{disabled:plus.disabled,inert:plus.inert,label:plus.getAttribute('aria-disabled')}];
+  })));
+  const off={disabled:true,inert:true,label:'true'},on={disabled:false,inert:false,label:null};
+  await settle(tab);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},'once the selectors connect; the ordinary line shows they manage the plus');
+  await changeRow(tab,'design',2);await settle(tab);
+  assert.equal(await tab.evaluate(()=>window.__server.renders),1,'the refusal redrew the rows');
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},"after the design's refusal");
+  await changeRow(tab,'addon',2);await settle(tab);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:on},"after the artist's touch's refusal");
+  await changeRow(tab,'ordinary',0);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.renders,3);assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['addon',1],['design',1]]);
+  assert.deepEqual(await pluses(),{design:off,addon:off,ordinary:null},'after another line is removed');
   assert.deepEqual(tab.__errors,[]);
  }finally{await tab.close();}
 });

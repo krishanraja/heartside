@@ -22,8 +22,10 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
   assert.equal(JSON.parse(load(true).withHsProps(JSON.stringify({id: 1, quantity: 4, properties: {_customization_id: 'x'}}))).quantity, 1, 'the single-item form too');
 });
 
-// The cart row's plus (28 Oct): a design is served with its plus disabled, because the base selector keeps a
-// plus that arrives disabled (serverDisabledPlus) and never turns it back on. An ordinary line keeps its plus.
+// The cart row's plus (28 Oct): a design is served with its plus disabled and inert. Helio's cart selector turns a
+// plus served disabled back on (cart-quantity-browser test 10), so inert keeps it unpressable and
+// component-cart-items.js finds it by data-hs2-one-per to disable it again. An ordinary line keeps its plus.
+const OFF = 'name="plus" disabled inert aria-disabled="true" data-hs2-one-per';
 test('the cart serves a design\'s plus disabled and an ordinary line\'s plus as it was', async () => {
   const liquid = readFileSync(new URL('../../shopify/snippets/cart-products.liquid', import.meta.url), 'utf8');
   const start = liquid.indexOf('{%- capture hs_quantity_selector -%}'), endTag = '{{ hs_quantity_selector }}{%- endif -%}';
@@ -35,23 +37,25 @@ test('the cart serves a design\'s plus disabled and an ordinary line\'s plus as 
   // hs_one_per is the line's quantity key and its add-on link together: blank for an ordinary line
   const render = key => engine.parseAndRender(block, {hs_quantity_key: key, hs_one_per: key, hs_quantity_item: {quantity: 2}, item: {product: {}, variant: {}, index: 0}, can_update_quantity: true});
   const design = await render('123:native'), ordinary = await render('');
-  assert.match(design, /name="plus" disabled on:click="\/increaseQuantity"/, 'the design\'s plus is disabled in the markup');
+  assert.ok(design.includes(OFF + ' on:click="/increaseQuantity"'), 'the design\'s plus is disabled and inert in the markup');
   assert.equal((design.match(/ disabled/g) || []).length, 1, 'only the plus is disabled here; the minus and the number stay the base selector\'s');
   assert.doesNotMatch(ordinary, / disabled/, 'an ordinary line is untouched');
   assert.match(liquid, /\{%- if hs_one_per != '' -%\}<p class="hs2-one-per">One per design<\/p>\{%- endif -%\}/);
+  // it looks off whatever the selector has done to disabled
+  assert.match(css, /\.cart-items__quantity-controls \[name="plus"\]\[data-hs2-one-per\] \{ opacity: \.4;/);
 });
 
 // A9c (28 Oct): the Artist's touch line kept a working plus, so one rework could become 2 x $29.
 test("an Artist's touch is one per design: no control at one, its plus served disabled, and said so", async () => {
   const quantity = html => html.slice(html.indexOf('class="cart-items__quantity"'), html.indexOf('class="cart-items__error'));
   const one = quantity(rowOf((await renderCart([gift(0, ID), addon(1, ID)])).html, '777:addon-1'));
-  assert.match(one, /name="plus" disabled/, 'the plus');
+  assert.ok(one.includes(OFF), 'the plus');
   assert.match(one, /<input type="number"[^>]* disabled/, 'and, at one, the whole control');
   assert.match(one, /<p class="hs2-one-per">One per design<\/p>/);
   // an older cart's add-on above one can come back down; its plus stays off
   const older = addon(1, ID); older.quantity = 2; older.final_line_price = 5800;
   const two = quantity(rowOf((await renderCart([gift(0, ID), older])).html, '777:addon-1'));
-  assert.match(two, /name="plus" disabled/); assert.doesNotMatch(two, /name="minus"[^>]* disabled/); assert.doesNotMatch(two, /<input type="number"[^>]* disabled/);
+  assert.ok(two.includes(OFF)); assert.doesNotMatch(two, /name="minus"[^>]* disabled/); assert.doesNotMatch(two, /<input type="number"[^>]* disabled/);
   // an ordinary line is untouched
   const plain = quantity(rowOf((await renderCart([ordinary(0)])).html, '456:plain-0'));
   assert.doesNotMatch(plain, / disabled/); assert.doesNotMatch(plain, /hs2-one-per/);

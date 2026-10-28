@@ -170,6 +170,28 @@ for (const minified of [false, true]) {
       assert.deepEqual(offsite, []); assert.deepEqual(errors, []);
     } finally { await tab.close(); }
   });
+
+  // 28 Oct review: with both versions in the cart, the first line's box was drawn without its "First version" tag,
+  // and a cart redraw morphed the script's tagged box back to that markup for good.
+  test(`${mode}: both versions in the cart: the first says so from the first paint, and a redraw keeps it`, async () => {
+    const items = [gift(0, ID), gift(1, ID2, {componentProps: {_hs_redo_of: ID}})];
+    const {tab, offsite, errors} = await open(await cartPage(minified, items), {width: 390, height: 844});
+    try {
+      const boxes = () => tab.evaluate(() => [0, 1].map(n => { const slot = document.querySelector(`#CartItem-101\\:merged-${n} [data-hs2-redo]`); return slot && slot.innerHTML; }));
+      const [drawn] = await boxes();
+      assert.match(drawn || '', /^<p class="hs2-redo__tag">First version<\/p><p>You made a new version of this gift\. Keep the new one\?<\/p>/, 'drawn with the line, tag and all');
+      await tab.evaluate(() => window.__cartTidy());
+      await settled(tab, errors);
+      const [first, second] = await boxes();
+      assert.equal(first, drawn, 'the script writes the same box');
+      assert.equal(second, '<p class="hs2-redo__tag">New version</p>');
+      // a cart redraw morphs the box back to the server's markup, in place
+      await tab.evaluate(html => { document.querySelector('#CartItem-101\\:merged-0 [data-hs2-redo]').innerHTML = html; }, drawn);
+      await tab.waitForTimeout(250);
+      assert.equal((await boxes())[0], drawn, 'the first still says so');
+      assert.deepEqual(offsite, []); assert.deepEqual(errors, []);
+    } finally { await tab.close(); }
+  });
 }
 
 // ------------------------------------------------------------------ the drawer
