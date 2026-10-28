@@ -29,7 +29,7 @@ The typed-answer and compose workflows each pass the model's reply through an En
 
 ## Publishing the typed and compose workflows
 
-A rule change here reaches buyers only after the rebuilt workflows are published in n8n. That is Krish's step, or CoWork's with his yes for each workflow (Part 1.3 of the [CoWork prompt](../docs/review/COWORK-LIVE-ACCEPTANCE.md)); nothing in this repository publishes them. The 28 October rebuild changes three fields in each of "Heartside: typed answer (Buddy AI)" and "Heartside: compose gift lines (Buddy AI)":
+A rule change here reaches buyers only after the rebuilt workflows are published in n8n. CoWork does it in Part 1.3 of the [CoWork prompt](../docs/review/COWORK-LIVE-ACCEPTANCE.md), a run Krish approved up front; nothing in this repository publishes them. The 28 October rebuild changes three fields in each of "Heartside: typed answer (Buddy AI)" and "Heartside: compose gift lines (Buddy AI)":
 
 - Guard `jsCode`, from `guard-typed.js` or `guard-compose.js` (the pronoun rule);
 - Enforce rules `jsCode`, from `enforce-typed.js` or `enforce-compose.js`;

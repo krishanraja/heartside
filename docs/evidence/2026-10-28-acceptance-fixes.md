@@ -94,7 +94,7 @@ Rulings (Krish, 28 October), also in the commit bodies:
 **Checkout tiles**
 - `design/checkout-tiles/` holds a tile for each gift and the Artist's touch.
 - The theme hides any photo whose alt text says "checkout tile".
-- CoWork attaches them on Krish's yes.
+- CoWork attaches them in Part 2.5 of its prompt, right after the live push.
 
 **Guards**
 - `tools/preview/catalog.mjs` holds the clean handles.

@@ -23,20 +23,25 @@ test('payments come first, then the platforms, the release and the mock orders, 
   assert.deepEqual([...order].sort((a, b) => a - b), order);
 });
 
-test('every step that changes a platform asks Krish first', () => {
-  for (const h of ['### 1.1', '### 1.2', '### 1.3', '### 1.4', '### 1.5', '### 2.1', '### 2.3', '### 2.4', '### 2.5', '### 2.7', '### 3.2', '### 3.3']) {
-    const line = headings.find(x => x.startsWith(h));
-    assert.ok(line && line.includes('[approval'), `${h} is marked [approval]: ${line}`);
-  }
-  // Part 0's switch, the test-payment window and a Sync each carry their own marker
-  assert.match(section('## Part 0'), /\*\*If Shopify Payments is off \[approval\]:\*\*/);
-  assert.match(section('### 3.0'), /\*\*Open the test window \[approval\]\.\*\*/);
-  assert.match(section('### 1.1'), /\*\*Sync \[approval\]\.\*\*/);
-  assert.match(prompt, /A yes never carries to the next step\./);
+// Ruling (Krish, 2026-10-28): "Remove all the approvals. Just have this co-work prompt punch through everything."
+// The run carries his yes up front: no step stops to ask, but the one hold on the live push, the
+// never list and the painting cap stay, because they protect real buyers and real money.
+test('the run carries Krish\'s yes up front: no step stops to ask, and the hold, the never list and the cap stay', () => {
+  assert.deepEqual(prompt.match(/\[approval/g) || [], [], 'no step is marked for approval');
+  for (const ask of [/\bAsk:/, /\bOn yes\b/, /wait for Krish's go/, /Krish chooses/, /on its own yes/, /A yes never carries/]) assert.doesNotMatch(prompt, ask);
+  assert.match(prompt, /Ruling \(Krish, 28 October\): "Remove all the approvals\. Just have this co-work prompt punch through everything\."/);
+  assert.match(prompt, /Do not stop to ask\./);
+  // the one hold: a theme that failed on the copy never reaches buyers
+  assert.match(prompt, /never push to the live theme unless the copy passed 2\.2 and 2\.3/);
+  assert.match(section('### 2.4'), /\*\*The one hold\.\*\* Push live only when 2\.2 is all clear/);
+  // never: a real card, a Printful confirmation, a message to a customer, anything not named
+  for (const never of [/confirm, release or pay for a Printful order/, /use a real card, or send a message to a customer or a vendor/, /change or delete anything this prompt does not name, or touch a real customer's order/]) assert.match(section('## Rules for every part'), never);
+  // every fallback and skipped step is reported
+  assert.match(section('## The report'), /\*\*Fallbacks\.\*\* Every fallback taken and every step skipped, with why\./);
 });
 
 test('the Teeinblue rule, the portrait campaign and the handle readback are spelled out', () => {
-  assert.match(prompt, /Never press Update or Sync in Teeinblue without its own \[approval\]/);
+  assert.match(prompt, /Press Update or Sync in Teeinblue only in the steps that name them, always after the backup/);
   assert.match(prompt, /"Heartside City Screenprint - DRAFT 2026-10-23"/);
   for (const handle of ['your-dogs-illustrated-mug', 'your-dogs-portrait', 'your-dogs-personality-blanket']) assert.ok(prompt.includes('`' + handle + '`'), handle);
   assert.match(prompt, /handle-check\.mjs/);
@@ -125,7 +130,7 @@ test('order 2\'s dog fits the 14-letter signature and carries an apostrophe', ()
 
 test('the photo test and the painting cap are in it', () => {
   assert.match(prompt, /\?hsdebug=photo/);
-  assert.match(prompt, /Paint up to 14 times across Parts 2 and 3/);
+  assert.match(prompt, /Krish approved up to 14 paintings across Parts 2 and 3/);
   assert.match(prompt, /A refused photo \(blurry, too small, HEIC\) never paints/);
 });
 
