@@ -2,7 +2,7 @@
 
 Shopify on the Basic plan draws a gift's nested checkout line with its variant's own catalog picture. On 27 October that picture was set to the blank supplier base, so that no example dog would stand in for the buyer's own dog, and since then buyers have seen a blank white thumbnail under their design. The Artist's touch add-on showed the heart favicon as a stand-in.
 
-These tiles replace both. Each shows the gift's shape and Buddy's heart where the painting goes. They carry no example dog and make no claim beyond the gift itself.
+These tiles are to replace both. CoWork attaches them on Krish's yes in Part 2.5 of the [CoWork prompt](../../docs/review/COWORK-LIVE-ACCEPTANCE.md), right after the live push in 2.4. Only the theme pushed in 2.4 hides the gift tiles from the product pages, so a gift tile attached earlier would show to buyers as a product photo. Each shows the gift's shape and Buddy's heart where the painting goes. They carry no example dog and make no claim beyond the gift itself.
 
 | File | Goes on | Alt text, exactly |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ These tiles replace both. Each shows the gift's shape and Buddy's heart where th
 
 - **"checkout tile" in the alt text keeps a tile off the product page.** `snippets/hs-product-gallery.liquid`, the variant picture map in `sections/hs2-product.liquid`, Buddy's gift fan in `sections/hs3-chat.liquid` and `hs2.js` all hide any photo whose alt text says so.
 - **Only blank variants change.** A gift's tile is attached only to the variants that `tools/preview/handle-check.mjs` reports as showing the blank base, which it names by gift and variant title. The product's first photo does not change.
-- **The add-on's tile keeps its own name.** The heart stand-in is stored in Shopify as `artists-touch.png`, so the tile is `artists-touch-tile.png`. `handle-check.mjs` fails while the heart is the add-on's first picture, by its file name, alt text or media id, and passes the tile.
+- **The add-on's tile keeps its own name.** The heart stand-in is stored in Shopify as `artists-touch.png`, so the tile is `artists-touch-tile.png`. `handle-check.mjs` fails while the heart is the add-on's first picture, by its file name, alt text or media id, and passes the tile. With `--warn-media`, as the guarded theme push and most CoWork prompt steps run it, the heart is a `warn` line instead and does not fail the check. The hourly storefront guard runs it without the flag.
 - **The mug's color variants keep their own photos.** The product page swaps between them when the color changes.
 - **The add-on's tile is not hidden.** It is that product's real picture.
 

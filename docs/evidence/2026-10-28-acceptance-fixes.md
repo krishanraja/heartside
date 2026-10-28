@@ -98,7 +98,7 @@ Rulings (Krish, 28 October), also in the commit bodies:
 
 **Guards**
 - `tools/preview/catalog.mjs` holds the clean handles.
-- `handle-check.mjs` reads the store without a browser: before and after every guarded push, and hourly (`storefront-guard.yml`, one issue on failure, paths only).
+- `handle-check.mjs` reads the store without a browser: before and after every guarded push, and hourly (`storefront-guard.yml`, one issue on failure, paths and public variant titles only).
 - Both gates fail on a redirected product page, and gain an Android Edge view.
 - CI runs `render.mjs` and `chat.mjs` with layout checks.
 - The n8n tests exit non-zero on failure.
@@ -107,7 +107,7 @@ Rulings (Krish, 28 October), also in the commit bodies:
 
 ## The review before the merge
 
-An independent review of the whole PR sent 35 findings to a second reviewer told to refute each one: 29 held and 6 were refuted. All 29 are fixed, each with a test that fails on the code before it, in four groups, and each group was re-read by a third checker. The checkers confirmed all 29 and found two follow-ups in the fixes themselves, both now fixed with tests: the Artist's touch hold below, and the halo under the choose screen's stuck button. They also found one test that could not fail, the cart redraw case, which now does.
+An independent review of the whole PR sent 35 findings to a second reviewer told to refute each one: 29 held and 6 were refuted. All 29 are fixed: the four code groups below, each fix with a test that fails on the code before it, and one revision of the CoWork prompt, with four doc tests that fail on the old prompt. A third checker re-read each group. The checkers confirmed all 29 and found two follow-ups in the fixes themselves, both now fixed with tests: the Artist's touch hold below, and the halo under the choose screen's stuck button. They also found one test that could not fail, the cart redraw case, which now does, and the storefront guard's comments, which said its issue names paths and counts only and now include the public variant titles.
 
 - **Photo.**
   - Safari writes its own Exif and Photoshop blocks into every canvas JPEG, so every iPhone photo would have been refused as "metadata remains". Those blocks are now cut from the encoder's output before the metadata check, which still refuses anything from the source photo.
@@ -154,6 +154,7 @@ An independent review of the whole PR sent 35 findings to a second reviewer told
 - **Rendered pass** over the chat, product pages and cart at 360×640 (Android Edge), 390×844, 1280×900 and 1620×889.
   - It found three more glitches, now fixed with tests: the doubled "Buddy's pick", "Jo-/anne" split in Buddy's bubble, and the sticky Next clipping field borders by 2 px.
   - Left to Track B: the reveal's button below the fold at 360×640, and the product page's length.
+- **Documentation pass:** every current document was read in full against the merged code. 99 stale or missing claims were reported and each was put to a second reader who tried to disprove it: 84 held and 15 did not. A final completeness pass found 17 more. All 101 are corrected, among them seven steps in the CoWork prompt that would have stalled or misled the live run.
 - **Photo check:** run in Chromium against the test photos. The blurry and too-small files are refused, and a 6000×4489 camera original is accepted and sent at 4096 px.
 
 ## Not proved here
@@ -172,4 +173,5 @@ An independent review of the whole PR sent 35 findings to a second reviewer told
 
 ## Found while doing this, not fixed here
 
-- **The store handle is public.** It is on the never-publish list, and it has been in the public tree since early October: in two workflow files, in the n8n builder and its generated guards, and in archived prompts. It is not a credential. Moving it out needs a repository variable for the workflows and a private origin list for n8n. That is proposed as its own task.
+- **The store handle is public.** It is on the never-publish list, and it has been in the public tree since early October. It is in two workflow files, in the order QC script, its test and its setup note, in the n8n builder and the typed and compose workflows and guards it writes, in archived and history prompts and handoffs, and in older dated evidence records. It is not a credential. Moving it out needs a repository variable for the workflows and a private origin list for n8n, and the order QC script, test and setup note need a placeholder in its place, as the checkout-image files already use. That is proposed as its own task.
+- **Two more never-publish items are public.** The documentation pass found Teeinblue campaign ids in `design/teeinblue/mug-v3/README.md` and dated evidence reports, and the n8n instance address and the two chat webhook addresses as setting defaults in `shopify/sections/hs3-chat.liquid`, in one dated evidence record and in three history files. The chat calls those webhooks from the buyer's browser, so any visitor can see them. Neither is a credential. They go in the same task.

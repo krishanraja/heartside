@@ -3,7 +3,7 @@
 // before and after every guarded theme push, and every hour (storefront-guard.yml).
 //
 //   node tools/preview/handle-check.mjs                     # heartside.io, the live theme
-//   node tools/preview/handle-check.mjs --theme <id>        # the home page and menu of that theme too
+//   node tools/preview/handle-check.mjs --theme <id>        # that theme's home page, menu and product pages too
 //   node tools/preview/handle-check.mjs --warn-media        # pictures warn instead of failing
 //   node tools/preview/handle-check.mjs --base http://127.0.0.1:8080   # a local stand-in (tests)
 //

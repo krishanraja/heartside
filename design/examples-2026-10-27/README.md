@@ -4,7 +4,7 @@ Krish asked for real examples on the site that show different personalities and 
 
 - `jobs.json`: 19 jobs, cap 20. Three stock dogs (photos already in this repository under `assets/photos/`; Krish confirmed they are not customer photos), each in one style: the pug in Vintage screenprint, the poodle in Painterly, the golden puppy in Cut-paper collage. Each dog appears in Sentimental and Hilarious on the mug, the portrait and the blanket, plus the pug portrait at Warm with a wink, so the slider demo can show one dog at all three stops.
 - `prompts/<id>.txt`: the complete prompt for each job. It is the committed Teeinblue prompt (`nativePrompt` in `tools/print-art/native-candidate.mjs`) with its four fields filled exactly as the storefront fills them: style, tone, energy from the breed (pug and poodle `devoted-close`, golden retriever `eager-open`), and personality facts that are plain and true of the photo.
-- Regenerate with `node tools/print-art/example-batch.mjs`; CI checks the files are fresh with `--check`. Never edit a prompt by hand.
+- This batch is kept as generated. `tools/print-art/example-batch.mjs` neither rebuilds nor checks it. Never edit a prompt by hand.
 
 The example names (Waffles, Rosie, Maple) are labels for examples only. Every image is shown on the site as an Example, and a person reviews each one before it is used.
 

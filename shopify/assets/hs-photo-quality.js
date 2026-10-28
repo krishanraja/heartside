@@ -7,7 +7,7 @@
    Hard rejects (never overridable): size, blur, dark, bright, unreadable, heic.
    HEIC or HEIF (by type or file name) is refused before any decode, with guidance to choose a JPEG
    (Krish, 28 Oct). The whole check gets 10 seconds (checkTimeout; Krish's ruling: "a 10-second
-   limit, then the photo goes on"). Decoding and measuring may use all of it; past that the check
+   limit, then the photo goes on"). Decoding may use all of it; a decode past it
    fails open with verdict ok and timedOut true, and the photo goes on, where the painter's own
    minimum size check still applies. A decode that never settles used to hold every later pick.
    The detector gets what is left, at most its own timeout: it used to start a fresh 4 seconds

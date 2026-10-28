@@ -18,7 +18,7 @@ Krish, 28 October: "go ahead, wire them in behind the switch, just set them to o
   - `examples-site.test.mjs` fails if any image is on the page without its job and its kept review, or sits at the wrong tone.
 - **The switch.** All of this sits behind the gift section's `examples_on` setting, which is on in `templates/index.json`.
 
-The examples were made with the single-direction prompts. Real orders paint the same way only once Teeinblue has the [prompt spec](../../tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md), which is Part 1.1 of the [final CoWork prompt](../review/COWORK-LIVE-ACCEPTANCE.md).
+The examples were made with the single-direction prompts. CoWork applied that [prompt spec](../../tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md) to the three campaigns later on 28 October and read back its hashes. Part 1.1 of the [current CoWork prompt](../review/COWORK-LIVE-ACCEPTANCE.md) now applies the stated-toy spec that follows it.
 
 ## Readback on production
 
@@ -38,5 +38,5 @@ Every browser check refused requests to n8n and anything that is not a GET, so n
 
 ## Not proved
 
-- **Real orders.** That a real order paints with the chosen tone and style. That needs the Teeinblue prompt spec applied, then the mock orders in Part 3 of the CoWork prompt.
+- **Real orders.** That a real order paints with the chosen tone and style. The prompt spec is now applied, and the mock orders in Part 3 of the CoWork prompt are the check.
 - **Conversion.** Whether the examples change conversion. The number to watch is Shopify net sales, trailing four weeks.

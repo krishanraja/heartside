@@ -5,4 +5,4 @@ The clickable phone prototype of the "gifts from your dog" journey that Krish ap
 - `Main.dc.html`: the whole journey in one file (home, chat with Biscuit, reveal, choose gifts, share card). Its script block holds every scripted line: Biscuit's reactions, the chip answers, the follow-ups, and the gift lines each answer writes (`homeQ`, `lineFor`, the step blocks). Use those words as written.
 - `canvas.json`: the canvas index.
 
-This is a reference for flow, layout and copy, written in the Design canvas format (`<x-dc>`, `DCLogic`), not production code. It opens only inside the claude.ai canvas. The example dog photo is an uploaded asset in the canvas and is not in this repo. The spec it implements is `docs/V3-GIFTS-FROM-YOUR-DOG.md`.
+This is a reference for flow, layout and copy, written in the Design canvas format (`<x-dc>`, `DCLogic`), not production code. It opens only inside the claude.ai canvas. The example dog photo is an uploaded asset in the canvas and is not in this repo. The spec it implements is `docs/history/V3-GIFTS-FROM-YOUR-DOG-2026-10-13.md`.

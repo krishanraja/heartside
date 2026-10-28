@@ -22,7 +22,7 @@ HSBreeds.parents('cavapoo')
 
 ## Rules it follows
 
-1. Normalize as `dog_corpus_completed_readme.md` section B says. It reproduces every one of the 858 corpus and addition keys exactly; letters with no ASCII base (the corpus has "ø") are dropped, as the corpus build did.
+1. Normalize as `dog_corpus_completed_readme.md` section B says. It reproduces every one of the 871 corpus and addition keys (827 and 44) exactly; letters with no ASCII base (the corpus has "ø") are dropped, as the corpus build did.
 2. Krish's call (15 Oct, "pit" added 19 Oct): "pit bull", "pitbull", "pittie" and "pit" show "Pit Bull" and use the American Staffordshire Terrier row.
 3. Then `us_lookup_additions.csv`, then `breed_lookup_normalized.csv`, exact match only. Each breed's and cross's own display name is an exact query too, when nothing else owns it, so a name the type-ahead offers always finds its own row again.
 4. No match: if the words name exactly one family ("poodle mix"), that family row; otherwise the mixed-breed row. `lookup()` never accepts a near spelling.

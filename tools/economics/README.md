@@ -1,8 +1,8 @@
 # Evidence-aware net economics
 
-Current owner policy (October26): maximize total net profit subject to a30% net operating floor. `calibration.json.target_margin` is0.30; see `docs/evidence/2026-10-26-pricing-ruling.md`. Actual costs remain unresolved; no net certification or live offer is implied.
+Current owner policy (October 26): maximize total net profit subject to a 30% net operating floor. `calibration.json.target_margin` is 0.30; see `docs/evidence/2026-10-26-pricing-ruling.md`. Actual costs remain unresolved; no net certification or live offer is implied.
 
-Historical direction (October24; superseded): defer labor calibration and produce cost price plus margin for now. `python tools/economics/cost_price.py tools/economics/calibration.json --output <path.md>` creates the provisional 50% delivered-supplier-cost-margin view from the 13 observed quotes. It verifies each total and rounds the price upward to cents. This view excludes operating costs and does not certify net margin or authorize live prices. The all-cost model below remains intact, with missing inputs still unknown.
+Historical direction (October 24; superseded): defer labor calibration and produce cost price plus margin for now. `python tools/economics/cost_price.py tools/economics/calibration.json --output <path.md>` creates the provisional 50% delivered-supplier-cost-margin view from the 13 observed quotes. It verifies each total and rounds the price upward to cents. This view excludes operating costs and does not certify net margin or authorize live prices. The all-cost model below remains intact, with missing inputs still unknown.
 
 Offline planning engine for E1 of the October 24 continuation. It never calls a service, changes a price or approves a release. `calibration.json` contains account observations and explicit missing inputs. `working-sensitivity.json` is a deliberately hypothetical override, not an approved commercial case.
 
@@ -21,9 +21,9 @@ Use `--output <local-path>` to save JSON. Do not commit customer records, invoic
 - `working-sensitivity.json`: the repo working set (AI USD0.50 and support USD2 per order, USD10 acquisition, about USD142 per 30 days of overhead, zero supplier tax, no checkout app), plus one USD0.13 redo per gift and the Artist's touch labor assumptions.
 - `economics-md-sensitivity.json`: the `docs/ECONOMICS.md` operating set (AI USD2.50, support USD5, no paid acquisition, about USD200 per 30 days before the app). Stack it after the working set.
 - `supplier-tax-sensitivity.json`: Printful supplier tax borne at the amounts recorded in `calibration.json`.
-- `checkout-app-sensitivity.json`: adds the USD69 per 30 days checkout app overhead row.
+- `checkout-app-sensitivity.json`: adds the USD69 per 30 days checkout app overhead row. The app is kept through Christmas (Ruling, Krish, 28 October), so stack this file for any current case.
 
-Bundle offer, free redo and Artist's touch (October 27 owner decisions, all inactive):
+Bundle offer, free redo and Artist's touch (October 27 owner decisions, live since 27 October; [`../../NOW.md`](../../NOW.md) owns their current state):
 
 ```powershell
 python tools/economics/bundle_economics.py tools/economics/calibration.json --orders-per-period 25

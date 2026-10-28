@@ -80,7 +80,7 @@ cd tools/preview && npm ci && npx playwright install chromium
   - "Add to cart" is in sentence case.
 - **Cart.**
   - Each Artist's touch line sits directly under its gift and shows that gift's design with a brush mark.
-  - "Add our artist's touch, $29" adds it, then reads "Added. Remove".
+  - On the product page, "Add our artist's touch, $29" turns it on and reads "Added. Remove". It goes in the cart with the gift. On the cart page, a gift without one offers "Want it reworked by hand? Artist's touch, $29. Adds 5 days."
   - A design is one unit: its plus is disabled.
   - The add-on says "Adds 5 days", and an uploaded photo shows as "View photo" with a thumbnail.
 - **Redo.**
@@ -102,6 +102,7 @@ cd tools/preview && npm ci && npx playwright install chromium
     - It ends "all clear" with exit 0 when every handle, price and address is intact.
     - Until the checkout tiles go on in Part 2.5, it also prints `warn` lines for the blank variant pictures and the Artist's touch stand-in. Those are expected there.
     - Exit 1 and a `FAIL` line mean a handle, price or address broke.
+    - Exit 2 means a Cloudflare challenge, a rate limit, a server error or a network failure kept it from reading the store. That is never a pass: wait a few minutes and run it again.
   - On 28 October a campaign Update renamed two handles to the campaign title, with every sync flag off. If a handle changed, restore it in Shopify admin on [approval], run the check again, then stop and report.
 - **Never, in any part:**
   - confirm, release or pay for a Printful order, or press a fulfillment control;
@@ -154,7 +155,7 @@ For each campaign:
    - mug `d34640f824d5889ff6cb6c35e800900507eb1c7cce92c50a5173952b11186625`
    - portrait `2b5225613b396749db687005ab6b1afdc6085a45a5a214e2b6fa85185f023bac`
    - blanket `a1af6a85c10734a90d8fcab2fec532f22ab3a6f6aba9bf78b870be3616d3e865`
-4. **Check the handles.** Apply the Teeinblue rule: read back the three handles and run `handle-check.mjs`.
+4. **Check the handles.** Apply the Teeinblue rule: read back the three handles and run `node tools/preview/handle-check.mjs --warn-media`.
 5. **Sync [approval].** Sync only on its own yes, with the catalog and image flags off, then read back the handles again.
 
 Stop and report if the editor rejects or shortens a prompt. Never trim one to fit.
@@ -289,7 +290,7 @@ The live gate includes Krish's Android Edge size, 360×640. Each command ends wi
 3. Pick `reject-blurry.jpg` from `docs/review/mock-order-photos/`, copied to the phone.
    - **Checkpoint:** the blurry message shows under the button and right after the photo field, and nothing paints.
 4. Pick `large-camera-original.jpg` (6000×4489).
-   - **Checkpoint:** it is accepted. The log shows the size it was sent at, at most 4096 px on its long side. Painting 1.
+   - **Checkpoint:** it is accepted. The log shows the size it was sent at, at most 4096 px on its long side. Painting 1. Let it finish, and Save if the framing dialog opens, before the next pick. Until then a new pick is held and nothing paints.
 5. If the phone has a photo saved as HEIC, pick it.
    - **Checkpoint:** the HEIC message, and nothing paints. If there is none, say so.
 6. A real photo of a dog from Krish's own camera roll. Painting 2.
@@ -419,7 +420,7 @@ Do this after 2.6, so the push and the editor change never cross.
 
 - **Chat.** Start on the home page with a clean session. Use chips everywhere except the home question, where you type: "she waits by the door!! every single day". The recipient is a partner, "Sam". Then press "Show me".
   - If Buddy asks a follow-up, it names only the door, never a car or a toy.
-  - **Checkpoint: the note,** on Buddy's pick screen, on the mug or portrait tab. While Buddy writes, the note says "Buddy is writing your note…". If the line changes after you have read it, the note says it changed. "What I'll paint" shows the typed words tidied: "Waits by the door. Every single day."
+  - **Checkpoint: the note,** on Buddy's pick screen, on the mug or portrait tab. While Buddy writes, the note says "Buddy is writing your note…". If the line changes after you have read it, the note says "Buddy polished this." "What I'll paint" shows the typed words tidied: "Waits by the door. Every single day."
   - Tap the Blanket tab. Set its "Artwork tone" slider to Sentimental.
   - Press "Choose Honey's gifts", leave only the blanket selected, then press the Personalize button, which names the blanket and $129.
 - **Product page.**
@@ -443,7 +444,7 @@ Do this after 2.6, so the push and the editor change never cross.
   - Type "Sir Biscuit O'Malley" into the dog's name field.
     - **Checkpoint: a long name.** The field stops at 14 characters, "Sir Biscuit O'". Under it: "Signed on the print: Love, Sir Biscuit O'" and "That's the most that fits. Up to 14 fit in the signature."
   - Clear the field and type "Bo O'Malley".
-    - **Checkpoint:** the line under it reads "Signed on the print: Love, Bo O'Malley".
+    - **Checkpoint:** the line under it reads "Signed on the print: Love, Bo O'Malley", with "3 letters left. Up to 14 fit in the signature." below it.
   - In the note field, type "For Pat & Jo, who saved me the good chair". Style Comic book, tone Hilarious.
   - Upload the photo, check the painting and the tick, then add.
   - Every place the names show (preview, cart, checkout, order) shows `Bo O'Malley` and `&`, never `&#39;` or `&amp;`.
@@ -464,7 +465,7 @@ Do this after 2.6, so the push and the editor change never cross.
 - **Product page.**
   - Favorite toy: "Blue rope ball".
   - Press "Add our artist's touch, $29". It reads "Added. Remove". Press Remove, then add it again.
-  - Write: "Paint her dark brown collar, and her ears as fluffy as photo 1". Photo 1 is `mock-order-photos/close-up.jpg`, tagged "Another photo of my dog".
+  - Write: "Paint her dark brown collar, and her ears as fluffy as photo 1". Attach `mock-order-photos/close-up.jpg` as photo 1, and change its tag from "Favorite toy" to "Another photo of my dog".
   - Upload the main photo, tick, and add.
     - **Checkpoint:** "Sending your photos to our artist." shows beside Add to cart while the photo uploads. Tap Add to cart once more: it says "One moment. Adding our artist's touch." and adds nothing twice.
 - **Cart.**
@@ -498,7 +499,7 @@ Do this after 2.6, so the push and the editor change never cross.
 
 **Order 5: Krish's Android phone, bad photos, leaving mid-paint, raising quantity and a foreign address.**
 
-Krish runs this on his Android phone in Edge, on heartside.io, with `?hsdebug=photo` on the product page. He picks every file himself.
+Krish runs this on his Android phone in Edge, on heartside.io, with `?hsdebug=photo` on the product page. He picks every file himself, so before he starts, ask him to copy `reject-too-small.jpg` from `docs/review/mock-order-photos/` and `maltipoo-on-deck.jpg` from `assets/photos/` to the phone, beside `reject-blurry.jpg` from Part 2.3.
 
 - **Bad photos.**
   - `reject-blurry.jpg`: the blurry message under the button, and nothing paints.
@@ -554,14 +555,14 @@ Write it for the Claude Code session, with nothing from the private list.
    - the three new prompt hashes as read back;
    - the n8n comparison result for each workflow;
    - the blank file names and the product redirects, for `catalog.mjs`;
-   - the Function Studio dates;
-   - the Christmas dates with links.
+   - the Function Studio dates.
 3. **Part 2.**
    - The push runs' result lines.
    - The three gates on the copy and on production, each all clear or the failing lines.
    - The checkout tiles and the Artist's touch picture: what was attached to which variant, and the readback.
    - For each phone browser: "adds in one tap" or what happened, and the photo log.
    - The storefront guard's run.
+   - The Christmas cut-off dates with links, and the date set or why it was left empty.
 4. **Part 3, for each order.**
    - Start and checkpoint times, and what was expected against what was seen at each checkpoint.
    - Totals: items, discount, shipping, tax and total.

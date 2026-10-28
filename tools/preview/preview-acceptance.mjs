@@ -1,4 +1,4 @@
-// Part A of docs/review/COWORK-LIVE-ACCEPTANCE.md, automated: the real store (Helio's real
+// The store gate in Parts 2.2 and 2.6 of docs/review/COWORK-LIVE-ACCEPTANCE.md, automated: the real store (Helio's real
 // header, Teeinblue's real form, real products), optionally on an unpublished theme, at a phone,
 // a desktop and Krish's Android Edge size. It checks what a buyer would meet: one Heartside on
 // every page, "Start with your dog" inside the first screen, the chat's Back, Forward and reload,

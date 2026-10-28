@@ -11,8 +11,8 @@
 # Before pushing it reads the store's product addresses (tools/preview/handle-check.mjs,
 # no browser): a broken one stops the run before anything is written, because a push
 # would carry index.json product settings that point at the clean handles. After the
-# push it reads the store back the same way, with the pushed theme's home page and
-# phone menu. It saves the theme's templates and section groups as a run artifact
+# push it reads the store back the same way, with the pushed theme's home page, product
+# pages and phone menu. It saves the theme's templates and section groups as a run artifact
 # ("theme-backup-run-..."), because pushing templates/*.json replaces any
 # theme-editor changes to them.
 #
@@ -23,7 +23,7 @@
 # (.github/scripts/footer-note.mjs). Tick "footer_remove_signup" to switch off Helio's email
 # signup ("Keep an eye on us") in the footer (.github/scripts/footer-signup.mjs).
 #
-# One-time setup (see docs/COWORK-PROMPT.md):
+# One-time setup:
 #   Repository secret SHOPIFY_CLI_THEME_TOKEN = a password from Shopify's free
 #   Theme Access app. Never commit it or paste it anywhere else.
 

@@ -1,6 +1,6 @@
 # Teeinblue native prompt spec, 28 October 2026 (stated toy rule)
 
-Status: **proposed vendor change, not applied.** The prompts live on the three Heartside artworks today are the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, which stays unchanged as the record of what is live. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, each step on Krish's yes at that step, with a backup first and the product handles read back after.
+Status: **proposed vendor change, not applied.** The prompts live on the three Heartside artworks today are the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, whose prompt blocks and hashes stay unchanged as the record of what is live. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, each step on Krish's yes at that step, with a backup first and the product handles read back after.
 
 ## What changed since 27 October
 
@@ -144,9 +144,9 @@ CoWork does this on Krish's computer, one campaign at a time, and each numbered 
 3. Replace the photo effect's prompt with the matching block above. Change no other effect setting and no field.
 4. Validate the template. It must report zero errors and zero warnings.
 5. Read back the saved prompt's SHA-256; it must equal this file's value for that format.
-6. Read back the three product handles: `your-dogs-illustrated-mug`, `your-dogs-personality-blanket` and `your-dogs-portrait`. On 28 October a campaign Update renamed two of them to the campaign title even with every sync flag off. If any handle changed, restore it first, then stop and report.
+6. Read back the three product handles in Shopify admin: `your-dogs-illustrated-mug`, `your-dogs-personality-blanket` and `your-dogs-portrait`. On 28 October a campaign Update renamed two of them to the campaign title even with every sync flag off. Then run `node tools/preview/handle-check.mjs --warn-media`. It must end "all clear" with exit 0. If any handle changed, restore it in Shopify admin on its own yes, run the check again, then stop and report. If the check ends any other way, stop and report.
 7. Sync only with catalog and image flags off, and only on its own yes. Read back the handles again after it.
-8. Verify with one approved painting: a Sentimental blanket whose Personality carries a toy fact. The stated toy must appear, as described, in at least two motifs. That painting comes out of the agreed painting budget.
+8. Verify with one approved painting: a Sentimental blanket whose Personality carries a toy fact. The stated toy must appear, as described, in at least two motifs. In the CoWork release run this is order 1 in Part 3, inside the painting cap agreed in Part 2.3. Do not paint for it while applying the spec.
 
 Stop and report, without shortening anything in the vendor editor, if the editor rejects or truncates a prompt or a field value.
 
