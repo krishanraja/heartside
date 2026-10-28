@@ -8,6 +8,7 @@ import {readFileSync, mkdirSync} from 'node:fs';
 import {chromium} from 'playwright';
 import {Liquid} from 'liquidjs';
 import {transformSync} from 'esbuild';
+import {fileURLToPath} from 'node:url';
 
 const root = new URL('../../', import.meta.url);
 const source = readFileSync(new URL('shopify/assets/hs2.js', root), 'utf8');
@@ -48,7 +49,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.equal(painting.animated, 'hs-art-wash', 'the wash moves');
       assert.equal(await page.evaluate(() => { const st = document.querySelector('[data-hs2-stage]'); return st.classList.contains('hs-painting') && getComputedStyle(st, '::after').content; }), '"Painting Pip"', 'the gallery paints too');
       assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-art-photo]').hidden), true, "the buyer's photo shows as the sketch being painted");
-      await page.screenshot({path: new URL(`${kind}-painting.png`, out).pathname});
+      await page.screenshot({path: fileURLToPath(new URL(`${kind}-painting.png`, out))});
       // forty seconds in, the bar has moved most of the way and the line says so, without claiming the end
       const later = await page.evaluate(() => { sessionStorage.setItem('hs-art-start:7', String(Date.now() - 40000)); artStage(true); const bar = document.querySelector('[data-hs-art-bar]'); return {pct: Number(bar.getAttribute('aria-valuenow')), line: document.querySelector('[data-hs-art-line]').textContent}; });
       assert.ok(later.pct > 60 && later.pct < 92, String(later.pct)); assert.match(later.line, /Nearly there/);
@@ -70,7 +71,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.doesNotMatch(done.text, /I have checked the finished artwork/);
       if (kind === 'mug') assert.match(done.text, /the note and signature/); else assert.doesNotMatch(done.text, /note and signature/);
       await page.waitForTimeout(1000); // the reveal
-      await page.screenshot({path: new URL(`${kind}-done.png`, out).pathname, fullPage: true});
+      await page.screenshot({path: fileURLToPath(new URL(`${kind}-done.png`, out)), fullPage: true});
       assert.equal(await page.evaluate(() => nudgeReview() && document.querySelector('[data-hs2-artwork-accept-wrap]').classList.contains('is-nudged')), true, 'a blocked Add to cart points at the review');
       // nothing to show: no card at all
       assert.equal(await page.evaluate(() => { saved = false; return artStage(false) === 'idle' && document.querySelector('[data-hs-art]').hidden; }), true);

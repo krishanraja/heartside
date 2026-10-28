@@ -3354,12 +3354,16 @@
 
   // Every gift needs Teeinblue's photo and note. Helio's collection quick-add
   // submits a bare variant, so a catalog card must open the product form first.
+  // Every card does, whatever its handle: a list of handles let a renamed one
+  // (28 Oct, a Teeinblue campaign Update) keep the bare quick add. Only the
+  // Artist's touch add-on, which is no gift, keeps Helio's own button.
   function personalizeCatalogCards() {
-    var handles = ['your-dogs-illustrated-mug', 'your-dogs-personality-blanket', 'your-dogs-portrait', 'the-morning-mug', 'the-couch-blanket', 'the-framed-print', 'the-tree-ornament'];
+    var keep = ['artists-touch'];
     document.querySelectorAll('product-card quick-add-component').forEach(function (quick) {
       var card = quick.closest('product-card');
       var productLink = card && card.querySelector('a[href*="/products/"]');
-      if (!productLink || handles.indexOf(handleOf(productLink.href)) === -1) return;
+      var handle = productLink ? handleOf(productLink.href) : '';
+      if (!handle || keep.indexOf(handle) !== -1) return;
       var link = quick.querySelector('.hs2-catalog-personalize');
       if (link) { link.href = productLink.href; return; }
       link = document.createElement('a');
