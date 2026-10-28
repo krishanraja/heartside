@@ -8,6 +8,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {Liquid} from 'liquidjs';
 import {transformSync} from 'esbuild';
+import {renderCart, gift, addon, rowOf, prepared, ID2} from './cart-fixture.mjs';
 
 const liquid = readFileSync(new URL('../../shopify/snippets/cart-products.liquid', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const start = liquid.indexOf('<td\n                  class="cart-items__media"'), end = liquid.indexOf('</td>', start) + '</td>'.length;
@@ -61,28 +62,55 @@ test('anything else keeps the product photo', async () => {
   }
 });
 
+// A9b (28 Oct): the Artist's touch line had no picture of what it reworks (a blank, then a heart).
+test("an Artist's touch shows the design it reworks, with a brush, not the add-on's product photo", async () => {
+  const {html} = await renderCart([addon(0, ID), gift(1, ID)]);
+  const line = rowOf(html, '777:addon-0');
+  assert.equal(designOf(line).replace(/&amp;/g, '&'), prepared(ID), "its gift's prepared design");
+  assert.match(line, /alt="Artist's touch for this design"/);
+  assert.match(line, /<span class="hs2-cart-addon-badge" aria-hidden="true"><svg/);
+  assert.doesNotMatch(line, /\/mock\/artists-touch\.jpg/);
+  assert.match(rowOf(html, '101:merged-1'), /alt="Your personalized artwork"/, 'the gift keeps its own words');
+  assert.doesNotMatch(rowOf(html, '101:merged-1'), /hs2-cart-addon-badge/);
+  // with no product photo at all, it still shows the design
+  const bare = addon(0, ID); bare.image = null;
+  assert.equal(designOf(rowOf((await renderCart([bare, gift(1, ID)])).html, '777:addon-0')).replace(/&amp;/g, '&'), prepared(ID));
+  // an add-on whose gift has left the cart has no design to show
+  const orphan = rowOf((await renderCart([addon(0, ID2), gift(1, ID)])).html, '777:addon-0');
+  assert.match(orphan, /\/mock\/artists-touch\.jpg/); assert.doesNotMatch(orphan, /data-hs2-design|hs2-cart-addon-badge/);
+});
+
 for (const minified of [false, true]) {
   const load = ctx => { const code = ['cartDesignRetry', 'cartPicture', 'bundleLine'].map(section).join('\n'); vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, ctx); return ctx; };
-  test(`${minified ? 'minified' : 'source'}: a server-drawn design is never swapped, and the bundle line reads the cart once per cart`, async () => {
+  test(`${minified ? 'minified' : 'source'}: a server-drawn design is never swapped`, () => {
     const writes = [];
     const designed = {complete: true, naturalWidth: 300, getAttribute: k => k === 'src' ? '//cdn.teeinblue.com/customizations/' + ID + '.jpg' : null, addEventListener() {},
       set src(v) { writes.push(v); }, setAttribute: k => writes.push(k)};
-    const row = (key, qty) => ({getAttribute: k => (k === 'data-key' ? key : null), querySelector: s => (s === '.cart-items__media img[data-hs2-design]' ? designed : s === 'input[type="number"]' ? {value: String(qty)} : null)});
-    let fetches = 0, rows = [row('a', 1)], line = null;
-    const totals = {parentNode: {insertBefore: el => { line = el; }}};
-    const ctx = load({setTimeout, shopRoot: () => '/',
-      fetch: () => { fetches++; return Promise.resolve({json: async () => ({items: [{product_title: 'Blanket'}], total_discount: 0})}); },
-      document: {querySelector: s => (s === '[data-hs-bundle-live]' ? {} : s === '.cart-totals__tax-note' ? totals : s === '[data-hs2-bundle-line]' ? line : null),
-        querySelectorAll: () => rows, createElement: () => ({setAttribute() {}, remove() { line = null; }})}});
-    ctx.cartPicture(rows[0], 'https://cdn.teeinblue.com/customizations/' + ID + '.jpg');
+    const ctx = load({setTimeout, shopRoot: () => '/', document: {}});
+    ctx.cartPicture({querySelector: s => (s === '.cart-items__media img[data-hs2-design]' ? designed : null)}, 'https://cdn.teeinblue.com/customizations/' + ID + '.jpg');
     assert.deepEqual(writes, [], 'the design the server drew is left alone');
+  });
+  // N5 (28 Oct): gifts were counted by a title match, so "Artist’s touch" (a curly apostrophe) counted
+  // as a gift, and only the first summary on the page got the line.
+  test(`${minified ? 'minified' : 'source'}: the bundle line counts gifts by link, reaches every summary and reads the cart once per cart`, async () => {
+    const row = (key, qty) => ({getAttribute: k => (k === 'data-key' ? key : null), querySelector: s => (s === 'input[type="number"]' ? {value: String(qty)} : null)});
+    const note = () => ({attrs: {}, setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; }, removeAttribute(k) { delete this.attrs[k]; }, parentNode: {insertBefore() {}}});
+    const notes = [note(), note()], NUDGE = 'Add a second gift and save 15%. Three saves 20%.';
+    let fetches = 0, rows = [row('a', 1), row('b', 1)];
+    const cart = {items: [{product_title: 'Your Dog’s Illustrated Mug', properties: {_customization_id: ID}}, {product_title: 'Artist’s touch', properties: {_hs_addon_for: ID}}], total_discount: 0};
+    const ctx = load({setTimeout, shopRoot: () => '/',
+      fetch: () => { fetches++; return Promise.resolve({json: async () => cart}); },
+      document: {querySelector: s => (s === '[data-hs-bundle-live]' ? {} : s === '.cart-totals__tax-note' ? notes[0] : null),
+        querySelectorAll: s => (s === '.cart-totals__tax-note' ? notes : rows), createElement: () => ({setAttribute() {}, remove() {}})}});
     ctx.bundleLine(rows); ctx.bundleLine(rows); await new Promise(r => setTimeout(r, 0));
     ctx.bundleLine(rows); ctx.bundleLine(rows); await new Promise(r => setTimeout(r, 0));
     assert.equal(fetches, 1, 'one read for one cart, however often it redraws');
-    assert.equal(line.textContent, 'Add a second gift and save 15%. Three saves 20%.');
-    line = null; ctx.bundleLine(rows);
-    assert.equal(fetches, 1); assert.equal(line && line.textContent, 'Add a second gift and save 15%. Three saves 20%.', 'a redraw that drops the line gets it back without a read');
-    rows = [row('a', 2)]; ctx.bundleLine(rows); await new Promise(r => setTimeout(r, 0));
-    assert.equal(fetches, 2, 'a new quantity is a new cart');
+    assert.deepEqual(notes.map(n => n.getAttribute('data-hs2-bundle-say')), [NUDGE, NUDGE], "one gift and its artist's touch: the nudge, in both summaries");
+    notes[1].removeAttribute('data-hs2-bundle-say'); ctx.bundleLine(rows);
+    assert.equal(fetches, 1); assert.equal(notes[1].getAttribute('data-hs2-bundle-say'), NUDGE, 'a redraw that drops the line gets it back without a read');
+    cart.items.push({product_title: 'Your Dog’s Portrait', properties: {_customization_id: ID2}}); cart.total_discount = 1240;
+    rows = [row('a', 1), row('b', 1), row('c', 1)]; ctx.bundleLine(rows); await new Promise(r => setTimeout(r, 0));
+    assert.equal(fetches, 2, 'a new cart is a new read');
+    assert.deepEqual(notes.map(n => n.getAttribute('data-hs2-bundle-say')), ['You are saving $12.40 on 2 gifts.', 'You are saving $12.40 on 2 gifts.']);
   });
 }

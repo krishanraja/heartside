@@ -2272,15 +2272,17 @@
   }
   /* The bundle in the cart (Krish, 27 Oct: 15% off two gifts, 20% off three), only while the memo
      strip's switch says the real discount exists: one gift gets the nudge, and two or more show
-     the saving Shopify actually applied, read from /cart.js, never a computed promise. */
+     the saving Shopify actually applied, read from /cart.js, never a computed promise. A gift is
+     any line that is not an Artist's touch (linked by _hs_addon_for), never a match on its title.
+     Every summary says it, the drawer's and the cart page's (N5), as the first line of its tax
+     note (data-hs2-bundle-say, drawn by hs2.css), whose place is kept from first paint so Check
+     out never moves when it arrives (28 Oct). */
   function bundleLine(rows) {
-    var totals = document.querySelector('.cart-totals__tax-note');
-    if (!document.querySelector('[data-hs-bundle-live]') || !totals) return;
+    if (!document.querySelector('[data-hs-bundle-live]') || !document.querySelector('.cart-totals__tax-note')) return;
     var show = function (say) {
-      var el = document.querySelector('[data-hs2-bundle-line]');
-      if (!say) { if (el) el.remove(); return; }
-      if (!el) { el = document.createElement('p'); el.className = 'hs2-bundle-line'; el.setAttribute('data-hs2-bundle-line', ''); totals.parentNode.insertBefore(el, totals); }
-      if (el.textContent !== say) el.textContent = say;
+      Array.prototype.forEach.call(document.querySelectorAll('.cart-totals__tax-note'), function (note) {
+        if (note.getAttribute('data-hs2-bundle-say') !== say) note.setAttribute('data-hs2-bundle-say', say);
+      });
     };
     // read /cart.js once per cart (its lines and quantities), not on every redraw: Teeinblue re-runs
     // its whole cart pass on each /cart.js request, and that pass redraws the cart again
@@ -2292,7 +2294,7 @@
     if (bundleLine.busy) return;
     bundleLine.busy = true;
     fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cart) {
-      var gifts = (cart.items || []).filter(function (it) { return !/artist'?s touch/i.test(it.product_title || ''); }).length;
+      var gifts = (cart.items || []).filter(function (it) { return !(it.properties && it.properties._hs_addon_for); }).length;
       var saved = Number(cart.total_discount) || 0, say = '';
       if (gifts === 1) say = 'Add a second gift and save 15%. Three saves 20%.';
       else if (gifts > 1 && saved > 0) say = 'You are saving $' + (saved / 100).toFixed(2).replace(/\.00$/, '') + ' on ' + gifts + ' gifts.';
@@ -2306,15 +2308,20 @@
   }
   /* Artist's touch (Krish, 27 Oct): a paid hand rework of one design, offered on each personalised
      cart line once the add-on product exists (memo strip setting). It goes in as its own line,
-     linked by _hs_addon_for, with the buyer's notes and up to three tagged photos as file
-     properties, for a person to read. Added from the cart page, never during the gift's own add. */
+     linked by _hs_addon_for, with the buyer's notes, the 5 days it adds (a visible Delivery
+     property, so checkout, the order and the packing slip say it too) and up to three tagged
+     photos as file properties, for a person to read. Offered on the cart page only, in the place
+     cart-products.liquid keeps for it (so nothing moves when it arrives); the drawer has none. */
   var ADDON_TAGS = ['Another photo of my dog', 'Favorite toy', 'Collar or accessory', 'Something else'];
   function artistTouch(rows) {
     var memo = document.querySelector('[data-hs-artist-variant]');
-    if (!memo || !/^\/cart\/?$/.test(location.pathname)) return;
+    // a kept place with nothing to put in it goes, rather than stay empty
+    var unslot = function (row) { var slot = row.querySelector('[data-hs2-artist-slot]'); if (slot && !slot.querySelector('[data-hs2-artist]') && slot.parentNode) slot.parentNode.removeChild(slot); };
+    if (!memo || !/^\/cart\/?$/.test(location.pathname)) { rows.forEach(unslot); return; }
     var variant = memo.getAttribute('data-hs-artist-variant'), price = memo.getAttribute('data-hs-artist-price') || '';
     var lines = [], taken = {}, gifts = {};
-    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; if (f.personal && f.id) gifts[f.id] = true; } });
+    // any line with a design is its gift, merged by the checkout transform or not (N4)
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; if (f.id) gifts[f.id] = true; } });
     // an add-on whose gift has left the cart (removed, or replaced by a redo) says so, so nobody
     // pays for a rework of a design they no longer have; removing it stays the buyer's tap
     lines.forEach(function (l) {
@@ -2327,17 +2334,32 @@
       host.appendChild(note);
     });
     lines.forEach(function (l) {
-      if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || taken[l.id] || l.row.querySelector('[data-hs2-artist]')) return;
-      var host = cartOfferHost(l.row);
+      var slot = l.row.querySelector('[data-hs2-artist-slot]');
+      if (l.row.closest && l.row.closest('[data-drawer]')) { unslot(l.row); return; }
+      if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || taken[l.id]) { unslot(l.row); return; }
+      if (l.row.querySelector('[data-hs2-artist]')) return;
+      var host = slot || cartOfferHost(l.row);
       if (!host) return;
       var box = document.createElement('details');
       box.className = 'hs2-artist'; box.setAttribute('data-hs2-artist', '');
-      var photo = function (i) { return '<div class="hs2-artist__photo"><select aria-label="What photo ' + i + ' shows" data-hs2-artist-tag>' + ADDON_TAGS.map(function (t) { return '<option>' + t + '</option>'; }).join('') + '</select><input type="file" accept="image/*" aria-label="Photo ' + i + '" data-hs2-artist-file></div>'; };
-      box.innerHTML = '<summary>Want it reworked by hand? Artist\'s touch' + (price ? ', ' + price : '') + '. Adds 5 days.</summary>' +
+      // each photo starts on its own tag, so two never default to the same one; the file picker is a
+      // labelled button that names the chosen photo, not the browser's "Choose File / No file chosen"
+      var photo = function (i) {
+        var tag = ADDON_TAGS[(i - 1) % ADDON_TAGS.length];
+        return '<div class="hs2-artist__photo"><select aria-label="What photo ' + i + ' shows" data-hs2-artist-tag>' + ADDON_TAGS.map(function (t) { return '<option' + (t === tag ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>' +
+          '<label class="hs-file"><input type="file" accept="image/*" aria-label="Photo ' + i + '" data-hs2-artist-file><span class="hs-file__text" data-hs-file-text>Choose photo ' + i + '</span></label></div>';
+      };
+      box.innerHTML = '<summary>Want it reworked by hand? Artist\'s touch' + (price ? ', ' + price : '') + '. Adds 5\u00a0days.</summary>' +
         '<p>Our artist reworks this design by hand from your notes and photos, then a person checks it before it prints.</p>' +
         '<label>What should change?<textarea maxlength="500" rows="3" data-hs2-artist-notes></textarea></label>' + photo(1) + photo(2) + photo(3) +
         '<button type="button" data-hs2-artist-add>Add the artist\'s touch</button><p role="status" data-hs2-artist-status></p>';
       host.appendChild(box);
+      box.querySelectorAll('[data-hs2-artist-file]').forEach(function (input, i) {
+        input.addEventListener('change', function () {
+          var text = input.parentNode && input.parentNode.querySelector('[data-hs-file-text]'), file = input.files && input.files[0];
+          if (text) text.textContent = file ? file.name : 'Choose photo ' + (i + 1);
+        });
+      });
       box.querySelector('[data-hs2-artist-add]').addEventListener('click', function () {
         var btn = this, status = box.querySelector('[data-hs2-artist-status]');
         var notes = box.querySelector('[data-hs2-artist-notes]').value.trim();
@@ -2346,10 +2368,12 @@
         form.append('id', variant); form.append('quantity', '1');
         form.append('properties[_hs_addon_for]', l.id);
         form.append('properties[What to change]', notes);
+        form.append('properties[Delivery]', 'Adds 5 days');
         var n = 0;
+        // "Photo 1 (favorite toy)": the cart adds its own colon after the name, so none inside it (A9e)
         box.querySelectorAll('.hs2-artist__photo').forEach(function (p) {
           var file = p.querySelector('[data-hs2-artist-file]').files[0];
-          if (file) { n++; form.append('properties[Photo ' + n + ': ' + p.querySelector('[data-hs2-artist-tag]').value + ']', file); }
+          if (file) { n++; form.append('properties[Photo ' + n + ' (' + p.querySelector('[data-hs2-artist-tag]').value.toLowerCase() + ')]', file); }
         });
         btn.disabled = true; status.textContent = 'Adding it to your cart.';
         track('artist_touch_add', { photos: n });
@@ -2383,59 +2407,131 @@
   }
   /* Their toy or collar on the product page (Krish, 28 Oct). The words are the chat's own toy and
      accessory facts, so they reach the painting the same way; changing them asks for a new
-     painting like any other change. Photos of them go to our artist: the Artist's touch line is
-     added right after the gift, linked to its design, with the photos as file properties. */
+     painting like any other change. Words the chat already has show as one line with a way to
+     change them, not as the question again. The facts the painter reads are tidied (Krish, 28 Oct,
+     HSArtworkProfile.tidy when it is there); the chat keeps the words as typed.
+     The Artist's touch is a choice the buyer makes in so many words (28 Oct: one tap on a sentence
+     added it, with no price shown and no way off): "Add our artist's touch, $29", then "Added.
+     Remove". When on, it goes in right after the gift, linked to its design, with the notes, the
+     5 days it adds and the photos (extrasAfterAdd). */
   function bindExtras() {
     var box = document.querySelector('[data-hs-extras]');
     if (!box || !nativeArtworkPurchase() || !window.HSArtworkProfile) return;
     box.hidden = false;
+    var profile = window.HSArtworkProfile;
+    var tidy = function (text) {
+      if (typeof profile.tidy !== 'function') return text;
+      try { var out = profile.tidy(text); return typeof out === 'string' ? out : text; } catch (e) { return text; }
+    };
     var facts = function () { try { return JSON.parse(artworkFacts()).facts; } catch (e) { return []; } };
-    box.querySelectorAll('[data-hs-extra]').forEach(function (input) {
+    var inputs = box.querySelectorAll('[data-hs-extra]');
+    var summary = box.querySelector('[data-hs-extras-summary]'), said = box.querySelector('[data-hs-extras-said]'), ask = box.querySelector('[data-hs-extras-ask]');
+    var told = function () { return facts().filter(function (f) { return f.source === 'toy' || f.source === 'accessory'; }).map(function (f) { return f.text; }).filter(Boolean); };
+    var fold = function (shut) {
+      if (!summary || !ask) return;
+      var have = told();
+      shut = shut && have.length > 0;
+      summary.hidden = !shut; ask.hidden = shut;
+      if (said) said.textContent = have.join(' · ');
+    };
+    inputs.forEach(function (input) {
       var source = input.getAttribute('data-hs-extra'), had = facts().filter(function (f) { return f.source === source; })[0];
       input.value = had ? had.text : '';
       input.addEventListener('change', function () {
-        var text = input.value.replace(/\s+/g, ' ').trim().slice(0, 80), now = facts().filter(function (f) { return f.source !== source; });
+        var typed = input.value.replace(/\s+/g, ' ').trim().slice(0, 80), text = typed ? tidy(typed).slice(0, 80) : '';
+        var now = facts().filter(function (f) { return f.source !== source; });
         if (text) now.push({ source: source, text: text });
         state.hs3_art_profile = { version: 1, facts: now };
         save();
-        try { var chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}'); chat[source] = text; window.sessionStorage.setItem('hs3-gift', JSON.stringify(chat)); } catch (e) { /* this page keeps it */ }
+        try { var chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}'); chat[source] = typed; window.sessionStorage.setItem('hs3-gift', JSON.stringify(chat)); } catch (e) { /* this page keeps it */ }
         invalidateBlanketReview(); artworkChoicesChanged(); journeyCard(); updateBlanketPurchaseStatus();
+        if (said) said.textContent = told().join(' · ');
         track('extras_words', { source: source, filled: !!text });
       });
+    });
+    fold(true);
+    var change = box.querySelector('[data-hs-extras-change]');
+    if (change) change.addEventListener('click', function () {
+      fold(false);
+      if (inputs[0] && inputs[0].focus) inputs[0].focus();
     });
     var memo = document.querySelector('[data-hs-artist-variant]'), artist = box.querySelector('[data-hs-extras-artist]');
     if (!memo || !artist) return;
     artist.hidden = false;
     var price = artist.querySelector('[data-hs-extras-price]');
     if (price) price.textContent = memo.getAttribute('data-hs-artist-price') || '';
+    var offer = artist.querySelector('[data-hs-extras-offer]'), on = artist.querySelector('[data-hs-extras-on]');
+    var add = artist.querySelector('[data-hs-extras-add]'), remove = artist.querySelector('[data-hs-extras-remove]');
+    var choose = function (yes) {
+      artist.setAttribute('data-hs-extras-state', yes ? 'on' : 'off');
+      if (offer) offer.hidden = yes;
+      if (on) on.hidden = !yes;
+    };
+    choose(false);
+    if (add) add.addEventListener('click', function () {
+      choose(true);
+      track('artist_touch_on', {});
+      if (remove && remove.focus) remove.focus();
+    });
+    if (remove) remove.addEventListener('click', function () {
+      choose(false);
+      track('artist_touch_off', {});
+      if (add && add.focus) add.focus();
+    });
+    // the file picker is a labelled button that names the chosen photo
+    Array.prototype.forEach.call(artist.querySelectorAll('[data-hs-extras-file]'), function (input, i) {
+      input.addEventListener('change', function () {
+        var text = input.parentNode && input.parentNode.querySelector('[data-hs-file-text]'), file = input.files && input.files[0];
+        if (text) text.textContent = file ? file.name : 'Choose photo ' + (i + 1);
+      });
+    });
     onCartAdd(extrasAfterAdd);
   }
+  /* After the gift's add: when the buyer chose the Artist's touch, its line goes in right after the
+     gift. announceAdd waits for it (extrasAfterAdd.pending), so the drawer opens once, on both. */
   function extrasAfterAdd(items) {
     var artist = document.querySelector('[data-hs-extras-artist]'), memo = document.querySelector('[data-hs-artist-variant]');
-    if (!artist || artist.hidden || !memo) return;
+    if (!artist || artist.hidden || !memo || artist.getAttribute('data-hs-extras-state') !== 'on') return;
     var notes = artist.querySelector('[data-hs-extras-notes]'), status = artist.querySelector('[data-hs-extras-status]');
     var photos = Array.prototype.filter.call(artist.querySelectorAll('.hs-extras__photo'), function (p) { var f = p.querySelector('[data-hs-extras-file]'); return f && f.files && f.files[0]; });
-    if (!photos.length && !notes.value.trim()) return;
+    var words = [];
+    try { words = JSON.parse(artworkFacts()).facts.filter(function (f) { return f.source === 'toy' || f.source === 'accessory'; }).map(function (f) { return f.text; }).filter(Boolean); } catch (e) { words = []; }
+    var what = notes.value.trim() || (photos.length ? 'Paint in the toy or collar from my photos.' : words.length ? 'Paint in by hand: ' + words.join(', ') + '.' : '');
+    if (!what) { status.textContent = 'Your gift is in your cart. Tell our artist what to change, then add the artist\'s touch from your cart page.'; return; }
     var gift = (items || []).filter(function (it) { return it && it.properties && /^[a-f0-9-]{36}$/i.test(it.properties._customization_id || ''); })[0];
     if (!gift) { status.textContent = 'Your gift is in your cart. Add the artist\'s touch from your cart page.'; return; }
     var form = new FormData();
     form.append('id', memo.getAttribute('data-hs-artist-variant')); form.append('quantity', '1');
     form.append('properties[_hs_addon_for]', gift.properties._customization_id);
-    form.append('properties[What to change]', notes.value.trim() || 'Paint in the toy or collar from my photos.');
-    photos.forEach(function (p, i) { form.append('properties[Photo ' + (i + 1) + ': ' + p.querySelector('[data-hs-extras-tag]').value + ']', p.querySelector('[data-hs-extras-file]').files[0]); });
-    status.textContent = 'Sending your photos to our artist.';
+    form.append('properties[What to change]', what);
+    form.append('properties[Delivery]', 'Adds 5 days');
+    // "Photo 1 (favorite toy)": the cart adds its own colon after the name, so none inside it (A9e)
+    photos.forEach(function (p, i) { form.append('properties[Photo ' + (i + 1) + ' (' + p.querySelector('[data-hs-extras-tag]').value.toLowerCase() + ')]', p.querySelector('[data-hs-extras-file]').files[0]); });
+    status.textContent = photos.length ? 'Sending your photos to our artist.' : 'Adding our artist\'s touch.';
     track('artist_touch_add', { photos: photos.length, from: 'product' });
     // the add-on has no design of its own, so it skips the checkout-image preparation every gift add goes through
-    (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    var sent = (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
       .then(function (added) {
         notes.value = '';
-        photos.forEach(function (p) { p.querySelector('[data-hs-extras-file]').value = ''; });
-        artist.open = false;
+        photos.forEach(function (p) {
+          var input = p.querySelector('[data-hs-extras-file]'), text = input.parentNode && input.parentNode.querySelector('[data-hs-file-text]');
+          input.value = '';
+          if (text) text.textContent = text.getAttribute('data-hs-file-empty') || text.textContent;
+        });
+        // it is in the cart now: the next gift asks again
+        artist.setAttribute('data-hs-extras-state', 'off');
+        var offer = artist.querySelector('[data-hs-extras-offer]'), on = artist.querySelector('[data-hs-extras-on]');
+        if (offer) offer.hidden = false;
+        if (on) on.hidden = true;
         status.textContent = 'Added. Our artist will paint it in by hand, and a person checks it before it prints.';
-        announceAdd([added]);
+        // the gift's own announcement waits for this one; a page without it still tells the drawer
+        if (!confirmAdds.done) announceAdd([added]);
+        return true;
       })
-      .catch(function () { status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.'; });
+      .catch(function () { status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.'; return false; });
+    extrasAfterAdd.pending = sent;
+    return sent;
   }
   function cartTidy() {
     var run = function () {
@@ -3224,29 +3320,68 @@
       discountCodes: (Array.isArray(cart.discount_codes) ? cart.discount_codes : []).map(function (c) { return { applicable: c.applicable, code: c.code }; })
     };
   }
+  /* One confirmation per add (28 Oct: Teeinblue's green line, this toast and the drawer fired together,
+     and the drawer opened on "Your cart is empty", then 1 item, then 2 within 4 seconds). Helio hears
+     once, after the gift and its Artist's touch (extrasAfterAdd.pending) are both in the cart, with
+     the cart and the drawer's own new markup already read, so the drawer opens on the finished cart.
+     When it opens it is the confirmation; the toast shows only when it does not, and never outlives
+     the next step: it goes after 8 seconds, a scroll past 600px, or on leaving the page. */
   function announceAdd(items) {
     var list = queueGet().length > 0;
-    var fallback = function () { if (!list) showNext('In your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out'); };
+    var toast = function (title, sub, href, label) {
+      showNext(title, sub, href, label);
+      var bar = document.querySelector('[data-hs2-next]');
+      if (!bar) return; // on the cart page the next step sits in the page, not over it
+      var from = window.scrollY || 0, timer = null;
+      var gone = function () {
+        clearTimeout(timer);
+        window.removeEventListener('scroll', far);
+        window.removeEventListener('pagehide', gone);
+        var head = bar.querySelector('strong');
+        // only this toast: a later one in the same bar is that one's to clear
+        if (bar.parentNode && head && head.textContent === title) hideNext();
+      };
+      var far = function () { if (Math.abs((window.scrollY || 0) - from) > 600) gone(); };
+      timer = setTimeout(gone, 8000);
+      window.addEventListener('scroll', far, { passive: true });
+      window.addEventListener('pagehide', gone);
+    };
+    var fallback = function () { if (!list) toast('In your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out'); };
     if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
-    var settle = {};
-    var promise = new Promise(function (resolve, reject) { settle.resolve = resolve; settle.reject = reject; });
-    promise.catch(function () { /* each listener handles its own */ });
-    var ev;
-    try { ev = new Event('shopify:cart:lines-update', { bubbles: true, cancelable: true }); } catch (e) { fallback(); return; }
-    ev.action = list ? 'update' : 'add';
-    ev.context = 'product';
-    ev.promise = promise;
-    if (!list) ev.lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: GID + 'ProductVariant/' + it.variant_id, quantity: it.quantity || 1 }; });
-    document.dispatchEvent(ev);
-    fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
-      .then(function (r) { if (!r.ok) throw new Error('cart ' + r.status); return r.json(); })
-      .then(function (cart) {
-        settle.resolve({ cart: cartForEvent(cart), detail: { items: cart.items, itemCount: cart.item_count, source: 'hs2-personalizer', didError: false } });
-        // read back, then say it: the gift is in the cart, and the other gifts are one tap away
-        var dog = answer('dog');
-        if (!list && (cart.items || []).length) showNext(dog ? possessive(dog) + ' gift is in your cart.' : 'Your gift is in your cart.', 'Free US shipping on every order.', shopRoot() + '?step=choose', 'Add another gift');
-      })
-      .catch(function (e) { settle.reject(e); fallback(); });
+    var drawerOpen = function () {
+      var drawer = document.querySelector('cart-drawer-component'), dialog = drawer && drawer.closest ? drawer.closest('dialog') : null;
+      return !!((dialog && dialog.open) || document.querySelector('#cart-drawer dialog[open]'));
+    };
+    var json = function (r) { if (!r.ok) throw new Error('read ' + r.status); return r.json(); };
+    // after every other handler of this add has run, so an Artist's touch on its way is waited for
+    setTimeout(function () {
+      var addon = extrasAfterAdd.pending;
+      var wait = addon ? Promise.race([addon, new Promise(function (resolve) { setTimeout(resolve, 30000); })]) : Promise.resolve();
+      wait.then(function () {
+        var ids = [];
+        Array.prototype.forEach.call(document.querySelectorAll('cart-items-component[data-section-id]'), function (el) {
+          var id = el.getAttribute('data-section-id');
+          if (id && ids.indexOf(id) < 0) ids.push(id);
+        });
+        var markup = ids.length ? fetch(shopRoot() + '?sections=' + encodeURIComponent(ids.join(',')), { credentials: 'same-origin' }).then(json).catch(function () { return null; }) : Promise.resolve(null);
+        return Promise.all([fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(json), markup]);
+      }).then(function (read) {
+        var cart = read[0], sections = read[1];
+        var ev = new Event('shopify:cart:lines-update', { bubbles: true, cancelable: true });
+        ev.action = list ? 'update' : 'add';
+        ev.context = 'product';
+        ev.promise = Promise.resolve({ cart: cartForEvent(cart), detail: { items: cart.items, itemCount: cart.item_count, sections: sections || undefined, source: 'hs2-personalizer', didError: false } });
+        if (!list) ev.lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: GID + 'ProductVariant/' + it.variant_id, quantity: it.quantity || 1 }; });
+        document.dispatchEvent(ev);
+        if (list || !(cart.items || []).length) return;
+        // the drawer is the confirmation when it opens; the gift and the way to the next one otherwise
+        setTimeout(function () {
+          if (drawerOpen()) return;
+          var dog = answer('dog');
+          toast(dog ? possessive(dog) + ' gift is in your cart.' : 'Your gift is in your cart.', 'Free US shipping on every order.', shopRoot() + '?step=choose', 'Add another gift');
+        }, 900);
+      }).catch(function () { fallback(); });
+    }, 0);
   }
   function hideNext() {
     var bar = document.querySelector('[data-hs2-next]');

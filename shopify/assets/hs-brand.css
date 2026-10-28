@@ -226,6 +226,24 @@ header-component.header {
 cart-items-component, #cart-drawer .theme-drawer__dialog { font-family: var(--hs-sans); color: var(--hs-ink); }
 #cart-drawer .theme-drawer__dialog { background-color: var(--hs-cream); }
 #cart-drawer .theme-drawer__dialog::backdrop { background: rgba(30, 23, 20, 0.45); }
+/* The drawer lies over the page (28 Oct recordings: opening it shoved the page left, the logo from
+   x 70 to 35 and the gallery to the edge, and its prices, Discount and Check out ran off the right
+   edge). Helio can open it beside the page and narrow the page to make room; here the page keeps
+   its width and its place, and the drawer is a panel over the right of the screen, wholly inside
+   it, with Helio's own padding as its gutter. */
+html:has(#cart-drawer .theme-drawer__dialog[open]),
+html:has(#cart-drawer .theme-drawer__dialog[open]) body {
+  margin-inline-end: 0 !important; padding-inline-end: 0 !important;
+  width: auto !important; max-width: none !important; min-width: 0 !important;
+  transform: none !important; translate: none !important;
+}
+#cart-drawer .theme-drawer__dialog[open] {
+  position: fixed !important; inset-block: 0 !important; inset-inline: auto 0 !important; z-index: 1000;
+  box-sizing: border-box !important; width: min(26.5rem, 100%) !important; max-width: 100% !important;
+  height: 100% !important; max-height: none !important; margin: 0 !important;
+  overflow-x: hidden; box-shadow: -24px 0 48px -28px rgba(30, 23, 20, 0.55);
+}
+#cart-drawer .theme-drawer__dialog[open] :is(cart-drawer-component, .cart-drawer__inner, .cart-drawer__content, cart-items-component, .cart-items__wrapper, .cart-items) { box-sizing: border-box; max-width: 100%; min-width: 0; }
 #cart-drawer .theme-drawer__close-button { color: var(--hs-ink); }
 .cart-page .cart-title :is(h1, h2),
 #cart-drawer .theme-drawer__title {
@@ -235,8 +253,11 @@ cart-items-component, #cart-drawer .theme-drawer__dialog { font-family: var(--hs
 #cart-drawer .theme-drawer__title { font-size: 26px; line-height: 1.1; }
 @media (min-width: 900px) { .cart-page .cart-title :is(h1, h2) { font-size: 44px; } }
 :is(cart-items-component, #cart-drawer) :is(.cart-primary-typography, .cart-secondary-typography) { font-family: var(--hs-sans); }
-:is(cart-items-component, #cart-drawer) .cart-items__wrapper p { color: var(--hs-body); font-size: 16px; line-height: 1.4; }
-:is(cart-items-component, #cart-drawer) .cart-items__wrapper p a { color: var(--hs-ink); }
+/* the empty cart's lines only: the #cart-drawer inside :is() outranks every rule for the small lines in a
+   cart row (One per design, the redo offer, the Artist's touch), which kept turning them 16px */
+:is(cart-items-component, #cart-drawer) .cart-items__wrapper > p,
+:is(cart-items-component, #cart-drawer) .cart-items__wrapper .hs-cart-empty p { color: var(--hs-body); font-size: 16px; line-height: 1.4; }
+:is(cart-items-component, #cart-drawer) .cart-items__wrapper > p a { color: var(--hs-ink); }
 
 /* each line in the cart is a paper card; the grid inside it stays Helio's */
 cart-items-component .cart-items tbody > .cart-items__table-row:not(.cart-items__nested-line) {
@@ -294,10 +315,13 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
    until hs2.js replaces it with the true line (free US shipping), and stays hidden if the script
    never runs, rather than showing the wrong promise */
 .cart-totals__tax-note:not([data-hs-note]) { visibility: hidden; }
+/* Helio's line fits one row and ours ("Free US shipping on every order. Any tax is shown at checkout.")
+   takes two on a phone, so two rows are kept from the start: nothing below moves when it is swapped */
+.cart-totals__tax-note small { display: block; min-height: 2lh; text-wrap: balance; }
 
 /* The Artist's touch is an add-on bought from the cart, never browsed: it stays published (so the
    cart can add it) but is hidden from the catalog grid, the menu's featured products and search */
 li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive-search-results__card):has(a[href*="/products/artists-touch"]) { display: none !important; }
 
-/* an Artist's touch line whose design has left the cart (hs2.js artistTouch) */
+/* an Artist's touch line whose design has left the cart (cart-products.liquid, hs2.js artistTouch) */
 .hs2-artist__orphan { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--hs-stamp, #8A4A2B); }
