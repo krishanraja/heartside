@@ -349,10 +349,11 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
   .hs3-beats { grid-area: beats; margin: 40px 0 0; align-self: start; }
   .hs3-demo { grid-area: demo; margin: 40px 0 0; }
   .hs3-demo__art { aspect-ratio: 4 / 3; }
-  .hs3-range { grid-area: range; margin: 40px 0 0; padding: 28px 28px 24px; }
-  .hs3-range__h { font-size: 30px; }
-  .hs3-range__tiles { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .hs3-range__pair { gap: 14px; }
+  .hs3-range { grid-area: range; margin: 40px 0 0; padding: 28px 28px 24px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "h h" "note note" "pair tiles"; column-gap: 28px; row-gap: 12px; align-items: end; }
+  .hs3-range__h { grid-area: h; font-size: 30px; }
+  .hs3-range .hs3-small { grid-area: note; }
+  .hs3-range__pair { grid-area: pair; gap: 14px; }
+  .hs3-range__tiles { grid-area: tiles; gap: 12px; }
   .hs3-legal { grid-area: legal; }
   .hs3-fan { max-width: 620px; gap: 14px; }
   .hs3-fan__name { font-size: 16px; } .hs3-fan__price { font-size: 15px; }
