@@ -1,14 +1,14 @@
 // Tests for hs-breeds.js. Run: node test.mjs (after node build.mjs)
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { loadCorpus, buildData, render, KRISH_CALLS } from './build.mjs';
+import { loadCorpus, buildData, render, KRISH_CALLS, THEME_COPY, NOT_SURE } from './build.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
-const { lookup, normalize } = require('./hs-breeds.js');
+const { lookup, normalize, suggest, parents } = require('./hs-breeds.js');
 const src = loadCorpus();
 const us = new Map(src.display.map((d) => [d.canonical_id, d.us_display_name]));
 const corpusName = new Map(src.rows.map((r) => [r.id, r.name]));
@@ -107,6 +107,41 @@ ok('empty input returns null', () => {
   assert.equal(lookup(''), null);
   assert.equal(lookup('  ?! '), null);
   assert.equal(lookup(null), null);
+});
+
+// 28 Oct. CI runs the full set of these in tools/print-art/artwork-system.test.mjs.
+ok('the theme copy is the same build', () => {
+  assert.equal(fs.readFileSync(THEME_COPY, 'utf8'), render(buildData(src)));
+});
+
+ok('suggest offers checked names and always ends with Mixed or not sure', () => {
+  const first = (q) => suggest(q)[0];
+  assert.deepEqual({ ...first('golden retreiver') }, { id: 'golden-retriever', name: 'Golden Retriever' });
+  assert.deepEqual({ ...first('pittie') }, { id: 'american-staffordshire-terrier', name: 'Pit Bull' });
+  assert.deepEqual({ ...first('cavoodle') }, { id: 'cavapoo', name: 'Cavapoo' });
+  for (const q of ['', 'zzz', 'lab', 'golden retreiver']) assert.deepEqual({ ...suggest(q).at(-1) }, { id: 'mixed-breed', name: NOT_SURE }, q);
+  assert.equal(lookup('golden retreiver').exact, false, 'lookup stays exact');
+});
+
+ok('us_popularity.csv names real breed and cross rows, as the file shows them', () => {
+  const byId = new Map(src.rows.map((r) => [r.id, r]));
+  assert.ok(src.popular.length >= 80);
+  for (const p of src.popular) {
+    const r = byId.get(p.canonical_id);
+    assert.ok(r && (r.entity_type === 'breed' || r.entity_type === 'crossbreed'), p.canonical_id);
+    assert.equal(us.get(p.canonical_id) || r.name, p.us_display_name, p.canonical_id);
+  }
+  assert.throws(() => buildData({ ...src, popular: [{ canonical_id: 'family-poodle', us_display_name: 'Poodle family' }] }), /not a breed or cross/);
+  assert.throws(() => buildData({ ...src, popular: [{ canonical_id: 'beagle', us_display_name: 'Beagel' }] }), /shows "Beagle"/);
+});
+
+ok('parents: both corpus parents of every named cross, and lookup carries their lookups', () => {
+  for (const r of src.rows.filter((x) => x.entity_type === 'crossbreed')) {
+    assert.deepEqual(parents(r.id), [r.parent_1, r.parent_2], r.id);
+    assert.equal(lookup(r.name).parents.length, 2, r.id);
+  }
+  assert.equal(parents('beagle'), null);
+  assert.equal('parents' in lookup('beagle'), false);
 });
 
 console.log(n + ' tests passed');
