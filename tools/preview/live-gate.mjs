@@ -2,8 +2,9 @@
 // real products) at desktop, iPhone Safari, Instagram in-app and Android Edge sizes, and fail on
 // the defects a person would see before judging taste: content under the header, text on top of
 // text, sideways overflow, Teeinblue's own blue, its button bar pinned over the form or its
-// Personalize bar pinned over the page, a heading that leaves one word alone, Title Case on the
-// Add to cart button, or the first screen's button below the first screen. It also checks today's
+// Personalize bar pinned over the page, a heading that leaves one word alone (a product title
+// only when another wrap could have avoided it), Title Case on the Add to cart button, or the
+// first screen's button below the first screen. It also checks today's
 // catalog where a shopper sees it (catalog.mjs): each product page answers at its own address
 // (a redirect to another handle fails), carries its native template's mark, and shows its title
 // and first price; the home page's chat offers the three gifts at their clean addresses and the
@@ -179,7 +180,10 @@ function inspect([spec, retiredSource]) {
   }
 
   // 6. one word alone on the last line of a heading or Buddy's line ("Last step. Let's make
-  //    Mochi's / mug."): the words of each, grouped into lines by where the browser put them
+  //    Mochi's / mug."): the words of each, grouped into lines by where the browser put them.
+  //    The product title is Shopify's, not our copy, so it fails only when its last word could
+  //    have shared a line with the word before it. At the desk size "Personality Blanket" is
+  //    wider than the title's column, so "Blanket" is alone in every wrap (review of #65).
   const lastLine = (el) => {
     const words = [];
     const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -194,10 +198,25 @@ function inspect([spec, retiredSource]) {
     for (const x of words) { const l = lines[lines.length - 1]; if (l && Math.abs(x.top - l.top) <= 4) l.words.push(x.w); else lines.push({ top: x.top, words: [x.w] }); }
     return lines;
   };
+  // would these words fit on one line of el, in its own font? Measured by a hidden copy inside
+  // it, removed at once
+  const fitsOneLine = (el, text) => {
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+    probe.textContent = text;
+    el.appendChild(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    const cs = getComputedStyle(el), box = el.getBoundingClientRect();
+    return width <= box.width - ['paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth'].reduce((s, k) => s + (parseFloat(cs[k]) || 0), 0);
+  };
   for (const el of document.querySelectorAll('.hs3-hero__h, .hs3-h2, .hs3-range__h, .hs-journey__line, #buy h1')) {
     if (!vis(el)) continue;
     const lines = lastLine(el);
-    if (lines.length > 1 && lines[lines.length - 1].words.length === 1) fails.push(`one word alone: "${lines[lines.length - 1].words[0]}" on the last line of ${label(el)}`);
+    if (lines.length < 2 || lines[lines.length - 1].words.length !== 1) continue;
+    const before = lines[lines.length - 2].words, alone = lines[lines.length - 1].words[0];
+    if (el.matches('#buy h1') && !fitsOneLine(el, before[before.length - 1] + ' ' + alone)) continue;
+    fails.push(`one word alone: "${alone}" on the last line of ${label(el)}`);
   }
 
   // 7. the first screen's button ends inside the first screen (Krish's Edge phone, 28 Oct:

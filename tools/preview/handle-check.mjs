@@ -11,18 +11,20 @@
 //   - /products/<handle>.js answers 200 itself (no redirect) with the same handle, title, lowest
 //     and highest price, variant count, and every variant available;
 //   - the product page answers 200 itself and carries its native template's mark on #buy;
-//   - no variant's own picture is the blank supplier base (checkout draws the nested line with it).
+//   - no variant's own picture is the blank supplier base (checkout draws the nested line with it),
+//     and each one that is gets named by its gift and variant title.
 // Then the home page's chat config names the three clean handles with real addresses, the phone
-// menu links to the three, the Artist's touch answers with its price and a real picture (not the
-// heart stand-in), and each old address in REDIRECTS answers 301 to its clean one.
+// menu links to the three, the Artist's touch answers with its price and a first picture that is
+// not the heart stand-in, and each old address in REDIRECTS answers 301 to its clean one.
 //
 // Exit 0 all clear; 1 something is broken; 2 inconclusive (a Cloudflare challenge, rate limit,
 // server error or network failure kept a check from reading the store; never a pass); 3 the check
-// itself failed. It prints paths and counts only: never the store's host, never a theme id. GET
-// only, no cookies kept between runs, nothing written anywhere.
+// itself failed. It prints paths, counts and variant titles only: never the store's host, never a
+// theme, product, variant or media id. GET only, no cookies kept between runs, nothing written
+// anywhere.
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { CORE, ADDON, REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
+import { CORE, ADDON, REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_MEDIA_IDS, STANDIN_ALT, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
 
 const TIMEOUT = 20000;
 // honest about what it is; a challenge for it counts as inconclusive, not as a failure
@@ -39,13 +41,37 @@ export function blocked({ status, headers, text } = {}) {
   return '';
 }
 const fileOf = (src) => { try { return decodeURIComponent(new URL(String(src), 'https://x.invalid').pathname.split('/').pop()).toLowerCase(); } catch { return ''; } };
-const named = (src, stems) => { const f = fileOf(src); return !!f && stems.some((s) => f.includes(String(s).toLowerCase())); };
+// a file as Shopify stores it, without its extension or the suffixes Shopify adds when it serves
+// or renames one (catalog.mjs): artists-touch_400x400@2x.png?v=1 is artists-touch, and
+// artists-touch-tile.png stays artists-touch-tile
+const SHOPIFY_SUFFIX = /(?:@\dx|\.progressive|_crop_[a-z]+|_(?:\d+x\d*|x\d+)|_(?:pico|icon|thumb|small|compact|medium|large|grande|original|master)|_[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/;
+export function fileStem(src) {
+  let s = fileOf(src).replace(/\.[a-z0-9]+$/, '');
+  for (let was = ''; s && s !== was;) { was = s; s = s.replace(SHOPIFY_SUFFIX, ''); }
+  return s;
+}
+const named = (src, files) => { const s = fileStem(src); return !!s && files.some((f) => fileStem(f) === s); };
 // a variant picture is the blank base by the theme's own rules, or by a file name CoWork recorded
 export function isBlank(variant) {
   const img = variant && variant.featured_image, med = variant && variant.featured_media;
   if (med && BLANK_MEDIA_IDS.includes(String(med.id))) return true;
   for (const x of [img, med]) if (x && BLANK_ALT.test(String(x.alt || ''))) return true;
   return [img && img.src, med && med.preview_image && med.preview_image.src].some((s) => s && named(s, BLANK_FILES));
+}
+// a variant as the report names it: its gift and its title as the product JSON and Shopify admin
+// give it ("Framed / Black / 12″×18″"), or its place in the list when it has none (Shopify calls
+// the only variant of a product without options "Default Title"), never its id
+export function variantName(item, variant, i, n) {
+  const title = (variant && (variant.title || (Array.isArray(variant.options) ? variant.options.join(' / ') : ''))) || '';
+  return title && title !== 'Default Title' ? `${item.key} ${JSON.stringify(String(title))}` : `${item.key} variant ${i + 1} of ${n}`;
+}
+// the Artist's touch's first picture is the heart stand-in, by its media id, its alt text or its
+// file name (catalog.mjs); a heart moved behind the tile is not its first picture
+export function isStandin(json) {
+  const first = json && Array.isArray(json.media) ? json.media[0] : null;
+  if (first && (STANDIN_MEDIA_IDS.includes(String(first.id)) || STANDIN_ALT.test(String(first.alt || '').trim()))) return true;
+  const pictures = json ? [json.featured_image, ...(Array.isArray(json.images) ? json.images : [])].filter(Boolean).map((x) => (typeof x === 'string' ? x : x.src)) : [];
+  return [pictures[0], first && (first.src || (first.preview_image && first.preview_image.src))].some((s) => s && named(s, STANDIN_FILES));
 }
 // what products/<handle>.js should say, against what it said: a list of what differs
 export function productProblems(item, json) {
@@ -162,8 +188,9 @@ export async function check({ base = 'https://heartside.io', theme = '' } = {}) 
       const problems = productProblems(item, json);
       results.push(problems.length ? fail(p, problems.join('; ')) : ok(p, `${item.variants} variants available at the expected prices`));
       const vs = Array.isArray(json.variants) ? json.variants : [];
-      const blank = vs.filter(isBlank).length;
-      results.push(blank ? fail(p, `${blank} of ${vs.length} variants show the blank base picture, which checkout draws on the gift's nested line`, 'media') : ok(p, 'no variant shows the blank base picture', 'media'));
+      // each blank variant by name, so CoWork attaches the tile to those and to no other
+      const blank = vs.map((v, i) => (isBlank(v) ? variantName(item, v, i, vs.length) : '')).filter(Boolean);
+      results.push(blank.length ? fail(p, `${blank.length} of ${vs.length} variants show the blank base picture, which checkout draws on the gift's nested line: ${blank.join(', ')}`, 'media') : ok(p, 'no variant shows the blank base picture', 'media'));
     })());
     jobs.push((async () => {
       const r = await get(base, item.path, { theme });
@@ -193,7 +220,7 @@ export async function check({ base = 'https://heartside.io', theme = '' } = {}) 
     results.push(wrong.length ? fail(p, wrong.join('; ')) : ok(p, 'answers with its price'));
     const pictures = [json.featured_image, ...(Array.isArray(json.images) ? json.images : [])].filter(Boolean).map((x) => (typeof x === 'string' ? x : x.src));
     if (!pictures.length) results.push(fail(p, 'has no picture, so the cart and checkout show a blank square', 'media'));
-    else if (named(pictures[0], STANDIN_FILES)) results.push(fail(p, 'still shows the heart stand-in picture', 'media'));
+    else if (isStandin(json)) results.push(fail(p, 'still shows the heart stand-in picture', 'media'));
     else results.push(ok(p, 'has its own picture', 'media'));
   })());
   for (const [from, to] of Object.entries(REDIRECTS)) {

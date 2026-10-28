@@ -8,7 +8,8 @@
 // CoWork uploads each PNG to its product with the alt text printed below (the theme hides any photo
 // whose alt says "checkout tile" from the gallery and the chat, hs-product-gallery.liquid), then
 // points only the variants handle-check.mjs reports as blank at it. The product's own first photo
-// does not change.
+// does not change. The Artist's touch tile is artists-touch-tile.png: the heart stand-in it
+// replaces is stored in Shopify as artists-touch.png, and handle-check.mjs tells them apart by name.
 //
 //   cd tools/preview && node ../build_checkout_tiles.mjs        # writes design/checkout-tiles/*.png
 import fs from 'node:fs';
@@ -47,7 +48,7 @@ export const TILES = [
   { file: 'checkout-tile-mug.png', icon: 'mug', name: 'Your mug', alt: 'Your mug, painted from your dog. Heartside checkout tile.' },
   { file: 'checkout-tile-portrait.png', icon: 'portrait', name: 'Your portrait', alt: 'Your portrait, painted from your dog. Heartside checkout tile.' },
   { file: 'checkout-tile-blanket.png', icon: 'blanket', name: 'Your blanket', alt: 'Your blanket, painted from your dog. Heartside checkout tile.' },
-  { file: 'artists-touch.png', icon: 'brush', name: 'Our artist\u2019s touch', sub: 'a person adds the details you send', alt: "Our artist's touch: a person adds the details you send." },
+  { file: 'artists-touch-tile.png', icon: 'brush', name: 'Our artist\u2019s touch', sub: 'a person adds the details you send', alt: "Our artist's touch: a person adds the details you send." },
 ];
 const page = (t) => {
   const [hx, hy, hs] = HEART[t.icon];

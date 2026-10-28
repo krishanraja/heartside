@@ -4,7 +4,8 @@
 // Here the real live-gate.mjs runs against a stand-in store on 127.0.0.1 (node:http): a
 // redirected product address fails and names both paths, a chat config that lost the portrait
 // fails, a Cloudflare challenge is inconclusive (exit 2, never "all clear"), and Krish's Edge
-// phone (360x640) fails when "Start with your dog" ends below the first screen. Also the shared
+// phone (360x640) fails when "Start with your dog" ends below the first screen, and the rendered
+// blanket page passes at the desk size, where its title cannot avoid "Blanket" alone. Also the shared
 // launcher: certificate pins are read at launch from the CA bundle, never written into a gate.
 // Nothing leaves 127.0.0.1: the stand-in pages load nothing else.
 //
@@ -122,6 +123,26 @@ describe('live-gate against a stand-in store', {concurrency: 3}, () => {
     assert.match(alone.out, /one word alone: "too\." on the last line of h1\.hs3-hero__h/);
     const one = await gateOn((p) => (p === '/' ? {status: 200, body: h(360, 16)} : {status: 404}), '--pages', 'home', '--views', 'phone');
     assert.equal(one.code, 0, one.out);
+  });
+
+  // review of #65: at the desk size the blanket's title reads "Your Dog's / Personality / Blanket",
+  // because "Personality Blanket" is wider than its column, so no wrap can keep "Blanket" company.
+  // The title is Shopify's: that passes. A title whose last word could have shared the line above
+  // still fails, and our own heading fails on a lone word either way. At 300px "Personality
+  // Blanket" (19 characters, about 365px) cannot share a line; at 450px "Illustrated Mug" can.
+  test("a product title's lone last word fails only when it could have shared the line above", async () => {
+    const [mug, , blanket] = CORE;
+    const titled = (item, width) => page(`<main><div class="hs2"><div id="buy"${Object.entries(item.marker).map(([k, v]) => (v === '' ? ` ${k}` : ` ${k}="${v}"`)).join('')}><h1 style="width:${width}px;font:32px/1.2 monospace;margin:0">${item.title}</h1><span data-hs2-price>${item.price}</span></div></div></main>`, item.title);
+    const forced = await gateOn((p) => (p === blanket.path ? {status: 200, body: titled(blanket, 300)} : {status: 404}), '--pages', 'blanket', '--views', 'desk');
+    assert.equal(forced.code, 0, forced.out);
+    assert.match(forced.out, /all clear/);
+    const avoidable = await gateOn((p) => (p === mug.path ? {status: 200, body: titled(mug, 450)} : {status: 404}), '--pages', 'mug', '--views', 'desk');
+    assert.equal(avoidable.code, 1, avoidable.out);
+    assert.match(avoidable.out, /one word alone: "Mug" on the last line of h1 "Your Dog's Illustrated Mug"/);
+    const ours = home({hero: 100}).replace('<div style="height:100px"></div>', '<h1 class="hs3-hero__h" style="width:300px;font:32px/1.2 monospace;margin:0">Make a personality blanket</h1>');
+    const own = await gateOn((p) => (p === '/' ? {status: 200, body: ours} : {status: 404}), '--pages', 'home', '--views', 'desk');
+    assert.equal(own.code, 1, own.out);
+    assert.match(own.out, /one word alone: "blanket" on the last line of h1\.hs3-hero__h/);
   });
 
   test("Teeinblue's Personalize bar fixed over the page fails", async () => {
@@ -267,6 +288,29 @@ test("render.mjs runs, and its Teeinblue stand-in draws the live page's Preview,
     assert.match(html, /<div class="tee-btn-wrapper--personalize"><button type="button" class="tee-btn tee-btn--personalize"[^>]*>Personalize<\/button><\/div>/, name);
     assert.match(html, /@media \(max-width:749px\)\{\.tee-btn-wrapper--personalize\{display:block;position:fixed/, `${name}: fixed to the bottom of a phone screen`);
   }
+});
+
+// review of #65: the gate's default run (the desk view) failed the healthy blanket page on its
+// title, so CoWork's gates could never be all clear. Here the page render.mjs draws, with the
+// theme's own hs2.css and Fraunces, is served at the blanket's clean address, from a copy taken
+// first, since other test files render into out/ at the same time.
+test('the rendered blanket page is all clear at the desk size, its title broken before "Blanket" as it must be', async () => {
+  const out = path.join(here, 'out'), blanket = CORE.find((c) => c.key === 'blanket');
+  if (!fs.existsSync(path.join(out, 'product-blanket-native.html'))) await new Promise((resolve) => execFile(process.execPath, [path.join(here, 'render.mjs')], {timeout: 120000}, resolve));
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), 'hs-blanket-'));
+  try {
+    fs.copyFileSync(path.join(out, 'product-blanket-native.html'), path.join(copy, 'page.html'));
+    fs.cpSync(path.join(out, 'assets'), path.join(copy, 'assets'), {recursive: true});
+    const types = {'.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2'};
+    const r = await gateOn((p) => {
+      if (p === blanket.path) return {status: 200, body: fs.readFileSync(path.join(copy, 'page.html'))};
+      const file = p.includes('/assets/') ? path.join(copy, p.slice(p.indexOf('/assets/') + 1)) : '';
+      return file && fs.existsSync(file) ? {status: 200, headers: {'content-type': types[path.extname(file)] || 'application/octet-stream'}, body: fs.readFileSync(file)} : {status: 404};
+    }, '--pages', 'blanket', '--views', 'desk');
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /ok {3}desk blanket/);
+    assert.match(r.out, /all clear/);
+  } finally { fs.rmSync(copy, {recursive: true, force: true}); }
 });
 
 test('neither gate carries its own pinned certificate list: both launch through browser.mjs', () => {
