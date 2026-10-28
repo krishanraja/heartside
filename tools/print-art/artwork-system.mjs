@@ -32,7 +32,8 @@ export function prepare(input) {
     return {source: f.source, text: text(f.text, 'fact', factLimits[f.source])};
   });
   // Breed energy is separate, optional and never a fact. Absent, empty or none means
-  // no energy (unknown, mixed or two-parent breed); an unlisted code fails closed.
+  // no energy (an unknown or mixed breed, or a cross whose parents differ); an unlisted
+  // code fails closed.
   const energy = input.energy == null || input.energy === '' || input.energy === 'none' ? null : input.energy;
   if (energy !== null && (typeof energy !== 'string' || !Object.hasOwn(recipes.energy.directions, energy))) throw new Error('Unsupported energy; never silently substitute');
   if (!copy || !['user', 'generated', 'none'].includes(copy.owner)) throw new Error('Copy ownership required');
@@ -79,10 +80,18 @@ export function selectTone(input, tone) {
 }
 
 // Map a HSBreeds.lookup() result to an energy code. Only an exact corpus match has an
-// archetype; unknown names, mixed breeds and two-parent crosses get none. The code
-// never becomes a fact and is never shown to the buyer.
+// archetype; unknown names and mixed breeds get none. Ruling (Krish, 2026-10-28): a named
+// cross gets an energy only when both parents (lookup().parents) resolve exactly to the same
+// archetype, never from its own cross archetype and never averaged. The code never becomes a
+// fact and is never shown to the buyer.
 export function energyFor(lookup) {
   if (!lookup || lookup.exact !== true || lookup.kind === 'mixed' || typeof lookup.tone !== 'string') return null;
+  if (lookup.kind === 'crossbreed') {
+    const parents = lookup.parents;
+    if (!Array.isArray(parents) || parents.length !== 2 || parents.some(p => !p || p.kind === 'crossbreed')) return null;
+    const [first, second] = parents.map(energyFor);
+    return first !== null && first === second && parents[0].tone === parents[1].tone ? first : null;
+  }
   return Object.hasOwn(recipes.energy.byArchetype, lookup.tone) ? recipes.energy.byArchetype[lookup.tone] : null;
 }
 
