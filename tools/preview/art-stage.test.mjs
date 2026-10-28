@@ -30,7 +30,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div data-hs2-media><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div style="height:200px"></div></div></div>${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
     try {
       await page.goto('https://hs.test/');
-      const fns = ['artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
+      const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
       const code = `var pending=true,saved=false,src='',photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
         function blanketNativeError(){return false;}function blanketArtPreview(){return ${kind === 'blanket'};}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
       await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});

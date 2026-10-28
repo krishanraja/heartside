@@ -256,7 +256,7 @@
     // stays on show until there is art, unless the buyer chose a picture themselves
     var media = document.querySelector('[data-hs2-media]');
     if (media && blanketArtPreview() && !media.__hs2picked) {
-      var hold = next === 'idle' && !cityArtSource(), pick = null;
+      var hold = next === 'idle' && !previewHasArt(), pick = null;
       if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = media.querySelector('[data-hs2-thumb]:not([hidden])'); }
       else if (!hold && media.__hs2held) { media.removeAttribute('data-show'); media.__hs2held = false; pick = media.querySelector('[data-hs2-thumb-preview]'); }
       if (pick) media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pick ? 'true' : 'false'); });
@@ -439,6 +439,12 @@
     var src = image && (image.getAttribute('href') || image.getAttribute('xlink:href')) || '';
     if (!src || src.indexOf('6adb83e021733') !== -1) return ''; // approved concept placeholder
     try { var url = new URL(src, location.href); return url.protocol === 'https:' ? url.href : ''; } catch (e) { return ''; }
+  }
+  // art is in the preview once Teeinblue shows the same image in its photo field; each campaign's
+  // empty preview is its own placeholder file, so the image alone proves nothing
+  function previewHasArt() {
+    var src = cityArtSource(), photo = document.querySelector('.tee-field--photo .tee-photo-image');
+    return !!src && !!photo && photo.getAttribute('src') === src;
   }
   function cityArtSaved() {
     if (!(cityArtPreview() || nativeArtworkPurchase()) || (!artRequested() && !restoredArtworkChosen()) || document.querySelector('.vm--container')) return false;
@@ -1938,7 +1944,7 @@
        its words, the preview is the picture on show, unless the shopper picked a photo. */
     // the blanket has no words, so its preview stays the example photo until there is art in it:
     // an empty cream blanket read as broken (Krish, 28 Oct)
-    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked && (!blanketArtPreview() || cityArtSource())) media.removeAttribute('data-show');
+    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked && (!blanketArtPreview() || previewHasArt())) media.removeAttribute('data-show');
     // the preview arrived: it is the picture on show, so its thumbnail is the current one
     if (on === 'on' && pv && !media.hasAttribute('data-show')) {
       media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
