@@ -230,11 +230,13 @@ function slowDecoder(decodeMs, warm) {
 }
 test('the whole check, the dog detector included, settles within its one limit (Krish, 28 Oct: "a 10-second limit, then the photo goes on")', async () => {
   // hs2.js's 10 s limit and 4 s detector wait, scaled down: a slow decode inside the limit used to get
-  // a fresh detector wait on top of it, about 14 s in all
-  const cold = slowDecoder(320, false), started = Date.now();
-  const late = await cold.check({type: 'image/jpeg', name: 'PXL_20261028.jpg'}, {checkTimeout: 400, timeout: 300});
+  // a fresh detector wait on top of it, about 14 s in all. Scaled to 1 s, so the old code's 1.8 s and
+  // more stays far from the limit plus half a second for a busy CI machine (it measured 506 ms against
+  // 400 ms at the smaller scale there)
+  const cold = slowDecoder(800, false), started = Date.now();
+  const late = await cold.check({type: 'image/jpeg', name: 'PXL_20261028.jpg'}, {checkTimeout: 1000, timeout: 1000});
   const ms = Date.now() - started;
-  assert.ok(ms < 480, `the check took ${ms} ms against a 400 ms limit`);
+  assert.ok(ms < 1500, `the check took ${ms} ms against a 1000 ms limit`);
   assert.deepEqual([late.verdict, late.detection, !!late.timedOut, codes(late)], ['ok', null, false, []], 'decided on its pixels; the dog checks skipped');
   // with time left, a ready detector still runs: no dog is the overridable reject, as before
   const warm = slowDecoder(40, true);
