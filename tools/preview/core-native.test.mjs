@@ -40,7 +40,7 @@ for(const minified of [false,true]) {
   test(mode+': disabled native purchase gives shopper availability copy without starting a request',()=>{
     let click, message='', blocked=0;
     const c={document:{addEventListener:(event,fn)=>{if(event==='click')click=fn;},querySelector:()=>({getAttribute:()=> 'false'})},nativeArtworkPurchase:()=>true,cityArtPreview:()=>false,giftView:()=>false,nativePurchaseReady:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketReviewAccepted:()=>true,blanketPurchaseStatus:s=>message=s};
-    run(['guardGiftPhoto'],c,minified);c.guardGiftPhoto();
+    run(['nudgeReview','guardGiftPhoto'],c,minified);c.guardGiftPhoto();
     click({target:{closest:s=>s.includes('recustomize')?null:{}},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});
     assert.equal(blocked,1);assert.equal(message,'This gift is not available to order yet.');
   });

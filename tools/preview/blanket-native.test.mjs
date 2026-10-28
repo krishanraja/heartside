@@ -82,7 +82,7 @@ for(const minified of [false,true]) {
   test(label+': native cart blocks unresolved, stale and unsaved images but permits the saved matching result',()=>{
     const events={};let pending=false,ready=false,image=false,accepted=false,blocked=0;
     const ctx={document:{addEventListener:(name,fn)=>events[name]=fn,querySelector:()=>null},cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,giftView:()=>false,blanketUploadPending:()=>pending,nativeBlanketInputsReady:()=>ready,cityArtSaved:()=>image,blanketReviewAccepted:()=>accepted,syncBlanketProperties:()=>{},blanketPurchaseStatus:()=>{}};
-    run(['guardGiftPhoto'],ctx,minified);ctx.guardGiftPhoto();
+    run(['nudgeReview','guardGiftPhoto'],ctx,minified);ctx.guardGiftPhoto();
     const click=()=>events.click({target:{closest:selector=>selector.includes('recustomize')?null:{}},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});
     click();assert.equal(blocked,1);ready=true;click();assert.equal(blocked,2);image=true;pending=true;click();assert.equal(blocked,3);pending=false;click();assert.equal(blocked,4);accepted=true;click();assert.equal(blocked,4);
     events.submit({target:{closest:()=>({})},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});assert.equal(blocked,5);
@@ -111,7 +111,7 @@ for(const minified of [false,true]) {
     const events={},checkbox={checked:true};let blocked=0;
     const ctx={blanketAcceptedKey:'same:same.png',blanketReviewKey:()=> 'same:same.png',blanketNativeError:()=>false,document:{addEventListener:(name,fn)=>events[name]=fn,querySelector:selector=>selector==='.vm--container'||selector==='#buy[data-hs2-artwork-kind]'?null:checkbox},nativeArtworkPurchase:()=>true,nativePurchaseReady:()=>true,cityArtPreview:()=>false,giftView:()=>false,blanketUploadPending:()=>false,nativeBlanketInputsReady:()=>true,cityArtSaved:()=>true,blanketPurchaseStatus:()=>{},syncBlanketProperties:()=>{},invalidateBlanketReview:()=>{ctx.blanketAcceptedKey='';checkbox.checked=false;}};
     if(source.includes('  function invalidateBlanketReview(')) run(['invalidateBlanketReview'],ctx,minified);
-    run(['guardGiftPhoto','blanketReviewAccepted'],ctx,minified);ctx.guardGiftPhoto();assert.equal(ctx.blanketReviewAccepted(),true);
+    run(['nudgeReview','guardGiftPhoto','blanketReviewAccepted'],ctx,minified);ctx.guardGiftPhoto();assert.equal(ctx.blanketReviewAccepted(),true);
     events.click({target:{closest:selector=>selector.includes('recustomize')?{}:null}});
     assert.equal(ctx.blanketReviewAccepted(),false);assert.equal(checkbox.checked,false);
     events.click({target:{closest:selector=>selector.includes('recustomize')?null:{}},preventDefault:()=>blocked++,stopImmediatePropagation:()=>{}});assert.equal(blocked,1);
@@ -129,7 +129,7 @@ for(const minified of [false,true]) {
     if(source.includes('  function syncBlanketProperties(')) run(['syncBlanketProperties','artworkChoicesChanged'],ctx,minified);
     const registration=source.match(/window\.addEventListener\('hs-artwork-choices', [^\n]+/)[0];vm.runInNewContext(minified?transformSync(registration,{minify:true}).code:registration,ctx);
     events['hs-artwork-choices']();assert.equal(bridges,1);assert.deepEqual(props.map(input=>input.value),['current facts','Fine ink drawing','Hilarious']);
-    run(['guardGiftPhoto'],ctx,minified);ctx.guardGiftPhoto();style='Painterly';tone='Warm';
+    run(['nudgeReview','guardGiftPhoto'],ctx,minified);ctx.guardGiftPhoto();style='Painterly';tone='Warm';
     events.click({target:{closest:selector=>selector.includes('recustomize')?null:{}},preventDefault:()=>assert.fail('current reviewed cart should pass'),stopImmediatePropagation:()=>{}});
     assert.deepEqual(props.map(input=>input.value),['current facts','Painterly','Warm']);
   });

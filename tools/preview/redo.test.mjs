@@ -13,9 +13,11 @@ const A = 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa', B = 'bbbbbbbb-2222-4222-8222-b
 function row(snapshot, personal = true) {
   const slotHost = {children: [], appendChild(n) { this.children.push(n); n.parentNode = this; }};
   const remove = {hidden: false, clicks: 0, click() { this.clicks++; }};
-  const link = {getAttribute: () => '/products/your-dogs-illustrated-mug?variant=11', closest: () => slotHost};
-  return {remove, slotHost, getAttribute: k => k === 'data-hs2-cart-line' ? JSON.stringify(snapshot) : k === 'data-hs2-quantity-key' ? (personal ? 'k' : '') : null,
-    querySelector: s => s.startsWith('a[') ? link : s === '.cart-items__remove' ? remove : s === '[data-hs2-redo]' ? (slotHost.children[0] || null) : null};
+  // the first product link is the picture's; its cell is the narrow image column (28 Oct)
+  const mediaCell = {children: [], appendChild(n) { this.children.push(n); }};
+  const link = {getAttribute: () => '/products/your-dogs-illustrated-mug?variant=11', closest: () => mediaCell};
+  return {remove, slotHost, mediaCell, getAttribute: k => k === 'data-hs2-cart-line' ? JSON.stringify(snapshot) : k === 'data-hs2-quantity-key' ? (personal ? 'k' : '') : null,
+    querySelector: s => s.startsWith('a[') ? link : s === '.cart-items__details' ? slotHost : s === '.cart-items__remove' ? remove : s === '[data-hs2-redo]' ? (slotHost.children[0] || null) : null};
 }
 const snap = (id, of = '', quantity = 1) => ({key: id, variant_id: 11, quantity, properties: {}, item_components: [{properties: {_customization_id: id, _hs_redo_of: of}}]});
 function slotEl() { return {className: '', attrs: {}, innerHTML: '', setAttribute(k, v) { this.attrs[k] = v; }, querySelector(s) { return this.handlers[s] || null; }, handlers: {}, remove() {}}; }
@@ -25,7 +27,7 @@ for (const minified of [false, true]) {
       const el = slotEl();
       Object.defineProperty(el, 'innerHTML', {set(v) { this._h = v; this.handlers = {}; if (/data-hs2-redo-remove/.test(v)) this.handlers['[data-hs2-redo-remove]'] = {addEventListener: (n, fn) => { this.removeFn = fn; }}; if (/data-hs2-redo-go/.test(v)) this.handlers['[data-hs2-redo-go]'] = {addEventListener() {}}; }, get() { return this._h; }});
       return el; }}}, extra);
-    const code = ['cartLineFacts', 'redoOffers'].map(section).join('\n');
+    const code = ['cartOfferHost', 'cartLineFacts', 'redoOffers'].map(section).join('\n');
     vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, ctx); return ctx;
   };
   test(`${minified ? 'minified' : 'source'}: one redo per gift, and the old version waits for the buyer`, () => {
@@ -34,6 +36,7 @@ for (const minified of [false, true]) {
     ctx.redoOffers([first, ordinary, two]);
     const offer = first.slotHost.children[0].innerHTML;
     assert.match(offer, /Not quite right\? Make another version\./); assert.match(offer, new RegExp('redo=' + A)); assert.match(offer, /variant=11/);
+    assert.equal(first.mediaCell.children.length, 0, 'the offer sits with the title and price, not under the picture');
     assert.equal(ordinary.slotHost.children.length, 0, 'not a personalised line'); assert.equal(two.slotHost.children.length, 0, 'quantity 1 only');
     // the new version is in the cart: the old line asks, the new one offers no second redo
     const old = row(snap(A)), fresh = row(snap(B, A));

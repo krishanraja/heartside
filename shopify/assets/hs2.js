@@ -227,10 +227,84 @@
       });
     });
   }
+  /* The painting, then the finished design (Krish, 28 Oct: the wait "looks broken", and the tickbox
+     sat above the picture). While Teeinblue paints, the card shows the buyer's photo as a sketch
+     under a moving wash, lines from their own choices, and a bar that eases toward the end without
+     ever claiming it. The finished design then fills the card with the review right under it. */
+  function artLines(who) {
+    var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
+    var STYLE = { cinematic: 'Lighting ' + who + ' like a film still.', painterly: 'Loading the brush for ' + who + '.', screenprint: 'Inking the screens, one color at a time.',
+      comic: 'Inking ' + who + "'s panel lines.", collage: 'Cutting the paper shapes for ' + who + '.', ink: 'Sharpening the pen for ' + who + '.' };
+    var TONE = { sentimental: 'Keeping it soft and tender.', warm: 'Finding the wink.', hilarious: 'Setting up the joke.' };
+    return [(choice && STYLE[choice.style]) || 'Sketching ' + who + '.', 'Getting ' + who + "'s ears exactly right.", (choice && TONE[choice.tone]) || 'Mixing the colors.',
+      'Adding what you told me about ' + who + '.', 'Checking every whisker and marking.'];
+  }
+  function artStage(pending) {
+    var card = document.querySelector('[data-hs-art]');
+    if (!card) return '';
+    var key = 'hs-art-start:' + productId(), modal = !!document.querySelector('.vm--container');
+    var painting = (pending || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading')) && !blanketNativeError();
+    var done = !painting && cityArtSaved() && !blanketNativeError();
+    var next = done ? 'done' : painting ? 'painting' : 'idle', was = card.getAttribute('data-state');
+    var who = String(answer('dog') || '').trim() || 'your dog';
+    card.hidden = next === 'idle';
+    card.setAttribute('data-state', next);
+    card.querySelector('[data-hs-art-painting]').hidden = next !== 'painting';
+    card.querySelector('[data-hs-art-done]').hidden = next !== 'done';
+    var photo = card.querySelector('[data-hs-art-photo]'), result = card.querySelector('[data-hs-art-result]');
+    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; }
+    if (next === 'painting') {
+      var start = 0;
+      try { start = Number(window.sessionStorage.getItem(key)) || 0; if (!start) window.sessionStorage.setItem(key, String(start = Date.now())); } catch (e) { start = artStage.start || (artStage.start = Date.now()); }
+      card.querySelector('[data-hs-art-title]').textContent = 'Painting ' + who;
+      photo.hidden = !photoURL;
+      if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
+      var tick = function () {
+        var t = Date.now() - start, lines = artLines(who), line = card.querySelector('[data-hs-art-line]'), bar = card.querySelector('[data-hs-art-bar]');
+        // eases toward 92% over about a minute; only the finished design ends it
+        var pct = Math.round(92 * (1 - Math.exp(-t / 28000)));
+        var say = modal ? "It's painted. Save its placement and it will appear here." : t > 100000 ? "Still painting. Some take a little longer, and I'm on it." : t > 30000 ? 'Nearly there. Good paintings take a minute.' : lines[Math.floor(t / 5000) % lines.length];
+        if (line.textContent !== say) line.textContent = say;
+        bar.firstElementChild.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct));
+      };
+      tick();
+      if (!artStage.timer) artStage.timer = setInterval(function () { if (card.getAttribute('data-state') === 'painting') tick(); }, 1000);
+      // the moment it starts, bring the painting into view instead of the small loader below
+      if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    } else {
+      try { window.sessionStorage.removeItem(key); } catch (e) { artStage.start = 0; }
+    }
+    if (next === 'done') {
+      var src = cityArtSource();
+      if (src && result.getAttribute('src') !== src) result.src = src;
+      result.hidden = !src;
+      card.querySelector('[data-hs-art-done-title]').textContent = "Here's " + who + '.';
+      var yes = card.querySelector('[data-hs-art-yes]');
+      if (yes) yes.textContent = who === 'your dog' ? 'Yes, this is my dog.' : 'Yes, this is ' + who + '.';
+      if (was === 'painting') {
+        card.classList.add('is-new');
+        setTimeout(function () { card.classList.remove('is-new'); }, 1200);
+        if (card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        var title = card.querySelector('[data-hs-art-done-title]');
+        if (title.focus) title.focus({ preventScroll: true });
+      }
+    }
+    return next;
+  }
+  // a blocked Add to cart shows the buyer the one thing left to do, where it is
+  function nudgeReview() {
+    var wrap = document.querySelector('[data-hs2-artwork-accept-wrap]');
+    if (!wrap || wrap.hidden || !wrap.getClientRects || !wrap.getClientRects().length) return false;
+    if (wrap.scrollIntoView) wrap.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    wrap.classList.remove('is-nudged'); void wrap.offsetWidth; wrap.classList.add('is-nudged');
+    return true;
+  }
   function updateBlanketPurchaseStatus() {
     updatePortraitSignatureRecovery();
     updateRestoredArtworkReview();
     var pending = blanketUploadPending();
+    // the card says it in pictures; the status line stays for anything the card does not cover
+    var staged = artStage(pending) !== 'idle' && !!document.querySelector('[data-hs-art]');
     var photoBox = document.querySelector('[data-hs2-blanket-photo]');
     if (photoBox) {
       photoBox.hidden = !usePhoto.file || artRequested();
@@ -246,11 +320,11 @@
     if (review) review.hidden = true;
     if (acceptance && !blanketReviewAccepted()) { acceptance.checked = false; blanketAcceptedKey = ''; }
     document.querySelectorAll('[data-hs-art-choices] select').forEach(function (select) { select.disabled = pending; });
-    if (pending) { blanketPurchaseStatus('Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
+    if (pending) { blanketPurchaseStatus(staged ? '' : 'Waiting for your artwork. Save its placement when it appears. Another upload is held while this request is unresolved.'); return; }
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
     var who = answer('dog') || 'your dog';
-    blanketPurchaseStatus(saved ? 'Artwork saved. Check every whisker, face and marking before you add your gift.' : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
+    blanketPurchaseStatus(saved ? (staged ? '' : 'Artwork saved. Check every whisker, face and marking before you add your gift.') : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }
@@ -1318,6 +1392,7 @@
         e.preventDefault(); e.stopImmediatePropagation();
         var nativeBuy = document.querySelector('#buy[data-hs2-artwork-kind]');
         blanketPurchaseStatus(nativeBuy && nativeBuy.getAttribute('data-hs2-purchase-enabled') !== 'true' ? 'This gift is not available to order yet.' : 'Finish and save your artwork, then tick the artwork review before adding this gift. If an error appears, follow the instructions beside your artwork.');
+        if (cityArtSaved() && !blanketReviewAccepted()) nudgeReview();
         return;
       }
       // This isolated template is for acceptance testing. AI completion, raw-photo
@@ -2143,11 +2218,16 @@
     });
     return { id: String(id), of: String(of), addonFor: String((snap.properties || {})._hs_addon_for || ''), quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
   }
+  // the offers sit with the line's title and price, never in the narrow picture column
+  function cartOfferHost(row) {
+    var link = row.querySelector('a[href*="/products/"]');
+    return row.querySelector('.cart-items__details') || (link && link.closest('td'));
+  }
   function redoOffers(rows) {
     var lines = [], redone = {};
     rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.of) redone[f.of] = true; } });
     lines.forEach(function (l) {
-      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      var link = l.row.querySelector('a[href*="/products/"]'), host = cartOfferHost(l.row);
       if (!host) return;
       var slot = l.row.querySelector('[data-hs2-redo]');
       var html = '';
@@ -2173,21 +2253,36 @@
   /* The bundle in the cart (Krish, 27 Oct: 15% off two gifts, 20% off three), only while the memo
      strip's switch says the real discount exists: one gift gets the nudge, and two or more show
      the saving Shopify actually applied, read from /cart.js, never a computed promise. */
-  function bundleLine(rowCount) {
+  function bundleLine(rows) {
     var totals = document.querySelector('.cart-totals__tax-note');
-    if (!document.querySelector('[data-hs-bundle-live]') || !totals || bundleLine.busy) return;
+    if (!document.querySelector('[data-hs-bundle-live]') || !totals) return;
+    var show = function (say) {
+      var el = document.querySelector('[data-hs2-bundle-line]');
+      if (!say) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement('p'); el.className = 'hs2-bundle-line'; el.setAttribute('data-hs2-bundle-line', ''); totals.parentNode.insertBefore(el, totals); }
+      if (el.textContent !== say) el.textContent = say;
+    };
+    // read /cart.js once per cart (its lines and quantities), not on every redraw: Teeinblue re-runs
+    // its whole cart pass on each /cart.js request, and that pass redraws the cart again
+    var seen = rows.map(function (row) {
+      var q = row.querySelector('input[type="number"]');
+      return row.getAttribute('data-key') + ':' + (q ? q.value : '');
+    }).join('|');
+    if (seen === bundleLine.seen) { if (!bundleLine.busy) show(bundleLine.say); return; }
+    if (bundleLine.busy) return;
     bundleLine.busy = true;
     fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cart) {
       var gifts = (cart.items || []).filter(function (it) { return !/artist'?s touch/i.test(it.product_title || ''); }).length;
       var saved = Number(cart.total_discount) || 0, say = '';
       if (gifts === 1) say = 'Add a second gift and save 15%. Three saves 20%.';
       else if (gifts > 1 && saved > 0) say = 'You are saving $' + (saved / 100).toFixed(2).replace(/\.00$/, '') + ' on ' + gifts + ' gifts.';
-      var el = document.querySelector('[data-hs2-bundle-line]');
-      if (!say) { if (el) el.remove(); return; }
-      if (!el) { el = document.createElement('p'); el.className = 'hs2-bundle-line'; el.setAttribute('data-hs2-bundle-line', ''); totals.parentNode.insertBefore(el, totals); }
-      if (el.textContent !== say) el.textContent = say;
-    }).catch(function () { /* the cart works without it */ }).then(function () { bundleLine.busy = false; });
-    void rowCount;
+      bundleLine.seen = seen; bundleLine.say = say;
+      show(say);
+    }).catch(function () { /* the cart works without it */ }).then(function () {
+      bundleLine.busy = false;
+      // the cart may have changed while this was in flight; asks again only if it did
+      bundleLine(Array.prototype.slice.call(document.querySelectorAll('.cart-items__table-row[data-key]')));
+    });
   }
   /* Artist's touch (Krish, 27 Oct): a paid hand rework of one design, offered on each personalised
      cart line once the add-on product exists (memo strip setting). It goes in as its own line,
@@ -2204,7 +2299,7 @@
     // pays for a rework of a design they no longer have; removing it stays the buyer's tap
     lines.forEach(function (l) {
       if (!l.addonFor || gifts[l.addonFor] || l.row.querySelector('[data-hs2-artist-orphan]')) return;
-      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      var host = cartOfferHost(l.row);
       if (!host) return;
       var note = document.createElement('p');
       note.className = 'hs2-artist__orphan'; note.setAttribute('data-hs2-artist-orphan', ''); note.setAttribute('role', 'status');
@@ -2213,7 +2308,7 @@
     });
     lines.forEach(function (l) {
       if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || taken[l.id] || l.row.querySelector('[data-hs2-artist]')) return;
-      var link = l.row.querySelector('a[href*="/products/"]'), host = link && link.closest('td');
+      var host = cartOfferHost(l.row);
       if (!host) return;
       var box = document.createElement('details');
       box.className = 'hs2-artist'; box.setAttribute('data-hs2-artist', '');
@@ -2266,6 +2361,62 @@
       journeyCard();
     });
   }
+  /* Their toy or collar on the product page (Krish, 28 Oct). The words are the chat's own toy and
+     accessory facts, so they reach the painting the same way; changing them asks for a new
+     painting like any other change. Photos of them go to our artist: the Artist's touch line is
+     added right after the gift, linked to its design, with the photos as file properties. */
+  function bindExtras() {
+    var box = document.querySelector('[data-hs-extras]');
+    if (!box || !nativeArtworkPurchase() || !window.HSArtworkProfile) return;
+    box.hidden = false;
+    var facts = function () { try { return JSON.parse(artworkFacts()).facts; } catch (e) { return []; } };
+    box.querySelectorAll('[data-hs-extra]').forEach(function (input) {
+      var source = input.getAttribute('data-hs-extra'), had = facts().filter(function (f) { return f.source === source; })[0];
+      input.value = had ? had.text : '';
+      input.addEventListener('change', function () {
+        var text = input.value.replace(/\s+/g, ' ').trim().slice(0, 80), now = facts().filter(function (f) { return f.source !== source; });
+        if (text) now.push({ source: source, text: text });
+        state.hs3_art_profile = { version: 1, facts: now };
+        save();
+        try { var chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}'); chat[source] = text; window.sessionStorage.setItem('hs3-gift', JSON.stringify(chat)); } catch (e) { /* this page keeps it */ }
+        invalidateBlanketReview(); artworkChoicesChanged(); journeyCard(); updateBlanketPurchaseStatus();
+        track('extras_words', { source: source, filled: !!text });
+      });
+    });
+    var memo = document.querySelector('[data-hs-artist-variant]'), artist = box.querySelector('[data-hs-extras-artist]');
+    if (!memo || !artist) return;
+    artist.hidden = false;
+    var price = artist.querySelector('[data-hs-extras-price]');
+    if (price) price.textContent = memo.getAttribute('data-hs-artist-price') || '';
+    onCartAdd(extrasAfterAdd);
+  }
+  function extrasAfterAdd(items) {
+    var artist = document.querySelector('[data-hs-extras-artist]'), memo = document.querySelector('[data-hs-artist-variant]');
+    if (!artist || artist.hidden || !memo) return;
+    var notes = artist.querySelector('[data-hs-extras-notes]'), status = artist.querySelector('[data-hs-extras-status]');
+    var photos = Array.prototype.filter.call(artist.querySelectorAll('.hs-extras__photo'), function (p) { var f = p.querySelector('[data-hs-extras-file]'); return f && f.files && f.files[0]; });
+    if (!photos.length && !notes.value.trim()) return;
+    var gift = (items || []).filter(function (it) { return it && it.properties && /^[a-f0-9-]{36}$/i.test(it.properties._customization_id || ''); })[0];
+    if (!gift) { status.textContent = 'Your gift is in your cart. Add the artist\'s touch from your cart page.'; return; }
+    var form = new FormData();
+    form.append('id', memo.getAttribute('data-hs-artist-variant')); form.append('quantity', '1');
+    form.append('properties[_hs_addon_for]', gift.properties._customization_id);
+    form.append('properties[What to change]', notes.value.trim() || 'Paint in the toy or collar from my photos.');
+    photos.forEach(function (p, i) { form.append('properties[Photo ' + (i + 1) + ': ' + p.querySelector('[data-hs-extras-tag]').value + ']', p.querySelector('[data-hs-extras-file]').files[0]); });
+    status.textContent = 'Sending your photos to our artist.';
+    track('artist_touch_add', { photos: photos.length, from: 'product' });
+    // the add-on has no design of its own, so it skips the checkout-image preparation every gift add goes through
+    (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
+      .then(function (added) {
+        notes.value = '';
+        photos.forEach(function (p) { p.querySelector('[data-hs-extras-file]').value = ''; });
+        artist.open = false;
+        status.textContent = 'Added. Our artist will paint it in by hand, and a person checks it before it prints.';
+        announceAdd([added]);
+      })
+      .catch(function () { status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.'; });
+  }
   function cartTidy() {
     var run = function () {
       var rows = document.querySelectorAll('.cart-items__table-row[data-key]');
@@ -2304,7 +2455,7 @@
       });
       redoOffers(Array.prototype.slice.call(rows));
       artistTouch(Array.prototype.slice.call(rows));
-      bundleLine(rows.length);
+      bundleLine(Array.prototype.slice.call(rows));
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
         var want = 'Free US shipping on every order. Tax is added at checkout.';
@@ -2329,14 +2480,39 @@
     run();
     if ('MutationObserver' in window && !cartTidy.mo) {
       var queued = false;
-      cartTidy.mo = new MutationObserver(function () {
-        if (queued) return; queued = true;
+      // only changes inside the cart wake this up; the personalizer on a product page redraws
+      // constantly, and every needless pass was another chance to fight over the thumbnail
+      var CART = '.cart-items__table-row, .cart-totals, .cart-items__media';
+      var touches = function (n) {
+        var el = n && (n.nodeType === 1 ? n : n.parentElement);
+        return !!el && (!!el.closest(CART) || (n.nodeType === 1 && !!el.querySelector(CART)));
+      };
+      cartTidy.mo = new MutationObserver(function (records) {
+        if (queued || !records.some(function (r) { return touches(r.target) || Array.prototype.some.call(r.addedNodes, touches); })) return;
+        queued = true;
         setTimeout(function () { queued = false; run(); }, 60);
       });
-      cartTidy.mo.observe(document.body, { childList: true, subtree: true });
+      cartTidy.mo.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
   }
+  // the server already drew the design (cart-products.liquid); Teeinblue may still be rendering its
+  // copy just after a generation, so a design that fails to load is asked for again, 6 times at most
+  function cartDesignRetry(img) {
+    if (img.__hs2Retry) return;
+    img.__hs2Retry = 0;
+    var again = function () {
+      if (img.complete && img.naturalWidth) return;
+      if (++img.__hs2Retry > 6 || !/^\/\/cdn\.teeinblue\.com\/customizations\//.test(img.getAttribute('src') || '')) return;
+      setTimeout(function () { img.src = img.getAttribute('src').split('?')[0] + '?v=' + Date.now(); }, 3500);
+    };
+    img.addEventListener('error', again);
+    if (img.complete && !img.naturalWidth) again();
+  }
   function cartPicture(row, url) {
+    var designed = row.querySelector('.cart-items__media img[data-hs2-design]');
+    if (designed) { cartDesignRetry(designed); return; }
+    // one owner per thumbnail: a cell Teeinblue's own widget already holds is left to it
+    if (row.querySelector('.cart-items__media .tee-customization-image, .cart-items__media .tee-cart-thumbnail')) return;
     var img = row.querySelector('.cart-items__media img');
     if (!img) return;
     if (!url) {
@@ -2958,6 +3134,7 @@
     var isAdd = function (u) { return /\/cart\/add(\.js)?(?:[?#]|$)/.test(String(u || '')); };
     if (window.fetch) {
       var f0 = window.fetch;
+      onCartAdd.fetch0 = f0;
       window.fetch = function (input) {
         var u = typeof input === 'string' ? input : (input && input.url);
         var args = arguments;
@@ -3187,6 +3364,7 @@
     }
     guardSearchFocus();
     bindBlanketRecovery();
+    bindExtras();
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
