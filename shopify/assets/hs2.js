@@ -50,7 +50,13 @@
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
       return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
     }
-    if (k === 'art_energy' && (cityArtPreview() || nativeArtworkPurchase())) return artworkEnergy() || 'none';
+    // 28 Oct: Teeinblue's prompt reads only the chosen medium, mood and energy, in hidden fields
+    // (tools/print-art/native-candidate.mjs nativeFieldValues writes the same text)
+    if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style_direction' || k === 'art_tone_direction')) {
+      var chosen = window.HSArtworkChoices.read(), rs = window.HSArtworkEngine.recipes;
+      return k === 'art_style_direction' ? rs.styles[chosen.style].label + '. ' + rs.styles[chosen.style].grammar : rs.tones[chosen.tone].label + '. ' + rs.tones[chosen.tone].art;
+    }
+    if (k === 'art_energy' && (cityArtPreview() || nativeArtworkPurchase())) { var code = artworkEnergy(); return code ? window.HSArtworkEngine.recipes.energy.directions[code] : 'none'; }
     if (k === 'city' && (cityArtPreview() || nativeArtworkPurchase())) return String(state.city || '').trim();
     if (V3_ANSWER.test(k)) return v3Answer(k);
     var v = (state[k] == null ? '' : String(state[k])).trim();
@@ -201,9 +207,10 @@
   }
   function nativeBlanketInputsReady() {
     var fields = tibFields();
-    // a campaign without the Energy field is still ready; one that has it must carry the code
+    // a campaign without the hidden direction fields is still ready; one that has them must carry
+    // the chosen text, so the storefront can go live before Teeinblue gets the 28 Oct prompt
     var keys = ['personality', 'art_style', 'art_tone'];
-    if (fields.some(function (f) { return f.rule.k === 'art_energy'; })) keys.push('art_energy');
+    ['art_energy', 'art_style_direction', 'art_tone_direction'].forEach(function (k) { if (fields.some(function (f) { return f.rule.k === k; })) keys.push(k); });
     return keys.every(function (key) {
       var field = fields.find(function (f) { return f.rule.k === key; });
       if (!field) return false;
@@ -1135,6 +1142,8 @@
     { k: 'personality', re: /^\s*personality\b/i },
     { k: 'art_style', re: /^\s*artwork style\b/i, choice: true },
     { k: 'art_tone', re: /^\s*artwork tone\b/i, choice: true },
+    { k: 'art_style_direction', re: /^\s*style direction\b/i },
+    { k: 'art_tone_direction', re: /^\s*tone direction\b/i },
     { k: 'art_energy', re: /^\s*energy\b/i },
     { k: 'dog', re: /manager|dog'?s name|pet'?s name|name of (your|the) (dog|pet)|reviewer/i },
     { k: 'person', re: /employee|your name|person'?s name|owner|human/i },
@@ -1379,7 +1388,7 @@
   }
   function fillField(f) {
     var k = f.rule.k, el = f.el;
-    if ((cityArtPreview() || nativeArtworkPurchase()) && ['art_style', 'art_tone', 'personality', 'art_energy'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
+    if ((cityArtPreview() || nativeArtworkPurchase()) && ['art_style', 'art_tone', 'personality', 'art_energy', 'art_style_direction', 'art_tone_direction'].indexOf(k) !== -1) el.setAttribute('data-hs2-art-personality', '');
     var text = el.querySelector('input[type="text"], input:not([type]), textarea');
     var select = el.querySelector('select');
     if (text) {
@@ -1390,11 +1399,11 @@
         if (text.value !== facts) setValue(text, facts);
         return { name: name, value: facts };
       }
-      if (k === 'art_energy' && (cityArtPreview() || nativeArtworkPurchase())) {
-        // always written, "none" included, so a cleared breed never leaves an old code behind
-        var code = answer('art_energy');
-        if (text.value !== code) setValue(text, code);
-        return { name: name, value: code };
+      if (['art_energy', 'art_style_direction', 'art_tone_direction'].indexOf(k) !== -1 && (cityArtPreview() || nativeArtworkPurchase())) {
+        // always written ("none" included for energy), so a changed choice never leaves old text behind
+        var direction = answer(k);
+        if (text.value !== direction) setValue(text, direction);
+        return { name: name, value: direction };
       }
       watchField(text, k);
       if (bridge.owned[name]) return { name: name, value: text.value, mine: true };

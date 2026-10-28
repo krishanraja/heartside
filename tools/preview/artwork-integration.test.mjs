@@ -74,7 +74,7 @@ test('mug candidate expands art across wrap, removes cut-out mask and keeps one 
   const r=mugTemplate(source,{style:1,tone:2});
   const photo=r.layers.find(l=>l.type==='photo'); assert.equal(photo.width,2700);assert.equal(photo.height,1050);assert.equal(photo.masked_enable,false);
   assert.equal(r.layers.filter(l=>/^Line/.test(l.name)).length,1);assert.equal(source.layers[0].width,900);
-  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Artwork style}}'));assert.ok(p.includes('{{Artwork tone}}'));assert.ok(p.includes('{{Energy}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
+  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Style direction}}'));assert.ok(p.includes('{{Tone direction}}'));assert.ok(p.includes('{{Energy}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
 });
 
 // 27 Oct ruling: tone (and breed energy) drive the imagery on every format. Exact words
@@ -230,4 +230,41 @@ for (const minify of [false,true]) test((minify?'minified':'source')+': optional
 });
 test('portrait native prompt has no required City substitution',()=>{
   const prompt=nativePrompt('portrait');assert.ok(!prompt.includes('{{City}}'));assert.ok(prompt.includes('place is null or absent'));assert.ok(prompt.includes('{{Personality}}'));
+});
+
+const hs2Source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
+const section=name=>{const i=hs2Source.indexOf('  function '+name+'(');assert.notEqual(i,-1,name);return hs2Source.slice(i,hs2Source.indexOf('\n  function ',i+1));};
+// 28 Oct: Teeinblue's prompt reads only the chosen style, tone and energy text, from hidden fields
+// the storefront fills. hs2.js answer() must write exactly what nativeFieldValues() promises the spec.
+for (const minify of [false,true]) test(`${minify?'minified':'source'}: the storefront writes the same direction text the prompt spec expects`, async () => {
+  const {nativeFieldValues}=await import('../print-art/native-candidate.mjs');
+  const {recipes}=await import('../print-art/artwork-system.mjs');
+  const w=browser(minify), state={hs3_energy:null};
+  let choice={style:'screenprint',tone:'sentimental'};
+  w.HSArtworkChoices={read:()=>choice};
+  const ctx={window:w,state,cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativeArtworkEvidence:()=>'{}',V3_ANSWER:/^$/,v3Answer:()=>'',DEFAULTS:{},NAMES:[],
+    artworkEnergy:()=>state.hs3_energy&&Object.hasOwn(recipes.energy.directions,state.hs3_energy)?state.hs3_energy:null};
+  const code=section('answer');
+  vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
+  for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const energy of [null,'devoted-close','eager-open']) {
+    choice={style,tone}; state.hs3_energy=energy;
+    const v=nativeFieldValues({style,tone,energy});
+    assert.equal(ctx.answer('art_style_direction'),v['Style direction']);
+    assert.equal(ctx.answer('art_tone_direction'),v['Tone direction']);
+    assert.equal(ctx.answer('art_energy'),v.Energy);
+  }
+});
+for (const minify of [false,true]) test(`${minify?'minified':'source'}: a campaign without the hidden direction fields is still ready; one with them needs the chosen text`, () => {
+  const field=(k,value)=>({rule:{k},el:{querySelector:s=>s.startsWith('input[type="text"]')?{value}:null,querySelectorAll:()=>[]}});
+  const want={personality:'{}',art_style:'Ink',art_tone:'Warm',art_energy:'none',art_style_direction:'S.',art_tone_direction:'T.'};
+  let fields=[];
+  const ctx={tibFields:()=>fields,answer:k=>want[k],choiceMatches:()=>true,radioLabel:()=>null,radioPicked:()=>false};
+  const code=section('nativeBlanketInputsReady');
+  vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
+  fields=['personality','art_style','art_tone'].map(k=>field(k,want[k]));
+  assert.equal(ctx.nativeBlanketInputsReady(),true,'the 27 Oct campaigns stay purchasable');
+  fields=fields.concat([field('art_style_direction','S.'),field('art_tone_direction','old tone text'),field('art_energy','none')]);
+  assert.equal(ctx.nativeBlanketInputsReady(),false,'a stale tone text blocks the purchase until it is rewritten');
+  fields[4]=field('art_tone_direction','T.');
+  assert.equal(ctx.nativeBlanketInputsReady(),true);
 });

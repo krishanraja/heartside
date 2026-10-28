@@ -1,19 +1,25 @@
-// The 27 October example batch: three stock dogs from assets/photos (already public in this
+// Example batches for the site: three stock dogs from assets/photos (already public in this
 // repository), each in one style, across the tones and the three gifts. Every prompt is the
-// committed Teeinblue prompt from nativePrompt(format) with its placeholders filled exactly as
-// the storefront fills them, so the examples show what the real pipeline is asked for.
-// No network, no generation: it writes design/examples-2026-10-27/jobs.json and one prompt file
-// per job. --check fails if those files are stale.
+// committed Teeinblue prompt from nativePrompt(format) with its fields filled by
+// nativeFieldValues(), exactly as the storefront fills them, so the examples show what the
+// real pipeline is asked for. No network, no generation: it writes the current batch's
+// jobs.json and one prompt file per job. --check fails if those files are stale.
+//
+// design/examples-2026-10-27/ is the first batch, kept as generated (its prompts are the 27 Oct
+// all-directions form). The 28 Oct batch re-runs the images whose tone or style didn't show,
+// with the single-direction prompts, in two stages (cap 10): stage 2 runs only after a person
+// has seen stage 1 show three clearly different moods.
 //
 //   node tools/print-art/example-batch.mjs [--check]
 import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import vm from 'node:vm';
 import {recipes, energyFor} from './artwork-system.mjs';
-import {nativePrompt} from './native-candidate.mjs';
+import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const out = root + 'design/examples-2026-10-27/';
+const BATCH = '2026-10-28';
+const out = root + 'design/examples-' + BATCH + '/';
 
 const ctx = {window: {}};
 vm.runInNewContext(readFileSync(root + 'shopify/assets/hs-breeds.js', 'utf8'), ctx);
@@ -25,34 +31,33 @@ const DOGS = [
   {id: 'poodle', name: 'Rosie', breed: 'Poodle', photo: 'assets/photos/red-poodle-head-tilt.jpg', style: 'painterly', facts: [{source: 'spot', text: 'Sits neatly on the wooden floor.'}]},
   {id: 'golden', name: 'Maple', breed: 'Golden Retriever', photo: 'assets/photos/golden-puppy-asleep.jpg', style: 'collage', facts: [{source: 'spot', text: 'Naps on the rug by the sofa.'}]}
 ];
-// 18 core jobs (3 dogs x 2 tones x 3 gifts) plus the pug portrait at the middle tone, so the
-// slider demo can show one dog at all three stops. Cap 20.
-const TONES = ['sentimental', 'hilarious'];
-const FORMATS = {mug: '1536x1024', portrait: '1024x1536', blanket: '1024x1024'};
-const EXTRA = [{dog: 'pug', tone: 'warm', format: 'portrait'}];
-const CAP = 20;
+const SIZES = {mug: '1536x1024', portrait: '1024x1536', blanket: '1024x1024'};
+// stage 1 proves the slider on one dog; stage 2 redoes the 27 Oct images whose tone or style
+// didn't show (both Hilarious mugs, the golden puppy outside collage, its rejected mug)
+const STAGES = [
+  {stage: 1, cap: 3, jobs: [['pug', 'sentimental', 'portrait'], ['pug', 'warm', 'portrait'], ['pug', 'hilarious', 'portrait']]},
+  {stage: 2, cap: 7, jobs: [['pug', 'hilarious', 'mug'], ['poodle', 'hilarious', 'mug'], ['golden', 'sentimental', 'mug'], ['golden', 'sentimental', 'portrait'],
+    ['golden', 'sentimental', 'blanket'], ['golden', 'hilarious', 'mug'], ['golden', 'hilarious', 'portrait']]}
+];
+const CAP = STAGES.reduce((n, s) => n + s.cap, 0);
 
-function job(dog, tone, format) {
-  const energy = energyFor(breeds.lookup(dog.breed)) || 'none';
-  const personality = JSON.stringify({version: 1, facts: dog.facts});
-  const prompt = nativePrompt(format)
-    .replaceAll('{{Artwork style}}', recipes.styles[dog.style].label)
-    .replaceAll('{{Artwork tone}}', recipes.tones[tone].label)
-    .replaceAll('{{Energy}}', energy)
-    .replaceAll('{{Personality}}', personality);
-  if (/\{\{[^}]*\}\}/.test(prompt)) throw new Error('Unfilled placeholder in ' + dog.id + ' ' + tone + ' ' + format);
+function job(stage, [dogId, tone, format]) {
+  const dog = DOGS.find(d => d.id === dogId);
+  const fields = {...nativeFieldValues({style: dog.style, tone, energy: energyFor(breeds.lookup(dog.breed))}), Personality: JSON.stringify({version: 1, facts: dog.facts})};
+  const prompt = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    if (!Object.hasOwn(fields, key)) throw new Error('Unknown field ' + key);
+    return fields[key];
+  });
   const id = [dog.id, tone, format].join('-');
-  return {id, prompt, dog: dog.id, example_name: dog.name, breed: dog.breed, photo: dog.photo, style: recipes.styles[dog.style].label,
-    tone: recipes.tones[tone].label, format, size: FORMATS[format], energy, personality,
-    prompt_file: 'design/examples-2026-10-27/prompts/' + id + '.txt', output: 'design/examples-2026-10-27/out/' + id + '.png'};
+  return {id, prompt, stage, dog: dog.id, example_name: dog.name, breed: dog.breed, photo: dog.photo, style: recipes.styles[dog.style].label,
+    tone: recipes.tones[tone].label, format, size: SIZES[format], energy: fields.Energy, personality: fields.Personality,
+    prompt_file: 'design/examples-' + BATCH + '/prompts/' + id + '.txt', output: 'design/examples-' + BATCH + '/out/' + id + '.png'};
 }
 
-const jobs = [];
-for (const dog of DOGS) for (const tone of TONES) for (const format of Object.keys(FORMATS)) jobs.push(job(dog, tone, format));
-for (const e of EXTRA) jobs.push(job(DOGS.find(d => d.id === e.dog), e.tone, e.format));
-if (jobs.length > CAP) throw new Error('More jobs than the cap');
+const jobs = STAGES.flatMap(s => s.jobs.map(j => job(s.stage, j)));
+if (jobs.length > CAP || STAGES.some(s => s.jobs.length > s.cap)) throw new Error('More jobs than the cap');
 
-const files = {'jobs.json': JSON.stringify({about: 'Example batch, 27 October 2026. Generated by tools/print-art/example-batch.mjs; do not edit by hand. Each image is an Example and a person reviews it before use.', recipe_version: recipes.version, cap: CAP, jobs: jobs.map(({prompt, ...rest}) => rest)}, null, 2) + '\n'};
+const files = {'jobs.json': JSON.stringify({about: 'Example batch, 28 October 2026. Generated by tools/print-art/example-batch.mjs; do not edit by hand. Each image is an Example and a person reviews it before use. Run one stage at a time.', recipe_version: recipes.version, cap: CAP, stages: STAGES.map(({stage, cap}) => ({stage, cap})), jobs: jobs.map(({prompt, ...rest}) => rest)}, null, 2) + '\n'};
 for (const j of jobs) files['prompts/' + j.id + '.txt'] = j.prompt + '\n';
 
 if (process.argv.includes('--check')) {
@@ -62,5 +67,5 @@ if (process.argv.includes('--check')) {
 } else {
   mkdirSync(out + 'prompts', {recursive: true});
   for (const [name, body] of Object.entries(files)) writeFileSync(out + name, body);
-  console.log('wrote ' + jobs.length + ' jobs to design/examples-2026-10-27/');
+  console.log('wrote ' + jobs.length + ' jobs to design/examples-' + BATCH + '/');
 }
