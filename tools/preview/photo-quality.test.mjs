@@ -177,12 +177,39 @@ test('an empty or fully transparent image is unreadable', () => {
 
 test('messages are warm, plain and follow the copy rules', () => {
   const all = Object.entries(Q.messages);
-  assert.deepEqual(all.map(([k]) => k).sort(), ['blur', 'bright', 'dark', 'dim', 'dogs', 'far', 'glare', 'nodog', 'size', 'small', 'soft', 'unreadable']);
+  assert.deepEqual(all.map(([k]) => k).sort(), ['blur', 'bright', 'dark', 'dim', 'dogs', 'far', 'glare', 'heic', 'nodog', 'size', 'small', 'soft', 'unreadable']);
   for (const [code, message] of all) {
     assert.ok(!/[!\u2014\u2013]/.test(message), `${code} has an exclamation mark or a dash`);
     assert.ok(message.length > 20 && message.length <= 140, `${code} is ${message.length} characters`);
     assert.ok(/[.]$/.test(message), `${code} ends with a period`);
   }
+});
+
+// A context where this browser can decode nothing: createImageBitmap rejects and an <img> errors.
+function noDecoder(hang) {
+  const ctx = vm.createContext({window: {}, setTimeout, clearTimeout, URL: {createObjectURL: () => 'blob:x', revokeObjectURL() {}},
+    createImageBitmap: () => hang ? new Promise(() => {}) : Promise.reject(new Error('cannot decode')),
+    Image: class { set src(v) { if (!hang) setTimeout(() => this.onerror && this.onerror(), 0); } }});
+  vm.runInContext(source, ctx);
+  return ctx.window.HSPhotoQuality;
+}
+test('a HEIC or HEIF photo is refused with guidance to choose a JPEG, by type or by file name (Krish, 28 Oct)', async () => {
+  const Q = noDecoder(false);
+  for (const file of [{type: 'image/heic', name: 'PXL_20261028.heic'}, {type: 'image/heif', name: 'photo.heif'}, {type: '', name: 'IMG_0042.HEIC'}]) {
+    const result = await Q.check(file, {detect: false});
+    assert.deepEqual([result.verdict, result.overridable, codes(result)], ['reject', false, ['heic']], JSON.stringify(file));
+    assert.match(result.reasons[0].message, /HEIC/); assert.match(result.reasons[0].message, /JPEG/);
+  }
+  // a file the browser cannot open is still "unreadable"
+  assert.deepEqual(codes(await Q.check({type: 'image/jpeg', name: 'broken.jpg'}, {detect: false})), ['unreadable']);
+});
+test('a decode that never finishes fails open within the time limit and says it timed out', async () => {
+  const Q = noDecoder(true);
+  assert.equal(Q.limits.decodeTimeout, 10000, 'ten seconds on the device (Krish, 28 Oct)');
+  const result = await Promise.race([Q.check({type: 'image/jpeg', name: 'cloud-photo.jpg'}, {decodeTimeout: 50, detect: false}),
+    new Promise(resolve => setTimeout(() => resolve('still waiting'), 500))]);
+  assert.notEqual(result, 'still waiting', 'the check settles');
+  assert.deepEqual([result.verdict, result.timedOut, codes(result)], ['ok', true, []], 'the photo goes on; the painter still checks its size');
 });
 
 test('plain browser script: no modules, no import(), nothing sent anywhere', () => {

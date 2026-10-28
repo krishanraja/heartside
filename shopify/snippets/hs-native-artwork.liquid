@@ -36,16 +36,29 @@
                 </div>
               </div>
               <p data-hs2-checkout-image-status role="status" aria-live="polite" hidden></p>
-              <div data-hs2-blanket-photo hidden>
-                <img data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="80" height="80">
-                <button type="button" data-hs2-blanket-create>Paint it from the photo you gave Buddy</button>
-              </div>
-              {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog the detector missed {%- endcomment -%}
-              <div class="hs-photo-check" data-hs2-photo-check hidden>
-                <p data-hs2-photo-check-text role="alert"></p>
+              {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog
+                the detector missed. hs2.js photoNote puts each outcome under the button the buyer tapped and right after
+                Teeinblue's photo field; this box holds it only while Teeinblue has not drawn that field. {%- endcomment -%}
+              <div class="hs-photo-check" data-hs2-photo-check aria-live="polite" hidden>
+                <p data-hs2-photo-check-text></p>
                 <button type="button" data-hs2-photo-override hidden>It's my dog. Use this photo.</button>
               </div>
               <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
+              {%- comment -%} The photo the buyer gave Buddy, as one choice (Krish, 28 Oct: "the UI should absolutely really be
+                asking if you want to add to that or use a different picture"). hs2.js updateBlanketPurchaseStatus names the dog;
+                the first button starts the painting, the second opens the phone's picker in the same tap. {%- endcomment -%}
+              <div class="hs-photo-choice" data-hs2-blanket-photo hidden>
+                <img class="hs-photo-choice__img" data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="64" height="64">
+                <div class="hs-photo-choice__body">
+                  <p class="hs-photo-choice__ask" data-hs2-blanket-photo-line>Paint your dog from this photo?</p>
+                  <p class="hs-photo-choice__hint">This starts the painting. It takes about a minute.</p>
+                  <div class="hs-photo-choice__actions">
+                    <button type="button" class="hs-photo-choice__use" data-hs2-blanket-create>Use your dog's photo</button>
+                    <button type="button" class="hs-photo-choice__other" data-hs2-photo-different>Use a different photo</button>
+                  </div>
+                  <div class="hs-photo-note" data-hs2-blanket-photo-status hidden><p data-hs-photo-note-text></p><button type="button" data-hs-photo-note-override hidden>It's my dog. Use this photo.</button></div>
+                </div>
+              </div>
               {%- comment -%} The painting, then the finished design with the review right under it (Krish, 28 Oct:
                 the wait "looks broken" and the tickbox sat above the picture where he barely saw it).
                 hs2.js artStage() runs it; the wait is honest: about a minute, never a fake finish. {%- endcomment -%}

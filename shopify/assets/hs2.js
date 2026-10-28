@@ -74,10 +74,21 @@
   function cityArtPreview() { return !!document.querySelector('#buy[data-hs2-city-art-preview]'); }
   function blanketArtPreview() { return !!document.querySelector('#buy[data-hs2-blanket-art-preview], #buy[data-hs2-blanket-purchase]'); }
   function nativeArtworkPurchase() { return !!document.querySelector('#buy[data-hs2-blanket-purchase], #buy[data-hs2-artwork-kind]'); }
+  /* The one upload a painting may use, held in sessionStorage so a reload cannot send a second.
+     It has two stages (28 Oct): 'preparing' while the photo is checked and cleaned on this device,
+     and 'sent', written synchronously just before the photo is handed to Teeinblue. A 'preparing'
+     lock with no preparation running on this page (the tab reloaded or was discarded first) sent
+     nothing, so it is cleared. A 'sent' lock, and a lock from before the stages, holds until a new
+     image arrives. */
   function blanketUploadPending() {
     var key = 'hs2-blanket-upload:' + productId(), pending;
     try { pending = JSON.parse(window.sessionStorage.getItem(key) || 'null'); } catch (e) { return true; }
     if (!pending) return false;
+    if (pending.stage === 'preparing' && !keepTibPhoto.preparing) {
+      try { window.sessionStorage.removeItem(key); } catch (e) { return true; }
+      photoLog('lock:stale', { lock: 'preparing' });
+      return false;
+    }
     var src = cityArtSource(), photo = document.querySelector('.tee-field--photo .tee-photo-image');
     if (src && src !== pending.before && photo && photo.getAttribute('src') === src && !document.querySelector('.vm--container')) {
       try { window.sessionStorage.removeItem(key); } catch (e) { return true; }
@@ -87,8 +98,19 @@
   }
   function beginBlanketUpload() {
     if (!productId() || blanketUploadPending() || !nativeBlanketInputsReady()) return false;
-    try { window.sessionStorage.setItem('hs2-blanket-upload:' + productId(), JSON.stringify({before: cityArtSource()})); return true; }
+    try { window.sessionStorage.setItem('hs2-blanket-upload:' + productId(), JSON.stringify({before: cityArtSource(), stage: 'preparing'})); return true; }
     catch (e) { return false; }
+  }
+  // the lock's second stage, written before the vendor's change event and never after it
+  function blanketUploadSent() {
+    var key = 'hs2-blanket-upload:' + productId();
+    try {
+      var lock = JSON.parse(window.sessionStorage.getItem(key) || 'null');
+      if (!lock || typeof lock !== 'object') return false;
+      lock.stage = 'sent';
+      window.sessionStorage.setItem(key, JSON.stringify(lock));
+      return true;
+    } catch (e) { return false; }
   }
   function blanketPurchaseStatus(message) {
     var buy = document.querySelector('#buy[data-hs2-artwork-kind]');
@@ -132,50 +154,124 @@
       return true;
     } catch (e) { return false; }
   }
-  /* What the on-device photo check found, beside the artwork status: a reason in plain words,
-     and for a dog the detector may have missed, "It's my dog. Use this photo." */
+  /* The fallback home for a photo outcome, used only while Teeinblue has not drawn its photo field
+     (photoNote puts it right after that field once it exists): a reason in plain words, and for a
+     dog the detector may have missed, "It's my dog. Use this photo." */
   function photoCheck(message, override) {
     var box = document.querySelector('[data-hs2-photo-check]');
     if (!box) { if (message) blanketPurchaseStatus(message); return; }
     box.hidden = !message;
     var text = box.querySelector('[data-hs2-photo-check-text]'), btn = box.querySelector('[data-hs2-photo-override]');
-    if (text) text.textContent = message || '';
+    if (text && text.textContent !== (message || '')) text.textContent = message || '';
     if (btn) {
       btn.hidden = !override;
       btn.onclick = override ? function () { btn.hidden = true; override(); } : null;
     }
   }
-  // start the dog detector when the buyer heads for the photo, so the check is ready by the time they pick one
+  /* Every photo outcome where the buyer is (Krish's Android phone, 28 Oct: a rejected or failed photo
+     just reset Teeinblue's field, and the reason was written above the form, out of sight). The same
+     words, and the "It's my dog. Use this photo." override, go (1) under the journey card's photo
+     button, (2) inside the saved-photo choice card while it shows and (3) in a line right after
+     Teeinblue's photo field. Only the last is a live region, so a screen reader hears it once. */
+  function photoNote(text, override) {
+    var message = text || '', used = false;
+    photoNote.text = message; photoNote.override = override || null;
+    var run = override ? function () { if (used) return; used = true; photoNote(''); override(); } : null;
+    var go = document.querySelector('[data-hs-journey-photo]'), card = go && go.closest ? go.closest('[data-hs-journey-card]') : null;
+    var under = document.querySelector('[data-hs-journey-photo-status]');
+    if (card && !under && message) under = photoNoteSpot('data-hs-journey-photo-status', false);
+    if (under && card && card.nextElementSibling !== under && card.insertAdjacentElement) card.insertAdjacentElement('afterend', under);
+    if (under) photoNoteFill(under, card ? message : '', run);
+    var choice = document.querySelector('[data-hs2-blanket-photo-status]');
+    if (choice) photoNoteFill(choice, message, run);
+    var field = document.querySelector('.tee-field--photo'), inline = document.querySelector('[data-hs2-photo-inline]');
+    if (field && !inline && message) inline = photoNoteSpot('data-hs2-photo-inline', true);
+    if (inline && field && field.nextElementSibling !== inline && field.insertAdjacentElement) field.insertAdjacentElement('afterend', inline);
+    if (inline && field) { photoNoteFill(inline, message, run); photoCheck(''); }
+    else { if (inline) photoNoteFill(inline, '', null); photoCheck(message, run); }
+  }
+  function photoNoteSpot(attr, live) {
+    var spot = document.createElement('div'), text = document.createElement('p'), btn = document.createElement('button');
+    spot.className = 'hs-photo-note'; spot.setAttribute(attr, ''); spot.hidden = true;
+    if (live) { spot.setAttribute('role', 'status'); spot.setAttribute('aria-live', 'polite'); }
+    text.setAttribute('data-hs-photo-note-text', '');
+    btn.type = 'button'; btn.hidden = true; btn.setAttribute('data-hs-photo-note-override', ''); btn.textContent = "It's my dog. Use this photo.";
+    spot.appendChild(text); spot.appendChild(btn);
+    return spot;
+  }
+  function photoNoteFill(spot, message, run) {
+    spot.hidden = !message;
+    var text = spot.querySelector('[data-hs-photo-note-text]') || spot, btn = spot.querySelector('[data-hs-photo-note-override]');
+    if (text.textContent !== message) text.textContent = message;
+    if (btn) { btn.hidden = !run; btn.onclick = run; }
+  }
+  // why a photo is held instead of starting another painting, in words the buyer can act on
+  function photoHeld() {
+    if (keepTibPhoto.preparing) return "I'm still getting your last photo ready. Give me a moment.";
+    if (blanketUploadPending()) return 'I\'m still working on the photo you sent. If it stopped, open "Artwork failed or stopped?" below.';
+    if (!nativeBlanketInputsReady()) return 'Your choices are still loading into the painter. Choose the photo again in a moment.';
+    return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
+  }
+  // the real reason a photo could not be made ready, never one sentence for every cause
+  function photoReason(error, file) {
+    var code = error && error.code;
+    if (file && (/^image\/hei[cf]/i.test(file.type || '') || /\.hei[cf]$/i.test(file.name || ''))) return "This photo is saved as HEIC, which I can't paint from. Choose a JPEG of your dog instead.";
+    if (code === 'type') return 'I can paint from a JPEG, PNG or WebP photo. Choose one of those.';
+    if (code === 'megapixels') return 'This photo is over 40 megapixels, more than I can get ready. Choose a smaller copy of it.';
+    if (code === 'unreadable' || (error && error.name === 'NotReadableError')) return "I couldn't open this photo. Try a JPEG or PNG from your camera roll.";
+    if (code === 'changed') return 'Your choices changed while I was getting the photo ready. Choose it again.';
+    if (code === 'detached') return "Your photo didn't reach the painter. Choose it again.";
+    if (code === 'storage') return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
+    return "I couldn't get this photo ready in this browser. Choose it again, or try a different photo.";
+  }
+  // Teeinblue's photo input as it is now: it redraws its fields, and a redrawn input is a new element
+  function livePhotoInput(inp) {
+    if (inp && inp.isConnected) return inp;
+    var live = photoInput();
+    return live && live !== inp && live.isConnected ? live : null;
+  }
+  /* One tap opens the phone's picker (Krish, 28 Oct: "Add Mochi's photo" only scrolled a long way and
+     needed a second tap). click() must run inside the tap, before any timer or promise, or the
+     browser refuses to open the picker. Teeinblue's input is never display:none (see hs2.css). */
+  function openPhotoPicker(from) {
+    if (blanketUploadPending()) { photoNote(photoHeld()); photoLog('picker:held', { from: from }); return false; }
+    var inp = photoInput();
+    if (inp && !inp.disabled) {
+      photoLog('picker', { from: from, id: inp.id || '', accept: inp.getAttribute ? inp.getAttribute('accept') || '' : '', capture: inp.getAttribute ? inp.getAttribute('capture') || '' : '' });
+      inp.click();
+      return true;
+    }
+    // Teeinblue has not drawn its photo field yet: go to where it will be, without a long animation
+    var target = document.querySelector('.tee-field--photo, [data-hs2-photo-step], .tee-form-wrapper');
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'auto' });
+    photoNote('The photo step is still loading. Tap again in a moment.');
+    photoLog('picker:loading', { from: from, input: !!inp });
+    return false;
+  }
+  /* The dog detector (about 19 MB) loads only once a photo is picked (28 Oct). Warming it as the
+     photo step scrolled into view could put that download and a WebGL pause on a phone just before
+     its picker opened; check() skips the dog checks when the detector is not ready in time. */
   function warmPhotoCheck() {
     if (warmPhotoCheck.done || !nativeArtworkPurchase()) return;
     warmPhotoCheck.done = true;
-    var load = function () {
-      if (load.done || !window.HSPhotoQuality) return;
-      load.done = true;
-      document.removeEventListener('pointerdown', go, true);
-      try { window.HSPhotoQuality.loadDetector(); } catch (err) { /* the check fails open without it */ }
-    };
-    var go = function (e) {
-      if (e.target && e.target.closest && e.target.closest('.tee-field--photo, [data-hs2-blanket-create]')) load();
-    };
-    document.addEventListener('pointerdown', go, true);
-    // the dog detector needs a few seconds to arrive, so it also starts once the photo step is on
-    // screen (not on a data saver), giving the no-dog check time to run before a photo is picked
-    var conn = navigator.connection || {};
-    if (conn.saveData || /2g/.test(conn.effectiveType || '') || !('IntersectionObserver' in window)) return;
-    var tries = 0, wait = setInterval(function () {
-      var field = document.querySelector('.tee-field--photo');
-      if (!field && ++tries < 30) return;
-      clearInterval(wait);
-      if (!field) return;
-      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { io.disconnect(); load(); } });
-      io.observe(field);
-    }, 1000);
+    document.addEventListener('change', function (e) {
+      var inp = e.target;
+      if (warmPhotoCheck.loaded || !window.HSPhotoQuality || !inp || inp.type !== 'file' || !inp.matches) return;
+      if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]') || !(inp.files && inp.files[0])) return;
+      var conn = navigator.connection || {};
+      if (conn.saveData || /2g/.test(conn.effectiveType || '')) return;
+      warmPhotoCheck.loaded = true;
+      var t0 = Date.now();
+      photoLog('detector', { trigger: 'pick' });
+      try {
+        Promise.resolve(window.HSPhotoQuality.loadDetector()).then(function (detector) { photoLog(detector ? 'detector:ready' : 'detector:none', { ms: Date.now() - t0 }); });
+      } catch (err) { /* the check fails open without it */ }
+    }, true);
   }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
     var target = photoInput();
-    if (!target) { blanketPurchaseStatus('The personalizer is still loading. Your photo is saved here.'); return; }
+    if (!target) { photoNote('The painter is still loading. Your photo is saved, so tap again in a moment.'); return; }
     try {
       var transfer = new DataTransfer(); transfer.items.add(usePhoto.file);
       target.files = transfer.files;
@@ -183,13 +279,21 @@
       // No timers, refill API or retry follows this explicit click.
       target.dispatchEvent(new Event('change', { bubbles: true }));
     } catch (e) {
-      blanketPurchaseStatus('Your photo could not be sent automatically. Check whether the personalizer is working before choosing it below.');
+      photoNote("I couldn't pass your saved photo to the painter in this browser. Choose it again with Use a different photo.");
     }
   }
   function bindBlanketRecovery() {
     var box = document.querySelector('[data-hs2-upload-recovery]');
     if (!nativeArtworkPurchase() || !box) return;
     document.querySelector('[data-hs2-blanket-create]').addEventListener('click', sendBlanketPhoto);
+    // "Use a different photo": Teeinblue's field comes back first, then the picker opens in this same tap
+    var different = document.querySelector('[data-hs2-photo-different]');
+    if (different) different.addEventListener('click', function () {
+      updateBlanketPurchaseStatus.different = true;
+      var buy = document.getElementById('buy');
+      if (buy) buy.classList.remove('hs2-photo-choice');
+      openPhotoPicker('different');
+    });
     var acceptance = document.querySelector('[data-hs2-artwork-accept]');
     acceptance.addEventListener('change', function () {
       blanketAcceptedKey = acceptance.checked && !blanketUploadPending() && cityArtSaved() && !blanketNativeError() ? blanketReviewKey() : '';
@@ -317,12 +421,27 @@
     var pending = blanketUploadPending();
     // the card says it in pictures; the status line stays for anything the card does not cover
     var staged = artStage(pending) !== 'idle' && !!document.querySelector('[data-hs-art]');
-    var photoBox = document.querySelector('[data-hs2-blanket-photo]');
+    /* The photo the buyer gave Buddy, as one choice (Krish, 28 Oct: "the UI should absolutely really be
+       asking if you want to add to that or use a different picture"). While the card shows, Teeinblue's
+       empty uploader is clip-hidden by the hs2-photo-choice class (never display:none, iOS ignores
+       click() on those) until the buyer picks "Use a different photo". */
+    var photoBox = document.querySelector('[data-hs2-blanket-photo]'), choosing = false;
     if (photoBox) {
+      var wasHidden = photoBox.hidden;
       photoBox.hidden = !usePhoto.file || artRequested();
       var photo = photoBox.querySelector('[data-hs2-blanket-photo-img]'), create = photoBox.querySelector('[data-hs2-blanket-create]');
       if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
       create.disabled = pending || !nativeBlanketInputsReady();
+      var named = answer('dog') || 'your dog', ask = photoBox.querySelector('[data-hs2-blanket-photo-line]');
+      if (ask && ask.textContent !== 'Paint ' + named + ' from this photo?') ask.textContent = 'Paint ' + named + ' from this photo?';
+      if (create.textContent !== 'Use ' + possessive(named) + ' photo') create.textContent = 'Use ' + possessive(named) + ' photo';
+      choosing = !photoBox.hidden && !updateBlanketPurchaseStatus.different;
+      var buyBox = document.getElementById('buy');
+      if (buyBox) buyBox.classList.toggle('hs2-photo-choice', choosing);
+      // the journey card's photo button reads "Paint <dog> from your photo" while this card shows
+      if (wasHidden !== photoBox.hidden) journeyCard();
+      // a photo outcome stays where the buyer is, even after Teeinblue redraws its field
+      if (photoNote.text) photoNote(photoNote.text, photoNote.override);
     }
     var recovery = document.querySelector('[data-hs2-upload-recovery]');
     if (recovery) recovery.hidden = !pending;
@@ -336,7 +455,7 @@
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
     var who = answer('dog') || 'your dog';
-    blanketPurchaseStatus(saved ? (staged ? '' : 'Artwork saved. Check every whisker, face and marking before you add your gift.') : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
+    blanketPurchaseStatus(saved ? (staged ? '' : 'Artwork saved. Check every whisker, face and marking before you add your gift.') : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : choosing ? 'Create artwork with your saved photo. Check the result before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }
@@ -627,17 +746,23 @@
     if (style) html += row('Style and tone', esc_(style) + ' · ' + esc_(tone), '#hs-art-choices', 'Change below');
     if (cityArtSaved()) html += '<p class="hs-journey__warn">Changing these means painting new artwork.</p>';
     // the first thing to do on this page, in the first screen: go to the photo step
-    else html += '<button type="button" class="hs-journey__go hs-journey__photo" data-hs-journey-photo>Add ' + esc_(possessive(dog)) + ' photo</button>';
+    // with the photo the buyer gave Buddy on show as a choice card, the button goes to that card
+    else { var savedChoice = document.querySelector('[data-hs2-blanket-photo]'); html += '<button type="button" class="hs-journey__go hs-journey__photo" data-hs-journey-photo>' + (savedChoice && !savedChoice.hidden ? 'Paint ' + esc_(dog) + ' from your photo' : 'Add ' + esc_(possessive(dog)) + ' photo') + '</button>'; }
     if (card.innerHTML !== html) card.innerHTML = html;
     var go = card.querySelector('[data-hs-journey-photo]');
     if (go && !go.__hs2) {
       go.__hs2 = true;
+      // one tap opens the phone's picker, with no scroll (openPhotoPicker); the outcome shows under this button
       go.addEventListener('click', function () {
-        var target = document.querySelector('.tee-field--photo, [data-hs2-photo-step], .tee-form-wrapper');
-        if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        var file = target && target.querySelector && target.querySelector('button, label, input');
-        if (file && file.focus) { try { file.focus({ preventScroll: true }); } catch (e) { /* old browser */ } }
         track('journey_photo', { gift: gift });
+        var choice = document.querySelector('[data-hs2-blanket-photo]');
+        if (choice && !choice.hidden) {
+          if (choice.scrollIntoView) choice.scrollIntoView({ block: 'center', behavior: 'auto' });
+          var use = choice.querySelector('[data-hs2-blanket-create]');
+          if (use && use.focus) { try { use.focus({ preventScroll: true }); } catch (e) { /* old browser */ } }
+          return;
+        }
+        openPhotoPicker('journey');
       });
     }
     card.hidden = false;
@@ -2080,37 +2205,60 @@
   function keepTibPhoto() {
     if (keepTibPhoto.done) return;
     keepTibPhoto.done = true;
+    photoLogOn();
     document.addEventListener('change', function (e) {
       var inp = e.target;
       if (doHandoff.busy || !inp || inp.type !== 'file' || !inp.matches) return;
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]')) return;
       var f = inp.files && inp.files[0];
-      if (!f || !/^image\//.test(f.type)) return;
+      // some Android pickers hand over a file with no type; on a gift page its name still says what it is
+      if (!f || !(/^image\//.test(f.type) || (nativeArtworkPurchase() && !f.type && /\.(jpe?g|png|webp|hei[cf])$/i.test(f.name || '')))) return;
+      var who = answer('dog') || 'your dog';
       if (nativeArtworkPurchase() && inp.__hs2PreparedPhoto !== f && window.HSPhotoQuality && inp.__hs2CheckedPhoto !== f) {
         // The photo check comes first, on the device (hs-photo-quality.js): a photo that can't make
         // good artwork never reaches Teeinblue and never reserves the upload (27 Oct).
         e.preventDefault(); e.stopImmediatePropagation();
-        if (keepTibPhoto.checking) return;
-        keepTibPhoto.checking = f;
-        photoCheck('Checking your photo on your device.');
-        window.HSPhotoQuality.check(f, { timeout: 4000 }).then(function (r) {
+        photoLog('change', photoLogFile(f, inp, 'check', e));
+        // a second pick while a check runs replaces the first: only the latest photo's result counts
+        var run = keepTibPhoto.checking = { file: f }, t0 = Date.now();
+        keepTibPhoto.warn = '';
+        photoNote('Checking ' + possessive(who) + ' photo on your device.');
+        photoLog('check', {});
+        // ten seconds at most on the device (Krish, 28 Oct); a checker that fails lets the photo go on, as a timeout does
+        Promise.resolve().then(function () { return window.HSPhotoQuality.check(f, { timeout: 4000, decodeTimeout: 10000 }); }).catch(function (err) {
+          photoLog('check:error', { name: err && err.name || '', message: err && err.message || '' });
+          return { verdict: 'ok', overridable: false, reasons: [], metrics: null, detection: null };
+        }).then(function (r) {
+          if (keepTibPhoto.checking !== run) { photoLog('check:replaced', {}); return; }
           keepTibPhoto.checking = null;
+          var found = r.detection && r.detection.dogs && r.detection.dogs[0];
+          photoLog(r.timedOut ? 'check:timeout' : 'check:' + r.verdict, { ms: Date.now() - t0, codes: r.reasons.map(function (x) { return x.code; }).join(','),
+            size: r.metrics ? r.metrics.width + 'x' + r.metrics.height : '', dog: r.detection ? (found ? Math.round(found.score * 100) / 100 : 'none') : 'skipped' });
           if (r.verdict === 'reject' && !(r.overridable && inp.__hs2Override === f)) {
             inp.value = '';
-            photoCheck(r.reasons.map(function (x) { return x.message; }).join(' '), r.overridable ? function () {
+            photoNote(r.reasons.map(function (x) { return x.message; }).join(' '), r.overridable ? function () {
               // the buyer knows their dog: the detector can miss an unusual one
-              inp.__hs2Override = f;
-              try { var dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; } catch (err) { return; }
+              var again = livePhotoInput(inp);
+              if (!again) { photoNote(photoReason({ code: 'detached' }, f)); return; }
+              again.__hs2Override = f;
+              try { var dt = new DataTransfer(); dt.items.add(f); again.files = dt.files; } catch (err) { photoNote(photoReason({ code: 'detached' }, f)); return; }
               track('photo_override', {});
-              inp.dispatchEvent(new Event('change', { bubbles: true }));
+              again.dispatchEvent(new Event('change', { bubbles: true }));
             } : null);
             track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
             return;
           }
-          photoCheck(r.verdict === 'warn' ? r.reasons.map(function (x) { return x.message; }).join(' ') : '');
-          inp.__hs2CheckedPhoto = f;
-          if (!inp.isConnected) return;
-          inp.dispatchEvent(new Event('change', { bubbles: true }));
+          keepTibPhoto.warn = r.verdict === 'warn' ? r.reasons.map(function (x) { return x.message; }).join(' ') : '';
+          photoNote(keepTibPhoto.warn);
+          // Teeinblue may have redrawn its field during the check: the photo goes to the field as it is now
+          var target = livePhotoInput(inp);
+          if (target && target !== inp) {
+            try { var moved = new DataTransfer(); moved.items.add(f); target.files = moved.files; } catch (err) { target = null; }
+          }
+          if (!target) { inp.value = ''; photoLog('detach', { stage: 'check' }); photoNote(photoReason({ code: 'detached' }, f)); return; }
+          if (target !== inp) photoLog('redrawn', { id: target.id || '' });
+          target.__hs2CheckedPhoto = f;
+          target.dispatchEvent(new Event('change', { bubbles: true }));
         });
         return;
       }
@@ -2118,36 +2266,51 @@
         // Capture before the vendor receives the File. Preparing is local only;
         // the sole vendor event is emitted after metadata removal succeeds.
         e.preventDefault(); e.stopImmediatePropagation();
+        photoLog('change', photoLogFile(f, inp, 'prepare', e));
         if (keepTibPhoto.preparing || !beginBlanketUpload()) {
-          blanketPurchaseStatus('Upload held: wait for your current artwork or photo preparation to finish.');
+          // cleared, so choosing the same photo again fires a change
+          inp.value = '';
+          photoNote(photoHeld());
+          photoLog('held', { lock: photoLogLock() });
           return;
         }
-        var token = { key: artRequestKey() };
+        var token = { key: artRequestKey() }, p0 = Date.now();
         keepTibPhoto.preparing = token;
-        blanketPurchaseStatus('Preparing your photo and removing its location metadata.');
+        photoNote(keepTibPhoto.warn || 'Getting ' + possessive(who) + ' photo ready and removing its location data.');
+        photoLog('prepare', { lock: photoLogLock() });
         Promise.resolve().then(function () {
-          if (!window.HSArtworkPhoto || typeof DataTransfer !== 'function') throw new Error('Photo preparation is unavailable.');
+          if (!window.HSArtworkPhoto || typeof DataTransfer !== 'function') { var none = new Error('Photo preparation is unavailable.'); none.code = 'unavailable'; throw none; }
           return window.HSArtworkPhoto.prepare(f);
         }).then(function (prepared) {
           if (keepTibPhoto.preparing !== token) return;
-          if (!inp.isConnected || token.key !== artRequestKey() || !nativeBlanketInputsReady()) throw new Error('Your artwork choices changed.');
+          var why = function (code) { var err = new Error(code); err.code = code; return err; };
+          if (token.key !== artRequestKey() || !nativeBlanketInputsReady()) throw why('changed');
+          var target = livePhotoInput(inp);
+          if (!target) throw why('detached');
+          if (target !== inp) photoLog('redrawn', { id: target.id || '' });
           var dt = new DataTransfer(); dt.items.add(prepared.file);
-          inp.files = dt.files;
-          inp.__hs2PreparedPhoto = prepared.file;
-          state.hs3_photo_provenance = { photo: prepared.photo, width: prepared.width, height: prepared.height };
+          target.files = dt.files;
+          target.__hs2PreparedPhoto = prepared.file;
+          state.hs3_photo_provenance = { photo: prepared.photo, width: prepared.width, height: prepared.height, uploadWidth: prepared.uploadWidth, uploadHeight: prepared.uploadHeight };
+          photoLog('prepare:ok', { ms: Date.now() - p0, bytes: prepared.uploadBytes || (prepared.file && prepared.file.size) || 0, size: prepared.width + 'x' + prepared.height, upload: prepared.uploadWidth ? prepared.uploadWidth + 'x' + prepared.uploadHeight : '' });
+          // the lock reads 'sent' before Teeinblue hears of the photo, so no reload can send a second
+          if (!blanketUploadSent()) throw why('storage');
           keepTibPhoto.preparing = null;
-          inp.dispatchEvent(new Event('change', { bubbles: true }));
-        }).catch(function () {
+          photoNote(keepTibPhoto.warn || '');
+          photoLog('vendor', { id: target.id || '', lock: photoLogLock() });
+          target.dispatchEvent(new Event('change', { bubbles: true }));
+        }).catch(function (err) {
           if (keepTibPhoto.preparing !== token) return;
           keepTibPhoto.preparing = null;
           resetBlanketUpload(); inp.value = '';
-          blanketPurchaseStatus('No artwork was started. Use a JPEG, PNG or WebP photo up to 40 megapixels, then try again.');
+          photoLog('prepare:error', { ms: Date.now() - p0, code: err && err.code || '', name: err && err.name || '', message: err && err.message || '' });
+          photoNote(photoReason(err, f));
         });
         return;
       }
       var preparedUpload = inp.__hs2PreparedPhoto === f;
       delete inp.__hs2PreparedPhoto;
-      if (nativeArtworkPurchase() && !preparedUpload && !beginBlanketUpload()) {
+      if (nativeArtworkPurchase() && !preparedUpload && !(beginBlanketUpload() && blanketUploadSent())) {
         e.preventDefault(); e.stopImmediatePropagation(); inp.value = '';
         blanketPurchaseStatus('Upload held: wait for any current artwork to finish and your choices to load. This browser must allow session storage before creating artwork.');
         return;
@@ -2160,6 +2323,114 @@
       savePhoto(f, t);
       track('photo_attached', { where: 'personalizer' });
     }, true);
+  }
+  /* ?hsdebug=photo: an on-screen log of every photo stage, for a real phone (28 Oct: the Android photo
+     failed where no desktop run could see why). It lives in sessionStorage (hs-photo-log, the last 120
+     entries), so it survives the picker, a reload and a discarded tab. It stays on the device: nothing
+     is sent anywhere and no pixels are kept. Off by default; ?hsdebug=off turns it off and clears it. */
+  function photoLog(stage, data) {
+    if (!photoLogOn()) return;
+    var entry = { t: new Date().toISOString().slice(11, 23), s: String(stage) };
+    Object.keys(data || {}).forEach(function (k) {
+      var v = data[k];
+      entry[k] = v == null || typeof v === 'number' || typeof v === 'boolean' ? v : String(v).slice(0, 200);
+    });
+    var log = photoLog.entries || (photoLog.entries = photoLogRead());
+    log.push(entry);
+    if (log.length > 120) log.splice(0, log.length - 120);
+    try { window.sessionStorage.setItem('hs-photo-log', JSON.stringify(log)); } catch (e) { /* the overlay still shows it */ }
+    photoLogDraw(log);
+  }
+  function photoLogRead() {
+    try { var log = JSON.parse(window.sessionStorage.getItem('hs-photo-log') || '[]'); return Array.isArray(log) ? log : []; } catch (e) { return []; }
+  }
+  function photoLogOn() {
+    if (photoLogOn.on !== undefined) return photoLogOn.on;
+    var on = false;
+    try {
+      var flag = new URLSearchParams(window.location.search).get('hsdebug');
+      if (flag === 'photo') window.sessionStorage.setItem('hs-debug', 'photo');
+      if (flag === 'off') { window.sessionStorage.removeItem('hs-debug'); window.sessionStorage.removeItem('hs-photo-log'); }
+      on = window.sessionStorage.getItem('hs-debug') === 'photo';
+    } catch (e) { on = false; }
+    photoLogOn.on = on;
+    if (on) { try { photoLogStart(); } catch (e) { /* a debug aid never breaks the page */ } }
+    return on;
+  }
+  function photoLogFile(f, inp, branch, e) {
+    return { branch: branch, name: f.name || '', type: f.type || '', size: f.size, modified: f.lastModified || 0, id: inp.id || '', connected: !!inp.isConnected, trusted: !!(e && e.isTrusted) };
+  }
+  function photoLogLock() {
+    try { return window.sessionStorage.getItem('hs2-blanket-upload:' + productId()) || 'none'; } catch (e) { return 'unreadable'; }
+  }
+  function photoLogStart() {
+    var nav = '', earlier = photoLogRead().length;
+    try { var entry = window.performance.getEntriesByType('navigation')[0]; nav = entry ? entry.type : ''; } catch (e) { nav = 'unknown'; }
+    photoLog('page', { path: window.location.pathname, nav: nav, discarded: !!document.wasDiscarded, ua: navigator.userAgent, memory: navigator.deviceMemory || '',
+      viewport: window.innerWidth + 'x' + window.innerHeight + '@' + window.devicePixelRatio, earlier: earlier });
+    document.addEventListener('visibilitychange', function () { photoLog('visibility', { state: document.visibilityState }); });
+    document.addEventListener('freeze', function () { photoLog('freeze', {}); });
+    document.addEventListener('resume', function () { photoLog('resume', {}); });
+    window.addEventListener('pagehide', function (e) { photoLog('pagehide', { persisted: !!e.persisted }); });
+    window.addEventListener('pageshow', function (e) { photoLog('pageshow', { persisted: !!e.persisted }); });
+    window.addEventListener('error', function (e) { photoLog('error', { message: e.message || '', at: String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0) }); });
+    window.addEventListener('unhandledrejection', function (e) { photoLog('rejection', { message: e.reason && e.reason.message ? e.reason.message : String(e.reason) }); });
+    // Teeinblue's reaction: its crop dialog, its upload spinner, its photo message, an invalid field
+    if (!('MutationObserver' in window)) return;
+    var last = '', look = function () {
+      var message = document.querySelector('.tee-photo-message');
+      var now = { dialog: !!document.querySelector('.vm--container'), uploading: !!document.querySelector('.tee-photo-uploading'),
+        message: message ? String(message.textContent || '').trim().slice(0, 120) : '', invalid: !!document.querySelector('.tee-field--invalid') };
+      if (JSON.stringify(now) !== last) { last = JSON.stringify(now); photoLog('teeinblue', now); }
+    };
+    var watch = function () {
+      if (!document.body) return;
+      new MutationObserver(function () { clearTimeout(look.timer); look.timer = setTimeout(look, 120); })
+        .observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      look();
+    };
+    if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch);
+  }
+  // the overlay: fixed to the bottom of the screen, with Copy, Clear and Hide
+  function photoLogDraw(log) {
+    if (!document.body) return;
+    var box = document.querySelector('[data-hs-photo-log]');
+    if (!box) {
+      box = document.createElement('div');
+      box.setAttribute('data-hs-photo-log', '');
+      box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;flex-direction:column;max-height:40vh;background:rgba(18,16,16,.94);color:#FBF6F1;font:11px/1.35 ui-monospace,Menlo,monospace';
+      var bar = document.createElement('div'), title = document.createElement('strong'), pre = document.createElement('pre');
+      bar.style.cssText = 'display:flex;gap:6px;align-items:center;padding:4px 8px';
+      title.textContent = 'Photo log'; title.style.flex = '1';
+      bar.appendChild(title);
+      ['Copy', 'Clear', 'Hide'].forEach(function (label) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = label; b.setAttribute('data-hs-photo-log-' + label.toLowerCase(), '');
+        b.style.cssText = 'min-height:32px;padding:0 10px;border:1px solid #FBF6F1;border-radius:8px;background:transparent;color:inherit;font:inherit';
+        bar.appendChild(b);
+      });
+      pre.style.cssText = 'margin:0;padding:4px 8px;overflow:auto;white-space:pre-wrap;word-break:break-all';
+      box.appendChild(bar); box.appendChild(pre);
+      document.body.appendChild(box);
+      var copy = bar.querySelector('[data-hs-photo-log-copy]'), hide = bar.querySelector('[data-hs-photo-log-hide]');
+      copy.addEventListener('click', function () {
+        var text = pre.textContent, done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1500); };
+        var select = function () { var range = document.createRange(); range.selectNodeContents(pre); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); try { document.execCommand('copy'); done(); } catch (e) { /* selected, ready to copy */ } };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select); else select();
+      });
+      bar.querySelector('[data-hs-photo-log-clear]').addEventListener('click', function () {
+        photoLog.entries = [];
+        try { window.sessionStorage.removeItem('hs-photo-log'); } catch (e) { /* nothing stored */ }
+        photoLogDraw(photoLog.entries);
+      });
+      hide.addEventListener('click', function () { var shut = pre.style.display !== 'none'; pre.style.display = shut ? 'none' : ''; hide.textContent = shut ? 'Show' : 'Hide'; });
+    }
+    var out = box.querySelector('pre');
+    out.textContent = log.map(function (entry) {
+      var rest = Object.keys(entry).filter(function (k) { return k !== 't' && k !== 's'; }).map(function (k) { return k + '=' + entry[k]; }).join(' ');
+      return entry.t + ' ' + entry.s + (rest ? ' ' + rest : '');
+    }).join('\n');
+    out.scrollTop = out.scrollHeight;
   }
   function watchBlanketCompletion() {
     if (!nativeArtworkPurchase() || watchBlanketCompletion.done || !('MutationObserver' in window)) return;
