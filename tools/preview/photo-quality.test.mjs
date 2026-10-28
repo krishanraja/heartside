@@ -205,11 +205,41 @@ test('a HEIC or HEIF photo is refused with guidance to choose a JPEG, by type or
 });
 test('a decode that never finishes fails open within the time limit and says it timed out', async () => {
   const Q = noDecoder(true);
-  assert.equal(Q.limits.decodeTimeout, 10000, 'ten seconds on the device (Krish, 28 Oct)');
-  const result = await Promise.race([Q.check({type: 'image/jpeg', name: 'cloud-photo.jpg'}, {decodeTimeout: 50, detect: false}),
+  assert.equal(Q.limits.checkTimeout, 10000, 'ten seconds on the device (Krish, 28 Oct)');
+  const result = await Promise.race([Q.check({type: 'image/jpeg', name: 'cloud-photo.jpg'}, {checkTimeout: 50, detect: false}),
     new Promise(resolve => setTimeout(() => resolve('still waiting'), 500))]);
   assert.notEqual(result, 'still waiting', 'the check settles');
   assert.deepEqual([result.verdict, result.timedOut, codes(result)], ['ok', true, []], 'the photo goes on; the painter still checks its size');
+});
+// A context whose decode takes decodeMs, with WebGL, and a dog detector that is ready (warm) or still
+// downloading (cold, as on a phone's first pick): its scripts never arrive.
+function slowDecoder(decodeMs, warm) {
+  let seed = 3;
+  const canvas = () => ({width: 0, height: 0, getContext: kind => (kind === 'webgl2' || kind === 'webgl' ? {} : {drawImage() {}, getImageData(x, y, w, h) {
+    const d = new Uint8ClampedArray(w * h * 4);
+    for (let i = 0; i < w * h; i++) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 60 + (seed >> 16) % 140; d[i * 4 + 3] = 255; }
+    return {data: d};
+  }})});
+  const model = {detect: async () => []};
+  const window = warm ? {tf: {setBackend: async () => true, ready: async () => {}, getBackend: () => 'webgl'}, cocoSsd: {load: async () => model}} : {};
+  const ctx = vm.createContext({window, setTimeout, clearTimeout, URL: {createObjectURL: () => 'blob:x', revokeObjectURL() {}},
+    createImageBitmap: () => new Promise(resolve => setTimeout(() => resolve({width: 1600, height: 1200, close() {}}), decodeMs)),
+    document: {createElement: tag => (tag === 'canvas' ? canvas() : {remove() {}}), head: {appendChild() {}}}});
+  vm.runInContext(source, ctx);
+  return ctx.window.HSPhotoQuality;
+}
+test('the whole check, the dog detector included, settles within its one limit (Krish, 28 Oct: "a 10-second limit, then the photo goes on")', async () => {
+  // hs2.js's 10 s limit and 4 s detector wait, scaled down: a slow decode inside the limit used to get
+  // a fresh detector wait on top of it, about 14 s in all
+  const cold = slowDecoder(320, false), started = Date.now();
+  const late = await cold.check({type: 'image/jpeg', name: 'PXL_20261028.jpg'}, {checkTimeout: 400, timeout: 300});
+  const ms = Date.now() - started;
+  assert.ok(ms < 480, `the check took ${ms} ms against a 400 ms limit`);
+  assert.deepEqual([late.verdict, late.detection, !!late.timedOut, codes(late)], ['ok', null, false, []], 'decided on its pixels; the dog checks skipped');
+  // with time left, a ready detector still runs: no dog is the overridable reject, as before
+  const warm = slowDecoder(40, true);
+  const looked = await warm.check({type: 'image/jpeg', name: 'cat.jpg'}, {checkTimeout: 400, timeout: 300});
+  assert.deepEqual([looked.verdict, looked.overridable, codes(looked), plain(looked.detection.dogs)], ['reject', true, ['nodog'], []]);
 });
 
 test('plain browser script: no modules, no import(), nothing sent anywhere', () => {

@@ -7,7 +7,8 @@
 // is, under the journey card's photo button and right after Teeinblue's photo field, with the real
 // reason; a held pick clears the field; a field Teeinblue redrew during the check still gets the
 // photo; a second pick replaces a running check; ?hsdebug=photo keeps an on-device log; the dog
-// detector loads only after a pick.
+// detector loads only after a pick. 28 Oct review: a preparation that never settles is bounded too,
+// so it frees the upload in plain words instead of holding every later pick.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -196,6 +197,41 @@ for (const minified of [false, true]) {
     await pick(broken); broken.release(); await flush();
     assert.deepEqual(broken.vendor, [broken.clean]);
     assert.ok(broken.logs.some(([stage]) => stage === 'check:error'));
+  });
+  test(`${mode}: a preparation that runs out of time says so in plain words and frees the upload, so the next pick goes on`, async () => {
+    const h = harness(minified, []); delete h.ctx.window.HSPhotoQuality;
+    await pick(h);
+    h.release(Object.assign(new Error('Photo preparation timed out'), {code: 'timeout'})); await flush();
+    assert.equal(h.inline.text.textContent, 'This photo took too long to get ready. Choose it again, or try a different photo.');
+    assert.deepEqual(h.vendor, []); assert.equal(h.pending(), false, 'the one upload is free again'); assert.equal(h.ctx.keepTibPhoto.preparing, null);
+    h.input.value = 'again'; await pick(h);
+    assert.equal(h.inline.text.textContent, "Getting Pip's photo ready and removing its location data.", 'not held behind the photo that stalled');
+    h.release(); await flush();
+    assert.deepEqual(h.vendor, [h.clean], 'one vendor event, for the new pick');
+  });
+  test(`${mode}: with the real check and the real preparation, a decode that never settles frees the photo step in plain words`, async () => {
+    // the 28 Oct review's case: the check gave up after its limit and handed the photo to a preparation
+    // with no limit, which held every later pick. Both limits scaled down from 10 and 20 seconds.
+    const read = path => readFileSync(new URL('../../shopify/assets/' + path, import.meta.url), 'utf8');
+    const hang = () => new Promise(() => {});
+    const quality = vm.createContext({window: {}, setTimeout, clearTimeout, URL: {createObjectURL: () => 'blob:x', revokeObjectURL() {}}, createImageBitmap: hang, Image: class { set src(v) {} }});
+    vm.runInContext(read('hs-photo-quality.js'), quality);
+    const photo = vm.createContext({window: {crypto: {subtle: {digest: async () => new ArrayBuffer(32)}}}, setTimeout, clearTimeout, File: class {}, createImageBitmap: hang, document: {}});
+    vm.runInContext(read('hs-artwork-photo.js'), photo);
+    const raw = {type: 'image/jpeg', name: 'cloud-photo.jpg', size: 4200000, lastModified: 1, arrayBuffer: async () => new ArrayBuffer(8)};
+    const h = harness(minified, [], {raw});
+    h.ctx.window.HSPhotoQuality = {check: (f, o) => quality.window.HSPhotoQuality.check(f, Object.assign({}, o, {checkTimeout: 50}))};
+    h.ctx.window.HSArtworkPhoto = {prepare: f => photo.window.HSArtworkPhoto.prepare(f, {timeout: 50})};
+    await pick(h); await new Promise(resolve => setTimeout(resolve, 300));
+    const stages = h.logs.map(([stage]) => stage);
+    assert.deepEqual(stages, ['change', 'check', 'check:timeout', 'change', 'prepare', 'prepare:error'], JSON.stringify(stages));
+    assert.equal(h.logs[5][1].code, 'timeout');
+    assert.equal(h.inline.text.textContent, 'This photo took too long to get ready. Choose it again, or try a different photo.');
+    assert.deepEqual(h.vendor, []); assert.equal(h.pending(), false); assert.equal(h.ctx.keepTibPhoto.preparing, null);
+    h.input.value = 'again'; await pick(h);
+    assert.ok(!h.logs.some(([stage]) => stage === 'held'), 'the next pick is not held');
+    await new Promise(resolve => setTimeout(resolve, 150));
+    assert.deepEqual(h.vendor, [], 'nothing reached Teeinblue');
   });
   test(`${mode}: the lock reads sent before the vendor's change event, once per pick`, async () => {
     const h = harness(minified, [{verdict: 'ok', overridable: false, reasons: []}]);

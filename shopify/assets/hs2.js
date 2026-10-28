@@ -223,10 +223,16 @@
     if (text.textContent !== message) text.textContent = message;
     if (btn) { btn.hidden = !run; btn.onclick = run; }
   }
-  // why a photo is held instead of starting another painting, in words the buyer can act on
+  // why a photo is held instead of starting another painting, in words the buyer can act on. "Artwork
+  // failed or stopped?" is named only while it shows: artStage holds it back for a painting's first
+  // two minutes, and the words sent the buyer to a control that was not on the page (28 Oct review).
   function photoHeld() {
     if (keepTibPhoto.preparing) return "I'm still getting your last photo ready. Give me a moment.";
-    if (blanketUploadPending()) return 'I\'m still working on the photo you sent. If it stopped, open "Artwork failed or stopped?" below.';
+    if (blanketUploadPending()) {
+      var recovery = document.querySelector('[data-hs2-upload-recovery]'), who = String(answer('dog') || '').trim() || 'your dog';
+      if (recovery && recovery.getClientRects().length) return 'I\'m still working on the photo you sent. If it stopped, open "Artwork failed or stopped?" below.';
+      return "I'm still painting " + who + ' from the photo you sent. It takes about a minute, sometimes two.';
+    }
     if (!nativeBlanketInputsReady()) return 'Your choices are still loading into the painter. Choose the photo again in a moment.';
     return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
   }
@@ -237,6 +243,7 @@
     if (code === 'type') return 'I can paint from a JPEG, PNG or WebP photo. Choose one of those.';
     if (code === 'megapixels') return 'This photo is over 40 megapixels, more than I can get ready. Choose a smaller copy of it.';
     if (code === 'unreadable' || (error && error.name === 'NotReadableError')) return "I couldn't open this photo. Try a JPEG or PNG from your camera roll.";
+    if (code === 'timeout') return 'This photo took too long to get ready. Choose it again, or try a different photo.';
     if (code === 'changed') return 'Your choices changed while I was getting the photo ready. Choose it again.';
     if (code === 'detached') return "Your photo didn't reach the painter. Choose it again.";
     if (code === 'storage') return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
@@ -2402,8 +2409,8 @@
         keepTibPhoto.warn = '';
         photoNote('Checking ' + possessive(who) + ' photo on your device.');
         photoLog('check', {});
-        // ten seconds at most on the device (Krish, 28 Oct); a checker that fails lets the photo go on, as a timeout does
-        Promise.resolve().then(function () { return window.HSPhotoQuality.check(f, { timeout: 4000, decodeTimeout: 10000 }); }).catch(function (err) {
+        // ten seconds at most on the device, the dog detector included (Krish, 28 Oct); a checker that fails lets the photo go on, as a timeout does
+        Promise.resolve().then(function () { return window.HSPhotoQuality.check(f, { timeout: 4000, checkTimeout: 10000 }); }).catch(function (err) {
           photoLog('check:error', { name: err && err.name || '', message: err && err.message || '' });
           return { verdict: 'ok', overridable: false, reasons: [], metrics: null, detection: null };
         }).then(function (r) {
@@ -2964,12 +2971,21 @@
       });
     });
     onCartAdd(extrasAfterAdd);
+    // While its photos upload, another Add to cart would add the gift and the touch again (28 Oct
+    // review): the tap is held, and said so beside the button. Runs before guardGiftPhoto's check.
+    document.addEventListener('click', function (e) {
+      if (!extrasAfterAdd.busy || !e.target || !e.target.closest || !e.target.closest('#teeAtcButton, .tee-btn--atc, [data-hs2-add]')) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      checkoutImageStatus("One moment. Adding our artist's touch.");
+    }, true);
   }
   /* After the gift's add: when the buyer chose the Artist's touch, its line goes in right after the
-     gift. announceAdd waits for it (extrasAfterAdd.pending), so the drawer opens once, on both. */
+     gift. announceAdd waits for it (extrasAfterAdd.pending), so the drawer opens once, on both. Until
+     it lands (extrasAfterAdd.busy) its words show beside Add to cart too, where the buyer is looking:
+     the gift's own line has cleared and the drawer waits, so nothing else said the gift went in. */
   function extrasAfterAdd(items) {
     var artist = document.querySelector('[data-hs-extras-artist]'), memo = document.querySelector('[data-hs-artist-variant]');
-    if (!artist || artist.hidden || !memo || artist.getAttribute('data-hs-extras-state') !== 'on') return;
+    if (!artist || artist.hidden || !memo || artist.getAttribute('data-hs-extras-state') !== 'on' || extrasAfterAdd.busy) return;
     var notes = artist.querySelector('[data-hs-extras-notes]'), status = artist.querySelector('[data-hs-extras-status]');
     var photos = Array.prototype.filter.call(artist.querySelectorAll('.hs-extras__photo'), function (p) { var f = p.querySelector('[data-hs-extras-file]'); return f && f.files && f.files[0]; });
     var words = [];
@@ -2986,11 +3002,13 @@
     // "Photo 1 (favorite toy)": the cart adds its own colon after the name, so none inside it (A9e)
     photos.forEach(function (p, i) { form.append('properties[Photo ' + (i + 1) + ' (' + p.querySelector('[data-hs-extras-tag]').value.toLowerCase() + ')]', p.querySelector('[data-hs-extras-file]').files[0]); });
     status.textContent = photos.length ? 'Sending your photos to our artist.' : 'Adding our artist\'s touch.';
+    checkoutImageStatus(status.textContent);
     track('artist_touch_add', { photos: photos.length, from: 'product' });
     // the add-on has no design of its own, so it skips the checkout-image preparation every gift add goes through
     var sent = (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
       .then(function (added) {
+        extrasAfterAdd.busy = false;
         notes.value = '';
         photos.forEach(function (p) {
           var input = p.querySelector('[data-hs-extras-file]'), text = input.parentNode && input.parentNode.querySelector('[data-hs-file-text]');
@@ -3003,11 +3021,18 @@
         if (offer) offer.hidden = false;
         if (on) on.hidden = true;
         status.textContent = 'Added. Our artist will paint it in by hand, and a person checks it before it prints.';
+        checkoutImageStatus(''); // the drawer opens next, on both lines, and is the confirmation
         // the gift's own announcement waits for this one; a page without it still tells the drawer
         if (!confirmAdds.done) announceAdd([added]);
         return true;
       })
-      .catch(function () { status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.'; return false; });
+      .catch(function () {
+        extrasAfterAdd.busy = false;
+        status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.';
+        checkoutImageStatus(status.textContent);
+        return false;
+      });
+    extrasAfterAdd.busy = true; // set once the request is on its way; it settles either way
     extrasAfterAdd.pending = sent;
     return sent;
   }
