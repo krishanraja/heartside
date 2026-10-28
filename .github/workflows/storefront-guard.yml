@@ -91,11 +91,11 @@ jobs:
             echo ""
             echo "Findings key: $key"
           } > body.md
-          gh label create storefront-guard --repo "$REPO" --color B60205 --description "The hourly storefront guard found a broken product address" 2>/dev/null || true
+          gh label create storefront-guard --repo "$REPO" --color B60205 --description "The hourly storefront guard found a broken storefront check" 2>/dev/null || true
           open=$(gh issue list --repo "$REPO" --label storefront-guard --state open --limit 1 --json number --jq '.[0].number // empty')
           if [ -z "$open" ]; then
             gh issue create --repo "$REPO" --label storefront-guard --assignee krishanraja \
-              --title "Storefront guard: a product address is broken" --body-file body.md
+              --title "Storefront guard: a storefront check failed" --body-file body.md
           elif gh issue view "$open" --repo "$REPO" --comments --json body,comments --jq '[.body] + [.comments[].body] | join("\n")' | grep -q "Findings key: $key"; then
             echo "Issue #$open already carries these findings; nothing new to say."
           else
