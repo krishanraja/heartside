@@ -177,6 +177,20 @@ test(mode+': 6: a design never goes above one: Shopify\'s checkout merge doubled
   assert.equal(server.updates.length,0,'nothing removed, nothing added');
   assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['design',1],['ordinary',1]]);
   assert.ok(server.errors.some(error=>/Each design is one gift/.test(error)),JSON.stringify(server.errors));
+  // The refusal is said in the row (it only reached the console before), as the other refusals are.
+  const shown=await tab.evaluate(()=>({text:document.querySelector('[ref="cartItemError-1"]').textContent,hidden:document.querySelector('[ref="cartItemErrorContainer-1"]').classList.contains('hidden')}));
+  assert.match(shown.text,/Each design is one gift, so it stays at one\. Nothing was changed\./);assert.equal(shown.hidden,false,'the row\'s error area is open');
+  assert.equal((await controls(tab)).ordinary.every(control=>!control.disabled),true,'the cart is released, not left waiting');
+ }finally{await tab.close();}
+});
+
+test(mode+': 6: a design already above one (an older cart) can come down but not go up, and says so in the row',{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['design','ordinary'],designQuantity:2});
+ try{
+  await changeRow(tab,'design',3);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.updates.length,0);assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['design',2],['ordinary',1]]);
+  assert.match(await tab.evaluate(()=>document.querySelector('[ref="cartItemError-1"]').textContent),/Each design is one gift/);
  }finally{await tab.close();}
 });
 

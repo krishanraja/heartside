@@ -411,8 +411,12 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       // One unit per design (28 Oct): Shopify's checkout merge turned 2 of a design ($258 in the cart)
       // into 4 ($516 in checkout). A design may come down to one but never go above one.
       if (componentKey && quantity > 1 && quantity >= heartsideComponentUnits(this.refs.cartItemRows[line - 1])) {
+        const refused = 'Each design is one gift, so it stays at one. Nothing was changed.';
         await this.#refreshCartSection(); // put the number back as it was
-        throw new Error('Each design is one gift, so it stays at one. Nothing was changed.');
+        // Said in the row, as the other refusals are: a thrown error only ever reached the console.
+        this.#handleCartError(line, { errors: refused });
+        deferredUpdatePromise.reject(new Error(refused));
+        return;
       }
       if (componentKey) {
         heartsideOwner = {};
