@@ -383,11 +383,12 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
   .hs3-ship { padding-top: 6px; }
   /* choosing on a phone: the button to personalize stays at the foot of the screen while the gifts
      scroll above it, and settles in its place at the end of the list (28 Oct). The dock's own box
-     steps aside so the button can stick within the whole screen. */
+     steps aside so the button can stick within the whole screen. Its cream halo stays inside the 8px
+     gap, as the chat's Next does: a fade above it washed out the shipping line at rest (28 Oct review). */
   .hs3__frame[data-hs3-screen="choose"] > .hs3-dock { display: contents; }
   .hs3__frame[data-hs3-screen="choose"] > .hs3-dock > * { width: auto; margin: 8px var(--g) 0; }
   .hs3__frame[data-hs3-screen="choose"] > .hs3-dock > :first-child { margin-top: auto; padding-top: 10px; }
-  .hs3__frame[data-hs3-screen="choose"] > .hs3-dock > [data-hs3="add"] { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 3; box-shadow: 0 0 0 10px var(--cream), 0 -18px 16px 2px var(--cream); }
+  .hs3__frame[data-hs3-screen="choose"] > .hs3-dock > [data-hs3="add"] { position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 3; box-shadow: 0 0 0 6px var(--cream); }
   .hs3-dock { gap: 8px; }
 }
 /* the space cleared under the header is the page's own cream, not the theme's grey */

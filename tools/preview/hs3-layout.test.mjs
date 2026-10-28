@@ -477,6 +477,16 @@ for (const mode of MODES) test(`${mode}: choosing: Buddy's pick over a name that
       await tab.waitForTimeout(50);
       const end = await tab.evaluate(() => { const add = document.querySelector('[data-hs3="add"]'), promise = document.querySelector('.hs3-promise'); return {covered: window.__covered(add), overlap: window.__overlap(add, promise)}; });
       check(!end.covered && end.overlap <= 1, `${w}x${h}: at the end of the list the button sits clear of the shipping line`);
+      // nor does its cream halo reach that line: every layer of its shadow, with its offset and blur (28 Oct review: a
+      // fade above the button washed the line's last words out)
+      const halo = await tab.evaluate(() => {
+        const add = document.querySelector('[data-hs3="add"]'), a = add.getBoundingClientRect(), p = document.querySelector('.hs3-promise').getBoundingClientRect();
+        const px = (getComputedStyle(add).boxShadow.match(/-?[\d.]+px/g) || []).map(parseFloat);
+        let up = 0, down = 0;
+        for (let i = 0; i + 3 < px.length; i += 4) { up = Math.max(up, px[i + 3] + px[i + 2] - px[i + 1]); down = Math.max(down, px[i + 3] + px[i + 2] + px[i + 1]); }
+        return p.bottom <= a.top ? a.top - up - p.bottom : p.top - (a.bottom + down);
+      });
+      check(halo >= 0, `${w}x${h}: the button's halo stays off the shipping line (${halo.toFixed(1)}px clear)`);
       assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
     } finally { await context.close(); }
   }

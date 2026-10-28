@@ -524,7 +524,7 @@
                     endif
                   -%}
                   {%- if hs_redos contains hs_id_mark -%}
-                    <div class="hs2-redo" data-hs2-redo><p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button></div>
+                    <div class="hs2-redo" data-hs2-redo><p class="hs2-redo__tag">First version</p><p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button></div>
                   {%- elsif hs_redo_offer == '1136:/' -%}
                     <div class="hs2-redo" data-hs2-redo><a href="{{ hs_redo_href | escape }}" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span></div>
                   {%- endif -%}
@@ -568,9 +568,11 @@
                         can_update_quantity: can_update_quantity
                       %}
                     {%- endcapture -%}
-                    {%- comment -%} A design never goes up (28 Oct): its plus is served disabled. The base selector records a plus
-                      that arrives disabled (serverDisabledPlus) and never turns it back on, so no re-render can. {%- endcomment -%}
-                    {%- if hs_one_per != '' -%}{{ hs_quantity_selector | replace: 'name="plus"', 'name="plus" disabled' }}{%- else -%}{{ hs_quantity_selector }}{%- endif -%}
+                    {%- comment -%} A design never goes up (28 Oct), nor does an Artist's touch: its plus is served disabled and
+                      inert. Helio's cart selector ignores a plus that arrives disabled: it turns it back on when it connects and
+                      after every redraw, as the line has no max. Inert keeps it unpressable all the same, and
+                      component-cart-items.js puts disabled back after each redraw (data-hs2-one-per). {%- endcomment -%}
+                    {%- if hs_one_per != '' -%}{{ hs_quantity_selector | replace: 'name="plus"', 'name="plus" disabled inert aria-disabled="true" data-hs2-one-per' }}{%- else -%}{{ hs_quantity_selector }}{%- endif -%}
                     {%- if hs_one_per != '' -%}<p class="hs2-one-per">One per design</p>{%- endif -%}
 
                     <button

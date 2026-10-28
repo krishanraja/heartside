@@ -1371,6 +1371,8 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 @media (prefers-reduced-motion: reduce) { .hs2-product__stage.hs-painting::before, .hs2-product__stage.hs-painting::after { animation: none; } }
 /* a personalised design is one gift (cart-products.liquid) */
 .hs2-one-per { margin: 0; font-size: 13px; color: #5A4A44; white-space: nowrap; }
+/* its plus is served off (inert); Helio's selector can turn disabled back on, so it is dimmed here whatever its state */
+.cart-items__quantity-controls [name="plus"][data-hs2-one-per] { opacity: .4; cursor: default; }
 /* the gift page adds one of each design; Teeinblue's quantity box would only promise more (hs2.js withHsProps) */
 #buy[data-hs2-artwork-kind] .tee-form-actions .tee-quantity, #buy[data-hs2-blanket-purchase] .tee-form-actions .tee-quantity { display: none !important; }
 

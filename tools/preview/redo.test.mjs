@@ -67,6 +67,16 @@ for (const minified of [false, true]) {
     ctx.redoOffers([old, fresh]);
     assert.match(old.slotHost.children[0].innerHTML, /First version/);
     assert.match(fresh.slotHost.children[0].innerHTML, /New version/);
+    // a cart redraw morphs the first line's box back to the server's markup and keeps the element (28 Oct
+    // review): the next pass draws the tag again, it is not skipped as already drawn
+    const box = old.slotHost.children[0];
+    box.innerHTML = '<p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button>';
+    ctx.redoOffers([old, fresh]);
+    assert.equal(old.slotHost.children[0], box, 'the same box');
+    assert.match(box.innerHTML, /^<p class="hs2-redo__tag">First version<\/p>/, 'the tag is back');
+    box.removeFn(); assert.equal(old.remove.clicks, 1, 'and its button still works');
+    // drawn and untouched, a pass leaves it alone
+    const drawn = box.removeFn; ctx.redoOffers([old, fresh]); assert.equal(box.removeFn, drawn);
     // the first design removed: the new one is just the gift, with no tag and no second redo
     const alone = row(snap(B, A)); ctx.redoOffers([alone]);
     assert.equal(alone.slotHost.children.length, 0);

@@ -56,6 +56,18 @@ function heartsideAddonUnits(row) {
   } catch { return null; }
 }
 
+// One per design (28 Oct, A9c): cart-products.liquid serves the plus of a design and of an Artist's touch
+// disabled and inert, marked data-hs2-one-per. Helio's cart selector manages its buttons client-side: when it
+// connects and on every updateButtonStates it turns that plus back on, as the line has no max. Inert keeps it
+// unpressable meanwhile; this puts disabled back. Writes only on a change: the quantity gate watches both.
+function heartsideHoldOnePerPlus() {
+  for (const plus of document.querySelectorAll('cart-quantity-selector-component [name="plus"][data-hs2-one-per]')) {
+    if (!(plus instanceof HTMLButtonElement)) continue;
+    if (!plus.disabled) plus.disabled = true;
+    if (!plus.inert) plus.inert = true;
+  }
+}
+
 function heartsideQuantityMatches(rows, key, quantity) {
   let found = 0, units = 0;
   for (const row of rows || []) {
@@ -199,6 +211,8 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     document.addEventListener(StandardEvents.cartDiscountUpdate, this.#handleDiscountUpdate);
     document.addEventListener(StandardEvents.cartNoteUpdate, this.#handleNoteUpdate);
     window.addEventListener('pageshow', this.#handlePageShow);
+    // The cart's selectors turn a served-off plus back on as they connect; this runs after they have.
+    customElements.whenDefined('cart-quantity-selector-component').then(() => heartsideHoldOnePerPlus());
   }
 
   disconnectedCallback() {
@@ -709,6 +723,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
     for (const selector of document.querySelectorAll('cart-quantity-selector-component')) {
       /** @type {any} */ (selector).updateButtonStates?.();
     }
+    heartsideHoldOnePerPlus();
   }
 
   async fetchCartData() {
