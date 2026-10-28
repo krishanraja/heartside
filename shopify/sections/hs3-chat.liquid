@@ -139,8 +139,18 @@
       </ol>
       {%- comment -%} The signature feature, free to try before anything is asked: one example note at
         each end of the slider and in between (Krish, 27 Oct). Labelled Example. {%- endcomment -%}
-      <div class="hs3-demo">
+      <div class="hs3-demo{% if s.examples_on %} hs3-demo--art{% endif %}">
         <div class="hs3-demo__head"><span class="hs3-label">{{ s.demo_label }}</span><strong data-hs3-demo-name>Sentimental</strong></div>
+        {%- if s.examples_on -%}
+          {%- comment -%} The slider moves the painting too: one dog at each tone, from the reviewed 28 Oct batch
+            (design/examples-2026-10-28/site.json; Krish, 28 Oct). hs3.js shows the one that matches the slider. {%- endcomment -%}
+          <div class="hs3-demo__art" data-hs3-demo-art>
+            <span class="hs3-example">EXAMPLE</span>
+            <img class="hs3-demo__img is-on" src="{{ 'hs-example-pug-sentimental-portrait.webp' | asset_url }}" alt="Example: a pug lying in autumn leaves, soft-eyed and still, in vintage screenprint. Sentimental." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="0">
+            <img class="hs3-demo__img" src="{{ 'hs-example-pug-warm-portrait.webp' | asset_url }}" alt="Example: the same pug standing in the leaves with a head tilt and a small smile, in vintage screenprint. Warm with a wink." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="1" aria-hidden="true">
+            <img class="hs3-demo__img" src="{{ 'hs-example-pug-hilarious-portrait.webp' | asset_url }}" alt="Example: the same pug bounding at you through flying leaves, tongue out, in vintage screenprint. Hilarious." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="2" aria-hidden="true">
+          </div>
+        {%- endif -%}
         <div class="hs3-note hs3-note--demo">
           <span class="hs3-example">EXAMPLE</span>
           <div class="hs3-note__for">For {{ s.demo_for }}</div>
@@ -154,6 +164,24 @@
         <div class="hs3-tone__row"><span>Sentimental</span><input type="range" min="0" max="2" step="1" value="0" aria-label="Try the tone" aria-valuetext="Sentimental" data-hs3-demo><span>Hilarious</span></div>
         <p class="hs3-small">{{ s.demo_note }}</p>
       </div>
+      {%- if s.examples_on -%}
+        {%- comment -%} The same slider on every gift: one dog at both ends on a mug, then a portrait, a blanket
+          and another mug. Stock photos of dogs, painted by the store's own prompts; every picture says Example. {%- endcomment -%}
+        <section class="hs3-range" aria-labelledby="hs3-range-h">
+          <h2 class="hs3-range__h" id="hs3-range-h">{{ s.range_heading }}</h2>
+          <p class="hs3-small">{{ s.range_note }}</p>
+          <div class="hs3-range__pair">
+            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-mug.webp' | asset_url }}" alt="Example mug art: a golden retriever puppy asleep on a rug, chin on its paws, in cut-paper collage. Sentimental." width="960" height="640" loading="lazy" decoding="async"><figcaption>Mug · Sentimental</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-hilarious-mug.webp' | asset_url }}" alt="Example mug art: the same puppy rolling belly-up on the rug with its paws in the air, in cut-paper collage. Hilarious." width="960" height="640" loading="lazy" decoding="async"><figcaption>Mug · Hilarious</figcaption></figure>
+          </div>
+          <div class="hs3-range__tiles">
+            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-portrait.webp' | asset_url }}" alt="Example portrait art: a golden retriever puppy resting its chin on a paw, eyes half closed, in cut-paper collage. Sentimental." width="480" height="720" loading="lazy" decoding="async"><figcaption>Portrait · Sentimental</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-blanket.webp' | asset_url }}" alt="Example blanket art: a repeated pattern of a sleepy golden retriever puppy among leaf sprigs and hearts, in cut-paper collage. Sentimental." width="720" height="720" loading="lazy" decoding="async"><figcaption>Blanket · Sentimental</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-example-pug-hilarious-mug.webp' | asset_url }}" alt="Example mug art: a pug leaping into autumn leaves with its tongue out, in vintage screenprint. Hilarious." width="720" height="480" loading="lazy" decoding="async"><figcaption>Mug · Hilarious</figcaption></figure>
+          </div>
+          <span class="hs3-example">EXAMPLES</span>
+        </section>
+      {%- endif -%}
       {%- comment -%} the policies stay one tap away; Heartside's own footer replaces this line once it is placed {%- endcomment -%}
       <p class="hs3-legal">
         {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
@@ -352,6 +380,25 @@
       "id": "demo_note",
       "label": "Under the slider",
       "default": "Every gift gets a slider like this. It sets the words and the painting."
+    },
+    {
+      "type": "checkbox",
+      "id": "examples_on",
+      "label": "Show the example paintings",
+      "info": "The slider's pictures and the Same slider, every gift strip, from design/examples-2026-10-28/site.json.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "range_heading",
+      "label": "Example strip heading",
+      "default": "Same slider, every gift"
+    },
+    {
+      "type": "text",
+      "id": "range_note",
+      "label": "Under the strip heading",
+      "default": "The tone you choose sets the painting too. These are stock photos of dogs, painted the way your gift will be."
     },
     {
       "type": "header",

@@ -8,6 +8,7 @@
         "product_print": "your-dogs-portrait",
         "product_ornament": "the-tree-ornament",
         "ornament_bundle": false,
+        "examples_on": true,
         "artwork_candidates": true,
         "blanket_purchase": false,
         "core_purchase": true

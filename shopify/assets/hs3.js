@@ -1338,6 +1338,12 @@
       var show = function () {
         var i = Number(demo.value) || 0, label = frame.querySelector('[data-hs3-demo-name]');
         lines.forEach(function (l) { l.hidden = Number(l.getAttribute('data-hs3-demo-line')) !== i; });
+        // the example painting moves with the words (examples_on): the matching tone fades in
+        frame.querySelectorAll('[data-hs3-demo-img]').forEach(function (img) {
+          var on = Number(img.getAttribute('data-hs3-demo-img')) === i;
+          img.classList.toggle('is-on', on);
+          if (on) img.removeAttribute('aria-hidden'); else img.setAttribute('aria-hidden', 'true');
+        });
         demo.setAttribute('aria-valuetext', names_[i]);
         if (label) label.textContent = names_[i];
       };

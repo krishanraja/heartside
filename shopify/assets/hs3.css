@@ -84,6 +84,21 @@
 .hs3-note--demo .hs3-line { font-size: 16px; min-height: 42px; }
 .hs3-demo .hs3-tone__row { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .hs3-demo input[type="range"] { flex: 1; accent-color: var(--chestnut); min-height: 44px; cursor: pointer; }
+/* the example paintings (examples_on): the slider moves the picture too, and one strip shows the same slider on every gift */
+.hs3-demo__art { position: relative; display: grid; aspect-ratio: 1 / 1; margin-top: 4px; border-radius: 16px; background: #F3EEE8; }
+.hs3-demo__art .hs3-example { top: 10px; right: 10px; }
+.hs3-demo__img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: cover; object-position: 50% 32%; border-radius: 16px; opacity: 0; transition: opacity 0.35s ease; }
+.hs3-demo__img.is-on { opacity: 1; }
+.hs3-range { position: relative; margin: 22px 16px 0; padding: 20px 16px 18px; background: #fff; border-radius: 24px; box-shadow: 0 0 0 1px #EFE6DD; display: flex; flex-direction: column; gap: 12px; }
+.hs3-range__h { margin: 0; font-family: var(--serif); font-size: 24px; line-height: 1.15; color: var(--ink); font-weight: 500; }
+.hs3-range .hs3-small { margin: 0; text-align: left; }
+.hs3-range__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hs3-range__tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hs3-range figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.hs3-range__img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; background: #F3EEE8; }
+.hs3-range__tiles .hs3-range__img { aspect-ratio: 1 / 1; object-position: 50% 30%; }
+.hs3-range figcaption { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .hs3-demo__img { transition: none; } }
 .hs3-legal { margin: 18px 0 0; padding: 4px 16px 8px; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
 .hs3-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 /* Heartside's own footer carries the policies once it is placed */
@@ -330,9 +345,15 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
 @media (min-width: 1000px) {
   .hs3__frame[data-hs3-screen="hero"] { max-width: 1200px; border: 0; padding: 0 56px 40px; }
   .hs3 { overflow-x: clip; }
-  .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art" "beats demo" "legal legal"; grid-template-rows: auto auto auto auto; column-gap: 64px; align-items: center; }
+  .hs3-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: "copy art" "foot art" "beats demo" "range range" "legal legal"; grid-template-rows: auto auto auto auto auto; column-gap: 64px; align-items: center; }
   .hs3-beats { grid-area: beats; margin: 40px 0 0; align-self: start; }
   .hs3-demo { grid-area: demo; margin: 40px 0 0; }
+  .hs3-demo__art { aspect-ratio: 4 / 3; }
+  .hs3-range { grid-area: range; margin: 40px 0 0; padding: 28px 28px 24px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "h h" "note note" "pair tiles"; column-gap: 28px; row-gap: 12px; align-items: end; }
+  .hs3-range__h { grid-area: h; font-size: 30px; }
+  .hs3-range .hs3-small { grid-area: note; }
+  .hs3-range__pair { grid-area: pair; gap: 14px; }
+  .hs3-range__tiles { grid-area: tiles; gap: 12px; }
   .hs3-legal { grid-area: legal; }
   .hs3-fan { max-width: 620px; gap: 14px; }
   .hs3-fan__name { font-size: 16px; } .hs3-fan__price { font-size: 15px; }
