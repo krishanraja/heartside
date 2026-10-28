@@ -252,6 +252,15 @@
     // the gallery paints too, over the preview that is still empty
     var stage = document.querySelector('[data-hs2-stage]');
     if (stage) { stage.classList.toggle('hs-painting', next === 'painting'); stage.setAttribute('data-hs-painting', 'Painting ' + who); }
+    // the blanket has no words, so an empty preview is just a blank blanket: the example photo
+    // stays on show until there is art, unless the buyer chose a picture themselves
+    var media = document.querySelector('[data-hs2-media]');
+    if (media && blanketArtPreview() && !media.__hs2picked) {
+      var hold = next === 'idle' && !cityArtSource(), pick = null;
+      if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = media.querySelector('[data-hs2-thumb]:not([hidden])'); }
+      else if (!hold && media.__hs2held) { media.removeAttribute('data-show'); media.__hs2held = false; pick = media.querySelector('[data-hs2-thumb-preview]'); }
+      if (pick) media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pick ? 'true' : 'false'); });
+    }
     card.querySelector('[data-hs-art-painting]').hidden = next !== 'painting';
     card.querySelector('[data-hs-art-done]').hidden = next !== 'done';
     var photo = card.querySelector('[data-hs-art-photo]'), result = card.querySelector('[data-hs-art-result]');
@@ -1138,7 +1147,7 @@
     // the shopper's own live preview (Teeinblue's), first in the row
     document.querySelectorAll('[data-hs2-thumb-preview]').forEach(function (b) {
       if (b.__hs2) return; b.__hs2 = true;
-      b.addEventListener('click', function () { if (media) media.removeAttribute('data-show'); current(b); });
+      b.addEventListener('click', function () { if (media) { media.removeAttribute('data-show'); media.__hs2picked = true; } current(b); });
     });
     var sel = document.querySelector('[data-hs2-variant]');
     if (sel && !sel.__hs2) {

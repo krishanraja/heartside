@@ -27,14 +27,17 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings});
     const page = await browser.newPage({viewport: {width: 390, height: 844}});
     // a real origin, so the page has sessionStorage like the store does; nothing else loads
-    await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__stage" data-hs2-stage><div style="height:200px"></div></div>${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
+    await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div data-hs2-media><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div style="height:200px"></div></div></div>${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
     try {
       await page.goto('https://hs.test/');
       const fns = ['artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
       const code = `var pending=true,saved=false,src='',photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
-        function blanketNativeError(){return false;}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
+        function blanketNativeError(){return false;}function blanketArtPreview(){return ${kind === 'blanket'};}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
       await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
-      await page.evaluate(() => artStage(pending));
+      // before any painting, the blanket shows its example, not an empty preview; the mug keeps its preview
+      assert.equal(await page.evaluate(() => { pending = false; artStage(false); const m = document.querySelector('[data-hs2-media]'); return m.getAttribute('data-show') + ':' + m.querySelector('[data-hs2-thumb]').getAttribute('aria-current'); }), kind === 'blanket' ? 'photo:true' : 'null:false');
+      await page.evaluate(() => { pending = true; artStage(pending); });
+      assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-media]').hasAttribute('data-show')), false, 'painting: back to the preview, under the wash');
       const painting = await page.evaluate(() => {
         const card = document.querySelector('[data-hs-art]'), line = card.querySelector('[data-hs-art-line]');
         return {shown: !card.hidden && card.getBoundingClientRect().height > 300, state: card.getAttribute('data-state'), title: card.querySelector('[data-hs-art-title]').textContent,
