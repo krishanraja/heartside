@@ -35,7 +35,17 @@ The theme's fail-safe, on the follow-up branch: a personalised design is one uni
 
 Two different designs are two lines at one each, which the merge handles correctly (Part B's quantity-1 checkout read back $129).
 
-Not proved here: why the merge doubles, and whether the same design added twice would merge into one line of two. Shopify started rate-limiting this container's QA cart reads, so the direct cart-transform readback waits for the next run.
+The fail-safe, the phone menu and the tax line went live in [krishanraja/heartside#60](https://github.com/krishanraja/heartside/pull/60) (`f72c798`), after the preview copy passed Part A. Production readback:
+
+- Part A and the live gate: all clear.
+- Phone drawer: "Make a gift with Buddy", then Illustrated mug $45, Portrait from $59 and Sherpa blanket $129, the shipping line, Answers and Contact. The product cards are hidden.
+- Teeinblue's quantity box is hidden on all three gift pages.
+- The browser test drives the real cart component to show a design at one cannot be raised.
+
+Not proved on production:
+
+- The cart's "One per design" branch. A synthetic QA line is not merged by the transform; it needs a real prepared file, so it shows on a real design only.
+- Why the merge doubles, and whether the same design added twice would merge into one line of two.
 
 ## Not proved
 
