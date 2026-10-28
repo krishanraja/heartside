@@ -22,7 +22,10 @@
     {%- endif -%}
     <nav class="hs-footer__links" aria-label="Store policies and contact">
       <ul>
+        {%- comment -%} One Contact link (28 Oct): Shopify's "Contact information" policy sat beside
+          our Contact page, so it shows only when no contact page is set. {%- endcomment -%}
         {%- for policy in shop.policies -%}
+          {%- if s.contact_url != blank and policy.url contains 'contact-information' -%}{%- continue -%}{%- endif -%}
           <li><a href="{{ policy.url }}">{{ policy.title | escape }}</a></li>
         {%- endfor -%}
         {%- if s.contact_url != blank -%}

@@ -252,7 +252,7 @@ for (const mode of MODES) test(`${mode}: the chat opens on Buddy, with no peek o
       }
       // step 1 is the dog's name, then Next, then the optional breed and photo
       await load(tab, {}, 'dog');
-      const order = await tab.evaluate(() => [...document.querySelectorAll('.hs3-dock > *')].map(e => e.id || e.getAttribute('data-hs3') || e.className.split(' ')[0]).slice(0, 3));
+      const order = await tab.evaluate(() => [...document.querySelectorAll('.hs3-dock > :not([data-hs3-name-hint])')].map(e => e.id || e.getAttribute('data-hs3') || e.className.split(' ')[0]).slice(0, 3));
       check(JSON.stringify(order) === JSON.stringify(['hs3-dog', 'next', 'hs3-breed']), `${w}x${h}: Next straight under the name field (${order.join(', ')})`);
       const hints = await tab.evaluate(() => [...document.querySelectorAll('#hs3-dog, #hs3-breed, #hs3-rec')].map(i => i.id + ':' + i.getAttribute('enterkeyhint')).join(' '));
       check(hints === 'hs3-dog:next hs3-breed:next', `${w}x${h}: the keyboard's Enter key says next (${hints})`);
