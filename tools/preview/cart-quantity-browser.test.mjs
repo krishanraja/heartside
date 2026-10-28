@@ -29,7 +29,7 @@ function fakeStore(setup){
  const cartId='gid://shopify/Cart/browser-test?key=never-persist',variant='gid://shopify/ProductVariant/123';
  const image='https://cdn.shopify.com/s/files/1/1111/2222/3333/files/heartside-checkout-11111111-2222-4333-8444-555555555555.jpg?v=1';
  const attributes=[{key:'_customization_id',value:'browser-design'},{key:'_tib_design_link_1',value:'https://example.invalid/design.png'},{key:'_hs_checkout_image',value:image},{key:'Dog name',value:'Test dog'}];
- const design={kind:'design',id:'gid://shopify/CartLine/design-1',key:'123:bundle-1',childId:'gid://shopify/CartLine/design-1-child',childKey:'123:native',quantity:2};
+ const design={kind:'design',id:'gid://shopify/CartLine/design-1',key:'123:bundle-1',childId:'gid://shopify/CartLine/design-1-child',childKey:'123:native',quantity:setup.designQuantity||2};
  const ordinary={kind:'ordinary',id:'gid://shopify/CartLine/ordinary',key:'456:ordinary',quantity:1};
  const server=window.__server={cartId,lines:setup.serverOrder.map(kind=>kind==='design'?design:ordinary),renders:0,requests:[],updates:[],errors:[],aborts:[],next:1,addGate:null,addMode:'ok'};
  if(setup.record)sessionStorage.setItem('heartside.quantity.pending.v1',JSON.stringify(setup.record));
@@ -123,7 +123,8 @@ test(mode+': 3: an ordinary row changes by line key, so a stale row position nev
 });
 
 test(mode+': 3: ordinary quantity controls are disabled and refused while a recovery record is pending, and return after it resolves',{timeout:30000},async()=>{
- const tab=await open({serverOrder:['design','ordinary']});
+ // a design only ever comes down (one unit per design, 28 Oct), so the repair is driven 4 -> 3
+ const tab=await open({serverOrder:['design','ordinary'],designQuantity:4});
  try{
   await tab.evaluate(()=>{window.__server.addMode='reject';});
   await changeRow(tab,'design',3);await settle(tab);
@@ -145,13 +146,13 @@ test(mode+': 3: ordinary quantity controls are disabled and refused while a reco
 });
 
 test(mode+': 4: an overlapping change cannot release another operation, abort its render or start a competing one',{timeout:30000},async()=>{
- const tab=await open({serverOrder:['design','ordinary']});
+ const tab=await open({serverOrder:['design','ordinary'],designQuantity:4});
  try{
   await tab.evaluate(()=>{window.__server.addGate=new Promise(resolve=>window.__releaseAdd=resolve);});
   await changeRow(tab,'design',3);
   await tab.waitForFunction(()=>window.__server.updates.length===2);
   // Keyboard repeats on both rows, and a direct call that skips row validation.
-  await changeRow(tab,'design',4);await changeRow(tab,'ordinary',0);
+  await changeRow(tab,'design',2);await changeRow(tab,'ordinary',0);
   await tab.evaluate(()=>document.querySelector('cart-items-component').updateQuantity({line:2,quantity:5,action:'change'}));
   await tab.evaluate(()=>new Promise(resolve=>setTimeout(resolve,50)));
   let server=await tab.evaluate(()=>window.__server);
@@ -165,6 +166,17 @@ test(mode+': 4: an overlapping change cannot release another operation, abort it
   assert.equal(server.updates.length,2);
   assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['ordinary',1],['design',3]]);
   assert.equal(await tab.evaluate(()=>sessionStorage.getItem('heartside.quantity.pending.v1')),null);
+ }finally{await tab.close();}
+});
+
+test(mode+': 6: a design never goes above one: Shopify\'s checkout merge doubled it (28 Oct)',{timeout:30000},async()=>{
+ const tab=await open({serverOrder:['design','ordinary'],designQuantity:1});
+ try{
+  await changeRow(tab,'design',2);await settle(tab);
+  const server=await tab.evaluate(()=>window.__server);
+  assert.equal(server.updates.length,0,'nothing removed, nothing added');
+  assert.deepEqual(server.lines.map(line=>[line.kind,line.quantity]),[['design',1],['ordinary',1]]);
+  assert.ok(server.errors.some(error=>/Each design is one gift/.test(error)),JSON.stringify(server.errors));
  }finally{await tab.close();}
 });
 

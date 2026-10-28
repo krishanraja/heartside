@@ -1238,3 +1238,7 @@ product-card quick-add-component button { display: none !important; }
 @keyframes hs-stage-wash { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
 @keyframes hs-stage-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .hs2-product__stage.hs-painting::before, .hs2-product__stage.hs-painting::after { animation: none; } }
+/* a personalised design is one gift (cart-products.liquid) */
+.hs2-one-per { margin: 4px 0 0; font-size: 13px; color: #5A4A44; }
+/* the gift page adds one of each design; Teeinblue's quantity box would only promise more (hs2.js withHsProps) */
+#buy[data-hs2-artwork-kind] .tee-form-actions .tee-quantity, #buy[data-hs2-blanket-purchase] .tee-form-actions .tee-quantity { display: none !important; }

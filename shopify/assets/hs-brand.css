@@ -209,6 +209,17 @@ header-component.header {
 .header .menu-drawer .resource-card__title { font-family: var(--hs-sans); font-weight: 600; text-transform: none; color: var(--hs-ink); }
 .header .menu-drawer .price { font-family: var(--hs-sans); color: var(--hs-body); }
 .header .menu-drawer .resource-card__media { border-radius: var(--hs-radius-field); overflow: hidden; }
+/* Heartside's own phone menu (hs-footer.liquid, hs2.js heartsideMenu) in place of Helio's product cards */
+.header .menu-drawer:has(.hs-menu) .menu-drawer__featured-content { display: none !important; }
+.hs-menu { padding: 8px 24px 32px; font-family: var(--hs-sans); color: var(--hs-ink); }
+.hs-menu__start { display: flex; align-items: center; justify-content: center; min-height: 52px; margin: 8px 0 16px; border-radius: var(--hs-radius-control); background: var(--hs-ink); color: var(--hs-cream); font-size: 17px; font-weight: 600; text-decoration: none; }
+.hs-menu ul { list-style: none; margin: 0; padding: 0; }
+.hs-menu li + li { border-top: 1px solid var(--hs-line); }
+.hs-menu li a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; color: var(--hs-ink); font-family: var(--hs-serif); font-size: 21px; text-decoration: none; }
+.hs-menu li a span:last-child { font-family: var(--hs-sans); font-size: 16px; color: var(--hs-body); }
+.hs-menu__line { margin: 14px 0 0; font-size: 14px; color: var(--hs-muted); }
+.hs-menu__small { display: flex; gap: 22px; margin: 6px 0 0; }
+.hs-menu__small a { display: inline-flex; align-items: center; min-height: 44px; color: var(--hs-ink); font-size: 15px; text-decoration: underline; text-underline-offset: 3px; }
 
 /* --------------------------------------------- Helio's cart page and drawer */
 /* fixtures/helio-cart-empty.html, fixtures/helio-drawer.html and snippets/cart-products.liquid */
