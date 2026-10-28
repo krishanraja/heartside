@@ -3383,9 +3383,21 @@
      list with Shopify's prices; it goes at the top of the drawer, and hs-brand.css hides the cards. */
   function heartsideMenu() {
     var tpl = document.querySelector('template[data-hs-menu]'), drawer = document.querySelector('.header .menu-drawer');
-    if (!tpl || !drawer || drawer.querySelector('.hs-menu') || !tpl.content || !tpl.content.firstElementChild) return;
-    var close = drawer.querySelector('.menu-drawer__close-button'), menu = tpl.content.firstElementChild.cloneNode(true);
-    drawer.insertBefore(menu, close ? close.nextSibling : drawer.firstChild);
+    if (tpl && drawer && !drawer.querySelector('.hs-menu') && tpl.content && tpl.content.firstElementChild) {
+      var close = drawer.querySelector('.menu-drawer__close-button'), menu = tpl.content.firstElementChild.cloneNode(true);
+      drawer.insertBefore(menu, close ? close.nextSibling : drawer.firstChild);
+    }
+    // Helio redraws its header after load and replaces the whole drawer, so the list goes back in
+    // whenever that happens, and again as the menu opens
+    var header = document.querySelector('.header');
+    if (!tpl || !header || heartsideMenu.watching) return;
+    heartsideMenu.watching = true;
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.header__icon--menu')) heartsideMenu(); }, true);
+    if ('MutationObserver' in window) new MutationObserver(function () {
+      if (heartsideMenu.queued) return;
+      heartsideMenu.queued = true;
+      requestAnimationFrame(function () { heartsideMenu.queued = false; heartsideMenu(); });
+    }).observe(header, { childList: true, subtree: true });
   }
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {

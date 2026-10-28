@@ -44,5 +44,13 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
     assert.deepEqual(r.items, ['Illustrated mug $45 /products/your-dogs-illustrated-mug', 'Portrait From $59 /products/your-dogs-portrait', 'Sherpa blanket $129 /products/your-dogs-personality-blanket']);
     assert.equal(r.start, '/'); assert.ok(r.cardsHidden, "Helio's cards are gone");
     assert.doesNotMatch(r.text, /\$119/); assert.match(r.text, /Free US shipping on every order\./);
+    // Helio redraws its header after load and replaces the whole drawer: the list comes back
+    const again = await page.evaluate(async () => {
+      const old = document.querySelector('.header .menu-drawer'), fresh = old.cloneNode(true);
+      fresh.querySelector('.hs-menu').remove(); old.replaceWith(fresh);
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return document.querySelectorAll('.header .menu-drawer .hs-menu').length;
+    });
+    assert.equal(again, 1, 'back after a redraw, once');
   } finally { await page.close(); }
 });
