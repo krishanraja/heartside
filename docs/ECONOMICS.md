@@ -10,7 +10,7 @@ For any proposed price or offer change, model expected net revenue after discoun
 
 ## Function Studio recurring-cost sensitivity, October27
 
-The owner-approved Function Studio Advanced plan was installed at USD69/month with a five-day trial ending November 1. Retention after the compatibility test determines whether the recurring cost continues. The updated private economics report, `FUNCTION-STUDIO-CANDIDATE-SENSITIVITY.md` and its arithmetic JSON, conservatively includes the full USD69 even during the trial, in addition to the existing USD200 monthly operating-cost scenario. Historical filenames do not mean installation is still hypothetical. The dated test record is in the [integration evidence](evidence/2026-10-27-core-launch-integration.md).
+The owner-approved Function Studio Advanced plan was installed at USD69/month with a five-day trial ending November 1. Ruling (Krish, 28 October): keep it through Christmas, then review it in January against measured conversion. Without it, checkout shows the catalog picture instead of the buyer's design. The updated private economics report, `FUNCTION-STUDIO-CANDIDATE-SENSITIVITY.md` and its arithmetic JSON, conservatively includes the full USD69 even during the trial, in addition to the existing USD200 monthly operating-cost scenario. Historical filenames do not mean installation is still hypothetical. The dated test record is in the [integration evidence](evidence/2026-10-27-core-launch-integration.md).
 
 The added allocation is USD2.76/order at25 monthly orders or USD1.38/order at50. With the same conservative supplier, refund/remake, payment, USD5 support and USD2.50 prepurchase-AI assumptions and no paid acquisition, representative aggregate scenarios are:
 
@@ -22,3 +22,7 @@ The added allocation is USD2.76/order at25 monthly orders or USD1.38/order at50.
 |0/0/0/25,25 blanket orders|USD3160.50|USD1102.11|34.87%|
 
 These scenarios allocate fixed costs once across the store; they are not demand forecasts or simultaneous product-level allocations. The balanced25-order case has only USD46.15 headroom above the30% floor; the mug-heavy case misses it by USD4.47. Do not introduce paid acquisition, percentage discounts or bundle offers without recalculating the aggregate condition. Reconcile actual mix and attributable costs at20 fulfilled orders, monthly and after material cost changes, honoring paid orders while reviewing promotions if margin falls below the floor. No realized net-margin certification or change to the approved prices is made here.
+
+## Painting spend for the 28 October release run
+
+Teeinblue paints once per accepted photo and once per redo, at about USD0.13 each. Seven of the ten paintings agreed for the first mock-order run were used on 28 October. The release run in the [CoWork prompt](review/COWORK-LIVE-ACCEPTANCE.md) asks Krish for a cap of 14, about USD1.80. That covers his own phones (4), five mock orders with three gifts and a redo in one of them (8), and two spare. A photo the store refuses never paints.

@@ -6,9 +6,9 @@ Heartside sells personalized gifts from a customer's dog, hosted by Buddy. The c
 
 - `docs/`: current scope/acceptance pointers, dated decisions and historical specs. Older V3, positioning, handoff, brief and setup documents are evidence of earlier states, not current execution instructions.
 - `shopify/`: the theme code (our sections, snippets, templates, `hs2.js`, `hs2.css`), deployed by `.github/workflows/shopify-theme-push.yml`. `shopify/README.md` documents every section.
-- `tools/preview/`: local render, Theme Check, the minify check, the live-store gate and the in-app purchase test.
+- `tools/preview/`: local render and the chat with their layout checks, Theme Check, copy lint, the minify check, the live-store gates (`live-gate.mjs`, `preview-acceptance.mjs`) and the browser-free handle check (`handle-check.mjs`), which also runs hourly as the storefront guard.
 - `tools/content/`: the video builder and its specs.
 - `content/`: rendered videos kept for reference (the first set is in `content/v1-2026-10-06/`).
 - `design/prototype-v3/`: the approved phone prototype of the v3 journey (reference, not production code).
 - Growth lives in [`krishanraja/growth-heartside`](https://github.com/krishanraja/growth-heartside). It should read the current sources in the "Picking this up?" order above before using product or pricing claims. Its own repository owns acquisition and social strategy; store fixes return here for implementation.
-- `design/`, `assets/`, `ornament/`: design source, print templates, product photos, the photo library and brand files.
+- `design/`, `assets/`, `ornament/`: design source, print templates, product photos, the photo library and brand files. `design/checkout-tiles/` holds the pictures checkout shows for a gift's component line and for the Artist's touch.

@@ -62,6 +62,8 @@ Energy comes from `energyFor(HSBreeds.lookup(breed))`. Only an exact corpus matc
 
 Energy is also none when the buyer typed no breed or a name with no exact match ("lab mix", "Labradoor", "catahoula"), and for any lookup whose kind is `mixed`. These twelve archetypes are every archetype present in `shopify/assets/hs-breeds.js`, and a test fails if that file gains one the map does not cover. One judgment call: named doodle crosses such as Goldendoodle keep the Doodle Wildcard energy, because the note writer already gives them that voice. Setting `"Doodle Wildcard": null` in the recipes drops it.
 
+> Superseded 28 October: Ruling (Krish, 2026-10-28), a cross gets a breed energy only when both parents match. Named doodle crosses now get none. See `tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md`.
+
 The shared energy rule also keeps ear shape and carriage, muzzle, eyes, coat and markings unchanged. When the photo does not establish the body, it keeps a head and shoulders view and carries the energy in the face and head.
 
 ## What this means for the buyer

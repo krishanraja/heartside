@@ -1,6 +1,6 @@
 # Heartside repository and brand asset sync
 
-Updated 27 October 2026. This replaces the 15 October map, which pointed Canva at retired products and an older design-system export.
+Updated 28 October 2026. This replaces the 15 October map, which pointed Canva at retired products and an older design-system export.
 
 ## Current sources
 
@@ -8,6 +8,7 @@ Updated 27 October 2026. This replaces the 15 October map, which pointed Canva a
 - Live Shopify product records establish current prices, variants, descriptions and availability; the repo records the dated readback in `NOW.md`.
 - The current storefront's brand tokens are in `shopify/assets/hs-brand.css` (`--hs-*`, from the 27 October brand book), loaded first on every page; the chat's own styles are in `shopify/assets/hs3.css`; font loading is in `shopify/snippets/hs2-head.liquid`.
 - The favicon is the pink watercolor heart with a white paw (`design/brand-v4/`, built by `tools/build_favicon.py`); `heartside-favicon-heart.png` is the file for Shopify Files. The brand-v3 Buddy head stays as history.
+- `design/checkout-tiles/` (28 October) holds the pictures Shopify shows for a gift's component line at checkout and for the Artist's touch add-on, with their exact alt text. They are uploaded to Shopify, not Drive or Canva.
 - `design/CANVA-SOURCES.md` is the current written Canva brand-kit handoff. The matching Drive file is `00_Brand-Assets/01_Identity/CANVA-BRAND-KIT-GUIDE.md`.
 - [`docs/history/BRAND-SYSTEM-PRE-REVAMP.md`](history/BRAND-SYSTEM-PRE-REVAMP.md) preserves the old October brand system. It is not the current product or social brief.
 

@@ -9,6 +9,6 @@ Everything in this directory is dated evidence. It records prior offers, prices,
 - `ECONOMICS-2026-10-24.md` and `pricing-scenarios-2026-10-24.csv` preserve the superseded 50% calculations.
 - `SHOPIFY-README-2026-10.md`, `N8N-README-2026-10.md`, `ORDER-QC-README-2026-10.md` and `BRAND-SYSTEM-PRE-REVAMP.md` preserve older technical and brand assumptions.
 - `V2-FROM-THE-DOG-2026-10-04.md`, `ASSETS-README-PRE-REVAMP.md`, `DESIGN-README-PRE-REVAMP.md` and the ornament files preserve retired source guidance.
-- All pre-release CoWork prompts and the October 24 `NEW-SESSION-PROMPT` have been moved here. The two current independent review assignments are in [`../review/`](../review/).
+- All pre-release CoWork prompts and the October 24 `NEW-SESSION-PROMPT` have been moved here, and so has `COWORK-PROMPT-2026-10-28.md`, the live acceptance prompt that found the 28 October defects. The two current independent review assignments are in [`../review/`](../review/).
 
 Historical files retain their original wording and some original relative links for provenance. Their internal "current", "approved" and "next" labels refer to the date of that record, not today. The active public README and review prompts must never derive current product or pricing claims from these files.

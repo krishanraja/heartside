@@ -35,10 +35,13 @@ From the repository root, these are the existing offline test entry points to in
 ```powershell
 $heartsideTests = @(Get-ChildItem tools/preview, tools/print-art -File -Filter '*.test.mjs' | ForEach-Object { $_.FullName })
 node --test $heartsideTests
+node tools/preview/render.mjs; node tools/preview/chat.mjs
 node tools/preview/artwork-profile-test.mjs
 node tools/preview/minify-check.mjs
-node tools/preview/theme-check.mjs
+node tools/preview/theme-check.mjs --baseline
+node tools/preview/copy-lint.mjs --baseline tools/preview/copy-lint-baseline.json
 node tools/print-art/build-browser.mjs --check
+node tools/print-art/example-batch.mjs --check
 node n8n/test-rules.mjs
 node n8n/test-voice.mjs
 node n8n/test-checkout-image.mjs
@@ -48,10 +51,12 @@ python tools/print-art/test_generate.py
 python tools/qc/test_order_qc.py
 python tools/qc/test_mug_qc.py
 python tools/economics/test_net_margin.py
+python tools/print-art/example-assets.py --check
+node n8n/build.mjs; git diff --exit-code -- n8n/
 git diff --check
 ```
 
-Run commands individually or in a runner that preserves every exit code; do not let the final success hide earlier failures. Inspect the current versions before execution: the voice tests and image-generation contract test use local fixtures/mocks, and must remain offline. Missing fixture files, optional fonts or Python packages are explicit gaps, not passes. Do not run the actual generation, voice-lab, supplier/order processing or production webhook scripts to resolve a fixture failure. Some older test scripts print failures without necessarily setting a nonzero exit code; inspect their completion behavior and treat failure output as failure, correcting the harness if appropriate.
+Run commands individually or in a runner that preserves every exit code; do not let the final success hide earlier failures. Inspect the current versions before execution: the voice tests and image-generation contract test use local fixtures/mocks, and must remain offline. Missing fixture files, optional fonts or Python packages are explicit gaps, not passes. Do not run the actual generation, voice-lab, supplier/order processing or production webhook scripts to resolve a fixture failure. Since 28 October the n8n rule tests exit 1 on any failed case; still treat any failure output as failure. `.github/workflows/offline-tests.yml` is the list CI runs; any command it runs that is missing above is a gap in this brief.
 
 Also validate relevant JS syntax, JSON/schema shape, Liquid references, CSS references, imported module paths and generated asset inclusion. Inspect all GitHub workflow checks and run the equivalent local commands where safe. For local rendered previews use `tools/preview`'s documented render/screenshots entry points after inspecting their inputs and destinations. A stub-rendered page is not the real Shopify page; report that boundary.
 
