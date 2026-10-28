@@ -39,6 +39,27 @@
     <p class="hs-footer__company">Heartside is a Mindmaker LLC company. Mindmaker Ltd in the UK.</p>
   </div>
 </div>
+{%- comment -%} The phone menu. Helio's drawer showed three product cards, with the framed portrait's price and the
+  blanket's blank template picture (CoWork Part B, 28 Oct). This is Heartside's own list, with Shopify's prices;
+  hs2.js heartsideMenu() puts it at the top of the drawer and hs-brand.css hides the cards. {%- endcomment -%}
+{%- assign hs_mug = all_products['your-dogs-illustrated-mug'] -%}
+{%- assign hs_portrait = all_products['your-dogs-portrait'] -%}
+{%- assign hs_blanket = all_products['your-dogs-personality-blanket'] -%}
+<template data-hs-menu>
+  <nav class="hs-menu" aria-label="Heartside">
+    <a class="hs-menu__start" href="{{ routes.root_url }}">Make a gift with Buddy</a>
+    <ul>
+      {%- if hs_mug.id -%}<li><a href="{{ hs_mug.url }}"><span>Illustrated mug</span><span>{{ hs_mug.price_min | money_without_trailing_zeros }}</span></a></li>{%- endif -%}
+      {%- if hs_portrait.id -%}<li><a href="{{ hs_portrait.url }}"><span>Portrait</span><span>{% if hs_portrait.price_varies %}From {% endif %}{{ hs_portrait.price_min | money_without_trailing_zeros }}</span></a></li>{%- endif -%}
+      {%- if hs_blanket.id -%}<li><a href="{{ hs_blanket.url }}"><span>Sherpa blanket</span><span>{{ hs_blanket.price_min | money_without_trailing_zeros }}</span></a></li>{%- endif -%}
+    </ul>
+    <p class="hs-menu__line">{{ s.shipping_line | escape }}</p>
+    <p class="hs-menu__small">
+      {%- if s.answers_url != blank -%}<a href="{{ s.answers_url | escape }}">{{ s.answers_label | escape }}</a>{%- endif -%}
+      {%- if s.contact_url != blank -%}<a href="{{ s.contact_url | escape }}">{{ s.contact_label | escape }}</a>{%- endif -%}
+    </p>
+  </nav>
+</template>
 
 {% schema %}
 {

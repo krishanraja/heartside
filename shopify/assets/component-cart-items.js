@@ -35,6 +35,10 @@ function heartsideQuantityTarget(row) {
   return /^https:\/\/cdn\.shopify\.com\/s\/files\/1\/(?:[0-9]+\/){3}files\/heartside-checkout-[a-f0-9-]{36}\.jpg(?:\?v=[0-9]+)?$/i.test(image || '') ? key : null;
 }
 
+function heartsideComponentUnits(row) {
+  try { return JSON.parse(row.getAttribute('data-hs2-cart-line')).item_components[0].quantity; } catch { return 1; }
+}
+
 async function heartsideSetComponentQuantity(key, quantity) {
   if (!Number.isInteger(quantity) || quantity < 0) throw new Error('Choose a whole-number quantity.');
   if (typeof window.Shopify?.actions?.getCart !== 'function') throw new Error('Your cart is still loading. Refresh the page and try again.');
@@ -404,6 +408,12 @@ export class CartItemsComponent extends createViewEventElement(Component) {
 
       const componentKey = heartsideQuantityTarget(this.refs.cartItemRows[line - 1]);
       if (componentKey === null) throw new Error('Your cart changed. Refresh the page and try again.');
+      // One unit per design (28 Oct): Shopify's checkout merge turned 2 of a design ($258 in the cart)
+      // into 4 ($516 in checkout). A design may come down to one but never go above one.
+      if (componentKey && quantity > 1 && quantity >= heartsideComponentUnits(this.refs.cartItemRows[line - 1])) {
+        await this.#refreshCartSection(); // put the number back as it was
+        throw new Error('Each design is one gift, so it stays at one. Nothing was changed.');
+      }
       if (componentKey) {
         heartsideOwner = {};
         this.#heartsideQuantityOwner = heartsideOwner;

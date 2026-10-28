@@ -2478,7 +2478,7 @@
       bundleLine(Array.prototype.slice.call(rows));
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
-        var want = 'Free US shipping on every order. Tax is added at checkout.';
+        var want = 'Free US shipping on every order. Any tax is shown at checkout.';
         if (n.textContent.trim() !== want) n.textContent = want;
         // hs-brand.css keeps Helio's "calculated at checkout" hidden until this line replaces it
         var box = n.closest ? n.closest('.cart-totals__tax-note') : null;
@@ -3099,6 +3099,8 @@
         });
         // Teeinblue encoded this label in the observed native cart. Correct only the
         // known label; never HTML-decode customer prose or customization/design URLs.
+        // one unit per design (28 Oct): Shopify's checkout merge turned 2 of a design into 4
+        if (nativeArtworkPurchase() && it.properties._customization_id && Number(it.quantity) !== 1) it.quantity = 1;
         if (nativeArtworkPurchase() && Object.prototype.hasOwnProperty.call(it.properties, 'Dog&#39;s name') && !Object.prototype.hasOwnProperty.call(it.properties, "Dog's name")) {
           it.properties["Dog's name"] = it.properties['Dog&#39;s name'];
           delete it.properties['Dog&#39;s name'];
@@ -3376,6 +3378,15 @@
     }
   }
 
+  /* The phone menu: Helio's drawer showed three product cards, with the framed portrait's price and the
+     blanket's blank template picture (CoWork Part B, 28 Oct). hs-footer.liquid renders Heartside's own
+     list with Shopify's prices; it goes at the top of the drawer, and hs-brand.css hides the cards. */
+  function heartsideMenu() {
+    var tpl = document.querySelector('template[data-hs-menu]'), drawer = document.querySelector('.header .menu-drawer');
+    if (!tpl || !drawer || drawer.querySelector('.hs-menu') || !tpl.content || !tpl.content.firstElementChild) return;
+    var close = drawer.querySelector('.menu-drawer__close-button'), menu = tpl.content.firstElementChild.cloneNode(true);
+    drawer.insertBefore(menu, close ? close.nextSibling : drawer.firstChild);
+  }
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices) {
@@ -3386,7 +3397,7 @@
     bindBlanketRecovery();
     bindExtras();
     guardCatalogQuickAdd();
-    bindInputs(); render(); sticky(); gallery(); clearHeader();
+    bindInputs(); render(); sticky(); gallery(); clearHeader(); heartsideMenu();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
     shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); redoMode(); window.addEventListener('hs-artwork-choices', function () { journeyCard(); }); guardMugProof();
     layout();

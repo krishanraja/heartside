@@ -430,6 +430,10 @@
                     | default: true, allow_false: true
                   %}
                   {% if hs_quantity_item.instructions.can_update_quantity == false %}{% assign can_update_quantity = false %}{% endif %}
+                  {%- comment -%} One unit per design (28 Oct): Shopify's checkout merge turned 2 of a design ($258 in the cart)
+                    into 4 ($516 in checkout). A design at one has no quantity control; one already above one keeps it, to
+                    come back down (component-cart-items.js refuses anything higher). {%- endcomment -%}
+                  {%- if hs_quantity_key != '' and hs_quantity_item.quantity == 1 -%}{%- assign can_update_quantity = false -%}{%- endif -%}
                   <div class="cart-items__quantity-controls">
                     {% render 'volume-pricing-info',
                       variant: item.variant,
@@ -445,6 +449,7 @@
                       class: 'cart-primary-typography',
                       can_update_quantity: can_update_quantity
                     %}
+                    {%- if hs_quantity_key != '' -%}<p class="hs2-one-per">One per design</p>{%- endif -%}
 
                     <button
                       class="button cart-items__remove"
