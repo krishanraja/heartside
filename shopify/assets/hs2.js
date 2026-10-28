@@ -27,7 +27,9 @@
     // answers carried in the URL (from the homepage or a shared link) win over storage
     try {
       var q = new URLSearchParams(window.location.search);
-      ANSWERS.forEach(function (k) { if (q.get(k)) s[k] = q.get(k).slice(0, 40); });
+      // a name fits in 14 letters: the portrait signs "Love, " and the Dog's name field (14), and
+      // Signed holds 20. A longer ?dog= from a link would be cut by Teeinblue anyway (28 Oct)
+      ANSWERS.forEach(function (k) { if (q.get(k)) s[k] = q.get(k).slice(0, k === 'dog' || k === 'person' ? 14 : 40); });
       if (q.get('video') === '1') s.voice = true;
     } catch (e) { /* old browser */ }
     return s;
@@ -130,6 +132,22 @@
     blanketAcceptedKey = '';
     var acceptance = document.querySelector('[data-hs2-artwork-accept]');
     if (acceptance) acceptance.checked = false;
+    try { syncTibAgreement(false); } catch (err) { /* our own review is already cleared */ }
+  }
+  /* Teeinblue asks for its own "responsible for my personalization" tick after ours (28 Oct: two
+     boxes for one painting). Krish: our one tick covers both, and our sentence carries the clause.
+     Its box is found by its words, so no design option is ever touched; it is clicked only when it
+     differs (Teeinblue keeps its own state), at most three times for each change, and hidden only
+     once recognized. A box with other words stays on show for the buyer to answer. */
+  function syncTibAgreement(on) {
+    on = !!on;
+    if (syncTibAgreement.on !== on) { syncTibAgreement.on = on; syncTibAgreement.tries = 0; }
+    Array.prototype.forEach.call(document.querySelectorAll('#buy .tee-checkbox-wrapper'), function (wrap) {
+      var box = wrap.querySelector('input[type="checkbox"]');
+      if (!box || !/responsib|approve|confirm|agree/i.test(wrap.textContent || '')) return;
+      if (!wrap.hasAttribute('data-hs2-tib-agreement')) wrap.setAttribute('data-hs2-tib-agreement', '');
+      if (box.checked !== on && syncTibAgreement.tries < 3) { syncTibAgreement.tries++; box.click(); }
+    });
   }
   function blanketReviewAccepted() {
     if (document.querySelector('.vm--container')) { invalidateBlanketReview(); return false; }
@@ -298,6 +316,8 @@
     acceptance.addEventListener('change', function () {
       blanketAcceptedKey = acceptance.checked && !blanketUploadPending() && cityArtSaved() && !blanketNativeError() ? blanketReviewKey() : '';
       acceptance.checked = !!blanketAcceptedKey;
+      // the same tick answers Teeinblue's own agreement box (Krish, 28 Oct)
+      try { syncTibAgreement(!!blanketAcceptedKey); } catch (err) { /* our review stands on its own */ }
     });
     var ack = box.querySelector('[data-hs2-upload-retry-ack]'), button = box.querySelector('[data-hs2-upload-retry]');
     ack.addEventListener('change', function () { button.disabled = !ack.checked; });
@@ -346,7 +366,7 @@
   function artStage(pending) {
     var card = document.querySelector('[data-hs-art]');
     if (!card) return '';
-    var key = 'hs-art-start:' + productId(), modal = !!document.querySelector('.vm--container');
+    var key = 'hs-art-start:' + productId();
     var painting = (pending || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading')) && !blanketNativeError();
     var done = !painting && cityArtSaved() && !blanketNativeError();
     var next = done ? 'done' : painting ? 'painting' : 'idle', was = card.getAttribute('data-state');
@@ -368,23 +388,38 @@
     card.querySelector('[data-hs-art-painting]').hidden = next !== 'painting';
     card.querySelector('[data-hs-art-done]').hidden = next !== 'done';
     var photo = card.querySelector('[data-hs-art-photo]'), result = card.querySelector('[data-hs-art-result]');
-    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; }
+    // "Artwork failed or stopped?" only once a painting has run two minutes, or on a real error:
+    // under a normal run it invited doubt (28 Oct, order 1). The status code still owns hidden.
+    var recovery = document.querySelector('[data-hs2-upload-recovery]');
+    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; artStage.tick = null; artStage.at = -1; if (recovery) recovery.style.display = ''; }
     if (next === 'painting') {
       var start = 0;
       try { start = Number(window.sessionStorage.getItem(key)) || 0; if (!start) window.sessionStorage.setItem(key, String(start = Date.now())); } catch (e) { start = artStage.start || (artStage.start = Date.now()); }
       card.querySelector('[data-hs-art-title]').textContent = 'Painting ' + who;
+      // honest timing, and Teeinblue's framing box named before it opens by itself (28 Oct)
+      var note = card.querySelector('.hs-art__note'), timing = "About a minute, sometimes two. When it's done, check the framing, then Save.";
+      if (note && note.textContent !== timing) note.textContent = timing;
       photo.hidden = !photoURL;
       if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
       var tick = function () {
         var t = Date.now() - start, lines = artLines(who), line = card.querySelector('[data-hs-art-line]'), bar = card.querySelector('[data-hs-art-bar]');
         // eases toward 92% over about a minute; only the finished design ends it
         var pct = Math.round(92 * (1 - Math.exp(-t / 28000)));
-        var say = modal ? "It's painted. Save its placement and it will appear here." : t > 100000 ? "Still painting. Some take a little longer, and I'm on it." : t > 30000 ? 'Nearly there. Good paintings take a minute.' : lines[Math.floor(t / 5000) % lines.length];
+        // the line only moves forward: each of Buddy's lines once, then the longer waits, then the
+        // framing box while it is open and the moment after it. It used to start over at 25 seconds,
+        // and a timer kept from the first call put "Nearly there" back over an open framing box.
+        var steps = lines.concat(['Nearly there. Good paintings take a minute.', "Still painting. Some take a little longer, and I'm on it.", "It's painted. Check the framing, then Save.", 'Putting it on your gift.']);
+        var framing = steps.length - 2, open = !!document.querySelector('.vm--container');
+        var at = open ? framing : artStage.at >= framing ? framing + 1 : t > 100000 ? framing - 1 : t > 30000 ? lines.length : Math.min(Math.floor(t / 5000), lines.length - 1);
+        artStage.at = Math.max(at, artStage.at == null ? -1 : artStage.at);
+        var say = steps[artStage.at];
         if (line.textContent !== say) line.textContent = say;
         bar.firstElementChild.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct));
+        if (recovery) recovery.style.display = t < 120000 ? 'none' : '';
       };
+      artStage.tick = tick;
       tick();
-      if (!artStage.timer) artStage.timer = setInterval(function () { if (card.getAttribute('data-state') === 'painting') tick(); }, 1000);
+      if (!artStage.timer) artStage.timer = setInterval(function () { if (card.getAttribute('data-state') === 'painting' && artStage.tick) artStage.tick(); }, 1000);
       // the moment it starts, bring the painting into view instead of the small loader below
       if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
     } else {
@@ -631,7 +666,8 @@
   }
   function missingNames() { return NAMES.filter(function (k) { return !answer(k); }); }
   function engaged() { return !!(answer('dog') || answer('person')); }
-  function possessive(n) { return /s$/i.test(n) ? n + "'" : n + "'s"; }
+  // a name cut to "Sir Biscuit O'" read "O''s" in the toast (28 Oct): its own apostrophes go first
+  function possessive(n) { n = String(n == null ? '' : n).replace(/['’]+$/, ''); return /s$/i.test(n) ? n + "'" : n + "'s"; }
   function json(sel) {
     var el = document.querySelector(sel);
     if (!el) return {};
@@ -675,9 +711,11 @@
       if (!base || base.charAt(0) === '#') return;
       a.setAttribute('href', base + (base.indexOf('?') === -1 ? '?' : '&') + answerParams().toString());
     });
-    // hidden line-item properties on product forms
+    // hidden line-item properties on product forms. An input with no key (the redo's _hs_redo_of)
+    // carries its own value: answer('') turned it into "undefined" on the first edit (28 Oct)
     document.querySelectorAll('[data-hs2-prop]').forEach(function (inp) {
       var k = inp.getAttribute('data-hs2-prop');
+      if (!k) return;
       inp.value = k === 'voice' ? (val('voice') ? 'Yes' : '') : answer(k);
     });
     document.querySelectorAll('[data-hs2-input]').forEach(function (inp) {
@@ -719,11 +757,12 @@
       return;
     }
     if (intro) intro.hidden = true;
-    // several gifts picked in the chat: say which one this is, not "last step"
+    // several gifts picked in the chat: say which one this is. Never "Last step.": the photo, the
+    // painting, the tick and the add are all still to come on this page (28 Oct)
     var q = queueGet(), at = -1;
     q.forEach(function (it, i) { if (at === -1 && handleOf(it.url) === handleOf(location.pathname)) at = i; });
-    var lead = q.length > 1 && at !== -1 ? 'Gift ' + (at + 1) + ' of ' + q.length + '.' : 'Last step.';
-    var want = redoMode.id ? 'Another version, then. Your first design stays in your cart until you choose.' : lead + ' Let\'s make ' + possessive(dog) + ' ' + gift + '.';
+    var lead = q.length > 1 && at !== -1 ? 'Gift ' + (at + 1) + ' of ' + q.length + '. ' : '';
+    var want = redoMode.landed ? 'Your new version is in your cart. Choose which one to keep there.' : redoMode.id ? 'Another version, then. Your first design stays in your cart until you choose.' : lead + 'Let\'s make ' + possessive(dog) + ' ' + gift + '.';
     if (line && line.textContent !== want) line.textContent = want;
     if (!card) return;
     var esc_ = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -1479,6 +1518,31 @@
       return shown !== null && exact(input.value) === exact(answer(key)) && exact(shown) === exact(answer(key));
     });
   }
+  /* The portrait signs itself: artwork 1378371 prints "Love, " and the Dog's name field, and has no
+     Signed field (the 23 Oct design, kept on 28 Oct). So a line under that field says what will be
+     signed, as they type, and from 11 letters how many still fit (Signed holds 20: "Love, " + 14). */
+  function portraitSignLine() {
+    if (!document.querySelector('#buy[data-hs2-artwork-kind="print"]')) return;
+    var field = tibFields().filter(function (f) { return f.rule.k === 'dog'; })[0];
+    var input = field && field.el.querySelector('input[type="text"], input:not([type]), textarea');
+    if (!input || !field.el.parentNode) return;
+    var line = document.querySelector('[data-hs2-sign-line]');
+    if (!line) {
+      line = document.createElement('p');
+      line.className = 'hs2-sign-line'; line.setAttribute('data-hs2-sign-line', ''); line.setAttribute('role', 'status');
+      line.innerHTML = '<span data-hs2-sign-text></span><span data-hs2-sign-hint></span>';
+    }
+    // Teeinblue redraws its form: the line goes back right under the field it describes
+    if (field.el.nextSibling !== line) field.el.parentNode.insertBefore(line, field.el.nextSibling);
+    if (!input.__hs2sign) { input.__hs2sign = true; input.addEventListener('input', portraitSignLine); }
+    var name = input.value.replace(/\s+/g, ' ').trim(), max = input.maxLength > 0 ? input.maxLength : 14, left = max - input.value.length;
+    var say = name ? 'Signed on the print: Love, ' + name : "Your dog's name signs the print.";
+    var hint = input.value.length < max - 3 ? '' : (left > 1 ? left + ' letters left. ' : left === 1 ? '1 letter left. ' : "That's the most that fits. ") + 'Up to ' + max + ' fit in the signature.';
+    var text = line.querySelector('[data-hs2-sign-text]'), more = line.querySelector('[data-hs2-sign-hint]');
+    if (text.textContent !== say) text.textContent = say;
+    if (more.textContent !== hint) more.textContent = hint;
+    more.hidden = !hint;
+  }
   function portraitSignatureChoice() {
     if (!document.querySelector('#buy[data-hs2-artwork-kind="print"]')) return '';
     var input = document.querySelector('#buy input[name="layer-209591"]');
@@ -1531,11 +1595,18 @@
       var button = e.target.closest && e.target.closest(cityArtPreview() || nativeArtworkPurchase() ? '#teeAtcButton, .tee-btn--atc, [data-hs2-add]' : '#teeAtcButton');
       if (!button || !(giftView() || nativeArtworkPurchase())) return;
       if (nativeArtworkPurchase()) {
-        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted() && nativePurchaseReady()) { syncBlanketProperties(); return; }
+        if (!blanketUploadPending() && nativeBlanketInputsReady() && cityArtSaved() && blanketReviewAccepted() && nativePurchaseReady()) {
+          syncBlanketProperties();
+          // words beside the button and Teeinblue's own box are courtesies: neither may hold the add
+          try { startedAdd(); } catch (err) { /* the add goes ahead */ }
+          return;
+        }
         e.preventDefault(); e.stopImmediatePropagation();
         var nativeBuy = document.querySelector('#buy[data-hs2-artwork-kind]');
         blanketPurchaseStatus(nativeBuy && nativeBuy.getAttribute('data-hs2-purchase-enabled') !== 'true' ? 'This gift is not available to order yet.' : 'Finish and save your artwork, then tick the artwork review before adding this gift. If an error appears, follow the instructions beside your artwork.');
         if (cityArtSaved() && !blanketReviewAccepted()) nudgeReview();
+        // the one thing left, said beside the button the buyer pressed; the block above stands either way
+        try { blockedAdd(); } catch (err) { /* the block holds without the words */ }
         return;
       }
       // This isolated template is for acceptance testing. AI completion, raw-photo
@@ -1567,6 +1638,38 @@
       else if (document.querySelector('.vm--container')) note.textContent = 'Save your photo crop before adding this gift.';
       else { handoff(); note.textContent = 'Finish your photo in the personalizer, check the preview, then try again.'; }
     }, true);
+  }
+  /* A blocked Add to cart on a gift page says the one thing left, in the line beside the button
+     (28 Oct, order 1: no word at all, and the photo step never opened). The block itself is in
+     guardGiftPhoto; this only explains it, and opens the photo step when the photo is missing. */
+  function blockedAdd() {
+    var buy = document.querySelector('#buy[data-hs2-artwork-kind]');
+    var dog = String(answer('dog') || '').trim(), whose = dog ? possessive(dog) : "your dog's", name = dog || 'your dog';
+    var say = 'One more thing first. See the message above.';
+    if (buy && buy.getAttribute('data-hs2-purchase-enabled') !== 'true') say = 'This gift is not available to order yet.';
+    else if (blanketUploadPending() || (artRequested() && !cityArtSaved())) say = 'Still painting ' + name + '. About a minute.';
+    else if (cityArtSaved()) { if (!blanketReviewAccepted()) say = 'Tick the box under ' + whose + ' painting first.'; }
+    else if (restoredArtworkAvailable()) say = 'Review your saved design above first, or add a new photo.';
+    else if (!nativeBlanketInputsReady()) say = 'One moment. Your choices are still loading.';
+    else {
+      say = 'Add ' + whose + ' photo first. Buddy paints from it.';
+      // open the photo step: the field in view and its upload button ready for the next tap
+      var field = document.querySelector('#buy .tee-field--photo');
+      if (field && field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+      var upload = field && field.querySelector('.tee-btn--upload, button, label');
+      if (upload && upload.focus) { try { upload.focus({ preventScroll: true }); } catch (err) { /* old browser */ } }
+    }
+    checkoutImageStatus(say);
+    return say;
+  }
+  /* An add that goes ahead: Teeinblue's own box gets our tick before its handler reads it, the
+     line beside the button starts saying what is happening, and the clock starts for add_timing. */
+  function startedAdd() {
+    var dog = String(answer('dog') || '').trim();
+    checkoutImageStatus.dog = dog ? possessive(dog) : '';
+    onCartAdd.clickAt = Date.now();
+    syncTibAgreement(true);
+    checkoutImageStatus('Saving ' + (checkoutImageStatus.dog || 'your') + ' design.');
   }
   /* A scripted click on a label moves focus to its radio, and the browser scrolls to it: on
      the ad landing page that pulled a shopper typing in the hero 5,000px down the page. So
@@ -2019,17 +2122,27 @@
      redraws the picker, so the shopper reads "Frame". */
   function relabelOptions() {
     var buy = document.getElementById('buy');
-    if (!buy || !buy.getAttribute('data-hs2-option-labels')) return;
+    var native = nativeArtworkPurchase();
+    if (!buy || (!buy.getAttribute('data-hs2-option-labels') && !native)) return;
     var map = {};
-    try { map = JSON.parse(buy.getAttribute('data-hs2-option-labels')) || {}; } catch (e) { return; }
+    try { map = JSON.parse(buy.getAttribute('data-hs2-option-labels') || '{}') || {}; } catch (e) { if (!native) return; }
+    // one key for "Available Product" and the "Available Products" the live title reads (28 Oct)
+    var one = function (k) { return k ? k.replace(/s$/, '') : k; };
     buy.querySelectorAll('.tee-option').forEach(function (opt) {
       var m = /(?:^|\s)tee-option--([a-z0-9_-]+)/.exec(opt.className), title = opt.querySelector('.tee-option__title');
       if (!title) return;
       // Teeinblue's own key ("color"), or the title's words ("Available Product") for a key it spells differently
       var key = m ? m[1].replace(/_/g, '-') : '', words = title.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      var want = map[key] || (title.__hs2key && map[title.__hs2key]) || map[words];
+      var want = map[key] || (title.__hs2key && map[title.__hs2key]) || map[words] || map[one(key)] || map[one(words)];
+      // a gift page reads in sentence case even where the section names nothing: "Color", "Framed or unframed"
+      if (!want && native) {
+        var raw = title.__hs2raw || title.textContent.trim();
+        if (/^available[ _-]?products?$/i.test(raw) || one(key) === 'available-product') want = 'Framed or unframed';
+        else if (raw && raw === raw.toLowerCase() && /^[a-z]/.test(raw)) want = raw.charAt(0).toUpperCase() + raw.slice(1);
+        if (want && !title.__hs2raw) title.__hs2raw = raw;
+      }
       if (!want) return;
-      if (!title.__hs2key) title.__hs2key = map[key] ? key : words;
+      if (!title.__hs2key) title.__hs2key = map[key] ? key : map[words] ? words : map[one(key)] ? one(key) : one(words);
       if (title.textContent.trim() === want) return;
       // change only the text, never Teeinblue's elements
       var walker = document.createTreeWalker(title, NodeFilter.SHOW_TEXT), node, done = false;
@@ -2039,6 +2152,7 @@
         done = true;
       }
     });
+    if (native) tibChrome();
     if (!buy.__hs2labels && 'MutationObserver' in window) {
       buy.__hs2labels = true;
       var queued = false;
@@ -2047,6 +2161,35 @@
         setTimeout(function () { queued = false; relabelOptions(); }, 50);
       }).observe(buy, { childList: true, subtree: true, characterData: true });
     }
+  }
+  /* Teeinblue's own chrome on the gift pages (28 Oct, Krish's stills): "Add to cart" in sentence case,
+     "Adjust the framing" for "Recustomize image", and its upload count and its own added-to-cart
+     line put away, since the painting card and the cart drawer say those. Only text nodes change,
+     never Teeinblue's elements, and a line holding a control is never put away. relabelOptions
+     runs this again whenever Teeinblue redraws. */
+  function tibChrome() {
+    var buy = document.querySelector('#buy[data-hs2-artwork-kind], #buy[data-hs2-blanket-purchase]');
+    if (!buy) return;
+    [['#teeAtcButton, .tee-btn--atc', /^add to cart$/i, 'Add to cart'], ['.tee-btn--recustomize', /^re-?customi[sz]e(?: image)?$/i, 'Adjust the framing']].forEach(function (w) {
+      buy.querySelectorAll(w[0]).forEach(function (el) {
+        var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), text;
+        while ((text = walk.nextNode())) { if (w[1].test(text.nodeValue.trim()) && text.nodeValue.trim() !== w[2]) text.nodeValue = w[2]; }
+      });
+    });
+    var ours = '[data-hs2-add-note], [data-hs2-sign-line], .hs-journey, .hs-art, .hs-extras, [data-hs2-answers], [data-hs2-next]';
+    var walker = document.createTreeWalker(buy, NodeFilter.SHOW_TEXT), node;
+    while ((node = walker.nextNode())) {
+      var el = node.parentElement;
+      if (!el || !/uploads? remaining|has been added to (?:your |the )?cart/i.test(node.nodeValue) || el.closest(ours)) continue;
+      if (el.querySelector('button, input, select, textarea, label, a:not([href*="/cart"])')) continue;
+      if (!el.hasAttribute('data-hs2-tib-hide')) el.setAttribute('data-hs2-tib-hide', '');
+    }
+    buy.querySelectorAll('a').forEach(function (a) {
+      if (/^view cart$/i.test((a.textContent || '').trim()) && !a.closest(ours) && !a.hasAttribute('data-hs2-tib-hide')) a.setAttribute('data-hs2-tib-hide', '');
+    });
+    // Teeinblue may draw its agreement box again, unticked: it follows ours on every redraw
+    syncTibAgreement(!!blanketAcceptedKey && blanketReviewAccepted());
+    portraitSignLine();
   }
   function tibGallery() {
     var box = document.querySelector('[data-hs2-tib-gallery]'), media = document.querySelector('[data-hs2-media]');
@@ -2059,21 +2202,47 @@
       if (Date.now() - tibGallery.offAt < 800) return;
     }
     tibGallery.offAt = 0;
-    if (media.getAttribute('data-tib') === on) return;
-    media.setAttribute('data-tib', on);
     var pv = media.querySelector('[data-hs2-thumb-preview]');
-    /* A gift page opens on the product photo until the shopper adds their own (open_on photo).
-       After the chat, though, the words are already in the preview, and the product photo
-       shows Teeinblue's sample dog and lines ("Bartholomew Jr"), so the buyer could not see
-       their own words before Add to cart (Krish, 19 Oct). So when the chat handed this gift
-       its words, the preview is the picture on show, unless the shopper picked a photo. */
-    // the blanket has no words, so its preview stays the example photo until there is art in it:
-    // an empty cream blanket read as broken (Krish, 28 Oct)
-    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked && (!blanketArtPreview() || previewHasArt())) media.removeAttribute('data-show');
-    // the preview arrived: it is the picture on show, so its thumbnail is the current one
-    if (on === 'on' && pv && !media.hasAttribute('data-show')) {
-      media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
+    if (media.getAttribute('data-tib') !== on) {
+      media.setAttribute('data-tib', on);
+      /* A gift page opens on the product photo until the shopper adds their own (open_on photo).
+         After the chat, though, the words are already in the preview, and the product photo
+         shows Teeinblue's sample dog and lines ("Bartholomew Jr"), so the buyer could not see
+         their own words before Add to cart (Krish, 19 Oct). So when the chat handed this gift
+         its words, the preview is the picture on show, unless the shopper picked a photo. */
+      // the blanket has no words, so its preview stays the example photo until there is art in it:
+      // an empty cream blanket read as broken (Krish, 28 Oct)
+      if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked && (!blanketArtPreview() || previewHasArt())) media.removeAttribute('data-show');
+      // the preview arrived: it is the picture on show, so its thumbnail is the current one
+      if (on === 'on' && pv && !media.hasAttribute('data-show')) {
+        media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
+      }
     }
+    // Teeinblue's arrows and swipes also show its own sample mockups (the pug mug): "Your design" is
+    // the current thumbnail only while the buyer's design is the slide on show (28 Oct)
+    if (!box.__hs2slides && 'MutationObserver' in window) {
+      box.__hs2slides = true;
+      var soon = function () { clearTimeout(tibGallery.slideT); tibGallery.slideT = setTimeout(tibGallery, 120); };
+      box.addEventListener('click', function () { setTimeout(tibGallery, 400); }, true);
+      box.addEventListener('transitionend', soon);
+      new MutationObserver(soon).observe(box, { attributes: true, subtree: true, attributeFilter: ['style', 'class'] });
+    }
+    if (on === 'on' && pv && !media.hasAttribute('data-show')) {
+      var mine = tibSlideShown(box) <= 0 ? 'true' : 'false';
+      if (pv.getAttribute('aria-current') !== mine) pv.setAttribute('aria-current', mine);
+    }
+  }
+  // which of Teeinblue's slides is on show: the one across the middle of its slider. The first is
+  // the buyer's design; the others are its mockups. 0 also for a gallery of one slide.
+  function tibSlideShown(box) {
+    var slides = box.querySelectorAll('.tee-slide'), frame = box.querySelector('.tee-slider__inner, .tee-slider, .tee-gallery__stage');
+    if (slides.length < 2 || !frame) return 0;
+    var r = frame.getBoundingClientRect(), mid = r.left + r.width / 2;
+    for (var i = 0; i < slides.length; i++) {
+      var s = slides[i].getBoundingClientRect();
+      if (s.width && s.left <= mid && s.right > mid) return i;
+    }
+    return -1;
   }
   function photoInput() { return document.querySelector('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]'); }
   function handedKey() { return 'hs2-handed-' + (productId() || location.pathname); }
@@ -2515,17 +2684,24 @@
     return row.querySelector('.cart-items__details') || (link && link.closest('td'));
   }
   function redoOffers(rows) {
-    var lines = [], redone = {};
-    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.of) redone[f.of] = true; } });
+    var lines = [], redone = {}, here = {};
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.of) redone[f.of] = true; if (f.id) here[f.id] = true; } });
     lines.forEach(function (l) {
       var link = l.row.querySelector('a[href*="/products/"]'), host = cartOfferHost(l.row);
       if (!host) return;
       var slot = l.row.querySelector('[data-hs2-redo]');
       var html = '';
-      if (redone[l.id]) html = '<p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button>';
-      else if (l.personal && l.quantity === 1 && /^[a-f0-9-]{36}$/i.test(l.id) && !l.of) {
-        var u = new URL(link.getAttribute('href'), location.href); u.searchParams.set('redo', l.id);
-        html = '<a href="' + u.pathname + u.search + '" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span>';
+      // both designs in the cart: each line says which it is (28 Oct)
+      if (redone[l.id]) html = '<p class="hs2-redo__tag">First version</p><p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button>';
+      else if (l.of && here[l.of]) html = '<p class="hs2-redo__tag">New version</p>';
+      else if (l.personal && l.quantity === 1 && /^[a-f0-9-]{36}$/i.test(l.id) && !l.of && link) {
+        // the redo link is the product, the variant and the design id, nothing else the cart's
+        // own link carries (a vendor customization_id or edit flag rode along before, 28 Oct)
+        var u = null, variant = '', path = '';
+        try { u = new URL(link.getAttribute('href') || '', location.href); path = (/^(?:\/[^/?#]+)*?\/products\/[^/?#]+/.exec(u.pathname) || [''])[0]; } catch (e) { path = ''; }
+        try { variant = String((JSON.parse(l.row.getAttribute('data-hs2-cart-line') || '{}') || {}).variant_id || ''); } catch (e) { variant = ''; }
+        if (!/^\d+$/.test(variant)) variant = (u && u.searchParams.get('variant')) || '';
+        if (path) html = '<a href="' + path + '?' + (/^\d+$/.test(variant) ? 'variant=' + variant + '&' : '') + 'redo=' + l.id + '" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span>';
       }
       if (!html) { if (slot) slot.remove(); return; }
       if (!slot) { slot = document.createElement('div'); slot.className = 'hs2-redo'; slot.setAttribute('data-hs2-redo', ''); host.appendChild(slot); }
@@ -2668,12 +2844,34 @@
     inp.type = 'hidden'; inp.name = 'properties[_hs_redo_of]'; inp.value = id; inp.setAttribute('data-hs2-prop', '');
     form.appendChild(inp);
     redoMode.id = id;
-    resetBlanketUpload(); // the one new upload this redo allows; still started by the buyer's click
+    onCartAdd.redo = id; // the add wrapper refuses to send this first design again
+    // the one new upload this redo allows, still started by the buyer's click. Once per redo in a
+    // tab: a reload used to throw away the new painting and ask for another paid one (28 Oct)
+    var once = 'hs2-redo:' + productId() + ':' + id, fresh = true;
+    try { fresh = !window.sessionStorage.getItem(once); window.sessionStorage.setItem(once, '1'); } catch (e) { fresh = true; }
+    if (fresh) resetBlanketUpload();
     journeyCard();
+    // An add is not proof the new version landed (28 Oct, order #1008 kept only the first design).
+    // The cart is read back: a line naming this redo with a different design confirms it.
     onCartAdd(function () {
-      if (inp.parentNode) inp.parentNode.removeChild(inp);
-      redoMode.id = '';
-      journeyCard();
+      if (!redoMode.id) return;
+      fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
+        .then(function (r) { if (!r.ok) throw new Error('cart ' + r.status); return r.json(); })
+        .then(function (cart) {
+          var landed = (cart.items || []).some(function (it) {
+            var of = '', design = '';
+            [it.properties || {}].concat((it.item_components || []).map(function (c) { return c.properties || {}; })).forEach(function (p) { of = of || p._hs_redo_of || ''; design = design || p._customization_id || ''; });
+            return of === id && !!design && design !== id;
+          });
+          if (!landed) { checkoutImageStatus('Your new version did not reach your cart. Your first design is still there.'); return; }
+          if (inp.parentNode) inp.parentNode.removeChild(inp);
+          redoMode.id = ''; onCartAdd.redo = ''; redoMode.landed = true;
+          showNext.held = false;
+          showNext('Your new version is in your cart.', 'Choose which one to keep.', shopRoot() + 'cart', 'Choose in cart');
+          showNext.held = true; // this, not the usual added bar, is the one to read
+          journeyCard();
+        })
+        .catch(function () { /* the cart page still shows both designs */ });
     });
   }
   /* Their toy or collar on the product page (Krish, 28 Oct). The words are the chat's own toy and
@@ -3480,9 +3678,37 @@
     var buy = document.querySelector('#buy[data-hs2-checkout-image-enabled="true"]');
     return nativeArtworkPurchase() && buy ? {endpoint: buy.getAttribute('data-hs2-checkout-image-endpoint') || '', cdnPrefix: buy.getAttribute('data-hs2-checkout-image-cdn-prefix') || ''} : null;
   }
+  /* Every word about an add, in one line right after Teeinblue's Add to cart, where the buyer is
+     looking (28 Oct: the words went to the top of the form, out of sight, under a bare 30 second
+     spinner). It clears itself after a minute, when the add lands, and when Teeinblue marks a field
+     to fix, since then its own check stopped the add. With no button on the page the words go to the
+     status line above the form, as before. checkoutImageStatus.dog is the dog's possessive, set
+     when an add starts (startedAdd). */
   function checkoutImageStatus(message) {
     var status = document.querySelector('[data-hs2-checkout-image-status]');
-    if (status) { status.textContent = message; status.hidden = !message; }
+    var button = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
+    clearTimeout(checkoutImageStatus.timer);
+    if (!button || !button.parentNode) { if (status) { status.textContent = message; status.hidden = !message; } return; }
+    if (status && !status.hidden) { status.textContent = ''; status.hidden = true; }
+    var note = document.querySelector('[data-hs2-add-note]');
+    if (!note && !message) return; // nothing said yet, nothing to clear
+    if (!note) {
+      note = document.createElement('p');
+      note.className = 'hs2-add-note'; note.setAttribute('data-hs2-add-note', ''); note.setAttribute('role', 'status');
+    }
+    // Teeinblue redraws its button: the line goes back right after it
+    if (button.nextSibling !== note) button.parentNode.insertBefore(note, button.nextSibling);
+    if (note.textContent !== message) note.textContent = message;
+    note.hidden = !message;
+    if (message) checkoutImageStatus.timer = setTimeout(function () { checkoutImageStatus(''); }, 60000);
+    var buy = document.getElementById('buy');
+    if (!checkoutImageStatus.watching && buy && window.MutationObserver) {
+      checkoutImageStatus.watching = true;
+      new window.MutationObserver(function () {
+        var shown = document.querySelector('[data-hs2-add-note]');
+        if (shown && !shown.hidden && document.querySelector('#buy .tee-field--invalid')) checkoutImageStatus('');
+      }).observe(buy, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    }
   }
   function prepareCheckoutCart(body) {
     var config = checkoutImageConfig();
@@ -3491,24 +3717,28 @@
     var revision = function () { return JSON.stringify([blanketReviewKey(), answer('line4'), answer('signed'), hsProps()]); };
     var identity = revision(), variant = document.querySelector('[data-hs2-variant-id]');
     var variantId = variant && variant.value;
+    var whose = checkoutImageStatus.dog || 'your', Whose = checkoutImageStatus.dog || 'Your';
     prepareCheckoutCart.pending = true;
-    checkoutImageStatus('Preparing your saved artwork for checkout.');
+    checkoutImageStatus('Getting ' + whose + ' picture ready for checkout.');
+    // registration polls while Teeinblue finishes its copy; it never uploads (hs-checkout-image.js)
+    var options = Object.assign({}, config, { onPending: function () { checkoutImageStatus('Almost there.'); } });
     return Promise.resolve().then(function () {
       if (!window.HSCheckoutImage) throw new Error('Checkout artwork service is unavailable.');
-      return window.HSCheckoutImage.prepare(body, config);
+      return window.HSCheckoutImage.prepare(body, options);
     }).then(function (prepared) {
       var currentVariant = document.querySelector('[data-hs2-variant-id]');
-      if (identity !== revision() || variantId !== (currentVariant && currentVariant.value) || !cityArtSaved() || !blanketReviewAccepted() || !nativePurchaseReady() || blanketUploadPending()) throw new Error('Your artwork selection changed.');
-      checkoutImageStatus('Your artwork is ready for checkout.');
+      if (identity !== revision() || variantId !== (currentVariant && currentVariant.value) || !cityArtSaved() || !blanketReviewAccepted() || !nativePurchaseReady() || blanketUploadPending()) {
+        var changed = new Error('Your artwork selection changed.'); changed.hs2Changed = true; throw changed;
+      }
+      checkoutImageStatus('Almost there.');
       prepareCheckoutCart.pending = false;
       return prepared;
-    }, function (error) {
-      prepareCheckoutCart.pending = false;
-      checkoutImageStatus('We could not prepare your checkout picture. Try Add to cart again. Your saved artwork does not need another upload.');
-      throw error;
     }).catch(function (error) {
       prepareCheckoutCart.pending = false;
-      checkoutImageStatus('We could not prepare your checkout picture. Check your saved artwork, then try Add to cart again. You do not need to upload your photo again.');
+      // plain words, and the one thing a buyer must not do: paint again
+      checkoutImageStatus(error && error.hs2Changed
+        ? Whose + ' design changed while it was saving. Check it, then try Add to cart again. You do not need to upload a photo again.'
+        : "That didn't go through. " + Whose + ' design is saved, so you do not need to upload a photo again. Try Add to cart again.');
       throw error;
     });
   }
@@ -3518,20 +3748,41 @@
     onCartAdd.hooked = true;
     var fire = function (body) {
       var items = body && (Array.isArray(body.items) ? body.items : body.variant_id ? [body] : null);
+      checkoutImageStatus(''); // it landed: the line beside the button has said its piece
       setTimeout(function () { onCartAdd.cbs.forEach(function (f) { try { f(items); } catch (e) { /* keep going */ } }); }, 400);
     };
     var isAdd = function (u) { return /\/cart\/add(\.js)?(?:[?#]|$)/.test(String(u || '')); };
+    /* On a redo page (redoMode sets onCartAdd.redo) an add carrying the first design's id again is
+       refused: order #1008 kept the first design under the redo (28 Oct). The words ask for a new
+       photo; nothing here paints, uploads or retries. */
+    var firstDesign = function (body) {
+      if (!onCartAdd.redo || !body) return false;
+      if (typeof body !== 'string') return !!(body.get && body.get('properties[_customization_id]') === onCartAdd.redo);
+      try {
+        var j = JSON.parse(body);
+        return (Array.isArray(j.items) ? j.items : [j]).some(function (it) { return !!it && !!it.properties && it.properties._customization_id === onCartAdd.redo; });
+      } catch (e) { return false; }
+    };
+    var refuse = function () { checkoutImageStatus('This is still your first design. Add a new photo to make another version.'); };
+    // where the 30 seconds go (28 Oct): Teeinblue's own save, our checkout picture, Shopify's add
+    var timed = function (at, ready) {
+      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready }); } catch (e) { /* analytics never holds an add */ }
+      onCartAdd.clickAt = 0;
+    };
     if (window.fetch) {
       var f0 = window.fetch;
       onCartAdd.fetch0 = f0;
       window.fetch = function (input) {
         var u = typeof input === 'string' ? input : (input && input.url);
         var args = arguments;
+        if (isAdd(u) && args[1] && firstDesign(args[1].body)) { refuse(); return Promise.reject(new Error('This is still the first design.')); }
         if (isAdd(u) && args[1] && typeof args[1].body === 'string') { args = [input, Object.assign({}, args[1], { body: withHsProps(args[1].body) })]; }
+        var at = Date.now(), ready = at;
         var context = this, preparation = isAdd(u) ? prepareCheckoutCart(args[1] && args[1].body) : null;
-        var pr = preparation ? preparation.then(function (body) { return f0.call(context, input, Object.assign({}, args[1], {body: body})); }) : f0.apply(this, args);
+        var pr = preparation ? preparation.then(function (body) { ready = Date.now(); return f0.call(context, input, Object.assign({}, args[1], {body: body})); }) : f0.apply(this, args);
         if (isAdd(u)) pr.then(function (r) {
-          if (!r || !r.ok) return;
+          if (!r || !r.ok) { checkoutImageStatus(''); return; } // Shopify said no; Teeinblue shows why
+          timed(at, ready);
           var copy = null;
           try { copy = r.clone(); } catch (e) { /* body already read */ }
           if (copy) copy.json().then(fire, function () { fire(null); }); else fire(null);
@@ -3544,9 +3795,17 @@
       X.open = function (m, u) { this.__hs2add = isAdd(u); this.__hs2generation = (this.__hs2generation || 0) + 1; return open0.apply(this, arguments); };
       X.abort = function () { this.__hs2generation = (this.__hs2generation || 0) + 1; return abort0.apply(this, arguments); };
       X.send = function (b) {
+        if (this.__hs2add && firstDesign(b)) {
+          refuse();
+          // Teeinblue's XHR client hears a normal failure and releases its button; nothing is sent
+          this.dispatchEvent(new Event('error')); this.dispatchEvent(new Event('loadend'));
+          return;
+        }
         if (this.__hs2add && typeof b === 'string') arguments[0] = withHsProps(b);
+        var at = Date.now(), ready = at;
         if (this.__hs2add) this.addEventListener('load', function () {
-          if (this.status < 200 || this.status >= 300) return;
+          if (this.status < 200 || this.status >= 300) { checkoutImageStatus(''); return; }
+          timed(at, ready);
           var body = null;
           try { body = JSON.parse(this.responseText); } catch (e) { /* not JSON */ }
           fire(body);
@@ -3555,6 +3814,7 @@
         var preparation = this.__hs2add ? prepareCheckoutCart(arguments[0]) : null;
         if (!preparation) return send0.apply(this, arguments);
         preparation.then(function (body) {
+          ready = Date.now();
           if (xhr.__hs2generation === generation) send0.call(xhr, body);
         }, function () {
           if (xhr.__hs2generation !== generation) return;
@@ -3657,10 +3917,13 @@
   function hideNext() {
     var bar = document.querySelector('[data-hs2-next]');
     if (bar) bar.remove();
+    showNext.held = false;
     document.documentElement.classList.remove('hs2-has-next');
     giftFit();
   }
+  // a bar marked held (the redo's "Your new version is in your cart.") stays until the buyer closes it
   function showNext(title, sub, href, label) {
+    if (showNext.held) return;
     var onCart = /^\/cart\/?$/.test(location.pathname);
     var anchor = onCart && document.querySelector('.cart-totals__tax-note');
     if (anchor) {
@@ -3687,9 +3950,14 @@
     document.documentElement.classList.add('hs2-has-next');
     giftFit(); // the bar takes the bottom of a one-screen gift page
   }
-  function queueBar() {
+  // items: the lines an add just put in (onCartAdd), or undefined on a plain page load
+  function queueBar(items) {
     var q = queueGet();
     if (!q.length) return;
+    // a redo page makes a new version of a gift already in the cart: the list's bar covered it and
+    // read "All 3 gifts are in your cart" over the new painting (28 Oct, Recording 4)
+    if (/[?&]redo=[a-f0-9-]{36}(?:[&#]|$)/i.test(location.search || '')) { if (!showNext.held) hideNext(); return; }
+    var fromAdd = items !== undefined;
     fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (cart) {
@@ -3704,7 +3972,9 @@
           var done = q.length - left.length;
           showNext('Next: ' + next.title, done + ' of ' + q.length + ' in your cart. Photo and names carry over.', next.url, 'Personalize it');
         } else {
-          showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out');
+          // the list is done: said once, by the add that finished it; a later page load ends it quietly
+          queueSet([]);
+          if (fromAdd) showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out');
         }
       })
       .catch(function () { /* the bar is a convenience; the cart still works */ });
