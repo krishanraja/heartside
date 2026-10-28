@@ -1,5 +1,7 @@
 # Tone drives the imagery on every gift, with breed energy and buyer-tagged toys
 
+**Superseded in part, 28 October.** The native prompt no longer lists every tone and energy and reads `{{Artwork tone}}`; it reads the chosen texts from three hidden fields (`Tone direction`, `Style direction`, `Energy`, the last now a direction rather than a code). Current text, hashes and apply steps: `tools/print-art/teeinblue/PROMPT-SPEC-2026-10-27.md`. The rest of this record stands as the 27 October state.
+
 October 27, 2026. Status: implemented in the recipes, preparation engine, facts profile, product-page copy, native prompt candidates and tests. Not deployed to the theme, not applied to any Teeinblue campaign, not committed. No image was generated and no model or vendor service was called.
 
 ## Owner rulings

@@ -1,5 +1,29 @@
 {%- assign s = settings -%}
 <p>{% if s.blanket_purchase %}Inspired by what you told Buddy. No words on the blanket.{% else %}Your dog, the details you shared with Buddy, and your exact note.{% endif %}</p>
+              {%- comment -%} Their toy or collar, on the page where the photo goes (Krish, 28 Oct: "I cant seem to
+                upload any images of accessories"). The painter reads one photo, the dog's, so the words go into the
+                painting now; photos of the toy or collar go to our artist with the Artist's touch, added with the gift
+                (hs2.js bindExtras, extrasAfterAdd). {%- endcomment -%}
+              <div class="hs-extras" data-hs-extras hidden>
+                <p class="hs-extras__title">Paint their toy or collar too?</p>
+                <p class="hs-extras__hint">A few words is plenty. Optional.</p>
+                <div class="hs-extras__fields">
+                  <label>Favorite toy<input type="text" maxlength="80" autocomplete="off" placeholder="A squeaky duck" data-hs-extra="toy"></label>
+                  <label>Collar or accessory<input type="text" maxlength="80" autocomplete="off" placeholder="A red bandana" data-hs-extra="accessory"></label>
+                </div>
+                <details class="hs-extras__artist" data-hs-extras-artist hidden>
+                  <summary>Have photos of it? Our artist can paint it in by hand. Artist's touch, <span data-hs-extras-price></span>. Adds 5 days.</summary>
+                  <p>Added with your gift. Our artist reworks your design by hand from these photos and notes, and a person checks it before it prints.</p>
+                  <label>What should our artist add?<textarea maxlength="500" rows="2" data-hs-extras-notes placeholder="Her blue squeaky duck, in her mouth"></textarea></label>
+                  {%- for i in (1..3) -%}
+                  <div class="hs-extras__photo">
+                    <select aria-label="What photo {{ i }} shows" data-hs-extras-tag><option>Favorite toy</option><option>Collar or accessory</option><option>Another photo of my dog</option><option>Something else</option></select>
+                    <input type="file" accept="image/*" aria-label="Photo {{ i }}" data-hs-extras-file>
+                  </div>
+                  {%- endfor -%}
+                  <p class="hs-extras__status" data-hs-extras-status role="status" aria-live="polite"></p>
+                </details>
+              </div>
               <p data-hs2-checkout-image-status role="status" aria-live="polite" hidden></p>
               <div data-hs2-blanket-photo hidden>
                 <img data-hs2-blanket-photo-img alt="The photo you gave Buddy" width="80" height="80">
@@ -11,8 +35,33 @@
                 <button type="button" data-hs2-photo-override hidden>It's my dog. Use this photo.</button>
               </div>
               <p data-hs2-artwork-status role="status" aria-live="polite">Choose your style and tone, then add your dog's photo below.</p>
-              <a data-hs2-artwork-source data-hs2-artwork-layer="{% if s.native_artwork_kind == 'mug' %}layer-696867{% elsif s.native_artwork_kind == 'print' %}layer-747218{% else %}layer-292294{% endif %}" target="_blank" rel="noopener noreferrer" hidden>View your artwork</a>
-              <label data-hs2-artwork-accept-wrap hidden><input type="checkbox" data-hs2-artwork-accept> I have checked the finished artwork, including every face, marking and limb, and want this design on my gift. {% unless s.blanket_purchase %}I have checked the note and signature too.{% endunless %}</label>
+              {%- comment -%} The painting, then the finished design with the review right under it (Krish, 28 Oct:
+                the wait "looks broken" and the tickbox sat above the picture where he barely saw it).
+                hs2.js artStage() runs it; the wait is honest: about a minute, never a fake finish. {%- endcomment -%}
+              <div class="hs-art" data-hs-art data-state="idle" style="{% if s.native_artwork_kind == 'mug' %}--hs-art-ratio: 3 / 2; --hs-art-r: 1.5{% elsif s.native_artwork_kind == 'print' %}--hs-art-ratio: 2 / 3; --hs-art-r: 0.6667{% else %}--hs-art-ratio: 5 / 6; --hs-art-r: 0.8333{% endif %}" hidden>
+                <div class="hs-art__canvas" data-hs-art-canvas>
+                  <div class="hs-art__wash" aria-hidden="true"><i></i><i></i><i></i></div>
+                  <img class="hs-art__photo" data-hs-art-photo alt="" width="480" height="480" hidden>
+                  <svg class="hs-art__brush" aria-hidden="true" viewBox="0 0 64 64" width="56" height="56"><path d="M44 6c4 0 14 10 14 14 0 3-16 20-22 24l-6-6c4-6 11-32 14-32Z" fill="#121010"/><path d="M28 40l6 6c-2 6-7 12-16 12-5 0-10-2-12-4 6-1 8-4 9-8 1-5 7-8 13-6Z" fill="#a8284e"/></svg>
+                  <img class="hs-art__result" data-hs-art-result alt="Your finished artwork" width="1000" height="1200" hidden>
+                </div>
+                <div class="hs-art__painting" data-hs-art-painting>
+                  <p class="hs-art__title" data-hs-art-title>Painting your dog</p>
+                  <p class="hs-art__line" data-hs-art-line>Mixing the paint.</p>
+                  <div class="hs-art__bar" data-hs-art-bar role="progressbar" aria-label="Painting" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+                  <p class="hs-art__note">About a minute. Stay here and I'll show you the moment it's ready.</p>
+                </div>
+                <div class="hs-art__done" data-hs-art-done hidden>
+                  <p class="hs-art__title" data-hs-art-done-title tabindex="-1">Here's your dog.</p>
+                  <a class="hs-art__full" data-hs2-artwork-source data-hs2-artwork-layer="{% if s.native_artwork_kind == 'mug' %}layer-696867{% elsif s.native_artwork_kind == 'print' %}layer-747218{% else %}layer-292294{% endif %}" target="_blank" rel="noopener noreferrer" hidden>See it full size</a>
+                  <label class="hs-art__accept" data-hs2-artwork-accept-wrap hidden>
+                    <input type="checkbox" data-hs2-artwork-accept>
+                    <span class="hs-art__box" aria-hidden="true"></span>
+                    <span><strong data-hs-art-yes>Yes, this is my dog.</strong> I checked every face, marking and paw{% unless s.blanket_purchase %}, and the note and signature{% endunless %}, and I want this design on my gift.</span>
+                  </label>
+                  <p class="hs-art__redo">Not quite right? Choose another photo below to make a new version.</p>
+                </div>
+              </div>
               <details data-hs2-upload-recovery hidden>
                 <summary>Artwork failed or stopped?</summary>
                 <p>Wait while your artwork is still being created. If an error appears and no artwork arrives, you can allow another upload. This will not start a new artwork until you choose a photo again.</p>

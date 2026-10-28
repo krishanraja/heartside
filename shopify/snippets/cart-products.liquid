@@ -206,15 +206,63 @@
                       elsif block_settings.image_ratio == 'adapt'
                         assign ratio = item.image.aspect_ratio
                       endif
+
+                      # The accepted design, drawn by the server (Krish, 28 Oct: the cart thumbnail
+                      # "glitches epileptically"). Before, the product photo came from here, hs2.js
+                      # swapped in the design and Teeinblue swapped that for its spinner, again on
+                      # every re-render. Same sources as cartArtworkImage() in hs2.js: the line's
+                      # prepared checkout image, else Teeinblue's, else its one matching component's.
+                      assign hs_design_line = item
+                      assign hs_design_prepared = item.properties._hs_checkout_image | default: ''
+                      assign hs_design_native = item.properties._customization_image | default: ''
+                      if hs_design_prepared == blank and hs_design_native == blank and item.item_components.size == 1
+                        assign hs_design_line = item.item_components.first
+                        if hs_design_line.variant_id == item.variant_id
+                          assign hs_design_prepared = hs_design_line.properties._hs_checkout_image | default: ''
+                          assign hs_design_native = hs_design_line.properties._customization_image | default: ''
+                        endif
+                      endif
+                      assign hs_design = ''
+                      assign hs_design_src = ''
+                      assign hs_design_name = hs_design_prepared | split: '?' | first | split: '/' | last
+                      assign hs_design_head = hs_design_name | slice: 0, 19
+                      assign hs_design_tail = hs_design_name | slice: -4, 4
+                      if hs_design_prepared != '' and hs_design_name.size == 59 and hs_design_head == 'heartside-checkout-' and hs_design_tail == '.jpg'
+                        assign hs_design_origin = hs_design_prepared | slice: 0, 34
+                        if hs_design_origin == 'https://cdn.shopify.com/s/files/1/'
+                          assign hs_design = hs_design_prepared
+                          if hs_design contains '?'
+                            assign hs_design_src = hs_design | append: '&width=300'
+                          else
+                            assign hs_design_src = hs_design | append: '?width=300'
+                          endif
+                        endif
+                      endif
+                      if hs_design == '' and hs_design_native != ''
+                        assign hs_design_name = hs_design_native | split: '?' | first | split: '/' | last
+                        assign hs_design_tail = hs_design_name | slice: -4, 4
+                        assign hs_design_origin = hs_design_native | slice: 0, 41
+                        if hs_design_origin == 'https://cdn.teeinblue.com/customizations/' and hs_design_name.size == 40 and hs_design_tail == '.jpg'
+                          assign hs_design = hs_design_native
+                          # protocol-relative, so Teeinblue's img[src^="https://cdn.teeinblue.com/..."]
+                          # never claims it; hs2.js retries it while Teeinblue is still rendering it
+                          assign hs_design_src = hs_design | remove_first: 'https:'
+                        endif
+                      endif
                     %}
                     <a
                       href="{{ item.url }}"
-                      class="cart-items__media-container"
+                      class="cart-items__media-container{% if hs_design != '' %} teeinblue-item--customization-images{% endif %}"
                       style="--ratio:{{ ratio }};"
                     >
+                      {%- if hs_design != '' -%}
+                        {%- comment -%} teeinblue-item--customization-images is Teeinblue's own "leave these thumbnails alone" container {%- endcomment -%}
+                        <img src="{{ hs_design_src | escape }}" alt="Your personalized artwork" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
+                      {%- else -%}
                       {%- liquid
                         echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
                       -%}
+                      {%- endif -%}
                     </a>
                   {%- endif %}
                 </td>

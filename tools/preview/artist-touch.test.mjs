@@ -20,14 +20,15 @@ function box() {
 function row(props, personal) {
   const host = {children: [], appendChild(n) { this.children.push(n); }};
   return {host, getAttribute: k => k === 'data-hs2-cart-line' ? JSON.stringify({quantity: 1, properties: props, item_components: personal ? [{properties: {_customization_id: A}}] : []}) : k === 'data-hs2-quantity-key' ? (personal ? 'k' : '') : null,
-    querySelector: s => s.startsWith('a[') ? {closest: () => host} : null};
+    // the details cell (title and price), never the picture's cell (28 Oct)
+    querySelector: s => s === '.cart-items__details' ? host : s.startsWith('a[') ? {closest: () => ({appendChild() { throw new Error('offer in the picture column'); }})} : null};
 }
 for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}: the artist's touch is offered once per design and sends notes and tagged photos`, async () => {
   const posts = [], made = [];
   let memo = null;
   const ctx = {location: {pathname: '/cart', reload() {}}, FormData, track() {}, shopRoot: () => '/', fetch: (url, o) => { posts.push([url, o.body]); return Promise.resolve({ok: true, json: async () => ({})}); },
     document: {querySelector: s => s === '[data-hs-artist-variant]' ? memo : null, createElement: () => { const b = box(); made.push(b); return b; }}};
-  vm.runInNewContext(['cartLineFacts', 'artistTouch'].map(section).map(c => minified ? transformSync(c, {minify: true}).code : c).join('\n').replace('var ADDON_TAGS', 'var ADDON_TAGS'), Object.assign(ctx, {ADDON_TAGS: ['Favorite toy']}));
+  vm.runInNewContext(['cartOfferHost', 'cartLineFacts', 'artistTouch'].map(section).map(c => minified ? transformSync(c, {minify: true}).code : c).join('\n').replace('var ADDON_TAGS', 'var ADDON_TAGS'), Object.assign(ctx, {ADDON_TAGS: ['Favorite toy']}));
   const gift = row({}, true);
   ctx.artistTouch([gift]); assert.equal(gift.host.children.length, 0, 'hidden until the add-on product exists');
   memo = {getAttribute: k => k === 'data-hs-artist-variant' ? '777' : '$29'};

@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-27
+as_of: 2026-10-28
 head: 83ad83005490fbad23330c09f7832823acc0e722
 lifecycle: live
 production_url: https://heartside.io
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalisation is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-27)
+## Where it is right now (as of 2026-10-28)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119), and word-free sherpa blanket ($129). Old duplicate products have been archived or held, and the old core handles redirect to the clean ones. The reviewed theme, with native purchase and actual-design checkout settings enabled for all three products, was published on 27 October. The storefront password was removed. Independent uncookied public readback returned HTTP 200 without a password page for the homepage and all three clean product URLs, confirmed the reviewed theme as live, and found all ten current variants available at the expected prices. This is route/configuration acceptance, not a fresh interactive checkout. Normal Shopify Payments is accepting payments; its test gateway is off, and the three pre-existing $49 US market prices remain intact.
 
@@ -51,6 +51,8 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 
 ## What changed recently
 
+- **28 October, later:** Krish's own walk-through found four problems, fixed on the branch: the cart thumbnail flickered (the product photo, the design and Teeinblue's spinner took turns after every cart redraw; the server now draws the design itself and the cart is read once per change), the wait while Teeinblue paints looked broken (a painting card now shows the buyer's photo being painted, lines from their own choices and an eased bar, then reveals the design), the review tickbox sat above the picture (it is now a large confirmation directly under the finished design, and a blocked Add to cart points at it), and there was no way to add a toy or collar (the product page now takes their words, which reach the painting, and photos of them for our artist with the Artist's touch, added with the gift). The redo and Artist's touch offers moved out of the cart's narrow picture column.
+- **28 October:** The first example batch (19 Codex images from Krish's local relay session, on branch `examples/2026-10-27`) showed the tone barely changing the art and the golden puppy ignoring its style. The art prompt is redesigned so the store sends only the chosen style, tone and energy text in hidden fields (Krish's ruling); a staged second batch (cap 10) tests it before any example goes on the site.
 - **27 October, later:** Follow-ups went live the same way: the Christmas reminder capture on the choose screen, the mug reveal opening on the dog's side, and review polish (an Artist's touch line whose design left the cart now says so; "Not sure" on the home follow-up).
 - **27 October:** The journey redesign went live, with the bundle discount and the Artist's touch add-on, after an independent review and a real-store check on an unpublished copy. Krish's rulings are in the commit bodies. The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) is rewritten: Part A is automated (`tools/preview/preview-acceptance.mjs`), Part B (production) is due, Part C runs on his word.
 - **27 October:** The three core products and reviewed theme went live with normal payments. The fee-free blanket compatibility order confirmed the accepted artwork reached Teeinblue and produced an inspectable print file; physical print quality and a real paid order still await Krish's sample. See the release checkpoint above and the [live acceptance assignment](docs/review/COWORK-LIVE-ACCEPTANCE.md).
@@ -58,9 +60,9 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 
 ## What is next and what is waiting on Krish
 
-- **Next action:** bring the example batch into the site when Krish's local session pushes `examples/2026-10-27` (the slider demo and the range get real tone examples), then CoWork runs Part B of [the acceptance prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) on production. The redesign targets conversion and order value; the number is still $0 as last measured and is next measured from Shopify orders net of refunds.
-- **Waiting on Krish:** applying the Teeinblue prompt spec (tone imagery and breed energy depend on it); the real blanket sample order; the mug price (below the 30% floor); whether the Artist's touch may name him; and one reminder email, before Christmas delivery closes, to customers tagged `buddy-reminder`. He can change the add-on's $29 price or end the bundle in Shopify at any time. Do not claim physical quality or paid-order fulfillment until the sample is inspected.
-- North Star check (2026-10-27): holds.
+- **Next action:** stage 1 of the 28 October example batch (the pug portrait at three tones) through Krish's local relay session; if the three moods clearly differ, stage 2, then the examples go into the slider demo and a range strip. CoWork Part B on production is also due. The number is still $0 as last measured and is next measured from Shopify orders net of refunds.
+- **Waiting on Krish:** applying the Teeinblue prompt spec, now with three hidden fields (`Tone direction`, `Style direction`, `Energy`; tone imagery and breed energy depend on it); the real blanket sample order; the mug price (below the 30% floor); whether the Artist's touch may name him; and one reminder email, before Christmas delivery closes, to customers tagged `buddy-reminder`. He can change the add-on's $29 price or end the bundle in Shopify at any time. Do not claim physical quality or paid-order fulfillment until the sample is inspected.
+- North Star check (2026-10-28): holds.
 
 ## Read next
 

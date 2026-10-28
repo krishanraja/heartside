@@ -6,7 +6,7 @@ import {createHash} from 'node:crypto';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {recipes, prepare} from './artwork-system.mjs';
-import {nativePrompt} from './native-candidate.mjs';
+import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
 import {criteria} from './review-six-style-screen.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -30,9 +30,9 @@ const cases = plan.caseOrder.map((style, i) => {
     factsProfile:facts, style, tone:plan.route.tone, format:plan.route.format, city:plan.fixture.city,
     variant:'private-portrait-12x18-screen', model:plan.route.model, copy:plan.fixture.copy});
   // Expected substitution of stored form values, not a claim of provider parity.
-  // Global options carry their labels (hs2.js selects by label). The fixture has no
-  // breed, so Energy is none. Since 27 Oct the portrait prompt reads the tone too.
-  const values = {'Artwork style':recipes.styles[style].label, 'Artwork tone':recipes.tones[plan.route.tone].label, Personality:JSON.stringify(facts), City:plan.fixture.city, Energy:'none'};
+  // Since 28 Oct the prompt reads the chosen style, tone and energy text from hidden fields
+  // (nativeFieldValues, as hs2.js writes them). The fixture has no breed, so Energy is none.
+  const values = {...nativeFieldValues({style, tone:plan.route.tone}), Personality:JSON.stringify(facts), City:plan.fixture.city};
   const nativePromptExpected = rawNativePrompt.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     assert.ok(Object.hasOwn(values, key), `Unknown native field ${key}`); return values[key];
   });
