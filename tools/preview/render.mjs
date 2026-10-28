@@ -226,10 +226,9 @@ const withVariant = (p, test) => ({ ...p, selected_or_first_available_variant: p
 // quantity and Teeinblue's own "Add To Cart" in Title Case, and on a phone a Personalize bar
 // fixed to the bottom of the screen. So a local preview shows what a buyer meets, not a tidier
 // stand-in; the theme's own fixes for them are what the preview then checks.
-// Classes seen on the live pages after the fixture was captured, which hs2.css already styles;
-// they move into fixtures/teeinblue-classes.json with its next capture.
-const TEE_SEEN_LIVE = ['tee-btn--preview', 'tee-btn--atc', 'tee-btn-wrapper--personalize', 'tee-btn--personalize'];
-const TEE_CLASSES = new Set([...JSON.parse(fs.readFileSync(path.join(fixtures, 'teeinblue-classes.json'), 'utf8')), ...TEE_SEEN_LIVE]);
+// fixtures/teeinblue-classes.json holds every class seen on the live pages, the Preview, Add To
+// Cart and Personalize bar classes from the 28 Oct recordings included
+const TEE_CLASSES = new Set(JSON.parse(fs.readFileSync(path.join(fixtures, 'teeinblue-classes.json'), 'utf8')));
 const tee = (...names) => {
   for (const n of names) if (n.startsWith('tee-') && !TEE_CLASSES.has(n)) throw new Error(`render.mjs: "${n}" is not a class Teeinblue renders (fixtures/teeinblue-classes.json)`);
   return names.join(' ');

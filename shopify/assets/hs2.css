@@ -1411,8 +1411,9 @@ html.hs2-has-next #buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) 
 .hs2-sign-line { margin: -10px 0 16px; font-size: 14px; line-height: 1.45; color: #5A4A44; }
 .hs2-sign-line [data-hs2-sign-hint] { display: block; color: #8A4A2B; }
 .hs2-sign-line [hidden] { display: none; }
-/* Buddy's line on a gift page never leaves one word on its own line ("Let's make Mochi's / mug.") */
-.hs-journey__line { text-wrap: balance; }
+/* Buddy's line and the gift's title never leave one word on its own line ("Let's make Mochi's / mug.",
+   "Your Dog's / Portrait") */
+.hs-journey__line, .hs2-product__info h1, .hs-art__title { text-wrap: balance; }
 .hs-journey__intro p, .hs-journey__v { text-wrap: pretty; }
 /* a redo in the cart: which line is which (hs2.js redoOffers) */
 .hs2-redo .hs2-redo__tag { font-family: "HS Courier Prime", "Courier New", monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A4A2B; }

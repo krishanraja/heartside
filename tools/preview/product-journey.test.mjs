@@ -51,6 +51,22 @@ for (const minified of [false, true]) {
       assert.match(last.parts['[data-hs-journey-line]'].textContent, /Let's make Buttons' mug\.$/);
     }
   });
+  test(`${minified ? 'minified' : 'source'}: the card shows the facts as the chat does, tidied and naming the person, with the chat's pronoun`, () => {
+    const profile = readFileSync(new URL('../../shopify/assets/hs-artwork-profile.js', import.meta.url), 'utf8');
+    const card = (rel, pro, facts) => {
+      const {parts, ctx} = page('mug', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}});
+      vm.runInNewContext(profile, {window: ctx.window});
+      ctx.window.sessionStorage = {getItem: () => JSON.stringify({dog: 'Pip', pro, rel})};
+      ctx.artworkFacts = () => JSON.stringify({version: 1, facts});
+      run(ctx); return parts['[data-hs-journey-card]'].innerHTML;
+    };
+    const facts = [{source: 'spot', text: "Rests on their person's side of the bed."}, {source: 'together', text: 'coffee in bed on sundays!!'}];
+    const html = card('partner', 'she', facts);
+    assert.match(html, /Rests on Alex&#39;s side of the bed\. · Coffee in bed on sundays\./); assert.doesNotMatch(html, /their person|!!/);
+    assert.match(card('self', 'she', facts), /Rests on your side of the bed\./);
+    assert.match(card('partner', '', []), /Pip, just as they are\./, 'no pronoun tapped reads they');
+    assert.match(card('partner', 'he', []), /Pip, just as he is\./);
+  });
   test(`${minified ? 'minified' : 'source'}: possessives never double an apostrophe`, () => {
     const ctx = {}; const code = section('possessive'); vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, ctx);
     assert.equal(ctx.possessive("Sir Biscuit O'"), "Sir Biscuit O's");

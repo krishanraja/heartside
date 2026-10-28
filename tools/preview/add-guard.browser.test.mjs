@@ -79,6 +79,15 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
     const photo = await page.evaluate(() => { const r = document.querySelector('.tee-field--photo').getBoundingClientRect(); return {inView: r.top >= 0 && r.bottom <= innerHeight, focused: document.activeElement === document.querySelector('.tee-btn--upload')}; });
     assert.deepEqual(photo, {inView: true, focused: true}, 'the photo step is open for the next tap');
 
+    // the photo Buddy was given shows as one card, with Teeinblue's field clip-hidden: the press points at the card
+    await page.evaluate(() => { document.getElementById('buy').classList.add('hs2-photo-choice'); document.querySelector('[data-hs2-blanket-photo]').hidden = false; scrollTo(0, 0); });
+    await page.click('#teeAtcButton');
+    assert.equal(adds.length, 0);
+    assert.equal((await note()).text, "Use Honey's photo first, or a different one. Buddy paints from it.");
+    const card = await page.evaluate(() => { const r = document.querySelector('[data-hs2-blanket-photo]').getBoundingClientRect(); return {inView: r.top >= 0 && r.bottom <= innerHeight, focused: document.activeElement === document.querySelector('[data-hs2-blanket-create]')}; });
+    assert.deepEqual(card, {inView: true, focused: true}, 'the card is the photo step while it shows');
+    await page.evaluate(() => { document.getElementById('buy').classList.remove('hs2-photo-choice'); document.querySelector('[data-hs2-blanket-photo]').hidden = true; });
+
     // painting: said plainly, still blocked
     await page.evaluate(() => { at.requested = true; at.pending = true; });
     await page.click('#teeAtcButton');

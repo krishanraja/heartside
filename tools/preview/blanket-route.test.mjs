@@ -102,12 +102,12 @@ for(const minified of [false,true]) {
     const {ctx}=fixture(minified,false);ctx.cfg.corePurchase=true;ctx.S.sel={};ctx.selectGift('mug');
     const buttons={dog:'Buttons',rec:'Riley',them:'Riley'};
     let html=ctx.chooseView(buttons);
-    assert.match(html,/<h2 class="hs3-h2">Buttons' gift for Riley<\/h2>/);assert.match(html,/Save Buttons' gift to your story/);
+    assert.match(html,/<h2 class="hs3-h2"><span class="hs3-nm">Buttons'<\/span> gift for <span class="hs3-nm">Riley<\/span><\/h2>/);assert.match(html,/Save Buttons' gift to your story/);
     assert.match(html,/Ship to/);
     ctx.selectGift('print');html=ctx.chooseView(buttons);
-    assert.match(html,/<h2 class="hs3-h2">Buttons' gifts for Riley<\/h2>/);assert.match(html,/Save Buttons' gifts to your story/);
+    assert.match(html,/<h2 class="hs3-h2"><span class="hs3-nm">Buttons'<\/span> gifts for <span class="hs3-nm">Riley<\/span><\/h2>/);assert.match(html,/Save Buttons' gifts to your story/);
     html=ctx.chooseView({dog:'Mochi',rec:'Sam',them:'you',self:true});
-    assert.match(html,/<h2 class="hs3-h2">Mochi's gifts for you<\/h2>/);assert.doesNotMatch(html,/Ship to|data-hs3="ship"/);
+    assert.match(html,/<h2 class="hs3-h2"><span class="hs3-nm">Mochi's<\/span> gifts for <span class="hs3-nm">you<\/span><\/h2>/);assert.doesNotMatch(html,/Ship to|data-hs3="ship"/);
   });
   test(mode+': the button answers the tap at once: pressed, busy and naming the gift that opens',()=>{
     const {ctx}=fixture(minified,false);ctx.cfg.corePurchase=true;ctx.S.sel={};ctx.selectGift('mug',true);

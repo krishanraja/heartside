@@ -108,10 +108,10 @@ for (const [mode,code] of [['source',instrumented],['minified',transformSync(ins
     Object.assign(f.state,{step:5}); assert.match(f.api.html(),/What do you and Mochi do together, just the two of you\?/);
     Object.assign(f.state,{step:6}); html=f.api.html(); assert.match(html,/What is Mochi to you\?/);assert.match(html,/Your shadow/);
     Object.assign(f.state,{screen:'choose',sel:{mug:true}}); html=f.api.chooseHTML();
-    assert.match(html,/Mochi&#39;s gift for you/);assert.doesNotMatch(html,/Ship to/);
+    assert.match(html,/<span class="hs3-nm">Mochi&#39;s<\/span> gift for <span class="hs3-nm">you<\/span>/);assert.doesNotMatch(html,/Ship to/);
     assert.equal(bridge(f).hs_ship_to,'Me (the buyer)');
     f.api.choose('partner'); html=f.api.chooseHTML();
-    assert.match(html,/Mochi&#39;s gift for Sam/);assert.match(html,/Ship to/);
+    assert.match(html,/<span class="hs3-nm">Mochi&#39;s<\/span> gift for <span class="hs3-nm">Sam<\/span>/);assert.match(html,/Ship to/);
   });
   test(mode+': no pronoun is chosen for the buyer; the copy says they until one is tapped',()=>{
     const f=fixture(code); f.state.step=1;

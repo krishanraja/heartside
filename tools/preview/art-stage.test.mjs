@@ -127,7 +127,7 @@ for (const [kind, settings] of [['mug', {blanket_purchase: false, native_artwork
       assert.ok(chooser, 'the picker opened in the same tap');
       const shown = await page.evaluate(() => { updateBlanketPurchaseStatus(); const r = document.querySelector('.tee-field--photo').getBoundingClientRect(); return {w: r.width, h: r.height, cls: document.getElementById('buy').classList.contains('hs2-photo-choice')}; });
       assert.ok(shown.w > 1 && shown.h > 1, "Teeinblue's field is back for the new photo"); assert.equal(shown.cls, false);
-      assert.match(await page.locator('[data-hs2-artwork-status]').textContent(), /or choose a photo below/, 'the field is there again, so the status says so');
+      assert.match(await page.locator('[data-hs2-artwork-status]').textContent(), /^Add Pickle's photo below\. Buddy paints from it\.$/, 'the field is there again, so the status asks for the photo');
       await use.click();
       assert.equal(await page.evaluate(() => sent), 1, 'one tap on the primary sends the saved photo once');
       assert.deepEqual(outside(), []); assert.deepEqual(errors, []);

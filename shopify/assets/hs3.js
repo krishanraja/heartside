@@ -1102,8 +1102,8 @@
         // optional, typed as plain words with no AI step: they become facts the painting may use
         var lim = (window.HSArtworkProfile && window.HSArtworkProfile.limits) || { toy: 80, accessory: 80 };
         h += '<details class="hs3-extras"' + (S.toy || S.accessory ? ' open' : '') + '><summary>Anything I should paint with ' + esc(n.dog) + '? (optional)</summary>';
-        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="A squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
-        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="A red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
+        h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="For example, a squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
+        h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="For example, a red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
       }
       if (m.next && !ui.typing && m.input !== 'dog') h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
       if (S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url && S.step > 1) h += '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>';
@@ -1596,8 +1596,6 @@
       warm(cfg.typedUrl);
       toView();
     });
-    var cd = frame.querySelector('[data-hs3-countdown]'), days = daysToChristmas();
-    if (cd && days) { cd.textContent = days + (days === 1 ? ' day' : ' days') + ' to Christmas morning. Every gift is made to order, then shipped.'; cd.hidden = false; }
     var over = frame.querySelector('[data-hs3-restart]');
     if (over) over.addEventListener('click', function () { track('start_over', {}); restart(); });
     // the signature feature on the first screen: slide the example note from sentimental to hilarious

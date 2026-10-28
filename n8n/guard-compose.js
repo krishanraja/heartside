@@ -21,7 +21,9 @@ if (!reject) {
   if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';
 }
 const TONES = ["Companion Velcro","Doodle Wildcard","Guardian","Herding Manager","Retriever","Scent Detective","Sighthound Sofa Missile","Spitz Commentator","Terrier Menace","Working Goofball"];
-const dog = { name: str(b.dog && b.dog.name, 14), pronoun: (b.dog && b.dog.pronoun) === 'he' ? 'he' : 'she' };
+// no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)
+const pro = String((b.dog && b.dog.pronoun) || '');
+const dog = { name: str(b.dog && b.dog.name, 14), pronoun: pro === 'he' || pro === 'she' ? pro : 'they' };
 const breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');
 if (breed) dog.breed = breed;
 if (TONES.indexOf(tone) !== -1) dog.tone = tone;

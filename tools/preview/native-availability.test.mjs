@@ -12,10 +12,10 @@ for(const minified of [false,true]) {
  test(mode+': disabled availability survives observer progress updates without hiding upload status',()=>{
   let enabled='false',pending=false;const status={textContent:''};
   const c={updateRestoredArtworkReview(){},answer:()=>'',restoredArtworkAvailable:()=>false,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{getAttribute:()=>enabled}:s==='[data-hs2-artwork-status]'?status:null,querySelectorAll:()=>[]},blanketUploadPending:()=>pending,usePhoto:{},nativeBlanketInputsReady:()=>true,cityArtSaved:()=>false,blanketNativeError:()=>false,artRequested:()=>false,latestArtRequest:()=>false};
-  run(['portraitSignatureChoice','updatePortraitSignatureRecovery','blanketPurchaseStatus','artLines','artStage','updateBlanketPurchaseStatus'],c,minified);
+  run(['possessive','portraitSignatureChoice','updatePortraitSignatureRecovery','blanketPurchaseStatus','artLines','artStage','updateBlanketPurchaseStatus'],c,minified);
   c.blanketPurchaseStatus('This gift is not available to order yet.');
   c.updateBlanketPurchaseStatus();
-  assert.match(status.textContent,/^This gift is not available to order yet\. Create artwork/);
+  assert.equal(status.textContent,"This gift is not available to order yet. Add your dog's photo below. Buddy paints from it.");
   pending=true;c.updateBlanketPurchaseStatus();c.updateBlanketPurchaseStatus();
   assert.match(status.textContent,/^This gift is not available to order yet\. Waiting for your artwork/);
   assert.equal((status.textContent.match(/not available/g)||[]).length,1);

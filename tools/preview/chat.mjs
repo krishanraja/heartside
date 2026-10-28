@@ -66,7 +66,7 @@ async function session(name, { ai = 'ok', width = 390, height = 844 } = {}) {
       return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ lines: { home: body.note_tone === 'hilarious' ? 'I guard the window like it owes me rent.' : 'Watches the window for you from 5pm.', spot: cur.spot, together: cur.together, meaning: cur.meaning }, alternates: {}, recommended_gift: body.note_tone === 'hilarious' ? 'blanket' : ((body.answers || []).some((a) => a.typed) ? 'mug' : body.default_gift), reason: 'The window watch starts at 5pm. So Kuku gets a spot in your mug.', sources: {}, flags: [] }) });
     }
     if (/passed away/.test(body.typed_text)) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: "I didn't quite catch that one. Try again, or pick one of these?", line: '', follow_up: null, flags: ['grief'] }) });
-    const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps office hours. Smart dog.', 'Weekends too. Very loyal.'] } : null;
+    const fu = body.step === 'home' ? { question: 'From 5pm sharp? Every day?', chips: ['Every single day', 'Weekdays', 'Even weekends'], lines: [null, 'Watches for you from 5pm on weekdays.', 'Watches for you from 5pm, weekends too.'], replies: [null, 'Keeps a strict schedule. Smart dog.', 'Weekends too. Very loyal.'] } : null;
     if (mode === 'delay') await new Promise((r) => setTimeout(r, 1200));
     const line = body.step === 'home_follow' ? 'Watches the window for you from 5pm, daily.' : 'Watches the window for you from 5pm.';
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ reaction: 'The window watch. Very serious work.', line, follow_up: fu, flags: [] }) });
@@ -286,7 +286,8 @@ for (const mode of ['fail', 'slow']) {
   await chipNamed(page, 'Weekdays');
   await page.waitForSelector("text=Where's Kuku's spot", { timeout: 1000 });
   ok(Date.now() - t2 < 400 && calls.length === 1, `a prepared follow-up chip is instant, with no second call (${Date.now() - t2} ms, ${calls.length} call)`);
-  ok(await lineFor(page, 'home') === 'Watches for you from 5pm on weekdays.' && (await bubble(page)).startsWith('Keeps office hours. Smart dog.'), 'the chip\'s prepared line and reply are used');
+  const _l = await lineFor(page, 'home'), _b = await bubble(page);
+  ok(_l === 'Watches for you from 5pm on weekdays.' && _b.startsWith('Keeps a strict schedule. Smart dog.'), 'the chip\'s prepared line and reply are used (' + _l + ' / ' + _b + ')');
   ok(!errors.length, 'no script errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await ctx.close();
 }

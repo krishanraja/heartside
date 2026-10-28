@@ -231,7 +231,7 @@ test('energy is optional, follows identity and facts, changes image identity on 
   assert.deepEqual(JSON.parse(profile.serialize({version: 1, facts: [{source: 'energy', text: 'bold-cheeky'}, {source: 'breed', text: 'Beagle'}]})).facts, []);
 });
 test('buyer-typed toy and accessory facts are accepted alongside the existing four, within limits', () => {
-  const chat = {home: 'typed', spot: 'typed', together: 'typed', typed: {home: 'Waits by the window.', home_follow: 'Then sighs.', spot: 'Sleeps on the rug.', together: 'Morning walks.'},
+  const chat = {home: 'typed', follow: 'typed', spot: 'typed', together: 'typed', typed: {home: 'Waits by the window.', home_follow: 'Then sighs.', spot: 'Sleeps on the rug.', together: 'Morning walks.'},
     toy: '  A squeaky  green\nhedgehog ', accessory: 'Red plaid bandana'};
   const all = JSON.parse(profile.serialize(profile.fromChat(chat)));
   assert.deepEqual(all.facts.map(f => f.source), ['home', 'home_follow', 'spot', 'together', 'toy', 'accessory']);

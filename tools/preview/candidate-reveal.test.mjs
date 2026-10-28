@@ -60,8 +60,8 @@ for(const minified of [false,true]) {
   });
   test(mode+': the heading takes the house possessive and speaks to the buyer when the gift is theirs',()=>{
     const c=fixture(minified);c.S.gift='mug';
-    assert.match(c.revealView({...who,dog:'Buttons',rec:'Riley',them:'Riley'}),/<h2 class="hs3-h2">Buttons' gift for Riley<\/h2>/);
-    assert.match(c.revealView({...who,dog:'Mochi',rec:'Sam',them:'you',self:true}),/<h2 class="hs3-h2">Mochi's gift for you<\/h2>/);
+    assert.match(c.revealView({...who,dog:'Buttons',rec:'Riley',them:'Riley'}),/<h2 class="hs3-h2"><span class="hs3-nm">Buttons'<\/span> gift for <span class="hs3-nm">Riley<\/span><\/h2>/);
+    assert.match(c.revealView({...who,dog:'Mochi',rec:'Sam',them:'you',self:true}),/<h2 class="hs3-h2"><span class="hs3-nm">Mochi's<\/span> gift for <span class="hs3-nm">you<\/span><\/h2>/);
     assert.match(c.revealView({...who,dog:"Sir Biscuit O'"}),/Sir Biscuit O's gift/,'a stray apostrophe never doubles');
   });
   test(mode+': the reveal slider shows the shared tone the product pages read',()=>{

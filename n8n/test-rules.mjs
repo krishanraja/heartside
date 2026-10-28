@@ -20,6 +20,13 @@ check('guard accepts a good typed request and passes the answer on as data', () 
   assert.equal(g.reject, '');
   assert.deepEqual(JSON.parse(g.prompt), {step:'home',question:'What does Kuku do?',typed_text:'she sits in the window from 5pm',previous_line:'',dog:{name:'Kuku',pronoun:'she'},recipient:{name:'Sam',relation:'partner'}});
 });
+check('guard keeps they when no pronoun was tapped, and never guesses she', () => {
+  const base = {session:'abcdefgh12',step:'home',question:'What does Kuku do?',typed_text:'sits in the window',recipient:{name:'Sam',relation:'partner'}};
+  for (const [sent, kept] of [['they','they'],[undefined,'they'],['it','they'],['he','he'],['she','she']]) {
+    const r = guard('guard-typed.js',{headers:{origin:'https://heartside.io'},body:{...base, dog:{name:'Kuku', pronoun: sent}}});
+    assert.equal(JSON.parse(r.prompt).dog.pronoun, kept, String(sent));
+  }
+});
 check('guard refuses another origin', () => {
   assert.equal(guard('guard-typed.js',{headers:{origin:'https://evil.com'},body:{session:'abcdefgh12',typed_text:'x'}}).reject, 'origin');
 });

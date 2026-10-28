@@ -52,6 +52,16 @@
 /* who the dog loves: six choices as two even rows of three, never one left on its own (28 Oct) */
 .hs3-chips:has(> [data-hs3="rel"]) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .hs3-chips:has(> [data-hs3="rel"]) > .hs3-chip { padding-left: 6px; padding-right: 6px; text-align: center; }
+/* the breed type-ahead sits under its box as one tap per breed; [hidden] beats the flex above */
+.hs3-breeds { gap: 6px; margin-top: -4px; }
+.hs3-breeds[hidden], [data-hs3-name-hint]:empty { display: none; }
+.hs3-breeds > .hs3-chip { font-size: 14.5px; padding: 9px 13px; }
+/* the name count and its one-tap short forms, straight under the name */
+[data-hs3-name-hint] { display: flex; flex-direction: column; gap: 6px; margin-top: -4px; }
+[data-hs3-breed-note] { margin-top: -4px; }
+/* the choose button answers the tap: pressed, with a turning ring, while the gift's page opens */
+.hs3-btn.is-busy { cursor: progress; transform: scale(.985); display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.hs3-btn.is-busy::before { content: ''; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: hs3-spin .8s linear infinite; }
 .hs3-field { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 17px; font-family: var(--sans); background: #fff; color: var(--ink); min-height: 48px; }
 .hs3-field--mono { font-family: var(--mono); font-size: 15px; padding: 10px 12px; min-height: 44px; }
 .hs3-field.is-need { border-color: var(--stamp); }
@@ -309,6 +319,7 @@ details.hs3-note-wrap[open] > summary { margin-bottom: 8px; }
 @keyframes hs3-ink { 0% { opacity: .25; transform: translateY(3px); } 100% { opacity: 1; transform: none; } }
 @keyframes hs3-ear { 0%, 70%, 100% { transform: rotate(0); } 78% { transform: rotate(9deg); } 88% { transform: rotate(-4deg); } }
 @keyframes hs3-blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes hs3-spin { to { transform: rotate(360deg); } }
 @keyframes hs3-peek { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .hs3 *, .hs3 *::before, .hs3 *::after { animation: none !important; transition: none !important; } }
 @media (max-width: 380px) {

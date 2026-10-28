@@ -490,7 +490,7 @@
     if (!nativeBlanketInputsReady()) { blanketPurchaseStatus('Loading your choices into the personalizer.'); return; }
     var saved = cityArtSaved() && !blanketNativeError(), requested = artRequested();
     var who = answer('dog') || 'your dog';
-    blanketPurchaseStatus(saved ? (staged ? '' : 'Artwork saved. Check every whisker, face and marking before you add your gift.') : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : choosing ? 'Create artwork with your saved photo. Check the result before adding your gift.' : 'Create artwork with your saved photo, or choose a photo below. Check the result before adding your gift.');
+    blanketPurchaseStatus(saved ? (staged ? '' : 'Artwork saved. Check every whisker, face and marking before you add your gift.') : restoredArtworkAvailable() ? 'Saved artwork is available. Choose Review this saved artwork to inspect it without creating another image.' : requested ? 'Painting ' + who + ' now. This can take a minute. Save its placement when it appears. Uploading again makes another image.' : latestArtRequest() ? 'Create matching artwork with your photo below before adding your gift.' : choosing ? 'Create artwork with your saved photo. Check the result before adding your gift.' : 'Add ' + possessive(who) + ' photo below. Buddy paints from it.');
     if (link) { link.hidden = !saved; if (saved) link.href = cityArtSource(); else link.removeAttribute('href'); }
     if (review) review.hidden = !saved;
   }
@@ -767,9 +767,16 @@
     if (!card) return;
     var esc_ = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
     var change = function (step) { return shopRoot() + '?step=' + step + '&return=' + gift; };
+    // the chat in this tab: its pronoun ("Until she is dizzy") and whether the gift is the buyer's own
+    var chat = {};
+    try { chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}') || {}; } catch (e) { /* no chat in this tab */ }
     var facts = [];
-    // the buyer's reading of each fact, without the image model's instructions
-    try { facts = JSON.parse(artworkFacts()).facts.map(function (f) { return window.HSArtworkProfile && window.HSArtworkProfile.plain ? window.HSArtworkProfile.plain(f.text) : f.text; }); } catch (e) { facts = []; }
+    // the buyer's reading of each fact, tidied and naming the person as the chat does, without the
+    // image model's instructions
+    try {
+      var P = window.HSArtworkProfile, parsed = JSON.parse(artworkFacts());
+      facts = P && P.display ? P.display(parsed, { rec: person, self: chat.rel === 'self' }) : parsed.facts.map(function (f) { return f.text; });
+    } catch (e) { facts = []; }
     var style = '', tone = '';
     try {
       var choice = window.HSArtworkChoices && window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine && window.HSArtworkEngine.recipes;
@@ -778,9 +785,8 @@
     var row = function (k, v, href, label) { return '<div class="hs-journey__row"><span class="hs-journey__k">' + k + '</span><span class="hs-journey__v">' + v + '</span>' + (href ? '<a href="' + esc_(href) + '">' + (label || 'Change') + '</a>' : '') + '</div>'; };
     var html = row('From', esc_(dog) + (person ? ' for ' + esc_(person) : ''), change(person ? 'person' : 'dog'));
     html += gift === 'blanket' ? row('Words', 'None. The blanket is all painting.') : row('Words', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>' + esc_(answer('signed')) + '</em>', change('gift-' + gift));
-    // the pronoun the chat used ("Until she is dizzy"), so the two pages agree
-    var isNow = 'they are';
-    try { var chat = JSON.parse(window.sessionStorage.getItem('hs3-gift') || '{}'); if (chat.dog) isNow = chat.pro === 'he' ? 'he is' : 'she is'; } catch (e) { /* no chat in this tab */ }
+    // the pronoun the chat used, so the two pages agree; none tapped reads "they" (28 Oct)
+    var isNow = chat.pro === 'he' ? 'he is' : chat.pro === 'she' ? 'she is' : 'they are';
     html += row('What I\'ll paint', facts.length ? facts.map(esc_).join(' · ') : esc_(dog) + ', just as ' + isNow + '.', change('home'));
     if (style) html += row('Style and tone', esc_(style) + ' · ' + esc_(tone), '#hs-art-choices', 'Change below');
     if (cityArtSaved()) html += '<p class="hs-journey__warn">Changing these means painting new artwork.</p>';
@@ -1653,10 +1659,13 @@
     else if (!nativeBlanketInputsReady()) say = 'One moment. Your choices are still loading.';
     else {
       say = 'Add ' + whose + ' photo first. Buddy paints from it.';
-      // open the photo step: the field in view and its upload button ready for the next tap
-      var field = document.querySelector('#buy .tee-field--photo');
+      // open the photo step: the field in view and its upload button ready for the next tap. While
+      // the saved-photo card shows, Teeinblue's field is clip-hidden, so the card is the step
+      var card = document.querySelector('#buy.hs2-photo-choice [data-hs2-blanket-photo]:not([hidden])');
+      if (card) say = 'Use ' + whose + ' photo first, or a different one. Buddy paints from it.';
+      var field = card || document.querySelector('#buy .tee-field--photo');
       if (field && field.scrollIntoView) field.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
-      var upload = field && field.querySelector('.tee-btn--upload, button, label');
+      var upload = card ? card.querySelector('[data-hs2-blanket-create]') : field && field.querySelector('.tee-btn--upload, button, label');
       if (upload && upload.focus) { try { upload.focus({ preventScroll: true }); } catch (err) { /* old browser */ } }
     }
     checkoutImageStatus(say);
