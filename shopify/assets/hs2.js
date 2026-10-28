@@ -249,6 +249,9 @@
     var who = String(answer('dog') || '').trim() || 'your dog';
     card.hidden = next === 'idle';
     card.setAttribute('data-state', next);
+    // the gallery paints too, over the preview that is still empty
+    var stage = document.querySelector('[data-hs2-stage]');
+    if (stage) { stage.classList.toggle('hs-painting', next === 'painting'); stage.setAttribute('data-hs-painting', 'Painting ' + who); }
     card.querySelector('[data-hs-art-painting]').hidden = next !== 'painting';
     card.querySelector('[data-hs-art-done]').hidden = next !== 'done';
     var photo = card.querySelector('[data-hs-art-photo]'), result = card.querySelector('[data-hs-art-result]');
@@ -1924,7 +1927,9 @@
        shows Teeinblue's sample dog and lines ("Bartholomew Jr"), so the buyer could not see
        their own words before Add to cart (Krish, 19 Oct). So when the chat handed this gift
        its words, the preview is the picture on show, unless the shopper picked a photo. */
-    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked) media.removeAttribute('data-show');
+    // the blanket has no words, so its preview stays the example photo until there is art in it:
+    // an empty cream blanket read as broken (Krish, 28 Oct)
+    if (on === 'on' && pv && media.getAttribute('data-show') === 'photo' && v3Kind() && state.hs3_lines && !media.__hs2picked && (!blanketArtPreview() || cityArtSource())) media.removeAttribute('data-show');
     // the preview arrived: it is the picture on show, so its thumbnail is the current one
     if (on === 'on' && pv && !media.hasAttribute('data-show')) {
       media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });

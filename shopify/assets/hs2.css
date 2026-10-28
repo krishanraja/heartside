@@ -1226,9 +1226,15 @@ product-card quick-add-component button { display: none !important; }
 .hs-extras input[type="text"], .hs-extras textarea, .hs-extras select { min-height: 44px; padding: 8px 12px; border: 1.5px solid #E2D4C8; border-radius: 12px; background: #fff; font: inherit; font-size: 16px; font-weight: 400; color: #121010; }
 .hs-extras input[type="text"]:focus-visible, .hs-extras textarea:focus-visible, .hs-extras select:focus-visible { outline: 3px solid #A8284E; outline-offset: 1px; border-color: #121010; }
 .hs-extras__artist { margin-top: 12px; font-size: 14px; }
-.hs-extras__artist > summary { cursor: pointer; display: flex; align-items: center; min-height: 44px; line-height: 1.4; text-decoration: underline; text-underline-offset: 3px; color: #121010; }
+.hs-extras__artist > summary { cursor: pointer; display: list-item; padding: 11px 0; line-height: 1.45; text-decoration: underline; text-underline-offset: 3px; color: #121010; }
 .hs-extras__artist p { margin: 6px 0; font-size: 13.5px; line-height: 1.45; color: #5A4A44; }
 .hs-extras__artist label { margin: 8px 0; }
 .hs-extras__photo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
 .hs-extras__photo input[type="file"] { max-width: 100%; font-size: 14px; }
 .hs-extras__status:empty { display: none; }
+/* the gallery while Teeinblue paints: the same wash over the still-empty preview, and the dog's name */
+.hs2-product__stage.hs-painting::before { content: ""; grid-area: stage; z-index: 5; background: radial-gradient(circle at 30% 30%, rgba(240, 192, 192, 0.9), transparent 55%), radial-gradient(circle at 70% 65%, rgba(201, 160, 72, 0.55), transparent 50%), radial-gradient(circle at 40% 85%, rgba(168, 40, 78, 0.3), transparent 45%), #F3EEE8; background-size: 160% 160%; animation: hs-stage-wash 8s ease-in-out infinite alternate; }
+.hs2-product__stage.hs-painting::after { content: attr(data-hs-painting); grid-area: stage; z-index: 6; align-self: center; justify-self: center; padding: 12px 22px; border-radius: 999px; background: rgba(255, 253, 249, 0.92); box-shadow: 0 10px 24px -14px rgba(30, 23, 20, 0.6); font-family: "HS Fraunces", Fraunces, Georgia, serif; font-size: 20px; color: #121010; animation: hs-stage-breathe 2.6s ease-in-out infinite; }
+@keyframes hs-stage-wash { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+@keyframes hs-stage-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .hs2-product__stage.hs-painting::before, .hs2-product__stage.hs-painting::after { animation: none; } }

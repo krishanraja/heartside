@@ -27,7 +27,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings});
     const page = await browser.newPage({viewport: {width: 390, height: 844}});
     // a real origin, so the page has sessionStorage like the store does; nothing else loads
-    await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy">${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
+    await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__stage" data-hs2-stage><div style="height:200px"></div></div>${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
     try {
       await page.goto('https://hs.test/');
       const fns = ['artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
@@ -43,6 +43,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.ok(painting.shown, 'a large card, not a small loader'); assert.equal(painting.state, 'painting');
       assert.equal(painting.title, 'Painting Pip'); assert.ok(painting.line.length > 8); assert.equal(painting.review, false);
       assert.equal(painting.animated, 'hs-art-wash', 'the wash moves');
+      assert.equal(await page.evaluate(() => { const st = document.querySelector('[data-hs2-stage]'); return st.classList.contains('hs-painting') && getComputedStyle(st, '::after').content; }), '"Painting Pip"', 'the gallery paints too');
       assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-art-photo]').hidden), true, "the buyer's photo shows as the sketch being painted");
       await page.screenshot({path: new URL(`${kind}-painting.png`, out).pathname});
       // forty seconds in, the bar has moved most of the way and the line says so, without claiming the end
@@ -62,7 +63,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.equal(done.state, 'done'); assert.ok(done.img, 'the finished design fills the card');
       assert.equal(done.title, "Here's Pip."); assert.equal(done.yes, 'Yes, this is Pip.');
       assert.ok(done.below, 'the review sits under the picture'); assert.ok(done.tall, 'a tap target, not a small tickbox');
-      assert.equal(done.painting, false); assert.equal(done.started, null, 'the next painting starts its own clock');
+      assert.equal(done.painting, false); assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-stage]').classList.contains('hs-painting')), false); assert.equal(done.started, null, 'the next painting starts its own clock');
       assert.doesNotMatch(done.text, /I have checked the finished artwork/);
       if (kind === 'mug') assert.match(done.text, /the note and signature/); else assert.doesNotMatch(done.text, /note and signature/);
       await page.waitForTimeout(1000); // the reveal
