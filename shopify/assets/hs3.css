@@ -349,11 +349,12 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
   .hs3-beats { grid-area: beats; margin: 40px 0 0; align-self: start; }
   .hs3-demo { grid-area: demo; margin: 40px 0 0; }
   .hs3-demo__art { aspect-ratio: 4 / 3; }
-  .hs3-range { grid-area: range; margin: 40px 0 0; padding: 28px 28px 24px; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "h h" "note note" "pair tiles"; column-gap: 28px; row-gap: 12px; align-items: end; }
-  .hs3-range__h { grid-area: h; font-size: 30px; }
-  .hs3-range .hs3-small { grid-area: note; }
-  .hs3-range__pair { grid-area: pair; gap: 14px; }
-  .hs3-range__tiles { grid-area: tiles; gap: 12px; }
+  /* one row of five, every picture the same height: 3:2 mugs at 1.5 parts, 3:4 tiles at 0.75 */
+  .hs3-range { grid-area: range; margin: 40px 0 0; padding: 28px 28px 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1.5fr)) repeat(3, minmax(0, 0.75fr)); column-gap: 14px; row-gap: 12px; align-items: start; }
+  .hs3-range__h, .hs3-range .hs3-small { grid-column: 1 / -1; }
+  .hs3-range__h { font-size: 30px; }
+  .hs3-range__pair, .hs3-range__tiles { display: contents; }
+  .hs3-range__tiles .hs3-range__img { aspect-ratio: 3 / 4; }
   .hs3-legal { grid-area: legal; }
   .hs3-fan { max-width: 620px; gap: 14px; }
   .hs3-fan__name { font-size: 16px; } .hs3-fan__price { font-size: 15px; }
