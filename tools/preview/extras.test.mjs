@@ -43,7 +43,9 @@ function page({memo = true, toy = 'A squeaky duck', tidy = null, announcer = tru
   const calls = [], posts = [], announced = [], tracked = [], lines = [], listeners = {};
   const facts = [{source: 'home', text: 'Waits at the door.'}].concat(toy ? [{source: 'toy', text: toy}] : []);
   const state = {hs3_art_profile: {version: 1, facts}};
+  const timers = [];
   const ctx = {state, FormData, URLSearchParams, confirmAdds: {done: announcer},
+    setTimeout: (fn, ms) => timers.push({fn, ms, cleared: false}), clearTimeout: id => { if (timers[id - 1]) timers[id - 1].cleared = true; },
     window: {HSArtworkProfile: tidy ? {tidy} : {}, sessionStorage: {getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; }}},
     document: {querySelector: s => (s === '[data-hs-extras]' ? box : s === '[data-hs-artist-variant]' ? memoEl : s === '[data-hs-extras-artist]' ? artist : null),
       addEventListener(name, fn, capture) { listeners[name] = {fn, capture}; }},
@@ -53,7 +55,7 @@ function page({memo = true, toy = 'A squeaky duck', tidy = null, announcer = tru
     announceAdd: items => announced.push(items), onCartAdd: f => { ctx.added = f; }};
   ctx.onCartAdd.fetch0 = function (url, o) { posts.push([url, o.body, this]); return Promise.resolve({ok: true, json: async () => ({id: 1, variant_id: 777})}); };
   ctx.window.fetch = () => { throw new Error('the wrapped fetch would send this through the checkout-image preparation'); };
-  return {ctx, toy: extraToy, accessory, notes, status, price, artist, offer, on, add, remove, summary, said, ask, change, box, store, calls, posts, announced, tracked, photos, lines, listeners};
+  return {ctx, toy: extraToy, accessory, notes, status, price, artist, offer, on, add, remove, summary, said, ask, change, box, store, calls, posts, announced, tracked, photos, lines, listeners, timers};
 }
 for (const minified of [false, true]) {
   const load = p => { const code = ['bindExtras', 'extrasAfterAdd'].map(section).join('\n'); vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, p.ctx); return p; };
@@ -157,6 +159,21 @@ for (const minified of [false, true]) {
     assert.equal(await f.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]), false);
     assert.match(f.lines.at(-1), /^Your gift is in your cart, but the artist's touch did not go through\./);
     assert.equal(f.ctx.extrasAfterAdd.busy, false);
+  });
+  // review of the fix: an upload that never settles held every later Add to cart until a reload
+  test(`${mode}: an artist's touch upload that never settles lifts its hold after a minute, and is still never sent twice`, async () => {
+    const p = load(page());
+    p.ctx.onCartAdd.fetch0 = (url, o) => { p.posts.push([url, o.body]); return new Promise(() => {}); };
+    p.ctx.bindExtras(); p.add.handlers.click();
+    const tap = () => { const e = {target: {closest: s => (s.includes('#teeAtcButton') ? {} : null)}, held: 0, preventDefault() { this.held++; }, stopImmediatePropagation() { this.held++; }}; p.listeners.click.fn(e); return e.held > 0; };
+    p.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]);
+    assert.equal(tap(), true, 'held while it uploads');
+    const lift = p.timers.find(t => t.ms === 60000 && !t.cleared);
+    assert.ok(lift, 'a one-minute limit on the hold');
+    lift.fn();
+    assert.equal(tap(), false, 'after a minute, Add to cart works again');
+    p.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]);
+    assert.equal(p.posts.length, 1, 'the touch still on its way is not sent a second time');
   });
 }
 

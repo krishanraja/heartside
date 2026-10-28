@@ -50,7 +50,8 @@ Rulings (Krish, 28 October), also in the commit bodies:
 - Every outcome shows under the button tapped and right after the photo field.
 - Buddy's card opens the picker in one tap.
 - Uploads are capped at 4096 px as JPEG 0.92, metadata removed.
-- The detector loads only after a pick, and the check fails open after 10 seconds.
+- The detector loads only after a pick, and the whole check, the dog check included, fails open after 10 seconds.
+- Getting a photo ready gives up after 20 seconds, says so in plain words and frees the upload.
 - HEIC is refused with plain guidance.
 - A redrawn input is re-resolved, and lock stages go `preparing`, then `sent`.
 - A saved photo shows as one card.
@@ -104,9 +105,45 @@ Rulings (Krish, 28 October), also in the commit bodies:
 - copy-lint covers US spelling and the cart script.
 - The theme-push summary prints no store or theme id.
 
+## The review before the merge
+
+An independent review of the whole PR sent 35 findings to a second reviewer told to refute each one: 29 held and 6 were refuted. All 29 are fixed, each with a test that fails on the code before it, in four groups, and each group was re-read by a third checker.
+
+- **Photo.**
+  - Safari writes its own Exif and Photoshop blocks into every canvas JPEG, so every iPhone photo would have been refused as "metadata remains". Those blocks are now cut from the encoder's output before the metadata check, which still refuses anything from the source photo.
+  - Getting a photo ready had no time limit. It now gives up after 20 seconds.
+  - The 10-second limit covered only the decode. It now covers the whole check, the dog check included.
+  - The message for a photo held behind a painting pointed at a link that was not on screen yet.
+  - The Artist's touch could be added twice by a second tap while its photo uploaded. The hold that stops it now lifts after a minute if the upload never settles, and the touch is still sent once.
+- **Chat and Buddy's rules.**
+  - A cross picked from the breed list lost its parents, so a Maltipoo got no energy.
+  - The browser's Forward button skipped the 14-letter name limit.
+  - The portrait's fixed reason named a wall by the door.
+  - Buddy's follow-up question was not checked for invented objects.
+  - A gift for "Me" could call the buyer by their own name.
+  - "..." became a period followed by a lowercase word.
+  - A dog called Biscuit counted as the buyer mentioning a biscuit.
+  - The prompts did not say to use "they" when no pronoun was tapped.
+- **Cart and layout.**
+  - Helio's quantity selector turned a design's disabled plus back on.
+  - The "First version" tag was lost when the cart redrew.
+  - The choose screen's button halo washed out the shipping line.
+- **Guards.**
+  - The live gate's lone-last-word check failed the healthy blanket page, whose title cannot wrap any other way at desk size. A product title now fails only when its last word could have shared the line.
+  - The handle check printed a count of blank variants; it now names each by gift and title.
+  - The heart stand-in is stored as `artists-touch.png`, the same name as the new tile, so the check could not tell them apart. The tile is now `artists-touch-tile.png`, and the stand-in is matched by its whole file name, alt text or media id.
+- **The CoWork prompt.**
+  - It attached the checkout tiles in Part 1, before the theme that hides them was live. They now go on right after the live push.
+  - Its handle checks before the tiles would have printed FAIL on the known pictures. They now warn only.
+  - Order 4 made the gifts in an order the app does not offer, so its two-gift total was wrong.
+  - Order 1 set the tone before "Show me", where there is no saved slider.
+  - Order 2's dog did not fit the 14-letter signature.
+  - The live push needed the photo to work on Android only. It now needs a real photo to add on the iPhone too.
+  - The checkout readback in Part 1 needed a painting outside the agreed cap.
+
 ## How it was checked
 
-- **Offline suite: 657 of 657.**
+- **Offline suite: 707 of 707.**
   - Every new test was run against the parent code and fails there.
   - The browser tests run on source and on minified code.
   - Also passing:
@@ -122,6 +159,8 @@ Rulings (Krish, 28 October), also in the commit bodies:
 ## Not proved here
 
 - **Real devices.** Android in Edge and Chrome, and iPhone Safari. The fix is designed from the recording, and the device log in Part 2.3 of the CoWork prompt is the proof.
+- **Safari's own JPEG blocks.** The test uses a header built from published Apple output. No WebKit runs here, so the iPhone photo in Part 2.3 is the first real check.
+- **Helio's quantity selector.** Its source is not in the repository. The test copies the selector logic read from the live theme on 28 October.
 - **Real Teeinblue and Shopify behavior.** The tests use liquidjs, stand-ins and Chromium. Not yet seen on the real store:
   - the hidden agreement box;
   - the crop dialog;

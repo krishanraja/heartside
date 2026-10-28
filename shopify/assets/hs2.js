@@ -2987,7 +2987,7 @@
      the gift's own line has cleared and the drawer waits, so nothing else said the gift went in. */
   function extrasAfterAdd(items) {
     var artist = document.querySelector('[data-hs-extras-artist]'), memo = document.querySelector('[data-hs-artist-variant]');
-    if (!artist || artist.hidden || !memo || artist.getAttribute('data-hs-extras-state') !== 'on' || extrasAfterAdd.busy) return;
+    if (!artist || artist.hidden || !memo || artist.getAttribute('data-hs-extras-state') !== 'on' || extrasAfterAdd.sending) return;
     var notes = artist.querySelector('[data-hs-extras-notes]'), status = artist.querySelector('[data-hs-extras-status]');
     var photos = Array.prototype.filter.call(artist.querySelectorAll('.hs-extras__photo'), function (p) { var f = p.querySelector('[data-hs-extras-file]'); return f && f.files && f.files[0]; });
     var words = [];
@@ -3010,7 +3010,7 @@
     var sent = (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: form, credentials: 'same-origin', headers: { Accept: 'application/json' } })
       .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
       .then(function (added) {
-        extrasAfterAdd.busy = false;
+        clearTimeout(lift); extrasAfterAdd.busy = extrasAfterAdd.sending = false;
         notes.value = '';
         photos.forEach(function (p) {
           var input = p.querySelector('[data-hs-extras-file]'), text = input.parentNode && input.parentNode.querySelector('[data-hs-file-text]');
@@ -3029,12 +3029,15 @@
         return true;
       })
       .catch(function () {
-        extrasAfterAdd.busy = false;
+        clearTimeout(lift); extrasAfterAdd.busy = extrasAfterAdd.sending = false;
         status.textContent = 'Your gift is in your cart, but the artist\'s touch did not go through. Add it from your cart page, or leave out a large photo.';
         checkoutImageStatus(status.textContent);
         return false;
       });
-    extrasAfterAdd.busy = true; // set once the request is on its way; it settles either way
+    extrasAfterAdd.busy = extrasAfterAdd.sending = true; // set once the request is on its way; it settles either way
+    // a request that never settles must not hold every later Add to cart (28 Oct review): the hold
+    // lifts after a minute, and the touch is still never sent twice, since sending lasts until it settles
+    var lift = setTimeout(function () { extrasAfterAdd.busy = false; }, extrasAfterAdd.holdMs || 60000);
     extrasAfterAdd.pending = sent;
     return sent;
   }

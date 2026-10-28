@@ -61,8 +61,10 @@ cd tools/preview && npm ci && npx playwright install chromium
     - "This photo is too blurry…";
     - "This photo is too small…";
     - "This photo is saved as HEIC, which I can't paint from. Choose a JPEG of your dog instead.";
-    - "I couldn't spot a dog…", with "It's my dog. Use this photo."
-  - The check on the phone takes at most 10 seconds, then the photo goes on.
+    - "I couldn't spot a dog…", with "It's my dog. Use this photo.";
+    - "This photo took too long to get ready. Choose it again, or try a different photo.", after 20 seconds of getting the photo ready.
+  - A second photo picked while the first one is still painting gets "I'm still painting <dog> from the photo you sent. It takes about a minute, sometimes two."
+  - The check on the phone takes at most 10 seconds in all, the dog check included, then the photo goes on. The Photo log's `check:` line shows `ms` of about 10000 at most.
   - Uploads are at most 4096 px on the long side.
   - A photo already given to Buddy shows as one card: "Use <dog>'s photo" or "Use a different photo".
 - **Painting and confirming.**
@@ -83,7 +85,7 @@ cd tools/preview && npm ci && npx playwright install chromium
   - The add-on says "Adds 5 days", and an uploaded photo shows as "View photo" with a thumbnail.
 - **Redo.**
   - "Not quite right? Make another version." ends with "Your new version is in your cart. Choose which one to keep."
-  - Both designs are then in the cart, and the first says "You made a new version of this gift. Keep the new one?" with "Remove this version".
+  - Both designs are then in the cart. The first is tagged "First version" and says "You made a new version of this gift. Keep the new one?" with "Remove this version". The new one is tagged "New version".
 - **Debug log.** `?hsdebug=photo` on any product page turns on a "Photo log" panel at the bottom of the screen, with Copy, Clear and Hide. It lasts for that tab and survives the phone's picker and reloads. `?hsdebug=off` turns it off and clears it. It holds stage names and file facts only, never pixels.
 
 ## Rules for every part
@@ -179,7 +181,7 @@ The merge rebuilt two workflows. The first is "Heartside: typed answer (Buddy AI
 | Node | New value, from the repository |
 | --- | --- |
 | Guard (`jsCode`) | `n8n/guard-typed.js` or `n8n/guard-compose.js`. It keeps "they" when no pronoun was tapped. |
-| Enforce rules (`jsCode`) | `n8n/enforce-typed.js` or `n8n/enforce-compose.js`. It rejects invented foods, toys, objects and places, drops "Not sure" chips, and never prints "!". |
+| Enforce rules (`jsCode`) | `n8n/enforce-typed.js` or `n8n/enforce-compose.js`. It rejects invented foods, toys, objects and places, in Buddy's follow-up question too, and a dog called Biscuit grounds no biscuit. It drops "Not sure" chips, never prints "!", and for a gift for "Me" speaks to you, never by name. |
 | The backup model node (`options.systemMessage`) | The `typed` or `compose` entry in `n8n/prompts.json` |
 
 For each workflow:
@@ -298,7 +300,7 @@ The live gate includes Krish's Android Edge size, 360×640. Each command ends wi
 **Teeinblue's chrome, on both Android browsers:** its fixed Personalize bar never covers the page, and the photo field, the style and tone, and Add to cart are all reachable.
 
 **iPhone in Safari:** the chat, then the portrait, with `?hsdebug=photo` on the product page, then one real photo from Krish's camera roll. Painting 4.
-- **Checkpoint:** the photo adds in one tap and the painting starts. Safari writes its own photos differently from Chrome, and this is the only test of it, so a refusal here is a defect even when the page says why.
+- **Checkpoint:** the photo adds in one tap, the log reaches `vendor`, and the painting starts. Safari writes its own photos differently from Chrome, and this is the only test of it, so a refusal here is a defect even when the page says why. "I couldn't get this photo ready in this browser." is that defect.
 - The portrait page opens on Unframed $59 when it comes from the chat.
 - Copy the log.
 
@@ -326,7 +328,7 @@ Shopify draws each gift's component line at checkout with its variant's own pict
 
 The tiles are in [`design/checkout-tiles/`](../../design/checkout-tiles/README.md), with the exact alt text for each. The live theme now hides any photo whose alt text says "checkout tile".
 
-1. Run `node tools/preview/handle-check.mjs --warn-media`. Its `warn` lines name each variant that shows the blank base, by product and variant name.
+1. Run `node tools/preview/handle-check.mjs --warn-media`. Its `warn` lines name each variant that shows the blank base, by gift and variant title, for example `portrait "Framed / Black / 12″×18″"`. A gift with one variant shows as `blanket variant 1 of 1`. The Artist's touch line reads `still shows the heart stand-in picture`.
 2. For each gift with a blank variant, on **[approval]**:
    - upload that gift's tile to the product, with its alt text exactly as in the README;
    - set it as the picture for only the variants the check named;
@@ -416,6 +418,7 @@ Do this after 2.6, so the push and the editor change never cross.
 **Order 1: a typed answer, the stated toy and one tick.**
 
 - **Chat.** Start on the home page with a clean session. Use chips everywhere except the home question, where you type: "she waits by the door!! every single day". The recipient is a partner, "Sam". Then press "Show me".
+  - If Buddy asks a follow-up, it names only the door, never a car or a toy.
   - **Checkpoint: the note,** on Buddy's pick screen, on the mug or portrait tab. While Buddy writes, the note says "Buddy is writing your note…". If the line changes after you have read it, the note says it changed. "What I'll paint" shows the typed words tidied: "Waits by the door. Every single day."
   - Tap the Blanket tab. Set its "Artwork tone" slider to Sentimental.
   - Press "Choose Honey's gifts", leave only the blanket selected, then press the Personalize button, which names the blanket and $129.
@@ -455,7 +458,7 @@ Do this after 2.6, so the push and the editor change never cross.
   - Dog's name "RUBY". The chat calls her Ruby.
   - Type "toy poodle" into the breed box. It offers "Poodle", the corpus name for toy poodles, with "Mixed or not sure" last. Pick Poodle.
   - Tap no pronoun. The chat says "they".
-  - Choose "Me" as the recipient. The label reads "Your first name"; enter "Alex". The copy speaks to you.
+  - Choose "Me" as the recipient. The label reads "Your first name"; enter "Alex". The copy speaks to you, Buddy's reason and follow-up included, and never calls you Alex.
   - On three steps, press Back, then Forward, then reload. Nothing is erased, and no paid call repeats.
   - Choose the mug, dark green. The choose screen has no ship-to choice.
 - **Product page.**
@@ -463,6 +466,7 @@ Do this after 2.6, so the push and the editor change never cross.
   - Press "Add our artist's touch, $29". It reads "Added. Remove". Press Remove, then add it again.
   - Write: "Paint her dark brown collar, and her ears as fluffy as photo 1". Photo 1 is `mock-order-photos/close-up.jpg`, tagged "Another photo of my dog".
   - Upload the main photo, tick, and add.
+    - **Checkpoint:** "Sending your photos to our artist." shows beside Add to cart while the photo uploads. Tap Add to cart once more: it says "One moment. Adding our artist's touch." and adds nothing twice.
 - **Cart.**
   - The Artist's touch line sits under the mug, showing the mug's design with a brush mark.
   - It says "Adds 5 days" and "View photo" with a thumbnail, and its plus is disabled.
@@ -484,7 +488,7 @@ Do this after 2.6, so the push and the editor change never cross.
   - Each add shows one confirmation, and "All 3 gifts are in your cart" appears only after the third add.
 - **Redo the mug.**
   - In the cart, use "Not quite right? Make another version." on the mug and make a new version.
-  - **Checkpoint:** "Your new version is in your cart. Choose which one to keep." The cart then holds both mug designs, and the first says "You made a new version of this gift. Keep the new one?".
+  - **Checkpoint:** "Your new version is in your cart. Choose which one to keep." The cart then holds both mug designs. The first is tagged "First version" and says "You made a new version of this gift. Keep the new one?", and the new one is tagged "New version".
   - Press "Remove this version" on the first.
   - **Checkpoint: cart.** Three gifts, each at one unit, with 20% applied ($186.40 again) and every picture steady.
 - **Checkout.**
