@@ -77,3 +77,94 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     } finally { await page.close(); }
   });
 }
+
+// 28 Oct: the photo the buyer gave Buddy is one choice (Krish: "the UI should absolutely really be asking
+// if you want to add to that or use a different picture"). Real snippet and stylesheet: the card names the
+// dog and says it starts the painting; Teeinblue's empty uploader is clip-hidden while it shows, never
+// display:none; "Use a different photo" brings the field back and opens the picker in the same tap.
+const has = name => source.includes('  function ' + name + '(');
+const PHOTO_FNS = ['possessive', 'photoInput', 'blanketPurchaseStatus', 'photoCheck', 'photoNote', 'photoNoteSpot', 'photoNoteFill', 'photoHeld', 'photoReason', 'livePhotoInput', 'openPhotoPicker',
+  'previewHasArt', 'artLines', 'artStage', 'updateBlanketPurchaseStatus', 'bindBlanketRecovery'].filter(has).map(section).join('\n');
+const STANDINS = `var photoURL=${JSON.stringify(PHOTO)},usePhoto={file:new File(['x'],'pickle.jpg',{type:'image/jpeg'})},blanketAcceptedKey='',keepTibPhoto={},sent=0,journeys=0,overrides=0;
+  function productId(){return 7;}function answer(k){return k==='dog'?'Pickle':'';}function nativeArtworkPurchase(){return true;}function blanketArtPreview(){return false;}
+  function blanketUploadPending(){return false;}function nativeBlanketInputsReady(){return true;}function artRequested(){return false;}function cityArtSaved(){return false;}function cityArtSource(){return '';}
+  function blanketNativeError(){return false;}function restoredArtworkAvailable(){return false;}function latestArtRequest(){return '';}function blanketReviewAccepted(){return false;}function blanketReviewKey(){return '';}
+  function updatePortraitSignatureRecovery(){}function updateRestoredArtworkReview(){}function resetBlanketUpload(){return true;}function sendBlanketPhoto(){sent++;}function journeyCard(){journeys++;}function photoLog(){}
+`;
+async function photoPage(settings, body) {
+  const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings});
+  const page = await browser.newPage({viewport: {width: 360, height: 640}}), outside = [], errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.route('**/*', r => {
+    if (r.request().url() === 'https://hs.test/') return r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style>${body(html)}`});
+    outside.push(r.request().url());
+    return r.abort();
+  });
+  await page.goto('https://hs.test/');
+  return {page, outside: () => outside.filter(u => !u.startsWith('data:')), errors};
+}
+for (const [kind, settings] of [['mug', {blanket_purchase: false, native_artwork_kind: 'mug'}], ['blanket', {blanket_purchase: true, native_artwork_kind: 'blanket'}]]) {
+  for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} ${kind}: the saved photo is one choice, and "Use a different photo" opens the picker in the same tap`, async () => {
+    const {page, outside, errors} = await photoPage(settings, html => `<main id="buy">${html}<div class="tee-field--photo"><label for="tee-photo-1">Choose an image</label><input type="file" id="tee-photo-1" accept="image/*"></div></main>`);
+    try {
+      const code = STANDINS + PHOTO_FNS;
+      await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
+      await page.evaluate(() => { bindBlanketRecovery(); updateBlanketPurchaseStatus(); });
+      const use = page.getByRole('button', {name: "Use Pickle's photo"}), other = page.getByRole('button', {name: 'Use a different photo'});
+      assert.equal(await use.isVisible(), true, 'the primary names the dog'); assert.equal(await other.isVisible(), true);
+      assert.equal(await page.getByText('Paint Pickle from this photo?').isVisible(), true);
+      assert.equal(await page.getByText('This starts the painting.', {exact: false}).isVisible(), true, 'it says the tap starts a painting');
+      const hidden = await page.evaluate(() => { const f = document.querySelector('.tee-field--photo'), r = f.getBoundingClientRect(); return {display: getComputedStyle(f).display, w: r.width, h: r.height, cls: document.getElementById('buy').classList.contains('hs2-photo-choice')}; });
+      assert.notEqual(hidden.display, 'none', 'never display:none: iOS ignores click() on those');
+      assert.ok(hidden.w <= 1 && hidden.h <= 1, `Teeinblue's empty uploader is clip-hidden (${hidden.w}x${hidden.h})`); assert.equal(hidden.cls, true);
+      assert.equal(await page.locator('[data-hs2-artwork-status]').textContent(), 'Create artwork with your saved photo. Check the result before adding your gift.');
+      assert.equal(await page.evaluate(() => journeys), 1, "the journey card's button is told the card is showing");
+      const card = await page.locator('[data-hs2-blanket-photo]').boundingBox();
+      assert.ok(card.x >= 0 && card.x + card.width <= 360, 'the card fits a 360 px phone');
+      await page.screenshot({path: new URL(`${kind}-photo-choice.png`, out).pathname});
+      const [chooser] = await Promise.all([page.waitForEvent('filechooser', {timeout: 3000}), other.click()]);
+      assert.ok(chooser, 'the picker opened in the same tap');
+      const shown = await page.evaluate(() => { updateBlanketPurchaseStatus(); const r = document.querySelector('.tee-field--photo').getBoundingClientRect(); return {w: r.width, h: r.height, cls: document.getElementById('buy').classList.contains('hs2-photo-choice')}; });
+      assert.ok(shown.w > 1 && shown.h > 1, "Teeinblue's field is back for the new photo"); assert.equal(shown.cls, false);
+      assert.match(await page.locator('[data-hs2-artwork-status]').textContent(), /or choose a photo below/, 'the field is there again, so the status says so');
+      await use.click();
+      assert.equal(await page.evaluate(() => sent), 1, 'one tap on the primary sends the saved photo once');
+      assert.deepEqual(outside(), []); assert.deepEqual(errors, []);
+    } finally { await page.close(); }
+  });
+}
+for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}: a photo outcome lands under the journey button and right after Teeinblue's field, in one live region`, async () => {
+  const {page, outside, errors} = await photoPage({blanket_purchase: false, native_artwork_kind: 'mug'}, html => `<div class="hs-journey" data-hs-journey><div class="hs-journey__card" data-hs-journey-card><button type="button" class="hs-journey__go hs-journey__photo" data-hs-journey-photo>Add Pickle's photo</button></div></div>
+    <main id="buy">${html}<div class="tee-form"><div class="tee-field--photo"><input type="file" id="tee-photo-1"></div><div class="tee-field">Your note</div></div></main>`);
+  try {
+    const code = STANDINS + PHOTO_FNS;
+    await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
+    const message = "I couldn't spot a dog in this photo. If your dog is in it, you can still use it.";
+    const placed = await page.evaluate(m => {
+      photoNote(m, () => { overrides++; });
+      const field = document.querySelector('.tee-field--photo'), card = document.querySelector('[data-hs-journey-card]');
+      const inline = field.nextElementSibling, under = card.nextElementSibling;
+      const live = [...document.querySelectorAll('[aria-live]')].filter(e => e.textContent.includes('spot a dog') && e.getClientRects().length);
+      return {inline: inline && inline.matches('[data-hs2-photo-inline]') ? inline.textContent : null, inlineLive: inline && inline.getAttribute('aria-live'),
+        under: under && under.matches('[data-hs-journey-photo-status]') ? under.textContent : null, underLive: under && under.getAttribute('aria-live'), live: live.length,
+        box: document.querySelector('[data-hs2-photo-check]').hidden};
+    }, message);
+    assert.match(placed.inline, /couldn't spot a dog/); assert.match(placed.inline, /It's my dog\. Use this photo\./);
+    assert.match(placed.under, /couldn't spot a dog/);
+    assert.equal(placed.inlineLive, 'polite'); assert.equal(placed.underLive, null); assert.equal(placed.live, 1, 'a screen reader hears it once');
+    assert.equal(placed.box, true, 'the box above the form stays empty');
+    await page.screenshot({path: new URL('photo-note.png', out).pathname, fullPage: true});
+    await page.locator('[data-hs-journey-photo-status]').getByRole('button', {name: "It's my dog. Use this photo."}).click();
+    assert.equal(await page.evaluate(() => overrides), 1);
+    assert.equal(await page.locator('[data-hs2-photo-inline]').isVisible(), false, 'the override clears every copy');
+    // Teeinblue redraws its form: the next outcome goes after the new field
+    const again = await page.evaluate(() => {
+      document.querySelector('.tee-form').innerHTML = '<div class="tee-field--photo"><input type="file" id="tee-photo-2"></div>';
+      photoNote("Your photo didn't reach the painter. Choose it again.");
+      const next = document.querySelector('.tee-field--photo').nextElementSibling;
+      return next && next.matches('[data-hs2-photo-inline]') ? next.querySelector('[data-hs-photo-note-text]').textContent : null;
+    });
+    assert.equal(again, "Your photo didn't reach the painter. Choose it again.");
+    assert.deepEqual(outside(), []); assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});
