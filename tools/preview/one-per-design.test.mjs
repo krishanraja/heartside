@@ -7,6 +7,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {transformSync} from 'esbuild';
 import {Liquid} from 'liquidjs';
+import {renderCart, gift, addon, ordinary, rowOf, ID} from './cart-fixture.mjs';
 
 const source = readFileSync(new URL('../../shopify/assets/hs2.js', import.meta.url), 'utf8');
 const section = name => { const i = source.indexOf('  function ' + name + '('); assert.notEqual(i, -1, name); return source.slice(i, source.indexOf('\n  function ', i + 1)); };
@@ -31,12 +32,29 @@ test('the cart serves a design\'s plus disabled and an ordinary line\'s plus as 
   const stub = '<button class="button quantity-minus button-unstyled" type="button" name="minus" on:click="/decreaseQuantity" ref="minusButton"></button><input type="number" name="updates[]" value="{{ in_cart_quantity }}"><button class="button quantity-plus button-unstyled" type="button" name="plus" on:click="/increaseQuantity" ref="plusButton"></button>';
   const files = {'/quantity-selector.liquid': stub};
   const engine = new Liquid({root: ['/'], extname: '.liquid', fs: {sep: '/', dirname: () => '/', contains: () => true, resolve: (root, file, ext) => '/' + file + ext, exists: async p => p in files, existsSync: p => p in files, readFile: async p => files[p], readFileSync: p => files[p]}});
-  const render = key => engine.parseAndRender(block, {hs_quantity_key: key, hs_quantity_item: {quantity: 2}, item: {product: {}, variant: {}, index: 0}, can_update_quantity: true});
+  // hs_one_per is the line's quantity key and its add-on link together: blank for an ordinary line
+  const render = key => engine.parseAndRender(block, {hs_quantity_key: key, hs_one_per: key, hs_quantity_item: {quantity: 2}, item: {product: {}, variant: {}, index: 0}, can_update_quantity: true});
   const design = await render('123:native'), ordinary = await render('');
   assert.match(design, /name="plus" disabled on:click="\/increaseQuantity"/, 'the design\'s plus is disabled in the markup');
   assert.equal((design.match(/ disabled/g) || []).length, 1, 'only the plus is disabled here; the minus and the number stay the base selector\'s');
   assert.doesNotMatch(ordinary, / disabled/, 'an ordinary line is untouched');
-  assert.match(liquid, /\{%- if hs_quantity_key != '' -%\}<p class="hs2-one-per">One per design<\/p>\{%- endif -%\}/);
+  assert.match(liquid, /\{%- if hs_one_per != '' -%\}<p class="hs2-one-per">One per design<\/p>\{%- endif -%\}/);
+});
+
+// A9c (28 Oct): the Artist's touch line kept a working plus, so one rework could become 2 x $29.
+test("an Artist's touch is one per design: no control at one, its plus served disabled, and said so", async () => {
+  const quantity = html => html.slice(html.indexOf('class="cart-items__quantity"'), html.indexOf('class="cart-items__error'));
+  const one = quantity(rowOf((await renderCart([gift(0, ID), addon(1, ID)])).html, '777:addon-1'));
+  assert.match(one, /name="plus" disabled/, 'the plus');
+  assert.match(one, /<input type="number"[^>]* disabled/, 'and, at one, the whole control');
+  assert.match(one, /<p class="hs2-one-per">One per design<\/p>/);
+  // an older cart's add-on above one can come back down; its plus stays off
+  const older = addon(1, ID); older.quantity = 2; older.final_line_price = 5800;
+  const two = quantity(rowOf((await renderCart([gift(0, ID), older])).html, '777:addon-1'));
+  assert.match(two, /name="plus" disabled/); assert.doesNotMatch(two, /name="minus"[^>]* disabled/); assert.doesNotMatch(two, /<input type="number"[^>]* disabled/);
+  // an ordinary line is untouched
+  const plain = quantity(rowOf((await renderCart([ordinary(0)])).html, '456:plain-0'));
+  assert.doesNotMatch(plain, / disabled/); assert.doesNotMatch(plain, /hs2-one-per/);
 });
 
 test("Teeinblue's quantity box is hidden on gift pages", () => {

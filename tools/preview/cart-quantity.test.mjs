@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {transformSync} from 'esbuild';
 import {Liquid} from 'liquidjs';
+import {renderCart,gift,ordinary,rowOf,ID} from './cart-fixture.mjs';
 const root=new URL('../../',import.meta.url);
 const source=readFileSync(new URL('shopify/assets/component-cart-items.js',root),'utf8').replace(/\r\n/g,'\n');
 const helper=source.slice(source.indexOf('function heartsideQuantityTarget('),source.indexOf('/** @typedef'));
@@ -72,6 +73,27 @@ test('Liquid displays actual component units and per-unit price but keeps the pa
  assert.match(source,/in_cart_quantity: hs_quantity_item.quantity,\s+line_index: item.index/);
  assert.match(source,/hs_quantity_item.instructions.can_update_quantity == false/);
  assert.match(source,/hs_quantity_item.instructions.can_remove == false/);
+});
+
+// N2 (28 Oct): a merged gift listed its own product name again ("Your Dog's Illustrated Mug - Your Dog's
+// Illustrated Mug / Dark Green / 11 oz") and never showed its options. N3: each one-unit line showed its
+// price twice, beside itself.
+test('a merged gift shows its own options, not its name again, and one price',async()=>{
+ const row=rowOf((await renderCart([gift(0,ID)])).html,'101:merged-0');
+ assert.doesNotMatch(row,/cart-items__bundle/);
+ assert.equal((row.match(/>Your Dog's Illustrated Mug</g)||[]).length,1,'the name once, as the title');
+ assert.match(row,/<dt class="visually-hidden">Color:<\/dt>\s*<dd>Dark Green,&nbsp;<\/dd>/);
+ assert.match(row,/<dt class="visually-hidden">Size:<\/dt>\s*<dd>11 oz<\/dd>/);
+ assert.doesNotMatch(row,/cart-items__unit-price-wrapper/,'one unit: the line price says it');
+ // a real bundle of several products still lists what is in it
+ const bundle=gift(0,ID);bundle.item_components.push({key:'202:wrap',variant_id:202,quantity:1,title:'Gift wrap',properties:{}});
+ const listed=rowOf((await renderCart([bundle])).html,'101:merged-0');
+ assert.match(listed,/<ul class="cart-items__bundle list-unstyled">/);assert.match(listed,/Gift wrap/);
+ // the unit price comes back when it says something: several units, or a sale
+ const two=ordinary(0);two.quantity=2;two.original_line_price=two.final_line_price=5000;
+ assert.match(rowOf((await renderCart([two])).html,'456:plain-0'),/cart-items__unit-price-wrapper/);
+ const sale=ordinary(0);sale.final_price=2000;sale.final_line_price=2000;
+ assert.match(rowOf((await renderCart([sale])).html,'456:plain-0'),/cart-items__unit-price-wrapper/);
 });
 
 test('marked-invalid controls stop before shimmer or optimistic removal',()=>{
