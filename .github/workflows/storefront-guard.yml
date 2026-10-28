@@ -11,8 +11,8 @@
 # finding. Exit 3 (the check itself failed) fails the run without an issue. A broken store does
 # not turn the run red: the issue is the one notice, where a red run would mail every hour.
 #
-# This repository is public, so the summary and the issue name paths and counts only: never the
-# store's host, a theme id or anything a buyer typed. The check sends GETs only, as an anonymous
+# This repository is public, so the summary and the issue name paths, counts and public variant
+# titles only: never the store's host, a theme id or anything a buyer typed. The check sends GETs only, as an anonymous
 # visitor, and writes nothing to the store.
 
 name: Storefront guard
@@ -85,7 +85,7 @@ jobs:
             cat findings.txt
             echo '```'
             echo ""
-            echo "Paths only. Read the store back in Shopify admin before changing anything; a renamed handle is restored there, then this guard and the gates are run again."
+            echo "Paths and public variant titles only. Read the store back in Shopify admin before changing anything; a renamed handle is restored there, then this guard and the gates are run again."
             echo ""
             echo "Run: $RUN_URL"
             echo ""

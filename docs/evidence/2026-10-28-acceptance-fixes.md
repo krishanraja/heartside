@@ -107,7 +107,7 @@ Rulings (Krish, 28 October), also in the commit bodies:
 
 ## The review before the merge
 
-An independent review of the whole PR sent 35 findings to a second reviewer told to refute each one: 29 held and 6 were refuted. All 29 are fixed, each with a test that fails on the code before it, in four groups, and each group was re-read by a third checker.
+An independent review of the whole PR sent 35 findings to a second reviewer told to refute each one: 29 held and 6 were refuted. All 29 are fixed, each with a test that fails on the code before it, in four groups, and each group was re-read by a third checker. The checkers confirmed all 29 and found two follow-ups in the fixes themselves, both now fixed with tests: the Artist's touch hold below, and the halo under the choose screen's stuck button. They also found one test that could not fail, the cart redraw case, which now does.
 
 - **Photo.**
   - Safari writes its own Exif and Photoshop blocks into every canvas JPEG, so every iPhone photo would have been refused as "metadata remains". Those blocks are now cut from the encoder's output before the metadata check, which still refuses anything from the source photo.
@@ -127,7 +127,7 @@ An independent review of the whole PR sent 35 findings to a second reviewer told
 - **Cart and layout.**
   - Helio's quantity selector turned a design's disabled plus back on.
   - The "First version" tag was lost when the cart redrew.
-  - The choose screen's button halo washed out the shipping line.
+  - The choose screen's button halo washed out the shipping line. Its fix first left 4px of the gift chips showing under the stuck button at 360×640; the halo now reaches the screen's edge below and stays 6px above.
 - **Guards.**
   - The live gate's lone-last-word check failed the healthy blanket page, whose title cannot wrap any other way at desk size. A product title now fails only when its last word could have shared the line.
   - The handle check printed a count of blank variants; it now names each by gift and title.

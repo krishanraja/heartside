@@ -185,9 +185,11 @@ for (const minified of [false, true]) {
       const [first, second] = await boxes();
       assert.equal(first, drawn, 'the script writes the same box');
       assert.equal(second, '<p class="hs2-redo__tag">New version</p>');
-      // a cart redraw morphs the box back to the server's markup, in place
-      await tab.evaluate(html => { document.querySelector('#CartItem-101\\:merged-0 [data-hs2-redo]').innerHTML = html; }, drawn);
-      await tab.waitForTimeout(250);
+      // a cart redraw puts back markup other than what the script drew (here, a box without its tag) in the same
+      // box: the script draws it again rather than taking the box as already drawn
+      await tab.evaluate(html => { document.querySelector('#CartItem-101\\:merged-0 [data-hs2-redo]').innerHTML = html; }, drawn.replace(/^<p class="hs2-redo__tag">First version<\/p>/, ''));
+      await tab.evaluate(() => window.__cartTidy());
+      await settled(tab, errors);
       assert.equal((await boxes())[0], drawn, 'the first still says so');
       assert.deepEqual(offsite, []); assert.deepEqual(errors, []);
     } finally { await tab.close(); }

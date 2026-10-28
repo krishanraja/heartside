@@ -487,6 +487,21 @@ for (const mode of MODES) test(`${mode}: choosing: Buddy's pick over a name that
         return p.bottom <= a.top ? a.top - up - p.bottom : p.top - (a.bottom + down);
       });
       check(halo >= 0, `${w}x${h}: the button's halo stays off the shipping line (${halo.toFixed(1)}px clear)`);
+      // stuck at the foot of the screen over a long list, the halo still fills the gap under the button, so no gift
+      // shows through between it and the screen's edge (review of the fix: a 6px spread left 4px of the chips)
+      await load(tab, {...done, sel: {mug: true, blanket: true, print: true}}, 'choose');
+      await tab.evaluate(() => window.scrollTo(0, 0));
+      await tab.waitForTimeout(50);
+      const foot = await tab.evaluate(() => {
+        const add = document.querySelector('[data-hs3="add"]'), a = add.getBoundingClientRect();
+        const px = (getComputedStyle(add).boxShadow.match(/-?[\d.]+px/g) || []).map(parseFloat);
+        let down = 0;
+        for (let i = 0; i + 3 < px.length; i += 4) down = Math.max(down, px[i + 3] + px[i + 2] + px[i + 1]);
+        const stuck = getComputedStyle(add).position === 'sticky' && a.bottom < document.querySelector('.hs3-promise').getBoundingClientRect().top;
+        return {stuck, gap: innerHeight - a.bottom, down};
+      });
+      if (w === 360) check(foot.stuck, `${w}x${h}: with three gifts the button is stuck at the foot of the screen`);
+      if (foot.stuck) check(foot.down >= foot.gap - 0.5, `${w}x${h}: the halo fills the ${foot.gap.toFixed(1)}px under the stuck button (reaches ${foot.down.toFixed(1)}px)`);
       assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
     } finally { await context.close(); }
   }
