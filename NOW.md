@@ -63,7 +63,7 @@ The earlier handoffs, execution queues, pricing scenarios, module notes and pre-
 
 - **Next action:** Krish runs the [final CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) on his computer: Part 1 makes the platforms match the store (the Teeinblue prompt spec first, then reads of the checkout merge, discounts, tax, Inbox, Printful and the Christmas cut-off), Part 2 checks every page, price and mockup on production, and Part 3 runs five mock orders through test payments, each with its own edge cases, which he screen-records. He brings the recording and the report back to the Claude Code session, which judges each order for UX and quality and fixes what it finds. The number, $24 against $250 this week, is next measured from Shopify orders net of refunds.
 - **Waiting on Krish:** his yes at each approval step of that prompt (the three Teeinblue campaigns, the test-payment window, a cap of 10 paintings, the restore and the clean-up); whether to keep the checkout merge app past its trial on 1 November ($69 a month; without it checkout shows the catalog picture instead of the design) and whether to lift the one-per-design cap; the real blanket sample order; the mug price (below the 30% floor); whether the Artist's touch may name him; and one reminder email, before Christmas delivery closes, to customers tagged `buddy-reminder`. He can change the add-on's $29 price or end the bundle in Shopify at any time. Do not claim physical quality or paid-order fulfillment until the sample is inspected.
-- North Star check (2026-10-28, evening): holds. The examples make the slider's promise visible on the first screen; the mock orders are the next proof that real orders keep it.
+- North Star check (2026-10-28): holds.
 
 ## Read next
 
