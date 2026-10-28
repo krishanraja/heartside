@@ -70,7 +70,7 @@ test('nothing from the private list is in it', () => {
 test('every file it names is in the repository', () => {
   const files = ['NOW.md', 'docs/SCOPE.md', 'docs/evidence/2026-10-28-acceptance-fixes.md', 'docs/history/COWORK-PROMPT-2026-10-28.md',
     'tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md', 'n8n/guard-typed.js', 'n8n/guard-compose.js', 'n8n/enforce-typed.js', 'n8n/enforce-compose.js', 'n8n/prompts.json',
-    'design/checkout-tiles/README.md', 'design/checkout-tiles/artists-touch.png', 'tools/preview/handle-check.mjs', 'tools/preview/live-gate.mjs', 'tools/preview/preview-acceptance.mjs', 'tools/preview/catalog.mjs',
+    'design/checkout-tiles/README.md', 'design/checkout-tiles/artists-touch-tile.png', 'tools/preview/handle-check.mjs', 'tools/preview/live-gate.mjs', 'tools/preview/preview-acceptance.mjs', 'tools/preview/catalog.mjs',
     'docs/review/mock-order-photos/reject-blurry.jpg', 'docs/review/mock-order-photos/reject-too-small.jpg', 'docs/review/mock-order-photos/large-camera-original.jpg', 'docs/review/mock-order-photos/close-up.jpg',
     'assets/photos/golden-puppy-asleep.jpg', 'assets/photos/pug-autumn-leaves.jpg', 'assets/photos/red-poodle-head-tilt.jpg', 'assets/photos/apricot-poodle-puppy.jpg', 'assets/photos/maltipoo-on-deck.jpg'];
   for (const f of files) {

@@ -51,12 +51,19 @@ export const REDIRECTS = {
 //   BLANK_MEDIA_IDS   the blank references the theme already hides (hs-product-gallery.liquid)
 //   BLANK_ALT         the alt text the theme already treats as a blank reference (hs2-product.liquid)
 //   BLANK_FILES       file names, filled in by CoWork from Shopify admin when known
-//   STANDIN_FILES     the heart icon CoWork attached to the Artist's touch on 28 Oct as a stand-in.
-//                     The favicon's file stem is assumed; CoWork confirms or corrects it in admin.
+//   STANDIN_*         the pink heart CoWork attached to the Artist's touch on 28 Oct as a stand-in,
+//                     as products/artists-touch.js served it that day: its media id, its alt text
+//                     and its file, artists-touch.png. heartside-favicon-heart is the favicon's own
+//                     file, should it be attached under that name. Our tile is artists-touch-tile.png.
+// A file name matches only as a whole: Shopify's ?v= version and the suffixes it adds (a size such
+// as _400x or _400x400@2x, _crop_center, or the _<uuid> of a second upload under the same name) are
+// set aside, but artists-touch-tile.png is another file from artists-touch.png.
 export const BLANK_MEDIA_IDS = ['71850515169662', '71856697049470'];
 export const BLANK_ALT = /\bblank |shown in your cart/i;
 export const BLANK_FILES = [];
-export const STANDIN_FILES = ['heartside-favicon-heart'];
+export const STANDIN_MEDIA_IDS = ['71873863057790'];
+export const STANDIN_ALT = /^artist['’]s touch by heartside$/i;
+export const STANDIN_FILES = ['artists-touch.png', 'heartside-favicon-heart.png'];
 
 // The CSS selector for a CORE item's template mark, e.g. #buy[data-hs2-artwork-kind="mug"]
 export const markerSelector = (item) => '#buy' + Object.entries(item.marker).map(([k, v]) => (v === '' ? `[${k}]` : `[${k}="${v}"]`)).join('');

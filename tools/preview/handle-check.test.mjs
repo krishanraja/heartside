@@ -2,9 +2,10 @@
 // theme push and every hour (storefront-guard.yml). The real script runs against a stand-in
 // store on 127.0.0.1 (node:http) for each way the 28 Oct handle trap, or anything like it, can
 // show: a 301 to the draft handle, a 404, a wrong handle or the campaign's title in the product
-// JSON, the chat config without the portrait, the blank base as a variant picture, the heart
-// stand-in on the Artist's touch, a redirect map that holds or breaks, and a Cloudflare
-// challenge (inconclusive, exit 2, never "all clear"). Output names paths only.
+// JSON, the chat config without the portrait, the blank base as a variant picture (each one named
+// by its gift and title), the heart stand-in on the Artist's touch as it was served on 28 Oct, a
+// redirect map that holds or breaks, and a Cloudflare challenge (inconclusive, exit 2, never "all
+// clear"). Output names paths and variant titles only, never a host or an id.
 //
 //   node --test tools/preview/handle-check.test.mjs
 import {test, describe, after} from 'node:test';
@@ -14,7 +15,7 @@ import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {CORE, ADDON, REDIRECTS, BLANK_MEDIA_IDS} from './catalog.mjs';
-import {judge, blocked, buyAttributes, hasMarker, chatConfig, chatProblems, menuLinks, menuProblems, productProblems, isBlank} from './handle-check.mjs';
+import {judge, blocked, buyAttributes, hasMarker, chatConfig, chatProblems, menuLinks, menuProblems, productProblems, isBlank, isStandin, fileStem, variantName} from './handle-check.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const script = path.join(here, 'handle-check.mjs');
@@ -137,6 +138,40 @@ describe('handle-check against a stand-in store', {concurrency: 4}, () => {
     assert.match(w.out, /warn \/products\/your-dogs-personality-blanket\.js: 1 of 1 variants show the blank base picture/);
   });
 
+  // review of #65: CoWork attaches a tile only to the variants the check names, so it names each
+  // blank one by its gift and its title, as Shopify admin shows it, and never prints an id
+  test('each blank variant is named by its gift and its title, never by an id', async () => {
+    const portrait = productJson(PORTRAIT);
+    const titles = ['Framed / Black / 12″×18″', 'Framed / Red Oak / 12″×18″', 'Framed / White / 12″×18″', 'Unframed / Default / 12″×18″'];
+    portrait.variants.forEach((v, i) => { v.id = 47900000000 + i; v.title = titles[i]; });
+    for (const i of [0, 3]) portrait.variants[i].featured_media = {id: Number(BLANK_MEDIA_IDS[0]), alt: 'Example frame', preview_image: {src: '//cdn.test/s/files/portrait-base.png'}};
+    const r = await checkOn(store({[PORTRAIT.path + '.js']: json(portrait)}), '--warn-media');
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /^warn \/products\/your-dogs-portrait\.js: 2 of 4 variants show the blank base picture, which checkout draws on the gift's nested line: portrait "Framed \/ Black \/ 12″×18″", portrait "Unframed \/ Default \/ 12″×18″"$/m);
+    assert.doesNotMatch(r.out, /4790000000\d|71850515169662/, 'never a variant or media id');
+    noHost(r);
+  });
+
+  // review of #65: on 28 Oct products/artists-touch.js served the pink heart as artists-touch.png,
+  // alt "Artist's touch by Heartside", and the check said "has its own picture". Our tile is
+  // artists-touch-tile.png: as the first picture, with the heart behind it, it passes, also under
+  // the name Shopify gives a second upload
+  test("the Artist's touch as served on 28 Oct is the heart stand-in: broken; the tile in front of it passes", async () => {
+    const HEART = '//cdn.test/s/files/artists-touch.png?v=1793181652', TILE = '//cdn.test/s/files/artists-touch-tile.png?v=1793190000';
+    const addon = (pics) => json({handle: ADDON.handle, title: "Artist's touch", price_min: ADDON.min, price_max: ADDON.min, available: true, featured_image: pics[0].src, images: pics.map((x) => x.src),
+      media: pics.map((x, i) => ({id: x.id, alt: x.alt, position: i + 1, media_type: 'image', src: x.src, preview_image: {src: x.src}})), variants: [{id: 1, available: true, featured_image: null}]});
+    const heart = {id: 71873863057790, alt: "Artist's touch by Heartside", src: HEART};
+    const live = await checkOn(store({[ADDON.path + '.js']: addon([heart])}));
+    assert.equal(live.code, 1, live.out);
+    assert.match(live.out, /FAIL \/products\/artists-touch\.js: still shows the heart stand-in picture/);
+    assert.doesNotMatch(live.out, /71873863057790/, 'never the media id');
+    for (const src of [TILE, '//cdn.test/s/files/artists-touch-tile_3f2c1a9e-1b2c-4d5e-8f90-a1b2c3d4e5f6.png?v=2']) {
+      const tile = await checkOn(store({[ADDON.path + '.js']: addon([{id: 71900000000001, alt: "Our artist's touch: a person adds the details you send.", src}, heart])}));
+      assert.equal(tile.code, 0, tile.out);
+      assert.match(tile.out, /ok {3}\/products\/artists-touch\.js: has its own picture/);
+    }
+  });
+
   test("the Artist's touch still shows the heart stand-in, or no picture: broken", async () => {
     const heart = await checkOn(store({[ADDON.path + '.js']: json({handle: ADDON.handle, price_min: ADDON.min, featured_image: '//cdn.test/s/files/heartside-favicon-heart.png?v=1', images: ['//cdn.test/s/files/heartside-favicon-heart.png?v=1']})}));
     assert.equal(heart.code, 1, heart.out);
@@ -235,4 +270,25 @@ test('the parts that read the server HTML', () => {
   assert.ok(isBlank({featured_image: {src: 'x.png', alt: 'Blank white mug'}}));
   assert.ok(!isBlank({featured_image: {src: 'x.png', alt: 'Example mug with a pug'}}));
   assert.ok(!isBlank({featured_image: null, featured_media: null}));
+});
+
+test('fileStem() and isStandin(): the heart matches as itself under any Shopify suffix, and the tile never does', () => {
+  for (const src of ['//cdn.shopify.com/s/files/1/0/files/artists-touch.png?v=1', 'artists-touch_400x.png', 'artists-touch_400x400@2x.png', 'artists-touch_x200_crop_center.png', 'artists-touch_small.png', 'ARTISTS-TOUCH_3f2c1a9e-1b2c-4d5e-8f90-a1b2c3d4e5f6.PNG']) assert.equal(fileStem(src), 'artists-touch', src);
+  assert.equal(fileStem('//cdn.test/s/files/artists-touch-tile_1024x1024.png?v=3'), 'artists-touch-tile');
+  // the heart by its file, its alt text or its media id
+  assert.ok(isStandin({featured_image: '//cdn.test/s/files/artists-touch_1024x1024.png?v=1', images: []}));
+  assert.ok(isStandin({featured_image: '//cdn.test/s/files/heartside-favicon-heart.png', images: []}));
+  assert.ok(isStandin({featured_image: '//cdn.test/s/files/heart-2.png', media: [{id: 1, alt: 'Artist’s touch by Heartside', src: '//cdn.test/s/files/heart-2.png'}]}));
+  assert.ok(isStandin({featured_image: '//cdn.test/s/files/heart-3.png', media: [{id: 71873863057790, alt: null}]}));
+  // the tile, with the heart behind it
+  assert.ok(!isStandin({featured_image: '//cdn.test/s/files/artists-touch-tile.png', media: [{id: 2, alt: "Our artist's touch: a person adds the details you send."}, {id: 71873863057790, alt: "Artist's touch by Heartside"}]}));
+  assert.ok(!isStandin({featured_image: '//cdn.test/s/files/artists-touch-tile_3f2c1a9e-1b2c-4d5e-8f90-a1b2c3d4e5f6.png'}));
+  assert.ok(!isStandin(null));
+});
+
+test('variantName(): the gift and the title Shopify gives, or the place in the list, never the id', () => {
+  assert.equal(variantName(PORTRAIT, {id: 47900000003, title: 'Unframed / Default / 12″×18″'}, 3, 4), 'portrait "Unframed / Default / 12″×18″"');
+  assert.equal(variantName(MUG, {id: 47900000004, options: ['White', '11 oz']}, 0, 5), 'mug "White / 11 oz"');
+  assert.equal(variantName(BLANKET, {id: 47900000005, title: 'Default Title', options: ['Default Title']}, 0, 1), 'blanket variant 1 of 1');
+  assert.equal(variantName(BLANKET, {id: 47900000005}, 0, 1), 'blanket variant 1 of 1');
 });
