@@ -441,14 +441,19 @@
                       quantity: hs_quantity_item.quantity
                     %}
 
-                    {% render 'quantity-selector',
-                      product: item.product,
-                      variant: item.variant,
-                      in_cart_quantity: hs_quantity_item.quantity,
-                      line_index: item.index,
-                      class: 'cart-primary-typography',
-                      can_update_quantity: can_update_quantity
-                    %}
+                    {%- capture hs_quantity_selector -%}
+                      {% render 'quantity-selector',
+                        product: item.product,
+                        variant: item.variant,
+                        in_cart_quantity: hs_quantity_item.quantity,
+                        line_index: item.index,
+                        class: 'cart-primary-typography',
+                        can_update_quantity: can_update_quantity
+                      %}
+                    {%- endcapture -%}
+                    {%- comment -%} A design never goes up (28 Oct): its plus is served disabled. The base selector records a plus
+                      that arrives disabled (serverDisabledPlus) and never turns it back on, so no re-render can. {%- endcomment -%}
+                    {%- if hs_quantity_key != '' -%}{{ hs_quantity_selector | replace: 'name="plus"', 'name="plus" disabled' }}{%- else -%}{{ hs_quantity_selector }}{%- endif -%}
                     {%- if hs_quantity_key != '' -%}<p class="hs2-one-per">One per design</p>{%- endif -%}
 
                     <button
