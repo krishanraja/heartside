@@ -2,6 +2,8 @@
   # The blank technical reference (Printful's plain blanket, "shown in your cart") never shows in
   # the gallery: it is hidden by its alt text, with the known ids kept as a backstop (27 Oct; the
   # old hard-coded id had gone stale and the blank showed first on the live blanket page).
+  # A "checkout tile" (the designed picture a gift's variant carries for checkout's component line,
+  # 28 Oct) is hidden the same way: it stands for the buyer's design at checkout, never on the page.
   assign hide_alt = s.hide_media_alt | default: 'shown in your cart' | downcase
   assign hidden_ids = '71850515169662,71856697049470' | split: ','
   assign first = nil
@@ -11,12 +13,12 @@
     assign first = current.featured_media | default: product.featured_media
     assign first_alt = first.alt | downcase
     assign first_id = first.id | append: ''
-    if hidden_ids contains first_id or first_alt contains hide_alt or first_alt contains 'blank '
+    if hidden_ids contains first_id or first_alt contains hide_alt or first_alt contains 'blank ' or first_alt contains 'checkout tile'
       assign first = nil
       for candidate in product.media
         assign c_alt = candidate.alt | downcase
         assign c_id = candidate.id | append: ''
-        unless hidden_ids contains c_id or c_alt contains hide_alt or c_alt contains 'blank '
+        unless hidden_ids contains c_id or c_alt contains hide_alt or c_alt contains 'blank ' or c_alt contains 'checkout tile'
           assign first = candidate
           break
         endunless
@@ -73,7 +75,7 @@
             {%- for m in product.media limit: 12 -%}
               {%- assign m_alt = m.alt | downcase -%}
               {%- assign m_id = m.id | append: '' -%}
-              {%- if hidden_ids contains m_id or m_alt contains hide_alt or m_alt contains 'blank ' -%}{%- continue -%}{%- endif -%}
+              {%- if hidden_ids contains m_id or m_alt contains hide_alt or m_alt contains 'blank ' or m_alt contains 'checkout tile' -%}{%- continue -%}{%- endif -%}
               <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-srcset="{{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 900 }} 900w, {{ m | image_url: width: 1200 }} 1200w" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if first and m.id == first.id %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
                 <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
               </button>

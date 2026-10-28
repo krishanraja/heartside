@@ -1351,7 +1351,7 @@
         // the variant's own photo (the mug in that color) becomes the product picture
         var img = json('script[data-hs2-vimages]')[id], main = document.querySelector('[data-hs2-main]');
         // the blank technical reference never becomes the product picture (the page already hides it)
-        if (img && /shown in your cart|(^|\s)blank\s/i.test(img.alt || '')) img = null;
+        if (img && /shown in your cart|checkout tile|(^|\s)blank\s/i.test(img.alt || '')) img = null;
         // a gift sold in colors shows only that color's pair of photos
         var col = img && /, (.+?) inside/i.exec(img.alt || '');
         if (col) document.querySelectorAll('[data-hs2-thumb][data-hs2-color]').forEach(function (b) { b.hidden = b.getAttribute('data-hs2-color') !== col[1].toLowerCase(); });

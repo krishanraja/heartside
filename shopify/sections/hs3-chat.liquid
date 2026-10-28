@@ -81,7 +81,7 @@
                 {%- for m in p.media -%}
                   {%- assign a = m.alt | downcase -%}
                   {%- if m.media_type == 'image' and n < 4 and m.alt != blank -%}
-                    {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}
+                    {%- unless a contains 'shown in your cart' or a contains 'blank ' or a contains 'checkout tile' -%}
                       {%- if n > 0 -%},{%- endif -%}{ "src": {{ m | image_url: width: 900 | json }}, "alt": {{ m.alt | json }} }
                       {%- assign n = n | plus: 1 -%}
                     {%- endunless -%}
@@ -126,7 +126,7 @@
               {%- for m in p.media -%}
                 {%- assign a = m.alt | downcase -%}
                 {%- if m.media_type == 'image' and m.alt != blank -%}
-                  {%- unless a contains 'shown in your cart' or a contains 'blank ' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
+                  {%- unless a contains 'shown in your cart' or a contains 'blank ' or a contains 'checkout tile' -%}{%- assign shot = m -%}{%- break -%}{%- endunless -%}
                 {%- endif -%}
               {%- endfor -%}
               <a class="hs3-fan__item hs3-fan__item--{{ k }}" href="{{ p.url }}">

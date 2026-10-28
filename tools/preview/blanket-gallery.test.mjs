@@ -41,3 +41,12 @@ test('only-excluded media never leaks into the main image',async()=>{
  assert.doesNotMatch(html,/71850515169662|data-hs2-main/);
  assert.match(html,/data-hs2-tib-gallery/);
 });
+test('a checkout tile, the designed picture a variant carries for checkout, never shows on the page (28 Oct)',async()=>{
+ const tile={id:71860000000001,alt:'Your design, painted from your dog. Heartside checkout tile.'};
+ const other={id:71859323634046,alt:'Illustrated mug, black inside: handle-left view. Example only.'};
+ for(const settings of [{},{blanket_purchase:true}]){
+  const html=await render(settings,16158073880958,tile,[tile,other,example]);
+  assert.doesNotMatch(html,/71860000000001/,'the tile is hidden, first or as a thumbnail');
+  assert.match(html,/data-hs2-main src="\/media\/71859323634046.png"/);
+ }
+});
