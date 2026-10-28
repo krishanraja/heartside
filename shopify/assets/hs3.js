@@ -820,7 +820,9 @@
     for (var i = 1; i <= 6; i++) dots += '<span class="hs3-dot' + (i <= S.step ? ' is-on' : '') + '"></span>';
     var h = '';
     h += '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-dots" role="img" aria-label="Question ' + Math.min(S.step, 6) + ' of 6">' + dots + '</span><span class="hs3-count">' + Math.min(S.step, 6) + ' of 6</span></div>';
-    if (cfg.artworkCandidates) {
+    // on a phone the note waits until there is something to show (step 3), so the first questions
+    // open on Buddy; a wide screen keeps its note column from the start
+    if (cfg.artworkCandidates && (S.step >= 3 || window.innerWidth >= 1000)) {
       // the note shows what prints (one line and the signature); the rest of the answers feed the painting
       var meaning = ui.pending && ui.pending.key === 'meaning' && ui.pending.line ? ui.pending.line : lineFor('meaning');
       var fresh_ = meaning && ui.inked.meaning !== meaning; if (meaning) ui.inked.meaning = meaning;
@@ -830,7 +832,7 @@
       h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
       h += '<div class="hs3-note__lines">' + (meaning ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(meaning) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>') + '</div>' + sign(n) + '</div>';
       h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' is. Your answers add the details.</p>') + '</div></details>';
-    } else {
+    } else if (!cfg.artworkCandidates) {
       var note = ['home', 'spot', 'together', 'meaning'].map(function (k) {
         var t = ui.pending && ui.pending.key === k && ui.pending.line ? ui.pending.line : lineFor(k);
         var fresh2 = t && ui.inked[k] !== t; if (t) ui.inked[k] = t;
@@ -851,8 +853,10 @@
     if (!ui.thinking) {
       if (m.input === 'dog') {
         // the field names sit inside the fields, so the first question is two boxes and a button
-        h += '<input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Your dog\'s name" aria-label="Your dog\'s name" value="' + esc(S.dog) + '" data-hs3-in="dog">';
-        h += '<input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" placeholder="Breed, if you know it" aria-label="Breed, if you know it (optional)" value="' + esc(S.breed) + '" data-hs3-in="breed">';
+        h += '<input id="hs3-dog" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Your dog\'s name" aria-label="Your dog\'s name" value="' + esc(S.dog) + '" data-hs3-in="dog">';
+        // Next sits straight under the name, the one thing this step needs; the breed and photo are optional
+        if (m.next) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+        h += '<input id="hs3-breed" class="hs3-field" type="text" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Breed, if you know it" aria-label="Breed, if you know it (optional)" value="' + esc(S.breed) + '" data-hs3-in="breed">';
         h += '<div class="hs3-row"><button type="button" class="hs3-chip' + (S.pro === 'she' ? ' is-on' : '') + '" data-hs3="pro" data-v="she" aria-pressed="' + (S.pro === 'she') + '">She</button><button type="button" class="hs3-chip' + (S.pro === 'he' ? ' is-on' : '') + '" data-hs3="pro" data-v="he" aria-pressed="' + (S.pro === 'he') + '">He</button>';
         h += '<label class="hs3-photo-pick">' + img('', 'hs3-photo--tiny') + '<span>' + (S.hasPhoto ? 'Change photo' : 'Add a photo') + '</span><input type="file" accept="image/*" data-hs3-file></label></div>';
         if (!S.hasPhoto) h += '<div class="hs3-small hs3-later">No photo handy? Add it later, on the gift.</div>';
@@ -860,7 +864,7 @@
         h += '<div class="hs3-chips">' + [['self', 'Me'], ['partner', 'My partner'], ['mom', 'Mom'], ['dad', 'Dad'], ['kid', 'Our kid'], ['friend', 'A friend']].map(function (c) {
           return '<button type="button" class="hs3-chip' + (S.rel === c[0] ? ' is-on' : '') + '" data-hs3="rel" data-v="' + c[0] + '" aria-pressed="' + (S.rel === c[0]) + '">' + esc(c[1]) + '</button>';
         }).join('') + '</div>';
-        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" value="' + esc(S.rec) + '" data-hs3-in="rec">';
+        h += '<label class="hs3-small" for="hs3-rec">' + (S.rel === 'self' ? 'Your first name' : 'Their first name') + '</label><input id="hs3-rec" class="hs3-field" type="text" maxlength="14" autocomplete="off" autocapitalize="words" enterkeyhint="go" value="' + esc(S.rec) + '" data-hs3-in="rec">';
       } else if (ui.typing) {
         h += '<label class="hs3-small" for="hs3-typed">In your own words</label><div class="hs3-row hs3-row--typed"><input id="hs3-typed" class="hs3-field" type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-hs3-in="typed"><button type="button" class="hs3-btn hs3-btn--small" data-hs3="send">Done</button></div>' + privacy();
         h += '<div class="hs3-row"><button type="button" class="hs3-quiet" data-hs3="untype">Back to the choices</button></div>';
@@ -878,7 +882,7 @@
         h += '<label class="hs3-small" for="hs3-toy">Favorite toy</label><input id="hs3-toy" class="hs3-field" type="text" maxlength="' + lim.toy + '" autocomplete="off" placeholder="A squeaky duck" value="' + esc(S.toy) + '" data-hs3-in="toy">';
         h += '<label class="hs3-small" for="hs3-accessory">Collar or accessory</label><input id="hs3-accessory" class="hs3-field" type="text" maxlength="' + lim.accessory + '" autocomplete="off" placeholder="A red bandana" value="' + esc(S.accessory) + '" data-hs3-in="accessory"></details>';
       }
-      if (m.next && !ui.typing) h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
+      if (m.next && !ui.typing && m.input !== 'dog') h += '<button type="button" class="hs3-btn" data-hs3="next">' + esc(m.nextLabel) + '</button>';
       if (S.returnTo && cfg.gifts && cfg.gifts[S.returnTo] && cfg.gifts[S.returnTo].url && S.step > 1) h += '<button type="button" class="hs3-ghost" data-hs3="returnTo">Back to your ' + esc(SHORT[S.returnTo].toLowerCase()) + '</button>';
     }
     h += '</div>';
@@ -900,11 +904,14 @@
     var pick = recGift();
     var keys = giftKeys(g);
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-label">' + (g === pick ? 'Buddy\'s pick' : esc(GN[g])) + '</span><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gift for ' + esc(n.rec) + '</h2>';
+    // a name in a heading never splits across lines, not even at its hyphen (Jo-anne); the span keeps
+    // the real hyphen, since Fraunces has no non-breaking hyphen (U+2011 would draw from another font)
+    h += '<h2 class="hs3-h2"><span class="hs3-nm">' + esc(n.dog) + '</span>\'s gift for <span class="hs3-nm">' + esc(n.rec) + '</span></h2>';
     if (!ui.editing) {
+      // every tab shows its price; Buddy's pick is a badge on its tab, not a stand-in for the price
       h += '<div class="hs3-tabs" role="group" aria-label="Gifts">' + reviewGifts().map(function (k) {
         var price = cfg.artworkCandidates ? priceLabel(k) : '';
-        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + (k === pick ? "Buddy's pick" : esc(price)) + '</span></button>';
+        return '<button type="button" class="hs3-tab' + (k === g ? ' is-on' : '') + '" data-hs3="tab" data-v="' + k + '" aria-pressed="' + (k === g) + '">' + ICON[k] + '<span>' + SHORT[k] + '</span><span class="hs3-tab__tag">' + esc(price) + '</span>' + (k === pick ? '<span class="hs3-tab__pick">Buddy\'s pick</span>' : '') + '</button>';
       }).join('') + '</div>';
       if (cfg.artworkCandidates) h += '<details class="hs-art-choices"><summary>Explore artwork styles</summary><div data-hs-art-choices></div></details>';
       h += toneView(n, wordFree);
@@ -1064,12 +1071,12 @@
   function chooseView(n) {
     var pick = recGift(), c = chooseModel(), core = cfg.artworkCandidates && cfg.corePurchase;
     var h = '<div class="hs3-top"><button type="button" class="hs3-quiet" data-hs3="back">Back</button><span class="hs3-spacer"></span></div>';
-    h += '<h2 class="hs3-h2">' + esc(n.dog) + '\'s gifts for ' + esc(n.rec) + '</h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
+    h += '<h2 class="hs3-h2"><span class="hs3-nm">' + esc(n.dog) + '</span>\'s gifts for <span class="hs3-nm">' + esc(n.rec) + '</span></h2><p class="hs3-sub">' + (core ? 'Pick one, or a few. Your photo and answers carry over to each one.' : blanketPurchaseEnabled() ? 'Choose one at a time: personalize your word-free blanket, or review a draft. Drafts cannot be ordered. Use Back to return after reviewing one.' : cfg.artworkCandidates ? 'Review the artwork drafts. The blanket stays word-free.' : 'Pick one or more. Your words go on each one.') + '</p>';
     if (core && cfg.bundleOffer) h += '<p class="hs3-bundle' + (c.tier ? ' is-on' : '') + '" role="status">' + (c.tier ? c.count + ' gifts: ' + c.tier + '% off, taken at checkout.' : c.count === 1 ? 'Add a second gift and save 15%. Three saves 20%.' : 'Give two, save 15%. Give three, save 20%.') + '</p>';
     h += '<div class="hs3-strip">' + img('Your dog', 'hs3-photo--strip') + '<div><div class="hs3-line hs3-ink">' + esc(lineFor('meaning') || lineFor('home') || '') + '</div><span class="hs3-sign">Love, ' + esc(n.dog) + '</span></div></div>';
     h += '<div class="hs3-opts">' + reviewGifts().map(function (k) {
       var on = selectedGifts().indexOf(k) !== -1, photo = cfg.artworkCandidates ? giftPhoto(k) : null;
-      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (photo ? '<img class="hs3-opt__img" src="' + esc(photo.src) + '" alt="" width="64" height="64" loading="lazy">' : '') + '<span class="hs3-opt__body"><span class="hs3-opt__name">' + esc(GN[k]) + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '</span><span class="hs3-small">' + esc(giftDesc(k)) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : esc(priceLabel(k))) + '</span></button>';
+      return '<button type="button" class="hs3-opt' + (on ? ' is-on' : '') + '" data-hs3="sel" data-v="' + k + '" aria-pressed="' + on + '"><span class="hs3-tick" aria-hidden="true">' + (on ? '✓' : '') + '</span>' + (photo ? '<img class="hs3-opt__img" src="' + esc(photo.src) + '" alt="" width="64" height="64" loading="lazy">' : '') + '<span class="hs3-opt__body">' + (k === pick ? '<span class="hs3-opt__pick">BUDDY\'S PICK</span>' : '') + '<span class="hs3-opt__name">' + esc(GN[k]) + '</span><span class="hs3-small">' + esc(giftDesc(k)) + '</span></span><span class="hs3-opt__price">' + (cfg.artworkCandidates && !giftPurchasable(k) ? 'Draft' : esc(priceLabel(k))) + '</span></button>';
     }).join('') + '</div>';
     if (selectedGifts().indexOf('mug') !== -1) h += mugSwatches();
     h += '<div class="hs3-row hs3-ship"><span class="hs3-small">Ship to</span><button type="button" class="hs3-chip' + (S.shipTo === 'rec' ? ' is-on' : '') + '" data-hs3="ship" data-v="rec" aria-pressed="' + (S.shipTo === 'rec') + '">' + esc(n.rec) + '</button><button type="button" class="hs3-chip' + (S.shipTo === 'me' ? ' is-on' : '') + '" data-hs3="ship" data-v="me" aria-pressed="' + (S.shipTo === 'me') + '">Me</button></div>';
@@ -1470,10 +1477,31 @@
     void n;
   }
 
+  /* The keyboard never covers Next (Krish's phone, 28 Oct). Chromium on Android resizes the page for
+     the keyboard once the viewport asks it to: this page only, so the product pages keep their
+     one-screen sizes. Where only the visual viewport shrinks (Safari), --hs3-kb carries the
+     keyboard's height to the CSS that pins Next above it, and the field being typed in is brought
+     into view with room for Next under it. Pinch zoom is not a keyboard. */
+  function keyboardRoom() {
+    var vp = document.querySelector('meta[name="viewport"]'), was = vp ? vp.getAttribute('content') || '' : '';
+    if (vp && !/interactive-widget/.test(was)) vp.setAttribute('content', (was ? was + ', ' : '') + 'interactive-widget=resizes-content');
+    var vv = window.visualViewport;
+    var lift = function (panned) {
+      var kb = vv && Math.abs((vv.scale || 1) - 1) < 0.01 ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+      root.style.setProperty('--hs3-kb', kb + 'px');
+      if (panned) return;
+      var f = document.activeElement;
+      if (f && frame && frame.contains(f) && /^(INPUT|TEXTAREA)$/.test(f.tagName)) { try { f.scrollIntoView({ block: 'nearest' }); } catch (e) { /* old browser */ } }
+    };
+    if (vv && vv.addEventListener) { vv.addEventListener('resize', function () { lift(false); }); vv.addEventListener('scroll', function () { lift(true); }); }
+    window.addEventListener('resize', function () { lift(false); });
+  }
+
   function init() {
     root = document.querySelector('[data-hs3]');
     if (!root) return;
     frame = root.querySelector('.hs3__frame');
+    keyboardRoom();
     try { cfg = JSON.parse(root.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = {}; }
     // the bundle saving shows only when the memo strip's one switch says the real discount exists
     cfg.bundleOffer = !!(cfg.bundleOffer || document.querySelector('[data-hs-bundle-live]'));

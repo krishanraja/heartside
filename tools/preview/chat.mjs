@@ -361,6 +361,38 @@ for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
       if (m.screen !== screen) bad.push(`${name} (landed on ${m.screen})`);
       if (m.wide > 0) bad.push(`${name} (${m.wide}px sideways)`);
       if (m.locked && m.bottom > h + 1) bad.push(`${name} (cut off at ${Math.round(m.bottom)}px in a page that can't scroll)`);
+      // the layout (28 Oct): the primary in the first screen, labels and names on one line, nothing
+      // overlapping, the top bar centered (tools/preview/hs3-layout.test.mjs has the full set)
+      bad.push(...(await page.evaluate(([name, phone]) => {
+        const out = [], q = (s) => document.querySelector(s), all = (s) => [...document.querySelectorAll(s)], r = (el) => el.getBoundingClientRect();
+        const lines = (el) => { const tops = new Set(); const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); for (let n; (n = walk.nextNode());) { const g = document.createRange(); g.selectNodeContents(n); for (const x of g.getClientRects()) if (x.width) tops.add(Math.round(x.top / 6)); } return tops.size; };
+        const overlap = (a, b) => { const p = r(a), o = r(b); return Math.max(0, Math.min(p.right, o.right) - Math.max(p.left, o.left)) * Math.max(0, Math.min(p.bottom, o.bottom) - Math.max(p.top, o.top)); };
+        const inView = (el) => el && r(el).bottom <= innerHeight + 1;
+        if (name === 'hero' && !inView(q('[data-hs3-start]'))) out.push('hero: Start with your dog below the first screen');
+        if (/^question [12]$/.test(name) && phone) {
+          const note = q('.hs3-note-wrap');
+          if (note && note.getClientRects().length) out.push(`${name}: the writing peek shows before step 3`);
+          if (!inView(q('[data-hs3="next"]'))) out.push(`${name}: Next below the first screen`);
+        }
+        if (name.startsWith('reveal')) {
+          const tabs = q('.hs3-tabs'), last = all('.hs3-tab').pop(), stamp = q('.hs3-product > .hs3-example'), label = q('.hs3-inset__label'), note = q('.hs3-note--print');
+          if (Math.abs(r(tabs).right - parseFloat(getComputedStyle(tabs).paddingRight) - r(last).right) > 1) out.push(`${name}: the tabs stop short of the row`);
+          if (all('.hs3-tab__tag').some((t) => lines(t) !== 1)) out.push(`${name}: a tab's price wraps`);
+          if (stamp && overlap(stamp, tabs) > 1) out.push(`${name}: the Example stamp runs into the tabs`);
+          if (label && note && overlap(label, note) > 1) out.push(`${name}: "Your photo" runs into the note`);
+          const top = r(q('.hs3-top')), mid = r(q('.hs3-top > :nth-child(2)'));
+          if (Math.abs((mid.left + mid.right) / 2 - (top.left + top.right) / 2) > 1) out.push(`${name}: the top bar's label is off center`);
+        }
+        if (name.startsWith('choose')) {
+          for (const o of all('.hs3-opt')) {
+            const nm = o.querySelector('.hs3-opt__name'), price = o.querySelector('.hs3-opt__price');
+            if (lines(nm) !== 1) out.push(`${name}: "${nm.textContent}" wraps`);
+            if (r(nm).right > r(price).left + 0.5) out.push(`${name}: "${nm.textContent}" runs under its price`);
+          }
+          if (phone && !inView(q('[data-hs3="add"]'))) out.push(`${name}: the button is below the first screen`);
+        }
+        return out;
+      }, [name, w < 1000])));
     }
     ok(!bad.length, `${w}x${h}: every screen fits sideways and nothing is cut off out of reach${bad.length ? ': ' + bad.join('; ') : ''}`);
     await ctx.close();
