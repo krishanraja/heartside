@@ -5,7 +5,9 @@
 // choice made in so many words (the 28 Oct recordings: one tap on a sentence added it, with no way
 // off): "Add our artist's touch", then "Added. Remove". When on, its line goes in right after the
 // gift, linked to its design, with the 5 days it adds and the tagged photos, around the
-// checkout-image wrap, and the drawer hears once, after both (announceAdd waits on it).
+// checkout-image wrap, and the drawer hears once, after both (announceAdd waits on it). While its photos
+// upload, its words show beside Add to cart and the next add is held (28 Oct review: nothing said the
+// gift went in, and a second tap added the gift and the touch again).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -38,18 +40,20 @@ function page({memo = true, toy = 'A squeaky duck', tidy = null, announcer = tru
   const box = el({hidden: true, querySelectorAll: () => [extraToy, accessory], querySelector: s => bits[s] || null});
   const memoEl = memo ? el({attrs: {'data-hs-artist-variant': '777', 'data-hs-artist-price': '$29'}}) : null;
   const store = {'hs3-gift': JSON.stringify({dog: 'Pip', toy})};
-  const calls = [], posts = [], announced = [], tracked = [];
+  const calls = [], posts = [], announced = [], tracked = [], lines = [], listeners = {};
   const facts = [{source: 'home', text: 'Waits at the door.'}].concat(toy ? [{source: 'toy', text: toy}] : []);
   const state = {hs3_art_profile: {version: 1, facts}};
   const ctx = {state, FormData, URLSearchParams, confirmAdds: {done: announcer},
     window: {HSArtworkProfile: tidy ? {tidy} : {}, sessionStorage: {getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = v; }}},
-    document: {querySelector: s => (s === '[data-hs-extras]' ? box : s === '[data-hs-artist-variant]' ? memoEl : s === '[data-hs-extras-artist]' ? artist : null)},
+    document: {querySelector: s => (s === '[data-hs-extras]' ? box : s === '[data-hs-artist-variant]' ? memoEl : s === '[data-hs-extras-artist]' ? artist : null),
+      addEventListener(name, fn, capture) { listeners[name] = {fn, capture}; }},
+    checkoutImageStatus: message => lines.push(message),
     nativeArtworkPurchase: () => true, artworkFacts: () => JSON.stringify(state.hs3_art_profile), save() { calls.push('save'); }, invalidateBlanketReview() { calls.push('invalidate'); },
     artworkChoicesChanged() { calls.push('choices'); }, journeyCard() { calls.push('journey'); }, updateBlanketPurchaseStatus() { calls.push('status'); }, track(name) { tracked.push(name); }, shopRoot: () => '/',
     announceAdd: items => announced.push(items), onCartAdd: f => { ctx.added = f; }};
   ctx.onCartAdd.fetch0 = function (url, o) { posts.push([url, o.body, this]); return Promise.resolve({ok: true, json: async () => ({id: 1, variant_id: 777})}); };
   ctx.window.fetch = () => { throw new Error('the wrapped fetch would send this through the checkout-image preparation'); };
-  return {ctx, toy: extraToy, accessory, notes, status, price, artist, offer, on, add, remove, summary, said, ask, change, box, store, calls, posts, announced, tracked, photos};
+  return {ctx, toy: extraToy, accessory, notes, status, price, artist, offer, on, add, remove, summary, said, ask, change, box, store, calls, posts, announced, tracked, photos, lines, listeners};
 }
 for (const minified of [false, true]) {
   const load = p => { const code = ['bindExtras', 'extrasAfterAdd'].map(section).join('\n'); vm.runInNewContext(minified ? transformSync(code, {minify: true}).code : code, p.ctx); return p; };
@@ -124,6 +128,35 @@ for (const minified of [false, true]) {
     const lone = load(page({announcer: false})); lone.ctx.bindExtras(); lone.add.handlers.click();
     await lone.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]);
     assert.equal(lone.announced.length, 1);
+  });
+  test(`${mode}: while the artist's touch uploads, its words are beside Add to cart and a second tap adds nothing twice`, async () => {
+    const p = load(page());
+    let land;
+    p.ctx.onCartAdd.fetch0 = (url, o) => { p.posts.push([url, o.body]); return new Promise(resolve => { land = resolve; }); };
+    p.ctx.bindExtras(); p.add.handlers.click();
+    const tap = on => { const e = {target: {closest: s => (on && s.includes('#teeAtcButton') ? {} : null)}, held: 0, preventDefault() { this.held++; }, stopImmediatePropagation() { this.held++; }}; p.listeners.click.fn(e); return e.held > 0; };
+    assert.equal(p.listeners.click.capture, true, 'before Teeinblue and our own add check hear the tap');
+    assert.equal(tap(true), false, 'nothing on its way: Add to cart works');
+    const sending = p.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]);
+    assert.deepEqual(p.lines, ['Sending your photos to our artist.'], 'said beside the button, where the buyer is looking');
+    assert.equal(p.status.textContent, 'Sending your photos to our artist.');
+    assert.equal(tap(true), true, 'a second tap is held while the photos upload');
+    assert.equal(p.lines.at(-1), "One moment. Adding our artist's touch.");
+    assert.equal(tap(false), false, 'other taps are not');
+    // a second add landing anyway does not send the touch again
+    p.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]);
+    assert.equal(p.posts.length, 1, 'one artist\'s touch');
+    land({ok: true, json: async () => ({id: 1, variant_id: 777})});
+    assert.equal(await sending, true);
+    assert.equal(p.lines.at(-1), '', 'the drawer opens next and is the confirmation');
+    assert.equal(tap(true), false, 'in the cart: Add to cart works again');
+    // a failure is said beside the button too, and frees the button
+    const f = load(page());
+    f.ctx.onCartAdd.fetch0 = () => Promise.resolve({ok: false, status: 413});
+    f.ctx.bindExtras(); f.add.handlers.click();
+    assert.equal(await f.ctx.added([{variant_id: 5, properties: {_customization_id: ID}}]), false);
+    assert.match(f.lines.at(-1), /^Your gift is in your cart, but the artist's touch did not go through\./);
+    assert.equal(f.ctx.extrasAfterAdd.busy, false);
   });
 }
 
