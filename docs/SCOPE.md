@@ -1,6 +1,6 @@
 # Heartside: current execution contract
 
-Owner: Krish. Issued October 24, 2026; reconciled October 28. Status: scope approved. The 27 October implementation is live. The 28 October acceptance fixes (PR #65) are not live: the photo, name, typed-answer, cross, stated-toy and prop rules in 3 to 5 below reach buyers only when CoWork pushes the theme, publishes the two n8n workflows and applies the 28 October prompt spec, each on Krish's yes. Independent live acceptance and the owner's real physical sample remain open. [`../NOW.md`](../NOW.md) owns current operational state and next action.
+Owner: Krish. Issued October 24, 2026; reconciled October 28. Status: scope approved. The 27 October implementation is live. The 28 October acceptance fixes (PR #65) are not live: the photo, name, typed-answer, cross, stated-toy and prop rules in 3 to 5 below reach buyers only when CoWork pushes the theme, publishes the two n8n workflows and applies the 28 October prompt spec, in the CoWork run Krish approved up front. Independent live acceptance and the owner's real physical sample remain open. [`../NOW.md`](../NOW.md) owns current operational state and next action.
 
 This file holds the approved scope and enduring product constraints for the revamp. Read it with [`../NOW.md`](../NOW.md) for release state, configured prices and the single next action. Older task queues, handoffs, initial economics scenarios and implementation snapshots are in [`history/`](history/README.md). Later explicit owner rulings take precedence.
 

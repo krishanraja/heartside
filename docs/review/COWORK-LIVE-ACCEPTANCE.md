@@ -2,6 +2,8 @@
 
 Status: ASSIGNMENT, not a result. Issued 28 October 2026, after the acceptance fixes merged to main (PR #65). Krish runs it in CoWork on his own computer and screen-records Part 3. He brings the recording, the photo logs and your report back to the Claude Code session, which judges every order for UX and quality and fixes what it finds. The earlier version of this file, the one that found these defects, is kept in [`../history/COWORK-PROMPT-2026-10-28.md`](../history/COWORK-PROMPT-2026-10-28.md). Do not run that one.
 
+Krish approved every step of this prompt up front, so run it straight through without stopping to ask him. See "Krish's approval" under the rules.
+
 Work in four parts, in this order:
 
 0. **Payments.** Make sure real buyers can pay. Do this first: the store cannot take money while Shopify Payments is off.
@@ -90,12 +92,13 @@ cd tools/preview && npm ci && npx playwright install chromium
 
 ## Rules for every part
 
-- **Approval.** Each step marked **[approval]** needs Krish's explicit yes immediately before it, for that named action and target only.
-  - Ask in one plain line naming the action, the target and how to undo it, then wait for the answer.
-  - A yes never carries to the next step.
-  - Everything not marked is read only and runs without asking.
+- **Krish's approval.** Ruling (Krish, 28 October): "Remove all the approvals. Just have this co-work prompt punch through everything." His yes covers every step this prompt names, on the targets it names, for this run.
+  - Do not stop to ask. Do each step, read it back, write the result and the time in your log, and go on.
+  - When a check fails, take the fallback the step names, record it, and carry on with every step that does not depend on it. The report lists every fallback taken and every step skipped, with why.
+  - One hold stays: never push to the live theme unless the copy passed 2.2 and 2.3 (see 2.4). A broken theme would reach real buyers, and CoWork cannot fix code. If the hold applies, run Part 3 on the copy instead.
+  - Krish's hands are still needed where a step says so: his own phones in 2.3 and order 5, picking files on them, and the screen recording. Tell him when each comes up, then carry on.
 - **The Teeinblue rule.**
-  - Never press Update or Sync in Teeinblue without its own [approval], even when another step there was approved.
+  - Press Update or Sync in Teeinblue only in the steps that name them, always after the backup, and read back the handles after each.
   - Back up the campaign privately before any change.
   - The live portrait product belongs to the campaign **"Heartside City Screenprint - DRAFT 2026-10-23"**. The campaign called "Your Dog's Portrait" points at a draft reference product and errors on Update; leave it alone.
   - After every Teeinblue change, read back the three product handles in Shopify admin (`your-dogs-illustrated-mug`, `your-dogs-portrait`, `your-dogs-personality-blanket`), then run `node tools/preview/handle-check.mjs --warn-media`.
@@ -103,11 +106,11 @@ cd tools/preview && npm ci && npx playwright install chromium
     - Until the checkout tiles go on in Part 2.5, it also prints `warn` lines for the blank variant pictures and the Artist's touch stand-in. Those are expected there.
     - Exit 1 and a `FAIL` line mean a handle, price or address broke.
     - Exit 2 means a Cloudflare challenge, a rate limit, a server error or a network failure kept it from reading the store. That is never a pass: wait a few minutes and run it again.
-  - On 28 October a campaign Update renamed two handles to the campaign title, with every sync flag off. If a handle changed, restore it in Shopify admin on [approval], run the check again, then stop and report.
+  - On 28 October a campaign Update renamed two handles to the campaign title, with every sync flag off. If a handle changed, restore it in Shopify admin at once, run the check again until it is all clear, record it, and carry on.
 - **Never, in any part:**
   - confirm, release or pay for a Printful order, or press a fulfillment control;
   - use a real card, or send a message to a customer or a vendor;
-  - change anything not named here, or delete anything without its own approval.
+  - change or delete anything this prompt does not name, or touch a real customer's order.
 - **Browser.** Use only the authorized browser session. Never open the system file picker. Attach photos with the browser tool's file upload on the page's file input. If the tool cannot attach a file, ask Krish to pick the named file himself while recording. On his own phones, Krish picks every file himself.
 - **Test details.**
   - Names: synthetic only.
@@ -120,7 +123,7 @@ cd tools/preview && npm ci && npx playwright install chromium
   - **Real customers:** if you meet a real customer's order or data, stop looking at it and do not record it.
 - **Paintings cost money.** Teeinblue paints once per accepted photo and once per redo, about $0.13 each.
   - Count every painting in your log as it starts.
-  - Stop at the cap Krish agrees in Part 2.3. It covers Parts 2 and 3 together.
+  - Stop at 14, the cap Krish approved for Parts 2 and 3 together (about $1.80). If a test still needs a painting after that, skip it and say so.
   - A refused photo (blurry, too small, HEIC) never paints. If one does, that is a defect: count it and report it.
 - **Recording.** Krish screen-records Part 2.3 and Part 3. Pause about three seconds on each checkpoint screen named below, and write the clock time at each checkpoint into your log.
 
@@ -129,16 +132,16 @@ cd tools/preview && npm ci && npx playwright install chromium
 1. Read Shopify admin, Settings, Payments.
    - On 28 October Shopify Payments was switched off for the test orders, with the Bogus Gateway on, at about 09:13. The repository's record then said it was accepting payments. Record what is true now.
    - **Read only:** also read the three pre-existing $49 market price overrides on **The Heartside Sling**, by market name. Record them privately (market, price, currency). Part 3.2 checks them again.
-2. **If Shopify Payments is off [approval]:**
-   - Ask: "Switch Shopify Payments back on and the Bogus Gateway off now, so real buyers can pay. Undo: switch them back."
-   - On yes, do it, then read back: accepting payments, test mode off.
+2. **If Shopify Payments is off:**
+   - Switch Shopify Payments back on and the Bogus Gateway off, so real buyers can pay. Undo: switch them back.
+   - Read back: accepting payments, test mode off.
    - Open a fresh checkout on heartside.io and go as far as the payment step, never paying. It should offer the real payment methods.
-   - Read the three Sling prices again. If one is missing, report it. Restore it only on its own [approval], with the value you recorded.
+   - Read the three Sling prices again. If one is missing, restore it with the value you recorded, read it back, and report it.
 3. If Payments is already on, record that and move to Part 1.
 
 ## Part 1: bring the platforms in line
 
-### 1.1 Teeinblue: the stated-toy prompt **[approval, once per campaign]**
+### 1.1 Teeinblue: the stated-toy prompt
 
 Apply [`tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md`](../../tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md) to the mug campaign, then the portrait campaign ("Heartside City Screenprint - DRAFT 2026-10-23"), then the blanket campaign. The new prompt makes a toy or accessory the buyer typed always appear. Order 1 on 28 October left out a green hedgehog.
 
@@ -149,33 +152,33 @@ For each campaign:
    - portrait `d115d2dd20217fb7b25be5ae0b487f6fc6f96b8454d28f74a48625c6057ab370`
    - blanket `ed13162b2e772adad6a6da86f6e66d60718feda50429954d8fb336cf4ee42b6e`
 
-   If it is not, stop and report.
+   If it is not, record the hash you found and carry on: the backup you just saved is the rollback.
 2. **Replace and validate.** Replace the photo effect's prompt with that campaign's block from the spec. Change no other effect setting and no field. Validate: zero errors and zero warnings.
 3. **Read back the hash.** The saved prompt's SHA-256 must be:
    - mug `d34640f824d5889ff6cb6c35e800900507eb1c7cce92c50a5173952b11186625`
    - portrait `2b5225613b396749db687005ab6b1afdc6085a45a5a214e2b6fa85185f023bac`
    - blanket `a1af6a85c10734a90d8fcab2fec532f22ab3a6f6aba9bf78b870be3616d3e865`
 4. **Check the handles.** Apply the Teeinblue rule: read back the three handles and run `node tools/preview/handle-check.mjs --warn-media`.
-5. **Sync [approval].** Sync only on its own yes, with the catalog and image flags off, then read back the handles again.
+5. **Sync.** Sync with the catalog and image flags off, then read back the handles again.
 
-Stop and report if the editor rejects or shortens a prompt. Never trim one to fit.
+If the editor rejects or shortens a prompt, never trim it to fit: roll that campaign back, record it, and go on to the next campaign.
 
 **Rollback:** restore the backed-up prompt, validate, and read back its 27 October hash.
 
 The check that the toy now appears is order 1 in Part 3.
 
-### 1.2 Teeinblue: the crop dialog **[approval, once per campaign]**
+### 1.2 Teeinblue: the crop dialog
 
 After every painting, Teeinblue's placement editor opens by itself. On 28 October it first showed blank, buyers sat on it for 19 to 30 seconds, and it left a ghost after Save.
 
 1. In each of the three campaigns, read the photo editor setting: what it is called, and what is on.
-2. Propose turning the editor off, in one line per campaign. If turning it off would also remove the buyer's way to fix a badly framed painting, say so. Then Krish chooses.
-3. **[approval]** Change it, applying the Teeinblue rule.
+2. Decide per campaign: turn the editor off if that only stops it opening by itself. If turning it off would also remove the buyer's way to fix a badly framed painting, leave it on and record why.
+3. Make the change, applying the Teeinblue rule.
 4. **Readback:** the setting is saved, and the three handles are unchanged.
 
 The code already says "check the framing, then Save" before the dialog opens, so leaving it on is safe.
 
-### 1.3 n8n: publish Buddy's rebuilt rules **[approval, once per workflow]**
+### 1.3 n8n: publish Buddy's rebuilt rules
 
 The merge rebuilt two workflows. The first is "Heartside: typed answer (Buddy AI)", and the second is "Heartside: compose gift lines (Buddy AI)". Each changes in three places, and nothing else changes:
 
@@ -188,13 +191,13 @@ The merge rebuilt two workflows. The first is "Heartside: typed answer (Buddy AI
 For each workflow:
 
 1. Record the active version, so it can be restored.
-2. **[approval]** Paste the three values and publish.
-3. Read back the active Guard code, Enforce rules code and system message, and compare each one character for character with the files. Report "match" or the first difference.
+2. Paste the three values and publish.
+3. Read back the active Guard code, Enforce rules code and system message, and compare each one character for character with the files. Report "match" or the first difference. On a difference, paste and publish once more; if it still differs, restore the recorded version and record it.
 4. **Rollback:** restore the recorded version.
 
 Order 1's typed answer in Part 3 is the live check.
 
-### 1.4 Shopify: checkout look and the thank-you line **[approval for each]**
+### 1.4 Shopify: checkout look and the thank-you line
 
 1. **Checkout branding.** In Settings, Checkout, Customize, change these:
    - colors: background cream `#FBF6F1`, main buttons ink `#121010` with cream text, accents stamp red `#A8284E`;
@@ -208,12 +211,12 @@ Order 1's typed answer in Part 3 is the live check.
    - **Readback:** an order in Part 3 shows it.
 3. **Rollback:** both can be reset in the same screens.
 
-### 1.5 Function Studio: kept through Christmas **[approval only if a control is needed]**
+### 1.5 Function Studio: kept through Christmas
 
 Ruling (Krish, 28 October): keep the checkout-merge app through Christmas at $69 a month, then review it in January against measured conversion.
 
 1. Read the app's plan, when the trial ends and the next billing date, and confirm nothing will cancel it on 1 November.
-2. If keeping it needs an action, such as accepting a charge, ask first.
+2. If keeping it needs an action, such as accepting the $69 monthly charge, take it: Krish ruled to keep it. Record what you did.
 3. Read and record the active rule's status, and how it sets the output quantity. The store keeps every design at one unit, so it is not changed.
 
 ### 1.6 Read only, for the record
@@ -233,13 +236,13 @@ Ruling (Krish, 28 October): keep the checkout-merge app through Christmas at $69
   - automatic confirmation: off;
   - "Import personalized orders as drafts": on;
   - "Automatically import orders with synced products" and "Use product alternatives": as they are.
-- **Shopify Inbox.** At 390×844, does its chat bubble cover Add to cart, a chip or Buddy's button? If it does, propose a fix and change it only on [approval].
+- **Shopify Inbox.** At 390×844, does its chat bubble cover Add to cart, a chip or Buddy's button? If it does, move it in the Inbox settings (its position or offset) so it covers none of them, and read it back at 390×844.
 
-Close Part 1 with a table of each item: done with readback, not run, or blocked (with the reason).
+Close Part 1 with a table of each item: done with readback, fallback taken, or skipped (with the reason).
 
 ## Part 2: release the theme
 
-### 2.1 Push to a copy **[approval]**
+### 2.1 Push to a copy
 
 1. **Duplicate the theme.** In Shopify admin, Online Store, Themes, duplicate the live theme and name the copy "Heartside 28 Oct fixes". Keep its theme id private.
 2. **Run the guarded push.** In GitHub, run the action "Push homepage to a Shopify theme" (Actions, then Run workflow) with:
@@ -265,11 +268,11 @@ node handle-check.mjs --theme <copy id> --warn-media
 The live gate includes Krish's Android Edge size, 360×640. Each command ends with exit 0 and "all clear". The handle check may also print `warn` lines for the blank variant pictures and the Artist's touch stand-in: those are fixed in 2.5, after the live push, and are expected here.
 
 - **Exit 2** means Cloudflare challenged a page. That is inconclusive, never a pass: wait a few minutes and run it again, or run it from another network.
-- **Exit 1** means a failure. Stop and report it. Do not push live.
+- **Exit 1** means a failure. Record the failing lines. The hold in 2.4 then applies: do not push live, and run Part 3 on the copy.
 
-### 2.3 Krish's own phones, on the copy (Krish records) **[approval: the painting cap]**
+### 2.3 Krish's own phones, on the copy (Krish records)
 
-**Agree the cap first.** Ask: "Paint up to 14 times across Parts 2 and 3, about $1.80 at $0.13 each." The plan:
+**The painting cap.** Krish approved up to 14 paintings across Parts 2 and 3, about $1.80 at $0.13 each. The plan:
 
 | Where | Paintings |
 | --- | --- |
@@ -312,16 +315,16 @@ The live gate includes Krish's Android Edge size, 360×640. Each command ends wi
 
 A photo that is picked but never adds, with no message, is the 28 October defect. A real dog photo that is refused is a defect too. Either one blocks the live push.
 
-### 2.4 Push live **[approval]**
+### 2.4 Push live
 
-Only when 2.2 is all clear, and in 2.3 a real photo added and painted on all three browsers (Android in Edge, Android in Chrome, iPhone in Safari), and every refused test photo said why under the button:
+**The one hold.** Push live only when 2.2 is all clear, and in 2.3 a real photo added and painted on all three browsers (Android in Edge, Android in Chrome, iPhone in Safari), and every refused test photo said why under the button. If not, skip 2.4 to 2.6, do 2.7, and run Part 3 on the copy's preview link instead of heartside.io. Otherwise:
 
 1. Run the same action with the live theme's id and exact name, and `allow_live_theme` ticked. Leave every other switch at its default.
 2. Read the run's result line, then go straight on to 2.5.
 
 **Rollback:** the run saved the live theme's templates as a backup artifact. Krish can also publish the previous theme from Online Store, Themes.
 
-### 2.5 Checkout tiles and the Artist's touch picture **[approval, once per product]**
+### 2.5 Checkout tiles and the Artist's touch picture
 
 Do this right after the live push. Only the theme pushed in 2.4 hides the tiles from the product pages, so a tile attached earlier would show to buyers as a product photo.
 
@@ -330,14 +333,14 @@ Shopify draws each gift's component line at checkout with its variant's own pict
 The tiles are in [`design/checkout-tiles/`](../../design/checkout-tiles/README.md), with the exact alt text for each. The live theme now hides any photo whose alt text says "checkout tile".
 
 1. Run `node tools/preview/handle-check.mjs --warn-media`. Its `warn` lines name each variant that shows the blank base, by gift and variant title, for example `portrait "Framed / Black / 12″×18″"`. A gift with one variant shows as `blanket variant 1 of 1`. The Artist's touch line reads `still shows the heart stand-in picture`.
-2. For each gift with a blank variant, on **[approval]**:
+2. For each gift with a blank variant:
    - upload that gift's tile to the product, with its alt text exactly as in the README;
    - set it as the picture for only the variants the check named;
    - leave the product's first photo, and every other variant's photo, as they are. The mug's colors keep their own photos.
-3. For the Artist's touch, on **[approval]**:
+3. For the Artist's touch:
    - upload `artists-touch-tile.png` with its alt text;
    - make it the product's first picture;
-   - keep the heart stand-in, moved to a later position, unless Krish says to remove it.
+   - keep the heart stand-in, moved to a later position.
 4. **Read back:**
    - in Shopify admin, the Artist's touch's first picture is the new tile, and each gift's blank variants show their gift's tile;
    - each product page on heartside.io shows no tile in its gallery, including after choosing each variant;
@@ -351,9 +354,9 @@ The tiles are in [`design/checkout-tiles/`](../../design/checkout-tiles/README.m
    - Since the merge, the hourly guard will have opened one issue, "Storefront guard: a storefront check failed", about the blank pictures and the stand-in.
    - Once a run is all clear, Krish closes that issue.
 
-If a gate fails here, stop and report. The rollback is in 2.4.
+If a gate fails here, roll back: 2.4's rollback first, then 2.5's. Record the failing lines and run Part 3 on the copy.
 
-### 2.7 Christmas cut-off **[approval]**
+### 2.7 Christmas cut-off
 
 1. On Printful's own site, find the published 2026 US holiday order cut-offs, with standard shipping, for:
    - the 11 oz mug;
@@ -361,7 +364,7 @@ If a gate fails here, stop and report. The rollback is in 2.4.
    - the 50×60 sherpa blanket.
 
    Report each date with its link.
-2. If all are published, propose the earliest. On approval:
+2. If all are published, take the earliest:
    - set it as "Last order date for Christmas" (YYYY-MM-DD) in the HS memo section of the live theme's editor, and save;
    - read the strip back on heartside.io. It counts down to that date.
 
@@ -376,11 +379,11 @@ Do this after 2.6, so the push and the editor change never cross.
 1. **Choose the test route.** Read Teeinblue's current help pages, "How to make a test order" and the pricing FAQ.
    - Use only the route they say is not billed, and quote that line in the report.
    - On 26 October that was Shopify's Bogus Gateway, which means switching Shopify Payments off for the window.
-2. **Open the test window [approval].**
-   - Ask: "Switch checkout to test payments (Bogus Gateway) for about 90 minutes for five mock orders, then switch back. Real buyers cannot pay during the window."
-   - On yes, switch it, and read back that checkout offers only the test method.
+2. **Open the test window.**
+   - Switch checkout to test payments (Bogus Gateway) for the five mock orders, and read back that checkout offers only the test method.
+   - Real buyers cannot pay during the window, so keep it to about 90 minutes and close it in 3.2.
    - Note the start time. Any order placed during the window that you did not place goes to Krish at once.
-3. **Before each order,** say in one line which order is next and how many paintings it uses, and wait for Krish's go.
+3. **Before each order,** write in your log which order is next and how many paintings it uses, then start it. Order 5 needs Krish and his phone: tell him it is next.
 4. **Before you pay,** check the card is the test method's success card.
 
 **Bogus Gateway cards:**
@@ -531,16 +534,18 @@ Krish runs this on his Android phone in Edge, on heartside.io, with `?hsdebug=ph
   - Save the design preview privately as `mock-<n>-design.png`.
 - **Printful.** The order is a draft or was not imported, never confirmed. A draft's variant matches the order: the mug's inside color, the frame, the blanket size.
 
-### 3.2 Restore payments **[approval]**
+### 3.2 Restore payments
 
-1. Ask, then switch Shopify Payments back on and the Bogus Gateway off.
+1. Switch Shopify Payments back on and the Bogus Gateway off.
 2. Read back:
    - accepting payments, with test mode off;
-   - the three $49 market prices on The Heartside Sling, exactly as recorded in Part 0. Restore a missing one only on its own [approval], with the recorded value;
+   - the three $49 market prices on The Heartside Sling, exactly as recorded in Part 0. Restore a missing one with the recorded value and read it back;
    - a fresh checkout on heartside.io offering the real payment methods, going only as far as the payment step.
 3. Report the window's end time. List every order placed during it by count only, and how many were yours.
 
-### 3.3 Clean up **[approval, separately for each system]**
+### 3.3 Clean up
+
+Only the orders named here, and nothing a real customer placed.
 
 - **Shopify.** Cancel the four orders marked test on 28 October and the five from this run, with no customer notification. Read back canceled.
 - **Printful.** Delete any draft those orders created, never confirming one. Read back gone.
@@ -569,6 +574,7 @@ Write it for the Claude Code session, with nothing from the private list.
    - The production-file checks.
    - Every defect, with what a buyer would feel, and whether it blocks.
 5. **Counts.** Paintings used against the cap, note calls, orders placed, and the restore and clean-up readbacks.
-6. **Close** with **ready to sell**, **hold for the listed defects**, or **insufficient evidence at the named boundary**. Say separately that physical print quality still waits for Krish's own sample order.
+6. **Fallbacks.** Every fallback taken and every step skipped, with why.
+7. **Close** with **ready to sell**, **hold for the listed defects**, or **insufficient evidence at the named boundary**. Say separately that physical print quality still waits for Krish's own sample order.
 
 Krish names the recordings `phones-copy` and `mock-1` to `mock-5` (or one file, with the times from your log) and brings them back with this report.
