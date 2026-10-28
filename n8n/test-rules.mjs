@@ -90,5 +90,73 @@ check('compose drops an invented place, and a draft with a bed the owner never m
 check('compose drops a reason built on coffee the owner never mentioned', () => {
   assert.equal(c.reason, '');
 });
+
+// 28 Oct review of PR #65. The shared rules on their own, as both Enforce nodes paste them.
+const S = new Function(fs.readFileSync('shared.js', 'utf8') + '\nreturn { clean, ownWords, propsGrounded };')();
+const typedReq = (step, typed_text, dog, recipient) => guard('guard-typed.js', {headers:{origin:'https://heartside.io'}, body:{session:'abcdefgh31', step, question:'q', typed_text, dog:{name:dog, pronoun:'she'}, recipient}});
+const sam = {name:'Sam', relation:'partner'}, alexSelf = {name:'Alex', relation:'self'};
+check('an ellipsis is one period, and the word after it starts a sentence', () => {
+  assert.equal(S.clean('I wait at the window... until your car pulls in.'), 'I wait at the window. Until your car pulls in.');
+  assert.equal(S.clean('Window duty...the best kind of duty.'), 'Window duty. The best kind of duty.');
+  assert.equal(S.clean('I wait...'), 'I wait.');
+  assert.equal(S.clean('We walk at 7 a.m. every day.'), 'We walk at 7 a.m. every day.', 'one period is left alone');
+  assert.equal(S.ownWords('my best friend... forever', 44), 'My best friend. Forever.');
+  const gw = typedReq('home', 'waits at the window until my car pulls in', 'Kuku', sam);
+  const out = run('enforce-typed.js', gw, {reaction:'Window duty... the best kind of duty.', lines:['I wait at the window... until your car pulls in.'], follow_up:null, flags:[]});
+  assert.equal(out.line, 'I wait at the window. Until your car pulls in.');
+  assert.equal(out.reaction, 'Window duty. The best kind of duty.');
+  assert.equal(run('enforce-typed.js', typedReq('meaning', 'my best friend... forever', 'Kuku', sam), {error:'timeout'}).line, 'My best friend. Forever.');
+});
+check('a follow-up question that names something the owner never said is dropped, with its chips', () => {
+  const gd = typedReq('home', 'she waits by the door!! every single day', 'Honey', sam);
+  const fu = (question, chips) => run('enforce-typed.js', gd, {reaction:'At the door every day, what a welcome.', lines:['I wait by the door for you every single day.'], follow_up:{question, chips, lines:chips.map(() => null), replies:chips.map(() => null)}, flags:[]}).follow_up;
+  assert.equal(fu("Does Honey hear Sam's car before the door opens?", ['Hears the car first', 'Only at the door', 'Every single time']), null, 'a car');
+  assert.equal(fu('Does Honey grab a toy or a shoe for Sam?', ['Brings a toy', 'Just waits', 'Every single time']), null, 'a toy and a shoe');
+  const kept = fu('Is Honey at the door even on weekends?', ['Even weekends', 'Hears the car first', 'Every single time']);
+  assert.equal(kept.question, 'Is Honey at the door even on weekends?', 'the door is the owner\'s own');
+  assert.deepEqual(kept.chips, ['Even weekends', 'Every single time']);
+});
+check('a gift for the buyer: Buddy says you, and never the buyer\'s name', () => {
+  const gs = typedReq('home', 'she follows me from room to room', 'Ruby', alexSelf);
+  const fuYou = {question:'Does Ruby follow you into every room?', chips:['Follows you everywhere', 'Only when you get up'], lines:[null, null], replies:['Your shadow, then.', 'A sensible shadow.']};
+  const you = run('enforce-typed.js', gs, {reaction:'Ruby follows you from room to room, which is love.', lines:['I follow you from room to room, every time.'], follow_up:fuYou, flags:[]});
+  assert.equal(you.reaction, 'Ruby follows you from room to room, which is love.');
+  assert.deepEqual(you.follow_up.chips, ['Follows you everywhere', 'Only when you get up']);
+  assert.deepEqual(you.follow_up.replies, ['Your shadow, then.', 'A sensible shadow.']);
+  const byName = run('enforce-typed.js', gs, {reaction:'Ruby follows Alex from room to room.', lines:['I follow you from room to room, every time.'], follow_up:{question:'Does Ruby follow Alex into every room?', chips:['Follows Alex everywhere'], lines:[null], replies:[null]}, flags:[]});
+  assert.equal(byName.reaction, '', 'no prefix rather than the buyer named in the third person');
+  assert.equal(byName.follow_up, null);
+  // a gift for someone else is unchanged: their name, never you
+  const gp = typedReq('home', 'she follows me from room to room', 'Ruby', sam);
+  assert.equal(run('enforce-typed.js', gp, {reaction:'Lovely.', lines:['I follow you from room to room, every time.'], follow_up:fuYou, flags:[]}).follow_up, null);
+  const named = run('enforce-typed.js', gp, {reaction:'Lovely.', lines:['I follow you from room to room, every time.'], follow_up:{question:'Does Ruby follow Sam into every room?', chips:['Follows Sam everywhere'], lines:[null], replies:[null]}, flags:[]});
+  assert.deepEqual(named.follow_up.chips, ['Follows Sam everywhere']);
+  // the compose reason
+  const coffeeFor = (recipient) => ({input:{dog:{name:'Ruby'}, recipient, answers:[{id:'together', chip:'coffee', label:'', typed:null}], current_lines:{home:'I wait for you.', spot:"I'm never far from you.", together:'Coffee with you is the best part of my morning.', meaning:"I'm yours, always."}, default_gift:'mug'}});
+  const reason = (recipient, text) => run('enforce-compose.js', coffeeFor(recipient), {text: JSON.stringify({lines: coffeeFor(recipient).input.current_lines, recommended_gift:'mug', reason:text, flags:[]})}).reason;
+  assert.equal(reason(alexSelf, 'Your mornings start with Ruby and a coffee, so a mug puts Ruby right there.'), 'Your mornings start with Ruby and a coffee, so a mug puts Ruby right there.');
+  assert.equal(reason(alexSelf, "Alex's mornings start with Ruby and a coffee, so a mug puts Ruby right there."), '');
+  assert.equal(reason(sam, 'Your mornings start with Ruby and a coffee, so a mug puts Ruby right there.'), '');
+  assert.equal(reason(sam, "Sam's mornings start with Ruby and a coffee, so a mug puts Ruby right there."), "Sam's mornings start with Ruby and a coffee, so a mug puts Ruby right there.");
+});
+check('a dog\'s name grounds no prop: a dog called Biscuit, Latte or Waffles gets no cookie, espresso or waffle', () => {
+  const said = 'we hang out on sundays';
+  const typed = (dog, reaction, line, text = said) => run('enforce-typed.js', typedReq('together', text, dog, sam), {reaction, lines:[line], follow_up:null, flags:[]});
+  let out = typed('Biscuit', 'Biscuit would trade every cookie for Sam.', "I'd trade every cookie in the house for you.");
+  assert.equal(out.reaction, ''); assert.equal(out.line, 'We hang out on sundays.');
+  assert.equal(typed('Latte', 'Lovely.', 'Espresso with you is my favorite part of the day.').line, 'We hang out on sundays.');
+  assert.equal(typed('Waffles', 'Lovely.', "I'd give up every waffle for you on a sunday.").line, 'We hang out on sundays.');
+  // the name itself may appear, and the owner's own words still ground a prop
+  assert.equal(typed('Biscuit', 'Biscuit and Sam on a Sunday, perfect.', 'Sundays with you are my favorite days.').reaction, 'Biscuit and Sam on a Sunday, perfect.');
+  out = typed('Biscuit', 'Lovely.', 'I wait at the door with a cookie for you.', 'Biscuit waits at the door');
+  assert.equal(out.line, 'Biscuit waits at the door.', 'the name in the typed words grounds no cookie');
+  assert.equal(typed('Biscuit', 'Lovely.', 'I wait at the door for you.', 'Biscuit waits at the door').line, 'I wait at the door for you.');
+  assert.equal(S.propsGrounded('I bring you a cookie.', 'she loves cookies', 'Cookie Sam'), true, 'cookies the owner typed ground a cookie, whatever the name');
+  // compose
+  const biscuit = {input:{dog:{name:'Biscuit'}, recipient:sam, answers:[{id:'together', chip:'walk', label:'', typed:null}], current_lines:{home:'I wait for you.', spot:"I'm never far from you.", together:'Our walks are the best part of my day.', meaning:"I'm yours, always."}, default_gift:'mug'}};
+  const cl = run('enforce-compose.js', biscuit, {text: JSON.stringify({lines: Object.assign({}, biscuit.input.current_lines, {together:"I'd trade every cookie in the house for you."}), recommended_gift:'mug', reason:'Biscuit would trade a cookie for a walk with Sam, so a mug fits.', flags:[]})});
+  assert.equal(cl.lines.together, 'Our walks are the best part of my day.');
+  assert.equal(cl.reason, '');
+});
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;

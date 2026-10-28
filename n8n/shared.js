@@ -14,7 +14,8 @@ const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Z
 
 // No exclamation marks anywhere a buyer reads (house rule): a run of them ends the sentence with one
 // period, one beside a question mark leaves the question, one before a comma just goes, the word
-// after a converted one starts a sentence, and a double period collapses
+// after a converted one starts a sentence, and a double period or an ellipsis collapses to one
+// period, with the word after it starting a sentence ("I wait at the window. Until your car pulls in.")
 function clean(s) {
   return String(s == null ? '' : s)
     .replace(/[—–]/g, ', ')
@@ -25,6 +26,7 @@ function clean(s) {
     .replace(/!(?=\s*[,;:])/g, '')
     .replace(/!\s+([a-z])/g, (m, c) => '. ' + c.toUpperCase())
     .replace(/!/g, '.')
+    .replace(/\.{2,}\s*([a-z])/g, (m, c) => '. ' + c.toUpperCase())
     .replace(/\.{2,}/g, '.')
     .replace(/\s+([,.!?])/g, '$1')
     .replace(/,\s*,/g, ',')
@@ -73,12 +75,16 @@ const CHIP_WORDS = {
 function chipWords(chips) {
   return chips.filter(c => typeof c === 'string' && c).map(c => c + ' ' + (Object.prototype.hasOwnProperty.call(CHIP_WORDS, c) ? CHIP_WORDS[c].join(' ') : '')).join(' ');
 }
-function propsGrounded(text, answerHay) {
+// names holds the dog's and the person's names. A name is no prop and grounds none: the name itself
+// may appear in the text, but a dog called Biscuit or Latte never grounds a cookie or an espresso (28 Oct)
+function propsGrounded(text, answerHay, names) {
+  const nm = Object.create(null);
+  (String(names || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { nm[w] = true; });
   const have = {};
-  (String(answerHay || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { if (w in PROP_GROUP) have[PROP_GROUP[w]] = true; });
+  (String(answerHay || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { if (w in PROP_GROUP && !nm[w]) have[PROP_GROUP[w]] = true; });
   const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
   return words.every((w, i) => {
-    if (!(w in PROP_GROUP)) return true;
+    if (!(w in PROP_GROUP) || nm[w]) return true;
     // "You treat me like family" and "I park myself on your feet" are verbs, not a snack or a place
     if (/^(treat|park)s?$/.test(w) && /^(you|me|us|them|him|her|it|everyone|myself|yourself|ourselves)$/.test(words[i + 1] || '')) return true;
     return !!have[PROP_GROUP[w]];
@@ -124,7 +130,7 @@ function staccato(s) {
 // Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
 const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
 // hay grounds names and numbers; answerHay (the owner's answers only) grounds every prop (28 Oct)
-function okLine(s, hay, max, answerHay) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay); }
+function okLine(s, hay, max, answerHay, names) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay, names); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
 // 43 characters printed "Always ready to run, walk and fetch. Not."); clean() has already turned a
 // typed double exclamation mark into one period (28 Oct: a typed note printed with both marks)

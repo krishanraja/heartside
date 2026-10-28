@@ -14,7 +14,8 @@ const YOU = /(^|[^A-Za-z'])(you|your|yours|you're|you've|you'll|you'd)(?=$|[^A-Z
 
 // No exclamation marks anywhere a buyer reads (house rule): a run of them ends the sentence with one
 // period, one beside a question mark leaves the question, one before a comma just goes, the word
-// after a converted one starts a sentence, and a double period collapses
+// after a converted one starts a sentence, and a double period or an ellipsis collapses to one
+// period, with the word after it starting a sentence ("I wait at the window. Until your car pulls in.")
 function clean(s) {
   return String(s == null ? '' : s)
     .replace(/[—–]/g, ', ')
@@ -25,6 +26,7 @@ function clean(s) {
     .replace(/!(?=\s*[,;:])/g, '')
     .replace(/!\s+([a-z])/g, (m, c) => '. ' + c.toUpperCase())
     .replace(/!/g, '.')
+    .replace(/\.{2,}\s*([a-z])/g, (m, c) => '. ' + c.toUpperCase())
     .replace(/\.{2,}/g, '.')
     .replace(/\s+([,.!?])/g, '$1')
     .replace(/,\s*,/g, ',')
@@ -73,12 +75,16 @@ const CHIP_WORDS = {
 function chipWords(chips) {
   return chips.filter(c => typeof c === 'string' && c).map(c => c + ' ' + (Object.prototype.hasOwnProperty.call(CHIP_WORDS, c) ? CHIP_WORDS[c].join(' ') : '')).join(' ');
 }
-function propsGrounded(text, answerHay) {
+// names holds the dog's and the person's names. A name is no prop and grounds none: the name itself
+// may appear in the text, but a dog called Biscuit or Latte never grounds a cookie or an espresso (28 Oct)
+function propsGrounded(text, answerHay, names) {
+  const nm = Object.create(null);
+  (String(names || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { nm[w] = true; });
   const have = {};
-  (String(answerHay || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { if (w in PROP_GROUP) have[PROP_GROUP[w]] = true; });
+  (String(answerHay || '').toLowerCase().match(/[a-z]+/g) || []).forEach(w => { if (w in PROP_GROUP && !nm[w]) have[PROP_GROUP[w]] = true; });
   const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
   return words.every((w, i) => {
-    if (!(w in PROP_GROUP)) return true;
+    if (!(w in PROP_GROUP) || nm[w]) return true;
     // "You treat me like family" and "I park myself on your feet" are verbs, not a snack or a place
     if (/^(treat|park)s?$/.test(w) && /^(you|me|us|them|him|her|it|everyone|myself|yourself|ourselves)$/.test(words[i + 1] || '')) return true;
     return !!have[PROP_GROUP[w]];
@@ -124,7 +130,7 @@ function staccato(s) {
 // Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
 const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
 // hay grounds names and numbers; answerHay (the owner's answers only) grounds every prop (28 Oct)
-function okLine(s, hay, max, answerHay) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay); }
+function okLine(s, hay, max, answerHay, names) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay, names); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
 // 43 characters printed "Always ready to run, walk and fetch. Not."); clean() has already turned a
 // typed double exclamation mark into one period (28 Oct: a typed note printed with both marks)
@@ -162,13 +168,18 @@ const inp = g.input;
 const raw = $input.first().json;
 const m = findJson(raw, 'reaction') || findJson(raw, 'line') || {};
 const hay = [inp.typed_text, inp.previous_line, inp.dog.name, inp.recipient.name, inp.recipient.relation, inp.question].join(' ');
-// what the owner said, for props: the typed words and the names, never the question. On home_follow
-// the line refines previous_line, which is already the guarded line from the owner's home answer.
-const answerHay = [inp.typed_text, inp.step === 'home_follow' ? inp.previous_line : '', inp.dog.name, inp.recipient.name].join(' ');
+// what the owner said, for props: the typed words, never the question. On home_follow the line
+// refines previous_line, which is already the guarded line from the owner's home answer. The names
+// go apart: a name may appear, but a dog called Biscuit grounds no cookie (28 Oct).
+const answerHay = [inp.typed_text, inp.step === 'home_follow' ? inp.previous_line : ''].join(' ');
+const names = [inp.dog.name, inp.recipient.name].join(' ');
 // gift lines speak to the person as you, so their name never appears in one
 // and the dog is I, so its own name never appears in one either
 const hasName = (t, nm) => !!nm && !!nm.replace(/[^A-Za-z]/g, '') && new RegExp('(^|[^A-Za-z])' + nm.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 const named = (t) => hasName(t, inp.recipient.name) || hasName(t, inp.dog.name);
+// a gift for the buyer ("Me", relation self): Buddy is talking to the person, so Buddy's words say
+// you and never the buyer's name (28 Oct)
+const forBuyer = inp.recipient.relation === 'self';
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(inp.typed_text) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(inp.typed_text) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -183,7 +194,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
   // three candidate lines, best first: the first that passes every rule wins (22 Oct)
   const cands = (Array.isArray(m.lines) ? m.lines : []).concat(m.line ? [m.line] : []).map(clean).filter(Boolean);
   const MAX = MAX_LINE[inp.step] || 44;
-  const line = cands.find(l => okLine(l, hay, MAX, answerHay) && !named(l)) || '';
+  const line = cands.find(l => okLine(l, hay, MAX, answerHay, names) && !named(l)) || '';
   let fu = null;
   if (m.follow_up && typeof m.follow_up === 'object' && inp.step === 'home') {
     const q = clean(m.follow_up.question);
@@ -194,21 +205,24 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       c = clean(c);
       // a non-answer chip (the page adds its own Not sure) or one that names a prop the owner never
       // mentioned goes, with its line and reply (28 Oct)
-      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay)) return;
+      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay, names)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
-      f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow, answerHay + ' ' + c) && !named(l) ? l : null);
-      f.replies.push(okText(r, 50) && propsGrounded(r, answerHay + ' ' + c) ? r : null);
+      f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow, answerHay + ' ' + c, names) && !named(l) ? l : null);
+      f.replies.push(okText(r, 50) && propsGrounded(r, answerHay + ' ' + c, names) ? r : null);
     });
-    // the buyer is not the person: a question or chip that says you, I or my is about the wrong one
-    const wrong = (t) => YOU.test(t) || FIRST_PERSON.test(t);
+    // the buyer is not the person: a question or chip that says you, I or my is about the wrong one.
+    // For a gift for the buyer it is the other way round: you is right, and their name is wrong.
+    const wrong = (t) => (forBuyer ? hasName(t, inp.recipient.name) : YOU.test(t)) || FIRST_PERSON.test(t);
     f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
-    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong)) fu = f;
+    // the question Buddy asks names nothing the owner never said, as its chips don't (28 Oct)
+    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong) && propsGrounded(q, answerHay, names)) fu = f;
   }
   const goodLine = line || ownWords(inp.typed_text, MAX) || clean(inp.previous_line);
   out = {
-    // a reaction that invents a prop says nothing at all, so the page shows no prefix (28 Oct)
-    reaction: okText(reaction, 70) ? (propsGrounded(reaction, answerHay) ? reaction : '') : 'Tell me more?',
+    // a reaction that invents a prop, or names the buyer of a gift for themselves, says nothing at
+    // all, so the page shows no prefix (28 Oct)
+    reaction: okText(reaction, 70) ? (propsGrounded(reaction, answerHay, names) && !(forBuyer && hasName(reaction, inp.recipient.name)) ? reaction : '') : 'Tell me more?',
     line: goodLine,
     follow_up: ai ? fu : (inp.step === 'home' ? { question: 'Tell me more?', chips: [] } : null),
     flags: flags

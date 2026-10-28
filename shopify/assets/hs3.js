@@ -105,7 +105,7 @@
   /* The breed, if the buyer gave one, through the corpus lookup (breeds-corpus/lookup). Only an
      exact match counts; its archetype (tone) is a light signal for the dog's voice, never shown.
      A breed picked from the list (S.breedId, 28 Oct) is that row; typed words count only when
-     they are an exact name. */
+     they are an exact name. A picked cross keeps its parents, which decide its energy. */
   function breedRow() {
     var B = window.HSBreeds, b = String(S.breed || '').trim();
     if (!B || (!b && !S.breedId)) return null;
@@ -113,7 +113,7 @@
     try {
       if (S.breedId && typeof B.byId === 'function') r = B.byId(S.breedId);
       if (!r) r = B.lookup(b);
-      if (r && S.breedId) r = r.id === S.breedId ? { id: r.id, name: r.name, kind: r.kind, exact: true, tone: r.tone } : null;
+      if (r && S.breedId) r = r.id === S.breedId ? { id: r.id, name: r.name, kind: r.kind, exact: true, tone: r.tone, parents: r.parents } : null;
     } catch (e) { r = null; }
     return r;
   }
@@ -270,7 +270,8 @@
     return {
       mug: MUG[S.together] || MUG.skip,
       blanket: 'For the couch ' + (n.self ? 'you' : 'they') + ' share. Warm, soft, and ' + n.dog + ' is already on it.',
-      print: 'For the wall by the door, so ' + r + ' see' + s + ' ' + n.dog + ' the minute ' + (n.self ? 'you' : 'they') + ' get home.',
+      // no door, window or couch the buyer never named (28 Oct): the portrait hangs on a wall at home
+      print: 'For a wall at home, so ' + r + ' see' + s + ' ' + n.dog + ' every day.',
       ornament: 'For the tree. ' + n.dog + ' comes out every December, right where ' + r + ' will see.'
     }[g];
   }
@@ -346,7 +347,9 @@
      the dog instead (he, she, its name: "Pretends he doesn't.") is the wrong voice and is dropped. */
   var THIRD = /(^|[^A-Za-z'])(he|she|him|his|her|hers|he's|she's)(?=$|[^A-Za-z'])/i;
   function dogStyle(line, key) {
-    var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').replace(/\.{2,}/g, '.').trim();
+    // an ellipsis or doubled period is one period, and the word after it starts a sentence (28 Oct:
+    // "I wait at the window... until your car pulls in." printed "window. until"), as n8n's clean()
+    var t = String(line || '').replace(/[‘’]/g, "'").replace(/!/g, '.').replace(/\.{2,}\s*([a-z])/g, function (m, c) { return '. ' + c.toUpperCase(); }).replace(/\.{2,}/g, '.').trim();
     if (!t || t.length > maxFor(key) || THIRD.test(t)) return '';
     var dog = String(S.dog || '').trim().toLowerCase();
     if (dog && t.toLowerCase().indexOf(dog) !== -1) return '';
@@ -387,12 +390,15 @@
     });
   }
   // the AI's follow-up: no non-answer chips (each chip keeps its own line and reply), and no
-  // reply or line that names something the buyer never said
+  // question, chip, reply or line that names something the buyer never said. A question that
+  // does ("Does Honey hear Sam's car?" when the buyer said only the door) is no follow-up at all,
+  // the same rule as n8n's Enforce (28 Oct)
   function followUp(f, hay) {
     var out = { question: clip(level(f.question), 70), chips: [], lines: [], replies: [] };
+    if (invents(out.question, hay)) return null;
     (f.chips || []).slice(0, 3).forEach(function (c, i) {
       c = clip(level(c), 24);
-      if (!String(c).trim() || NONANSWER.test(String(c).trim())) return;
+      if (!String(c).trim() || NONANSWER.test(String(c).trim()) || invents(c, hay)) return;
       var h = hay + ' ' + c, l = f.lines && f.lines[i], x = f.replies && f.replies[i];
       l = typeof l === 'string' ? dogStyle(l, 'home') || null : null;
       x = typeof x === 'string' && x.length <= 50 ? level(x) : null;
@@ -748,12 +754,15 @@
     if (S.step === 3) return S.more ? 'home-more' : 'home';
     return ROUTES[[0, 0, 1, 2, 4, 5, 6, 7][S.step] || 0];
   }
+  // the dog's name as Next lets it through: there, and no longer than the signature holds (28 Oct:
+  // the browser's Forward once carried a 23-letter name past Next, and the gift went unsigned)
+  function dogOK() { var d = nameCase(S.dog, ''); return !!d && d.length <= NAME_MAX; }
   function routeOK(r) {
     var chip = S.home && S.home !== 'skip' && S.home !== 'typed';
     switch (r) {
       case 'hero': case 'dog': return true;
-      case 'person': return !!String(S.dog).trim();
-      case 'home': return !!(String(S.dog).trim() && String(S.rec).trim());
+      case 'person': return dogOK();
+      case 'home': return !!(dogOK() && String(S.rec).trim());
       case 'home-more': return routeOK('home') && !!(chip || S.fu);
       case 'spot': return routeOK('home') && !!S.home && !S.fu;
       case 'together': return routeOK('spot') && !!S.spot;
@@ -1809,8 +1818,9 @@
       var st = e.state || {}, was = nav.depth, want = st.hs3 || routeFromURL() || 'hero';
       nav.depth = st.depth || 0;
       // a step the answers no longer reach (a typed answer's follow-up, once answered) is passed
-      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere
-      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was) {
+      // over in the direction the buyer pressed, untouched, so no Back or Forward press lands nowhere.
+      // A dog's name Next would refuse reaches no later step, so the buyer lands on the name instead.
+      if (want !== 'hero' && clampRoute(want) !== want && nav.depth !== was && dogOK()) {
         try { if (nav.depth < was && nav.depth > 0) { window.history.back(); return; } if (nav.depth > was) { window.history.forward(); return; } } catch (err) { /* show the clamped step below */ }
       }
       nav.route = '';
