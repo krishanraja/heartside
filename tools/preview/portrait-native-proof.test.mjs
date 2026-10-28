@@ -69,3 +69,41 @@ for (const minified of [false,true]) test(`${minified?'minified':'source'}: port
   assert.equal(await page.evaluate(()=>state.hs3_signature_override),'Love, Juniper');
  } finally {await browser.close();}
 });
+
+// Item 4 (28 Oct): a direct visit to the portrait shows no Signed field, by design; the name is the
+// signature. So the line under Dog's name says what prints, as they type, and from 11 letters how
+// many still fit in Teeinblue's 14 (Signed holds 20: "Love, " + 14).
+for (const minified of [false,true]) test(`${minified?'minified':'source'}: the portrait says what it signs, under the Dog's name field, as they type`, async()=>{
+ const browser=await chromium.launch();
+ try {
+  const page=await browser.newPage(), errors=[], offsite=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',r=>{offsite.push(r.request().url());return r.abort();});
+  await page.setContent(html.replace('name="layer-209591" value="Juniper"','name="layer-209591" value="Juniper" maxlength="14"'));
+  const code=rules+['tibFields','portraitSignLine'].map(section).join('\n');
+  await page.addScriptTag({content:minified?transformSync(code,{minify:true}).code:code});
+  const read=()=>page.evaluate(()=>{const line=document.querySelector('[data-hs2-sign-line]');const field=document.querySelector('[name="layer-209591"]').closest('.tee-field');
+   return line&&{under:field.nextElementSibling===line,role:line.getAttribute('role'),text:line.querySelector('[data-hs2-sign-text]').textContent,hint:line.querySelector('[data-hs2-sign-hint]').hidden?'':line.querySelector('[data-hs2-sign-hint]').textContent,shown:!!line.getClientRects().length};});
+  await page.evaluate(()=>portraitSignLine());
+  assert.deepEqual(await read(),{under:true,role:'status',text:'Signed on the print: Love, Juniper',hint:'',shown:true});
+  const dog=page.locator('[name="layer-209591"]');
+  await dog.fill('');await dog.pressSequentially('Pickle');
+  assert.equal((await read()).text,'Signed on the print: Love, Pickle');
+  await dog.fill('');await dog.dispatchEvent('input');
+  assert.equal((await read()).text,"Your dog's name signs the print.");
+  await dog.pressSequentially('Sir Biscuit');
+  assert.deepEqual(await read(),{under:true,role:'status',text:'Signed on the print: Love, Sir Biscuit',hint:'3 letters left. Up to 14 fit in the signature.',shown:true});
+  await dog.pressSequentially(' O');
+  assert.equal((await read()).hint,'1 letter left. Up to 14 fit in the signature.');
+  await dog.pressSequentially("'Malley");
+  assert.equal(await dog.inputValue(),"Sir Biscuit O'",'Teeinblue keeps 14');
+  assert.equal((await read()).hint,"That's the most that fits. Up to 14 fit in the signature.");
+  // a Teeinblue redraw moves our line; the next pass puts it back under the field, once
+  await page.evaluate(()=>{document.querySelector('#buy').appendChild(document.querySelector('[data-hs2-sign-line]'));portraitSignLine();});
+  assert.equal((await read()).under,true);assert.equal(await page.locator('[data-hs2-sign-line]').count(),1);
+  // only the portrait signs itself
+  await page.evaluate(()=>{document.querySelector('[data-hs2-sign-line]').remove();document.querySelector('#buy').dataset.hs2ArtworkKind='mug';portraitSignLine();});
+  assert.equal(await page.locator('[data-hs2-sign-line]').count(),0);
+  assert.deepEqual(errors,[]);assert.deepEqual(offsite,[]);
+ } finally {await browser.close();}
+});

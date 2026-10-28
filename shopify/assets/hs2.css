@@ -1242,3 +1242,48 @@ product-card quick-add-component button { display: none !important; }
 .hs2-one-per { margin: 4px 0 0; font-size: 13px; color: #5A4A44; }
 /* the gift page adds one of each design; Teeinblue's quantity box would only promise more (hs2.js withHsProps) */
 #buy[data-hs2-artwork-kind] .tee-form-actions .tee-quantity, #buy[data-hs2-blanket-purchase] .tee-form-actions .tee-quantity { display: none !important; }
+
+/* ========================================== Teeinblue's chrome on the gift pages (28 Oct, wp1b)
+   The native mug, portrait and blanket pages (#buy[data-hs2-artwork-kind], #buy[data-hs2-blanket-purchase])
+   are not the v3 gift view, so the polish above that is scoped to #buy[data-hs2-v3] never reached them.
+   Krish's stills S15 to S21 and the four order recordings: Teeinblue's fixed Personalize bar covered
+   the journey card and the review, its Preview and "PERSONALIZE" header doubled our own preview, and
+   its upload count and green "added to cart" line talked over ours. hs2.js tibChrome relabels the
+   words; these rules put the rest away. Kept separate from the photo block. */
+html:has(#buy[data-hs2-artwork-kind], #buy[data-hs2-blanket-purchase]) .tee-btn-wrapper--personalize { display: none !important; }
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .tee-form-action:has(.tee-btn--preview),
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .tee-btn--preview,
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .tee-form-header,
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) [data-hs2-tib-hide],
+/* Teeinblue's agreement box, once hs2.js syncTibAgreement has recognised it: our one tick answers it */
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .tee-checkbox-wrapper[data-hs2-tib-agreement] { display: none !important; }
+/* the crop dialog stays on the screen at phone width (its width and left are set inline in px) */
+.vm--container .vm--modal { left: 0 !important; right: 0 !important; margin-left: auto !important; margin-right: auto !important; max-width: calc(100vw - 16px) !important; box-sizing: border-box; }
+.vm--container .tee-dialog-image-cropper, .vm--container .tee-dialog-image-cropper :is(img, canvas) { max-width: 100% !important; height: auto; }
+/* Teeinblue's slider arrows sat on the mug's handle, halfway up: they keep their side and go to the
+   bottom corners, small and on cream. The arrows' own class names are not in our capture
+   (fixtures/teeinblue-classes.json), so they are found by place: a button directly in the stage or slider. */
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .hs2-product__tib :is(.tee-gallery__stage, .tee-slider, .tee-slider__inner) > button {
+  top: auto !important; bottom: 10px !important; transform: none !important; width: 36px !important; height: 36px !important; min-height: 0 !important;
+  padding: 0 !important; border: 0 !important; border-radius: 50% !important; background: rgba(255, 253, 249, 0.92) !important; color: #121010 !important;
+  box-shadow: 0 4px 10px -6px rgba(30, 23, 20, 0.6) !important; opacity: 1;
+}
+/* our thumbnail strip: one row that shares the width, scrolling only past six, so a sixth photo is
+   never alone on a second row (28 Oct, the mug page at 360 and 1280) */
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .hs2-product__thumbs { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: minmax(48px, 76px); gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .hs2-product__thumbs button { width: auto; height: auto; aspect-ratio: 1; }
+#buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) .hs2-product__thumbs button[hidden] { display: none; }
+/* the bottom bar (gift list, redo) never covers the last of the page */
+html.hs2-has-next #buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+/* every word about an add, right under Teeinblue's Add to cart (hs2.js checkoutImageStatus) */
+.hs2-add-note { margin: 8px 0 0; font-size: 15px; line-height: 1.45; color: #121010; text-align: center; text-wrap: pretty; }
+.hs2-add-note[hidden] { display: none; }
+/* the portrait's signature, under its Dog's name field (hs2.js portraitSignLine) */
+.hs2-sign-line { margin: -10px 0 16px; font-size: 14px; line-height: 1.45; color: #5A4A44; }
+.hs2-sign-line [data-hs2-sign-hint] { display: block; color: #8A4A2B; }
+.hs2-sign-line [hidden] { display: none; }
+/* Buddy's line on a gift page never leaves one word on its own line ("Let's make Mochi's / mug.") */
+.hs-journey__line { text-wrap: balance; }
+.hs-journey__intro p, .hs-journey__v { text-wrap: pretty; }
+/* a redo in the cart: which line is which (hs2.js redoOffers) */
+.hs2-redo .hs2-redo__tag { font-family: "HS Courier Prime", "Courier New", monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8A4A2B; }

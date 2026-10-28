@@ -204,6 +204,10 @@
                   <input type="hidden" name="properties[_hs_art_profile]" data-hs2-prop="personality" value="">
                   <input type="hidden" name="properties[_hs_art_style]" data-hs2-prop="art_style" value="">
                   <input type="hidden" name="properties[_hs_art_tone]" data-hs2-prop="art_tone" value="">
+                  {%- comment -%} what the buyer told Buddy and who it ships to, for the person who checks the order:
+                    they never reached a native order before (28 Oct, orders #1005 to #1008). hs2.js syncBlanketProperties fills them. {%- endcomment -%}
+                  <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
+                  <input type="hidden" name="properties[_hs_ship_to]" data-hs2-prop="hs_ship_to" value="">
                 {%- elsif block.settings.v3 -%}
                   {%- comment -%} v3 gifts: what the buyer told Buddy and the words on the gift, for the person who checks the order {%- endcomment -%}
                   <input type="hidden" name="properties[_hs_answers]" data-hs2-prop="hs_answers" value="">
