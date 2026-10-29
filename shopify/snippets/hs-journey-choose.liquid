@@ -1,0 +1,32 @@
+{%- comment -%}
+  Journey mode on a gift page (Krish, 29 Oct: show and tell, no scrolling, nothing asked twice).
+  A buyer who came through the journey (sections/hs-journey.liquid) lands here with everything
+  answered: this panel shows the painting as it happens, then the painting on every gift, the
+  bundle, one tick and one button. Everything else on the page is hidden by hs-journey-choose.css,
+  and Teeinblue's own working parts stay in the page, visually hidden, because they paint and add
+  to cart. Behaviour is in assets/hs-journey-choose.js; it shows nothing without a fresh journey.
+{%- endcomment -%}
+{{ 'hs-journey-choose.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-journey-choose.js' | asset_url }}" defer="defer"></script>
+<section class="hs-jm" data-hs-jm hidden aria-labelledby="hs-jm-title"
+  data-hs-jm-handle="{{ product.handle | escape }}">
+  <header class="hs-jm__head">
+    <a class="hs-jm__back" href="/?step=look" aria-label="Back to the look">←</a>
+    <h2 class="hs-jm__title" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
+  </header>
+  <div class="hs-jm__paint" data-hs-jm-paint>
+    <div class="hs-jm__nophoto" data-hs-jm-nophoto hidden>
+      <p class="hs-jm__lead">Your photo didn't come through on this page.</p>
+      <button type="button" class="hs-jm__btn" data-hs-jm-photo>Choose your dog's photo</button>
+    </div>
+  </div>
+  <div class="hs-jm__choose" data-hs-jm-choose hidden>
+    <p class="hs-jm__lead" data-hs-jm-lead></p>
+    <div class="hs-jm__tiles" role="group" aria-label="Choose your gifts" data-hs-jm-tiles></div>
+    <div class="hs-jm__options" data-hs-jm-options></div>
+    <p class="hs-jm__bundle" data-hs-jm-bundle>Two gifts save 15%. All three save 20%.</p>
+    <label class="hs-jm__tick"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
+    <div class="hs-jm__dock"><button type="button" class="hs-jm__btn" data-hs-jm-add disabled>Add to cart</button>
+      <p class="hs-jm__small" data-hs-jm-status role="status"></p></div>
+  </div>
+</section>

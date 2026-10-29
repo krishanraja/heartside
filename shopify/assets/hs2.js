@@ -295,6 +295,49 @@
       } catch (err) { /* the check fails open without it */ }
     }, true);
   }
+  /* Journey mode (Krish, 29 Oct): a buyer who came through the journey (hs-journey.js) has answered
+     everything and chosen the words, the tone and the look. This page paints at once and asks
+     nothing again: the photo goes to the painter by itself, once, and every question, select and
+     note editor is hidden. A journey is fresh for six hours and only on a ?journey=1 address. */
+  var JOURNEY_HOURS = 6;
+  function journey() {
+    var j = state.hs_journey;
+    if (!j || !j.t || Date.now() - j.t > JOURNEY_HOURS * 36e5) return null;
+    // Teeinblue rewrites the address to ?variant= when an option changes, so the page remembers it
+    // opened from this journey and a reload stays in journey mode
+    var key = 'hs2-journey-on:' + productId();
+    try {
+      if (new URLSearchParams(window.location.search).get('journey') === '1') sessionStorage.setItem(key, String(j.t));
+      else if (sessionStorage.getItem(key) !== String(j.t)) return null;
+    } catch (e) { return null; }
+    return nativeArtworkPurchase() ? j : null;
+  }
+  function journeySentKey(j) { return 'hs2-journey-sent:' + productId() + ':' + j.t; }
+  // sends the saved photo once the painter's fields carry the answers; a reload after the send, or a
+  // painting already saved, never sends again (the upload lock and request keys still stand behind it)
+  // the photo did not carry over: the buyer picks one in Teeinblue's own field, which sends it, so
+  // the automatic send stands down for good on this page (no second painting)
+  function journeyPick() {
+    var j = journey(); if (!j) return false;
+    try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
+    return openPhotoPicker('journey');
+  }
+  function journeyAutoSend() {
+    var j = journey();
+    if (!j) return;
+    // the page's own restore gives up after 1.5 s; the journey waits for the photo it was promised
+    if (!usePhoto.file) restorePhoto().then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); });
+    var tries = 0, timer = setInterval(function () {
+      tries++;
+      var sent = false;
+      try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
+      if (sent || cityArtSaved() || tries > 150) { clearInterval(timer); return; }
+      if (!usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
+      clearInterval(timer);
+      sendBlanketPhoto();
+    }, 600);
+  }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
     var target = photoInput();
@@ -4143,6 +4186,7 @@
   }
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
+    if (journey()) { document.documentElement.classList.add('hs2-journey'); var buyEl = document.getElementById('buy'); if (buyEl) buyEl.classList.add('hs2-journey'); }
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices) {
       window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeArtworkPurchase()});
       window.addEventListener('hs-artwork-choices', artworkChoicesChanged);
@@ -4158,7 +4202,7 @@
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
-    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); });
+    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); journeyAutoSend(); });
     cartTidy();
   }
   var resizeT;
@@ -4168,5 +4212,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyPick: journeyPick, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
