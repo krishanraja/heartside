@@ -35,7 +35,7 @@ export const CORE = [
 // Shopify everywhere it is shown; this is only what the guard expects to find.
 export const ADDON = { key: 'artists-touch', handle: 'artists-touch', path: '/products/artists-touch', min: 2900 };
 
-// Old addresses and where each must land, with a 301. The two draft handles are what the
+// Old addresses and their exact destinations. Draft aliases require 301. The two draft handles are what the
 // 28 Oct campaign Update renamed the blanket and the portrait to; Shopify keeps redirects from
 // them to the clean handles CoWork restored. The legacy handles (the-morning-mug and the rest)
 // are left out until CoWork reads Shopify's URL redirect list back, so that no target here is a
@@ -88,3 +88,7 @@ export function landed(requested, finalUrl, redirected = false) {
   if (absolute(requested) && absolute(finalUrl) && a.host !== b.host) return `moved: ${from} now lands on another host`;
   return '';
 }
+
+// Verified 29 Oct: these three legacy aliases return 302 to the exact destinations above.
+// Accept a permanent redirect too; every other alias still requires 301.
+export const TEMPORARY_REDIRECTS = ["/products/the-framed-print","/products/the-couch-blanket","/products/the-morning-mug"];
