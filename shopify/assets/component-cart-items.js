@@ -47,6 +47,15 @@ async function heartsideSetComponentQuantity(key, quantity) {
   return HeartsideCartQuantity.change(current.cart.id, key, quantity);
 }
 
+// Native personalized rows can appear before Shopify presents the checkout bundle.
+// They follow the same one-per-design rule from their first cart render.
+function heartsideNativeDesignUnits(row) {
+  try {
+    const data = JSON.parse(row.getAttribute('data-hs2-cart-line'));
+    return data?.properties?._customization_id ? data.quantity : null;
+  } catch { return null; }
+}
+
 // An Artist's touch line (linked to its design by _hs_addon_for) and its units, or null.
 function heartsideAddonUnits(row) {
   if (!row) return null;
@@ -449,7 +458,8 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       // into 4 ($516 in checkout). A design may come down to one but never go above one.
       // An Artist's touch reworks one design once, so it follows the same rule (A9c).
       const addonUnits = componentKey ? null : heartsideAddonUnits(row);
-      const refused = componentKey && quantity > 1 && quantity >= heartsideComponentUnits(row)
+      const nativeUnits = componentKey ? null : heartsideNativeDesignUnits(row);
+      const refused = quantity > 1 && ((componentKey && quantity >= heartsideComponentUnits(row)) || (nativeUnits !== null && quantity >= nativeUnits))
         ? 'Each design is one gift, so it stays at one. Nothing was changed.'
         : addonUnits !== null && quantity > 1 && quantity >= addonUnits
           ? "One artist's touch per design. Nothing was changed."
