@@ -24,7 +24,7 @@
 // anywhere.
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { CORE, ADDON, REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_MEDIA_IDS, STANDIN_ALT, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
+import { CORE, ADDON, REDIRECTS, TEMPORARY_REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_MEDIA_IDS, STANDIN_ALT, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
 
 const TIMEOUT = 20000;
 // honest about what it is; a challenge for it counts as inconclusive, not as a failure
@@ -229,7 +229,7 @@ export async function check({ base = 'https://heartside.io', theme = '' } = {}) 
       if (r.error) return results.push(unknown(from, `could not be read (${r.error})`));
       const why = blocked(r);
       if (why) return results.push(unknown(from, `not checked: ${why}`));
-      if (r.status === 301 && r.location === to) return results.push(ok(from, `301 to ${to}`));
+      if ((r.status === 301 || (r.status === 302 && TEMPORARY_REDIRECTS.includes(from))) && r.location === to) return results.push(ok(from, `${r.status} to ${to}`));
       results.push(fail(from, r.location ? `answers ${r.status} to ${r.location}, expected 301 to ${to}` : `answers HTTP ${r.status}, expected 301 to ${to}`));
     })());
   }
