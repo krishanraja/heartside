@@ -411,15 +411,15 @@ for (const mode of MODES) test(`${mode}: chat: a hyphenated name stays whole in 
   for (const [w, h] of SIZES) {
     const {context, tab, errors, offsite} = await open(mode, w, h);
     try {
-      await load(tab, {...done, ...blank, dog: 'Honey', rec: 'Jo-anne'}, 'home');
+      await load(tab, {...done, ...blank, dog: 'Honey', rec: 'Jo-Anne'}, 'home');
       const m = await tab.evaluate(() => {
         const cut = el => { const out = []; const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-          for (let n; (n = walk.nextNode());) { let at = -1; while ((at = n.data.indexOf('Jo-anne', at + 1)) !== -1) { const range = document.createRange(); range.setStart(n, at); range.setEnd(n, at + 7); out.push(new Set([...range.getClientRects()].filter(x => x.width).map(x => Math.round(x.top))).size); } }
+          for (let n; (n = walk.nextNode());) { let at = -1; while ((at = n.data.indexOf('Jo-Anne', at + 1)) !== -1) { const range = document.createRange(); range.setStart(n, at); range.setEnd(n, at + 7); out.push(new Set([...range.getClientRects()].filter(x => x.width).map(x => Math.round(x.top))).size); } }
           return out; };
         return {bubble: cut(document.querySelector('.hs3-bubble')), chips: [...document.querySelectorAll('[data-hs3="chip"]')].flatMap(cut), wide: document.documentElement.scrollWidth - innerWidth};
       });
-      check(m.bubble.length >= 1 && m.bubble.every(n => n === 1), `${w}x${h}: "Jo-anne" is whole in the question (${JSON.stringify(m.bubble)})`);
-      check(m.chips.every(n => n === 1), `${w}x${h}: "Jo-anne" is whole on every chip (${JSON.stringify(m.chips)})`);
+      check(m.bubble.length >= 1 && m.bubble.every(n => n === 1), `${w}x${h}: "Jo-Anne" is whole in the question (${JSON.stringify(m.bubble)})`);
+      check(m.chips.every(n => n === 1), `${w}x${h}: "Jo-Anne" is whole on every chip (${JSON.stringify(m.chips)})`);
       check(m.wide <= 0, `${w}x${h}: no sideways scroll`);
       assert.deepEqual(errors, []); assert.deepEqual(offsite, []);
     } finally { await context.close(); }
@@ -434,7 +434,7 @@ for (const mode of MODES) test(`${mode}: choosing: Buddy's pick over a name that
   for (const [w, h] of [...SIZES, [375, 812]]) {
     const {context, tab, errors, offsite} = await open(mode, w, h);
     try {
-      for (const [name, st] of [['mug pick', {...done, sel: {mug: true, blanket: true, print: true}}], ['portrait pick', {...done, dog: 'Pickle', rec: 'Jo-anne', together: 'car', sel: {print: true}}], ['hyphen', {...done, dog: 'PICKLE', rec: 'Jo-anne', sel: {mug: true}}]]) {
+      for (const [name, st] of [['mug pick', {...done, sel: {mug: true, blanket: true, print: true}}], ['portrait pick', {...done, dog: 'Pickle', rec: 'Jo-Anne', together: 'car', sel: {print: true}}], ['hyphen', {...done, dog: 'PICKLE', rec: 'Jo-Anne', sel: {mug: true}}]]) {
         await load(tab, st, 'choose');
         const m = await tab.evaluate(rec => {
           const all = s => [...document.querySelectorAll(s)], add = document.querySelector('[data-hs3="add"]'), r = add.getBoundingClientRect();
