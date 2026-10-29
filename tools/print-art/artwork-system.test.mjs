@@ -258,9 +258,11 @@ test('buyer-typed toy and accessory facts are accepted alongside the existing fo
   assert.ok(prepare({...fixture(), factsProfile: JSON.parse(profile.serialize(profile.fromChat({toy: injection})))}).prompt.includes(JSON.stringify(injection)));
 });
 test('native candidate prompts carry only the chosen mood, medium and energy, and match the spec', () => {
-  // the 28 Oct spec is the proposed change; the 27 Oct spec stays as the record of what is live
+  // Keep the original proposal status and the dated application record distinct.
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-28.md', import.meta.url), 'utf8');
-  assert.match(spec, /Status: \*\*proposed vendor change, not applied\.\*\*/);
+  assert.match(spec, /Status at authoring on 28 October: \*\*proposed vendor change, not applied\.\*\*/);
+  assert.match(spec, /## 29 October acceptance repair/);
+  assert.match(spec, /This revision still requires a fresh painting and release gates\./);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
   assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
   assert.ok(spec.includes(recipes.energy.crossRuling), 'carries the cross ruling');
