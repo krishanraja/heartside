@@ -281,14 +281,20 @@ test('the 29 Oct spec stays the record of v10, the blocks CoWork applied', () =>
   for (const applied of ['d5bace79efa2bf410d041edfe77ddf5bb9efc4a3da0e35c41d421295b4f70c79', 'c14edaa2213a9eecacda7c98ae833167337079fa8b95f147c8b3c871a9a0e73e', '3caf99902178cf43c7ae19d07d0fb2890afed6fabb87e9b0e42eaf5b35bcb726'])
     assert.ok(spec.includes(applied), 'keeps the applied v10 hash ' + applied);
 });
-test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+test('the 30 Oct spec stays the record of v11, the blocks CoWork applied', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-30.md', import.meta.url), 'utf8');
-  assert.match(spec, /Status at authoring on 30 October: \*\*proposed vendor change, not applied\.\*\*/);
+  assert.ok(spec.includes('actual-dog-recipes-v11-directed-brief'));
+  for (const applied of ['716e35742742b2ecdccb67c50bf6007c7c5d8a27c18015d83f34195bb5276cff', '2ece7afbf715294b3381a26e0fca1247157b6a96f944b7236607546ec079f3e8', '4555a99e997799166a6720cae606530577360a8d7d8156906904d74c2d8710f4'])
+    assert.ok(spec.includes(applied), 'keeps the applied v11 hash ' + applied);
+});
+test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31.md', import.meta.url), 'utf8');
+  assert.match(spec, /Status at authoring: \*\*proposed vendor change, not applied\.\*\*/);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
   assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
   assert.ok(spec.includes('Ruling (Krish, 2026-10-29): Hilarious may use theatrical staging'), 'carries the Hilarious ruling');
-  for (const replaced of ['d5bace79efa2bf410d041edfe77ddf5bb9efc4a3da0e35c41d421295b4f70c79', 'c14edaa2213a9eecacda7c98ae833167337079fa8b95f147c8b3c871a9a0e73e', '3caf99902178cf43c7ae19d07d0fb2890afed6fabb87e9b0e42eaf5b35bcb726'])
-    assert.ok(spec.includes(replaced), 'names the v10 block it replaces: ' + replaced);
+  for (const replaced of ['716e35742742b2ecdccb67c50bf6007c7c5d8a27c18015d83f34195bb5276cff', '2ece7afbf715294b3381a26e0fca1247157b6a96f944b7236607546ec079f3e8', '4555a99e997799166a6720cae606530577360a8d7d8156906904d74c2d8710f4'])
+    assert.ok(spec.includes(replaced), 'names the v11 block it replaces: ' + replaced);
   for (const format of ['mug', 'portrait', 'blanket']) {
     const p = nativePrompt(format);
     for (const field of ['{{Tone direction}}', '{{Style direction}}', '{{Energy}}']) assert.equal(p.split(field).length, 2, format + field + ' once');
@@ -527,12 +533,12 @@ test('v11: Hilarious has no velvet or spotlight, keeps the stated place, and kee
   }
   // a stated couch or film survives a named toy, and the toy joins the scene
   const frenchie = nativeFieldValues({style: 'comic', tone: 'hilarious', format: 'portrait', pronoun: 'he', together: 'movie', spot: 'couch', toys: 'a squeaky toy in his mouth'})['Tone direction'];
-  assert.match(frenchie, /couch on movie night like a stern film critic/);
+  assert.match(frenchie, /couch on movie night/); assert.match(frenchie, /far end of the couch/);
   assert.match(frenchie, /a squeaky toy in his mouth/);
   const couch = nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'mug', pronoun: 'she', spot: 'couch', toys: 'a tennis ball'})['Tone direction'];
-  assert.match(couch, /perched on the back of the couch/); assert.match(couch, /with her tennis ball/);
+  assert.match(couch, /middle of the couch in the best seat/); assert.match(couch, /with her tennis ball/);
   // the toy joke only when no place or activity was given
-  assert.match(nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'mug', pronoun: 'he', toys: 'a bone'})['Tone direction'], /his bone guarded like a priceless treasure/);
+  assert.match(nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'mug', pronoun: 'he', toys: 'a bone'})['Tone direction'], /curled protectively around his bone/);
   // the owner's verb survives on every tone; "with" only when the wording has no verb
   for (const tone of Object.keys(recipes.tones)) {
     assert.match(nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'he', together: 'walk', toys: 'a tennis ball in his mouth'})['Tone direction'], /a tennis ball in his mouth/, tone);
@@ -544,8 +550,30 @@ test('v11: Hilarious has no velvet or spotlight, keeps the stated place, and kee
 });
 test('v11: no unnamed leash, blankets stay in the stated place, and the collage dog is cut paper', () => {
   for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /Avoid: [^\n]*a leash or lead, unless the owner named one/, format);
-  assert.match(nativePrompt('blanket'), /The ground is the stated place only, with no invented landscape or scenery\./);
+  for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /The setting is the stated place only, with no invented landscape or scenery\./, format);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v11-directed-brief');
+  assert.equal(recipes.version, 'actual-dog-recipes-v12-directed-brief');
+});
+
+// v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
+test('v12: every Hilarious joke is a visible contrast with the person, readable with no caption', () => {
+  const jokes = recipes.brief.scene.joke;
+  assert.ok(jokes.walk.includes('marching far out in front with chest out and a high, proud stride like the leader of a parade, {pos} person (only their legs) hurrying to keep up far behind on the path'));
+  for (const [k, line] of Object.entries(jokes)) if (k !== 'none') assert.match(line, /\{pos\} person|person's/, k + ' shows the person it plays against');
+  assert.ok(recipes.brief.tones.hilarious.pose.includes('The joke must be readable at a glance with no caption: show the contrast, not just the dog'));
+  for (const together of ['walk', 'coffee', 'movie', 'naps', 'car']) {
+    const t = nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'portrait', pronoun: 'she', together})['Tone direction'];
+    assert.match(t, /her person/, together); assert.doesNotMatch(t, /velvet|spotlight|\{/i, together);
+  }
+});
+test('v12: one place per scene; Sentimental and Over the top keep the spot, Warm and Hilarious the activity', () => {
+  const at = tone => nativeFieldValues({style: 'collage', tone, format: 'mug', pronoun: 'she', spot: 'feet', together: 'walk'})['Tone direction'];
+  for (const tone of ['sentimental', 'over_the_top']) { assert.match(at(tone), /feet/, tone); assert.doesNotMatch(at(tone), /walk/, tone); }
+  for (const tone of ['warm', 'hilarious']) { assert.match(at(tone), /walk|parade/, tone); assert.doesNotMatch(at(tone), /feet/, tone); }
+  // places that fit together stay together: movie night on the couch
+  const ott = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'portrait', pronoun: 'he', spot: 'couch', together: 'movie'})['Tone direction'];
+  assert.match(ott, /couch/); assert.match(ott, /movie night/);
+  const shepherd = readFileSync(new URL('../../design/examples-2026-10-29-breeds/prompts/shepherd-over_the_top-mug.txt', import.meta.url), 'utf8');
+  assert.doesNotMatch(shepherd, /morning walk/, 'the shepherd mug keeps her feet, not the walk');
 });

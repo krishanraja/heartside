@@ -124,10 +124,13 @@ export function briefFields(input) {
   const pick = (table, v) => !v ? '' : Object.hasOwn(table, v) ? table[v] : 'in the owner\'s words: "' + plain(v, 120) + '"';
   const sc = b.scene, tone = b.tones[o.tone], parts = [];
   const given = o.together || o.spot || o.home;
+  // one place per scene (v12): a spot and an activity in different places (at her feet, out on the
+  // walk) never share a scene; Sentimental and Over the top keep the spot, Warm and Hilarious the activity
+  const clash = !!(o.spot && o.together && Object.hasOwn(sc.fits, o.together) && Object.hasOwn(sc.spot, o.spot) && !sc.fits[o.together].includes(o.spot));
   let staging, place = '';
   if (o.tone === 'sentimental') {
     // resting: the dog's spot, with a calm together moment; never an active one (a walk, a car ride)
-    if (o.together && /^(naps|movie|coffee)$/.test(o.together)) parts.push(pick(sc.together, o.together));
+    if (o.together && /^(naps|movie|coffee)$/.test(o.together) && !clash) parts.push(pick(sc.together, o.together));
     if (o.spot) parts.push(pick(sc.spot, o.spot));
     staging = parts.length ? parts.join(', ') : 'settled in a simple, calm spot at home';
   } else if (o.tone === 'warm') {
@@ -149,7 +152,7 @@ export function briefFields(input) {
     // a toy the owner already placed (in his mouth) keeps its place, so it never rests on the cushion
     const key = stated || (toy && !toyHeld ? 'toy' : 'none');
     staging = sc.roast[key];
-    place = [pick(sc.spot, o.spot), pick(sc.together, o.together)].filter(Boolean).join(', ');
+    place = [pick(sc.spot, o.spot), clash ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
   }
   const comic = o.tone === 'hilarious' || o.tone === 'over_the_top';
   const inStaging = /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));
