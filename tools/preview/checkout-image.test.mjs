@@ -39,12 +39,12 @@ for(const minified of [false,true]) {
     const out=JSON.parse(await getHelper().prepare(JSON.stringify({items:[line(123),line(456)]}),options(async(_,i)=>response(ready(JSON.parse(i.body).variantId)))));
     assert.notEqual(out.items[0].properties._hs_checkout_bundle_id,out.items[1].properties._hs_checkout_bundle_id);
   });
-  test(mode+': pending polls before ready and a perpetual pending result stops after five requests',async()=>{
+  test(mode+': pending polls before ready and a perpetual pending result stops after twelve requests',async()=>{
     let count=0;
     await getHelper().prepare(JSON.stringify(line()),options(async()=>++count===1?response({state:'pending',retryAfterSeconds:3},202):response(ready())));
     assert.equal(count,2);count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'pending',retryAfterSeconds:5},202);})),/try Add to cart again/);
-    assert.equal(count,5);
+    assert.equal(count,12);
   });
   // 28 Oct, Recording 4: the redo's add failed on the first 503 while Teeinblue was still serving its copy
   test(mode+': 503 preview_unavailable right after painting waits inside the same budget and never uploads',async()=>{
@@ -53,8 +53,15 @@ for(const minified of [false,true]) {
     assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);assert.deepEqual(pending,[1]);
     count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'preview_unavailable'},503);})),/does not need another upload/);
-    assert.equal(count,5,'the same five-request budget');
+    assert.equal(count,12,'the same twelve-request budget');
     count=0;await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'other'},503);})));assert.equal(count,1,'any other 503 still fails at once');
+  });
+  test(mode+': slow saved artwork reaches the cart without another buyer tap',async()=>{
+    let count=0;
+    const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async()=>++count<=6?response({state:'error',code:'preview_unavailable'},503):response(ready()))));
+    assert.equal(count,7);
+    assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
+    assert.equal(out.properties._customization_id,uuid);
   });
   test(mode+': service errors, malformed JSON, hanging body, wrong identity and foreign CDN never become ready',async()=>{
     const bad=[async()=>response({},503),async()=>({status:200,json:async()=>{throw Error('HTML');}}),async()=>({status:200,json:()=>new Promise(()=>{})}),async()=>response({...ready(),variantId:'456'}),async()=>response({...ready(),fileId:null}),async()=>response({...ready(),imageUrl:'https://cdn.shopify.com/s/files/1/4444/5555/6666/files/art.jpg'}),async()=>response({...ready(),properties:{...ready().properties,_hs_checkout_parent:'false'}}),async()=>response({state:'pending',retryAfterSeconds:0},202)];
