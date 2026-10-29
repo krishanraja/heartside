@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v7-clear-comic-premise",
+  "version": "actual-dog-recipes-v8-deadpan-premise",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -67,7 +67,7 @@
     "hilarious": {
       "label": "Hilarious",
       "humor": "high",
-      "art": "Humor: high, one clear affectionate comic premise. Staging: when the buyer stated a habit, toy or accessory, exaggerate the drama, scale or importance of that stated thing, never the dog's anatomy and never the fact itself. When nothing usable is stated, the comedy comes from the dog alone, through a bold, theatrical or deadpan pose and expression with no added objects. Expression: big and readable, such as wide bright eyes, raised eyebrows, a proud mock-serious look or a goofy open-mouth grin; always joyful and safe. Light: bright, punchy, high-contrast light with saturated color. Composition: dynamic, with a close or low viewpoint and bold diagonals so the joke reads at a glance; in repeated layouts, energetic rotation and contrasting expressions without crowding any face. Exaggeration lives in staging and expression only; markings and proportions stay exact. Never fear, pain, illness, danger, humiliation, scolding or an invented costume. A calm seated dog beside a toy is not enough. Make the visual joke unmistakable through mock-serious expression, dramatic viewpoint and an outsized sense of importance, using only the stated scene and objects.",
+      "art": "Humor: high, a visual joke that reads before any caption. Use a single mock-serious premise: this ordinary dog regards the buyer's stated resting place or toy as a matter of enormous importance. Stage a dramatically low, close viewpoint with the dog looking solemnly down toward the viewer, chin lifted, mouth closed, and one clearly readable sideways glance. Keep the actual dog anatomy and markings exact. If a couch or chair is stated, use its real cushions as the imposing foreground; if a toy is stated, frame that exact toy prominently beside the dog like the focus of an absurdly serious portrait. Preserve every stated action: resting stays resting, never fetches, brings or guards unless stated. Without usable facts, use the same pompous close-up against a plain backdrop with no props. Bright theatrical light and bold diagonals. In repeated layouts, vary the camera angle and deadpan expression. A generic happy dog or open-mouth grin is not the joke. No costumes, invented objects, anger, fear, distress or distorted anatomy.",
       "copy": "A stronger affectionate dog-perspective premise anchored to explicit facts, never an invented habit."
     }
   },
