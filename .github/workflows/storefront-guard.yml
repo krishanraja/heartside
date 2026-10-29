@@ -21,6 +21,21 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      acceptance:
+        description: "Run the three read-only acceptance gates instead of the hourly catalog monitor"
+        type: boolean
+        default: false
+      theme_id:
+        description: "Unpublished theme ID; leave empty only for the final production checks"
+        required: false
+        default: ""
+        type: string
+      warn_media:
+        description: "Allow the known checkout-media warnings before the live release"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -32,6 +47,7 @@ concurrency:
 
 jobs:
   check:
+    if: github.event_name != 'workflow_dispatch' || !inputs.acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
