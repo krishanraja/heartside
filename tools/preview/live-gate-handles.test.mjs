@@ -323,3 +323,12 @@ test('neither gate carries its own pinned certificate list: both launch through 
     assert.match(src, /edge: EDGE/, `${f}: Krish's Edge view`);
   }
 });
+
+// The add-on label can span DOM lines; only that exact label exempts $29.
+test('Artist touch price split over lines passes but a retired $29 gift price fails', async () => {
+  const withCopy = (copy) => portraitPage().replace('</main>', copy + '</main>');
+  const addon = await gateOn((p) => p === PORTRAIT ? {status: 200, body: withCopy('<p>Artist’s touch,<br>$29.00</p>')} : {status: 404}, '--pages', 'portrait', '--views', 'desk');
+  assert.equal(addon.code, 0, addon.out);
+  const retired = await gateOn((p) => p === PORTRAIT ? {status: 200, body: withCopy('<p>Your gift: $29.00</p>')} : {status: 404}, '--pages', 'portrait', '--views', 'desk');
+  assert.equal(retired.code, 1, retired.out);
+});
