@@ -293,8 +293,14 @@ test('the 31 Oct spec stays the record of v12', () => {
   for (const v12 of ['839cd10717e7567b7d7e2e77f0c81c413675db74dfbeb056dbd021ce935ec07a', 'a291d4ba6a49f772289f09b2176b99874c5551bf0b108457839d0acb1a758c6e', 'eb18937d07379fbcd2774e54aed4ed731dd7b95709154fb42a54b68081b307ec'])
     assert.ok(spec.includes(v12), 'keeps the v12 hash ' + v12);
 });
-test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+test('the 1 Nov spec stays the record of v13', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-01.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes('actual-dog-recipes-v13-directed-brief'));
+  for (const v13 of ['d760818e269faeec49aa4f0e636656aa00c9aaec03bfa98575ea0d9adc337bc5', 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', '9037d553f686c9a1536c79129597d64f4418e60fa2e1958b6f5d6b2914d6c333', '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'])
+    assert.ok(spec.includes(v13), 'keeps the v13 hash ' + v13);
+});
+test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-02.md', import.meta.url), 'utf8');
   assert.match(spec, /Status at authoring: \*\*proposed vendor change, not applied\.\*\*/);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
   assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
@@ -320,7 +326,7 @@ test('the native prompt is the short directed frame, and the spec carries it exa
       assert.ok(v.Energy.length <= 300 && v['Tone direction'].length <= 1200 && v['Style direction'].length <= 1200);
       assert.doesNotMatch(v['Tone direction'] + v['Style direction'] + v.Energy, /\{|\}|undefined|\bwink/i, 'every placeholder filled, and no literal wink');
       const filled = p.replace(/\{\{([^}]+)\}\}/g, (_, k) => v[k]);
-      assert.ok(filled.length < 2700, format + ' ' + style + ' ' + tone + ' ' + filled.length);
+      assert.ok(filled.length < 2800, format + ' ' + style + ' ' + tone + ' ' + filled.length); // a sanity bound, not a vendor limit
       assert.equal(Object.values(recipes.brief.styles).filter(x => filled.includes(x)).length, 1);
     }
     const block = spec.match(new RegExp('<!-- prompt:' + format + ' -->\\n```text\\n([\\s\\S]*?)\\n```'));
@@ -563,7 +569,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /The setting is the stated place only, with no invented landscape or scenery\./, format);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v13-directed-brief');
+  assert.equal(recipes.version, 'actual-dog-recipes-v14-directed-brief');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -579,7 +585,7 @@ test('v12: one place per scene; Sentimental and Over the top keep the spot, Warm
   // Over the top keeps the spot too, shot low with the person left out (v13): the floor, not the feet
   assert.match(at('sentimental'), /feet/); assert.match(at('over_the_top'), /rug at floor level/);
   for (const tone of ['sentimental', 'over_the_top']) assert.doesNotMatch(at(tone), /walk/, tone);
-  for (const tone of ['warm', 'hilarious']) { assert.match(at(tone), /walk|parade/, tone); assert.doesNotMatch(at(tone), /feet/, tone); }
+  for (const tone of ['warm', 'hilarious']) { assert.match(at(tone), /walk/, tone); assert.doesNotMatch(at(tone), /feet/, tone); }
   // places that fit together stay together: movie night on the couch
   const ott = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'portrait', pronoun: 'he', spot: 'couch', together: 'movie'})['Tone direction'];
   assert.match(ott, /couch/); assert.match(ott, /movie night/);
@@ -620,18 +626,22 @@ test("v13: a worm's-eye Hilarious prompt shows no part of the person, and neithe
   for (const j of JSON.parse(readFileSync(new URL('../../design/examples-2026-10-29-breeds/jobs.json', import.meta.url), 'utf8')).jobs.filter(j => j.tone === 'Hilarious'))
     assert.doesNotMatch(j.fields['Tone direction'], /only their|only the hand|\bperson\b/, j.id);
 });
-test('v13: the walk joke is a parade stride with no person, and a named toy is its trophy', () => {
-  assert.equal(recipes.brief.scene.joke.walk, 'the dog marching on the morning walk with a proud, high-stepping parade stride, chest out and tail up like a flag');
+// v14 (Krish, 29 Oct, of the v13 shepherd: "if I was paying $119 I would not accept that"): the
+// parade read as a dog walking proudly; the joke is now a five-star general inspecting the troops
+test('v14: the walk joke is a five-star general with no person, and a named toy is the baton', () => {
+  assert.equal(recipes.brief.scene.joke.walk, "the dog leading the morning walk like a five-star general inspecting the troops: bolt upright, chest puffed out, one front paw raised mid-march, chin high, an utterly serious expression");
   const walk = (extra) => nativeFieldValues({style: 'screenprint', tone: 'hilarious', format: 'portrait', pronoun: 'she', together: 'walk', ...extra})['Tone direction'];
-  assert.match(walk({toys: 'a frisbee'}), /parade stride, chest out and tail up like a flag, carrying her frisbee like a trophy\./);
-  assert.match(walk({toys: 'a frisbee'}), /The toy's importance shows in how proudly she carries it, never in its size or in her body\./);
-  // the trophy is the toy itself, never a size joke or a held pose (the phone's "a stick far too big for her")
-  assert.match(walk({toys: 'a stick far too big for her in her mouth and a frisbee at her paws'}), /carrying her stick and frisbee like a trophy\./);
+  assert.match(walk({toys: 'a frisbee'}), /an utterly serious expression, her frisbee clamped like a field marshal's baton\./);
+  // v14: shortened so the longest Tone direction stays inside the field's 1200 characters
+  assert.match(walk({toys: 'a frisbee'}), /The toy keeps its real size\./);
+  // the baton is the toy itself, never a size joke or a held pose (the phone's "a stick far too big for her")
+  assert.match(walk({toys: 'a stick far too big for her in her mouth and a frisbee at her paws'}), /her stick and frisbee clamped like a field marshal's baton\./);
   assert.doesNotMatch(walk({toys: 'a stick far too big for her in her mouth and a frisbee at her paws'}), /too big|at her paws/);
-  assert.match(walk({}), /tail up like a flag\. The joke is in the staging/, 'no toy, no trophy');
-  assert.doesNotMatch(walk({}), /trophy|toy's importance/);
+  assert.match(walk({}), /an utterly serious expression\. The joke is in the staging/, 'no toy, no baton');
+  assert.doesNotMatch(walk({}), /baton|toy's importance/);
   for (const t of [walk({}), walk({toys: 'a frisbee'}), walk({spot: 'feet'})]) assert.doesNotMatch(t, /person|only their|behind on the path/);
-  assert.equal((walk({toys: 'a frisbee'}).match(/frisbee/g) || []).length, 1, 'the trophy is the toy, said once');
+  assert.equal((walk({toys: 'a frisbee'}).match(/frisbee/g) || []).length, 1, 'the baton is the toy, said once');
+  assert.doesNotMatch(walk({toys: 'a frisbee'}), /parade|trophy/);
 });
 test('v13: words are optional; a gift without words is painted edge to edge, and every gift is the same world', () => {
   const at = (format, words) => nativeFieldValues({style: 'ink', tone: 'warm', format, pronoun: 'he', spot: 'couch', words})['Tone direction'];
@@ -660,4 +670,39 @@ test('v13: the folded card is a conditional format with its own frame', () => {
   assert.ok(p.startsWith('Create a new picture of the dog in this photo, vertical 5:7 folded greeting card front.'));
   assert.match(p, /filling the card front edge to edge/);
   assert.ok(prepare({...fixture(), format: 'card'}).blockers.includes('Conditional supplier route unqualified'));
+});
+
+// v14: collage painted "Leave the lower-right quarter plain" as a bare torn sheet of paper filling a quarter
+test('v14: no prompt asks for the note area to be plain or blank; it is a calm, low-detail part of the scene', () => {
+  const calm = 'a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.';
+  for (const format of ['mug', 'portrait']) assert.ok(recipes.brief.formats[format].note.endsWith(calm), format);
+  // "plain" and "blank" may appear only inside that sentence ("plain wall", "never a blank sheet"), never as an ask
+  const asks = t => t.replace(calm, '').match(/\b(plain|blank)\b[^.]*\bnote\b|\bnote\b[^.]*\b(plain|blank)\b|\b(left|leave|keep|kept)\b[^.;]*\b(plain|blank)\b(?![^.]*\b(collar|bandana|bow|sweater|harness|mug)\b)/i);
+  const prompts = [];
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const words of [true, false]) {
+    const v = nativeFieldValues({style, tone, format, pronoun: 'she', spot: 'couch', together: 'walk', toys: 'a frisbee', accessory: 'a collar', words});
+    prompts.push([format + ' ' + style + ' ' + tone + ' ' + words, nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, k) => v[k])]);
+  }
+  for (const j of JSON.parse(readFileSync(new URL('../../design/examples-2026-10-29-breeds/jobs.json', import.meta.url), 'utf8')).jobs)
+    prompts.push([j.id, readFileSync(new URL('../../' + j.prompt_file, import.meta.url), 'utf8')]);
+  for (const [name, p] of prompts) {
+    assert.equal(asks(p), null, name + ': ' + (asks(p) || [''])[0]);
+    assert.doesNotMatch(p, /Leave the lower-right quarter plain|right third plain|left plain/, name);
+  }
+  assert.ok(prompts.filter(([n, p]) => p.includes(calm)).length >= 24, 'the calm note area reaches the mug and portrait prompts');
+});
+
+// Teeinblue's Tone direction field holds 1200 characters; anything longer is cut at the end, where the note line is
+test('v14: every chip answer, toy pair and worn item fits the Tone direction field', () => {
+  const c = recipes.brief.scene;
+  const toys = [undefined, 'a tennis ball', 'a stick far too big for them in their mouth and a tennis ball at their paws', 'a squeaky toy tucked under their chin and a frisbee at their paws'];
+  let longest = 0;
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) for (const tone of Object.keys(recipes.tones)) for (const pronoun of ['she', 'he', 'they'])
+    for (const spot of [undefined, ...Object.keys(c.spot)]) for (const together of [undefined, ...Object.keys(c.together)]) for (const home of [undefined, ...Object.keys(c.home)])
+      for (const toy of toys) for (const accessory of ['', 'a harness']) {
+        const t = nativeFieldValues({style: 'ink', tone, format, pronoun, spot, together, home, toys: toy, accessory})['Tone direction'];
+        longest = Math.max(longest, t.length);
+        assert.ok(t.length <= 1200, [format, tone, pronoun, spot, together, home, toy, t.length].join(' '));
+      }
+  assert.ok(longest > 1000, 'the check reaches the long cases: ' + longest);
 });

@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v13-directed-brief",
+  "version": "actual-dog-recipes-v14-directed-brief",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -155,7 +155,7 @@
     }
   },
   "brief": {
-    "about": "Proposal from the growth session, 29 Oct 2026, battle-tested on 47 single generations (an easy golden and a hard black rescue dog; 3 tones, 6 styles, 4 kinds of answer, 3 products). A short directed brief beats the rulebook: each tone owns the pose, camera and staging, each style describes its material with the dog made of it, and the photo is used only for who the dog is. v11 (30 Oct): six fixes after the growth session painted all 24 breed examples from v10's own prompts: Hilarious no longer borrows Over the top's velvet and spotlight, the joke keeps the stated place, held toys keep the owner's verb, no unnamed leash, blankets stay in the stated place, and the collage dog is built from paper. v12 (29 Oct, after painting v11's 24 jobs; 22 passed): every Hilarious joke is a visible contrast built only from what the owner stated, the dog and their person, readable with the caption covered; one place per scene; and no invented landscape on any product. v13 (after the artwork session's v12 review, and Krish's words strategy): the person is cut only by the frame edge, never ending in open space or sky, and is left out under a low or worm's-eye camera, so Hilarious and Over the top jokes are the dog and the stated place alone; the walk joke is a parade stride with the toy as a trophy; the note area moves out of the frame into Tone direction so a gift without words is painted edge to edge; every gift in a set is the same world seen as a different moment; and a folded card front joins the formats.",
+    "about": "Proposal from the growth session, 29 Oct 2026, battle-tested on 47 single generations (an easy golden and a hard black rescue dog; 3 tones, 6 styles, 4 kinds of answer, 3 products). A short directed brief beats the rulebook: each tone owns the pose, camera and staging, each style describes its material with the dog made of it, and the photo is used only for who the dog is. v11 (30 Oct): six fixes after the growth session painted all 24 breed examples from v10's own prompts: Hilarious no longer borrows Over the top's velvet and spotlight, the joke keeps the stated place, held toys keep the owner's verb, no unnamed leash, blankets stay in the stated place, and the collage dog is built from paper. v12 (29 Oct, after painting v11's 24 jobs; 22 passed): every Hilarious joke is a visible contrast built only from what the owner stated, the dog and their person, readable with the caption covered; one place per scene; and no invented landscape on any product. v13 (after the artwork session's v12 review, and Krish's words strategy): the person is cut only by the frame edge, never ending in open space or sky, and is left out under a low or worm's-eye camera, so Hilarious and Over the top jokes are the dog and the stated place alone; the walk joke is a parade stride with the toy as a trophy; the note area moves out of the frame into Tone direction so a gift without words is painted edge to edge; every gift in a set is the same world seen as a different moment; and a folded card front joins the formats. v14 (29 Oct, after Krish turned down the v13 shepherd-hilarious-portrait: \"if I was paying $119 I would not accept that\"): the note area is a calm, low-detail continuation of the scene, never a blank patch (collage had painted \"plain\" as a bare torn sheet); and the walk joke is a five-star general inspecting the troops, the toy clamped like a field marshal's baton.",
     "identity": "Keep exactly who {sub} {is}: this {breed}'s face shape, ears, eyes, muzzle, coat colors and markings, never mirrored.",
     "styles": {
       "painterly": "a hand-painted oil painting. Loaded-brush oil with visible directional strokes and impasto, fur built from painted shapes, never hairs; the face, eyes and nose brushed as boldly as the background. A loose, simply painted setting.",
@@ -183,7 +183,7 @@
         "camera": "a worm's-eye view through a wide-angle lens",
         "light": "bright, punchy light and bold diagonals.",
         "items": "the joke's staging comes only from the owner's stated place and activity, made bigger and more serious than life, with no theatrical props or sets, and never a toy, food, clothing, habit or place the owner did not name",
-        "toy": "The toy's importance shows in how proudly {sub} {carries} it, never in its size or in {pos} body"
+        "toy": "The toy keeps its real size"
       },
       "over_the_top": {
         "pose": "a loving roast: {sub} {is} the star of {pos} own life and royally unimpressed with {pos} person. {joke_ott}. Chin lifted, smug, both eyes open",
@@ -235,7 +235,7 @@
         "bed": "the dog sprawled diagonally across the whole bed, taking up every inch of it as if the bed were built for one dog",
         "feet": "the dog flopped flat on the floor like a dropped sandbag, chin down and utterly immovable, as if the spot were reserved for {obj} alone",
         "anywhere": "the dog sitting bolt upright on alert in the middle of the room, ears up and eyes locked just past the camera, ready to follow the moment anyone moves",
-        "walk": "the dog marching on the morning walk with a proud, high-stepping parade stride, chest out and tail up like a flag",
+        "walk": "the dog leading the morning walk like a five-star general inspecting the troops: bolt upright, chest puffed out, one front paw raised mid-march, chin high, an utterly serious expression",
         "coffee": "the dog sitting upright on a chair at the table, staring hard at the plain mug of coffee in front of {obj} as if it were {pos} own morning ritual",
         "movie": "the dog sitting bolt upright in the middle of the couch on movie night, eyes locked on an unseen screen with total concentration",
         "naps": "the dog stretched out across the whole couch for a nap, every inch of it claimed, one paw dangling off the end",
@@ -246,7 +246,7 @@
         "none": "the dog posing chin high and chest out like the subject of a grand official portrait, in a plain everyday room"
       },
       "jokeToy": {
-        "walk": ", carrying {pos} {toy} like a trophy"
+        "walk": ", {pos} {toy} clamped like a field marshal's baton"
       },
       "roast": {
         "couch": "The couch is {pos} throne, every cushion {pos} own",
@@ -284,7 +284,7 @@
       "portrait": {
         "shape": "vertical 2:3",
         "framing": "Framing: from a little further back, the whole dog in the scene, open space above the head. The setting is the stated place only, with no invented landscape or scenery.",
-        "note": "Leave the lower-right quarter plain for a small note.",
+        "note": "The lower-right quarter is a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.",
         "variation": "the main moment, the whole dog in the scene"
       },
       "blanket": {
@@ -295,7 +295,7 @@
       "mug": {
         "shape": "wide 3:2 mug wrap, flat artwork, not a picture of a mug",
         "framing": "Framing: one clear focal dog, and nothing important at the far left and right edges where the handle sits. The setting is the stated place only, with no invented landscape or scenery.",
-        "note": "Keep the dog in the left half and leave the right third plain for a small note.",
+        "note": "Keep the dog in the left half. The right third is a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.",
         "variation": "a closer view a moment later, the dog turned the other way"
       },
       "card": {
