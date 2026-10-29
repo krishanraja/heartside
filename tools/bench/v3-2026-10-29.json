@@ -1,0 +1,366 @@
+[
+ {
+  "id": "47890",
+  "dog": "Bao",
+  "tone": "sentimental",
+  "status": "success",
+  "voice": "A romantic, quietly dramatic soul who plays composed for a heartbeat, then admits every minute apart counted.",
+  "model_lines": {
+   "home": "I play it cool for a second, then I melt for you.",
+   "spot": "The couch is where I wait, because it's closest to you.",
+   "together": "Our naps are my favorite part of any day with you.",
+   "meaning": "Wherever you go, I'm your shadow."
+  },
+  "lines": {
+   "home": "I play it cool for a second, then I melt for you.",
+   "spot": "The couch is where I wait, because it's closest to you.",
+   "together": "Our naps are my favorite part of any day with you.",
+   "meaning": "Wherever you go, I'm your shadow."
+  },
+  "gift": "blanket",
+  "reason": "Bao and Sam share the couch and a good nap, so a blanket painted with Bao keeps him close even on the days Sam is away.",
+  "scene": "A French Bulldog curled up on a couch, wearing a bow, resting close with a squeaky toy tucked beside him, eyes soft and sleepy, quiet and close.",
+  "source": "ai"
+ },
+ {
+  "id": "47891",
+  "dog": "Bao",
+  "tone": "warm",
+  "status": "success",
+  "voice": "A romantic, quietly dramatic soulmate who pretends to be fine, then confesses he counted every minute apart.",
+  "model_lines": {
+   "home": "I play it cool for a second, then I give up.",
+   "spot": "The couch is ours, and I sit close enough to count.",
+   "together": "Our naps are my favorite part of any day.",
+   "meaning": "You're my person, and I'm your shadow."
+  },
+  "lines": {
+   "home": "I play it cool for a second, then I give up.",
+   "spot": "The couch is ours, and I sit close enough to count.",
+   "together": "Our naps are my favorite part of any day.",
+   "meaning": "You're my person, and I'm your shadow."
+  },
+  "gift": "blanket",
+  "reason": "Sam and Bao spend their naps together on the couch, so a blanket with Bao's portrait is the cozy way to keep him close.",
+  "scene": "A French Bulldog curled up on a couch with a squeaky toy tucked beside him and a bow, eyes soft and a little dramatic, as if he is waiting for someone. One small wink of mischief.",
+  "source": "ai"
+ },
+ {
+  "id": "47892",
+  "dog": "Bao",
+  "tone": "hilarious",
+  "status": "success",
+  "voice": "A theatrical soap-opera lead who calls every minute apart a tragedy and pretends he isn't dying to run to you.",
+  "model_lines": {
+   "home": "I play it cool for one second, which is my limit.",
+   "spot": "The couch is where I wait out our long separations.",
+   "together": "We nap together, and I put it on my résumé.",
+   "meaning": "I'm your shadow and I take the job seriously.",
+   "extra": ""
+  },
+  "lines": {
+   "home": "I play it cool for one second, which is my limit.",
+   "spot": "The couch is where I wait out our long separations.",
+   "together": "We nap together, and I put it on my résumé.",
+   "meaning": "I'm your shadow, no days off."
+  },
+  "gift": "blanket",
+  "reason": "Bao naps with Sam on the couch, so a blanket keeps that closeness going, even on the days Bao has to stay home.",
+  "scene": "A French Bulldog lying on the couch in a bow, one paw dramatically on his brow, a squeaky toy clutched close, gazing at the empty cushion beside him like a soap-opera star awaiting news.",
+  "source": "ai"
+ },
+ {
+  "id": "47893",
+  "dog": "Bao",
+  "tone": "over_the_top",
+  "status": "success",
+  "voice": "A soap-opera star who pretends to be above it all, then collapses into your arms mid-scene",
+  "model_lines": {
+   "home": "I play it cool for one second, which is my best acting.",
+   "spot": "The couch is mine, and you may rent the edge of it.",
+   "together": "Our naps are my gift to you, so please try to keep up.",
+   "meaning": "You're my shadow, and I'm very generous about it."
+  },
+  "lines": {
+   "home": "I play it cool for one second, which is my best acting.",
+   "spot": "The couch is mine, and you may rent the edge of it.",
+   "together": "Our naps are my gift to you, so please try to keep up.",
+   "meaning": "You follow me, I allow it, and that is love."
+  },
+  "gift": "blanket",
+  "reason": "",
+  "scene": "A French Bulldog lying across a couch in a dramatic swoon, wearing a bow, one paw over the forehead, a squeaky toy beside, looking smugly superior and royally unimpressed.",
+  "source": "ai"
+ },
+ {
+  "id": "47894",
+  "dog": "Juno",
+  "tone": "sentimental",
+  "status": "success",
+  "voice": "A big-hearted friend who adores everything you do and shows love by handing you things, plainly and generously",
+  "model_lines": {
+   "home": "I bring you my tennis ball because it's my best gift.",
+   "spot": "I sleep on your feet because that's where home is.",
+   "together": "Our walks are my favorite part of every day with you.",
+   "meaning": "You're my best friend, and I'm so glad."
+  },
+  "lines": {
+   "home": "I bring you my tennis ball because it's my best gift.",
+   "spot": "I sleep on your feet because that's where home is.",
+   "together": "Our walks are my favorite part of every day with you.",
+   "meaning": "You're my best friend, and I'm so glad."
+  },
+  "gift": "blanket",
+  "reason": "Mom's evenings end with Juno asleep on her feet, so a blanket feels like the next best thing to that warm weight.",
+  "scene": "A Labrador Retriever lying close at someone's feet, a tennis ball tucked beside her paws, a collar around her neck, gentle contented eyes, a quiet and tender moment.",
+  "source": "ai"
+ },
+ {
+  "id": "47895",
+  "dog": "Juno",
+  "tone": "warm",
+  "status": "success",
+  "voice": "A big-hearted best friend who is thrilled by everything Mom does and shows love by bringing her things.",
+  "model_lines": {
+   "home": "I bring you my tennis ball because you came home.",
+   "spot": "I sleep on your feet and I'm the happiest dog alive.",
+   "together": "Our walks are my favorite part, collar jingling the whole way.",
+   "meaning": "You're my best friend, and I'd say so twice."
+  },
+  "lines": {
+   "home": "I bring you my tennis ball because you came home.",
+   "spot": "I sleep on your feet and I'm the happiest dog alive.",
+   "together": "Every walk with you feels like the best news ever.",
+   "meaning": "You're my best friend, and I'd say so twice."
+  },
+  "gift": "blanket",
+  "reason": "Juno naps right on Mom's feet, so a cozy blanket with Juno on it keeps that warm spot there even when Mom gets up.",
+  "scene": "A Labrador Retriever lying happily on the floor, chin resting down, a tennis ball tucked between the front paws, wearing a collar, with a soft, contented smile and a tiny wink of mischief.",
+  "source": "ai"
+ },
+ {
+  "id": "47896",
+  "dog": "Juno",
+  "tone": "hilarious",
+  "status": "success",
+  "voice": "The big-hearted friend who takes every ball and every walk as the best news of the day, and tells it with a straight face.",
+  "model_lines": {
+   "home": "I bring you a tennis ball because you came home empty-handed.",
+   "spot": "I sleep on your feet so you can't leave without a hearing.",
+   "together": "On our walks I'm in charge of excitement, and I take it seriously.",
+   "meaning": "You're my best friend and my ball thrower."
+  },
+  "lines": {
+   "home": "You walked in with nothing, so I brought you a ball.",
+   "spot": "I sleep on your feet so you can't leave without a hearing.",
+   "together": "Any time with you is my favorite time.",
+   "meaning": "You're my best friend and my ball thrower."
+  },
+  "gift": "blanket",
+  "reason": "Juno naps on Mom's feet, so a blanket is where Juno already lives, and Mom gets to keep Juno there, ball and collar included.",
+  "scene": "A Labrador Retriever lying across someone's feet, wearing a collar, a tennis ball held proudly in the mouth, eyes wide with the look of a dog delivering the news of the century.",
+  "source": "ai"
+ },
+ {
+  "id": "47897",
+  "dog": "Juno",
+  "tone": "over_the_top",
+  "status": "success",
+  "voice": "A breathless, bighearted friend who grades you on a very generous curve and still thinks you're a bit slow.",
+  "model_lines": {
+   "home": "I bring you my tennis ball because you clearly need help.",
+   "spot": "I sleep on your feet so you can't escape the honor.",
+   "together": "On our walks I lead and you just carry the leash.",
+   "meaning": "I picked you as my best friend, so relax."
+  },
+  "lines": {
+   "home": "I bring you my tennis ball because you clearly need help.",
+   "spot": "I sleep on your feet so you can't escape the honor.",
+   "together": "You call it a walk, I call it your training.",
+   "meaning": "I picked you as my best friend, so relax."
+  },
+  "gift": "blanket",
+  "reason": "Juno naps on Mom's feet, so a blanket keeps Juno draped over Mom's toes even on the days the real dog is out chasing a tennis ball.",
+  "scene": "",
+  "source": "ai"
+ },
+ {
+  "id": "47898",
+  "dog": "Earl",
+  "tone": "sentimental",
+  "status": "success",
+  "voice": "A gentle, elegant soul who speaks softly, loves comfort, and shows love by staying close and quiet.",
+  "model_lines": {
+   "home": "I wait for you at the door, and the day feels softer.",
+   "spot": "I settle on your side of the bed to be near you.",
+   "together": "Our car rides are my favorite way to be beside you.",
+   "meaning": "I'm here on the hard days, always."
+  },
+  "lines": {
+   "home": "I wait for you at the door, and the day feels softer.",
+   "spot": "I settle on your side of the bed to be near you.",
+   "together": "Our car rides are my favorite way to be beside you.",
+   "meaning": "I'm here on the hard days, always."
+  },
+  "gift": "blanket",
+  "reason": "",
+  "scene": "A Greyhound curled quietly in a sweater on the side of a bed, head resting low, gazing up with calm, gentle eyes. Soft, close and tender.",
+  "source": "ai"
+ },
+ {
+  "id": "47899",
+  "dog": "Earl",
+  "tone": "warm",
+  "status": "success",
+  "voice": "A gentle, refined gentleman who speaks softly, loves comfort, and shows love by staying close and settling in beside you.",
+  "model_lines": {
+   "home": "I wait at the door in my sweater, calm and a little elegant.",
+   "spot": "Your side of the bed is where I rest best, and I'm sure of it.",
+   "together": "A car ride with you is my idea of a perfect afternoon.",
+   "meaning": "On hard days, I'm right here beside you."
+  },
+  "lines": {
+   "home": "I wait at the door in my sweater, calm and a little elegant.",
+   "spot": "I take your side of the bed, because it's the softest place.",
+   "together": "A car ride with you is my idea of a perfect afternoon.",
+   "meaning": "On hard days, I'm right here beside you."
+  },
+  "gift": "blanket",
+  "reason": "Earl keeps Dad's side of the bed warm and shows up on the hard days, so a soft blanket seems right for a dog like that.",
+  "scene": "A Greyhound lying curled on a bed in a cozy sweater, head resting on the pillow on one side, looking softly toward the viewer with a calm, contented, slightly smug expression.",
+  "source": "ai"
+ },
+ {
+  "id": "47900",
+  "dog": "Earl",
+  "tone": "hilarious",
+  "status": "success",
+  "voice": "A languid, dramatic diva who treats comfort as a human right and every favor to you as a grand sacrifice, delivered deadpan.",
+  "model_lines": {
+   "home": "I wait at the door like a diva who booked you for six.",
+   "spot": "Your side of the bed is mine now, and I say that gently.",
+   "together": "Car rides are my red carpet, sweater on, no autographs.",
+   "meaning": "On hard days I'm overqualified, and I clock in."
+  },
+  "lines": {
+   "home": "I wait at the door, because a star never chases.",
+   "spot": "Your side of the bed is mine now, and I say that gently.",
+   "together": "In the car I wear my sweater and receive the world.",
+   "meaning": "Bad days need a professional, so I came."
+  },
+  "gift": "blanket",
+  "reason": "",
+  "scene": "",
+  "source": "ai"
+ },
+ {
+  "id": "47901",
+  "dog": "Earl",
+  "tone": "over_the_top",
+  "status": "success",
+  "voice": "A languid, grand diva who lounges like royalty and condescends to love you, in a sweater.",
+  "model_lines": {
+   "home": "I wait at the door in my sweater, because you need a welcome.",
+   "spot": "I take your side of the bed, and you're welcome to the edge.",
+   "together": "Car rides are fine when I get the good seat and you drive.",
+   "meaning": "Your hard days are easy work for a dog like me."
+  },
+  "lines": {
+   "home": "I wait at the door so you can be received properly.",
+   "spot": "I'm never far from you.",
+   "together": "Car rides are fine when I get the good seat and you drive.",
+   "meaning": "On hard days I lie near, and you're lucky."
+  },
+  "gift": "blanket",
+  "reason": "",
+  "scene": "A Greyhound sprawled across the foot of a bed in a sweater, chin raised, wearing a smug, royally unimpressed expression, as if posing for a formal state portrait.",
+  "source": "ai"
+ },
+ {
+  "id": "47902",
+  "dog": "Frank",
+  "tone": "sentimental",
+  "status": "success",
+  "voice": "A slow, gentle, observant friend who notices everything by smell and says it quietly and wryly, with tenderness.",
+  "model_lines": {
+   "home": "I spin in circles because you smell like home.",
+   "spot": "I settle wherever you are, and the air feels right.",
+   "together": "Morning coffee is our hour, and I'm happy beside it.",
+   "meaning": "You let me be the boss, and I love you."
+  },
+  "lines": {
+   "home": "I spin in circles because you smell like home.",
+   "spot": "I settle wherever you are, and the air feels right.",
+   "together": "Morning coffee is our hour, and I'm happy beside it.",
+   "meaning": "You let me be the boss, and I love you."
+  },
+  "gift": "print",
+  "reason": "Frank runs the house and the mornings with a bone close by, and a boss like that deserves a portrait worth hanging where the coffee happens.",
+  "scene": "A Dachshund sitting upright and calm in a plain, softly lit spot, a bone resting between the front paws, nose lifted gently as if catching a familiar, welcome scent.",
+  "source": "ai"
+ },
+ {
+  "id": "47903",
+  "dog": "Frank",
+  "tone": "warm",
+  "status": "success",
+  "voice": "A wry, unhurried gourmand who notices everything and runs the house on his own gentle terms",
+  "model_lines": {
+   "home": "I spin in circles because you came home, and I notice.",
+   "spot": "I settle wherever you are, which is where I belong.",
+   "together": "Our morning coffee smells good, and I still prefer my bone.",
+   "meaning": "You help me run this house and I like it."
+  },
+  "lines": {
+   "home": "I spin in circles because you came home, and I notice.",
+   "spot": "I settle wherever you are, which is where I belong.",
+   "together": "Our morning coffee smells good, and I still prefer my bone.",
+   "meaning": "You help me run this house and I like it."
+  },
+  "gift": "print",
+  "reason": "",
+  "scene": "A Dachshund sitting upright and dignified at the person's feet, chin lifted like the boss of the house, a bone resting proudly between the front paws, with one small knowing look. Plain background.",
+  "source": "ai"
+ },
+ {
+  "id": "47904",
+  "dog": "Frank",
+  "tone": "hilarious",
+  "status": "success",
+  "voice": "A wry, unhurried food critic who investigates every arrival, tends the boss's household with deadpan pride, and never hurries a pleasure.",
+  "model_lines": {
+   "home": "I spin in circles because your arrival needs a proper inspection.",
+   "spot": "I settle wherever you are, so I can supervise it all.",
+   "together": "Over morning coffee I sniff the steam and approve it first.",
+   "meaning": "You work for me, and I adore my job."
+  },
+  "lines": {
+   "home": "My spinning is a full inspection, and you passed again.",
+   "spot": "I settle wherever you are, so I can supervise it all.",
+   "together": "Over morning coffee I sniff the steam and approve it first.",
+   "meaning": "You work for me, and I adore my job."
+  },
+  "gift": "print",
+  "reason": "Frank runs the house and a portrait is how a boss is properly displayed, plus it keeps his morning coffee shift in view.",
+  "scene": "A Dachshund sitting upright with a bone between the paws, wearing a stern, deadpan expression, like a boss presiding over an important meeting. Plain background, no people, no text.",
+  "source": "ai"
+ },
+ {
+  "id": "47905",
+  "dog": "Frank",
+  "tone": "over_the_top",
+  "status": "success",
+  "voice": null,
+  "model_lines": null,
+  "lines": {
+   "home": "Best part of my day? You walking in.",
+   "spot": "I'm never far from you.",
+   "together": "Any time with you is my favorite time.",
+   "meaning": "I'm yours, always."
+  },
+  "gift": "print",
+  "reason": "",
+  "scene": "",
+  "source": "fallback"
+ }
+]
