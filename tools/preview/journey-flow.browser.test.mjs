@@ -66,7 +66,9 @@ async function open({width = 390, height = 844, gift} = {}) {
 const pick = (page, group, v) => page.locator(`[data-hsj-pick="${group}"][data-v="${v}"]`).click();
 // the phones that matter, smallest to largest (29 Oct, Krish: "Guaranteed no scroll on every device"):
 // iPhone SE 1st gen, small Android (Krish's Edge phone), iPhone SE 2/3, iPhone 12 to 15, Pixel, Pro Max
-const SIZES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932}];
+const SIZES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932},
+  // and a desktop window (Krish, 29 Oct: "this should feel like a premium desktop site on desktop")
+  {width: 1440, height: 900}];
 // every screen fits the phone: nothing below the fold (Krish, 29 Oct: "It must be a no-scroll experience")
 async function noScroll(page, where) {
   const {sh, ih} = await page.evaluate(() => ({sh: document.documentElement.scrollHeight, ih: window.innerHeight}));
@@ -157,7 +159,7 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
     await page.waitForURL(/step=photo/);
     await noScroll(page, 'photo');
     const drop = await page.locator('[data-hsj-drop]').boundingBox();
-    assert.ok(drop.height >= 200 && drop.width >= size.width - 40, 'one big tappable target, the width of the screen');
+    assert.ok(drop.height >= 200 && drop.width >= Math.min(size.width - 40, 400), 'one big tappable target, the width of a phone screen');
     await page.screenshot({path: path.join(shots, tag + '-photo.png')});
     await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
