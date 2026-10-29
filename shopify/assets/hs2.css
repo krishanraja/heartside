@@ -1320,7 +1320,9 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 .hs-art__title { margin: 14px 0 2px; font-family: "HS Fraunces", Fraunces, Georgia, serif; font-size: 22px; line-height: 1.2; color: #121010; outline: none; }
 .hs-art__line { margin: 0 0 12px; min-height: 1.45em; font-size: 15px; line-height: 1.45; color: #3E322D; }
 .hs-art__bar { height: 6px; border-radius: 999px; background: #E2D4C8; overflow: hidden; }
-.hs-art__bar span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #A8284E, #C9A048); transition: width 0.9s linear; }
+.hs-art__bar span { display: block; width: 38%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #A8284E, #C9A048); animation: hs-art-sweep 1.8s ease-in-out infinite; }
+@keyframes hs-art-sweep { from { transform: translateX(-100%); } to { transform: translateX(265%); } }
+.hs-art__elapsed { margin: 8px 0 0; font-size: 13.5px; line-height: 1.45; color: #3E322D; font-variant-numeric: tabular-nums; }
 .hs-art__note, .hs-art__redo { margin: 10px 0 0; font-size: 13.5px; line-height: 1.45; color: #5A4A44; }
 .hs-art__full { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; color: #121010; text-decoration: underline; text-underline-offset: 3px; }
 .hs-art__accept { position: relative; display: flex; gap: 12px; align-items: flex-start; margin: 6px 0 4px; padding: 14px 16px; border: 2px solid #121010; border-radius: 14px; background: #fff; font-size: 15px; line-height: 1.45; color: #3E322D; cursor: pointer; }
@@ -1340,7 +1342,7 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
   .hs-art__wash i, .hs-art__photo, .hs-art.is-new .hs-art__result, .hs-art__accept.is-nudged { animation: none; }
   .hs-art__brush { display: none; }
   .hs-art__photo { opacity: 0.5; filter: grayscale(1); }
-  .hs-art__bar span { transition: none; }
+  .hs-art__bar span { animation: none; width: 100%; opacity: 0.55; }
 }
 /* Their toy or collar (hs-native-artwork.liquid, hs2.js bindExtras) */
 .hs-extras { margin: 4px 0 16px; padding: 14px 16px; border-radius: 16px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; }

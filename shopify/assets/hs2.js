@@ -231,7 +231,7 @@
     if (blanketUploadPending()) {
       var recovery = document.querySelector('[data-hs2-upload-recovery]'), who = String(answer('dog') || '').trim() || 'your dog';
       if (recovery && recovery.getClientRects().length) return 'I\'m still working on the photo you sent. If it stopped, open "Artwork failed or stopped?" below.';
-      return "I'm still painting " + who + ' from the photo you sent. It takes about a minute, sometimes two.';
+      return "I'm still painting " + who + ' from the photo you sent. Most paintings take 1 to 3 minutes.';
     }
     if (!nativeBlanketInputsReady()) return 'Your choices are still loading into the painter. Choose the photo again in a moment.';
     return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
@@ -360,15 +360,28 @@
   }
   /* The painting, then the finished design (Krish, 28 Oct: the wait "looks broken", and the tickbox
      sat above the picture). While Teeinblue paints, the card shows the buyer's photo as a sketch
-     under a moving wash, lines from their own choices, and a bar that eases toward the end without
-     ever claiming it. The finished design then fills the card with the review right under it. */
-  function artLines(who) {
-    var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
-    var STYLE = { cinematic: 'Lighting ' + who + ' like a film still.', painterly: 'Loading the brush for ' + who + '.', screenprint: 'Inking the screens, one color at a time.',
-      comic: 'Inking ' + who + "'s panel lines.", collage: 'Cutting the paper shapes for ' + who + '.', ink: 'Sharpening the pen for ' + who + '.' };
-    var TONE = { sentimental: 'Keeping it soft and tender.', warm: 'Finding the wink.', hilarious: 'Setting up the joke.' };
-    return [(choice && STYLE[choice.style]) || 'Sketching ' + who + '.', 'Getting ' + who + "'s ears exactly right.", (choice && TONE[choice.tone]) || 'Mixing the colors.',
-      'Adding what you told me about ' + who + '.', 'Checking every whisker and marking.'];
+     under a moving wash and says only what is known (29 Oct handover): the photo is being checked on
+     this device, it is with the painter, the framing box is open, or it is going onto the gift.
+     Teeinblue reports nothing between "sent" and "ready", so there is no percentage and no "nearly
+     there": the bar sweeps without a value and the card counts the time since it started. */
+  function artPhase(t, open) {
+    var lock = '';
+    try { lock = (JSON.parse(window.sessionStorage.getItem('hs2-blanket-upload:' + productId()) || 'null') || {}).stage || ''; } catch (e) { lock = ''; }
+    if (open) return 'framing';
+    if (artStage.framed) return 'placing';
+    if (lock === 'preparing') return 'checking';
+    return t > 120000 ? 'long' : 'painting';
+  }
+  function artWords(phase) {
+    return { checking: 'Checking your photo on this device and getting it ready.', painting: 'Your photo is with the painter. The finished picture comes back all at once.',
+      long: "This one is taking longer than most. It's still going, and you don't need to send the photo again.", framing: "It's painted. Check the framing, then Save.", placing: 'Putting it on your gift.' }[phase];
+  }
+  function artElapsed(t) {
+    var s = Math.max(0, Math.floor(t / 1000));
+    if (s < 10) return 'Started just now.';
+    if (s < 60) return 'Started ' + (s - s % 10) + ' seconds ago.';
+    var m = Math.floor(s / 60);
+    return 'Started ' + m + (m === 1 ? ' minute' : ' minutes') + ' ago.';
   }
   function artStage(pending) {
     var card = document.querySelector('[data-hs-art]');
@@ -405,37 +418,33 @@
     // "Artwork failed or stopped?" only once a painting has run two minutes, or on a real error:
     // under a normal run it invited doubt (28 Oct, order 1). The status code still owns hidden.
     var recovery = document.querySelector('[data-hs2-upload-recovery]');
-    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; artStage.tick = null; artStage.at = -1; if (recovery) recovery.style.display = ''; }
+    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; artStage.tick = null; artStage.framed = false; if (recovery) recovery.style.display = ''; }
     if (next === 'painting') {
       var start = 0;
       try { start = Number(window.sessionStorage.getItem(key)) || 0; if (!start) window.sessionStorage.setItem(key, String(start = Date.now())); } catch (e) { start = artStage.start || (artStage.start = Date.now()); }
       card.querySelector('[data-hs-art-title]').textContent = 'Painting ' + who;
       // honest timing, and Teeinblue's framing box named before it opens by itself (28 Oct)
-      var note = card.querySelector('.hs-art__note'), timing = "About a minute, sometimes two. When it's done, check the framing, then Save.";
+      var note = card.querySelector('.hs-art__note'), timing = "Most paintings take 1 to 3 minutes. When it's done, check the framing, then Save.";
       if (note && note.textContent !== timing) note.textContent = timing;
       photo.hidden = !photoURL;
       if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
       var tick = function () {
-        var t = Date.now() - start, lines = artLines(who), line = card.querySelector('[data-hs-art-line]'), bar = card.querySelector('[data-hs-art-bar]');
-        // eases toward 92% over about a minute; only the finished design ends it
-        var pct = Math.round(92 * (1 - Math.exp(-t / 28000)));
-        // the line only moves forward: each of Buddy's lines once, then the longer waits, then the
-        // framing box while it is open and the moment after it. It used to start over at 25 seconds,
-        // and a timer kept from the first call put "Nearly there" back over an open framing box.
-        var steps = lines.concat(['Nearly there. Good paintings take a minute.', "Still painting. Some take a little longer, and I'm on it.", "It's painted. Check the framing, then Save.", 'Putting it on your gift.']);
-        var framing = steps.length - 2, open = !!document.querySelector('.vm--container');
-        var at = open ? framing : artStage.at >= framing ? framing + 1 : t > 100000 ? framing - 1 : t > 30000 ? lines.length : Math.min(Math.floor(t / 5000), lines.length - 1);
-        artStage.at = Math.max(at, artStage.at == null ? -1 : artStage.at);
-        var say = steps[artStage.at];
+        var t = Date.now() - start, line = card.querySelector('[data-hs-art-line]'), elapsed = card.querySelector('[data-hs-art-elapsed]');
+        var open = !!document.querySelector('.vm--container');
+        // the framing box opens once the painting is back; after it closes the words move on and never
+        // return to "painting" (a timer kept from the first call once put an old line over the open box)
+        if (open) artStage.framed = true;
+        var say = artWords(artPhase(t, open));
         if (line.textContent !== say) line.textContent = say;
-        bar.firstElementChild.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct));
+        var since = artElapsed(t);
+        if (elapsed && elapsed.textContent !== since) elapsed.textContent = since;
         if (recovery) recovery.style.display = t < 120000 ? 'none' : '';
       };
       artStage.tick = tick;
       tick();
       if (!artStage.timer) artStage.timer = setInterval(function () { if (card.getAttribute('data-state') === 'painting' && artStage.tick) artStage.tick(); }, 1000);
       // the moment it starts, bring the painting into view instead of the small loader below
-      if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
     } else {
       try { window.sessionStorage.removeItem(key); } catch (e) { artStage.start = 0; }
     }
@@ -449,7 +458,7 @@
       if (was === 'painting') {
         card.classList.add('is-new');
         setTimeout(function () { card.classList.remove('is-new'); }, 1200);
-        if (card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
         var title = card.querySelector('[data-hs-art-done-title]');
         if (title.focus) title.focus({ preventScroll: true });
       }
@@ -1667,7 +1676,7 @@
     var dog = String(answer('dog') || '').trim(), whose = dog ? possessive(dog) : "your dog's", name = dog || 'your dog';
     var say = 'One more thing first. See the message above.';
     if (buy && buy.getAttribute('data-hs2-purchase-enabled') !== 'true') say = 'This gift is not available to order yet.';
-    else if (blanketUploadPending() || (artRequested() && !cityArtSaved())) say = 'Still painting ' + name + '. About a minute.';
+    else if (blanketUploadPending() || (artRequested() && !cityArtSaved())) say = 'Still painting ' + name + '. Most take 1 to 3 minutes.';
     else if (cityArtSaved()) { if (!blanketReviewAccepted()) say = 'Tick the box under ' + whose + ' painting first.'; }
     else if (restoredArtworkAvailable()) say = 'Review your saved design above first, or add a new photo.';
     else if (!nativeBlanketInputsReady()) say = 'One moment. Your choices are still loading.';
