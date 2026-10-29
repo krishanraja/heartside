@@ -84,6 +84,22 @@ for (const minified of [false, true]) {
     } finally { await browser.close(); }
   });
 
+  test(`${mode}: mixed-case hyphenated recipient and explicit reset`, async () => {
+    const {browser, tab, errors} = await open(minified);
+    try {
+      await tab.goto('http://localhost/');
+      await tab.click('[data-hs3-start]');
+      await tab.fill('#hs3-dog', 'Pickle'); await tab.click('[data-hs3="next"]');
+      await tab.fill('#hs3-rec', 'Jo-anne'); await tab.click('[data-hs3="next"]');
+      assert.equal((await state(tab)).rec, 'Jo-Anne');
+      await tab.evaluate(() => sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({style:'comic',tone:'hilarious'})));
+      await tab.goto('http://localhost/?hs3=reset');
+      assert.equal(await tab.evaluate(() => sessionStorage.getItem('hs-artwork-choices-v1')), null);
+      assert.equal((await state(tab)).dog, '');
+      assert.deepEqual(errors, []);
+    } finally { await browser.close(); }
+  });
+
   test(`${mode}: a gift for "Me" is spoken to the buyer, and the choose button answers the tap at once`, async () => {
     const {browser, tab, errors, offsite, products} = await open(minified);
     try {
@@ -104,6 +120,7 @@ for (const minified of [false, true]) {
       await tab.click('[data-hs3="next"]');
       await tab.waitForSelector('.hs3__frame[data-hs3-screen="reveal"]');
       assert.match(await tab.textContent('.hs3-h2'), /^Mochi's gift for you$/);
+      assert.equal((await tab.locator('.hs3-note__for').first().textContent()).trim(), 'For you');
       assert.equal(await tab.locator('.hs3-swatches').count(), 0, 'no mug color before the gift is chosen');
       await tab.click('[data-hs3="them"]');
       await tab.waitForSelector('.hs3__frame[data-hs3-screen="choose"]');
