@@ -158,5 +158,14 @@ check('a dog\'s name grounds no prop: a dog called Biscuit, Latte or Waffles get
   assert.equal(cl.lines.together, 'Our walks are the best part of my day.');
   assert.equal(cl.reason, '');
 });
+check('a named toy does not license a follow-up about bringing it', () => {
+  const input = {...g.input, typed_text:'She rests beside her green hedgehog.', previous_line:''};
+  const raw = {reaction:'Lovely.', line:'I rest beside my hedgehog.', follow_up:{question:'When does she bring Sam the hedgehog?',chips:['Every day','Weekends'],lines:['I bring my hedgehog every day.','I bring it on weekends.'],replies:['A daily delivery.','A weekend delivery.']},flags:[]};
+  assert.equal(run('enforce-typed.js',{input},raw).follow_up,null);
+  const offered = {...raw,follow_up:{...raw.follow_up,question:'When does she rest beside the hedgehog?',chips:['Brings it to Sam','After walks']}};
+  assert.deepEqual(run('enforce-typed.js',{input},offered).follow_up.chips,['After walks']);
+  const stated={...input,typed_text:'She brings Sam her green hedgehog.'};
+  assert.equal(run('enforce-typed.js',{input:stated},raw).follow_up.question,raw.follow_up.question);
+});
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;
