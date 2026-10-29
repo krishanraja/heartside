@@ -35,7 +35,7 @@ jobs:
         working-directory: tools/preview
         run: npx playwright install --with-deps chromium
       - name: Theme and storefront tests
-        run: node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs
+        run: node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs tools/perf/*.test.mjs
       - name: Rendered pages and the gift chat, with their layout checks (local stand-ins only)
         run: node tools/preview/render.mjs && node tools/preview/chat.mjs
       - name: Artwork facts profile

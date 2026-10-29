@@ -1,0 +1,8 @@
+# First Code node ("Guard") execution time inside compose and typed executions, read from n8n execution data on 2026-10-29. gap_s is seconds since the previous Heartside execution finished (either workflow; the code runner is shared). Warm-path "Warm" Code node included for the warm ping.
+execution,workflow,node,node_ms,gap_s
+47789,compose,Warm,1542,
+47790,compose,Guard,14,14.4
+47791,compose,Guard,1367,39.0
+47757,compose,Guard,14,5.0
+47747,compose,Guard,15,2.6
+47788,typed,Guard,15,4.4

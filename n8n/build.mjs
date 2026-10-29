@@ -278,6 +278,38 @@ const out = {
 return [{ json: out }];
 `;
 
+// A Gemini call with a deadline. The Gemini node has no timeout option, so this is the REST call
+// itself: the system prompt from Voice, JSON out, no thinking. Its reply is flattened to { text } by
+// replyText() before Enforce, the shape Enforce already reads.
+function geminiCall(name, prompt, timeout) {
+  const body = "{{ JSON.stringify({ systemInstruction: { parts: [ { text: $('Voice').params.options.systemMessage } ] }, contents: [ { role: 'user', parts: [ { text: " + prompt + " } ] } ], generationConfig: { temperature: 0.9, maxOutputTokens: " + (name === 'Gemini backup' && timeout > 2000 ? 700 : 600) + ", responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } } }) }}";
+  return `node({
+  type: 'n8n-nodes-base.httpRequest',
+  version: 4.2,
+  config: {
+    name: ${JSON.stringify(name)},
+    onError: 'continueErrorOutput',
+    parameters: {
+      method: 'POST',
+      url: ${JSON.stringify('https://generativelanguage.googleapis.com/v1beta/' + MODEL + ':generateContent')},
+      authentication: 'predefinedCredentialType',
+      nodeCredentialType: 'googlePalmApi',
+      sendBody: true,
+      specifyBody: 'json',
+      jsonBody: expr(${JSON.stringify(body)}),
+      options: { timeout: ${timeout} }
+    },
+    credentials: { googlePalmApi: ${JSON.stringify(CRED)} }
+  }
+})`;
+}
+function replyText(name) {
+  return `node({
+  type: 'n8n-nodes-base.set',
+  version: 3.4,
+  config: { name: ${JSON.stringify(name)}, parameters: { mode: 'manual', includeOtherFields: false, assignments: { assignments: [{ id: 'hs-text', name: 'text', value: expr("{{ $json.candidates?.[0]?.content?.parts?.[0]?.text ?? '' }}"), type: 'string' }] }, options: {} } }
+})`;
+}
 function wf(kind) {
   const id = kind === 'typed' ? 'heartside-typed-answer' : 'heartside-compose';
   const name = kind === 'typed' ? 'Heartside: typed answer (Buddy AI)' : 'Heartside: compose gift lines (Buddy AI)';
@@ -321,7 +353,9 @@ const allowed = ifElse({
   }
 });
 
-${kind === 'compose' ? `// The whole note: Claude Sonnet (Krish, 22 Oct). The instructions are cached; at 7.5 s it hands over to Gemini.
+${kind === 'compose' ? `// The whole note: Claude Sonnet (Krish, 22 Oct). The instructions are cached. The budget (29 Oct,
+// tools/perf): runner start up to 1.5 s + Claude 6.5 s + Gemini backup 3.5 s stays inside the page's
+// 11 s, and past that Enforce writes the buyer's own lines. Claude's slowest measured call was ~3.9 s.
 const gemini = node({
   type: 'n8n-nodes-base.httpRequest',
   version: 4.2,
@@ -337,32 +371,18 @@ const gemini = node({
       headerParameters: { parameters: [{ name: 'anthropic-version', value: '2023-06-01' }] },
       sendBody: true,
       specifyBody: 'json',
-      // the instructions live once, on Gemini backup, and are read from there
-      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: '" + CLAUDE + "', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Gemini backup').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
-      options: { timeout: 7500 }
+      // the instructions live once, on Voice, and are read from there
+      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: '" + CLAUDE + "', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Voice').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
+      options: { timeout: 6500 }
     },
     credentials: { anthropicApi: ${JSON.stringify(CLAUDE_CRED)} }
   }
 });
-` : `const gemini = node({
-  type: '@n8n/n8n-nodes-langchain.googleGemini',
-  version: 1.2,
-  config: {
-    name: 'Gemini',
-    onError: 'continueErrorOutput',
-    parameters: {
-      resource: 'text',
-      operation: 'message',
-      modelId: { __rl: true, mode: 'list', value: \${JSON.stringify(MODEL)}, cachedResultName: \${JSON.stringify(MODEL)} },
-      messages: { values: [{ content: expr('{{ $json.prompt }}'), role: 'user' }] },
-      simplify: true,
-      jsonOutput: true,
-      options: { systemMessage: expr("{{ $('Gemini backup').params.options.systemMessage }}"), maxOutputTokens: \${kind === 'typed' ? 600 : 700}, temperature: 0.9, thinkingBudget: 0 }
-    },
-    credentials: { googlePalmApi: \${JSON.stringify(CRED)} }
-  }
-});
-
+` : `// Typed answers: Gemini, bounded (29 Oct, tools/perf). The Gemini node has no timeout, so the call
+// is a plain request with one: runner start up to 1.5 s + 3 s here + 1.5 s backup, and past that
+// Enforce keeps the buyer's own words. The page itself gives up at 5 s.
+const gemini = ${geminiCall('Gemini', "$json.prompt", 3000)};
+const geminiText = ${replyText('Gemini text')};
 `}
 const enforce = node({
   type: 'n8n-nodes-base.code',
@@ -402,19 +422,24 @@ const respondWarm = node({
   config: { name: 'Respond warm', parameters: { respondWith: 'json', responseBody: expr('{{ JSON.stringify({ warm: true }) }}'), options: { responseCode: 200, responseHeaders: { entries: [{ name: 'Cache-Control', value: 'no-store' }] } } } }
 });
 
-// One retry if the first call errors (a passing error or rate limit). Tested 14 Oct: other models on
-// this key were unavailable (2.5-flash-lite) or too slow for 3 s (3.5-flash-lite, flash-lite-latest).
-const geminiBackup = node({
+// One retry if the first call errors (a passing error or a rate limit), bounded so a slow second try
+// never holds the buyer: 1.5 s for a typed answer, 3.5 s for the note.
+const geminiBackup = ${geminiCall('Gemini backup', "$('Guard').first().json.prompt", kind === 'typed' ? 1500 : 3500)};
+const backupText = ${replyText('Backup text')};
+
+// The instructions, held once and never run: a disabled Gemini node, so they stay readable and
+// editable in the n8n editor (29 Oct; it was the old backup node). Every model call reads them.
+const voice = node({
   type: '@n8n/n8n-nodes-langchain.googleGemini',
   version: 1.2,
   config: {
-    name: 'Gemini backup',
-    onError: 'continueErrorOutput',
+    name: 'Voice',
+    disabled: true,
     parameters: {
       resource: 'text',
       operation: 'message',
       modelId: { __rl: true, mode: 'list', value: ${JSON.stringify(MODEL)}, cachedResultName: ${JSON.stringify(MODEL)} },
-      messages: { values: [{ content: expr("{{ $('Guard').first().json.prompt }}"), role: 'user' }] },
+      messages: { values: [{ content: '', role: 'user' }] },
       simplify: true,
       jsonOutput: true,
       options: { systemMessage: ${JSON.stringify(sys)}, maxOutputTokens: ${kind === 'typed' ? 600 : 700}, temperature: 0.9, thinkingBudget: 0 }
@@ -485,12 +510,13 @@ const refuse = node({
 });
 
 export default workflow(${JSON.stringify(id)}, ${JSON.stringify(name)})
+  .add(voice)
   .add(hook)
   .to(stamp)
   .to(isWarm
     .onTrue(warmCode.to(respondWarm))
     .onFalse(guard.to(allowed
-      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(enforce)).to(enforce.to(tag.to(respond.to(log)))))
+      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(${kind === 'typed' ? 'geminiText.to(' : ''}enforce.to(tag.to(respond.to(log)))${kind === 'typed' ? ')' : ''}))
       .onFalse(refuse))));
 `;
 }

@@ -167,5 +167,44 @@ check('a named toy does not license a follow-up about bringing it', () => {
   const stated={...input,typed_text:'She brings Sam her green hedgehog.'};
   assert.equal(run('enforce-typed.js',{input:stated},raw).follow_up.question,raw.follow_up.question);
 });
+
+// 29 Oct: Gemini is called through its REST API with a deadline (the Gemini node has none). The reply
+// is flattened to { text } by a Set node before Enforce, and every model call reads the one system
+// prompt held on the disabled Voice node. Evaluated with n8n's own expression parser.
+{
+  const { createRequire } = await import('node:module');
+  const { Tournament } = createRequire(new URL('../tools/preview/package.json', import.meta.url))('@n8n/tournament');
+  const tournament = new Tournament(e => { throw e; });
+  const exprs = (f) => [...fs.readFileSync(f, 'utf8').matchAll(/expr\(("(?:[^"\\]|\\.)*")\)/g)].map(m => JSON.parse(m[1]));
+  const evalExpr = (e, scope) => tournament.execute(e, scope);
+  const rest = (o) => ({candidates:[{content:{parts:[{text: JSON.stringify(o)}], role:'model'}, finishReason:'STOP', index:0}], usageMetadata:{}});
+  const voice = (sys) => () => ({ params: { options: { systemMessage: sys } }, first: () => ({ json: { prompt: '{"step":"home"}' } }) });
+  check('a Gemini REST reply reaches Enforce as text, and a timeout or empty reply falls back to the buyer', () => {
+    const flatten = exprs('typed.js').find(e => e.includes('candidates'));
+    const text = evalExpr(flatten, { $json: rest({reaction:'Kuku on window duty is a fine sight.', lines:['I watch the window for you from 5pm.'], follow_up:null, flags:[]}) });
+    const typed = run('enforce-typed.js', g, {text});
+    assert.equal(typed.source, 'ai'); assert.equal(typed.line, 'I watch the window for you from 5pm.');
+    assert.equal(evalExpr(flatten, { $json: { error: { message: 'timeout of 3000ms exceeded' } } }), '');
+    assert.equal(run('enforce-typed.js', g, {text: ''}).source, 'fallback');
+    assert.equal(run('enforce-typed.js', g, {error:{message:'timeout of 3000ms exceeded', code:'ECONNABORTED'}}).source, 'fallback');
+  });
+  check('every model call reads the one system prompt on Voice, with a deadline, and no Gemini node runs', () => {
+    const P = JSON.parse(fs.readFileSync('prompts.json', 'utf8'));
+    for (const [f, sys, timeouts] of [['typed.js', P.typed, [3000, 1500]], ['compose.js', P.compose, [6500, 3500]]]) {
+      const src = fs.readFileSync(f, 'utf8');
+      assert.deepEqual([...src.matchAll(/timeout: (\d+)/g)].map(m => Number(m[1])), timeouts, f);
+      assert.equal((src.match(/n8n-nodes-langchain\.googleGemini/g) || []).length, 1, f + ': only Voice');
+      assert.match(src, /name: 'Voice',\n    disabled: true,/, f);
+      const bodies = exprs(f).filter(e => e.includes('JSON.stringify({'));
+      assert.equal(bodies.length, 2, f);
+      for (const body of bodies) {
+        const out = JSON.parse(evalExpr(body, { JSON, $: voice(sys), $json: { prompt: '{"step":"home"}' } }));
+        const system = out.systemInstruction ? out.systemInstruction.parts[0].text : out.system[0].text;
+        assert.equal(system, sys, f);
+        assert.equal((body.match(/\}\}/g) || []).length, 1, 'only the final n8n delimiter');
+      }
+    }
+  });
+}
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;

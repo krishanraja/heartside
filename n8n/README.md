@@ -29,10 +29,17 @@ The typed-answer and compose workflows each pass the model's reply through an En
 
 ## Publishing the typed and compose workflows
 
-A rule change here reaches buyers only after the rebuilt workflows are published in n8n. CoWork does it in Part 1.3 of the [CoWork prompt](../docs/review/COWORK-LIVE-ACCEPTANCE.md), a run Krish approved up front; nothing in this repository publishes them. The 28 October rebuild changes three fields in each of "Heartside: typed answer (Buddy AI)" and "Heartside: compose gift lines (Buddy AI)":
+A rule change here reaches buyers only after the rebuilt workflows are published in n8n. Since 29 October a Claude Code session publishes them through the n8n connector (Ruling, Krish, 29 October: "just do it automatically, everything is set to allow in the connectors"), with the version history as the rollback. The fields that carry the rules in "Heartside: typed answer (Buddy AI)" and "Heartside: compose gift lines (Buddy AI)":
 
-- Guard `jsCode`, from `guard-typed.js` or `guard-compose.js` (the pronoun rule);
+- Guard `jsCode`, from `guard-typed.js` or `guard-compose.js`;
 - Enforce rules `jsCode`, from `enforce-typed.js` or `enforce-compose.js`;
-- the backup model node's `options.systemMessage`, from the `typed` or `compose` entry in `prompts.json`. The main model node reads it from there.
+- the disabled **Voice** node's `options.systemMessage`, from the `typed` or `compose` entry in `prompts.json`. Voice never runs; every model call reads the instructions from it.
+
+Every model call has a deadline (29 October, measured in [`docs/evidence/2026-10-29-timing-report.md`](../docs/evidence/2026-10-29-timing-report.md)). The Gemini node has no timeout option, so Gemini is called through its REST API in an HTTP Request node, and a Set node ("Gemini text", "Backup text") flattens the reply to the `{ text }` Enforce reads:
+
+| Workflow | First call | Backup | Past both |
+|---|---|---|---|
+| typed | Gemini, 3 s | Gemini, 1.5 s | Enforce keeps the buyer's own words; the page gives up at 5 s |
+| compose | Claude, 6.5 s | Gemini, 3.5 s | Enforce keeps the buyer's own lines; the page waits 11 s, then still takes a late note |
 
 After publishing, read back the active Guard code, Enforce rules code and system message of each workflow and compare them with these files.
