@@ -119,7 +119,7 @@
               <p class="hs-art-draft-status">Draft review only. Artwork generation and ordering are paused. Price is not approved.</p>
             {% else %}
             <div {{ block.shopify_attributes }}>
-              <div class="hs2-product__price" data-hs2-price>{{ current.price | money }}</div>
+              <div class="hs2-product__price" data-hs2-price>{{ current.price | money_without_trailing_zeros }}</div>
               {%- comment -%} a product with framed and unframed variants says both prices, from Shopify {%- endcomment -%}
               {%- assign framed_min = '' -%}{%- assign unframed_min = '' -%}
               {%- for v in product.variants -%}
@@ -128,7 +128,7 @@
               {%- endfor -%}
               {%- if framed_min != '' and unframed_min != '' -%}<div class="hs2-product__formats">Unframed {{ unframed_min | money_without_trailing_zeros }} · Framed {{ framed_min | money_without_trailing_zeros }}</div>{%- endif -%}
               {%- unless product.has_only_default_variant -%}
-                <script type="application/json" data-hs2-prices>{ {%- for v in product.variants -%}{{ v.id | append: '' | json }}: {{ v.price | money | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }</script>
+                <script type="application/json" data-hs2-prices>{ {%- for v in product.variants -%}{{ v.id | append: '' | json }}: {{ v.price | money_without_trailing_zeros | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }</script>
                 {%- comment -%} each variant's own photo, so the picture follows the color chosen in Teeinblue {%- endcomment -%}
                 <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- assign v_hide = section.settings.hide_media_alt | default: 'shown in your cart' | downcase -%}{%- for v in product.variants -%}{%- assign v_alt = v.featured_media.alt | downcase -%}{%- assign v_mid = v.featured_media.id | append: '' -%}{%- if v.featured_media -%}{%- unless v_alt contains v_hide or v_alt contains 'blank ' or v_alt contains 'checkout tile' or v_mid == '71850515169662' or v_mid == '71856697049470' -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endunless -%}{%- endif -%}{%- endfor -%} }</script>
               {%- endunless -%}
@@ -194,7 +194,7 @@
                         {%- capture v_name -%}
                           {%- for pos in choice_positions -%}{%- assign i = pos | minus: 1 -%}{{ v.options[i] }}{%- unless forloop.last %} / {% endunless -%}{%- endfor -%}
                         {%- endcapture -%}
-                        <option value="{{ v.id }}" data-price="{{ v.price | money }}" data-available="{{ v.available }}"{% if v.id == current.id %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>{{ v_name | strip }}{% unless v.available %} (gone for now){% endunless %}</option>
+                        <option value="{{ v.id }}" data-price="{{ v.price | money_without_trailing_zeros }}" data-available="{{ v.available }}"{% if v.id == current.id %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>{{ v_name | strip }}{% unless v.available %} (gone for now){% endunless %}</option>
                       {%- endfor -%}
                     </select>
                   </div>
