@@ -32,11 +32,12 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     try {
       await page.goto('https://hs.test/');
       const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
-      const code = `var pending=true,saved=false,src='',photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
+      const code = `var pending=true,saved=false,src='',state={},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
         function blanketNativeError(){return false;}function blanketArtPreview(){return ${kind === 'blanket'};}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
       await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
-      // before any painting, the blanket shows its example, not an empty preview; the mug keeps its preview
-      assert.equal(await page.evaluate(() => { pending = false; artStage(false); const m = document.querySelector('[data-hs2-media]'); return m.getAttribute('data-show') + ':' + m.querySelector('[data-hs2-thumb]').getAttribute('aria-current'); }), kind === 'blanket' ? 'photo:true' : 'null:false');
+      // before any painting, a gift page reached without the chat shows its labeled example, not
+      // Teeinblue's sample dog as "Your design" (29 Oct: the mug and portrait did, over the sample pug)
+      assert.equal(await page.evaluate(() => { pending = false; artStage(false); const m = document.querySelector('[data-hs2-media]'); return m.getAttribute('data-show') + ':' + m.querySelector('[data-hs2-thumb]').getAttribute('aria-current'); }), 'photo:true');
       await page.evaluate(() => { pending = true; artStage(pending); });
       assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-media]').hasAttribute('data-show')), false, 'painting: back to the preview, under the wash');
       const painting = await page.evaluate(() => {
@@ -78,6 +79,32 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     } finally { await page.close(); }
   });
 }
+
+// 29 Oct: after the chat the preview carries the buyer's words (Krish, 19 Oct), so it stays on show, but
+// until the painting is in it the dog is Teeinblue's sample: it is labeled Example, and the label goes
+// once the buyer's painting is there.
+for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} mug after the chat: the preview stays on show, labeled Example until the painting is in it`, async () => {
+  const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings: {blanket_purchase: false, native_artwork_kind: 'mug'}});
+  const gallery = readFileSync(new URL('shopify/snippets/hs-product-gallery.liquid', root), 'utf8');
+  const tag = gallery.match(/<span class="hs2-product__tag hs2-product__tag--preview"[^>]*>Example<\/span>/);
+  assert.ok(tag, 'the gallery draws the preview label');
+  const page = await browser.newPage({viewport: {width: 390, height: 844}});
+  await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__media" data-hs2-media data-tib="on"><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div class="hs2-product__tib" data-hs2-tib-gallery style="height:200px"></div>${tag[0]}</div></div>${html}<div class="tee-field--photo"><img class="tee-photo-image" src=""></div></main>`}) : r.abort());
+  try {
+    await page.goto('https://hs.test/');
+    const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
+    const code = `var pending=false,saved=false,src='',state={hs3_lines:{meaning:'I wait by the door.'}},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
+      function blanketNativeError(){return false;}function blanketArtPreview(){return false;}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
+    await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
+    const look = () => page.evaluate(() => { const m = document.querySelector('[data-hs2-media]'), t = document.querySelector('.hs2-product__tag--preview');
+      return {show: m.getAttribute('data-show'), preview: m.querySelector('[data-hs2-thumb-preview]').getAttribute('aria-current'), label: getComputedStyle(t).display !== 'none' && t.getBoundingClientRect().width > 0}; });
+    await page.evaluate(() => artStage(false));
+    assert.deepEqual(await look(), {show: null, preview: 'true', label: true}, 'the buyer\'s words on show, the sample dog labeled');
+    // the painting is in the preview: no label
+    await page.evaluate(design => { src = design; document.querySelector('.tee-photo-image').setAttribute('src', design); artStage(false); }, DESIGN);
+    assert.deepEqual(await look(), {show: null, preview: 'true', label: false}, 'their painting, unlabeled');
+  } finally { await page.close(); }
+});
 
 // 28 Oct: the photo the buyer gave Buddy is one choice (Krish: "the UI should absolutely really be asking
 // if you want to add to that or use a different picture"). Real snippet and stylesheet: the card names the
