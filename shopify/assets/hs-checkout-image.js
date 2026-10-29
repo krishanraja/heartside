@@ -51,8 +51,11 @@
           // Teeinblue serves its copy of a design a moment after painting it, and until then the
           // server answers 503 preview_unavailable (28 Oct, Recording 4: the redo's add failed on
           // it). That is a wait inside the same budget: registration is asked again, nothing uploads.
+          // A transient lookup, create or readback failure must restart the same idempotent
+          // registration. A valid ready response is still required before the cart can change.
+          var transient = /^(preview_unavailable|image_lookup_failed|image_creation_failed|image_readback_failed)$/.test(data.code || '');
           var wait = response.status === 202 && data.state === 'pending' && (data.retryAfterSeconds === 3 || data.retryAfterSeconds === 5) ? data.retryAfterSeconds
-            : response.status === 503 && data.code === 'preview_unavailable' ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
+            : response.status === 503 && transient ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
           if (response.status === 503 && !wait) { if (root.console) root.console.warn('Checkout registration rejected', /^[a-z_]{1,48}$/.test(data.code || '') ? data.code : 'unknown'); throw fail(); }
           if (wait) {
             if (Date.now() + wait * 1000 >= deadline) throw fail();
