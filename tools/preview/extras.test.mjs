@@ -14,6 +14,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {transformSync} from 'esbuild';
 import {Liquid} from 'liquidjs';
+import {chromium} from 'playwright';
 
 const source = readFileSync(new URL('../../shopify/assets/hs2.js', import.meta.url), 'utf8');
 const section = name => { const i = source.indexOf('  function ' + name + '('); assert.notEqual(i, -1, name); return source.slice(i, source.indexOf('\n  function ', i + 1)); };
@@ -187,9 +188,35 @@ test('the toy and collar box: examples read as examples, the photos start on dif
   assert.deepEqual([...html.matchAll(/placeholder="([^"]*)"/g)].map(m => m[1]).filter(t => !/^For example, /.test(t)), [], 'every placeholder is an example');
   const picked = [...html.matchAll(/<select[\s\S]*?<\/select>/g)].map(m => (m[0].match(/<option selected>([^<]+)</) || [])[1]);
   assert.equal(picked.length, 3); assert.equal(new Set(picked).size, 3, 'no two photos start on the same tag');
-  assert.match(html, /<button type="button" class="hs-extras__add" data-hs-extras-add>Add our artist's touch, <span data-hs-extras-price><\/span><\/button>/);
+  assert.match(html, /<button type="button" class="hs-extras__add" data-hs-extras-add><span>Add our artist's touch, <span data-hs-extras-price><\/span><\/span><\/button>/);
   assert.match(html, /<p class="hs-extras__sub">Adds 5&nbsp;days\. A person reworks your design by&nbsp;hand\.<\/p>/);
   assert.match(html, /Added\. <button type="button" class="hs-extras__remove" data-hs-extras-remove>Remove<\/button>/);
   assert.doesNotMatch(html, /<details|<input type="file" accept="image\/\*" aria-label="Photo \d" data-hs-extras-file>\s*<\/div>/, 'no sentence that adds it on a tap, no bare file input');
   assert.equal((html.match(/<label class="hs-file"><input type="file"/g) || []).length, 3);
+});
+
+// 29 Oct, CoWork's gate on the theme copy: the button is inline-flex, so its words and its price were
+// two flex items. The price drew hard against the comma ("touch,$29") and read as a separate line,
+// which the live gate took for the retired $29 on every product page. One run of text keeps both.
+test('the Artist\'s touch button reads "Add our artist\'s touch, $29" on one line, with the space after the comma', async () => {
+  const liquid = readFileSync(new URL('../../shopify/snippets/hs-native-artwork.liquid', import.meta.url), 'utf8');
+  const button = liquid.match(/<button type="button" class="hs-extras__add"[\s\S]*?<\/button>/)[0];
+  const css = readFileSync(new URL('../../shopify/assets/hs2.css', import.meta.url), 'utf8');
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({viewport: {width: 390, height: 300}});
+    await page.setContent(`<style>${css}</style><div class="hs-extras">${button}</div>`);
+    const r = await page.evaluate(() => {
+      const btn = document.querySelector('.hs-extras__add'), price = btn.querySelector('[data-hs-extras-price]');
+      price.textContent = '$29';
+      const walk = document.createTreeWalker(btn, NodeFilter.SHOW_TEXT);
+      let comma = null;
+      for (let n; (n = walk.nextNode());) if (n.data.includes(',')) { const range = document.createRange(); range.setStart(n, n.data.indexOf(',')); range.setEnd(n, n.data.indexOf(',') + 1); comma = range.getBoundingClientRect(); }
+      const p = price.getBoundingClientRect();
+      return {text: btn.innerText, gap: p.left - comma.right, sameLine: Math.abs(p.top - comma.top) < 4};
+    });
+    assert.equal(r.text, "Add our artist's touch, $29");
+    assert.ok(r.sameLine, 'the price sits on the line of the words');
+    assert.ok(r.gap >= 2, `a space between the comma and the price (${r.gap.toFixed(1)}px)`);
+  } finally { await browser.close(); }
 });
