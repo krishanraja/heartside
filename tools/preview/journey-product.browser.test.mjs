@@ -125,8 +125,8 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     // recipes v10: the painter's hidden fields carry the directed brief for this dog (PROMPT-SPEC-2026-10-29.md)
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^Keep exactly who he is: this Border Collie's face shape/);
-    // v13: the stated walk is a parade stride with the named toys carried like a trophy, and no person
-    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog marching on the morning walk with a proud, high-stepping parade stride, chest out and tail up like a flag, carrying his tennis ball and big stick like a trophy\./);
+    // v14: the stated walk is a five-star general, the named toys clamped like a baton, and no person
+    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog leading the morning walk like a five-star general inspecting the troops: .*an utterly serious expression, his tennis ball and big stick clamped like a field marshal's baton\./);
     assert.doesNotMatch(brief['Tone direction'], /person|only their/);
     assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');
