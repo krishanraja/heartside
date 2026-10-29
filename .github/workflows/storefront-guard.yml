@@ -1,112 +1,91 @@
-# Storefront guard: every hour, read the public store's product addresses with
-# tools/preview/handle-check.mjs (no browser, no install, no secret) and tell Krish when one
-# breaks. On 28 October a Teeinblue campaign Update renamed two product handles between
-# checks; nothing noticed until the next hand-run gate.
-#
-# Exit 1 (broken: a renamed handle, a 404, a lost template, the chat or phone menu pointing at
-# nothing, the blank base as a gift's checkout picture, the Artist's touch stand-in) opens one
-# GitHub issue labelled storefront-guard, or comments on the open one when the findings change.
-# It never opens a second issue and never repeats the same findings. Exit 2 (Cloudflare or the
-# network kept the runner from reading the store) writes the job summary only: it is not a
-# finding. Exit 3 (the check itself failed) fails the run without an issue. A broken store does
-# not turn the run red: the issue is the one notice, where a red run would mail every hour.
-#
-# This repository is public, so the summary and the issue name paths, counts and public variant
-# titles only: never the store's host, a theme id or anything a buyer typed. The check sends GETs only, as an anonymous
-# visitor, and writes nothing to the store.
-
+# Temporary browser-operated acceptance runner. Main's hourly guard is unchanged.
 name: Storefront guard
-
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
-
+    inputs:
+      theme_id:
+        description: "Unpublished theme ID; leave empty only for the final production checks"
+        required: false
+        default: ""
+        type: string
+      warn_media:
+        description: "Allow the known checkout-media warnings before the live release"
+        required: false
+        default: true
+        type: boolean
 permissions:
   contents: read
-  issues: write
-
 concurrency:
-  group: storefront-guard
+  group: heartside-acceptance-gates
   cancel-in-progress: false
-
 jobs:
-  check:
+  acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 35
+    env:
+      THEME_ID: ${{ inputs.theme_id }}
     steps:
+      - name: Validate and mask target
+        run: |
+          if [ -n "$THEME_ID" ]; then
+            echo "::add-mask::$THEME_ID"
+            [[ "$THEME_ID" =~ ^[0-9]+$ ]] || exit 1
+          fi
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Read the product addresses
-        id: check
+      - name: Install the existing gate dependencies
+        working-directory: tools/preview
         run: |
-          set +e
-          node tools/preview/handle-check.mjs > check.txt 2>&1
-          code=$?
-          set -e
-          cat check.txt
-          echo "code=$code" >> "$GITHUB_OUTPUT"
-
-      - name: Summary
-        if: always() && steps.check.outputs.code != ''
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Preview acceptance
+        id: preview
+        continue-on-error: true
+        working-directory: tools/preview
+        run: |
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--theme "$THEME_ID"); fi
+          node preview-acceptance.mjs "${args[@]}"
+      - name: Live presentation gate
+        id: presentation
+        continue-on-error: true
+        working-directory: tools/preview
+        run: |
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--query "preview_theme_id=$THEME_ID"); fi
+          node live-gate.mjs "${args[@]}"
+      - name: Catalog and address gate
+        id: catalog
+        continue-on-error: true
+        working-directory: tools/preview
         env:
-          CODE: ${{ steps.check.outputs.code }}
+          WARN_MEDIA: ${{ inputs.warn_media }}
         run: |
-          {
-            case "$CODE" in
-              0) echo "### Storefront guard: all clear" ;;
-              1) echo "### Storefront guard: something is broken" ;;
-              2) echo "### Storefront guard: inconclusive (the store could not be read from GitHub's runner; nothing was judged)" ;;
-              *) echo "### Storefront guard: the check itself failed" ;;
-            esac
-            echo ""
-            echo '```'
-            cat check.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Tell Krish
-        if: steps.check.outputs.code == '1'
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--theme "$THEME_ID"); fi
+          if [ "$WARN_MEDIA" = "true" ]; then args+=(--warn-media); fi
+          node handle-check.mjs "${args[@]}"
+      - name: Preserve anonymous gate screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-gate-screenshots
+          path: |
+            tools/preview/out/acceptance/*.png
+            tools/preview/out/gate/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Require all three gates
+        if: always()
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          PREVIEW: ${{ steps.preview.outcome }}
+          PRESENTATION: ${{ steps.presentation.outcome }}
+          CATALOG: ${{ steps.catalog.outcome }}
         run: |
-          grep '^FAIL' check.txt | sort > findings.txt
-          key=$(sha256sum findings.txt | cut -c1-12)
-          {
-            echo "The hourly storefront guard found $(wc -l < findings.txt) broken check(s):"
-            echo ""
-            echo '```'
-            cat findings.txt
-            echo '```'
-            echo ""
-            echo "Paths and public variant titles only. Read the store back in Shopify admin before changing anything; a renamed handle is restored there, then this guard and the gates are run again."
-            echo ""
-            echo "Run: $RUN_URL"
-            echo ""
-            echo "Findings key: $key"
-          } > body.md
-          gh label create storefront-guard --repo "$REPO" --color B60205 --description "The hourly storefront guard found a broken storefront check" 2>/dev/null || true
-          open=$(gh issue list --repo "$REPO" --label storefront-guard --state open --limit 1 --json number --jq '.[0].number // empty')
-          if [ -z "$open" ]; then
-            gh issue create --repo "$REPO" --label storefront-guard --assignee krishanraja \
-              --title "Storefront guard: a storefront check failed" --body-file body.md
-          elif gh issue view "$open" --repo "$REPO" --comments --json body,comments --jq '[.body] + [.comments[].body] | join("\n")' | grep -q "Findings key: $key"; then
-            echo "Issue #$open already carries these findings; nothing new to say."
-          else
-            gh issue comment "$open" --repo "$REPO" --body-file body.md
-          fi
-
-      # A broken store is reported by the issue above, not by a red run: GitHub mails every
-      # failed scheduled run, which would be one mail an hour. Only a check that could not run
-      # at all fails the run, so it gets fixed.
-      - name: Fail the run when the check itself failed
-        if: steps.check.outputs.code != '0' && steps.check.outputs.code != '1' && steps.check.outputs.code != '2'
-        run: |
-          echo "::error::handle-check.mjs did not finish (see the log above)."
-          exit 1
+          echo "Preview acceptance: $PREVIEW" >> "$GITHUB_STEP_SUMMARY"
+          echo "Presentation gate: $PRESENTATION" >> "$GITHUB_STEP_SUMMARY"
+          echo "Catalog gate: $CATALOG" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Exit 2 is inconclusive and never a pass. Read individual logs for the exact exit code.' >> "$GITHUB_STEP_SUMMARY"
+          [ "$PREVIEW" = "success" ] && [ "$PRESENTATION" = "success" ] && [ "$CATALOG" = "success" ]
