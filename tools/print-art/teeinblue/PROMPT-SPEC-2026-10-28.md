@@ -1,6 +1,10 @@
 # Teeinblue native prompt spec, 28 October 2026 (stated toy rule)
 
-Status: **proposed vendor change, not applied.** The prompts live on the three Heartside artworks today are the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, whose prompt blocks and hashes stay unchanged as the record of what is live. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, in a run Krish approved up front, with a backup first and the product handles read back after.
+Status at authoring on 28 October: **proposed vendor change, not applied.** See the dated 29 October acceptance repair below for the subsequently applied prompt blocks and the pending tone-recipe revision. The prompts live on the three Heartside artworks today are the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, whose prompt blocks and hashes stay unchanged as the record of what is live. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, in a run Krish approved up front, with a backup first and the product handles read back after.
+
+## 29 October acceptance repair
+
+The three prompt blocks below were applied and hash-verified in the authorized browser acceptance run. Recipe revision `actual-dog-recipes-v7-clear-comic-premise` strengthens only the storefront-supplied Hilarious tone direction: a calm seated dog beside a toy does not satisfy the comic premise. Identity, factual grounding, safety and the three native prompt blocks are unchanged. This revision still requires a fresh painting and release gates.
 
 ## What changed since 27 October
 
@@ -9,7 +13,7 @@ Status: **proposed vendor change, not applied.** The prompts live on the three H
    - The Sentimental tone gains: "A stated toy or accessory rests quietly beside or on the dog."
    - The negative's "No invented city, costume, toy, accessory, occupation, food preference or relationship." becomes "No invented city, costume, occupation, food preference or relationship. No toy or accessory other than the ones in the facts."
 2. **The cross rule.** `Ruling (Krish, 2026-10-28): a cross gets a breed energy only when both parents match.` The 27 October text said two-parent crosses get `none` while its table gave the doodle archetype an energy, and the code followed the table: all 12 named doodle crosses, Cavapoo and Goldendoodle included, got "Poised and a little theatrical". Now a named cross never takes an energy from its own cross archetype. It gets one only when both of its corpus parents look up exactly and share one archetype, and energies are never averaged.
-3. Recipes `actual-dog-recipes-v6-stated-toy` (recipe SHA-256 `552a95d7f26368286c41bf73ee1d62671a5fb3b7163221d3edd74bf4a06725d9`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
+3. Recipes `actual-dog-recipes-v7-clear-comic-premise` (recipe SHA-256 `b07a236429ca40547d89d1a05589b6a897a1b0fb09e793d286944aa105085568`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
 
 Two parts of this reach the painting through fields the storefront writes, so they ship with the theme and need no vendor change: the Sentimental `Tone direction` text and the cross rule's `Energy` value. The grounding and the negative are in the saved prompt, so they reach the painting only once a campaign has the new block below.
 
