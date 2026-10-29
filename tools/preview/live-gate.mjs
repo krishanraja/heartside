@@ -260,8 +260,9 @@ function inspect([spec, retiredSource]) {
     if (!price || price.innerText.trim() !== spec.price) fails.push(`price: expected ${spec.price}, page shows ${price ? price.innerText.trim() : 'no price'}`);
   }
   const retired = new RegExp(retiredSource.slice(1, retiredSource.lastIndexOf('/')), retiredSource.slice(retiredSource.lastIndexOf('/') + 1));
-  // the Artist's touch add-on's own price (read from its product, $29 today) is not a retired price
-  const hit = (document.body.innerText || '').replace(/Artist['’]s touch,\s+\$\d+(?:\.\d\d)?/gi, "Artist's touch").match(retired);
+  // the Artist's touch add-on's own price (read from its product, $29 today) is not a retired price;
+  // a flex layout can put a line break after the comma in innerText (29 Oct, every product page failed)
+  const hit = (document.body.innerText || '').replace(/Artist['’]s touch,\s*\$\d+(?:\.\d\d)?/gi, "Artist's touch").match(retired);
   if (hit) fails.push(`retired copy on the page: "${hit[0]}"`);
 
   return { fails: [...new Set(fails)], headBottom: Math.round(headBottom) };
