@@ -13,7 +13,8 @@
 }
 .hsj *, .hsj *::before, .hsj *::after { box-sizing: border-box; }
 .hsj [hidden] { display: none !important; }
-.hsj button { font-family: inherit; color: inherit; }
+.hsj * { font-family: var(--sans); }
+.hsj button { color: inherit; }
 .hsj p { margin: 0; text-wrap: pretty; }
 .hsj h1, .hsj h2 { margin: 0; font-weight: 700; text-wrap: balance; }
 .hsj :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
