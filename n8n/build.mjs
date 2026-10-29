@@ -59,7 +59,7 @@ const DOG_VOICE = [
   "- Parent Envelope (crosses): a blend of both parents. Rescue Mystery or no breed: let the owner's details alone decide the personality.",
   "Two dogs with identical answers but different breeds must come out sounding like two different people. If your lines would fit any dog, rewrite them in this dog's voice.",
   "Never name the breed or the archetype in a line, and never use the archetype's words (manager, menace, detective, missile, velcro).",
-  "Length, counting spaces and punctuation, because every line is printed on the gift: the home, spot and together lines fit in 60 characters (aim for 40 to 60); the meaning line fits in 44, because the ornament prints it alone (aim for 30 to 44). One sentence per line. If a sentence runs long, cut words, not meaning: contractions, drop that, really, just, very. Never chop it into fragments.",
+  "Length, counting spaces and punctuation, because every line is printed on the gift: the home, spot and together lines fit in 60 characters (aim for 35 to 55); the meaning line fits in 44, because the ornament prints it alone (aim for 28 to 40). A line over its limit is thrown away whole, so count every line and every alternate before you answer, and keep the alternates as short as the first lines or shorter. One sentence per line. If a sentence runs long, cut words, not meaning: contractions, drop that, really, just, very. Never chop it into fragments.",
   "Never write: stacked fragments or two- and three-word sentences (\"Same stick. Every time.\", \"Window. Shift. Mine.\"), lists of the owner's verbs, or these worn lines: you're welcome, it isn't close, not sorry, obviously, that's the deal, that's the rule, the whole list, in this economy.",
   "Never write about the dog from outside: no he, she, his, her and never the dog's own name in a line. Never the person's name either. No \"Dear\", no sign-off (the gift adds \"Love, [dog]\"), no exclamation marks, no emoji, no woof, no baby talk, no em dashes. Never add a number, time, place or name the owner did not give.",
   "Examples. The same owner details (waits at the door, hears the car first, sleeps on the couch with them, the morning walk, best friend) from two different dogs:",
@@ -87,14 +87,16 @@ const COMPOSE_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   '{"voice": "<= 120 characters, decided first: who this dog would be as a person and how they talk",',
   ' "lines": {"home": "<= 60", "spot": "<= 60", "together": "<= 60", "meaning": "<= 44"},',
   ' "alternates": {"home": ["<= 60"], "spot": ["<= 60"], "together": ["<= 60"], "meaning": ["<= 44", "<= 44"]},',
-  ' "recommended_gift": "mug | blanket | print | ornament",',
+  ' "recommended_gift": "blanket | print",',
   ' "reason": "<= 140 characters. Buddy explaining the pick from what the dog and the person do together, warmly and a little funny.",',
+  ' "scene": "<= 220 characters. One painting idea for this dog: a single moment built only from the owner\'s answers, staged in the chosen note_tone. Say the pose, the action and any prop the owner gave. No words or text in the picture, no people.",',
   ' "flags": []}',
-  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you, typed answers first: they hold the real personality. current_lines holds a draft for each; rewrite any that is flat, copies the owner, or is too long. A draft is not a fact: keep a detail from it only when the owner gave it. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must stand on its own and carry the chosen tone most clearly, because the mug and the portrait print it alone. alternates holds one more option per line (two for meaning), in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters. The meaning line is the hardest: at most 44 characters, so count it, and shorten it if it runs over.",
+  "The four lines: home is what the dog does when the person comes home, spot is where it settles near them, together is what they do together, meaning is what the person is to the dog. Use everything the owner told you. Each answer's label is what the owner tapped, in words; typed answers are the owner's own words. An answer with id toy is a favorite toy or treat and wears is what the dog wears: use them in a line or in the scene where they fit, and never invent one the owner did not give. Write every line fresh from the answers; current_lines, when present, is only the page's fallback, so never reuse its wording. Read the four as one letter: vary how the sentences start and move, and let the dog's personality carry through all of them. The meaning line must stand on its own and carry the chosen tone most clearly, because the mug and the portrait print it alone. alternates holds one more option per line (two for meaning), in the same voice, in case the first breaks a rule. Home, spot and together <= 60 characters. The meaning line is the hardest: at most 44 characters, so count it, and shorten it if it runs over.",
   "note_tone is the buyer's slider, separate from dog.tone (the breed personality). It sets the register of every line, the meaning line included, and the buyer must see a clear difference between the three settings on the same answers. sentimental: open, direct affection, quiet and tender. warm: affection with one small knowing smile. hilarious: every line carries a comic premise in the dog's deadpan, self-important logic: the dog takes its habits absurdly seriously, overstates its own importance, or explains its devotion with ridiculous dog reasoning, built only from the owner's details (comfort on hard days, for example, becomes the dog treating your bad day as a job it is fully qualified for). Hilarious is affectionate and observational, never a roast, a stock joke or a joke at the person's expense. A tender answer such as hard days still follows the slider; only real grief, illness or loss (the grief flag) keeps the note gentle whatever the slider says.",
-  "In reason, Buddy talks to the buyer about the person: use the person's name, never you, and never address the person directly (no \"KJ,\"). When recipient.relation is self, the person is the buyer, so the reason talks to them as you and your, never by their name: \"Your mornings start with Kuku and a coffee, so a mug keeps Kuku in every one of them.\"",
-  "Pick: the morning walk or coffee means mug; couch and a movie or naps means blanket; car rides or anything else means print. Never pick ornament unless the buyer asked for the tree.",
-  'Reason example: "Kuku\'s mornings start with Sam and a coffee, so a mug puts Kuku right there in every one of them."'
+  "In reason, Buddy talks to the buyer about the person: use the person's name, never you, and never address the person directly (no \"KJ,\"). A person known only by relation (your partner, your friend) is called just that. When recipient.relation is self, the person is the buyer, so the reason talks to them as you and your, never by their name: \"Your mornings start with Kuku and a coffee, and a portrait keeps Kuku in every one of them.\"",
+  "Pick the gift the dog's painting goes on first, blanket or print, weighing every answer together with the breed's personality, never one answer alone (print is the framed portrait; the mug is always offered beside it, so it is never the pick). Count the closeness answers: a spot of the couch, the bed or the person's feet, together time of naps or movie nights, and being a shadow. Two or more is blanket, because this dog's life with the person is closeness. Fewer is print, because the dog's presence and story are worth framing: the boss of the house, a guardian on hard days, a car-ride companion, a best friend, the daily walk, the morning ritual. Typed answers count when they say the same thing. The pick and the reason depend only on the answers and the breed, never on note_tone: the same answers always get the same gift.",
+  "The scene is for the painter, not the buyer: one moment, this dog, in the chosen note_tone (sentimental quiet and close, warm with one small wink, hilarious a visible comic premise in the dog's pose and expression). Call the dog by its breed, or as the dog, never by a name, and name no person. Never describe the dog's color, coat, markings, age or muzzle: the owner's photo shows the real dog, and Buddy's own looks are not this dog's. Set it in the dog's spot from the answers (the couch, the bed, at the person's feet) or against a plain background. The only objects in it are the ones the answers name, the toy and what the dog wears included when the owner gave them: no door, room, cup, slippers or anything else the answers do not name.",
+  'Reason example: "Kuku\'s mornings start with Sam and a coffee, so a framed portrait of Kuku belongs right there in the morning light."'
 ].join('\n');
 
 const guard = (kind) => `
@@ -248,9 +250,21 @@ const PLAIN = { home: 'Best part of my day? You walking in.', spot: "I'm never f
 // and the dog is I, so its own name never appears in one either
 const hasName = (t, nm) => !!nm && !!nm.replace(/[^A-Za-z]/g, '') && new RegExp('(^|[^A-Za-z])' + nm.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 const named = (t) => hasName(t, inp.recipient.name) || hasName(t, inp.dog.name);
+// the coat, markings and age are the photo's to show, never the brief's (29 Oct)
+const COAT = /\\b(muzzle|grey(ing|ed)?|gray(ing|ed)?|chestnut|brindle|merle|fawn|dapple[ds]?|piebald|tricolou?r|liver)\\b/i;
 // Buddy's reason talks to the buyer: about the person by name and never you, or, for a gift for the
 // buyer ("Me", relation self), to them as you and never by their name (28 Oct)
-const toBuyer = (t) => (inp.recipient.relation === 'self' ? !hasName(t, inp.recipient.name) : !YOU.test(t));
+// A person the buyer named only by relation ("your partner", "your friend") is said that way, so that
+// phrase is no you (29 Oct bench: every reason for a partner was lost)
+// Krish, 29 Oct: "the UI always recommends the mug". The first gift follows the answers, the same way every
+// time: two or more closeness answers (spot couch, bed or feet; naps or movie nights; a shadow) is the
+// blanket, fewer is the portrait. A pick that disagrees takes the rule's gift and loses its reason.
+const chipOf = (id) => { const a = inp.answers.find(x => x.id === id); return a && a.chip; };
+const closeKnown = ['spot', 'together', 'meaning'].every(id => chipOf(id));
+const close = (/^(couch|bed|feet)$/.test(chipOf('spot') || '') ? 1 : 0) + (/^(naps|movie)$/.test(chipOf('together') || '') ? 1 : 0) + (chipOf('meaning') === 'shadow' ? 1 : 0);
+const ruleGift = closeKnown ? (close >= 2 ? 'blanket' : 'print') : '';
+const relName = /^your\\s/i.test(inp.recipient.name || '') ? inp.recipient.name : '';
+const toBuyer = (t) => (inp.recipient.relation === 'self' ? !hasName(t, inp.recipient.name) : !YOU.test(relName ? t.split(new RegExp(relName.replace(/[^A-Za-z ]/g, ''), 'i')).join(' ') : t));
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(typed) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(typed) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -259,7 +273,8 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   // the draft the buyer saw, cleaned of exclamation marks (28 Oct), and only when every prop in it is the owner's
   const draft = clean(inp.current_lines[k]);
-  const cur = draft && !propsGrounded(draft, answerHay, names) ? PLAIN[k] : draft;
+  // the journey sends no draft, so a line that breaks every rule still leaves a plain line, never a gap (29 Oct)
+  const cur = !draft || !propsGrounded(draft, answerHay, names) ? PLAIN[k] : draft;
   const l = clean(m.lines && m.lines[k]);
   const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay, MAX_LINE[k], answerHay, names) && !named(a)).slice(0, 2);
   // the first line that passes, then its alternates, then the draft the buyer saw (22 Oct)
@@ -272,9 +287,13 @@ const reason = clean(m.reason);
 const out = {
   lines: lines,
   alternates: alternates,
-  recommended_gift: GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift,
-  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay) && toBuyer(reason) && propsGrounded(reason, answerHay, names)) ? reason : '',
+  recommended_gift: ruleGift || (GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift),
+  // the reason is shown, never printed: the prompt asks for 140 and up to 170 is kept (29 Oct bench: three good reasons ran 145 to 160)
+  reason: (!blocked && (!ruleGift || m.recommended_gift === ruleGift) && okText(reason, 170) && groundedProse(reason, hay) && toBuyer(reason) && propsGrounded(reason, answerHay, names)) ? reason : '',
   sources: sources,
+  // the painter's brief: grounded like the lines (the breed may be named), no names, no grief, or nothing at all (29 Oct)
+  // and never a coat or a muzzle the photo may contradict (29 Oct bench: Buddy's "greying muzzle" reached a dachshund's brief)
+  scene: (() => { const sc = clean(m.scene); return !blocked && okText(sc, 220) && !COAT.test(sc) && !named(sc) && propsGrounded(sc, answerHay, names) && groundedProse(sc, hay + ' ' + (inp.dog.breed || '')) ? sc : ''; })(),
   flags: flags,
   source: m.lines ? 'ai' : 'fallback'
 };

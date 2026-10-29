@@ -85,8 +85,9 @@ function propsGrounded(text, answerHay, names) {
   const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
   return words.every((w, i) => {
     if (!(w in PROP_GROUP) || nm[w]) return true;
-    // "You treat me like family" and "I park myself on your feet" are verbs, not a snack or a place
-    if (/^(treat|park)s?$/.test(w) && /^(you|me|us|them|him|her|it|everyone|myself|yourself|ourselves)$/.test(words[i + 1] || '')) return true;
+    // "You treat me like family", "I treat our naps like work" and "she parks on your feet" are verbs,
+    // not a snack or a place (29 Oct bench: both lost good lines)
+    if (/^(treat|park)(s|ed|ing)?$/.test(w) && /^(you|your|me|my|us|our|them|their|him|his|her|it|its|everyone|myself|yourself|ourselves|herself|himself|itself|themselves|on|in|at|by|beside|next|right|up|down|like)$/.test(words[i + 1] || '')) return true;
     return !!have[PROP_GROUP[w]];
   });
 }
@@ -154,7 +155,12 @@ function findJson(o, key, depth) {
   if (typeof o === 'string') {
     const s = o.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
     if (s.charAt(0) !== '{') return null;
-    try { return findJson(JSON.parse(s), key, depth + 1); } catch (e) { return null; }
+    // a reply with one stray comma or quote before a closing brace (29 Oct bench: a whole note lost to
+    // `"meaning":"...","}`) is repaired once, never guessed at further
+    const parse = (t) => { try { return JSON.parse(t); } catch (e) { return undefined; } };
+    let j = parse(s);
+    if (j === undefined) j = parse(s.replace(/,\s*"\s*([}\]])/g, '$1').replace(/,\s*([}\]])/g, '$1'));
+    return j === undefined ? null : findJson(j, key, depth + 1);
   }
   if (typeof o !== 'object') return null;
   if (!Array.isArray(o) && key in o) return o;

@@ -85,8 +85,9 @@ function propsGrounded(text, answerHay, names) {
   const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
   return words.every((w, i) => {
     if (!(w in PROP_GROUP) || nm[w]) return true;
-    // "You treat me like family" and "I park myself on your feet" are verbs, not a snack or a place
-    if (/^(treat|park)s?$/.test(w) && /^(you|me|us|them|him|her|it|everyone|myself|yourself|ourselves)$/.test(words[i + 1] || '')) return true;
+    // "You treat me like family", "I treat our naps like work" and "she parks on your feet" are verbs,
+    // not a snack or a place (29 Oct bench: both lost good lines)
+    if (/^(treat|park)(s|ed|ing)?$/.test(w) && /^(you|your|me|my|us|our|them|their|him|his|her|it|its|everyone|myself|yourself|ourselves|herself|himself|itself|themselves|on|in|at|by|beside|next|right|up|down|like)$/.test(words[i + 1] || '')) return true;
     return !!have[PROP_GROUP[w]];
   });
 }
@@ -154,7 +155,12 @@ function findJson(o, key, depth) {
   if (typeof o === 'string') {
     const s = o.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
     if (s.charAt(0) !== '{') return null;
-    try { return findJson(JSON.parse(s), key, depth + 1); } catch (e) { return null; }
+    // a reply with one stray comma or quote before a closing brace (29 Oct bench: a whole note lost to
+    // `"meaning":"...","}`) is repaired once, never guessed at further
+    const parse = (t) => { try { return JSON.parse(t); } catch (e) { return undefined; } };
+    let j = parse(s);
+    if (j === undefined) j = parse(s.replace(/,\s*"\s*([}\]])/g, '$1').replace(/,\s*([}\]])/g, '$1'));
+    return j === undefined ? null : findJson(j, key, depth + 1);
   }
   if (typeof o !== 'object') return null;
   if (!Array.isArray(o) && key in o) return o;
@@ -183,9 +189,21 @@ const PLAIN = { home: 'Best part of my day? You walking in.', spot: "I'm never f
 // and the dog is I, so its own name never appears in one either
 const hasName = (t, nm) => !!nm && !!nm.replace(/[^A-Za-z]/g, '') && new RegExp('(^|[^A-Za-z])' + nm.replace(/[^A-Za-z]/g, '') + '(?=$|[^A-Za-z])', 'i').test(t);
 const named = (t) => hasName(t, inp.recipient.name) || hasName(t, inp.dog.name);
+// the coat, markings and age are the photo's to show, never the brief's (29 Oct)
+const COAT = /\b(muzzle|grey(ing|ed)?|gray(ing|ed)?|chestnut|brindle|merle|fawn|dapple[ds]?|piebald|tricolou?r|liver)\b/i;
 // Buddy's reason talks to the buyer: about the person by name and never you, or, for a gift for the
 // buyer ("Me", relation self), to them as you and never by their name (28 Oct)
-const toBuyer = (t) => (inp.recipient.relation === 'self' ? !hasName(t, inp.recipient.name) : !YOU.test(t));
+// A person the buyer named only by relation ("your partner", "your friend") is said that way, so that
+// phrase is no you (29 Oct bench: every reason for a partner was lost)
+// Krish, 29 Oct: "the UI always recommends the mug". The first gift follows the answers, the same way every
+// time: two or more closeness answers (spot couch, bed or feet; naps or movie nights; a shadow) is the
+// blanket, fewer is the portrait. A pick that disagrees takes the rule's gift and loses its reason.
+const chipOf = (id) => { const a = inp.answers.find(x => x.id === id); return a && a.chip; };
+const closeKnown = ['spot', 'together', 'meaning'].every(id => chipOf(id));
+const close = (/^(couch|bed|feet)$/.test(chipOf('spot') || '') ? 1 : 0) + (/^(naps|movie)$/.test(chipOf('together') || '') ? 1 : 0) + (chipOf('meaning') === 'shadow' ? 1 : 0);
+const ruleGift = closeKnown ? (close >= 2 ? 'blanket' : 'print') : '';
+const relName = /^your\s/i.test(inp.recipient.name || '') ? inp.recipient.name : '';
+const toBuyer = (t) => (inp.recipient.relation === 'self' ? !hasName(t, inp.recipient.name) : !YOU.test(relName ? t.split(new RegExp(relName.replace(/[^A-Za-z ]/g, ''), 'i')).join(' ') : t));
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);
 if (GRIEF.test(typed) && flags.indexOf('grief') === -1) flags.push('grief');
 if (PROFANE.test(typed) && flags.indexOf('profanity') === -1) flags.push('profanity');
@@ -194,7 +212,8 @@ const lines = {}, alternates = {}, sources = {};
 KEYS.forEach(k => {
   // the draft the buyer saw, cleaned of exclamation marks (28 Oct), and only when every prop in it is the owner's
   const draft = clean(inp.current_lines[k]);
-  const cur = draft && !propsGrounded(draft, answerHay, names) ? PLAIN[k] : draft;
+  // the journey sends no draft, so a line that breaks every rule still leaves a plain line, never a gap (29 Oct)
+  const cur = !draft || !propsGrounded(draft, answerHay, names) ? PLAIN[k] : draft;
   const l = clean(m.lines && m.lines[k]);
   const alts = (m.alternates && Array.isArray(m.alternates[k]) ? m.alternates[k] : []).map(clean).filter(a => okLine(a, hay, MAX_LINE[k], answerHay, names) && !named(a)).slice(0, 2);
   // the first line that passes, then its alternates, then the draft the buyer saw (22 Oct)
@@ -207,9 +226,13 @@ const reason = clean(m.reason);
 const out = {
   lines: lines,
   alternates: alternates,
-  recommended_gift: GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift,
-  reason: (!blocked && okText(reason, 140) && groundedProse(reason, hay) && toBuyer(reason) && propsGrounded(reason, answerHay, names)) ? reason : '',
+  recommended_gift: ruleGift || (GIFTS.indexOf(m.recommended_gift) !== -1 ? m.recommended_gift : inp.default_gift),
+  // the reason is shown, never printed: the prompt asks for 140 and up to 170 is kept (29 Oct bench: three good reasons ran 145 to 160)
+  reason: (!blocked && (!ruleGift || m.recommended_gift === ruleGift) && okText(reason, 170) && groundedProse(reason, hay) && toBuyer(reason) && propsGrounded(reason, answerHay, names)) ? reason : '',
   sources: sources,
+  // the painter's brief: grounded like the lines (the breed may be named), no names, no grief, or nothing at all (29 Oct)
+  // and never a coat or a muzzle the photo may contradict (29 Oct bench: Buddy's "greying muzzle" reached a dachshund's brief)
+  scene: (() => { const sc = clean(m.scene); return !blocked && okText(sc, 220) && !COAT.test(sc) && !named(sc) && propsGrounded(sc, answerHay, names) && groundedProse(sc, hay + ' ' + (inp.dog.breed || '')) ? sc : ''; })(),
   flags: flags,
   source: m.lines ? 'ai' : 'fallback'
 };

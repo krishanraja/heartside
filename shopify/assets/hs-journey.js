@@ -107,10 +107,9 @@
   function bestGift() {
     var c = note(), g = c && c.gift;
     if (g === 'blanket' || g === 'print') return g;
-    // what they do together decides; where the dog settles only breaks a tie
-    if (S.together === 'movie' || S.together === 'naps') return 'blanket';
-    if (S.together === 'walk' || S.together === 'car' || S.together === 'coffee') return 'print';
-    return S.spot === 'couch' || S.spot === 'bed' ? 'blanket' : 'print';
+    // the writer's own rule (n8n Enforce, 29 Oct): two or more closeness answers is the blanket, fewer the portrait
+    var close = (/^(couch|bed|feet)$/.test(S.spot || '') ? 1 : 0) + (/^(naps|movie)$/.test(S.together || '') ? 1 : 0) + (S.meaning === 'shadow' ? 1 : 0);
+    return close >= 2 ? 'blanket' : 'print';
   }
 
   /* ------------------------------------------------------------- the writer */
@@ -124,7 +123,7 @@
     var n = names(), r = breedRow(), dog = { name: n.dog, pronoun: n.she };
     if (r && r.kind !== 'mixed') { dog.breed = r.name; if (r.tone) dog.tone = r.tone; }
     var answers = ['home', 'spot', 'together', 'meaning'].map(function (id) { return { id: id, chip: S[id] || null, label: '', typed: null }; });
-    return { dog: dog, recipient: { name: n.self ? 'you' : n.them, relation: S.rel === 'self' ? 'self' : S.rel }, answers: answers,
+    return { dog: dog, recipient: { name: n.self ? '' : n.them, relation: S.rel === 'self' ? 'self' : S.rel }, answers: answers,
       current_lines: scripted(), default_gift: bestGift(), note_tone: tone, session: sessionId() };
   }
   function answersKey() { return JSON.stringify([COMPOSE_VERSION, S.dog, S.breed, S.pro, S.rel, S.home, S.spot, S.together, S.meaning]); }

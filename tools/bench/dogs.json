@@ -1,0 +1,6 @@
+[
+  {"id": "bao", "dog": "Bao", "breed": "French Bulldog", "pro": "he", "rel": "partner", "home": "cool", "spot": "couch", "together": "naps", "meaning": "shadow", "toy": "a squeaky toy", "accessory": "a bow"},
+  {"id": "juno", "dog": "Juno", "breed": "Labrador Retriever", "pro": "she", "rel": "mom", "home": "toy", "spot": "feet", "together": "walk", "meaning": "best", "toy": "a tennis ball", "accessory": "a collar"},
+  {"id": "earl", "dog": "Earl", "breed": "Greyhound", "pro": "he", "rel": "dad", "home": "door", "spot": "bed", "together": "car", "meaning": "hard", "toy": "", "accessory": "a sweater"},
+  {"id": "frank", "dog": "Frank", "breed": "Dachshund", "pro": "he", "rel": "self", "home": "spin", "spot": "anywhere", "together": "coffee", "meaning": "boss", "toy": "a bone", "accessory": ""}
+]

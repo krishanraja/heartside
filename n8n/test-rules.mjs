@@ -237,5 +237,47 @@ check('a named toy does not license a follow-up about bringing it', () => {
     }
   });
 }
+
+// 29 Oct: the writer also returns a painting idea (scene) for this dog, which reaches Teeinblue. It is
+// grounded like the lines: an object the owner never gave drops it, and the owner's own toy keeps it.
+check('the painting idea is kept only when every prop in it is the owner\'s', () => {
+  const inp = {dog:{name:'Juno',pronoun:'she',breed:'Labrador Retriever'},recipient:{name:'Mom',relation:'mom'},answers:[{id:'home',chip:'toy',label:'brings you something',typed:null},{id:'spot',chip:'feet',label:'on your feet',typed:null},{id:'together',chip:'walk',label:'walks',typed:null},{id:'meaning',chip:'best',label:'a best friend',typed:null},{id:'toy',chip:null,label:'favorite toy or treat',typed:'a tennis ball'}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print',note_tone:'hilarious'};
+  const lines = {home:'I bring you a present every time you walk in.',spot:'Your feet are my post, and I never leave it.',together:'Our walks are the best news of every day.',meaning:"You're my best friend, and I'm excellent."};
+  const ok = run('enforce-compose.js', {input: inp}, {lines, scene: 'A Labrador sitting bolt upright on a doormat, a tennis ball balanced on her nose, eyes sideways, deeply serious.'});
+  assert.match(ok.scene, /tennis ball/);
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines, scene: 'A Labrador with a slice of toast on her nose.'}).scene, '', 'toast was never given');
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines, scene: 'Juno and Mom on the couch.'}).scene, '', 'no names in the brief');
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines}).scene, '');
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines, scene: 'A chestnut Labrador with a greying muzzle and a tennis ball.'}).scene, '', 'no coat the photo may contradict');
+});
+// 29 Oct after-bench (executions 47856-47867): the writer was right and the rules lost it. A stray
+// comma and quote cost a whole note, "your partner" read as you, "treat our naps" and "parks on her
+// feet" read as a snack and a place, and a line over its limit with no draft left a gap.
+check('the after-bench losses are kept: repaired JSON, your partner, verbs, never a gap', () => {
+  const frank = {dog:{name:'Frank',breed:'Dachshund'},recipient:{name:'',relation:'self'},answers:[{id:'together',chip:'coffee',label:'morning coffee',typed:null},{id:'meaning',chip:'boss',label:'the boss of the house',typed:null}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print'};
+  const broken = '{"lines":{"home":"I spin until I\'ve checked every angle of you.","spot":"Anywhere you are is where I\'m needed most.","together":"I supervise your morning coffee because someone must.","meaning":"You\'re my boss, and I run you.","},"recommended_gift":"print"}';
+  const f = run('enforce-compose.js', {input: frank}, {text: broken});
+  assert.equal(f.source, 'ai'); assert.equal(f.lines.meaning, "You're my boss, and I run you.");
+  const bao = {dog:{name:'Bao',breed:'French Bulldog'},recipient:{name:'your partner',relation:'partner'},answers:[{id:'spot',chip:'couch',label:'the couch',typed:null},{id:'together',chip:'naps',label:'naps',typed:null}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print'};
+  const b = run('enforce-compose.js', {input: bao}, {lines:{home:'I play it cool for one second, then I give up.',spot:'The couch is where I keep your side warm for you, every single night.',together:'I treat our naps like an appointment I never miss.',meaning:"I'm your shadow, and proud of it."},recommended_gift:'blanket',reason:"Bao's whole life with your partner is the couch and the naps, so a blanket keeps Bao close."});
+  assert.match(b.reason, /your partner/);
+  assert.match(b.lines.together, /^I treat our naps/);
+  assert.ok(b.lines.spot, 'a line over its limit leaves a plain line, never a gap');
+  assert.equal(run('enforce-compose.js', {input: bao}, {lines:{}, reason:'Bao parks on the couch with your partner, so a blanket keeps him close.'}).reason.slice(0, 8), 'Bao park');
+  assert.equal(run('enforce-compose.js', {input: bao}, {lines:{}, reason:'Bao waits for your partner, so you should buy a blanket.'}).reason, '', 'a you that is not the partner still goes');
+});
+// 29 Oct: the first gift follows the answers, the same way every time, and a pick against the rule
+// loses its reason rather than explain the wrong gift
+check('the first gift follows the closeness answers, never the mug', () => {
+  const ans = (spot, together, meaning) => ({dog:{name:'Juno',breed:'Labrador Retriever'},recipient:{name:'Mom',relation:'mom'},answers:[{id:'spot',chip:spot,label:'',typed:null},{id:'together',chip:together,label:'',typed:null},{id:'meaning',chip:meaning,label:'',typed:null}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print'});
+  const why = 'Juno and Mom share every walk, so a framed portrait of Juno belongs on the wall.';
+  assert.equal(run('enforce-compose.js', {input: ans('couch', 'naps', 'best')}, {lines:{}, recommended_gift:'print', reason: why}).recommended_gift, 'blanket');
+  assert.equal(run('enforce-compose.js', {input: ans('couch', 'naps', 'best')}, {lines:{}, recommended_gift:'print', reason: why}).reason, '', 'no reason for the wrong gift');
+  assert.equal(run('enforce-compose.js', {input: ans('feet', 'walk', 'best')}, {lines:{}, recommended_gift:'mug', reason: why}).recommended_gift, 'print');
+  const ok = run('enforce-compose.js', {input: ans('feet', 'walk', 'best')}, {lines:{}, recommended_gift:'print', reason: why});
+  assert.equal(ok.recommended_gift, 'print'); assert.equal(ok.reason, why);
+  assert.equal(run('enforce-compose.js', {input: ans('anywhere', 'coffee', 'shadow')}, {lines:{}, recommended_gift:'print'}).recommended_gift, 'print');
+  assert.equal(run('enforce-compose.js', {input: ans('bed', 'movie', 'boss')}, {lines:{}, recommended_gift:'print'}).recommended_gift, 'blanket');
+});
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;
