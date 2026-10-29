@@ -64,3 +64,22 @@ test("an Artist's touch is one per design: no control at one, its plus served di
 test("Teeinblue's quantity box is hidden on gift pages", () => {
   assert.match(css, /#buy\[data-hs2-artwork-kind\] \.tee-form-actions \.tee-quantity, #buy\[data-hs2-blanket-purchase\] \.tee-form-actions \.tee-quantity \{ display: none !important; \}/);
 });
+
+// A newly added design is initially a native line, before Shopify's bundle transform.
+test('a native personalized line is locked from its first render, before the checkout bundle exists', async () => {
+  const native = gift(0, ID);
+  native.properties = native.item_components[0].properties;
+  native.item_components = [];
+  native.key = '101:unmerged-0';
+  const quantity = html => html.slice(html.indexOf('class="cart-items__quantity"'), html.indexOf('class="cart-items__error'));
+  for (const context of ['', 'drawer']) {
+    const one = quantity(rowOf((await renderCart([native], {context})).html, native.key));
+    assert.ok(one.includes(OFF), context + ': the plus is inert before JavaScript connects');
+    assert.match(one, /<input type="number"[^>]* disabled/, context + ': quantity stays at one');
+    native.quantity = 2; native.final_line_price = 9000;
+    const older = quantity(rowOf((await renderCart([native], {context})).html, native.key));
+    assert.ok(older.includes(OFF), 'an existing oversized native line cannot increase');
+    assert.doesNotMatch(older, /name="minus"[^>]* disabled/, 'it can still be reduced');
+    native.quantity = 1; native.final_line_price = 4500;
+  }
+});
