@@ -163,6 +163,9 @@ function findJson(o, key, depth) {
   return null;
 }
 
+// A named toy does not establish that the dog brings it (live acceptance, 29 Oct).
+const delivery = /\b(bring(?:s|ing)?|brought|carr(?:y|ies|ying|ied)|fetch(?:es|ing|ed)?|deliver(?:s|ing|ed)?)\b/i;
+const actionsGrounded = (text, evidence) => !delivery.test(text) || delivery.test(evidence);
 const g = $('Guard').first().json;
 const inp = g.input;
 const raw = $input.first().json;
@@ -205,7 +208,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       c = clean(c);
       // a non-answer chip (the page adds its own Not sure) or one that names a prop the owner never
       // mentioned goes, with its line and reply (28 Oct)
-      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay, names)) return;
+      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay, names) || !actionsGrounded(c, answerHay)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
       f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow, answerHay + ' ' + c, names) && !named(l) ? l : null);
@@ -216,7 +219,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
     const wrong = (t) => (forBuyer ? hasName(t, inp.recipient.name) : YOU.test(t)) || FIRST_PERSON.test(t);
     f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
     // the question Buddy asks names nothing the owner never said, as its chips don't (28 Oct)
-    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong) && propsGrounded(q, answerHay, names)) fu = f;
+    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong) && propsGrounded(q, answerHay, names) && actionsGrounded(q, answerHay)) fu = f;
   }
   const goodLine = line || ownWords(inp.typed_text, MAX) || clean(inp.previous_line);
   out = {
