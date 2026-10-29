@@ -45,7 +45,7 @@ async function gateOn(site, ...args) {
 after(() => { assert.ok(seen.length > 0 && seen.every((h) => h.startsWith('127.0.0.1:')), 'only the stand-in stores were asked'); });
 
 const page = (body, title = 'Heartside') => `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head><body>${body}</body></html>`;
-const portraitPage = (marked = true) => page(`<main><div class="hs2"><div id="buy"${marked ? ' data-hs2-artwork-kind="print" data-hs2-purchase-enabled="true"' : ''}><h1>Your Dog's Portrait</h1><span data-hs2-price>$119.00</span></div></div></main>`, "Your Dog's Portrait");
+const portraitPage = (marked = true) => page(`<main><div class="hs2"><div id="buy"${marked ? ' data-hs2-artwork-kind="print" data-hs2-purchase-enabled="true"' : ''}><h1>Your Dog's Portrait</h1><span data-hs2-price>$119</span></div></div></main>`, "Your Dog's Portrait");
 const gifts = (over = {}) => Object.fromEntries(CORE.map((c) => [c.chat, over[c.chat] || {url: c.path, handle: c.handle, title: c.title, price: c.min / 100}]));
 const menu = (paths = CORE.map((c) => c.path)) => `<template data-hs-menu><nav class="hs-menu"><a class="hs-menu__start" href="/">Make a gift with Buddy</a><ul>${paths.map((p) => `<li><a href="${p}">Gift</a></li>`).join('')}</ul></nav></template>`;
 const home = ({config = {gifts: gifts()}, hero = 300, links} = {}) => page(`<main><section class="hs3"><script type="application/json" data-hs3-config>${JSON.stringify(config)}</script><div style="height:${hero}px"></div><button type="button" class="hs3-btn" data-hs3-start>Start with your dog</button></section></main>${menu(links)}`);
@@ -62,6 +62,21 @@ describe('live-gate against a stand-in store', {concurrency: 3}, () => {
     const r = await gateOn((p) => (p === PORTRAIT ? {status: 200, body: portraitPage()} : {status: 404}), '--pages', 'portrait', '--views', 'desk');
     assert.equal(r.code, 0, r.out);
     assert.match(r.out, /all clear/);
+  });
+
+  // 29 Oct, CoWork's gate on the theme copy: the Artist's touch button is inline-flex, so innerText put a
+  // line break between "touch," and its price, and the add-on's own $29 read as the retired price on
+  // every product page. A stray $29 anywhere else still fails.
+  test("the Artist's touch price passes whatever whitespace the layout puts after its comma; a stray $29 still fails", async () => {
+    const withButton = (inner) => portraitPage().replace('</div></div></main>', `<div class="hs-extras">${inner}</div></div></div></main>`);
+    const flex = withButton(`<button type="button" style="display:inline-flex;align-items:center">Add our artist's touch, <span>$29</span></button>`);
+    const ok = await gateOn((p) => (p === PORTRAIT ? {status: 200, body: flex} : {status: 404}), '--pages', 'portrait', '--views', 'desk');
+    assert.equal(ok.code, 0, ok.out);
+    assert.doesNotMatch(ok.out, /retired copy/);
+    const stray = withButton(`<p>Mugs from $29 today.</p>`);
+    const bad = await gateOn((p) => (p === PORTRAIT ? {status: 200, body: stray} : {status: 404}), '--pages', 'portrait', '--views', 'desk');
+    assert.equal(bad.code, 1, bad.out);
+    assert.match(bad.out, /retired copy on the page: "\$29"/);
   });
 
   test("a product page that lost its native template's mark fails", async () => {
@@ -106,7 +121,7 @@ describe('live-gate against a stand-in store', {concurrency: 3}, () => {
   });
 
   test("Teeinblue's Add To Cart in Title Case fails; sentence case passes", async () => {
-    const buyPage = (label) => page(`<main><div class="hs2"><div id="buy" data-hs2-artwork-kind="print" data-hs2-purchase-enabled="true"><h1>Your Dog's Portrait</h1><span data-hs2-price>$119.00</span><div class="tee-form-actions"><div class="tee-form-action"><button type="button" class="tee-btn tee-btn--atc" id="teeAtcButton">${label}</button></div></div></div></div></main>`, "Your Dog's Portrait");
+    const buyPage = (label) => page(`<main><div class="hs2"><div id="buy" data-hs2-artwork-kind="print" data-hs2-purchase-enabled="true"><h1>Your Dog's Portrait</h1><span data-hs2-price>$119</span><div class="tee-form-actions"><div class="tee-form-action"><button type="button" class="tee-btn tee-btn--atc" id="teeAtcButton">${label}</button></div></div></div></div></main>`, "Your Dog's Portrait");
     const title = await gateOn((p) => (p === PORTRAIT ? {status: 200, body: buyPage('Add To Cart')} : {status: 404}), '--pages', 'portrait', '--views', 'desk');
     assert.equal(title.code, 1, title.out);
     assert.match(title.out, /not sentence case: Teeinblue's button reads "Add To Cart"/);

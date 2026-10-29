@@ -141,9 +141,17 @@ An independent review of the whole PR sent 35 findings to a second reviewer told
   - The live push needed the photo to work on Android only. It now needs a real photo to add on the iPhone too.
   - The checkout readback in Part 1 needed a painting outside the agreed cap.
 
+## Found on the theme copy (29 October)
+
+CoWork pushed the theme to a copy and ran the three gates from its own branch. Its logs and screenshots showed three defects this PR shipped. All three are fixed on main, each with a test that fails on the code before it.
+
+- **The live gate failed every product page.** The Artist's touch button ("Add our artist's touch, $29") is inline-flex, so its words and its price were two flex items. The price drew hard against the comma ("touch,$29"), and innerText put it on a line of its own, which the gate's allowance for "Artist's touch, $29" missed, so it reported the retired $29 on all twelve product views. The words and price are now one run of text in `hs-native-artwork.liquid`, and the gate allows any whitespace after the comma. Tests: `extras.test.mjs` renders the real button with `hs2.css` and checks the text and the space; `live-gate-handles.test.mjs` runs the gate on a stand-in with the old flex button and with a stray $29.
+- **"Your design" over Teeinblue's sample dog.** On the mug and portrait, the preview showed Teeinblue's sample pug as the current "Your design", with no Example label. A gift page reached without the chat now keeps the labeled example photo on show until the buyer's painting is in the preview, as the blanket already did. After the chat the preview carries the buyer's words, so it stays on show (Krish, 19 October) with its own Example label until the painting is in it. An independent review of this fix found that a buyer who typed the note in Teeinblue's field before painting left the page held on the example after the painting was done; the hold now always lets go once there is a painting. Tests: `art-stage.test.mjs`, including that sequence.
+- **Two price formats.** The product price read "$119.00" beside "Framed $119" and the home page's "$119". The price, the variant prices and the format list now use `money_without_trailing_zeros`, and the gates expect "$45", "$119" and "$129". The cart still shows Helio's "$45.00". Test: `chat.mjs` on the rendered gift page.
+
 ## How it was checked
 
-- **Offline suite: 707 of 707.**
+- **Offline suite: 713 of 713.**
   - Every new test was run against the parent code and fails there.
   - The browser tests run on source and on minified code.
   - Also passing:

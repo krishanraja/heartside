@@ -16,17 +16,17 @@
 export const CORE = [
   {
     key: 'mug', chat: 'mug', handle: 'your-dogs-illustrated-mug', path: '/products/your-dogs-illustrated-mug',
-    title: "Your Dog's Illustrated Mug", price: '$45.00', min: 4500, max: 4500, variants: 5,
+    title: "Your Dog's Illustrated Mug", price: '$45', min: 4500, max: 4500, variants: 5,
     marker: { 'data-hs2-artwork-kind': 'mug', 'data-hs2-purchase-enabled': 'true' },
   },
   {
     key: 'portrait', chat: 'print', handle: 'your-dogs-portrait', path: '/products/your-dogs-portrait',
-    title: "Your Dog's Portrait", price: '$119.00', min: 5900, max: 11900, variants: 4,
+    title: "Your Dog's Portrait", price: '$119', min: 5900, max: 11900, variants: 4,
     marker: { 'data-hs2-artwork-kind': 'print', 'data-hs2-purchase-enabled': 'true' },
   },
   {
     key: 'blanket', chat: 'blanket', handle: 'your-dogs-personality-blanket', path: '/products/your-dogs-personality-blanket',
-    title: "Your Dog's Personality Blanket", price: '$129.00', min: 12900, max: 12900, variants: 1,
+    title: "Your Dog's Personality Blanket", price: '$129', min: 12900, max: 12900, variants: 1,
     marker: { 'data-hs2-blanket-purchase': '' },
   },
 ];

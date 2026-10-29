@@ -383,11 +383,18 @@
     // the gallery paints too, over the preview that is still empty
     var stage = document.querySelector('[data-hs2-stage]');
     if (stage) { stage.classList.toggle('hs-painting', next === 'painting'); stage.setAttribute('data-hs-painting', 'Painting ' + who); }
-    // the blanket has no words, so an empty preview is just a blank blanket: the example photo
-    // stays on show until there is art, unless the buyer chose a picture themselves
-    var media = document.querySelector('[data-hs2-media]');
-    if (media && blanketArtPreview() && !media.__hs2picked) {
-      var hold = next === 'idle' && !previewHasArt(), pick = null;
+    // Until the buyer's painting is in it, Teeinblue's preview shows its own sample dog. The blanket
+    // has no words, and a gift page reached without the chat has none of the buyer's either, so the
+    // labeled example photo stays on show until there is art, unless the buyer chose a picture
+    // themselves. After the chat the preview carries the buyer's words (Krish, 19 Oct), so it stays
+    // on show, labeled as an example while the dog in it is Teeinblue's (29 Oct: "Your design" was the
+    // current thumbnail over the sample pug on the mug and the portrait).
+    var media = document.querySelector('[data-hs2-media]'), sample = next === 'idle' && !previewHasArt();
+    if (media) { if (sample) media.setAttribute('data-hs2-sample-dog', ''); else media.removeAttribute('data-hs2-sample-dog'); }
+    // the release runs whatever the lines are: typing the note in Teeinblue's field writes lines
+    // after the hold began, and the painting must still come back on show (29 Oct review)
+    if (media && !media.__hs2picked) {
+      var hold = sample && (blanketArtPreview() || !state.hs3_lines), pick = null;
       if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = media.querySelector('[data-hs2-thumb]:not([hidden])'); }
       else if (!hold && media.__hs2held) { media.removeAttribute('data-show'); media.__hs2held = false; pick = media.querySelector('[data-hs2-thumb-preview]'); }
       if (pick) media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pick ? 'true' : 'false'); });

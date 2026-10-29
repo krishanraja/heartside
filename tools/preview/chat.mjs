@@ -168,7 +168,7 @@ async function pickOnly(page, keys) {
   const at = new URL(page.url());
   ok(!at.searchParams.has('view'), `gift page: the mug opens its own default template, no ?view= (${at.pathname}${at.search})`);
   ok(/^\d+$/.test(at.searchParams.get('variant') || ''), 'gift page: the mug color chosen in the chat rides along as ?variant=');
-  ok(await page.locator('#buy h1').innerText() === "Your Dog's Illustrated Mug" && (await page.locator('#buy [data-hs2-price]').innerText()).trim() === '$45.00', 'gift page: "Your Dog\'s Illustrated Mug" at $45.00');
+  ok(await page.locator('#buy h1').innerText() === "Your Dog's Illustrated Mug" && (await page.locator('#buy [data-hs2-price]').innerText()).trim() === '$45', 'gift page: "Your Dog\'s Illustrated Mug" at $45');
   const hs2 = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review') || '{}'));
   const queue = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-queue') || '[]'));
   ok(hs2.dog === 'Kuku' && hs2.person === 'Sam', 'bridge: names handed to the product page');
