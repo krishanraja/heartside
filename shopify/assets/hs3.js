@@ -295,13 +295,27 @@
   /* The n8n code runner sleeps when the site is quiet, and waking it costs about 1.5 s. A
      tiny {"warm":true} call (no AI, no budget) wakes it, and opens the connection, while the
      buyer is still reading or typing, so the real call answers in about a second. */
-  var warmed = {};
+  /* {"warm":true} wakes n8n's code runner, which stops after ~15-40 s idle; a cold one adds ~1.4 s to the
+     next call (29 Oct, tools/perf). So the page warms while the buyer is busy (typing, the tone slider,
+     a note just shown), at most every 12 s and at most 15 times per workflow on a page, which keeps
+     n8n executions bounded. */
+  var warmed = {}, warmCount = {}, keepTimer = null;
   function warm(url) {
     if (!cfg.ai || !url || !window.fetch) return;
     var now = Date.now();
-    if (warmed[url] && now - warmed[url] < 45000) return;
-    warmed[url] = now;
+    if (warmed[url] && now - warmed[url] < 12000) return;
+    if ((warmCount[url] || 0) >= 15) return;
+    warmed[url] = now; warmCount[url] = (warmCount[url] || 0) + 1;
     try { window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"warm":true}', credentials: 'omit', mode: 'cors', keepalive: true }).catch(function () {}); } catch (e) { /* old browser */ }
+  }
+  // after a note is shown, a buyer often tries another tone within a minute: stay warm for it
+  function keepWarm(url, times) {
+    clearTimeout(keepTimer);
+    if (!times) return;
+    keepTimer = setTimeout(function () {
+      if (S.screen !== 'reveal' || (document.visibilityState && document.visibilityState !== 'visible')) return;
+      warm(url); keepWarm(url, times - 1);
+    }, 12000);
   }
   // the buyer's own words, cut only where a sentence or clause ends (22 Oct: a cut at 43 characters
   // printed "Always ready to run, walk and fetch. Not."); the same rule as n8n/shared.js
@@ -545,6 +559,7 @@
     var lines = {};
     ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines && dogStyle(r.lines[k], k); if (l) lines[k] = l; });
     S.composeRequest = null;
+    keepWarm(cfg.composeUrl, 4);
     if (Object.keys(lines).length !== 4 || (request.rewrite && r.source && r.source !== 'ai') || (request.tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
       ui.toneStatus = 'Could not rewrite this note. Your words are unchanged.';
     } else {
@@ -1656,7 +1671,7 @@
       var k = inp.getAttribute('data-hs3-in');
       inp.addEventListener('input', function () {
         inp.classList.remove('is-need');
-        if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
+        if (k === 'typed') { warm(cfg.typedUrl); clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, k === 'dog' ? 40 : NAME_MAX); save(); nameHint(k); }
         if (k === 'breed') breedTyped(inp);
         if (k === 'toy' || k === 'accessory') { S[k] = inp.value.slice(0, 80); save(); }
@@ -1704,6 +1719,7 @@
     if (cfg.artworkCandidates && window.HSArtworkChoices) window.HSArtworkChoices.mount(frame.querySelector('[data-hs-art-choices]'), {toneElsewhere: true});
     if (tone) {
       tone.addEventListener('input', function () {
+        warm(cfg.composeUrl);
         var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][Number(tone.value)] || 'Warm with a wink';
         tone.setAttribute('aria-valuetext', name);
         var label = frame.querySelector('[data-hs3-tone-name]'); if (label) label.textContent = name;

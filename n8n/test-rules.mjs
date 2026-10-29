@@ -206,5 +206,36 @@ check('a named toy does not license a follow-up about bringing it', () => {
     }
   });
 }
+
+// 29 Oct: the hourly limits. Static data is saved at the end of a run, so ten parallel runs from one
+// session all passed a limit of five. Now each allowed call appends its keys to a data table and counts
+// them (Admit, Count, "Within limits?"). Simulated here with an append-only table and n8n's own
+// expression parser: however the ten runs interleave, at most five are admitted, and the IP is a hash.
+{
+  const { createRequire } = await import('node:module');
+  const { Tournament } = createRequire(new URL('../tools/preview/package.json', import.meta.url))('@n8n/tournament');
+  const tournament = new Tournament(e => { throw e; });
+  const within = [...fs.readFileSync('compose.js', 'utf8').matchAll(/expr\(("(?:[^"\\]|\\.)*")\)/g)].map(m => JSON.parse(m[1])).find(e => e.includes("$('Count')"));
+  const req = {headers:{origin:'https://heartside.io','cf-connecting-ip':'198.51.100.7'},body:{session:'abcdefgh12',dog:{name:'Kuku'},recipient:{name:'Sam'}}};
+  check('guard keys hide the IP and carry the limits; nothing is counted in static data', () => {
+    const src = fs.readFileSync('guard-compose.js', 'utf8');
+    assert.doesNotMatch(src, /getWorkflowStaticData/);
+    const g1 = guard('guard-compose.js', req);
+    assert.match(g1.skey, /^compose\|\d+\|abcdefgh12$/); assert.match(g1.ikey, /^compose\|\d+\|[0-9a-z]+$/);
+    assert.ok(!g1.ikey.includes('198.51.100.7')); assert.deepEqual(g1.limits, {session: 5, ip: 20});
+    assert.equal(guard('guard-typed.js', {...req, body:{...req.body, typed_text:'x'}}).limits.session, 8);
+  });
+  check('ten parallel note calls from one session: at most five admitted, in any interleaving', () => {
+    const g1 = guard('guard-compose.js', req);
+    for (const order of ['all-insert-first', 'interleaved']) {
+      const table = []; let admitted = 0;
+      const decide = () => tournament.execute(within, { $: (n) => n === 'Count' ? { all: () => table.filter(r => r.skey === g1.skey || r.ikey === g1.ikey).map(json => ({json})) } : { first: () => ({ json: g1 }) } });
+      if (order === 'all-insert-first') { for (let i = 0; i < 10; i++) table.push({skey: g1.skey, ikey: g1.ikey}); for (let i = 0; i < 10; i++) if (decide()) admitted++; }
+      else for (let i = 0; i < 10; i++) { table.push({skey: g1.skey, ikey: g1.ikey}); if (decide()) admitted++; }
+      assert.ok(admitted <= 5, order + ': ' + admitted);
+      if (order === 'interleaved') assert.equal(admitted, 5, 'serial calls still get their five');
+    }
+  });
+}
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;

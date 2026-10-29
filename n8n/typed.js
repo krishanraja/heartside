@@ -18,7 +18,7 @@ const hook = trigger({
 const guard = node({
   type: 'n8n-nodes-base.code',
   version: 2,
-  config: { name: 'Guard', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "\nconst ALLOWED = [\"https://heartside.io\",\"https://www.heartside.io\",\"https://bnf1em-ge.myshopify.com\"];\nconst LIMIT_SESSION = 8;\nconst LIMIT_IP = 60;\nconst req = $input.first().json;\nconst h = req.headers || {};\nconst origin = String(h.origin || '').toLowerCase().replace(/\\/$/, '');\nconst b = (req.body && typeof req.body === 'object') ? req.body : {};\nconst ip = String(h['cf-connecting-ip'] || h['x-real-ip'] || String(h['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();\nconst session = String(b.session || '');\nconst str = (v, n) => String(v == null ? '' : v).replace(/[\\u0000-\\u001f]/g, ' ').trim().slice(0, n);\nlet reject = '';\nif (ALLOWED.indexOf(origin) === -1) reject = 'origin';\nelse if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';\nconst sd = $getWorkflowStaticData('global');\nconst now = Date.now();\nif (!sd.win || now - sd.win > 3600e3) { sd.win = now; sd.ip = {}; sd.s = {}; }\nif (!reject) {\n  sd.s[session] = (sd.s[session] || 0) + 1;\n  sd.ip[ip] = (sd.ip[ip] || 0) + 1;\n  if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';\n}\nconst TONES = [\"Companion Velcro\",\"Doodle Wildcard\",\"Guardian\",\"Herding Manager\",\"Retriever\",\"Scent Detective\",\"Sighthound Sofa Missile\",\"Spitz Commentator\",\"Terrier Menace\",\"Working Goofball\"];\n// no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)\nconst pro = String((b.dog && b.dog.pronoun) || '');\nconst dog = { name: str(b.dog && b.dog.name, 14), pronoun: pro === 'he' || pro === 'she' ? pro : 'they' };\nconst breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');\nif (breed) dog.breed = breed;\nif (TONES.indexOf(tone) !== -1) dog.tone = tone;\nconst recipient = { name: str(b.recipient && b.recipient.name, 14), relation: str(b.recipient && b.recipient.relation, 20) };\n\nconst STEPS = ['home', 'home_follow', 'spot', 'together', 'meaning'];\nconst input = {\n  step: STEPS.indexOf(b.step) === -1 ? 'home' : b.step,\n  question: str(b.question, 200),\n  typed_text: str(b.typed_text, 140),\n  previous_line: str(b.previous_line, 60),\n  dog: dog, recipient: recipient\n};\nif (!reject && !input.typed_text) reject = 'empty';\n\nreturn [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];\n" } }
+  config: { name: 'Guard', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "\nconst ALLOWED = [\"https://heartside.io\",\"https://www.heartside.io\",\"https://bnf1em-ge.myshopify.com\"];\nconst LIMIT_SESSION = 8;\nconst LIMIT_IP = 60;\nconst req = $input.first().json;\nconst h = req.headers || {};\nconst origin = String(h.origin || '').toLowerCase().replace(/\\/$/, '');\nconst b = (req.body && typeof req.body === 'object') ? req.body : {};\nconst ip = String(h['cf-connecting-ip'] || h['x-real-ip'] || String(h['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();\nconst session = String(b.session || '');\nconst str = (v, n) => String(v == null ? '' : v).replace(/[\\u0000-\\u001f]/g, ' ').trim().slice(0, n);\nlet reject = '';\nif (ALLOWED.indexOf(origin) === -1) reject = 'origin';\nelse if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';\n// The hourly limits are counted in the \"Heartside AI admission\" data table, not static data: n8n saves\n// static data at the end of a run, so parallel runs overwrote each other and a burst of ten got past a\n// limit of five (29 Oct). Each allowed call appends a row, then counts its keys; that can over-count\n// under a race, never over-admit. The IP is kept only as a hash, for two hours.\nconst hour = Math.floor(Date.now() / 3600e3);\nlet hash = 2166136261;\nfor (const ch of 'heartside|' + ip) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619) >>> 0; }\nconst skey = \"typed\" + '|' + hour + '|' + session;\nconst ikey = \"typed\" + '|' + hour + '|' + hash.toString(36);\nconst TONES = [\"Companion Velcro\",\"Doodle Wildcard\",\"Guardian\",\"Herding Manager\",\"Retriever\",\"Scent Detective\",\"Sighthound Sofa Missile\",\"Spitz Commentator\",\"Terrier Menace\",\"Working Goofball\"];\n// no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)\nconst pro = String((b.dog && b.dog.pronoun) || '');\nconst dog = { name: str(b.dog && b.dog.name, 14), pronoun: pro === 'he' || pro === 'she' ? pro : 'they' };\nconst breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');\nif (breed) dog.breed = breed;\nif (TONES.indexOf(tone) !== -1) dog.tone = tone;\nconst recipient = { name: str(b.recipient && b.recipient.name, 14), relation: str(b.recipient && b.recipient.relation, 20) };\n\nconst STEPS = ['home', 'home_follow', 'spot', 'together', 'meaning'];\nconst input = {\n  step: STEPS.indexOf(b.step) === -1 ? 'home' : b.step,\n  question: str(b.question, 200),\n  typed_text: str(b.typed_text, 140),\n  previous_line: str(b.previous_line, 60),\n  dog: dog, recipient: recipient\n};\nif (!reject && !input.typed_text) reject = 'empty';\n\nreturn [{ json: { reject: reject, input: input, prompt: JSON.stringify(input), skey: skey, ikey: ikey, limits: { session: LIMIT_SESSION, ip: LIMIT_IP } } }];\n" } }
 });
 
 const allowed = ifElse({
@@ -51,7 +51,7 @@ const gemini = node({
       nodeCredentialType: 'googlePalmApi',
       sendBody: true,
       specifyBody: 'json',
-      jsonBody: expr("{{ JSON.stringify({ systemInstruction: { parts: [ { text: $('Voice').params.options.systemMessage } ] }, contents: [ { role: 'user', parts: [ { text: $json.prompt } ] } ], generationConfig: { temperature: 0.9, maxOutputTokens: 600, responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } } }) }}"),
+      jsonBody: expr("{{ JSON.stringify({ systemInstruction: { parts: [ { text: $('Voice').params.options.systemMessage } ] }, contents: [ { role: 'user', parts: [ { text: $('Guard').first().json.prompt } ] } ], generationConfig: { temperature: 0.9, maxOutputTokens: 600, responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } } }) }}"),
       options: { timeout: 3000 }
     },
     credentials: { googlePalmApi: {"id":"LtlmaVHoTQdTTngQ","name":"Google Gemini(PaLM) - Heartside"} }
@@ -199,6 +199,69 @@ const respond = node({
   }
 });
 
+// The hourly limits, counted where parallel runs cannot overwrite each other (29 Oct): append this
+// call's keys, then count them. A race can only over-count.
+const admit = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Admit',
+    // a data table hiccup must never block a buyer: the limit fails open
+    onError: 'continueRegularOutput',
+    parameters: {
+      resource: 'row',
+      operation: 'insert',
+      dataTableId: { __rl: true, mode: 'id', value: "GaQT60CxkKCeC3xF", cachedResultName: 'Heartside AI admission' },
+      columns: {
+        mappingMode: 'defineBelow',
+        value: { skey: expr('{{ $json.skey }}'), ikey: expr('{{ $json.ikey }}') },
+        schema: [{"id":"skey","displayName":"skey","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},{"id":"ikey","displayName":"ikey","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true}]
+      },
+      options: {}
+    }
+  }
+});
+const count = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Count',
+    onError: 'continueRegularOutput',
+    alwaysOutputData: true,
+    parameters: {
+      resource: 'row',
+      operation: 'get',
+      dataTableId: { __rl: true, mode: 'id', value: "GaQT60CxkKCeC3xF", cachedResultName: 'Heartside AI admission' },
+      matchType: 'anyCondition',
+      filters: { conditions: [
+        { keyName: 'skey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.skey }}") },
+        { keyName: 'ikey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.ikey }}") }
+      ] },
+      returnAll: false,
+      limit: 100
+    }
+  }
+});
+const within = ifElse({
+  version: 2.2,
+  config: {
+    name: 'Within limits?',
+    executeOnce: true,
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },
+        conditions: [{ leftValue: expr("{{ $('Count').all().filter(i => i.json.skey === $('Guard').first().json.skey).length <= $('Guard').first().json.limits.session && $('Count').all().filter(i => i.json.ikey === $('Guard').first().json.ikey).length <= $('Guard').first().json.limits.ip }}"), operator: { type: 'boolean', operation: 'true', singleValue: true } }],
+        combinator: 'and'
+      }
+    }
+  }
+});
+const overLimit = node({
+  type: 'n8n-nodes-base.set',
+  version: 3.4,
+  config: { name: 'Over limit', parameters: { mode: 'manual', includeOtherFields: false, assignments: { assignments: [{ id: 'hs-limit', name: 'reject', value: 'limit', type: 'string' }] }, options: {} } }
+});
+
 const refuse = node({
   type: 'n8n-nodes-base.respondToWebhook',
   version: 1.5,
@@ -219,5 +282,7 @@ export default workflow("heartside-typed-answer", "Heartside: typed answer (Budd
   .to(isWarm
     .onTrue(warmCode.to(respondWarm))
     .onFalse(guard.to(allowed
-      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(geminiText.to(enforce.to(tag.to(respond.to(log))))))
+      .onTrue(admit.to(count.to(within
+        .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(geminiText.to(enforce.to(tag.to(respond.to(log))))))
+        .onFalse(overLimit.to(refuse)))))
       .onFalse(refuse))));

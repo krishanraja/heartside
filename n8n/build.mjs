@@ -11,8 +11,10 @@ const CLAUDE = process.env.HS_CLAUDE || 'claude-sonnet-5-5';
 const CLAUDE_CRED = { id: 'NqmXYF7Q7sJg5Iog', name: 'Anthropic account' };
 const ORIGINS = ['https://heartside.io', 'https://www.heartside.io', 'https://bnf1em-ge.myshopify.com'];
 
+const WITHIN = "{{ $('Count').all().filter(i => i.json.skey === $('Guard').first().json.skey).length <= $('Guard').first().json.limits.session && $('Count').all().filter(i => i.json.ikey === $('Guard').first().json.ikey).length <= $('Guard').first().json.limits.ip }}";
 const STEP_EXPR = 'expr("{{ $(\'Guard\').first().json.input.step || \'\' }}")';
 const LOG_TABLE = 'epJucnL4I8tBiyGY'; // n8n data table "Heartside AI calls"
+const ADMIT_TABLE = 'GaQT60CxkKCeC3xF'; // n8n data table "Heartside AI admission" (29 Oct)
 const TAG = [
   '// Which model answered, and how long the call took from arrival (Stamp) to here.',
   'const out = Object.assign({}, $input.first().json);',
@@ -109,14 +111,15 @@ const str = (v, n) => String(v == null ? '' : v).replace(/[\\u0000-\\u001f]/g, '
 let reject = '';
 if (ALLOWED.indexOf(origin) === -1) reject = 'origin';
 else if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';
-const sd = $getWorkflowStaticData('global');
-const now = Date.now();
-if (!sd.win || now - sd.win > 3600e3) { sd.win = now; sd.ip = {}; sd.s = {}; }
-if (!reject) {
-  sd.s[session] = (sd.s[session] || 0) + 1;
-  sd.ip[ip] = (sd.ip[ip] || 0) + 1;
-  if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';
-}
+// The hourly limits are counted in the "Heartside AI admission" data table, not static data: n8n saves
+// static data at the end of a run, so parallel runs overwrote each other and a burst of ten got past a
+// limit of five (29 Oct). Each allowed call appends a row, then counts its keys; that can over-count
+// under a race, never over-admit. The IP is kept only as a hash, for two hours.
+const hour = Math.floor(Date.now() / 3600e3);
+let hash = 2166136261;
+for (const ch of 'heartside|' + ip) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619) >>> 0; }
+const skey = ${JSON.stringify(kind)} + '|' + hour + '|' + session;
+const ikey = ${JSON.stringify(kind)} + '|' + hour + '|' + hash.toString(36);
 const TONES = ${JSON.stringify(TONES)};
 // no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)
 const pro = String((b.dog && b.dog.pronoun) || '');
@@ -148,7 +151,7 @@ const input = { dog: dog, recipient: recipient, answers: answers, current_lines:
   default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,
   note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };
 `}
-return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];
+return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input), skey: skey, ikey: ikey, limits: { session: LIMIT_SESSION, ip: LIMIT_IP } } }];
 `;
 
 const enforceTyped = shared + `
@@ -372,7 +375,7 @@ const gemini = node({
       sendBody: true,
       specifyBody: 'json',
       // the instructions live once, on Voice, and are read from there
-      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: '" + CLAUDE + "', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Voice').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
+      jsonBody: expr(${JSON.stringify("{{ JSON.stringify({ model: '" + CLAUDE + "', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Voice').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $('Guard').first().json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}")}),
       options: { timeout: 6500 }
     },
     credentials: { anthropicApi: ${JSON.stringify(CLAUDE_CRED)} }
@@ -381,7 +384,7 @@ const gemini = node({
 ` : `// Typed answers: Gemini, bounded (29 Oct, tools/perf). The Gemini node has no timeout, so the call
 // is a plain request with one: runner start up to 1.5 s + 3 s here + 1.5 s backup, and past that
 // Enforce keeps the buyer's own words. The page itself gives up at 5 s.
-const gemini = ${geminiCall('Gemini', "$json.prompt", 3000)};
+const gemini = ${geminiCall('Gemini', "$('Guard').first().json.prompt", 3000)};
 const geminiText = ${replyText('Gemini text')};
 `}
 const enforce = node({
@@ -496,6 +499,91 @@ const respond = node({
   }
 });
 
+// The hourly limits, counted where parallel runs cannot overwrite each other (29 Oct): append this
+// call's keys, then count them. A race can only over-count.
+const admit = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Admit',
+    // a data table hiccup must never block a buyer: the limit fails open
+    onError: 'continueRegularOutput',
+    parameters: {
+      resource: 'row',
+      operation: 'insert',
+      dataTableId: { __rl: true, mode: 'id', value: ${JSON.stringify(ADMIT_TABLE)}, cachedResultName: 'Heartside AI admission' },
+      columns: {
+        mappingMode: 'defineBelow',
+        value: { skey: expr('{{ $json.skey }}'), ikey: expr('{{ $json.ikey }}') },
+        schema: ${JSON.stringify(['skey', 'ikey'].map((c) => ({ id: c, displayName: c, required: false, defaultMatch: false, display: true, type: 'string', canBeUsedToMatch: true })))}
+      },
+      options: {}
+    }
+  }
+});
+const count = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Count',
+    onError: 'continueRegularOutput',
+    alwaysOutputData: true,
+    parameters: {
+      resource: 'row',
+      operation: 'get',
+      dataTableId: { __rl: true, mode: 'id', value: ${JSON.stringify(ADMIT_TABLE)}, cachedResultName: 'Heartside AI admission' },
+      matchType: 'anyCondition',
+      filters: { conditions: [
+        { keyName: 'skey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.skey }}") },
+        { keyName: 'ikey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.ikey }}") }
+      ] },
+      returnAll: false,
+      limit: 100
+    }
+  }
+});
+const within = ifElse({
+  version: 2.2,
+  config: {
+    name: 'Within limits?',
+    executeOnce: true,
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },
+        conditions: [{ leftValue: expr(${JSON.stringify(WITHIN)}), operator: { type: 'boolean', operation: 'true', singleValue: true } }],
+        combinator: 'and'
+      }
+    }
+  }
+});
+const overLimit = node({
+  type: 'n8n-nodes-base.set',
+  version: 3.4,
+  config: { name: 'Over limit', parameters: { mode: 'manual', includeOtherFields: false, assignments: { assignments: [{ id: 'hs-limit', name: 'reject', value: 'limit', type: 'string' }] }, options: {} } }
+});
+${kind === 'compose' ? `
+// Every hour, admission rows older than two hours go (they only ever count the current hour)
+const hourly = trigger({
+  type: 'n8n-nodes-base.scheduleTrigger',
+  version: 1.2,
+  config: { name: 'Hourly', parameters: { rule: { interval: [{ field: 'hours', hoursInterval: 1 }] } } }
+});
+const forget = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Forget old admissions',
+    parameters: {
+      resource: 'row',
+      operation: 'deleteRows',
+      dataTableId: { __rl: true, mode: 'id', value: ${JSON.stringify(ADMIT_TABLE)}, cachedResultName: 'Heartside AI admission' },
+      matchType: 'allConditions',
+      filters: { conditions: [{ keyName: 'createdAt', condition: 'lt', keyValue: expr('{{ $now.minus({ hours: 2 }).toISO() }}') }] },
+      options: {}
+    }
+  }
+});
+` : ''}
 const refuse = node({
   type: 'n8n-nodes-base.respondToWebhook',
   version: 1.5,
@@ -510,13 +598,16 @@ const refuse = node({
 });
 
 export default workflow(${JSON.stringify(id)}, ${JSON.stringify(name)})
-  .add(voice)
+  .add(voice)${kind === 'compose' ? `
+  .add(hourly.to(forget))` : ''}
   .add(hook)
   .to(stamp)
   .to(isWarm
     .onTrue(warmCode.to(respondWarm))
     .onFalse(guard.to(allowed
-      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(${kind === 'typed' ? 'geminiText.to(' : ''}enforce.to(tag.to(respond.to(log)))${kind === 'typed' ? ')' : ''}))
+      .onTrue(admit.to(count.to(within
+        .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(${kind === 'typed' ? 'geminiText.to(' : ''}enforce.to(tag.to(respond.to(log)))${kind === 'typed' ? ')' : ''}))
+        .onFalse(overLimit.to(refuse)))))
       .onFalse(refuse))));
 `;
 }

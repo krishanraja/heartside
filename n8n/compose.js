@@ -18,7 +18,7 @@ const hook = trigger({
 const guard = node({
   type: 'n8n-nodes-base.code',
   version: 2,
-  config: { name: 'Guard', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "\nconst ALLOWED = [\"https://heartside.io\",\"https://www.heartside.io\",\"https://bnf1em-ge.myshopify.com\"];\nconst LIMIT_SESSION = 5;\nconst LIMIT_IP = 20;\nconst req = $input.first().json;\nconst h = req.headers || {};\nconst origin = String(h.origin || '').toLowerCase().replace(/\\/$/, '');\nconst b = (req.body && typeof req.body === 'object') ? req.body : {};\nconst ip = String(h['cf-connecting-ip'] || h['x-real-ip'] || String(h['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();\nconst session = String(b.session || '');\nconst str = (v, n) => String(v == null ? '' : v).replace(/[\\u0000-\\u001f]/g, ' ').trim().slice(0, n);\nlet reject = '';\nif (ALLOWED.indexOf(origin) === -1) reject = 'origin';\nelse if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';\nconst sd = $getWorkflowStaticData('global');\nconst now = Date.now();\nif (!sd.win || now - sd.win > 3600e3) { sd.win = now; sd.ip = {}; sd.s = {}; }\nif (!reject) {\n  sd.s[session] = (sd.s[session] || 0) + 1;\n  sd.ip[ip] = (sd.ip[ip] || 0) + 1;\n  if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';\n}\nconst TONES = [\"Companion Velcro\",\"Doodle Wildcard\",\"Guardian\",\"Herding Manager\",\"Retriever\",\"Scent Detective\",\"Sighthound Sofa Missile\",\"Spitz Commentator\",\"Terrier Menace\",\"Working Goofball\"];\n// no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)\nconst pro = String((b.dog && b.dog.pronoun) || '');\nconst dog = { name: str(b.dog && b.dog.name, 14), pronoun: pro === 'he' || pro === 'she' ? pro : 'they' };\nconst breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');\nif (breed) dog.breed = breed;\nif (TONES.indexOf(tone) !== -1) dog.tone = tone;\nconst recipient = { name: str(b.recipient && b.recipient.name, 14), relation: str(b.recipient && b.recipient.relation, 20) };\n\nconst KEYS = ['home', 'spot', 'together', 'meaning'];\nconst answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 8).map(a => ({\n  id: str(a && a.id, 20), chip: str(a && a.chip, 30) || null, label: str(a && a.label, 60), typed: str(a && a.typed, 140) || null\n}));\nconst current_lines = {};\nKEYS.forEach(k => { current_lines[k] = str(b.current_lines && b.current_lines[k], 60); });\nconst GIFTS = ['mug', 'blanket', 'print', 'ornament'];\nconst NOTE_TONES = ['sentimental', 'warm', 'hilarious'];\nconst input = { dog: dog, recipient: recipient, answers: answers, current_lines: current_lines,\n  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,\n  note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };\n\nreturn [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];\n" } }
+  config: { name: 'Guard', parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "\nconst ALLOWED = [\"https://heartside.io\",\"https://www.heartside.io\",\"https://bnf1em-ge.myshopify.com\"];\nconst LIMIT_SESSION = 5;\nconst LIMIT_IP = 20;\nconst req = $input.first().json;\nconst h = req.headers || {};\nconst origin = String(h.origin || '').toLowerCase().replace(/\\/$/, '');\nconst b = (req.body && typeof req.body === 'object') ? req.body : {};\nconst ip = String(h['cf-connecting-ip'] || h['x-real-ip'] || String(h['x-forwarded-for'] || '').split(',')[0] || 'unknown').trim();\nconst session = String(b.session || '');\nconst str = (v, n) => String(v == null ? '' : v).replace(/[\\u0000-\\u001f]/g, ' ').trim().slice(0, n);\nlet reject = '';\nif (ALLOWED.indexOf(origin) === -1) reject = 'origin';\nelse if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';\n// The hourly limits are counted in the \"Heartside AI admission\" data table, not static data: n8n saves\n// static data at the end of a run, so parallel runs overwrote each other and a burst of ten got past a\n// limit of five (29 Oct). Each allowed call appends a row, then counts its keys; that can over-count\n// under a race, never over-admit. The IP is kept only as a hash, for two hours.\nconst hour = Math.floor(Date.now() / 3600e3);\nlet hash = 2166136261;\nfor (const ch of 'heartside|' + ip) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619) >>> 0; }\nconst skey = \"compose\" + '|' + hour + '|' + session;\nconst ikey = \"compose\" + '|' + hour + '|' + hash.toString(36);\nconst TONES = [\"Companion Velcro\",\"Doodle Wildcard\",\"Guardian\",\"Herding Manager\",\"Retriever\",\"Scent Detective\",\"Sighthound Sofa Missile\",\"Spitz Commentator\",\"Terrier Menace\",\"Working Goofball\"];\n// no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)\nconst pro = String((b.dog && b.dog.pronoun) || '');\nconst dog = { name: str(b.dog && b.dog.name, 14), pronoun: pro === 'he' || pro === 'she' ? pro : 'they' };\nconst breed = str(b.dog && b.dog.breed, 40), tone = String((b.dog && b.dog.tone) || '');\nif (breed) dog.breed = breed;\nif (TONES.indexOf(tone) !== -1) dog.tone = tone;\nconst recipient = { name: str(b.recipient && b.recipient.name, 14), relation: str(b.recipient && b.recipient.relation, 20) };\n\nconst KEYS = ['home', 'spot', 'together', 'meaning'];\nconst answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 8).map(a => ({\n  id: str(a && a.id, 20), chip: str(a && a.chip, 30) || null, label: str(a && a.label, 60), typed: str(a && a.typed, 140) || null\n}));\nconst current_lines = {};\nKEYS.forEach(k => { current_lines[k] = str(b.current_lines && b.current_lines[k], 60); });\nconst GIFTS = ['mug', 'blanket', 'print', 'ornament'];\nconst NOTE_TONES = ['sentimental', 'warm', 'hilarious'];\nconst input = { dog: dog, recipient: recipient, answers: answers, current_lines: current_lines,\n  default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,\n  note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };\n\nreturn [{ json: { reject: reject, input: input, prompt: JSON.stringify(input), skey: skey, ikey: ikey, limits: { session: LIMIT_SESSION, ip: LIMIT_IP } } }];\n" } }
 });
 
 const allowed = ifElse({
@@ -54,7 +54,7 @@ const gemini = node({
       sendBody: true,
       specifyBody: 'json',
       // the instructions live once, on Voice, and are read from there
-      jsonBody: expr("{{ JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Voice').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}"),
+      jsonBody: expr("{{ JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1200, thinking: { type: 'between_tools' }, system: [ { type: 'text', text: $('Voice').params.options.systemMessage, cache_control: { type: 'ephemeral' } } ], messages: [ { role: 'user', content: $('Guard').first().json.prompt + '\\n\\nReply with the JSON object only.' } ] }) }}"),
       options: { timeout: 6500 }
     },
     credentials: { anthropicApi: {"id":"NqmXYF7Q7sJg5Iog","name":"Anthropic account"} }
@@ -197,6 +197,91 @@ const respond = node({
   }
 });
 
+// The hourly limits, counted where parallel runs cannot overwrite each other (29 Oct): append this
+// call's keys, then count them. A race can only over-count.
+const admit = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Admit',
+    // a data table hiccup must never block a buyer: the limit fails open
+    onError: 'continueRegularOutput',
+    parameters: {
+      resource: 'row',
+      operation: 'insert',
+      dataTableId: { __rl: true, mode: 'id', value: "GaQT60CxkKCeC3xF", cachedResultName: 'Heartside AI admission' },
+      columns: {
+        mappingMode: 'defineBelow',
+        value: { skey: expr('{{ $json.skey }}'), ikey: expr('{{ $json.ikey }}') },
+        schema: [{"id":"skey","displayName":"skey","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true},{"id":"ikey","displayName":"ikey","required":false,"defaultMatch":false,"display":true,"type":"string","canBeUsedToMatch":true}]
+      },
+      options: {}
+    }
+  }
+});
+const count = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Count',
+    onError: 'continueRegularOutput',
+    alwaysOutputData: true,
+    parameters: {
+      resource: 'row',
+      operation: 'get',
+      dataTableId: { __rl: true, mode: 'id', value: "GaQT60CxkKCeC3xF", cachedResultName: 'Heartside AI admission' },
+      matchType: 'anyCondition',
+      filters: { conditions: [
+        { keyName: 'skey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.skey }}") },
+        { keyName: 'ikey', condition: 'eq', keyValue: expr("{{ $('Guard').first().json.ikey }}") }
+      ] },
+      returnAll: false,
+      limit: 100
+    }
+  }
+});
+const within = ifElse({
+  version: 2.2,
+  config: {
+    name: 'Within limits?',
+    executeOnce: true,
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },
+        conditions: [{ leftValue: expr("{{ $('Count').all().filter(i => i.json.skey === $('Guard').first().json.skey).length <= $('Guard').first().json.limits.session && $('Count').all().filter(i => i.json.ikey === $('Guard').first().json.ikey).length <= $('Guard').first().json.limits.ip }}"), operator: { type: 'boolean', operation: 'true', singleValue: true } }],
+        combinator: 'and'
+      }
+    }
+  }
+});
+const overLimit = node({
+  type: 'n8n-nodes-base.set',
+  version: 3.4,
+  config: { name: 'Over limit', parameters: { mode: 'manual', includeOtherFields: false, assignments: { assignments: [{ id: 'hs-limit', name: 'reject', value: 'limit', type: 'string' }] }, options: {} } }
+});
+
+// Every hour, admission rows older than two hours go (they only ever count the current hour)
+const hourly = trigger({
+  type: 'n8n-nodes-base.scheduleTrigger',
+  version: 1.2,
+  config: { name: 'Hourly', parameters: { rule: { interval: [{ field: 'hours', hoursInterval: 1 }] } } }
+});
+const forget = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Forget old admissions',
+    parameters: {
+      resource: 'row',
+      operation: 'deleteRows',
+      dataTableId: { __rl: true, mode: 'id', value: "GaQT60CxkKCeC3xF", cachedResultName: 'Heartside AI admission' },
+      matchType: 'allConditions',
+      filters: { conditions: [{ keyName: 'createdAt', condition: 'lt', keyValue: expr('{{ $now.minus({ hours: 2 }).toISO() }}') }] },
+      options: {}
+    }
+  }
+});
+
 const refuse = node({
   type: 'n8n-nodes-base.respondToWebhook',
   version: 1.5,
@@ -212,10 +297,13 @@ const refuse = node({
 
 export default workflow("heartside-compose", "Heartside: compose gift lines (Buddy AI)")
   .add(voice)
+  .add(hourly.to(forget))
   .add(hook)
   .to(stamp)
   .to(isWarm
     .onTrue(warmCode.to(respondWarm))
     .onFalse(guard.to(allowed
-      .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(enforce.to(tag.to(respond.to(log)))))
+      .onTrue(admit.to(count.to(within
+        .onTrue(gemini.onError(geminiBackup.onError(enforce).to(backupText.to(enforce))).to(enforce.to(tag.to(respond.to(log)))))
+        .onFalse(overLimit.to(refuse)))))
       .onFalse(refuse))));

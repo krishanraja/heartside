@@ -12,14 +12,15 @@ const str = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' '
 let reject = '';
 if (ALLOWED.indexOf(origin) === -1) reject = 'origin';
 else if (!/^[A-Za-z0-9_-]{8,64}$/.test(session)) reject = 'session';
-const sd = $getWorkflowStaticData('global');
-const now = Date.now();
-if (!sd.win || now - sd.win > 3600e3) { sd.win = now; sd.ip = {}; sd.s = {}; }
-if (!reject) {
-  sd.s[session] = (sd.s[session] || 0) + 1;
-  sd.ip[ip] = (sd.ip[ip] || 0) + 1;
-  if (sd.s[session] > LIMIT_SESSION || sd.ip[ip] > LIMIT_IP) reject = 'limit';
-}
+// The hourly limits are counted in the "Heartside AI admission" data table, not static data: n8n saves
+// static data at the end of a run, so parallel runs overwrote each other and a burst of ten got past a
+// limit of five (29 Oct). Each allowed call appends a row, then counts its keys; that can over-count
+// under a race, never over-admit. The IP is kept only as a hash, for two hours.
+const hour = Math.floor(Date.now() / 3600e3);
+let hash = 2166136261;
+for (const ch of 'heartside|' + ip) { hash ^= ch.charCodeAt(0); hash = Math.imul(hash, 16777619) >>> 0; }
+const skey = "compose" + '|' + hour + '|' + session;
+const ikey = "compose" + '|' + hour + '|' + hash.toString(36);
 const TONES = ["Companion Velcro","Doodle Wildcard","Guardian","Herding Manager","Retriever","Scent Detective","Sighthound Sofa Missile","Spitz Commentator","Terrier Menace","Working Goofball"];
 // no pronoun tapped arrives as they, and anything unknown reads they too, never a guessed she (28 Oct)
 const pro = String((b.dog && b.dog.pronoun) || '');
@@ -41,4 +42,4 @@ const input = { dog: dog, recipient: recipient, answers: answers, current_lines:
   default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,
   note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };
 
-return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } }];
+return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input), skey: skey, ikey: ikey, limits: { session: LIMIT_SESSION, ip: LIMIT_IP } } }];
