@@ -43,7 +43,8 @@
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
       var timeout = new Promise(function (_, reject) {
-        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); reject(fail()); }, Math.min(20000, Math.max(1, deadline - Date.now())));
+        // the server's run stops at 30 s; waiting past it means a retry never repeats work still running
+        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); reject(fail()); }, Math.min(32000, Math.max(1, deadline - Date.now())));
       });
       return Promise.race([request, timeout]).then(function (response) {
           clearTimeout(timer);
@@ -58,6 +59,9 @@
             : response.status === 503 && transient ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
           if (response.status === 503 && !wait) { if (root.console) root.console.warn('Checkout registration rejected', /^[a-z_]{1,48}$/.test(data.code || '') ? data.code : 'unknown'); throw fail(); }
           if (wait) {
+            // the server's 3 or 5 s, then a little longer after the third try, and a few hundred ms of
+            // jitter so two tabs asking about the same design do not keep arriving together
+            wait = (attempt < 3 ? wait : Math.min(8, wait + attempt - 2)) + Math.random() * 0.4;
             if (Date.now() + wait * 1000 >= deadline) throw fail();
             if (typeof options.onPending === 'function') { try { options.onPending(attempt + 1); } catch (e) { /* words only */ } }
             return new Promise(function (resolve) { setTimeout(resolve, wait * 1000); }).then(function () { return register(item, attempt + 1); });
@@ -69,8 +73,11 @@
           item.properties._hs_checkout_bundle_id = bundle;
       }).then(function (result) { clearTimeout(timer); return result; }, function () { clearTimeout(timer); throw fail(); });
     }
-    // One registration at a time keeps request volume bounded for a multi-item add.
-    return items.reduce(function (chain, item) { return chain.then(function () { return register(item, 0); }); }, Promise.resolve()).then(function () { return JSON.stringify(parsed); });
+    // Two registrations at a time: a three-gift add no longer waits for each in turn, and request
+    // volume stays bounded (the server admits 30 a minute per shop).
+    var queue = items.slice();
+    function lane() { var item = queue.shift(); return item ? register(item, 0).then(lane) : Promise.resolve(); }
+    return Promise.all([lane(), lane()]).then(function () { return JSON.stringify(parsed); });
   }
   root.HSCheckoutImage = {prepare: prepare};
 })(window);

@@ -72,6 +72,27 @@ for(const minified of [false,true]) {
     let count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'image_readback_failed'},503);})));assert.equal(count,12);
   });
+
+  test(mode+': a three-gift add registers two at a time, keeps every identity, and one failure fails the add',async()=>{
+    let live=0,peak=0;const seen=[];
+    const fetch=async(_,i)=>{live++;peak=Math.max(peak,live);const v=JSON.parse(i.body).variantId;seen.push(v);await tick();await tick();live--;return response(ready(v));};
+    const out=JSON.parse(await getHelper().prepare(JSON.stringify({items:[line(1),line(2),line(3)]}),options(fetch)));
+    assert.equal(peak,2,'two at a time');assert.deepEqual(seen.sort(),['1','2','3']);
+    assert.deepEqual(out.items.map(x=>x.properties._hs_checkout_bundle_id),[uuid+'-1',uuid+'-2',uuid+'-3']);
+    await assert.rejects(getHelper().prepare(JSON.stringify({items:[line(1),line(2),line(3)]}),options(async(_,i)=>JSON.parse(i.body).variantId==='2'?response({state:'error',code:'invalid_proxy_signature'},403):response(ready(JSON.parse(i.body).variantId)))));
+  });
+  test(mode+': a slow server answer is waited for up to its own 30 s ceiling, not abandoned at 20 s',()=>{
+    assert.match(helper,/Math\.min\(32000, Math\.max\(1, deadline - Date\.now\(\)\)\)/);
+    assert.doesNotMatch(helper,/Math\.min\(20000/);
+  });
+  test(mode+': waits lengthen after the third try, inside the same 90 s and twelve-request budget',async()=>{
+    const waits=[];const window={location:{href:'https://shop.example/products/gift'}};
+    vm.runInNewContext(minified?transformSync(helper,{minify:true}).code:helper,{window,URL,AbortController,Math,setTimeout:(f,ms)=>{if(ms>=1000&&ms<=9000)waits.push(ms);return setTimeout(f,0);},clearTimeout});
+    let count=0;
+    await window.HSCheckoutImage.prepare(JSON.stringify(line()),options(async()=>++count<=6?response({state:'pending',retryAfterSeconds:3},202):response(ready())));
+    assert.equal(waits.length,6);
+    for(const [i,ms] of waits.entries()){const base=(i<3?3:Math.min(8,3+i-2))*1000;assert.ok(ms>=base&&ms<base+400,i+': '+ms);}
+  });
   test(mode+': slow saved artwork reaches the cart without another buyer tap',async()=>{
     let count=0;
     const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async()=>++count<=6?response({state:'error',code:'preview_unavailable'},503):response(ready()))));
@@ -141,7 +162,7 @@ for(const minified of [false,true]) {
     resolve(JSON.stringify(line()));await p;await tick();await tick();
     assert.equal(note.hidden,true,'cleared once the add lands');
     assert.equal(t.tracked.length,1);assert.equal(t.tracked[0][0],'add_timing');
-    assert.deepEqual(Object.keys(t.tracked[0][1]),['teeinblue_ms','prepare_ms','add_ms']);
+    assert.deepEqual(Object.keys(t.tracked[0][1]),['teeinblue_ms','prepare_ms','add_ms','retries']);assert.equal(t.tracked[0][1].retries,1);
     // a failure says so in plain words, beside the button, and never asks for another painting
     const f=transport({button:true,prepare:async()=>{throw Error('temporary');}});f.c.checkoutImageStatus.dog="Pip's";
     await assert.rejects(f.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(line())}));

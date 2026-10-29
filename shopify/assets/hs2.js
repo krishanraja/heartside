@@ -3780,7 +3780,8 @@
     prepareCheckoutCart.pending = true;
     checkoutImageStatus('Getting ' + whose + ' picture ready for checkout.');
     // registration polls while Teeinblue finishes its copy; it never uploads (hs-checkout-image.js)
-    var options = Object.assign({}, config, { onPending: function () { checkoutImageStatus('Almost there.'); } });
+    prepareCheckoutCart.retries = 0;
+    var options = Object.assign({}, config, { onPending: function () { prepareCheckoutCart.retries++; checkoutImageStatus('Almost there.'); } });
     return Promise.resolve().then(function () {
       if (!window.HSCheckoutImage) throw new Error('Checkout artwork service is unavailable.');
       return window.HSCheckoutImage.prepare(body, options);
@@ -3825,7 +3826,7 @@
     var refuse = function () { checkoutImageStatus('This is still your first design. Add a new photo to make another version.'); };
     // where the 30 seconds go (28 Oct): Teeinblue's own save, our checkout picture, Shopify's add
     var timed = function (at, ready) {
-      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready }); } catch (e) { /* analytics never holds an add */ }
+      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready, retries: prepareCheckoutCart.retries || 0 }); } catch (e) { /* analytics never holds an add */ }
       onCartAdd.clickAt = 0;
     };
     if (window.fetch) {
