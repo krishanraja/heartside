@@ -41,6 +41,9 @@ export const ADDON = { key: 'artists-touch', handle: 'artists-touch', path: '/pr
 // are left out until CoWork reads Shopify's URL redirect list back, so that no target here is a
 // guess.
 export const REDIRECTS = {
+  '/products/the-framed-print': '/products/your-dogs-portrait',
+  '/products/the-couch-blanket': '/products/your-dogs-personality-blanket',
+  '/products/the-morning-mug': '/products/your-dogs-illustrated-mug',
   '/products/heartside-personality-blanket-draft-2026-10-23': '/products/your-dogs-personality-blanket',
   '/products/heartside-city-screenprint-draft-2026-10-23': '/products/your-dogs-portrait',
 };
@@ -60,7 +63,7 @@ export const REDIRECTS = {
 // set aside, but artists-touch-tile.png is another file from artists-touch.png.
 export const BLANK_MEDIA_IDS = ['71850515169662', '71856697049470'];
 export const BLANK_ALT = /\bblank |shown in your cart/i;
-export const BLANK_FILES = [];
+export const BLANK_FILES = ['6ae042294a133.webp', '261014_iKewQgX0VXLgM560_large.webp', '6ae2a68c7cc45.webp'];
 export const STANDIN_MEDIA_IDS = ['71873863057790'];
 export const STANDIN_ALT = /^artist['’]s touch by heartside$/i;
 export const STANDIN_FILES = ['artists-touch.png', 'heartside-favicon-heart.png'];
