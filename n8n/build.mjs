@@ -73,6 +73,7 @@ const TYPED_SYS = VOICE + '\n\n' + DOG_VOICE + '\n\n' + [
   ' "lines": ["three different gift lines for this step, best first, each one natural sentence in this dog\'s own voice, <= 60 characters (<= 44 on step meaning); at least one tender"],',
   ' "follow_up": {"question": "<= 70 characters. One question in Buddy\'s voice that digs into a detail they gave: which, when, how many, where. Never why. Never ask for a joke.", "chips": ["three short answers a typical owner might tap, each <= 24 characters"], "lines": ["for each chip, in order: the best gift line refined with that answer, <= 60 characters"], "replies": ["for each chip, in order: Buddy\'s short reaction to that answer, <= 50 characters"]},',
   ' "flags": ["any of: grief (death, illness, loss), profanity, person_described (the answer describes a person, not the dog), unclear (not about the dog at all)"]}',
+  "A toy beside the dog does not mean the dog brings, carries or fetches it. A follow-up must refine the action the owner actually stated; never presuppose a different action. If no grounded follow-up fits, return null.",
   "Never offer Not sure or Something else as a chip; the page adds them.",
   "Who is who: Buddy talks to the buyer. The person is the recipient named in the input. When recipient.relation is self, the buyer and recipient are the same person; otherwise the recipient is someone else. Only the gift lines speak to the person as you, unless the gift is for the buyer. In reaction, question, chips and replies, call the person by their name (or he, she, they), never you, and never I, me or my: chips are the buyer's answers about the dog and the person, like \"Follows Sam everywhere\". When recipient.relation is self, the person is the buyer Buddy is talking to, so the reaction, question, chips and replies say you and your, never their name: \"Follows you everywhere\".",
   "Steps: home = what the dog does when the person comes home. home_follow = more detail on that answer (refine previous_line with it). spot = where the dog's spot is when the person is around. together = what the dog and the person do together. meaning = what the dog is to the person. If the owner's answer doesn't fit the question, still write a line for this step from what they said (a meaning line can be about devotion). Only step home gets a follow_up; on every other step follow_up is null.",
@@ -151,6 +152,9 @@ return [{ json: { reject: reject, input: input, prompt: JSON.stringify(input) } 
 `;
 
 const enforceTyped = shared + `
+// A named toy does not establish that the dog brings it (live acceptance, 29 Oct).
+const delivery = /\\b(bring(?:s|ing)?|brought|carr(?:y|ies|ying|ied)|fetch(?:es|ing|ed)?|deliver(?:s|ing|ed)?)\\b/i;
+const actionsGrounded = (text, evidence) => !delivery.test(text) || delivery.test(evidence);
 const g = $('Guard').first().json;
 const inp = g.input;
 const raw = $input.first().json;
@@ -193,7 +197,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
       c = clean(c);
       // a non-answer chip (the page adds its own Not sure) or one that names a prop the owner never
       // mentioned goes, with its line and reply (28 Oct)
-      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay, names)) return;
+      if (!okText(c, 24) || NONANSWER.test(c) || !propsGrounded(c, answerHay, names) || !actionsGrounded(c, answerHay)) return;
       const l = clean(arr('lines')[i]), r = clean(arr('replies')[i]);
       f.chips.push(c);
       f.lines.push(okLine(l, hay + ' ' + c, MAX_LINE.home_follow, answerHay + ' ' + c, names) && !named(l) ? l : null);
@@ -204,7 +208,7 @@ if (flags.some(f => f === 'grief' || f === 'profanity' || f === 'unclear')) {
     const wrong = (t) => (forBuyer ? hasName(t, inp.recipient.name) : YOU.test(t)) || FIRST_PERSON.test(t);
     f.replies = f.replies.map((r) => (r && !wrong(r) ? r : null));
     // the question Buddy asks names nothing the owner never said, as its chips don't (28 Oct)
-    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong) && propsGrounded(q, answerHay, names)) fu = f;
+    if (okText(q, 70) && f.chips.length && !wrong(q) && !f.chips.some(wrong) && propsGrounded(q, answerHay, names) && actionsGrounded(q, answerHay)) fu = f;
   }
   const goodLine = line || ownWords(inp.typed_text, MAX) || clean(inp.previous_line);
   out = {
