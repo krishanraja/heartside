@@ -16,7 +16,7 @@ import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const BATCH = '2026-10-29-breeds';
 const out = root + 'design/examples-' + BATCH + '/';
-const {brief} = createRequire(import.meta.url)(root + 'shopify/assets/hs-brief.js');
+const {brief, toyWords} = createRequire(import.meta.url)(root + 'shopify/assets/hs-brief.js');
 
 // What an example buyer tapped for each dog. The photo is a reference the growth session sources:
 // a real photo under a free licence, its credit recorded in credits.json beside the images.
@@ -38,8 +38,9 @@ const STAGES = [{stage: 1, cap: 6}, {stage: 2, cap: 18}];
 const jobs = DOGS.flatMap((dog, i) => TONES.map((tone, t) => {
   const format = TURN[i % 3][t];
   const moment = brief({...dog, tone});
-  // recipes v10 (29 Oct): the exact directed brief the storefront writes for this dog's journey answers
-  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, spot: dog.spot, together: dog.together, toys: dog.toys.join(' and '), accessory: dog.wears || ''});
+  // the exact directed brief the storefront writes for this dog's journey answers; the toys keep the
+  // brief's own verb (in his mouth, at her paws: recipes v11, 30 Oct)
+  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, spot: dog.spot, together: dog.together, toys: toyWords({...dog, tone}), accessory: dog.wears || ''});
   const prompt = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     if (!Object.hasOwn(fields, key)) throw new Error('Unknown field ' + key);
     return fields[key];

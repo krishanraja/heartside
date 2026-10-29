@@ -275,14 +275,20 @@ test('the 28 Oct rulebook spec stays the record of the prompts the directed brie
 // 29 Oct, recipes v10: the growth session's control test (47 generations, two dogs) beat the
 // 5,500-character rulebook with a short directed brief. The saved prompt is a short frame; the
 // three hidden fields carry the identity line, the tone's staging and the medium.
-test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+test('the 29 Oct spec stays the record of v10, the blocks CoWork applied', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-29.md', import.meta.url), 'utf8');
-  assert.match(spec, /Status at authoring on 29 October: \*\*proposed vendor change, not applied\.\*\*/);
+  assert.ok(spec.includes('actual-dog-recipes-v10-directed-brief'));
+  for (const applied of ['d5bace79efa2bf410d041edfe77ddf5bb9efc4a3da0e35c41d421295b4f70c79', 'c14edaa2213a9eecacda7c98ae833167337079fa8b95f147c8b3c871a9a0e73e', '3caf99902178cf43c7ae19d07d0fb2890afed6fabb87e9b0e42eaf5b35bcb726'])
+    assert.ok(spec.includes(applied), 'keeps the applied v10 hash ' + applied);
+});
+test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-30.md', import.meta.url), 'utf8');
+  assert.match(spec, /Status at authoring on 30 October: \*\*proposed vendor change, not applied\.\*\*/);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
   assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
   assert.ok(spec.includes('Ruling (Krish, 2026-10-29): Hilarious may use theatrical staging'), 'carries the Hilarious ruling');
-  for (const replaced of ['d34640f824d5889ff6cb6c35e800900507eb1c7cce92c50a5173952b11186625', '2b5225613b396749db687005ab6b1afdc6085a45a5a214e2b6fa85185f023bac', 'a1af6a85c10734a90d8fcab2fec532f22ab3a6f6aba9bf78b870be3616d3e865'])
-    assert.ok(spec.includes(replaced), 'names the 28 Oct block it replaces: ' + replaced);
+  for (const replaced of ['d5bace79efa2bf410d041edfe77ddf5bb9efc4a3da0e35c41d421295b4f70c79', 'c14edaa2213a9eecacda7c98ae833167337079fa8b95f147c8b3c871a9a0e73e', '3caf99902178cf43c7ae19d07d0fb2890afed6fabb87e9b0e42eaf5b35bcb726'])
+    assert.ok(spec.includes(replaced), 'names the v10 block it replaces: ' + replaced);
   for (const format of ['mug', 'portrait', 'blanket']) {
     const p = nativePrompt(format);
     for (const field of ['{{Tone direction}}', '{{Style direction}}', '{{Energy}}']) assert.equal(p.split(field).length, 2, format + field + ' once');
@@ -291,7 +297,7 @@ test('the native prompt is the short directed frame, and the spec carries it exa
     assert.ok(p.startsWith('Create a new picture of the dog in this photo, ' + recipes.brief.formats[format].shape + '. Medium: {{Style direction}}'));
     assert.ok(p.indexOf('{{Style direction}}') < p.indexOf('{{Energy}}') && p.indexOf('{{Energy}}') < p.indexOf('{{Tone direction}}'));
     assert.ok(p.includes(recipes.brief.formats[format].framing) && p.endsWith(recipes.brief.avoid));
-    assert.ok(p.length < 800, format + ' ' + p.length);
+    assert.ok(p.length < 900, format + ' ' + p.length);
     // no list to choose from: only the chosen staging and medium arrive, through the fields
     for (const style of Object.values(recipes.brief.styles)) assert.ok(!p.includes(style), format + ' lists no style');
     for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const pronoun of ['she', 'he', 'they']) {
@@ -299,7 +305,7 @@ test('the native prompt is the short directed frame, and the spec carries it exa
       assert.ok(v.Energy.length <= 300 && v['Tone direction'].length <= 1200 && v['Style direction'].length <= 1200);
       assert.doesNotMatch(v['Tone direction'] + v['Style direction'] + v.Energy, /\{|\}|undefined|\bwink/i, 'every placeholder filled, and no literal wink');
       const filled = p.replace(/\{\{([^}]+)\}\}/g, (_, k) => v[k]);
-      assert.ok(filled.length < 2000, format + ' ' + style + ' ' + tone + ' ' + filled.length);
+      assert.ok(filled.length < 2200, format + ' ' + style + ' ' + tone + ' ' + filled.length);
       assert.equal(Object.values(recipes.brief.styles).filter(x => filled.includes(x)).length, 1);
     }
     const block = spec.match(new RegExp('<!-- prompt:' + format + ' -->\\n```text\\n([\\s\\S]*?)\\n```'));
@@ -508,4 +514,38 @@ test('a stated toy or accessory always appears, as described, on every tone and 
     assert.ok(r.prompt.includes(rule) && r.prompt.includes(negative), tone + ' ' + format);
     assert.ok(r.prompt.indexOf(rule) < r.prompt.indexOf('Green squeaky hedgehog'), 'the rule comes before the quoted facts');
   }
+});
+
+// 30 Oct, recipes v11: six fixes after the growth session painted all 24 breed examples from v10's prompts
+test('v11: Hilarious has no velvet or spotlight, keeps the stated place, and keeps the owner\'s verb', () => {
+  const formats = ['mug', 'portrait', 'blanket'];
+  const answers = [{}, {spot: 'couch'}, {together: 'movie', spot: 'couch', toys: 'a squeaky toy in his mouth'}, {toys: 'a tennis ball and a big stick'}, {together: 'walk', spot: 'feet', home: 'door', toys: 'a big stick in his mouth', accessory: 'a bandana'}, {together: 'my sofa'}];
+  for (const style of Object.keys(recipes.styles)) for (const format of formats) for (const a of answers) {
+    const v = nativeFieldValues({style, tone: 'hilarious', format, pronoun: 'he', ...a});
+    const filled = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, k) => v[k]);
+    assert.doesNotMatch(filled, /velvet|spotlight/i, style + ' ' + format + ' ' + JSON.stringify(a));
+  }
+  // a stated couch or film survives a named toy, and the toy joins the scene
+  const frenchie = nativeFieldValues({style: 'comic', tone: 'hilarious', format: 'portrait', pronoun: 'he', together: 'movie', spot: 'couch', toys: 'a squeaky toy in his mouth'})['Tone direction'];
+  assert.match(frenchie, /couch on movie night like a stern film critic/);
+  assert.match(frenchie, /a squeaky toy in his mouth/);
+  const couch = nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'mug', pronoun: 'she', spot: 'couch', toys: 'a tennis ball'})['Tone direction'];
+  assert.match(couch, /perched on the back of the couch/); assert.match(couch, /with her tennis ball/);
+  // the toy joke only when no place or activity was given
+  assert.match(nativeFieldValues({style: 'ink', tone: 'hilarious', format: 'mug', pronoun: 'he', toys: 'a bone'})['Tone direction'], /his bone guarded like a priceless treasure/);
+  // the owner's verb survives on every tone; "with" only when the wording has no verb
+  for (const tone of Object.keys(recipes.tones)) {
+    assert.match(nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'he', together: 'walk', toys: 'a tennis ball in his mouth'})['Tone direction'], /a tennis ball in his mouth/, tone);
+    assert.doesNotMatch(nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'he', together: 'walk', toys: 'a tennis ball in his mouth'})['Tone direction'], /with his tennis ball in his mouth/, tone);
+  }
+  // Over the top keeps its royal staging and always the stated place
+  const ott = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'blanket', pronoun: 'she', together: 'coffee', toys: 'a bone'})['Tone direction'];
+  assert.match(ott, /velvet cushion/); assert.match(ott, /Scene: at morning coffee time/);
+});
+test('v11: no unnamed leash, blankets stay in the stated place, and the collage dog is cut paper', () => {
+  for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /Avoid: [^\n]*a leash or lead, unless the owner named one/, format);
+  assert.match(nativePrompt('blanket'), /The ground is the stated place only, with no invented landscape or scenery\./);
+  const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
+  assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
+  assert.equal(recipes.version, 'actual-dog-recipes-v11-directed-brief');
 });

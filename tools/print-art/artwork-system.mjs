@@ -112,12 +112,19 @@ export function briefFields(input) {
   const plain = (t, max) => String(t == null ? '' : t).replace(/["“”<>{}\[\]\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
   const bare = t => plain(t, 80).replace(/^(a|an|the|my|her|his|their)\s+/i, '').replace(/\s+and\s+(a|an|the)\s+/gi, ' and ');
   const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => ({sub: p[0], obj: p[1], pos: p[2], is: p[3], takes: p[4], sits: p[5], sub_cap: cap(p[0]), pos_cap: cap(p[2]), toy: toy}[k] ?? m));
-  const toy = bare(o.toys || o.toy || '');
+  // the owner's toy wording is kept as said (v11): "a tennis ball in his mouth" stays in his mouth;
+  // only wording with no verb or place of its own gets "with his ..."
+  const toyRaw = plain(o.toys || o.toy || '', 160);
+  const toyHeld = /\b(in|at|on|under|between|beside|across|by|hugged|hugging|holding|carrying|clutching|chewing|guarding|tucked|balanced|as a)\b/i.test(toyRaw);
+  const toy = toyHeld ? toyRaw : bare(toyRaw);
+  const toyItem = !toy ? '' : toyHeld ? toyRaw : 'with {pos} {toy}';
   const wear = bare(o.accessory || '');
+  const wearItem = wear ? 'wearing a plain, solid-colored ' + wear + ' with no pattern' : '';
   // a chip id reads from the table; the buyer's own words are quoted, never followed
   const pick = (table, v) => !v ? '' : Object.hasOwn(table, v) ? table[v] : 'in the owner\'s words: "' + plain(v, 120) + '"';
   const sc = b.scene, tone = b.tones[o.tone], parts = [];
-  let staging;
+  const given = o.together || o.spot || o.home;
+  let staging, place = '';
   if (o.tone === 'sentimental') {
     // resting: the dog's spot, with a calm together moment; never an active one (a walk, a car ride)
     if (o.together && /^(naps|movie|coffee)$/.test(o.together)) parts.push(pick(sc.together, o.together));
@@ -129,22 +136,29 @@ export function briefFields(input) {
     // one moment: a spot only when there is no moment, so a walk never lands on the couch
     if (o.spot && !parts.length) parts.push(pick(sc.spot, o.spot));
     staging = parts.length ? parts.join(', ') : 'a happy everyday moment at home';
+  } else if (o.tone === 'hilarious') {
+    // v11: the joke keeps where the owner said the dog is: the stated activity or spot first, then
+    // home; the toy joke only when no place or activity was given, and a named toy joins the scene
+    const stated = [o.together, o.spot, o.home].find(k => k && Object.hasOwn(sc.joke, k));
+    const key = stated || (given ? 'none' : toy ? 'toy' : 'none');
+    staging = sc.joke[key].replace('{pos} {toy}', toyHeld ? toyRaw : '{pos} {toy}');
+    if (key === 'none' && given) staging += ', ' + [pick(sc.spot, o.spot), pick(sc.together, o.together), pick(sc.home, o.home)].filter(Boolean).join(', ');
   } else {
-    const table = o.tone === 'hilarious' ? sc.joke : sc.roast;
-    // Hilarious builds its joke on the stated toy first; Over the top crowns the dog's own spot first
-    const stated = [o.spot, o.together, o.home].find(k => k && Object.hasOwn(table, k));
-    const key = o.tone === 'hilarious' ? (toy ? 'toy' : stated || 'none') : (stated || (toy ? 'toy' : 'none'));
-    staging = table[key];
-    if (key === 'none' && (o.spot || o.together || o.home)) staging += ', ' + [pick(sc.spot, o.spot), pick(sc.together, o.together)].filter(Boolean).join(', ');
+    // Over the top crowns the dog's own spot first, and always keeps the stated place in the scene
+    const stated = [o.spot, o.together, o.home].find(k => k && Object.hasOwn(sc.roast, k));
+    // a toy the owner already placed (in his mouth) keeps its place, so it never rests on the cushion
+    const key = stated || (toy && !toyHeld ? 'toy' : 'none');
+    staging = sc.roast[key];
+    place = [pick(sc.spot, o.spot), pick(sc.together, o.together)].filter(Boolean).join(', ');
   }
-  const with_ = [];
-  if (toy && o.tone !== 'hilarious' && o.tone !== 'over_the_top') with_.push('with {pos} {toy}');
-  if (toy && o.tone === 'over_the_top' && !/\{toy\}/.test(staging)) with_.push('with {pos} {toy}');
-  if (wear) with_.push('wearing a plain, solid-colored ' + wear + ' with no pattern');
-  const scene = fill(staging + (with_.length ? ', ' + with_.join(', ') : ''));
+  const comic = o.tone === 'hilarious' || o.tone === 'over_the_top';
+  const inStaging = /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));
+  const items = [toy && !(comic && inStaging) ? toyItem : '', wearItem].filter(Boolean);
+  const scene = fill(staging + (items.length ? ', ' + items.join(', ') : ''));
+  const also = items.map(i => /^(with|wearing) /.test(i) ? 'the dog ' + i : i).join('; ');
   const toneText = [
     cap(fill(tone.pose).replace(/\{joke\}/, fill(staging)).replace(/\{joke_ott\}/, cap(fill(staging)))) + '.',
-    o.tone === 'hilarious' || o.tone === 'over_the_top' ? (with_.length ? 'Also in the scene: the dog ' + fill(with_.join(', ')) + '.' : '') : 'Scene: ' + scene + '.',
+    comic ? (place ? 'Scene: ' + fill(place) + '.' : '') + (items.length ? (place ? ' ' : '') + 'Also in the scene: ' + fill(also) + '.' : '') : 'Scene: ' + scene + '.',
     'Camera: ' + fill(tone.camera) + '.',
     'Light: ' + tone.light,
     cap(fill(tone.items)) + '.',
