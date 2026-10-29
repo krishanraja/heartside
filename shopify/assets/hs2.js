@@ -2924,8 +2924,10 @@
     inputs.forEach(function (input) {
       var source = input.getAttribute('data-hs-extra'), had = facts().filter(function (f) { return f.source === source; })[0];
       input.value = had ? had.text : '';
-      input.addEventListener('change', function () {
+      var persistWords = function () {
         var typed = input.value.replace(/\s+/g, ' ').trim().slice(0, 80), text = typed ? tidy(typed).slice(0, 80) : '';
+        var existing = facts().filter(function (f) { return f.source === source; })[0];
+        if ((existing ? existing.text : '') === text) return;
         var now = facts().filter(function (f) { return f.source !== source; });
         if (text) now.push({ source: source, text: text });
         state.hs3_art_profile = { version: 1, facts: now };
@@ -2934,7 +2936,9 @@
         invalidateBlanketReview(); artworkChoicesChanged(); journeyCard(); updateBlanketPurchaseStatus();
         if (said) said.textContent = told().join(' · ');
         track('extras_words', { source: source, filled: !!text });
-      });
+      };
+      input.addEventListener('input', persistWords);
+      input.addEventListener('change', persistWords);
     });
     fold(true);
     var change = box.querySelector('[data-hs-extras-change]');
