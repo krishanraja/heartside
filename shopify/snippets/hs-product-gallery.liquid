@@ -39,6 +39,9 @@
         box, so switching between them, or between thumbnails, never changes the page's height. {%- endcomment -%}
       <div class="hs2-product__stage" data-hs2-stage style="--hs2-ratio: {{ s.media_ratio | default: '1' }}">
         <div class="hs2-product__tib" data-hs2-tib-gallery></div>
+        {%- comment -%} the live preview shows Teeinblue's sample dog until the buyer's painting is in it,
+          so it says so too (hs2.js artStage sets data-hs2-sample-dog) {%- endcomment -%}
+        <span class="hs2-product__tag hs2-product__tag--preview" aria-hidden="true">Example</span>
         {%- if s.show_poster -%}
           <div class="hs2-product__poster">{% render 'hs2-poster' %}</div>
         {%- endif -%}
