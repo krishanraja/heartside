@@ -54,7 +54,23 @@ for(const minified of [false,true]) {
     count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'preview_unavailable'},503);})),/does not need another upload/);
     assert.equal(count,12,'the same twelve-request budget');
-    count=0;await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'other'},503);})));assert.equal(count,1,'any other 503 still fails at once');
+    count=0;await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'other'},503);})));assert.equal(count,1,'an unknown 503 still fails at once');
+  });
+  test(mode+': operational registration failures retry the same design while authorization errors fail closed', async()=>{
+    for(const code of ['image_lookup_failed','image_creation_failed','image_readback_failed']) {
+      let count=0;
+      const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async(_,init)=>{
+        assert.deepEqual(JSON.parse(init.body),{customizationId:uuid,variantId:'123'});
+        return ++count===1?response({state:'error',code},503):response(ready());
+      })));
+      assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
+    }
+    for(const [code,status] of [['invalid_proxy_signature',403],['shop_authentication_failed',503],['image_preparation_disabled',503]]) {
+      let count=0;
+      await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code},status);})));assert.equal(count,1);
+    }
+    let count=0;
+    await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'image_readback_failed'},503);})));assert.equal(count,12);
   });
   test(mode+': slow saved artwork reaches the cart without another buyer tap',async()=>{
     let count=0;
