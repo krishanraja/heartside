@@ -182,7 +182,7 @@ describe('handle-check against a stand-in store', {concurrency: 4}, () => {
   });
 
   test('a draft handle that no longer redirects (404) is broken; one that 302s is too', async () => {
-    const [from, target] = Object.entries(REDIRECTS)[0];
+    const from = DRAFT, target = REDIRECTS[DRAFT];
     const gone = await checkOn(store({[from]: html('Not found', 404)}));
     assert.equal(gone.code, 1, gone.out);
     assert.match(gone.out, new RegExp(`FAIL ${from}: answers HTTP 404, expected 301 to ${target}`));
@@ -291,4 +291,12 @@ test('variantName(): the gift and the title Shopify gives, or the place in the l
   assert.equal(variantName(MUG, {id: 47900000004, options: ['White', '11 oz']}, 0, 5), 'mug "White / 11 oz"');
   assert.equal(variantName(BLANKET, {id: 47900000005, title: 'Default Title', options: ['Default Title']}, 0, 1), 'blanket variant 1 of 1');
   assert.equal(variantName(BLANKET, {id: 47900000005}, 0, 1), 'blanket variant 1 of 1');
+});
+
+test('verified legacy aliases allow 302 only to their exact clean destinations', async () => {
+  const from = '/products/the-framed-print';
+  const good = await checkOn(store({[from]: to(REDIRECTS[from], 302)}));
+  assert.equal(good.code, 0, good.out);
+  const wrong = await checkOn(store({[from]: to(MUG.path, 302)}));
+  assert.equal(wrong.code, 1, wrong.out);
 });
