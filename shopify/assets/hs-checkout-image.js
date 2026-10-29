@@ -39,11 +39,11 @@
       var request = Promise.resolve().then(function () {
         return fetcher(requestUrl.href, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', cache: 'no-store', signal: controller ? controller.signal : undefined, body: JSON.stringify({customizationId: id, variantId: variant})});
       }).then(function (response) {
-        if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) throw fail();
+        if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) { if (root.console) root.console.warn('Checkout registration HTTP status', response ? response.status : 0); throw fail(); }
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
       var timeout = new Promise(function (_, reject) {
-        timer = setTimeout(function () { if (controller) controller.abort(); reject(fail()); }, Math.min(20000, Math.max(1, deadline - Date.now())));
+        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); reject(fail()); }, Math.min(20000, Math.max(1, deadline - Date.now())));
       });
       return Promise.race([request, timeout]).then(function (response) {
           clearTimeout(timer);
@@ -53,7 +53,7 @@
           // it). That is a wait inside the same budget: registration is asked again, nothing uploads.
           var wait = response.status === 202 && data.state === 'pending' && (data.retryAfterSeconds === 3 || data.retryAfterSeconds === 5) ? data.retryAfterSeconds
             : response.status === 503 && data.code === 'preview_unavailable' ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
-          if (response.status === 503 && !wait) throw fail();
+          if (response.status === 503 && !wait) { if (root.console) root.console.warn('Checkout registration rejected', /^[a-z_]{1,48}$/.test(data.code || '') ? data.code : 'unknown'); throw fail(); }
           if (wait) {
             if (Date.now() + wait * 1000 >= deadline) throw fail();
             if (typeof options.onPending === 'function') { try { options.onPending(attempt + 1); } catch (e) { /* words only */ } }
