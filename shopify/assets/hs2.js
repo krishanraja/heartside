@@ -50,7 +50,9 @@
     if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
+      // Teeinblue's Artwork tone option has three values; Over the top selects Hilarious there and its own
+      // direction travels in art_tone_direction (PROMPT-SPEC-2026-10-28.md, 29 Oct)
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'hilarious' : choice.tone].label;
     }
     // 28 Oct: Teeinblue's prompt reads only the chosen medium, mood and energy, in hidden fields
     // (tools/print-art/native-candidate.mjs nativeFieldValues writes the same text)

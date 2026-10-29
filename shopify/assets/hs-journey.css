@@ -12,7 +12,22 @@
 .hsj [hidden] { display: none !important; }
 .hsj button { font-family: inherit; color: inherit; }
 html.hsj-routed .hsj-hook { display: none; }
+/* the questions run like an app: no store header or footer, the back arrow and the progress line
+   instead, so each screen is the whole phone (Krish, 29 Oct). The hook keeps the header and carries
+   its own legal line, so the footer goes there too. */
+html.hsj-focus .shopify-section-group-header-group, html.hsj-focus .header-group { display: none !important; }
+html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group { display: none !important; }
 .hsj__screen { max-width: 480px; margin: 0 auto; padding: 8px 16px 96px; }
+/* a question screen fills the phone and never scrolls: progress, question, taps, then the button
+   at the bottom in thumb reach (Krish, 29 Oct: "It must be a no-scroll experience") */
+.hsj__screen--step { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; padding-bottom: 0; }
+.hsj__screen--step .hsj-body { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+.hsj__screen--step .hsj-dock { margin-top: auto; position: sticky; bottom: 0; }
+.hsj-progress { height: 4px; border-radius: 999px; background: var(--line); margin: 4px 0 10px; overflow: hidden; }
+.hsj-progress span { display: block; height: 100%; background: var(--stamp); transition: width .25s; }
+.hsj-pills--big .hsj-pill { flex: 1; justify-content: center; text-align: center; min-height: 64px; font-size: 18px; border-radius: 16px; }
+.hsj-search { margin-top: 4px; }
+.hsj-brief { font-family: var(--serif); font-size: 15px; line-height: 1.35; color: var(--body); margin: 0; }
 .hsj h1, .hsj h2 { font-family: var(--serif); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
 .hsj p { text-wrap: pretty; }
 .hsj-eyebrow, .hsj-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chestnut); margin: 0 0 6px; }
@@ -41,7 +56,7 @@ html.hsj-routed .hsj-hook { display: none; }
 .hsj-dock { position: sticky; bottom: 0; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 246, 241, 0), var(--cream) 30%); margin-top: 18px; z-index: 2; }
 .hsj-hook .hsj-dock { position: static; background: none; }
 .hsj-link { appearance: none; background: none; border: 0; padding: 10px 0; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.hsj-head { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 16px; }
+.hsj-head { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; }
 .hsj-back { flex: none; appearance: none; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; }
 
 /* questions: pills only, one group after another */
@@ -59,21 +74,21 @@ html.hsj-routed .hsj-hook { display: none; }
 
 /* the profile: the words in a box that never changes size, the tone beside them */
 .hsj-card { background: var(--paper); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 0 0 1px #EFE6DD; }
-.hsj-tone { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #F3EEE8; border-radius: 999px; padding: 4px; margin: 0 0 12px; }
-.hsj-seg { appearance: none; border: 0; background: transparent; border-radius: 999px; min-height: 44px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.hsj-tone { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; background: #F3EEE8; border-radius: 16px; padding: 4px; margin: 0; }
+.hsj-seg { appearance: none; border: 0; background: transparent; border-radius: 12px; min-height: 48px; padding: 4px 2px; font-size: 13.5px; line-height: 1.1; font-weight: 600; cursor: pointer; }
 .hsj-seg.is-on { background: var(--ink); color: var(--cream); }
-.hsj-note { position: relative; min-height: 400px; }
-@media (min-width: 420px) { .hsj-note { min-height: 340px; } }
+.hsj-note { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--paper); border-radius: 20px; padding: 16px; box-shadow: 0 0 0 1px #EFE6DD; }
 .hsj-note.is-busy > :not(.hsj-writing) { opacity: .35; transition: opacity .2s; }
 .hsj-voice { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--body); margin: 0 0 10px; }
 .hsj-lines { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
 .hsj-lines li { font-family: var(--mono); font-size: 15px; line-height: 1.4; color: var(--ink); padding-left: 14px; position: relative; }
 .hsj-lines li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: var(--stamp); }
-.hsj-gift-line { border-top: 1.5px dashed var(--line); padding-top: 10px; }
+.hsj-gift-line { border-bottom: 1.5px dashed var(--line); padding-bottom: 10px; margin-bottom: 12px; }
 .hsj-print { font-family: var(--mono); font-size: 18px; line-height: 1.35; margin: 2px 0 0; color: var(--ink); }
 .hsj-sign { font-family: var(--serif); font-style: italic; font-size: 17px; margin: 4px 0 0; }
 .hsj-writing { position: absolute; inset: auto 0 0 0; text-align: center; font-size: 14px; color: var(--ink); margin: 0; }
 .hsj-styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hsj-styles .hsj-style__art { aspect-ratio: 4 / 5; }
 .hsj-style { appearance: none; border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px; cursor: pointer; text-align: center; box-shadow: 0 0 0 1px var(--line); }
 .hsj-style.is-on { border-color: var(--ink); }
 .hsj-style__art { position: relative; display: block; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden; background: #F3EEE8; }
@@ -93,5 +108,14 @@ html.hsj-routed .hsj-hook { display: none; }
 .hsj-photo-note:empty { display: none; }
 .hsj-privacy { display: none; }
 
+/* small phones: the hook keeps the example and the button above the fold, the note tightens */
+@media (max-height: 700px) {
+  .hsj-h1 { font-size: 32px; margin-bottom: 10px; }
+  .hsj-example img { aspect-ratio: 16 / 9; }
+  .hsj-hook .hsj-lead { display: none; }
+  .hsj-lines li { font-size: 13.5px; }
+  .hsj-print { font-size: 16px; }
+  .hsj-styles .hsj-style__art { aspect-ratio: 1 / 1; }
+}
 @media (prefers-reduced-motion: reduce) { .hsj-group { animation: none; } .hsj-pill:active { transform: none; } }
 @media (min-width: 900px) { .hsj__screen { padding-top: 24px; } }

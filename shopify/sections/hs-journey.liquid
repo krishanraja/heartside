@@ -15,9 +15,10 @@
 {%- if section.settings.ai_on and ai_host contains 'https://' -%}<link rel="preconnect" href="{{ ai_host }}" crossorigin>{%- endif -%}
 {{ 'hs-journey.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'hs-brief.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
-<script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hsj-routed');setTimeout(function(){document.documentElement.classList.remove('hsj-routed')},3500);}</script>
+<script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hsj-routed','hsj-focus');setTimeout(function(){document.documentElement.classList.remove('hsj-routed')},3500);}</script>
 {%- comment -%} The mug's colors in the brand book's order, only those the product sells. {%- endcomment -%}
 {%- assign mug_hex = '#050505,#191A4D,#216251,#D9292C,#E49EAA' | split: ',' -%}
 {%- assign mug_order = 'Black,Dark Blue,Dark Green,Red,Pink' | split: ',' -%}
@@ -86,7 +87,7 @@
     </figure>
     <p class="hsj-lead">{{ s.intro }}</p>
     <div class="hsj-dock">
-      <a class="hsj-btn" href="?step=about" data-hsj-go="about">{{ s.start }}</a>
+      <a class="hsj-btn" href="?step=name" data-hsj-go="name">{{ s.start }}</a>
       <p class="hsj-small">{{ s.time_line }}</p>
       <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
     </div>
