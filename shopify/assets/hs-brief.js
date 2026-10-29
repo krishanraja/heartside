@@ -34,6 +34,23 @@
   function article(w) { return /^[aeiou]/i.test(w) ? 'an ' : 'a '; }
   function fill(t, p) { return t.replace(/\{pos\}/g, p.pos).replace(/\{obj\}/g, p.obj); }
 
+  // how each toy is held, in the words the buyer reads (in his mouth, at her paws, hugged close); the
+  // painter's brief keeps the same words (recipes v11, 30 Oct)
+  function heldToys(o) {
+    var p = PRON[o.pronoun] || PRON.they, comic = o.tone === 'hilarious' || o.tone === 'over_the_top', asleep = o.together === 'naps';
+    var toys = (o.toys || []).filter(function (t) { return TOYS[t]; }).slice(0, 2);
+    // the joke toy leads a comic portrait (Krish's example: a hilarious Border Collie with a tennis ball and a big stick)
+    if (comic) toys.sort(function (a, b) { return (TOYS[b].joke ? 1 : 0) - (TOYS[a].joke ? 1 : 0); });
+    return toys.map(function (t, i) {
+      var v = TOYS[t];
+      if (asleep) return fill(i === 0 ? v.sleep : v.paws, p);
+      if (i === 0 && comic && v.joke) return fill(v.joke, p);
+      // the first toy is held, the second waits at the paws
+      return fill(i === 0 ? v.hold : v.paws, p);
+    });
+  }
+  function toyWords(o) { return heldToys(o).join(' and '); }
+
   function brief(o) {
     var tone = LEAD[o.tone] ? o.tone : 'warm';
     var p = PRON[o.pronoun] || PRON.they;
@@ -48,24 +65,15 @@
     var where = o.together === 'walk' || o.together === 'car' ? '' : (SPOT[o.spot] || '');
     var scene = where && doing ? where + (/^for /.test(doing) ? ' ' : ', ') + doing : (where || doing);
     if (scene) { if (wear) parts.push(scene); else parts[0] += ' ' + scene; }
-    var toys = (o.toys || []).filter(function (t) { return TOYS[t]; }).slice(0, 2);
-    // the joke toy leads a comic portrait (Krish's example: a hilarious Border Collie with a tennis ball and a big stick)
-    if (comic) toys.sort(function (a, b) { return (TOYS[b].joke ? 1 : 0) - (TOYS[a].joke ? 1 : 0); });
+    var held = heldToys(o);
     var asleep = o.together === 'naps';
-    var held = toys.map(function (t, i) {
-      var v = TOYS[t];
-      if (asleep) return fill(i === 0 ? v.sleep : v.paws, p);
-      if (i === 0 && comic && v.joke) return fill(v.joke, p);
-      // the first toy is held, the second waits at the paws
-      return fill(i === 0 ? v.hold : v.paws, p);
-    });
     if (held.length) { if (parts.length === 1 && !wear) parts[0] += ' with ' + held.join(' and '); else parts.push('with ' + held.join(' and ')); }
     var mood = tone === 'over_the_top' ? (ROYAL[o.together] || 'royally unimpressed') : tone === 'hilarious' ? (JOKE[o.together] || 'looking extremely important') : asleep ? ASLEEP[tone] : ((MOOD[tone] || MOOD.warm)[o.meaning] || 'eyes bright');
     parts.push(mood);
     return parts.join(', ') + '.';
   }
 
-  var api = { brief: brief, TOYS: Object.keys(TOYS), WEARS: Object.keys(WEARS) };
+  var api = { brief: brief, toyWords: toyWords, TOYS: Object.keys(TOYS), WEARS: Object.keys(WEARS) };
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.HSBrief = api;
 })(typeof window !== 'undefined' ? window : this);
