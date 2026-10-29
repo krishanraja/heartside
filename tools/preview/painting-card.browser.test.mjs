@@ -35,7 +35,7 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
   });
   try {
     await page.goto('http://localhost/');
-    const code = `var photoURL='', error=false, keepTibPhoto={}; function productId(){return 7;} function answer(k){return k==='dog'?'Pip':'';} function blanketNativeError(){return error;}
+    const code = `var photoURL='', error=false, keepTibPhoto={}, state={}; function productId(){return 7;} function answer(k){return k==='dog'?'Pip':'';} function blanketNativeError(){return error;}
       function blanketArtPreview(){return false;} function cityArtSaved(){return false;} function cityArtSource(){return '';} function blanketUploadPending(){return true;} function nativeBlanketInputsReady(){return true;}` + ['previewHasArt', 'artLines', 'artStage', 'photoHeld'].map(section).join('\n');
     await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
     // the status code shows the recovery panel whenever an upload is unresolved; artStage decides when it may be seen
