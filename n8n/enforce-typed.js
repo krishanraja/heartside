@@ -132,7 +132,9 @@ function staccato(s) {
   return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
 }
 // Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
-const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
+// 29 Oct: only the meaning line prints now (mug and portrait); the others show on screen and may run to 80, so a
+// joke can spell out its punchline (Krish's own fix ran 77: "...because you clearly need help with your throwing.")
+const MAX_LINE = { home: 80, home_follow: 80, spot: 80, together: 80, meaning: 44 };
 // hay grounds names and numbers; answerHay (the owner's answers only) grounds every prop (28 Oct)
 function okLine(s, hay, max, answerHay, names) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay, names); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
