@@ -45,6 +45,7 @@
       "ai": {{ s.ai_on | json }},
       "corePurchase": {{ s.core_purchase | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },
+      "hero": {{ 'hs-example-pug-hilarious-mug.webp' | asset_url | json }},
       "examples": {
         "screenprint": {{ 'hs-example-pug-warm-portrait.webp' | asset_url | json }},
         "collage": {{ 'hs-example-golden-sentimental-portrait.webp' | asset_url | json }}
@@ -87,7 +88,7 @@
     </figure>
     <p class="hsj-lead">{{ s.intro }}</p>
     <div class="hsj-dock">
-      <a class="hsj-btn" href="?step=name" data-hsj-go="name">{{ s.start }}</a>
+      <a class="hsj-btn" href="?step=name" data-hsj-go="name"><span>{{ s.start }}</span><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h13M13 6.5 18.5 12 13 17.5"/></svg></a>
       <p class="hsj-small">{{ s.time_line }}</p>
       <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
     </div>
@@ -100,7 +101,7 @@
       {{ s.legal_note }}
     </p>
   </section>
-  <div data-hsj-app></div>
+  <div class="hsj-app" data-hsj-app></div>
   <noscript><p class="hsj-small">This page needs JavaScript. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
   <p class="hsj-privacy" data-hsj-privacy hidden>{{ s.privacy }}</p>
 </div>

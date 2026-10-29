@@ -21,10 +21,29 @@
   window.__hsj = true;
 
   var KEY = 'hs-journey', HS2 = 'hs2-review';
-  var NAME_MAX = 14, MAX_CALLS = 8, COMPOSE_MS = 11000;
+  var NAME_MAX = 14, MAX_CALLS = 14, COMPOSE_MS = 11000;
   var COMPOSE_VERSION = 'journey-v2';
   var TONES = ['sentimental', 'warm', 'hilarious', 'over_the_top'];
   var TONE_LABEL = { sentimental: 'Sentimental', warm: 'Warm', hilarious: 'Hilarious', over_the_top: 'Over the top' };
+  /* one line-icon family (24 px grid, 1.75 stroke, round ends), drawn in currentColor (Krish, 29 Oct:
+     "premium iconography", the same variety wherever it helps) */
+  function icon(paths, cls) { return '<svg class="hsj-ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + paths + '</svg>'; }
+  var ICON = {
+    sentimental: icon('<path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1Z"/>'),
+    warm: icon('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
+    hilarious: icon('<circle cx="12" cy="12" r="9"/><path d="M7.5 13.5h9a4.5 4.5 0 0 1-9 0Z"/><path d="M8 9.5c.6-.8 1.6-.8 2.2 0M13.8 9.5c.6-.8 1.6-.8 2.2 0"/>'),
+    over_the_top: icon('<path d="M3.5 8.5 7.5 12 12 5.5 16.5 12l4-3.5-1.8 9.5H5.3Z"/><path d="M5.5 20.5h13"/>'),
+    back: icon('<path d="M14.5 5.5 8 12l6.5 6.5"/>'),
+    next: icon('<path d="M5 12h13M13 6.5 18.5 12 13 17.5"/>'),
+    camera: icon('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.6-2.2h5.4L16.3 7h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5Z"/><circle cx="12" cy="12.8" r="3.4"/>'),
+    check: icon('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+    redo: icon('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/>'),
+    image: icon('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="m3.5 16 5-5 4 4 3-3 5 5"/>'),
+    face: icon('<circle cx="12" cy="12" r="8.5"/><path d="M9 10.5h.01M15 10.5h.01M9 15c1.6 1.3 4.4 1.3 6 0"/>'),
+    light: icon('<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3Z"/>'),
+    one: icon('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>'),
+    brush: icon('<path d="M14.5 4.5 19.5 9.5 11 18l-5-5Z"/><path d="M6 13c-2 0-3 1.6-3 3.5 0 1.4-.6 2.6-1.5 3 2.6.6 6.5-.3 6.5-3.5"/>')
+  };
   // the questions, one screen each, then the words, the look and the photo
   var ASK = ['name', 'breed', 'pro', 'person', 'home', 'spot', 'together', 'meaning', 'toy', 'wears'];
   var STEPS = ASK.concat(['words', 'look', 'photo']);
@@ -95,7 +114,7 @@
   function names() {
     var dog = nameCase(S.dog) || 'Your dog', self = S.rel === 'self', person = nameCase(S.person);
     return { dog: dog, possessive: S.dog ? possessive(dog) : 'Their', them: self ? 'you' : person || 'them', person: self ? '' : person, self: self,
-      she: S.pro === 'he' ? 'he' : S.pro === 'she' ? 'she' : 'they' };
+      she: S.pro === 'he' ? 'he' : S.pro === 'she' ? 'she' : 'they', his: S.pro === 'he' ? 'his' : S.pro === 'she' ? 'her' : 'their' };
   }
   // the toys as the painter and the writer read them: "a tennis ball and a big stick"
   function toyText() { return (S.toys || []).slice(0, MAX_TOYS).join(' and '); }
@@ -227,11 +246,17 @@
       toys: (window.HSBrief && window.HSBrief.toyWords({ tone: S.tone, pronoun: n.she, together: S.together, toys: S.toys })) || toyText() || '', accessory: S.accessory || '', noToy: !!S.toysDone && !toyText() };
     
     st.hs_ship_to = n.self ? 'Me (the buyer)' : n.person;
-    st.hs_journey = { t: Date.now(), gift: gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0, voice: (note() || {}).voice || '', brief: brief(), gifts: journeyGifts() };
+    st.hs_journey = { t: Date.now(), gift: gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0, voice: (note() || {}).voice || '', brief: brief(), gifts: journeyGifts(), notes: writtenNotes() };
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
     try { if (window.HSArtworkChoices) window.HSArtworkChoices.select({ style: S.style, tone: S.tone }); } catch (e) { /* the bridge holds them too */ }
   }
   // the gifts page shows the painting on every gift and queues the extras (hs-journey-choose.js)
+  // every tone the writer already wrote, so the gift page's one free repaint can change the words too
+  function writtenNotes() {
+    var out = {};
+    TONES.forEach(function (t) { var c = S.notes && S.notes[t]; if (c && c.lines) out[t] = { home: c.lines.home, spot: c.lines.spot, together: c.lines.together, meaning: c.lines.meaning }; });
+    return out;
+  }
   function journeyGifts() {
     var out = {};
     ['mug', 'blanket', 'print'].forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) out[g] = { url: giftURL(g), handle: x.handle, price: x.price }; });
@@ -247,45 +272,62 @@
   }
 
   /* ------------------------------------------------------------------ views
-     Every screen is one job and fits a phone without scrolling: the back arrow and a progress
-     line, the question, the taps, and the one button in thumb reach (Krish, 29 Oct). */
-  function pill(group, value, label, on) {
-    return '<button type="button" class="hsj-pill' + (on ? ' is-on' : '') + '" aria-pressed="' + (on ? 'true' : 'false') + '" data-hsj-pick="' + esc(group) + '" data-v="' + esc(value) + '">' + esc(label) + '</button>';
-  }
-  function head(step, title, sub) {
+     One template for every step (Krish approved the mock, 29 Oct: "much better"): the app bar
+     (Back, "Step 3 of 13") and the progress line, the headline and one line of support at the
+     same place on every screen, one component per job (rows, chips, a text field, cards), and the
+     one button in the dock at the bottom. Nothing moves between screens but the content. */
+  var BACK = '<button type="button" class="hsj-icon-btn" data-hsj-back aria-label="Back">' + ICON.back + '</button>';
+  function screen(step, title, sub, body, dockHtml) {
     var i = STEPS.indexOf(step), pct = Math.round((i + 1) / STEPS.length * 100);
-    return '<div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
-      '<header class="hsj-head"><button type="button" class="hsj-back" data-hsj-back aria-label="Back">←</button><div><h2 class="hsj-h2" id="hsj-q">' + title + '</h2>' + (sub ? '<p class="hsj-small">' + sub + '</p>' : '') + '</div></header>';
+    return '<header class="hsj-bar">' + BACK + '<p class="hsj-bar__step">Step ' + (i + 1) + ' of ' + STEPS.length + '</p></header>' +
+      '<div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
+      '<main class="hsj-content"><div class="hsj-heading"><h2 class="hsj-headline" id="hsj-q">' + title + '</h2>' + (sub ? '<p class="hsj-support">' + sub + '</p>' : '') + '</div>' +
+      '<div class="hsj-body">' + body + '</div></main><footer class="hsj-dock">' + dockHtml + '</footer>';
   }
-  function dock(label, next, on) { return '<div class="hsj-dock"><button type="button" class="hsj-btn" data-hsj-next="' + next + '"' + (on ? '' : ' disabled') + '>' + label + '</button></div>'; }
+  function primary(label, next, on) { return '<button type="button" class="hsj-btn" data-hsj-next="' + next + '"' + (on ? '' : ' disabled') + '><span>' + label + '</span>' + ICON.next + '</button>'; }
+  // one choice of a few: a full-width row with a radio; a tap answers and moves on
+  function row(group, value, label, on) {
+    return '<button type="button" class="hsj-row' + (on ? ' is-on' : '') + '" aria-pressed="' + (on ? 'true' : 'false') + '" data-hsj-pick="' + esc(group) + '" data-v="' + esc(value) + '"><span>' + esc(label) + '</span><span class="hsj-radio" aria-hidden="true"></span></button>';
+  }
+  // one of many, or up to two: a chip, with a check when chosen
+  function chip(group, value, label, on) {
+    return '<button type="button" class="hsj-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + (on ? 'true' : 'false') + '" data-hsj-pick="' + esc(group) + '" data-v="' + esc(value) + '">' + (on ? ICON.check : '') + '<span>' + esc(label) + '</span></button>';
+  }
+  var pill = chip;
+  function field(attr, label, value, placeholder, id) {
+    return '<label class="hsj-field" for="' + id + '"><span class="hsj-field__label">' + label + '</span><input id="' + id + '" class="hsj-input" ' + attr + ' type="text" inputmode="text" enterkeyhint="next" autocomplete="off" autocapitalize="words" maxlength="40" value="' + esc(value) + '" placeholder="' + placeholder + '"></label>';
+  }
   function nextOf(step) { return STEPS[STEPS.indexOf(step) + 1] || ''; }
   function viewName() {
-    return head('name', 'What is your dog called?', 'It signs the gift: "Love, ' + esc(nameCase(S.dog) || 'Mowgli') + '".') +
-      '<div class="hsj-body"><input id="hsj-name" class="hsj-input" data-hsj-name type="text" inputmode="text" enterkeyhint="next" autocomplete="off" autocapitalize="words" maxlength="40" value="' + esc(S.dog) + '" placeholder="Mowgli" aria-labelledby="hsj-q">' +
-      '<p class="hsj-small hsj-hint" data-hsj-name-hint aria-live="polite"></p></div>' + dock('Next', 'breed', answered('name'));
+    return screen('name', 'What is your dog called?', 'It signs the gift: "Love, ' + esc(nameCase(S.dog) || 'Mowgli') + '".',
+      field('data-hsj-name', "Dog's name", S.dog, 'Mowgli', 'hsj-name') + '<p class="hsj-hint" data-hsj-name-hint aria-live="polite"></p>', primary('Next', 'breed', answered('name')));
   }
   function viewBreed() {
     var n = names(), other = S.breed && BREEDS.indexOf(S.breed) === -1 && S.breed !== 'Mixed';
-    return head('breed', 'What breed is ' + esc(n.dog) + '?') + '<div class="hsj-body"><div class="hsj-pills" role="group" aria-labelledby="hsj-q">' +
-      BREEDS.map(function (b) { return pill('breed', b, b, S.breed === b); }).join('') + pill('breed', 'Mixed', 'Mixed or not sure', S.breed === 'Mixed') + pill('breed', '__other', other ? S.breed : 'Another breed', other || S.breedOther) + '</div>' +
-      (S.breedOther ? '<input class="hsj-input hsj-search" data-hsj-breed-search type="search" autocomplete="off" placeholder="Start typing the breed" aria-label="Search breeds"><div class="hsj-pills" data-hsj-breed-list></div>' : '') + '</div>';
+    return screen('breed', 'What breed is ' + esc(n.dog) + '?', 'We paint the breed you pick.', '<div class="hsj-chips" role="group" aria-labelledby="hsj-q">' +
+      BREEDS.map(function (b) { return chip('breed', b, b, S.breed === b); }).join('') + chip('breed', 'Mixed', 'Mixed or not sure', S.breed === 'Mixed') + chip('breed', '__other', other ? S.breed : 'Another breed', other || S.breedOther) + '</div>' +
+      (S.breedOther ? '<input class="hsj-input hsj-search" data-hsj-breed-search type="search" autocomplete="off" placeholder="Start typing the breed" aria-label="Search breeds"><div class="hsj-chips" data-hsj-breed-list></div>' : ''),
+      primary('Next', 'pro', answered('breed')));
   }
   function viewPro() {
     var n = names();
-    return head('pro', esc(n.dog) + ' is a…') + '<div class="hsj-body"><div class="hsj-pills hsj-pills--big" role="group" aria-labelledby="hsj-q">' + pill('pro', 'he', 'Boy', S.pro === 'he') + pill('pro', 'she', 'Girl', S.pro === 'she') + '</div></div>';
+    return screen('pro', esc(n.dog) + ' is a…', 'So the note says he or she.', '<div class="hsj-rows" role="group" aria-labelledby="hsj-q">' + row('pro', 'he', 'Boy', S.pro === 'he') + row('pro', 'she', 'Girl', S.pro === 'she') + '</div>',
+      primary('Next', 'person', answered('pro')));
   }
   function viewPerson() {
     var n = names();
-    return head('person', 'Who is the gift for?', 'Their first name, as ' + esc(n.dog) + ' would say it.') +
-      '<div class="hsj-body"><input id="hsj-person" class="hsj-input" data-hsj-person type="text" inputmode="text" enterkeyhint="next" autocomplete="off" autocapitalize="words" maxlength="40" value="' + esc(S.rel === 'self' ? '' : S.person) + '" placeholder="Sam" aria-labelledby="hsj-q">' +
-      '<div class="hsj-pills">' + pill('self', 'self', "It's for me", S.rel === 'self') + '</div></div>' + dock('Next', 'home', answered('person') && S.rel !== 'self');
+    return screen('person', 'Who is the gift for?', 'Their first name, as ' + esc(n.dog) + ' would say it.',
+      field('data-hsj-person', 'Their name', S.rel === 'self' ? '' : S.person, 'Sam', 'hsj-person') + '<div class="hsj-chips">' + chip('self', 'self', "It's for me", S.rel === 'self') + '</div>',
+      primary('Next', 'home', answered('person') && S.rel !== 'self'));
   }
   function viewAsk(step) {
     var g = groups(names()).filter(function (x) { return x.id === step; })[0];
     var multi = step === 'toy', on = function (v) { return multi ? (S.toys || []).indexOf(v) !== -1 : S[step] === v && S[step] !== null; };
-    return head(step, esc(g.q), g.sub || '') + '<div class="hsj-body"><div class="hsj-pills" role="group" aria-labelledby="hsj-q">' +
-      g.opts.map(function (o) { return pill(step, o[0], o[1], on(o[0])); }).join('') + (multi ? pill('toy', '', 'None', S.toysDone && !(S.toys || []).length) : '') + '</div></div>' +
-      (multi ? dock((S.toys || []).length ? 'Next' : 'Skip', 'wears', true) : '');
+    var sub = g.sub || (step === 'wears' ? 'We paint it in, plain and simple.' : 'Pick the one that sounds most like ' + esc(names().dog) + '.');
+    if (multi) return screen(step, esc(g.q), sub, '<div class="hsj-chips" role="group" aria-labelledby="hsj-q">' + g.opts.map(function (o) { return chip(step, o[0], o[1], on(o[0])); }).join('') + chip('toy', '', 'None', S.toysDone && !(S.toys || []).length) + '</div>',
+      primary((S.toys || []).length ? 'Next' : 'Skip', 'wears', true));
+    return screen(step, esc(g.q), sub, '<div class="hsj-rows" role="group" aria-labelledby="hsj-q">' + g.opts.map(function (o) { return row(step, o[0], o[1], on(o[0])); }).join('') + '</div>',
+      primary('Next', nextOf(step), answered(step)));
   }
   function styles() {
     var R = window.HSArtworkEngine && window.HSArtworkEngine.recipes && window.HSArtworkEngine.recipes.styles;
@@ -296,10 +338,11 @@
   }
   function viewWords() {
     var n = names();
-    return head('words', 'In ' + esc(n.possessive) + ' words', 'Slide to change how ' + esc(n.dog) + ' sounds.') +
-      '<div class="hsj-body"><div class="hsj-tone" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
-        return '<button type="button" class="hsj-seg' + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '">' + TONE_LABEL[t] + '</button>';
-      }).join('') + '</div><div class="hsj-note" data-hsj-note aria-live="polite"></div></div>' + dock('Now the look', 'look', true);
+    // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
+    return screen('words', "Now let's capture " + esc(n.possessive) + ' vibe.', 'Pick how ' + n.she + (n.she === 'they' ? ' sound' : ' sounds') + '. We paint from this.',
+      '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
+        return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
+      }).join('') + '</div>', primary('Now ' + n.his + ' look', 'look', true));
   }
   // the one-sentence brief the painter's moment follows (hs-brief.js), shown as what we'll paint
   function brief() {
@@ -308,35 +351,42 @@
   }
   function viewLook() {
     var n = names();
-    return head('look', 'How should we paint ' + esc(n.dog) + '?') + '<div class="hsj-body"><div class="hsj-styles">' + styles().map(function (s) {
-      var src = cfg.examples && cfg.examples[s.id];
-      return '<button type="button" class="hsj-style' + (S.style === s.id ? ' is-on' : '') + '" aria-pressed="' + (S.style === s.id) + '" data-hsj-style="' + esc(s.id) + '">' +
-        (src ? '<span class="hsj-style__art"><img src="' + esc(src) + '" alt="" loading="lazy" width="300" height="450"><span class="hsj-tag">Example</span></span>' : '<span class="hsj-style__art hsj-style__art--plain hsj-style--' + esc(s.id) + '" aria-hidden="true"></span>') +
+    return screen('look', 'What style of design do you want?', 'Every style is painted from your photo.', '<div class="hsj-styles">' + styles().map(function (s) {
+      var src = cfg.examples && cfg.examples[s.id], on = S.style === s.id;
+      return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="300" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
-    }).join('') + '</div><p class="hsj-brief" data-hsj-brief>' + esc(brief().replace(/^[\w-]+ portrait: /, 'We paint ')) + '</p></div>' + dock('Paint ' + esc(n.dog), 'photo', true);
+    }).join('') + '</div><p class="hsj-brief" data-hsj-brief>' + esc(brief().replace(/^[\w-]+ portrait: /, 'We paint ')) + '</p>', primary('Upload your best pic of ' + esc(n.dog), 'photo', true));
   }
-  // the note box keeps one size whatever is in it, so the tone never moves the page (29 Oct)
+  // the note keeps one size whatever is in it, so a tone never moves the page
   function paintNote() {
     var box = app && app.querySelector('[data-hsj-note]');
     if (!box) return;
-    var n = names(), c = note(), l = lines(), busy = !!(S.request && S.request.tone === S.tone);
+    var n = names(), l = lines(), busy = !!(S.request && S.request.tone === S.tone);
     box.classList.toggle('is-busy', busy);
-    box.innerHTML =
-      '<div class="hsj-gift-line"><p class="hsj-print">' + esc(l.meaning) + '</p><p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>' +
-      '<ul class="hsj-lines">' + ['home', 'spot', 'together'].map(function (k) { return '<li>' + esc(l[k]) + '</li>'; }).join('') + '</ul>' +
-      (busy ? '<p class="hsj-writing" role="status">Writing it ' + TONE_LABEL[S.tone].toLowerCase() + '…</p>' : '');
-    // the box fills the screen above the button at one size (hs-journey.css), so a tone never moves the page
+    box.innerHTML = '<div class="hsj-letter">' + ['home', 'spot', 'together', 'meaning'].map(function (k) { return '<p>' + esc(l[k]) + '</p>'; }).join('') +
+      '<p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>' +
+      '<div class="hsj-note__foot"><span class="hsj-note__ask" data-hsj-note-ask>' + (busy ? 'Writing it ' + TONE_LABEL[S.tone].toLowerCase() + '…' : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
+      '<button type="button" class="hsj-text-btn" data-hsj-rewrite' + (busy ? ' disabled' : '') + '>' + ICON.redo + '<span>Write it again</span></button></div>';
+  }
+  // "Write it again" as often as they like (Krish, 29 Oct): the same tone, a fresh draft; past the
+  // hour's limit it says so kindly and keeps the drafts they have
+  function rewriteNote() {
+    if (!canCall()) { rewriteNote.said = "That's every draft we can write this hour. Pick the one that sounds most like " + names().dog + '.'; paintNote(); return; }
+    rewriteNote.said = '';
+    if (S.notes) delete S.notes[S.tone];
+    save(); compose(S.tone);
   }
   function viewPhoto() {
     var n = names(), gift = bestGift();
-    return head('photo', 'A photo of ' + esc(n.dog), 'One clear photo: ' + esc(n.possessive) + ' face, good light, just ' + esc(n.dog) + '.') +
-      '<div class="hsj-body"><label class="hsj-drop" data-hsj-drop>' +
-      '<input type="file" accept="image/*" class="hsj-file" data-hsj-file>' +
-      '<span class="hsj-drop__img" data-hsj-preview>' + (photoURL ? '<img src="' + esc(photoURL) + '" alt="Your photo">' : '<span class="hsj-drop__plus" aria-hidden="true">+</span>') + '</span>' +
-      '<span class="hsj-drop__text">' + (photoURL ? 'Choose a different photo' : 'Choose or take a photo') + '</span></label>' +
-      '<p class="hsj-small hsj-photo-note" data-hsj-photo-note role="status"></p>' +
-      '<button type="button" class="hsj-link" data-hsj-override hidden>It\'s ' + esc(n.dog) + '. Use this photo.</button>' +
-      '<p class="hsj-small">We paint ' + esc(n.dog) + ' on the ' + GIFT_NAME[gift] + ' first, then show it on every gift. The photo stays on your phone until then.</p></div>';
+    return screen('photo', 'Give us ' + n.his + ' best pic to paint from', 'We paint ' + esc(n.dog) + ' on the ' + GIFT_NAME[gift] + ' first, then show it on every gift.',
+      '<label class="hsj-drop" data-hsj-drop>' + '<input type="file" accept="image/*" class="hsj-file" data-hsj-file>' +
+      '<span class="hsj-drop__img" data-hsj-preview>' + (photoURL ? '<img src="' + esc(photoURL) + '" alt="Your photo">' : '<span class="hsj-drop__ico">' + ICON.camera + '</span>') + '</span>' +
+      '<span class="hsj-drop__text">' + (photoURL ? 'Choose a different photo' : 'Take or choose a photo') + '</span><span class="hsj-drop__sub">It stays on your phone until you choose a gift.</span></label>' +
+      '<p class="hsj-photo-note" data-hsj-photo-note role="status"></p>' +
+      '<button type="button" class="hsj-text-btn" data-hsj-override hidden>It\'s ' + esc(n.dog) + '. Use this photo.</button>' +
+      '<ul class="hsj-tips"><li>' + ICON.face + esc(n.possessive) + ' face clearly in view</li><li>' + ICON.light + 'Good daylight</li><li>' + ICON.one + 'Just ' + esc(n.dog) + ', no other dogs</li></ul>',
+      '<button type="button" class="hsj-btn" data-hsj-choose-photo><span>Choose a photo</span>' + ICON.camera + '</button>');
   }
   function view(step) {
     if (step === 'name') return viewName();
@@ -403,6 +453,8 @@
     if (t.hasAttribute('data-hsj-back')) { if (window.history.length > 1) window.history.back(); else go(STEPS[STEPS.indexOf(stepFromURL()) - 1] || ''); return; }
     if (t.hasAttribute('data-hsj-pick')) { pick(t.getAttribute('data-hsj-pick'), t.getAttribute('data-v')); return; }
     if (t.hasAttribute('data-hsj-tone')) { setTone(t.getAttribute('data-hsj-tone')); return; }
+    if (t.hasAttribute('data-hsj-rewrite')) { if (!t.disabled) rewriteNote(); return; }
+    if (t.hasAttribute('data-hsj-choose-photo')) { var f = app.querySelector('[data-hsj-file]'); if (f) f.click(); return; }
     if (t.hasAttribute('data-hsj-style')) {
       S.style = t.getAttribute('data-hsj-style'); save();
       app.querySelectorAll('[data-hsj-style]').forEach(function (b) { var on = b === t; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
@@ -431,8 +483,9 @@
     } else if (group === 'wears') S.accessory = v;
     else S[group] = v;
     save(); warm();
-    // a tap answers the question and moves on
-    go(nextOf(step));
+    // a tap answers the question: the choice shows for a beat, then the next screen
+    app.querySelectorAll('[data-hsj-pick="' + group + '"]').forEach(function (b) { var on = b.getAttribute('data-v') === v; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
+    setTimeout(function () { if (stepFromURL() === step) go(nextOf(step)); }, 180);
   }
   function setTone(t) {
     if (TONES.indexOf(t) === -1 || t === S.tone) return;
