@@ -1294,6 +1294,10 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 /* "Example" on every product photo (the live "Your design" layer has none) */
 /* .hs2-product__main is already position: relative */
 .hs2-product__tag { position: absolute; z-index: 2; top: 10px; left: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(18, 16, 16, .82); color: #fff; font: 700 11px/1.4 "HS DM Sans", "DM Sans", system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+/* the same tag over the live preview while it shows Teeinblue's sample dog: a grid item on the stage,
+   above the preview, until the buyer's painting is in it (29 Oct) */
+.hs2-product__tag--preview { display: none; position: relative; top: auto; left: auto; z-index: 3; align-self: start; justify-self: start; margin: 10px; }
+.hs2-product__media[data-tib="on"][data-hs2-sample-dog]:not([data-show="photo"]) .hs2-product__tag--preview { display: block; }
 /* The painting, then the finished design with its review right under it (hs-native-artwork.liquid,
    hs2.js artStage; Krish, 28 Oct: the wait "looks broken", the tickbox sat above the picture). */
 .hs-art { margin: 6px 0 18px; padding: 14px; border-radius: 24px; background: #FFFDF9; box-shadow: 0 16px 28px -18px rgba(30, 23, 20, 0.55), 0 0 0 1px #EFE6DD; }
