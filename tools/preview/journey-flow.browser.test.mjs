@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import {fileURLToPath} from 'node:url';
+import {execFileSync} from 'node:child_process';
 import {chromium} from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -25,6 +26,8 @@ const NOTES = {
 };
 let server, base, browser;
 before(async () => {
+  // offline CI runs the tests before its render step, so the page is rendered here when it is missing
+  if (!fs.existsSync(path.join(out, 'index-journey.html'))) execFileSync(process.execPath, ['render.mjs'], {cwd: here, stdio: 'ignore'});
   server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     let f = path.join(out, decodeURIComponent(u.pathname));
