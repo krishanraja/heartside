@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v8-deadpan-premise",
+  "version": "actual-dog-recipes-v9-over-the-top",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -69,6 +69,12 @@
       "humor": "high",
       "art": "Humor: high, a visual joke that reads before any caption. Staging: when the buyer stated a habit, toy or accessory, use one mock-serious premise: this ordinary dog regards the buyer's stated resting place or toy as a matter of enormous importance. Composition: use a dramatically low, close viewpoint with the dog looking solemnly down toward the viewer. Expression: chin lifted, mouth closed, and one clearly readable sideways glance. Exaggerate the staging, never the dog's anatomy; keep markings exact. If a resting place is stated, use its stated surfaces as the imposing foreground; if a toy is stated, frame that exact toy prominently beside the dog like the focus of an absurdly serious portrait. Preserve every stated action: resting stays resting, never fetches, brings or guards unless stated. Without usable facts, use the same pompous close-up against a plain backdrop with no props. Light: bright theatrical light and bold diagonals. In repeated layouts, vary the camera angle and deadpan expression. A generic happy dog or open-mouth grin is not the joke. No costumes or invented objects. Never fear, pain, illness, danger, humiliation or scolding.",
       "copy": "A stronger affectionate dog-perspective premise anchored to explicit facts, never an invented habit."
+    },
+    "over_the_top": {
+      "label": "Over the top",
+      "humor": "maximum",
+      "art": "Humor: maximum, a big theatrical scene that reads as a joke from across the room. Staging: the dog as royalty or a star of its own life: the buyer's stated resting place becomes its throne or stage, a stated toy its prize or sceptre, a stated accessory worn like regalia. Composition: grand and symmetrical, the dog centered and elevated, a dramatic low camera looking up, bold rays of light or a spotlight behind. Expression: chin high, eyes half closed, utterly smug and royally unimpressed. Exaggerate the staging and the attitude, never the dog's anatomy; keep markings exact. Light: rich, saturated, theatrical color. Preserve every stated action: resting stays resting. No crowns, capes, costumes or objects the buyer did not state; the regal feeling comes from pose, framing and light. Never fear, pain, illness, danger, humiliation or scolding.",
+      "copy": "A loving roast: the dog teases the person about their real habits from a position of total superiority."
     }
   },
   "energy": {

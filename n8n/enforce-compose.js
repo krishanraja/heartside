@@ -69,7 +69,7 @@ const CHIP_WORDS = {
   door: ['door'], weekends: ['door'], weekdays: ['door'], hears: ['car', 'hear'],
   toy: ['toy', 'present'], same: ['toy'], closest: ['toy'], shoe: ['shoe'],
   feet: ['feet', 'pillow'], bed: ['bed', 'pillow'], couch: ['couch', 'sofa', 'cushion', 'pillow'],
-  walk: ['walk', 'walks', 'morning'], coffee: ['coffee', 'cup', 'mug', 'morning'], movie: ['movie', 'couch', 'sofa', 'tv'],
+  walk: ['walk', 'walks', 'morning', 'leash'], coffee: ['coffee', 'cup', 'mug', 'morning'], movie: ['movie', 'couch', 'sofa', 'tv'],
   naps: ['nap', 'naps'], car: ['car', 'ride', 'rides', 'road']
 };
 function chipWords(chips) {
@@ -88,6 +88,8 @@ function propsGrounded(text, answerHay, names) {
     // "You treat me like family", "I treat our naps like work" and "she parks on your feet" are verbs,
     // not a snack or a place (29 Oct bench: both lost good lines)
     if (/^(treat|park)(s|ed|ing)?$/.test(w) && /^(you|your|me|my|us|our|them|their|him|his|her|it|its|everyone|myself|yourself|ourselves|herself|himself|itself|themselves|on|in|at|by|beside|next|right|up|down|like)$/.test(words[i + 1] || '')) return true;
+    // a red carpet is a star's welcome, not a rug (29 Oct bench: "Car rides are my red carpet")
+    if (w === 'carpet' && words[i - 1] === 'red') return true;
     return !!have[PROP_GROUP[w]];
   });
 }
@@ -123,7 +125,8 @@ function groundedProse(text, hay) {
 // a gift line: the dog's own words to the person, a sentence may start anywhere, no shouting
 // Krish, 22 Oct: "two-word sentences stacked against two- or three-word sentences are just a clear tell".
 // A line is one natural sentence: reject stacked fragments and the worn lines every model reaches for.
-const WORN = /\b(you're welcome|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
+// "you're welcome" is worn as a punchline on its own, not in "you're welcome to the edge" (29 Oct)
+const WORN = /\b(you're welcome(?! to)|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
 function staccato(s) {
   const parts = s.split(/[.?;:]+/).map(x => x.trim()).filter(Boolean);
   return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
@@ -195,13 +198,14 @@ const COAT = /\b(muzzle|grey(ing|ed)?|gray(ing|ed)?|chestnut|brindle|merle|fawn|
 // buyer ("Me", relation self), to them as you and never by their name (28 Oct)
 // A person the buyer named only by relation ("your partner", "your friend") is said that way, so that
 // phrase is no you (29 Oct bench: every reason for a partner was lost)
-// Krish, 29 Oct: "the UI always recommends the mug". The first gift follows the answers, the same way every
-// time: two or more closeness answers (spot couch, bed or feet; naps or movie nights; a shadow) is the
-// blanket, fewer is the portrait. A pick that disagrees takes the rule's gift and loses its reason.
+// Krish, 29 Oct: "the UI always recommends the mug", then "if we know the dog sleeps near them, then the
+// blanket. If the dog wants to be in charge, then a portrait". The boss of the house is the portrait; a dog
+// that sleeps near the person (couch, bed, feet, naps) is the blanket; any other dog is the portrait.
+// A pick that disagrees takes the rule's gift and loses its reason.
 const chipOf = (id) => { const a = inp.answers.find(x => x.id === id); return a && a.chip; };
 const closeKnown = ['spot', 'together', 'meaning'].every(id => chipOf(id));
-const close = (/^(couch|bed|feet)$/.test(chipOf('spot') || '') ? 1 : 0) + (/^(naps|movie)$/.test(chipOf('together') || '') ? 1 : 0) + (chipOf('meaning') === 'shadow' ? 1 : 0);
-const ruleGift = closeKnown ? (close >= 2 ? 'blanket' : 'print') : '';
+const sleepsNear = /^(couch|bed|feet)$/.test(chipOf('spot') || '') || chipOf('together') === 'naps';
+const ruleGift = closeKnown ? (chipOf('meaning') === 'boss' ? 'print' : sleepsNear ? 'blanket' : 'print') : '';
 const relName = /^your\s/i.test(inp.recipient.name || '') ? inp.recipient.name : '';
 const toBuyer = (t) => (inp.recipient.relation === 'self' ? !hasName(t, inp.recipient.name) : !YOU.test(relName ? t.split(new RegExp(relName.replace(/[^A-Za-z ]/g, ''), 'i')).join(' ') : t));
 let flags = (Array.isArray(m.flags) ? m.flags : []).filter(f => FLAGS.indexOf(f) !== -1);

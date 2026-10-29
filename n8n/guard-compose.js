@@ -37,7 +37,7 @@ const answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 8).map(a =>
 const current_lines = {};
 KEYS.forEach(k => { current_lines[k] = str(b.current_lines && b.current_lines[k], 60); });
 const GIFTS = ['mug', 'blanket', 'print', 'ornament'];
-const NOTE_TONES = ['sentimental', 'warm', 'hilarious'];
+const NOTE_TONES = ['sentimental', 'warm', 'hilarious', 'over_the_top'];
 const input = { dog: dog, recipient: recipient, answers: answers, current_lines: current_lines,
   default_gift: GIFTS.indexOf(b.default_gift) === -1 ? 'mug' : b.default_gift,
   note_tone: NOTE_TONES.indexOf(b.note_tone) === -1 ? 'warm' : b.note_tone };

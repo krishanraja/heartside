@@ -107,9 +107,10 @@
   function bestGift() {
     var c = note(), g = c && c.gift;
     if (g === 'blanket' || g === 'print') return g;
-    // the writer's own rule (n8n Enforce, 29 Oct): two or more closeness answers is the blanket, fewer the portrait
-    var close = (/^(couch|bed|feet)$/.test(S.spot || '') ? 1 : 0) + (/^(naps|movie)$/.test(S.together || '') ? 1 : 0) + (S.meaning === 'shadow' ? 1 : 0);
-    return close >= 2 ? 'blanket' : 'print';
+    // the writer's own rule (n8n Enforce, Krish 29 Oct): the boss of the house is the portrait, a dog that
+    // sleeps near the person is the blanket, any other dog the portrait
+    if (S.meaning === 'boss') return 'print';
+    return /^(couch|bed|feet)$/.test(S.spot || '') || S.together === 'naps' ? 'blanket' : 'print';
   }
 
   /* ------------------------------------------------------------- the writer */

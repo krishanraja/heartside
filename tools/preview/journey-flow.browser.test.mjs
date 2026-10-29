@@ -85,7 +85,7 @@ test('the journey: one job per screen, taps not typing, a tone that changes the 
     await pick(page, 'pro', 'he');
     await pick(page, 'rel', 'partner');
     assert.equal(await page.locator('[data-hsj-next]').isDisabled(), true, 'not until the dog is described');
-    await pick(page, 'home', 'door'); await pick(page, 'spot', 'couch'); await pick(page, 'together', 'walk'); await pick(page, 'meaning', 'hard');
+    await pick(page, 'home', 'door'); await pick(page, 'spot', 'anywhere'); await pick(page, 'together', 'walk'); await pick(page, 'meaning', 'hard');
     await pick(page, 'toy', 'a tennis ball'); await pick(page, 'accessory', 'a bandana');
     const typed = await page.locator('[data-hsj-screen="about"] input:not([type="file"])').count();
     assert.equal(typed, 1, 'one typed field: the name');
@@ -134,7 +134,7 @@ test('the journey: one job per screen, taps not typing, a tone that changes the 
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
     await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/, {timeout: 10000});
     const bridge = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')));
-    assert.equal(bridge.hs_journey.gift, 'print', 'a walker paints the portrait first, not the mug the writer picked (the pick is being rebuilt from the whole profile)');
+    assert.equal(bridge.hs_journey.gift, 'print', 'a walker who sleeps nowhere near paints the portrait first, never the mug the writer picked');
     assert.deepEqual(bridge.hs3_art_choices, {style: 'collage', tone: 'hilarious'});
     assert.equal(bridge.hs3_lines.meaning, 'Hard days are my specialty, so I stay close.');
     assert.equal(bridge.dog, 'Mowgli');

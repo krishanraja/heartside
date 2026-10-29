@@ -67,8 +67,8 @@ ok(!Object.values(ct.lines).some(l => /toast/i.test(l)), 'compose prints no toas
 ok(Object.values(ct.lines).every(Boolean), 'compose still returns all four lines, so the page can use the note');
 ok(ct.reason === '', 'compose drops a reason that invents toast');
 ok(ct.lines.home === toastLines.home && ct.lines.spot === toastLines.spot, 'door and couch from the chips stay in the lines');
-const cm = run('enforce-compose.js', coffee, {text: JSON.stringify({lines: Object.assign({}, toastLines, {together:'Coffee with you is my favorite part of the morning.', meaning:"You're my best friend, and I'm yours."}), recommended_gift:'print', reason:"Ruby's mornings start with Sam and a coffee mug, so a portrait fits.", flags:[]})});
-ok(cm.lines.together === 'Coffee with you is my favorite part of the morning.' && cm.reason === "Ruby's mornings start with Sam and a coffee mug, so a portrait fits.", 'the coffee chip grounds coffee, mug and morning');
+const cm = run('enforce-compose.js', coffee, {text: JSON.stringify({lines: Object.assign({}, toastLines, {together:'Coffee with you is my favorite part of the morning.', meaning:"You're my best friend, and I'm yours."}), recommended_gift:'blanket', reason:"Ruby's mornings start with Sam and a coffee mug, so a blanket fits.", flags:[]})});
+ok(cm.lines.together === 'Coffee with you is my favorite part of the morning.' && cm.reason === "Ruby's mornings start with Sam and a coffee mug, so a blanket fits.", 'the coffee chip grounds coffee, mug and morning');
 const gt = guard('guard-typed.js',{headers:{origin:'https://heartside.io'},body:{session:'abcdefgh21',step:'together',question:'What do Ruby and Sam do together?',typed_text:'coffee in bed on sundays',dog:{name:'Ruby',pronoun:'she'},recipient:{name:'Sam',relation:'partner'}}});
 const croissant = run('enforce-typed.js', gt, {reaction:'Coffee in bed, and hopefully a croissant for Ruby.', lines:['Sunday coffee in bed is my favorite thing.'], follow_up:null, flags:[]});
 ok(croissant.reaction === '', 'typed drops a reaction that invents a croissant');

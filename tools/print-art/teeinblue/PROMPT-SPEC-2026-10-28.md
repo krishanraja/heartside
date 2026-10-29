@@ -6,6 +6,10 @@ Status at authoring on 28 October: **proposed vendor change, not applied.** See 
 
 The three prompt blocks below were applied and hash-verified in the authorized browser acceptance run. Recipe revision `actual-dog-recipes-v8-deadpan-premise` replaces the storefront-supplied Hilarious tone direction with a concrete deadpan composition. The v7 live painting remained a generic happy portrait despite carrying the chosen facts; v8 is a candidate until its painting is visually reviewed. Identity, factual grounding, safety and the three native prompt blocks are unchanged. This revision still requires a fresh painting and release gates.
 
+## 29 October: Over the top (proposed, not applied)
+
+`Ruling (Krish, 2026-10-29): the slider gets a fourth setting, Over the top, a loving roast, and Hilarious must be far funnier than Warm.` Recipes `actual-dog-recipes-v9-over-the-top` (recipe SHA-256 `5e88c07a0bd4c3224c0203f564aa15aef43214c9920b4ea9531be0de226a9abc`) add one tone, `over_the_top`, with its own art direction. The dog is staged as royalty or the star of its own life, grand and symmetrical, smug and royally unimpressed, and it gets no crowns, capes or other unstated objects. Nothing else in the recipes changed, and the three native prompt blocks below are unchanged. The storefront writes the new direction into the existing Tone direction field. The vendor's Artwork tone option keeps its three values, and Over the top selects Hilarious there, so applying this needs no change in the vendor editor. The recipe is a candidate until its painting is visually reviewed.
+
 ## What changed since 27 October
 
 1. **A stated toy or accessory always appears.** On the 28 October acceptance, order 1 (a Sentimental, cut-paper collage blanket) left out the buyer's green squeaky hedgehog although the toy fact reached the prompt; the red plaid bandana did appear. Of the three tones only Sentimental had no line about a stated item, and the old wording leaned against props. Three changes in `recipes-v1.json`:

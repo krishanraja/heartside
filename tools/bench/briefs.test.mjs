@@ -9,14 +9,14 @@ const TOYSETS = [[]].concat(TOYS.map((t) => [t]));
 TOYS.forEach((a, i) => TOYS.slice(i + 1).forEach((b) => TOYSETS.push([a, b])));
 const COAT = /\b(muzzle|grey|gray|chestnut|brindle|merle|fawn|black|white|brown|golden(?! retriever)|tan|spotted)\b/i;
 let n = 0, longest = '';
-for (const breed of BREEDS) for (const pronoun of ['he', 'she', 'they']) for (const tone of ['sentimental', 'warm', 'hilarious'])
+for (const breed of BREEDS) for (const pronoun of ['he', 'she', 'they']) for (const tone of ['sentimental', 'warm', 'hilarious', 'over_the_top'])
   for (const together of TOGETHER) for (const spot of SPOT) for (const meaning of MEANING) for (const toys of TOYSETS) for (const wears of WEARS.concat(['']))
   {
     const s = brief({ breed, pronoun, tone, together, spot, meaning, toys, wears });
     n++;
     if (s.length > longest.length) longest = s;
     assert.ok(s.length <= 220, s);
-    assert.match(s, /^(Tender|Cheerful|Comic) portrait: an? [A-Za-z -]+/, s);
+    assert.match(s, /^(Tender|Cheerful|Comic|Over-the-top) portrait: an? [A-Za-z -]+/, s);
     assert.ok(!/ {2}|,,| ,|\.\.|,\./.test(s) && s.endsWith('.'), s);
     assert.ok(!COAT.test(s.replace(/Golden Retriever|Goldendoodle/, '')), s);
     for (const t of toys) assert.ok(s.includes(t.split(' ').pop().replace('treats', 'treat')), t + ' missing: ' + s);

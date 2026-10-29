@@ -47,7 +47,7 @@ const fixture = () => ({photo: {originalHash: 'a'.repeat(64), uploadHash: 'b'.re
   copy: {owner: 'user', note: 'My exact words.', signature: 'Love, Test dog'}});
 const receipt = (request, id='r1') => ({key: request.imageKey, requestId: id, providerReceipt: 'test-receipt', imageHash: 'c'.repeat(64), width: 3600, height: 5400});
 
-test('all six media, three tones and five formats prepare without claiming quality', () => {
+test('all six media, four tones and five formats prepare without claiming quality', () => {
   const grammars = new Set(Object.values(recipes.styles).map(s => s.grammar));
   assert.equal(grammars.size, 6);
   let count = 0;
@@ -58,7 +58,7 @@ test('all six media, three tones and five formats prepare without claiming quali
     assert.ok(r.prompt.includes(recipes.tones[tone].art)); assert.equal(r.imageTone, tone);
     assert.equal(r.textLayer === null, ['blanket','pillow'].includes(format)); count++;
   }
-  assert.equal(count, 90); // configuration coverage, not 90 generated or judged images
+  assert.equal(count, 120); // configuration coverage, not 120 generated or judged images
 });
 test('shared explicit facts preserve negation and exact copy stays out of image prompt', () => {
   const r = prepare(fixture());
@@ -160,8 +160,8 @@ test('27 Oct routing: the selected tone drives the imagery on every format while
   assert.equal(recipes.toneRouting.textProducts, 'copy-and-imagery'); assert.equal(recipes.toneRouting.imageTone, 'selected');
   for (const format of formats) {
     const byTone = Object.keys(recipes.tones).map(tone => prepare({...fixture(), format, tone}));
-    assert.equal(new Set(byTone.map(r => r.imageKey)).size, 3, format);
-    assert.equal(new Set(byTone.map(r => r.prompt)).size, 3, format);
+    assert.equal(new Set(byTone.map(r => r.imageKey)).size, 4, format);
+    assert.equal(new Set(byTone.map(r => r.prompt)).size, 4, format);
     for (const [i, tone] of Object.keys(recipes.tones).entries()) {
       for (const other of Object.keys(recipes.tones)) assert.equal(byTone[i].prompt.includes(recipes.tones[other].art), other === tone);
     }
@@ -171,8 +171,8 @@ test('27 Oct routing: the selected tone drives the imagery on every format while
   }
 });
 test('each tone has distinct concrete art direction that never invents props or depicts distress', () => {
-  assert.equal(new Set(Object.values(recipes.tones).map(t => t.art)).size, 3);
-  assert.deepEqual(Object.values(recipes.tones).map(t => t.humor), ['none', 'light', 'high']);
+  assert.equal(new Set(Object.values(recipes.tones).map(t => t.art)).size, 4);
+  assert.deepEqual(Object.values(recipes.tones).map(t => t.humor), ['none', 'light', 'high', 'maximum']);
   for (const tone of Object.values(recipes.tones)) {
     assert.match(tone.art, /^Humor: /);
     for (const part of ['Staging:', 'Expression:', 'Light:', 'Composition:']) assert.ok(tone.art.includes(part), part);
@@ -183,6 +183,9 @@ test('each tone has distinct concrete art direction that never invents props or 
   assert.match(recipes.tones.warm.art, /rather than inventing a joke/);
   assert.match(recipes.tones.hilarious.art, /Never fear, pain, illness, danger, humiliation/);
   assert.match(recipes.tones.hilarious.art, /never the dog's anatomy/);
+  // Krish, 29 Oct: over the top is a loving roast; the grandeur comes from pose and light, never a costume
+  assert.match(recipes.tones.over_the_top.art, /Never fear, pain, illness, danger, humiliation/);
+  assert.match(recipes.tones.over_the_top.art, /No crowns, capes, costumes or objects the buyer did not state/);
   assert.match(recipes.negative, /distressed dog/);
   assert.match(recipes.grounding, /Do not derive habits, props or objects from breed, breed energy/);
 });

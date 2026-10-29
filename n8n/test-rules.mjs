@@ -268,16 +268,26 @@ check('the after-bench losses are kept: repaired JSON, your partner, verbs, neve
 });
 // 29 Oct: the first gift follows the answers, the same way every time, and a pick against the rule
 // loses its reason rather than explain the wrong gift
-check('the first gift follows the closeness answers, never the mug', () => {
+check('the first gift: the boss is the portrait, a dog that sleeps near is the blanket, never the mug', () => {
   const ans = (spot, together, meaning) => ({dog:{name:'Juno',breed:'Labrador Retriever'},recipient:{name:'Mom',relation:'mom'},answers:[{id:'spot',chip:spot,label:'',typed:null},{id:'together',chip:together,label:'',typed:null},{id:'meaning',chip:meaning,label:'',typed:null}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print'});
   const why = 'Juno and Mom share every walk, so a framed portrait of Juno belongs on the wall.';
   assert.equal(run('enforce-compose.js', {input: ans('couch', 'naps', 'best')}, {lines:{}, recommended_gift:'print', reason: why}).recommended_gift, 'blanket');
   assert.equal(run('enforce-compose.js', {input: ans('couch', 'naps', 'best')}, {lines:{}, recommended_gift:'print', reason: why}).reason, '', 'no reason for the wrong gift');
-  assert.equal(run('enforce-compose.js', {input: ans('feet', 'walk', 'best')}, {lines:{}, recommended_gift:'mug', reason: why}).recommended_gift, 'print');
-  const ok = run('enforce-compose.js', {input: ans('feet', 'walk', 'best')}, {lines:{}, recommended_gift:'print', reason: why});
+  assert.equal(run('enforce-compose.js', {input: ans('feet', 'walk', 'best')}, {lines:{}, recommended_gift:'mug', reason: why}).recommended_gift, 'blanket', 'sleeps at their feet');
+  assert.equal(run('enforce-compose.js', {input: ans('anywhere', 'walk', 'best')}, {lines:{}, recommended_gift:'mug', reason: why}).recommended_gift, 'print');
+  const ok = run('enforce-compose.js', {input: ans('anywhere', 'walk', 'best')}, {lines:{}, recommended_gift:'print', reason: why});
   assert.equal(ok.recommended_gift, 'print'); assert.equal(ok.reason, why);
   assert.equal(run('enforce-compose.js', {input: ans('anywhere', 'coffee', 'shadow')}, {lines:{}, recommended_gift:'print'}).recommended_gift, 'print');
-  assert.equal(run('enforce-compose.js', {input: ans('bed', 'movie', 'boss')}, {lines:{}, recommended_gift:'print'}).recommended_gift, 'blanket');
+  assert.equal(run('enforce-compose.js', {input: ans('bed', 'movie', 'boss')}, {lines:{}, recommended_gift:'blanket'}).recommended_gift, 'print', 'the boss wants to be in charge');
+  assert.equal(run('enforce-compose.js', {input: ans('anywhere', 'naps', 'best')}, {lines:{}, recommended_gift:'print'}).recommended_gift, 'blanket', 'naps together');
+});
+// 29 Oct, four-tone bench (47890-47905): three good punchlines were lost to the rules
+check('a red carpet, a leash on a walk and you\'re welcome to the edge are kept', () => {
+  const inp = {dog:{name:'Earl',breed:'Greyhound'},recipient:{name:'Dad',relation:'dad'},answers:[{id:'spot',chip:'bed',label:'',typed:null},{id:'together',chip:'walk',label:'',typed:null},{id:'meaning',chip:'hard',label:'',typed:null}],current_lines:{home:'',spot:'',together:'',meaning:''},default_gift:'print'};
+  const o = run('enforce-compose.js', {input: inp}, {lines:{home:'Our walks are my red carpet, and I never sign autographs.', spot:"I take your side of the bed, and you're welcome to the edge.", together:'On our walks I lead and you just carry the leash.', meaning:"I'm here on the hard days, always."}});
+  assert.match(o.lines.home, /red carpet/); assert.match(o.lines.spot, /welcome to the edge/); assert.match(o.lines.together, /leash/);
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines:{home:"I wait at the door, you're welcome.", spot:'', together:'', meaning:''}}).lines.home, 'Best part of my day? You walking in.', 'the worn punchline still goes');
+  assert.equal(run('enforce-compose.js', {input: inp}, {lines:{home:'I lie on the carpet by the door for you.', spot:'', together:'', meaning:''}}).lines.home, 'Best part of my day? You walking in.', 'a real carpet still needs the owner');
 });
 console.log(failed ? failed + ' failed, ' + passed + ' passed' : 'all ' + passed + ' passed');
 process.exitCode = failed ? 1 : 0;
