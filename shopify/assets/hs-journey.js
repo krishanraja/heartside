@@ -218,6 +218,10 @@
     st.hs3_energy = '';
     try { var r = breedRow(); if (r && window.HSArtworkEngine) st.hs3_energy = window.HSArtworkEngine.energyFor(r) || ''; } catch (e) { /* unknown breed: no energy */ }
     st.hs3_art_choices = { style: S.style, tone: S.tone };
+    // the painter's directed brief (recipes v10) stages the scene from these chip ids, never re-asked
+    st.hs_brief_input = { breed: S.breed || '', pronoun: n.she === 'she' || n.she === 'he' ? n.she : 'they', home: S.home || '', spot: S.spot || '', together: S.together || '',
+      toys: toyText() || '', accessory: S.accessory || '', noToy: !!S.toysDone && !toyText() };
+    
     st.hs_ship_to = n.self ? 'Me (the buyer)' : n.person;
     st.hs_journey = { t: Date.now(), gift: gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0, voice: (note() || {}).voice || '', brief: brief(), gifts: journeyGifts() };
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }

@@ -74,7 +74,9 @@ test('mug candidate expands art across wrap, removes cut-out mask and keeps one 
   const r=mugTemplate(source,{style:1,tone:2});
   const photo=r.layers.find(l=>l.type==='photo'); assert.equal(photo.width,2700);assert.equal(photo.height,1050);assert.equal(photo.masked_enable,false);
   assert.equal(r.layers.filter(l=>/^Line/.test(l.name)).length,1);assert.equal(source.layers[0].width,900);
-  for(const f of ['mug','blanket','portrait','pillow','ornament']) {const p=nativePrompt(f); assert.ok(p.includes('{{Style direction}}'));assert.ok(p.includes('{{Tone direction}}'));assert.ok(p.includes('{{Energy}}'));assert.ok(p.includes('{{Personality}}')); assert.ok(p.includes('Do not mirror'));}
+  // recipes v10 (29 Oct): the short directed frame reads the three hidden fields; the identity line travels in Energy
+  for(const f of ['mug','blanket','portrait']) {const p=nativePrompt(f); assert.ok(p.includes('{{Style direction}}'));assert.ok(p.includes('{{Tone direction}}'));assert.ok(p.includes('{{Energy}}'));assert.ok(!p.includes('{{Personality}}')); assert.match(p,/never reuse the photo's pose/);}
+  for(const f of ['pillow','ornament']) assert.throws(()=>nativePrompt(f),/Unknown format/,f+' is not a live native route');
 });
 
 // 27 Oct ruling: tone (and breed energy) drive the imagery on every format. Exact words
@@ -229,30 +231,40 @@ for (const minify of [false,true]) test((minify?'minified':'source')+': optional
   ctx.state.city='Paris';ctx.blanketArtPreview=()=>true;assert.equal('place' in JSON.parse(ctx.nativeArtworkEvidence()),false);
 });
 test('portrait native prompt has no required City substitution',()=>{
-  const prompt=nativePrompt('portrait');assert.ok(!prompt.includes('{{City}}'));assert.ok(prompt.includes('place is null or absent'));assert.ok(prompt.includes('{{Personality}}'));
+  // recipes v10: the journey asks no city, and the directed frame names none
+  const prompt=nativePrompt('portrait');assert.ok(!prompt.includes('{{City}}'));assert.ok(!/\bcity\b/i.test(prompt));
 });
 
 const hs2Source=readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
 const section=name=>{const i=hs2Source.indexOf('  function '+name+'(');assert.notEqual(i,-1,name);return hs2Source.slice(i,hs2Source.indexOf('\n  function ',i+1));};
-// 28 Oct: Teeinblue's prompt reads only the chosen style, tone and energy text, from hidden fields
-// the storefront fills. hs2.js answer() must write exactly what nativeFieldValues() promises the spec.
-for (const minify of [false,true]) test(`${minify?'minified':'source'}: the storefront writes the same direction text the prompt spec expects`, async () => {
+// 29 Oct, recipes v10: Teeinblue's prompt reads the directed brief from three hidden fields the
+// storefront fills. hs2.js answer() must write exactly what nativeFieldValues() promises the spec,
+// for every style, tone and format, from the journey's answers or (the older chat) from the facts.
+for (const minify of [false,true]) test(`${minify?'minified':'source'}: the storefront writes the same brief the prompt spec expects`, async () => {
   const {nativeFieldValues}=await import('../print-art/native-candidate.mjs');
   const {recipes}=await import('../print-art/artwork-system.mjs');
-  const w=browser(minify), state={hs3_energy:null};
-  let choice={style:'screenprint',tone:'sentimental'};
+  const w=browser(minify), state={};
+  let choice={style:'screenprint',tone:'sentimental'}, kind='mug', facts='{"version":1,"facts":[]}';
   w.HSArtworkChoices={read:()=>choice};
   const ctx={window:w,state,cityArtPreview:()=>false,nativeArtworkPurchase:()=>true,nativeArtworkEvidence:()=>'{}',V3_ANSWER:/^$/,v3Answer:()=>'',DEFAULTS:{},NAMES:[],
-    artworkEnergy:()=>state.hs3_energy&&Object.hasOwn(recipes.energy.directions,state.hs3_energy)?state.hs3_energy:null};
-  const code=section('answer');
+    artworkEnergy:()=>null,v3Kind:()=>kind,blanketArtPreview:()=>kind==='blanket',artworkFacts:()=>facts};
+  const code=section('answer')+'\n'+section('artworkBrief');
   vm.runInNewContext(minify?transformSync(code,{minify:true}).code:code,ctx);
-  for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const energy of [null,'devoted-close','eager-open']) {
-    choice={style,tone}; state.hs3_energy=energy;
-    const v=nativeFieldValues({style,tone,energy});
+  const journeys=[{breed:'Border Collie',pronoun:'he',home:'toy',spot:'couch',together:'walk',toys:'a tennis ball and a big stick',accessory:'a bandana',noToy:false},
+    {breed:'',pronoun:'they',home:'',spot:'feet',together:'naps',toys:'',accessory:'',noToy:true}];
+  for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const k of ['mug','print','blanket']) for (const input of journeys) {
+    choice={style,tone}; kind=k; state.hs_brief_input=input;
+    const v=nativeFieldValues({style,tone,format:k,...input});
     assert.equal(ctx.answer('art_style_direction'),v['Style direction']);
     assert.equal(ctx.answer('art_tone_direction'),v['Tone direction']);
     assert.equal(ctx.answer('art_energy'),v.Energy);
+    assert.ok(v.Energy.length<=300 && v['Tone direction'].length<=1200 && v['Style direction'].length<=1200, 'within the vendor field limits');
   }
+  // the older chat: no journey answers, so the toy and the worn item come from the facts
+  delete state.hs_brief_input; choice={style:'ink',tone:'warm'}; kind='print';
+  facts=JSON.stringify({version:1,facts:[{source:'toy',text:'Green squeaky hedgehog'},{source:'accessory',text:'Red plaid bandana'}]});
+  assert.equal(ctx.answer('art_tone_direction'),nativeFieldValues({style:'ink',tone:'warm',format:'print',pronoun:'they',toys:'Green squeaky hedgehog',accessory:'Red plaid bandana'})['Tone direction']);
+  assert.match(ctx.answer('art_tone_direction'),/squeaky hedgehog[\s\S]*plain, solid-colored Red plaid bandana/);
 });
 for (const minify of [false,true]) test(`${minify?'minified':'source'}: a campaign without the hidden direction fields is still ready; one with them needs the chosen text`, () => {
   const field=(k,value)=>({rule:{k},el:{querySelector:s=>s.startsWith('input[type="text"]')?{value}:null,querySelectorAll:()=>[]}});

@@ -54,8 +54,13 @@
       // direction travels in art_tone_direction (PROMPT-SPEC-2026-10-28.md, 29 Oct)
       return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'hilarious' : choice.tone].label;
     }
-    // 28 Oct: Teeinblue's prompt reads only the chosen medium, mood and energy, in hidden fields
-    // (tools/print-art/native-candidate.mjs nativeFieldValues writes the same text)
+    // 29 Oct, recipes v10: the directed brief (tools/print-art/artwork-system.mjs briefFields, the same
+    // text native-candidate.mjs nativeFieldValues gives): Energy carries the identity line, Tone
+    // direction the scene the tone stages from the buyer's answers, Style direction the medium
+    if ((cityArtPreview() || nativeArtworkPurchase()) && (k === 'art_style_direction' || k === 'art_tone_direction' || k === 'art_energy')) {
+      var brief = artworkBrief();
+      if (brief) return k === 'art_energy' ? brief.Energy : k === 'art_style_direction' ? brief['Style direction'] : brief['Tone direction'];
+    }
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style_direction' || k === 'art_tone_direction')) {
       var chosen = window.HSArtworkChoices.read(), rs = window.HSArtworkEngine.recipes;
       return k === 'art_style_direction' ? rs.styles[chosen.style].label + '. ' + rs.styles[chosen.style].grammar : rs.tones[chosen.tone].label + '. ' + rs.tones[chosen.tone].art;
@@ -571,6 +576,20 @@
     return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
   }
   // The breed's energy code, worked out in the chat (HSBreeds only loads there). Never a fact.
+  // what the buyer told the journey (hs-journey.js bridge: chip ids, breed and pronoun); a buyer from
+  // the older chat has only the facts, so the toy and the worn item come from those
+  function artworkBrief() {
+    var engine = window.HSArtworkEngine, choice = window.HSArtworkChoices && window.HSArtworkChoices.read();
+    if (!engine || !engine.briefFields || !choice) return null;
+    var b = state.hs_brief_input || {}, facts = [];
+    if (!state.hs_brief_input) { try { facts = JSON.parse(artworkFacts()).facts || []; } catch (e) { facts = []; } }
+    var fact = function (src) { var f = facts.filter(function (x) { return x.source === src; })[0]; return f ? f.text : ''; };
+    var kind = v3Kind() || (blanketArtPreview() ? 'blanket' : 'portrait');
+    try {
+      return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they',
+        home: b.home || '', spot: b.spot || '', together: b.together || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
+    } catch (e) { return null; }
+  }
   function artworkEnergy() {
     var code = state.hs3_energy, engine = window.HSArtworkEngine;
     return code && engine && engine.recipes.energy && Object.prototype.hasOwnProperty.call(engine.recipes.energy.directions, code) ? code : null;

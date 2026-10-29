@@ -10,17 +10,13 @@
 import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-import vm from 'node:vm';
-import {recipes, energyFor} from './artwork-system.mjs';
+import {recipes} from './artwork-system.mjs';
 import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const BATCH = '2026-10-29-breeds';
 const out = root + 'design/examples-' + BATCH + '/';
 const {brief} = createRequire(import.meta.url)(root + 'shopify/assets/hs-brief.js');
-const ctx = {window: {}};
-vm.runInNewContext(readFileSync(root + 'shopify/assets/hs-breeds.js', 'utf8'), ctx);
-const breeds = ctx.window.HSBreeds;
 
 // What an example buyer tapped for each dog. The photo is a reference the growth session sources:
 // a real photo under a free licence, its credit recorded in credits.json beside the images.
@@ -42,8 +38,8 @@ const STAGES = [{stage: 1, cap: 6}, {stage: 2, cap: 18}];
 const jobs = DOGS.flatMap((dog, i) => TONES.map((tone, t) => {
   const format = TURN[i % 3][t];
   const moment = brief({...dog, tone});
-  const facts = [{source: 'brief', text: moment.replace(/^\w+ portrait: /, '').replace(/^./, c => c.toUpperCase())}];
-  const fields = {...nativeFieldValues({style: dog.style, tone, energy: energyFor(breeds.lookup(dog.breed))}), Personality: JSON.stringify({version: 1, facts})};
+  // recipes v10 (29 Oct): the exact directed brief the storefront writes for this dog's journey answers
+  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, spot: dog.spot, together: dog.together, toys: dog.toys.join(' and '), accessory: dog.wears || ''});
   const prompt = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     if (!Object.hasOwn(fields, key)) throw new Error('Unknown field ' + key);
     return fields[key];
@@ -51,7 +47,7 @@ const jobs = DOGS.flatMap((dog, i) => TONES.map((tone, t) => {
   const id = [dog.id, tone, format].join('-');
   return {id, prompt, stage: t === i % 4 ? 1 : 2, dog: dog.id, example_name: dog.name, breed: dog.breed,
     photo: 'design/examples-' + BATCH + '/photos/' + dog.id + '.jpg', style: recipes.styles[dog.style].label, tone: recipes.tones[tone].label,
-    format, size: SIZES[format], brief: moment, energy: fields.Energy, personality: fields.Personality,
+    format, size: SIZES[format], brief: moment, fields,
     prompt_file: 'design/examples-' + BATCH + '/prompts/' + id + '.txt', output: 'design/examples-' + BATCH + '/out/' + id + '.png'};
 }));
 for (const s of STAGES) if (jobs.filter(j => j.stage === s.stage).length > s.cap) throw new Error('More jobs than the cap in stage ' + s.stage);

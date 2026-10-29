@@ -68,12 +68,15 @@ async function open(size, {photo = true, journeyAge = 0, gift = 'print'} = {}) {
       field('Personality', '<input type="text">');
       field('Artwork style', pick(['Cinematic', 'Painterly', 'Vintage screenprint', 'Comic book', 'Cut-paper collage', 'Fine ink drawing']));
       field('Artwork tone', pick(['Sentimental', 'Warm with a wink', 'Hilarious']));
+      for (const name of ['Style direction', 'Tone direction', 'Energy']) field(name, '<input type="text" data-brief="' + name + '">');
       document.dispatchEvent(new Event('teeinblue-event-component-injected'));
     }, true);
     if (sessionStorage.getItem('hs2-review')) return;
+    sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'hilarious'}));
     sessionStorage.setItem('hs2-review', JSON.stringify({
       dog: 'Mowgli', person: 'Sam', hs3_lines: {home: 'a', spot: 'b', together: 'c', meaning: 'You let me live here.'}, hs3_copy_owner: 'generated', hs3_photo_t: photo ? t : 0,
       hs3_art_profile: {version: 1, facts: [{source: 'spot', text: "Rests at their person's feet."}]}, hs3_art_choices: {style: 'collage', tone: 'hilarious'},
+      hs_brief_input: {breed: 'Border Collie', pronoun: 'he', home: 'toy', spot: 'couch', together: 'walk', toys: 'a tennis ball and a big stick', accessory: '', noToy: false},
       hs_journey: {t: Date.now() - journeyAge, gift, tone: 'hilarious', style: 'collage', gifts: GIFTS},
     }));
   }, [t, photo, journeyAge, gift, GIFTS]);
@@ -118,6 +121,11 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     assert.equal(view.card, true, 'the painting card sits in the panel');
     assert.equal(view.title, 'Painting Mowgli');
     assert.deepEqual(view.asked, [], 'no question, select, option or note editor shows');
+    // recipes v10: the painter's hidden fields carry the directed brief for this dog (PROMPT-SPEC-2026-10-29.md)
+    const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
+    assert.match(brief.Energy, /^Keep exactly who he is: this Border Collie's face shape/);
+    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: his tennis ball and big stick presented on a velvet cushion/);
+    assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');
     // a reload does not paint again
     await page.reload();

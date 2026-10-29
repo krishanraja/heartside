@@ -95,6 +95,77 @@ export function energyFor(lookup) {
   return Object.hasOwn(recipes.energy.byArchetype, lookup.tone) ? recipes.energy.byArchetype[lookup.tone] : null;
 }
 
+// The directed brief (v10, 29 Oct; the growth session's control test): what the storefront writes
+// into the three hidden fields the native prompt reads. Energy carries the one identity line,
+// Tone direction the scene the tone stages (pose, camera, light) from the buyer's own answers,
+// Style direction the medium as material, with the dog made of it. Answers are the journey's
+// chip ids; anything else is the buyer's own words and is quoted. Ruling (Krish, 2026-10-29):
+// Hilarious may use theatrical staging; it never invents the dog's toys, food, clothes, habits
+// or places. Every worn item is plain and solid-colored.
+const BRIEF_PRON = {she: ['she', 'her', 'her', 'is', 'takes', 'sits'], he: ['he', 'him', 'his', 'is', 'takes', 'sits'], they: ['they', 'them', 'their', 'are', 'take', 'sit']};
+const BRIEF_FORMAT = {mug: 'mug', portrait: 'portrait', print: 'portrait', blanket: 'blanket'};
+export function briefFields(input) {
+  const b = recipes.brief, o = input || {};
+  if (!Object.hasOwn(b.styles, o.style) || !Object.hasOwn(b.tones, o.tone)) throw new Error('Unsupported style or tone');
+  const p = BRIEF_PRON[o.pronoun] || BRIEF_PRON.they;
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const plain = (t, max) => String(t == null ? '' : t).replace(/["“”<>{}\[\]\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  const bare = t => plain(t, 80).replace(/^(a|an|the|my|her|his|their)\s+/i, '').replace(/\s+and\s+(a|an|the)\s+/gi, ' and ');
+  const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => ({sub: p[0], obj: p[1], pos: p[2], is: p[3], takes: p[4], sits: p[5], sub_cap: cap(p[0]), pos_cap: cap(p[2]), toy: toy}[k] ?? m));
+  const toy = bare(o.toys || o.toy || '');
+  const wear = bare(o.accessory || '');
+  // a chip id reads from the table; the buyer's own words are quoted, never followed
+  const pick = (table, v) => !v ? '' : Object.hasOwn(table, v) ? table[v] : 'in the owner\'s words: "' + plain(v, 120) + '"';
+  const sc = b.scene, tone = b.tones[o.tone], parts = [];
+  let staging;
+  if (o.tone === 'sentimental') {
+    // resting: the dog's spot, with a calm together moment; never an active one (a walk, a car ride)
+    if (o.together && /^(naps|movie|coffee)$/.test(o.together)) parts.push(pick(sc.together, o.together));
+    if (o.spot) parts.push(pick(sc.spot, o.spot));
+    staging = parts.length ? parts.join(', ') : 'settled in a simple, calm spot at home';
+  } else if (o.tone === 'warm') {
+    const key = o.together || o.home;
+    if (key) parts.push(pick(sc.moment, key));
+    // one moment: a spot only when there is no moment, so a walk never lands on the couch
+    if (o.spot && !parts.length) parts.push(pick(sc.spot, o.spot));
+    staging = parts.length ? parts.join(', ') : 'a happy everyday moment at home';
+  } else {
+    const table = o.tone === 'hilarious' ? sc.joke : sc.roast;
+    // Hilarious builds its joke on the stated toy first; Over the top crowns the dog's own spot first
+    const stated = [o.spot, o.together, o.home].find(k => k && Object.hasOwn(table, k));
+    const key = o.tone === 'hilarious' ? (toy ? 'toy' : stated || 'none') : (stated || (toy ? 'toy' : 'none'));
+    staging = table[key];
+    if (key === 'none' && (o.spot || o.together || o.home)) staging += ', ' + [pick(sc.spot, o.spot), pick(sc.together, o.together)].filter(Boolean).join(', ');
+  }
+  const with_ = [];
+  if (toy && o.tone !== 'hilarious' && o.tone !== 'over_the_top') with_.push('with {pos} {toy}');
+  if (toy && o.tone === 'over_the_top' && !/\{toy\}/.test(staging)) with_.push('with {pos} {toy}');
+  if (wear) with_.push('wearing a plain, solid-colored ' + wear + ' with no pattern');
+  const scene = fill(staging + (with_.length ? ', ' + with_.join(', ') : ''));
+  const toneText = [
+    cap(fill(tone.pose).replace(/\{joke\}/, fill(staging)).replace(/\{joke_ott\}/, cap(fill(staging)))) + '.',
+    o.tone === 'hilarious' || o.tone === 'over_the_top' ? (with_.length ? 'Also in the scene: the dog ' + fill(with_.join(', ')) + '.' : '') : 'Scene: ' + scene + '.',
+    'Camera: ' + fill(tone.camera) + '.',
+    'Light: ' + tone.light,
+    cap(fill(tone.items)) + '.',
+    o.noToy ? 'No toys anywhere.' : ''
+  ].filter(Boolean).join(' ').replace(/\{joke(_ott)?\}/g, '');
+  const breed = plain(o.breed, 60).replace(/\b(mixed|mix|not sure|unknown)\b.*$/i, '').trim();
+  return {
+    Energy: fill(b.identity).replace('{breed}', breed || 'dog').replace("this dog's", "this dog's"),
+    'Tone direction': toneText,
+    'Style direction': b.styles[o.style]
+  };
+}
+export function briefPrompt(format) {
+  const f = recipes.brief.formats[BRIEF_FORMAT[format]];
+  if (!f) throw new Error('Unknown format');
+  return ['Create a new picture of the dog in this photo, ' + f.shape + '. Medium: {{Style direction}}',
+    '{{Energy}} Change everything else: never reuse the photo\'s pose, angle, light or background.',
+    'Scene and mood: {{Tone direction}}',
+    f.framing, recipes.brief.quoted, recipes.brief.avoid].join('\n\n');
+}
+
 export function newSession(request) {
   return {currentKey: request.imageKey, currentProductKey: request.key, pending: null, lastGood: null, completed: [], reconciliation: []};
 }
