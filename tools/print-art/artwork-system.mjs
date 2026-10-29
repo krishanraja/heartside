@@ -102,8 +102,8 @@ export function energyFor(lookup) {
 // chip ids; anything else is the buyer's own words and is quoted. Ruling (Krish, 2026-10-29):
 // Hilarious may use theatrical staging; it never invents the dog's toys, food, clothes, habits
 // or places. Every worn item is plain and solid-colored.
-const BRIEF_PRON = {she: ['she', 'her', 'her', 'is', 'takes', 'sits'], he: ['he', 'him', 'his', 'is', 'takes', 'sits'], they: ['they', 'them', 'their', 'are', 'take', 'sit']};
-const BRIEF_FORMAT = {mug: 'mug', portrait: 'portrait', print: 'portrait', blanket: 'blanket'};
+const BRIEF_PRON = {she: ['she', 'her', 'her', 'is', 'takes', 'sits', 'carries'], he: ['he', 'him', 'his', 'is', 'takes', 'sits', 'carries'], they: ['they', 'them', 'their', 'are', 'take', 'sit', 'carry']};
+const BRIEF_FORMAT = {mug: 'mug', portrait: 'portrait', print: 'portrait', blanket: 'blanket', card: 'card'};
 export function briefFields(input) {
   const b = recipes.brief, o = input || {};
   if (!Object.hasOwn(b.styles, o.style) || !Object.hasOwn(b.tones, o.tone)) throw new Error('Unsupported style or tone');
@@ -111,7 +111,7 @@ export function briefFields(input) {
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
   const plain = (t, max) => String(t == null ? '' : t).replace(/["“”<>{}\[\]\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
   const bare = t => plain(t, 80).replace(/^(a|an|the|my|her|his|their)\s+/i, '').replace(/\s+and\s+(a|an|the)\s+/gi, ' and ');
-  const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => ({sub: p[0], obj: p[1], pos: p[2], is: p[3], takes: p[4], sits: p[5], sub_cap: cap(p[0]), pos_cap: cap(p[2]), toy: toy}[k] ?? m));
+  const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => ({sub: p[0], obj: p[1], pos: p[2], is: p[3], takes: p[4], sits: p[5], carries: p[6], sub_cap: cap(p[0]), pos_cap: cap(p[2]), toy: toy}[k] ?? m));
   // the owner's toy wording is kept as said (v11): "a tennis ball in his mouth" stays in his mouth;
   // only wording with no verb or place of its own gets "with his ..."
   const toyRaw = plain(o.toys || o.toy || '', 160);
@@ -122,12 +122,12 @@ export function briefFields(input) {
   const wearItem = wear ? 'wearing a plain, solid-colored ' + wear + ' with no pattern' : '';
   // a chip id reads from the table; the buyer's own words are quoted, never followed
   const pick = (table, v) => !v ? '' : Object.hasOwn(table, v) ? table[v] : 'in the owner\'s words: "' + plain(v, 120) + '"';
-  const sc = b.scene, tone = b.tones[o.tone], parts = [];
+  const sc = b.scene, tone = b.tones[o.tone], parts = [], fmt = b.formats[BRIEF_FORMAT[o.format]];
   const given = o.together || o.spot || o.home;
   // one place per scene (v12): a spot and an activity in different places (at her feet, out on the
   // walk) never share a scene; Sentimental and Over the top keep the spot, Warm and Hilarious the activity
   const clash = !!(o.spot && o.together && Object.hasOwn(sc.fits, o.together) && Object.hasOwn(sc.spot, o.spot) && !sc.fits[o.together].includes(o.spot));
-  let staging, place = '';
+  let staging, place = '', toyInJoke = false;
   if (o.tone === 'sentimental') {
     // resting: the dog's spot, with a calm together moment; never an active one (a walk, a car ride)
     if (o.together && /^(naps|movie|coffee)$/.test(o.together) && !clash) parts.push(pick(sc.together, o.together));
@@ -144,18 +144,25 @@ export function briefFields(input) {
     // home; the toy joke only when no place or activity was given, and a named toy joins the scene
     const stated = [o.together, o.spot, o.home].find(k => k && Object.hasOwn(sc.joke, k));
     const key = stated || (given ? 'none' : toy ? 'toy' : 'none');
-    staging = sc.joke[key].replace('{pos} {toy}', toyHeld ? toyRaw : '{pos} {toy}');
-    if (key === 'none' && given) staging += ', ' + [pick(sc.spot, o.spot), pick(sc.together, o.together), pick(sc.home, o.home)].filter(Boolean).join(', ');
+    // v13: the worm's-eye joke is the dog and the stated place alone, with no part of the person;
+    // a named toy on the walk is carried like a trophy, and with no toy the stride stays without it
+    // the trophy is the toy itself: its importance is in how it is carried, never its size or a held pose
+    const trophy = toyRaw.split(/\s+and\s+/).map(t => bare(t.replace(/\s+(?:far\s+)?too\s+(?:big|large|small)\b.*$/i, '')
+      .replace(/\s+(?:in|at|on|under|between|beside|across|by|tucked|balanced|as|hugged|held)\b.*$/i, ''))).filter(Boolean).join(' and ');
+    toyInJoke = !!(trophy && Object.hasOwn(sc.jokeToy, key));
+    staging = toyInJoke ? sc.joke[key] + sc.jokeToy[key].replace('{toy}', trophy) : sc.joke[key].replace('{pos} {toy}', toyHeld ? toyRaw : '{pos} {toy}');
+    if (key === 'none' && given) staging += ', ' + [pick(sc.spotSolo, o.spot), pick(sc.together, o.together), pick(sc.home, o.home)].filter(Boolean).join(', ');
   } else {
     // Over the top crowns the dog's own spot first, and always keeps the stated place in the scene
     const stated = [o.spot, o.together, o.home].find(k => k && Object.hasOwn(sc.roast, k));
     // a toy the owner already placed (in his mouth) keeps its place, so it never rests on the cushion
     const key = stated || (toy && !toyHeld ? 'toy' : 'none');
     staging = sc.roast[key];
-    place = [pick(sc.spot, o.spot), clash ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
+    // the royal portrait is shot low, so the person stays out of it (v13)
+    place = [pick(sc.spotSolo, o.spot), clash ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
   }
   const comic = o.tone === 'hilarious' || o.tone === 'over_the_top';
-  const inStaging = /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));
+  const inStaging = toyInJoke || /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));
   const items = [toy && !(comic && inStaging) ? toyItem : '', wearItem].filter(Boolean);
   const scene = fill(staging + (items.length ? ', ' + items.join(', ') : ''));
   const also = items.map(i => /^(with|wearing) /.test(i) ? 'the dog ' + i : i).join('; ');
@@ -165,6 +172,10 @@ export function briefFields(input) {
     'Camera: ' + fill(tone.camera) + '.',
     'Light: ' + tone.light,
     cap(fill(tone.items)) + '.',
+    tone.toy && toyInJoke ? fill(tone.toy) + '.' : '',
+    // v13: the note area lives here, not in the saved frame, so a gift without words is painted edge
+    // to edge; words stay on by default on the formats that carry them until the buyer turns them off
+    fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : '',
     o.noToy ? 'No toys anywhere.' : ''
   ].filter(Boolean).join(' ').replace(/\{joke(_ott)?\}/g, '');
   const breed = plain(o.breed, 60).replace(/\b(mixed|mix|not sure|unknown)\b.*$/i, '').trim();
@@ -177,10 +188,12 @@ export function briefFields(input) {
 export function briefPrompt(format) {
   const f = recipes.brief.formats[BRIEF_FORMAT[format]];
   if (!f) throw new Error('Unknown format');
+  // v13: the person rule sits beside the avoid line; every gift is the same world seen as its own moment
   return ['Create a new picture of the dog in this photo, ' + f.shape + '. Medium: {{Style direction}}',
     '{{Energy}} Change everything else: never reuse the photo\'s pose, angle, light or background.',
     'Scene and mood: {{Tone direction}}',
-    f.framing, recipes.brief.quoted, recipes.brief.avoid].join('\n\n');
+    f.framing + ' ' + recipes.brief.world.replace('{variation}', f.variation), recipes.brief.quoted,
+    recipes.brief.person + ' ' + recipes.brief.avoid].join('\n\n');
 }
 
 export function newSession(request) {
