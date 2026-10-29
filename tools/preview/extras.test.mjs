@@ -69,11 +69,13 @@ for (const minified of [false, true]) {
     assert.equal(p.said.textContent, 'A squeaky duck');
     p.change.handlers.click();
     assert.equal(p.summary.hidden, true); assert.equal(p.ask.hidden, false); assert.equal(p.toy.focused, 1, 'Change opens the fields');
-    p.accessory.value = '  a red   bandana!! '; p.accessory.handlers.change();
+    p.accessory.value = '  a red   bandana!! '; p.accessory.handlers.input();
     assert.deepEqual(plain(p.ctx.state.hs3_art_profile.facts.map(f => f.source + ':' + f.text)), ['home:Waits at the door.', 'toy:A squeaky duck', 'accessory:A red bandana.'], 'tidied for the painter');
     assert.equal(JSON.parse(p.store['hs3-gift']).accessory, 'a red bandana!!', 'Buddy keeps the words as typed');
     assert.equal(p.said.textContent, 'A squeaky duck · A red bandana.');
     assert.deepEqual(p.calls, ['save', 'invalidate', 'choices', 'journey', 'status']);
+    p.accessory.handlers.change();
+    assert.equal(p.calls.length, 5, 'blur after input does not invalidate the same artwork twice');
     p.toy.value = ''; p.toy.handlers.change();
     assert.deepEqual(plain(p.ctx.state.hs3_art_profile.facts.map(f => f.source)), ['home', 'accessory'], 'an emptied field drops its fact');
     p.toy.value = 'x'.repeat(200); p.toy.handlers.change();
