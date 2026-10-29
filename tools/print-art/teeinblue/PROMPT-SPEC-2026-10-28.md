@@ -4,7 +4,7 @@ Status at authoring on 28 October: **proposed vendor change, not applied.** See 
 
 ## 29 October acceptance repair
 
-The three prompt blocks below were applied and hash-verified in the authorized browser acceptance run. Recipe revision `actual-dog-recipes-v7-clear-comic-premise` strengthens only the storefront-supplied Hilarious tone direction: a calm seated dog beside a toy does not satisfy the comic premise. Identity, factual grounding, safety and the three native prompt blocks are unchanged. This revision still requires a fresh painting and release gates.
+The three prompt blocks below were applied and hash-verified in the authorized browser acceptance run. Recipe revision `actual-dog-recipes-v8-deadpan-premise` replaces the storefront-supplied Hilarious tone direction with a concrete deadpan composition. The v7 live painting remained a generic happy portrait despite carrying the chosen facts; v8 is a candidate until its painting is visually reviewed. Identity, factual grounding, safety and the three native prompt blocks are unchanged. This revision still requires a fresh painting and release gates.
 
 ## What changed since 27 October
 
@@ -13,7 +13,7 @@ The three prompt blocks below were applied and hash-verified in the authorized b
    - The Sentimental tone gains: "A stated toy or accessory rests quietly beside or on the dog."
    - The negative's "No invented city, costume, toy, accessory, occupation, food preference or relationship." becomes "No invented city, costume, occupation, food preference or relationship. No toy or accessory other than the ones in the facts."
 2. **The cross rule.** `Ruling (Krish, 2026-10-28): a cross gets a breed energy only when both parents match.` The 27 October text said two-parent crosses get `none` while its table gave the doodle archetype an energy, and the code followed the table: all 12 named doodle crosses, Cavapoo and Goldendoodle included, got "Poised and a little theatrical". Now a named cross never takes an energy from its own cross archetype. It gets one only when both of its corpus parents look up exactly and share one archetype, and energies are never averaged.
-3. Recipes `actual-dog-recipes-v7-clear-comic-premise` (recipe SHA-256 `b07a236429ca40547d89d1a05589b6a897a1b0fb09e793d286944aa105085568`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
+3. Recipes `actual-dog-recipes-v8-deadpan-premise` (recipe SHA-256 `d34e0d28916ed06998f36fb58fcac023fef3bd4d19fe6021f2eb36c25be4f189`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
 
 Two parts of this reach the painting through fields the storefront writes, so they ship with the theme and need no vendor change: the Sentimental `Tone direction` text and the cross rule's `Energy` value. The grounding and the negative are in the saved prompt, so they reach the painting only once a campaign has the new block below.
 
@@ -27,7 +27,7 @@ No field is added, removed or renamed. Teeinblue substitutes each `{{Name}}` pla
 
 | Field (exact layer name) | Placeholder | Type | Value the storefront writes |
 |---|---|---|---|
-| Tone direction | `{{Tone direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen tone's label and art direction. The longest, Hilarious, is 965 characters |
+| Tone direction | `{{Tone direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen tone's label and art direction. The Hilarious field is 1142 characters |
 | Style direction | `{{Style direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen style's label and definition |
 | Energy | `{{Energy}}` | Text layer, form only, not printed, not required, max length 300, default `none` | The energy direction from the table below, or `none` |
 | Personality | `{{Personality}}` | Existing text layer, form only | Facts JSON from `HSArtworkProfile.serialize`, `toy` and `accessory` included (portrait adds the optional `place`). Max length 1600 on mug and blanket and 3200 on portrait |
