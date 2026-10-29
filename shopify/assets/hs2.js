@@ -391,8 +391,10 @@
     // current thumbnail over the sample pug on the mug and the portrait).
     var media = document.querySelector('[data-hs2-media]'), sample = next === 'idle' && !previewHasArt();
     if (media) { if (sample) media.setAttribute('data-hs2-sample-dog', ''); else media.removeAttribute('data-hs2-sample-dog'); }
-    if (media && (blanketArtPreview() || !state.hs3_lines) && !media.__hs2picked) {
-      var hold = sample, pick = null;
+    // the release runs whatever the lines are: typing the note in Teeinblue's field writes lines
+    // after the hold began, and the painting must still come back on show (29 Oct review)
+    if (media && !media.__hs2picked) {
+      var hold = sample && (blanketArtPreview() || !state.hs3_lines), pick = null;
       if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = media.querySelector('[data-hs2-thumb]:not([hidden])'); }
       else if (!hold && media.__hs2held) { media.removeAttribute('data-show'); media.__hs2held = false; pick = media.querySelector('[data-hs2-thumb-preview]'); }
       if (pick) media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pick ? 'true' : 'false'); });
