@@ -45,7 +45,7 @@ test('the section shows each kept image once, with its words and size, and nothi
 test('the switch is on', () => {
   const schema = JSON.parse(section.slice(section.indexOf('{% schema %}') + 12, section.indexOf('{% endschema %}')));
   assert.equal(schema.settings.find(s => s.id === 'examples_on').default, true);
-  const index = JSON.parse(read('shopify/templates/index.json').replace(/\/\*[\s\S]*?\*\//g, ''));
+  const index = JSON.parse(read('shopify/templates/index.chat.json').replace(/\/\*[\s\S]*?\*\//g, ''));
   assert.equal(index.sections.gift.settings.examples_on, true);
   // the slider moves the picture: hs3.js toggles the image that matches the tone
   assert.match(read('shopify/assets/hs3.js'), /\[data-hs3-demo-img\][\s\S]{0,200}classList\.toggle\('is-on', on\)/);

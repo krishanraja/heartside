@@ -98,9 +98,9 @@ export const hasMarker = (html, item) => {
   const a = buyAttributes(html);
   return !!a && Object.entries(item.marker).every(([k, v]) => k in a && (v === '' || a[k] === v));
 };
-// the chat's gift list as the home page's server render gives it
+// the home page's gift list as its server render gives it: the journey's (29 Oct) or the rollback chat's
 export function chatConfig(html) {
-  const m = String(html).match(/<script\b[^>]*\bdata-hs3-config\b[^>]*>([\s\S]*?)<\/script>/i);
+  const m = String(html).match(/<script\b[^>]*\bdata-(?:hsj|hs3)-config\b[^>]*>([\s\S]*?)<\/script>/i);
   if (!m) return null;
   try { return JSON.parse(m[1]); } catch { return null; }
 }

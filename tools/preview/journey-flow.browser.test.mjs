@@ -64,7 +64,9 @@ async function open({width = 390, height = 844, gift} = {}) {
   return {ctx, page, calls, errors};
 }
 const pick = (page, group, v) => page.locator(`[data-hsj-pick="${group}"][data-v="${v}"]`).click();
-const SIZES = [{width: 360, height: 640}, {width: 390, height: 844}];
+// the phones that matter, smallest to largest (29 Oct, Krish: "Guaranteed no scroll on every device"):
+// iPhone SE 1st gen, small Android (Krish's Edge phone), iPhone SE 2/3, iPhone 12 to 15, Pixel, Pro Max
+const SIZES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932}];
 // every screen fits the phone: nothing below the fold (Krish, 29 Oct: "It must be a no-scroll experience")
 async function noScroll(page, where) {
   const {sh, ih} = await page.evaluate(() => ({sh: document.documentElement.scrollHeight, ih: window.innerHeight}));
@@ -99,6 +101,10 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
     assert.equal(await page.locator('[data-hsj-screen="hook"] .hsj-btn').count(), 1, 'one primary button');
     const btn = await page.locator('[data-hsj-go]').boundingBox();
     assert.ok(btn.y + btn.height <= size.height, 'the button is in the first phone screen');
+    // the whole first screen fits, not just the button: nothing below the fold, nothing clipped
+    await noScroll(page, 'hook');
+    const hookBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-hsj-screen="hook"] *')].filter((e) => e.getClientRects().length && getComputedStyle(e).display !== 'none').map((e) => e.getBoundingClientRect().bottom)));
+    assert.ok(hookBottom <= size.height, `the first screen ends at ${hookBottom}px of ${size.height}`);
     await page.screenshot({path: path.join(shots, tag + '-0-hook.png')});
     await page.locator('[data-hsj-go]').click();
     await answer(page, {name: 'mowgli', breed: 'Labrador Retriever', pro: 'he', person: 'sam', home: 'door', spot: 'anywhere', together: 'walk', meaning: 'hard', toys: ['a tennis ball', 'a big stick'], wears: 'a bandana'}, tag);
@@ -151,7 +157,7 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
     await page.waitForURL(/step=photo/);
     await noScroll(page, 'photo');
     const drop = await page.locator('[data-hsj-drop]').boundingBox();
-    assert.ok(drop.height >= 200 && drop.width >= 300, 'one big tappable target');
+    assert.ok(drop.height >= 200 && drop.width >= size.width - 40, 'one big tappable target, the width of the screen');
     await page.screenshot({path: path.join(shots, tag + '-photo.png')});
     await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);

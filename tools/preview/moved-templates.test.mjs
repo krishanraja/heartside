@@ -10,7 +10,7 @@ import {Liquid} from 'liquidjs';
 const root=new URL('../../',import.meta.url);
 const read=path=>readFileSync(new URL(path,root),'utf8');
 const retired=['index.classic.json','index.shop.json','index.landing.json','index.gifts.json','index.artwork-preview.json','product.landing.json','product.review.json','product.shop.json','product.shopgift.json','product.heartside.json','product.gift.json','product.mug-art-preview.json','product.blanket-art-preview.json','product.city-art-preview.json'];
-const live=['product.mug-native.json','product.portrait-native.json','product.blanket-native.json','index.json','cart.json'];
+const live=['product.mug-native.json','product.portrait-native.json','product.blanket-native.json','index.json','index.chat.json','cart.json'];
 
 test('every retired template renders only the moved section',()=>{
   for(const name of retired) {
@@ -29,7 +29,9 @@ test('the live templates still render their own sections, never the moved page',
     const types=Object.values(t.sections).map(x=>x.type);
     assert.ok(types.length && !types.includes('hs-moved'),name);
     if(name.startsWith('product.')) assert.deepEqual(types,['hs2-product'],name);
-    if(name==='index.json') assert.deepEqual(types,['hs3-chat'],name);
+    // 29 Oct: the homepage is the journey; the chat stays one release at /?view=chat for rollback
+    if(name==='index.json') assert.deepEqual(types,['hs-journey'],name);
+    if(name==='index.chat.json') assert.deepEqual(types,['hs3-chat'],name);
   }
 });
 

@@ -120,14 +120,16 @@ for (const v of views) {
       check(v, 'home: favicon is the heart', c.favicon);
       check(v, 'home: no sideways scroll, page not locked', !c.overflow && !c.locked, `overflow ${c.overflow}, locked ${c.locked}`);
       // Krish's Edge phone, 28 Oct: "Start with your dog" sat below the first screen
-      const start = await page.evaluate(() => { const b = document.querySelector('[data-hs3-start]'); return b ? { bottom: Math.round(b.getBoundingClientRect().bottom), h: innerHeight } : null; });
+      // 29 Oct: the homepage is the journey; its start button, or the rollback chat's
+      const start = await page.evaluate(() => { const b = document.querySelector('[data-hsj-go="name"], [data-hs3-start]'); return b ? { bottom: Math.round(b.getBoundingClientRect().bottom), h: innerHeight } : null; });
       check(v, 'home: Start with your dog ends inside the first screen', start && start.bottom <= start.h, start ? `ends at ${start.bottom}px in a ${start.h}px window` : 'no start button');
       await page.screenshot({ path: path.join(OUT, `${v}-home.png`) });
     });
 
     // 2. The chat: an address per step; Back, Forward and reload keep the answers
     if (parts.includes('chat')) await part('chat', async () => {
-      if (!parts.includes('home')) { await open(page, url('/')); await settle(page, 3000); }
+      // the chat is the rollback homepage now (templates/index.chat.json, /?view=chat)
+      await open(page, url('/?view=chat')); await settle(page, 3000);
       await page.click('[data-hs3-start]');
       await page.fill('#hs3-dog', 'Pip'); await page.click('[data-hs3="next"]');
       await page.fill('#hs3-rec', 'Alex'); await page.click('[data-hs3="next"]');

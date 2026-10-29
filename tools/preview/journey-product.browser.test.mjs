@@ -17,7 +17,8 @@ import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(here, 'out');
+const out = path.join(here, 'out'), shots = path.join(out, 'journey-product');
+fs.mkdirSync(shots, {recursive: true});
 // the rendered pages come from render.mjs; CI renders after the tests that need none
 if (!fs.existsSync(path.join(out, 'assets', 'hs-journey-choose.js'))) execFileSync(process.execPath, ['render.mjs'], {cwd: here, stdio: 'ignore'});
 const PAGE_FOR = {'your-dogs-illustrated-mug': 'product-mug-native.html', 'your-dogs-portrait': 'product-portrait-native.html', 'your-dogs-personality-blanket': 'product-blanket-native.html'};
@@ -93,7 +94,7 @@ async function open(size, {photo = true, journeyAge = 0, gift = 'print'} = {}) {
   }
   return {page, ctx, errors};
 }
-const PHONES = [{width: 360, height: 640}, {width: 390, height: 844}];
+const PHONES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932}];
 const fits = page => page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1);
 // stand in for a saved painting: hs2 marks the card done only once Teeinblue's preview holds it
 const paintDone = page => page.evaluate(() => {
@@ -128,6 +129,12 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog leading the morning walk like the grand marshal of a parade\..*Also in the scene: the dog with his tennis ball and big stick\./);
     assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');
+    // what Teeinblue shows while it paints (its uploading marker): the painting card, still on one screen
+    await page.evaluate(() => { const m = document.createElement('div'); m.className = 'tee-photo-uploading'; m.setAttribute('data-standin', ''); document.querySelector('#buy .tee-field--photo').appendChild(m); });
+    await page.waitForSelector('[data-hs-jm-paint] [data-hs-art][data-state="painting"]', {timeout: 8000});
+    assert.ok(await fits(page), 'the painting card fits without scrolling');
+    await page.screenshot({path: path.join(shots, size.width + '-painting.png')});
+    await page.evaluate(() => document.querySelector('[data-standin]').remove());
     // a reload does not paint again
     await page.reload();
     await page.waitForTimeout(3500);
@@ -155,6 +162,7 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting on e
     assert.equal(first.tick, 'Yes, this is Mowgli');
     assert.equal(first.add, true, 'no add before the tick');
     assert.ok(await fits(page), 'the gifts screen fits without scrolling');
+    await page.screenshot({path: path.join(shots, size.width + '-gifts.png')});
     // the painted gift cannot be dropped; a tap picks an extra and the total follows
     await page.dispatchEvent('[data-hs-jm-gift=print]', 'click'); // aria-disabled: a real tap is refused too
     await page.click('[data-hs-jm-gift=blanket]');
@@ -202,6 +210,7 @@ test('a photo that did not carry over: one button opens the picker, and the auto
     await page.waitForSelector('[data-hs-jm-nophoto]:not([hidden])', {timeout: 9000});
     assert.equal(await page.textContent('[data-hs-jm-photo]'), "Choose Mowgli's photo");
     assert.ok(await fits(page));
+    await page.screenshot({path: path.join(shots, '390-nophoto.png')});
     await page.evaluate(() => { window.__picked = 0; document.querySelectorAll('#buy input[type=file]').forEach(i => i.addEventListener('click', e => { e.preventDefault(); window.__picked++; })); });
     await page.click('[data-hs-jm-photo]');
     assert.equal(await page.evaluate(() => window.__picked), 1, "Teeinblue's own photo field opens");

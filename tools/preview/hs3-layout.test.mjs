@@ -24,7 +24,7 @@ const slice = (src, name) => { const i = src.indexOf('  function ' + name + '(')
 const SCHEMA = /{%-?\s*schema\s*-?%}([\s\S]*?){%-?\s*endschema\s*-?%}/;
 const source = text('shopify/sections/hs3-chat.liquid');
 const schema = JSON.parse(source.match(SCHEMA)[1]);
-const index = JSON.parse(text('shopify/templates/index.json').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
+const index = JSON.parse(text('shopify/templates/index.chat.json').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
 const engine = new Liquid({strictFilters: true});
 const money = c => '$' + (Number(c) / 100).toFixed(2);
 const attr = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');

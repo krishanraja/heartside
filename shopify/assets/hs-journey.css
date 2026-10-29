@@ -55,6 +55,15 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 .hsj-btn:disabled { background: #CFC4BB; cursor: default; }
 .hsj-dock { position: sticky; bottom: 0; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 246, 241, 0), var(--cream) 30%); margin-top: 18px; z-index: 2; }
 .hsj-hook .hsj-dock { position: static; background: none; }
+/* the first screen fits the phone too (Krish, 29 Oct: "Guaranteed no scroll on every device"): the
+   example shrinks with the screen's height, the shipping strip above already says free shipping, and
+   the legal links sit in one small line under the button */
+.hsj-hook { padding-bottom: 8px; }
+.hsj-hook .hsj-dock { margin-top: 12px; padding: 0; }
+.hsj-hook .hsj-example img { aspect-ratio: auto; height: clamp(96px, calc(100svh - 475px), 300px); }
+@media (min-height: 701px) { .hsj-hook .hsj-example img { height: clamp(96px, calc(100svh - 560px), 300px); } }
+.hsj-hook .hsj-trust { display: none; }
+.hsj-hook .hsj-legal { margin-top: 6px; font-size: 11px; line-height: 1.4; }
 .hsj-link { appearance: none; background: none; border: 0; padding: 10px 0; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hsj-head { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; }
 .hsj-back { flex: none; appearance: none; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; }

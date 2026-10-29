@@ -30,7 +30,12 @@ html.hs-jm-on body { background: #FBF6F1; }
 .hs-jm__back { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-left: -10px; border-radius: 22px; color: var(--ink); text-decoration: none; font-size: 22px; }
 .hs-jm__title { font-family: var(--serif); font-size: 24px; line-height: 1.15; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
 .hs-jm__paint { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-.hs-jm__paint .hs-art { margin: 0; }
+.hs-jm__paint .hs-art { margin: 0; padding: 12px; }
+/* the painting card on one phone screen: the picture takes the height the words leave it, and the
+   panel's own title already says "Painting {dog}" */
+.hs-jm__paint .hs-art__canvas { width: min(100%, calc((100svh - 300px) * var(--hs-art-r, 0.8333))); }
+.hs-jm__paint .hs-art__title { display: none; }
+.hs-jm__paint .hs-art__line { margin-top: 10px; }
 .hs-jm__choose { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .hs-jm__lead { margin: 0; color: var(--body); font-size: 15px; }
 

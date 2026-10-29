@@ -117,6 +117,9 @@
   // margin floor (docs/ECONOMICS.md), so a mug pick paints the portrait first and the mug is one
   // tap away on the next screen
   function bestGift() {
+    // a buyer who started from the blanket's or the portrait's page gets that gift; one from the mug's
+    // page follows the rule below, and the mug is one tap away on the gifts screen
+    if (S.wanted === 'blanket' || S.wanted === 'print') return S.wanted;
     var c = note(), g = c && c.gift;
     if (g === 'blanket' || g === 'print') return g;
     // the writer's own rule (n8n Enforce, Krish 29 Oct): the boss of the house is the portrait, a dog that
@@ -516,7 +519,11 @@
     window.addEventListener('popstate', function () { var s = stepFromURL(); render(allowed(s) ? s : ''); });
     // a gift page reached without the journey sends the buyer here with ?gift=; the dog comes first
     var q = new URLSearchParams(window.location.search);
-    if (q.get('gift')) track('from_gift', { gift: q.get('gift') });
+    if (q.get('gift')) {
+      var w = q.get('gift') === 'portrait' ? 'print' : q.get('gift');
+      if (/^(mug|blanket|print)$/.test(w)) { S.wanted = w; save(); }
+      track('from_gift', { gift: q.get('gift') });
+    }
     var s = stepFromURL();
     if (s && !allowed(s)) go(s, true); else render(s);
     document.documentElement.classList.remove('hsj-routed');

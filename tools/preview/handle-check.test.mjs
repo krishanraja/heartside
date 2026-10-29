@@ -258,6 +258,8 @@ test('the parts that read the server HTML', () => {
   assert.ok(!hasMarker(productPage(BLANKET), MUG));
   assert.ok(!hasMarker('<div id="buy" data-hs2-artwork-kind="mug" data-hs2-purchase-enabled="false">', MUG), 'purchase switched off');
   assert.deepEqual(chatProblems(chatConfig(homePage())), []);
+  // 29 Oct: the journey homepage carries the same gift list in data-hsj-config
+  assert.deepEqual(chatProblems(chatConfig(homePage().replace('data-hs3-config', 'data-hsj-config'))), []);
   assert.deepEqual(chatProblems(null), ['home: no chat config on the first screen']);
   assert.match(chatProblems({gifts: gifts({blanket: {url: '/products/heartside-personality-blanket-draft-2026-10-23', handle: 'heartside-personality-blanket-draft-2026-10-23'}})})[0], /the chat's blanket is \/products\/heartside-personality-blanket-draft-2026-10-23/);
   assert.deepEqual(menuProblems(menuLinks(homePage())), []);
