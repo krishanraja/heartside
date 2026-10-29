@@ -1,0 +1,151 @@
+{
+ "what": "The note writer v2.1-2.3 on the n8n compose draft (not published), 29 Oct. Bodies from tools/bench/bodies.mjs after(): each tap as words, the toy and what the dog wears as typed answers, no draft lines. Executions 47868-47879 (four dogs, three tones, v2.1), 47880-47885 (sensitivity, v2.2), 47886-47887 (gift rule, v2.3). Lines are Enforce's output, the words a buyer would see.",
+ "runs": {
+  "bao": {
+   "sentimental": {
+    "home": "I try to play it cool for a second, but I can't.",
+    "spot": "The couch is where I wait, and I save your side.",
+    "together": "Our naps are the best part of my whole day.",
+    "meaning": "My favorite place is right beside you.",
+    "gift": "blanket",
+    "reason": "Your partner and Bao spend their best hours close on the couch, so a blanket lets Bao stay curled up there even when he can't.",
+    "scene": "A French Bulldog in a bow curled on a couch, a squeaky toy tucked under his chin, eyes soft and half closed, a quiet, close, sleepy moment."
+   },
+   "warm": {
+    "home": "I try to play it cool, but only for about a second.",
+    "spot": "The couch is where I keep your place warm and my bow neat.",
+    "together": "Naps with you are my favorite thing, squeaky toy tucked in.",
+    "meaning": "I'm your shadow and I like it that way.",
+    "gift": "blanket",
+    "reason": "Bao's whole life with your partner is the couch and the naps, so a blanket lets Bao be a shadow even when the couch is empty.",
+    "scene": "A French Bulldog in a bow curled up on a couch, one eye half open as if playing it cool, a squeaky toy tucked under his chin, soft and quiet with a small wink in the expression."
+   },
+   "hilarious": {
+    "home": "I play it cool for a full second, which is all I can manage.",
+    "spot": "The couch is where I wait, in my bow, for your return.",
+    "together": "Our naps are serious work and I take them very seriously.",
+    "meaning": "You are my person and I am your shadow.",
+    "gift": "blanket",
+    "reason": "Bao is a couch-and-naps shadow who follows your partner everywhere, so a blanket keeps Bao close even on the days Bao is not in the room.",
+    "scene": "A French Bulldog in a bow curled on a couch in a deep nap, a squeaky toy tucked under his chin, one eye cracked open as if keeping watch. Hilarious: a smug, drowsy look."
+   }
+  },
+  "juno": {
+   "sentimental": {
+    "home": "I bring you my tennis ball because it's my best gift.",
+    "spot": "I settle on your feet, because that's where I'm happiest.",
+    "together": "Every walk with you is the best part of my whole day.",
+    "meaning": "You're my best friend, and I love you.",
+    "gift": "print",
+    "reason": "Juno and Mom are walking buddies and best friends, and that kind of story deserves a framed portrait Mom can see every day.",
+    "scene": "A Labrador Retriever sits proudly in soft light, wearing a collar, a tennis ball held gently in the mouth, eyes tender and a little shy, offering it to someone just out of frame."
+   },
+   "warm": {
+    "home": "I bring you my tennis ball because you came home.",
+    "spot": "I settle on your feet because that's where I belong.",
+    "together": "Our walks are my favorite part, and my collar jingles along.",
+    "meaning": "You're my best friend, and I'm yours.",
+    "gift": "print",
+    "reason": "Mom and Juno are best friends who share daily walks, and a framed portrait suits a dog who shows up with a tennis ball and her whole heart.",
+    "scene": "A Labrador Retriever sitting proudly with a tennis ball in her mouth, wearing a collar, tail mid-wag, eyes bright and a little pleased with herself, against a plain soft background."
+   },
+   "hilarious": {
+    "home": "I bring you a tennis ball because you clearly earned one.",
+    "spot": "I sleep on your feet because someone has to guard them.",
+    "together": "Our walks are the most important meetings of my day.",
+    "meaning": "You're my best friend and I'm your ball guy.",
+    "gift": "print",
+    "reason": "",
+    "scene": "A Labrador Retriever in a collar sitting proudly with a tennis ball in her mouth, chest out and eyes bright, looking like she just won the day. Plain background."
+   }
+  },
+  "earl": {
+   "sentimental": {
+    "home": "I'm at the door whenever you're coming home.",
+    "spot": "I sleep best on your side of the bed.",
+    "together": "Car rides with you are my favorite way to see the world.",
+    "meaning": "On hard days, I want to be right beside you.",
+    "gift": "print",
+    "reason": "",
+    "scene": "A Greyhound sitting upright and calm on the edge of a bed, wearing a snug knitted sweater, gazing gently toward the viewer with soft, tender eyes against a plain warm background."
+   },
+   "warm": {
+    "home": "I wait at the door because the day starts when you walk in.",
+    "spot": "Your side of the bed is mine, and I keep it warm for you.",
+    "together": "Car rides are my favorite, me in my sweater beside you.",
+    "meaning": "On hard days, I'm there, close and quiet.",
+    "gift": "print",
+    "reason": "Earl waits at the door, rides along in his sweater and stays close on Dad's hard days, a gentle character worth framing.",
+    "scene": "A Greyhound in a cozy sweater resting on the bed, head lifted with a soft, knowing look, settled in as if keeping watch over someone's favorite spot."
+   },
+   "hilarious": {
+    "home": "I wait at the door because greeting you is a ceremony.",
+    "spot": "Your side of the bed is mine, and I wear a sweater to it.",
+    "together": "On car rides I sit like a gentleman and judge nothing.",
+    "meaning": "I'm yours, always.",
+    "gift": "print",
+    "reason": "",
+    "scene": "A Greyhound lying elegantly on a bed in a cozy sweater, chin lifted, wearing a grave, self-important expression as if on very important duty. Plain soft background."
+   }
+  },
+  "frank": {
+   "sentimental": {
+    "home": "I spin in circles when you're back, it's all my joy.",
+    "spot": "I settle wherever you are, because that's where home is.",
+    "together": "Our morning coffee is when the day smells its best to me.",
+    "meaning": "You let me be the boss, and I love you.",
+    "gift": "print",
+    "reason": "",
+    "scene": "A dachshund sitting proudly in the middle of a plain soft background, a bone resting at his paws, gazing up with quiet, tender devotion as if keeping watch over the house."
+   },
+   "warm": {
+    "home": "I spin around because you coming home smells like joy.",
+    "spot": "Wherever you are is where I end up, nose first.",
+    "together": "Our morning coffee is when I sniff out the whole day.",
+    "meaning": "You live in my house, but I'm the boss.",
+    "gift": "print",
+    "reason": "Your mornings start with Frank and a coffee, and Frank carries the quiet authority of a boss, so a framed portrait of him suits the house.",
+    "scene": "A chestnut dachshund sits upright and dignified, nose lifted, with a bone resting between his front paws. He wears a calm, knowing look of someone who runs the place, against a plain warm background."
+   },
+   "hilarious": {
+    "home": "I spin in circles because it takes that long to inspect you.",
+    "spot": "I settle wherever you are, which is where I am needed.",
+    "together": "Morning coffee is when you and I review the day and my bone.",
+    "meaning": "You're my staff, and I'm the boss of you.",
+    "gift": "print",
+    "reason": "Your mornings start with Frank and a coffee, and a boss of the house deserves a framed portrait hung where he can supervise.",
+    "scene": "A Dachshund sits with great authority, one paw resting on a bone, chin lifted and eyes half-closed in a deadpan, self-important look, as if presiding over a morning meeting."
+   }
+  }
+ },
+ "sensitivity_warm_juno": {
+  "base (feet, walks, tennis ball, Lab)": {
+   "home": "I bring you my tennis ball because it's my best gift.",
+   "meaning": "You're my best friend, and I'm yours.",
+   "gift": "print"
+  },
+  "toy: rope toy": {
+   "home": "I bring you my rope toy because you deserve my best.",
+   "gift": "print",
+   "scene": "...holding a rope toy in the mouth..."
+  },
+  "breed: Border Collie": {
+   "home": "I meet you with a tennis ball because I planned ahead.",
+   "spot": "I settle on your feet so I always know where you are.",
+   "together": "I plan my whole day around our walks.",
+   "meaning": "You're my best friend, and I keep count."
+  },
+  "spot couch + naps (v2.3)": {
+   "spot": "I save you the best cushion on the couch every day.",
+   "together": "Our naps are my favorite thing, and I take them seriously.",
+   "gift": "blanket",
+   "reason": "Mom and Juno share the couch and their naps, so a blanket gives Mom that cozy closeness to curl up in, ball and all."
+  }
+ },
+ "findings": [
+  "Round 1 (47856-47867): 13 of 48 lines lost to the rules, one whole note lost to a stray comma, every partner reason lost to your partner, scenes naming the dog or inventing doors and slippers, the gift changing with the tone.",
+  "Round 2 (47868-47879): 48 of 48 lines from the writer; toy and outfit in 11 of 12 notes; gift steady across tones; 7 of 12 reasons kept (5 over length or naming a door the owner never gave).",
+  "One scene (47878) described a chestnut coat, and one earlier a greying muzzle: Buddy's own looks. v2.2 drops any coat or muzzle.",
+  "v2.3: the first gift is the closeness rule, checked in Enforce; a pick against it loses its reason."
+ ]
+}
