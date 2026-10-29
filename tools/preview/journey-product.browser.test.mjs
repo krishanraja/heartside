@@ -125,8 +125,8 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     // recipes v10: the painter's hidden fields carry the directed brief for this dog (PROMPT-SPEC-2026-10-29.md)
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^Keep exactly who he is: this Border Collie's face shape/);
-    // v11: the stated walk keeps the joke, and the named toys join the scene
-    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog leading the morning walk like the grand marshal of a parade\..*Also in the scene: the dog with his tennis ball and big stick\./);
+    // v11/v12: the stated walk keeps the joke as a visible contrast, and the named toys join the scene
+    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog marching far out in front .*like the leader of a parade.*Also in the scene: the dog with his tennis ball and big stick\./);
     assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');
     // what Teeinblue shows while it paints (its uploading marker): the painting card, still on one screen
