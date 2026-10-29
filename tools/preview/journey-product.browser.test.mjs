@@ -162,8 +162,13 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting on e
     }
     // the tick is hs2's own approval box; the add clicks Teeinblue's own button
     // hs2's own refusal while a painting is still saving is covered by its tests; the stand-in painting
-    // here is never really saved, so the box is a plain one
-    await page.evaluate(() => { const a = document.querySelector('[data-hs2-artwork-accept]'); a.replaceWith(a.cloneNode()); });
+    // here is never really saved, so the box is a plain one that hs2's own checks cannot clear
+    await page.evaluate(() => {
+      const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode();
+      let on = false;
+      Object.defineProperty(b, 'checked', {get: () => on, set: v => { if (v) on = true; }});
+      a.replaceWith(b);
+    });
     await page.check('[data-hs-jm-tick]');
     assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-artwork-accept]').checked), true);
     assert.equal(await page.isDisabled('[data-hs-jm-add]'), false);
