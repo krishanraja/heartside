@@ -106,6 +106,30 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} 
   } finally { await page.close(); }
 });
 
+// review of the fix above: on a page reached without the chat, the example is held; typing the note
+// in Teeinblue's field then writes lines, and the hold must still let go once the painting runs
+for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} mug without the chat, note typed before painting: the painting still comes on show`, async () => {
+  const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings: {blanket_purchase: false, native_artwork_kind: 'mug'}});
+  const page = await browser.newPage({viewport: {width: 390, height: 844}});
+  await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__media" data-hs2-media data-tib="on"><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div class="hs2-product__tib" data-hs2-tib-gallery style="height:200px"></div></div></div>${html}<div class="tee-field--photo"><img class="tee-photo-image" src=""></div></main>`}) : r.abort());
+  try {
+    await page.goto('https://hs.test/');
+    const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
+    const code = `var pending=false,saved=false,src='',state={},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
+      function blanketNativeError(){return false;}function blanketArtPreview(){return false;}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
+    await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
+    const show = () => page.evaluate(() => document.querySelector('[data-hs2-media]').getAttribute('data-show'));
+    await page.evaluate(() => artStage(false));
+    assert.equal(await show(), 'photo', 'held on the example');
+    await page.evaluate(() => { state.hs3_lines = {line1: 'Morning, you.'}; artStage(false); });
+    await page.evaluate(() => artStage(true));
+    assert.equal(await show(), null, 'painting: the preview, under the wash');
+    await page.evaluate(design => { src = design; saved = true; document.querySelector('.tee-photo-image').setAttribute('src', design); artStage(false); }, DESIGN);
+    assert.equal(await show(), null, 'done: their painting on show');
+    assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-thumb-preview]').getAttribute('aria-current')), 'true');
+  } finally { await page.close(); }
+});
+
 // 28 Oct: the photo the buyer gave Buddy is one choice (Krish: "the UI should absolutely really be asking
 // if you want to add to that or use a different picture"). Real snippet and stylesheet: the card names the
 // dog and says it starts the painting; Teeinblue's empty uploader is clip-hidden while it shows, never
