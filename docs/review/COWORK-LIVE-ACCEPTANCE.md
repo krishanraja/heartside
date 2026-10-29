@@ -69,6 +69,8 @@ cd tools/preview && npm ci && npx playwright install chromium
   - The check on the phone takes at most 10 seconds in all, the dog check included, then the photo goes on. The Photo log's `check:` line shows `ms` of about 10000 at most.
   - Uploads are at most 4096 px on the long side.
   - A photo already given to Buddy shows as one card: "Use <dog>'s photo" or "Use a different photo".
+  - Until the buyer's painting is in, the picture on show is labeled "Example", and "Your design" is never the current thumbnail over Teeinblue's sample dog. The product price reads "$45", "$119" or "$129", with no ".00".
+  - "Add our artist's touch, $29" reads on one line, with a space after the comma.
 - **Painting and confirming.**
   - The painting card says "About a minute, sometimes two. When it's done, check the framing, then Save."
   - Teeinblue's crop dialog stays inside the screen.
@@ -243,6 +245,8 @@ Close Part 1 with a table of each item: done with readback, fallback taken, or s
 ## Part 2: release the theme
 
 ### 2.1 Push to a copy
+
+If a copy was already pushed before the 29 October fixes reached main, push it again from current main and run 2.2 on that push. Those fixes are why the live gate failed on every product page of the first copy.
 
 1. **Duplicate the theme.** In Shopify admin, Online Store, Themes, duplicate the live theme and name the copy "Heartside 28 Oct fixes". Keep its theme id private.
 2. **Run the guarded push.** In GitHub, run the action "Push homepage to a Shopify theme" (Actions, then Run workflow) with:
