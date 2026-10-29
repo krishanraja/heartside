@@ -108,9 +108,16 @@ jobs:
       SHOPIFY_FLAG_STORE: bnf1em-ge.myshopify.com
       SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
       SHOPIFY_CLI_NO_ANALYTICS: "1"
-      THEME_ID: ${{ inputs.theme_id }}
       THEME_NAME: ${{ inputs.theme_name }}
     steps:
+      # GitHub prints a job's env before the first step runs, so the theme id is read from the
+      # event and masked here, then exported, instead of sitting in the job's env (29 Oct: it showed
+      # once, unmasked, in the env dump of the first step)
+      - name: Keep the theme id out of the log
+        run: |
+          id=$(jq -r '.inputs.theme_id // ""' "$GITHUB_EVENT_PATH")
+          if [ -n "$id" ]; then echo "::add-mask::$id"; fi
+          echo "THEME_ID=$id" >> "$GITHUB_ENV"
       - name: Check inputs
         run: |
           if [ -z "$SHOPIFY_CLI_THEME_TOKEN" ]; then
