@@ -327,6 +327,35 @@
     try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
     return openPhotoPicker('journey');
   }
+  /* One free repaint (Krish, 29 Oct: "They should get one free regenerate where they can choose to
+     change the slider one last time"): once the painting is saved, the buyer may pick a tone once
+     more and the same photo is painted again. The words follow when the journey already wrote that
+     tone. Used once per journey and gift page, then gone; a reload never repaints. */
+  function journeyRepaintKey(j) { return 'hs2-journey-repaint:' + productId() + ':' + j.t; }
+  function journeyRepaintLeft() {
+    var j = journey();
+    if (!j || !cityArtSaved()) return false;
+    try { return !sessionStorage.getItem(journeyRepaintKey(j)); } catch (e) { return false; }
+  }
+  function journeyRepaint(tone) {
+    var j = journey(), engine = window.HSArtworkEngine;
+    if (!j || !engine || !Object.prototype.hasOwnProperty.call(engine.recipes.tones, tone) || !journeyRepaintLeft() || !usePhoto.file || blanketUploadPending()) return false;
+    try { sessionStorage.setItem(journeyRepaintKey(j), String(Date.now())); } catch (e) { return false; }
+    var lines = j.notes && j.notes[tone];
+    if (lines) { state.hs3_lines = lines; state.hs3_mug_lines = lines; }
+    state.hs_journey.tone = tone;
+    state.hs3_art_choices = { style: (state.hs3_art_choices || {}).style || j.style, tone: tone };
+    save();
+    try { if (window.HSArtworkChoices) window.HSArtworkChoices.select({ tone: tone }); } catch (e) { /* the fields carry it */ }
+    runBridge();
+    // the hidden fields take the new tone's brief first, then the photo goes again
+    var tries = 0, timer = setInterval(function () {
+      if (++tries > 100) { clearInterval(timer); return; }
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      clearInterval(timer); sendBlanketPhoto();
+    }, 300);
+    return true;
+  }
   function journeyAutoSend() {
     var j = journey();
     if (!j) return;
@@ -4231,5 +4260,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyPick: journeyPick, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

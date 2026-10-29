@@ -4,7 +4,9 @@
 .hsj {
   --cream: #FBF6F1; --paper: #FFFDF9; --ink: #121010; --body: #3E322D; --muted: #5A4A44;
   --line: #E2D4C8; --chestnut: #8A4A2B; --stamp: #A8284E;
-  --serif: "HS Fraunces", Georgia, serif; --sans: "HS DM Sans", system-ui, -apple-system, sans-serif; --mono: "HS Courier Prime", "Courier New", monospace;
+  /* one type family, DM Sans, for everything (Krish, 29 Oct: "the professionalism of this product is
+     totally undermined by the fonts across the whole app"); --serif and --mono stay as names only */
+  --sans: "HS DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --serif: var(--sans); --mono: var(--sans);
   background: var(--cream); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.4;
   -webkit-text-size-adjust: 100%;
 }
@@ -20,23 +22,32 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 .hsj__screen { max-width: 480px; margin: 0 auto; padding: 8px 16px 96px; }
 /* a question screen fills the phone and never scrolls: progress, question, taps, then the button
    at the bottom in thumb reach (Krish, 29 Oct: "It must be a no-scroll experience") */
+/* thumb reach (Krish, 29 Oct): the progress line at the top, then space; the question, the taps, Back
+   and the button sit together low on the screen, where a thumb reaches while holding the phone */
 .hsj__screen--step { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; padding-bottom: 0; }
-.hsj__screen--step .hsj-body { flex: 1; display: flex; flex-direction: column; gap: 14px; }
-.hsj__screen--step .hsj-dock { margin-top: auto; position: sticky; bottom: 0; }
+.hsj__screen--step .hsj-head { margin-top: auto; }
+.hsj__screen--step .hsj-body { display: flex; flex-direction: column; gap: 14px; }
+.hsj__screen--step .hsj-body--words { flex: 1; min-height: 0; }
+/* the words screen is exactly one phone high: the note takes what is left and never pushes the page */
+.hsj__screen--step[data-hsj-screen="words"] { height: 100vh; height: 100svh; }
+.hsj__screen--step .hsj-dock { position: sticky; bottom: 0; }
 .hsj-progress { height: 4px; border-radius: 999px; background: var(--line); margin: 4px 0 10px; overflow: hidden; }
 .hsj-progress span { display: block; height: 100%; background: var(--stamp); transition: width .25s; }
 .hsj-pills--big .hsj-pill { flex: 1; justify-content: center; text-align: center; min-height: 64px; font-size: 18px; border-radius: 16px; }
+/* up to six choices: full-width rows, each an easy thumb target */
+.hsj-pills--rows { flex-direction: column; flex-wrap: nowrap; }
+.hsj-pills--rows .hsj-pill { width: 100%; min-height: 54px; font-size: 17px; border-radius: 14px; padding: 12px 16px; }
 .hsj-search { margin-top: 4px; }
-.hsj-brief { font-family: var(--serif); font-size: 15px; line-height: 1.35; color: var(--body); margin: 0; }
-.hsj h1, .hsj h2 { font-family: var(--serif); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+.hsj-brief { font-size: 15px; line-height: 1.4; color: var(--body); margin: 0; }
+.hsj h1, .hsj h2 { margin: 0; font-weight: 700; letter-spacing: -0.025em; text-wrap: balance; }
 .hsj p { text-wrap: pretty; }
-.hsj-eyebrow, .hsj-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chestnut); margin: 0 0 6px; }
-.hsj-h1 { font-size: clamp(34px, 9vw, 46px); line-height: 1.04; margin: 0 0 14px; }
-.hsj-h1 em { font-style: italic; color: var(--stamp); }
-.hsj-h2 { font-size: 26px; line-height: 1.12; }
+.hsj-eyebrow, .hsj-label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--chestnut); margin: 0 0 6px; }
+.hsj-h1 { font-size: clamp(32px, 9vw, 44px); line-height: 1.08; margin: 0 0 14px; }
+.hsj-h1 em { font-style: normal; color: var(--stamp); }
+.hsj-h2 { font-size: 27px; line-height: 1.15; }
 .hsj-small { font-size: 13.5px; line-height: 1.45; color: var(--muted); margin: 4px 0 0; }
 .hsj-lead { font-size: 16.5px; line-height: 1.45; color: var(--body); margin: 14px 0 0; }
-.hsj-tag { position: absolute; top: 8px; left: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--paper); color: var(--ink); border-radius: 6px; padding: 3px 6px; box-shadow: 0 0 0 1px var(--line); }
+.hsj-tag { position: absolute; top: 8px; left: 8px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--paper); color: var(--ink); border-radius: 6px; padding: 3px 6px; box-shadow: 0 0 0 1px var(--line); }
 .hsj-trust, .hsj-legal { margin-top: 18px; }
 .hsj-legal { font-size: 12px; color: var(--muted); }
 .hsj-legal a { color: inherit; }
@@ -46,31 +57,35 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 .hsj-example { position: relative; margin: 0; border-radius: 20px; overflow: hidden; background: var(--paper); box-shadow: 0 14px 28px -18px rgba(30, 23, 20, 0.55), 0 0 0 1px #EFE6DD; }
 .hsj-example img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
 .hsj-example__note { display: grid; gap: 2px; padding: 12px 14px 14px; }
-.hsj-example__for { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--chestnut); }
-.hsj-example__line { font-family: var(--mono); font-size: 16px; color: var(--ink); }
-.hsj-example__sign { font-family: var(--serif); font-style: italic; color: var(--body); }
+.hsj-example__for { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--chestnut); }
+.hsj-example__line { font-size: 17px; line-height: 1.35; color: var(--ink); }
+.hsj-example__sign { font-weight: 600; color: var(--body); }
 
 /* buttons */
 .hsj-btn { appearance: none; border: 0; border-radius: 14px; background: var(--ink); color: var(--cream) !important; font-size: 17px; font-weight: 600; min-height: 54px; padding: 0 20px; width: 100%; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
 .hsj-btn:disabled { background: #CFC4BB; cursor: default; }
-.hsj-dock { position: sticky; bottom: 0; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 246, 241, 0), var(--cream) 30%); margin-top: 18px; z-index: 2; }
-.hsj-hook .hsj-dock { position: static; background: none; }
+.hsj-ico { display: block; width: 22px; height: 22px; flex: none; }
+.hsj-btn { gap: 10px; }
+.hsj-btn .hsj-ico { width: 20px; height: 20px; }
+.hsj-dock { position: sticky; bottom: 0; display: flex; gap: 10px; padding: 12px 0 max(14px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 246, 241, 0), var(--cream) 30%); margin-top: 16px; z-index: 2; }
+.hsj-dock .hsj-btn { flex: 1; }
+.hsj-hook .hsj-dock { position: static; background: none; display: block; }
 /* the first screen fits the phone too (Krish, 29 Oct: "Guaranteed no scroll on every device"): the
    example shrinks with the screen's height, the shipping strip above already says free shipping, and
    the legal links sit in one small line under the button */
 .hsj-hook { padding-bottom: 8px; }
 .hsj-hook .hsj-dock { margin-top: 12px; padding: 0; }
-.hsj-hook .hsj-example img { aspect-ratio: auto; height: clamp(96px, calc(100svh - 475px), 300px); }
+.hsj-hook .hsj-example img { aspect-ratio: auto; height: clamp(90px, calc(100svh - 482px), 300px); }
 @media (min-height: 701px) { .hsj-hook .hsj-example img { height: clamp(96px, calc(100svh - 560px), 300px); } }
 .hsj-hook .hsj-trust { display: none; }
 .hsj-hook .hsj-legal { margin-top: 6px; font-size: 11px; line-height: 1.4; }
 .hsj-link { appearance: none; background: none; border: 0; padding: 10px 0; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.hsj-head { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; }
-.hsj-back { flex: none; appearance: none; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; }
+.hsj-head { margin: 0 0 16px; }
+.hsj-back { flex: none; appearance: none; width: 54px; height: 54px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
 
 /* questions: pills only, one group after another */
 .hsj-field { margin: 0 0 18px; }
-.hsj-q { display: block; font-family: var(--serif); font-size: 19px; line-height: 1.25; margin: 0 0 10px; padding: 0; }
+.hsj-q { display: block; font-size: 19px; font-weight: 700; line-height: 1.25; margin: 0 0 10px; padding: 0; }
 .hsj-input { width: 100%; min-height: 52px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; padding: 0 14px; font-size: 18px; font-family: inherit; color: var(--ink); }
 .hsj-input:focus { border-color: var(--ink); outline: none; }
 .hsj-hint:empty { display: none; }
@@ -83,18 +98,25 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 
 /* the profile: the words in a box that never changes size, the tone beside them */
 .hsj-card { background: var(--paper); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 0 0 1px #EFE6DD; }
-.hsj-tone { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; background: #F3EEE8; border-radius: 16px; padding: 4px; margin: 0; }
-.hsj-seg { appearance: none; border: 0; background: transparent; border-radius: 12px; min-height: 48px; padding: 4px 2px; font-size: 13.5px; line-height: 1.1; font-weight: 600; cursor: pointer; }
-.hsj-seg.is-on { background: var(--ink); color: var(--cream); }
+/* four tone buttons, two by two, each with room for its name (Krish, 29 Oct: "The slider is not a good UX") */
+.hsj-tone { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.hsj-seg { appearance: none; border: 1.5px solid var(--line); background: #fff; border-radius: 14px; min-height: 52px; padding: 8px 12px; font-size: 16px; line-height: 1.2; font-weight: 600; cursor: pointer; }
+.hsj-seg { display: flex; align-items: center; gap: 10px; text-align: left; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
+/* each tone has its own colour: the icon wears it at rest, the whole button when chosen */
+.hsj-seg--sentimental { --tone: #C2416B; --tone-2: #E07A9A; }
+.hsj-seg--warm { --tone: #D9771F; --tone-2: #F2B045; }
+.hsj-seg--hilarious { --tone: #6B45E0; --tone-2: #9C7CF5; }
+.hsj-seg--over_the_top { --tone: #B98512; --tone-2: #E2BC4A; }
+.hsj-seg .hsj-ico { flex: none; width: 26px; height: 26px; padding: 4px; box-sizing: content-box; border-radius: 10px; color: var(--tone); background: color-mix(in srgb, var(--tone) 12%, #fff); }
+.hsj-seg.is-on { background: linear-gradient(135deg, var(--tone), var(--tone-2)); color: #fff; border-color: transparent; box-shadow: 0 10px 20px -12px var(--tone); }
+.hsj-seg.is-on .hsj-ico { color: #fff; background: rgba(255, 255, 255, 0.2); }
 .hsj-note { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--paper); border-radius: 20px; padding: 16px; box-shadow: 0 0 0 1px #EFE6DD; }
 .hsj-note.is-busy > :not(.hsj-writing) { opacity: .35; transition: opacity .2s; }
-.hsj-voice { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--body); margin: 0 0 10px; }
-.hsj-lines { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
-.hsj-lines li { font-family: var(--mono); font-size: 15px; line-height: 1.4; color: var(--ink); padding-left: 14px; position: relative; }
-.hsj-lines li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: var(--stamp); }
-.hsj-gift-line { border-bottom: 1.5px dashed var(--line); padding-bottom: 10px; margin-bottom: 12px; }
-.hsj-print { font-family: var(--mono); font-size: 18px; line-height: 1.35; margin: 2px 0 0; color: var(--ink); }
-.hsj-sign { font-family: var(--serif); font-style: italic; font-size: 17px; margin: 4px 0 0; }
+/* the note reads as a letter from the dog: its lines, then the signature */
+.hsj-voice { font-size: 16px; color: var(--body); margin: 0 0 10px; }
+.hsj-letter { display: grid; gap: 10px; }
+.hsj-letter p { margin: 0; font-size: 18px; line-height: 1.4; color: var(--ink); }
+.hsj-letter .hsj-sign { font-weight: 600; margin-top: 4px; }
 .hsj-writing { position: absolute; inset: auto 0 0 0; text-align: center; font-size: 14px; color: var(--ink); margin: 0; }
 .hsj-styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .hsj-styles .hsj-style__art { aspect-ratio: 4 / 5; }
@@ -104,7 +126,7 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 .hsj-style__art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hsj-style__art .hsj-tag { top: 4px; left: 4px; font-size: 9px; }
 .hsj-style__art--plain { background: repeating-linear-gradient(135deg, #F3EEE8 0 10px, #EDE4DA 10px 20px); }
-.hsj-style__name { display: block; font-size: 13px; line-height: 1.2; padding: 6px 2px 2px; }
+.hsj-style__name { display: block; font-size: 13.5px; font-weight: 600; line-height: 1.2; padding: 6px 2px 2px; }
 
 /* the photo: one big target */
 .hsj-drop { display: grid; justify-items: center; gap: 10px; padding: 18px; border: 2px dashed var(--ink); border-radius: 20px; background: #fff; cursor: pointer; text-align: center; }
@@ -112,7 +134,8 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
 .hsj-drop:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hsj-drop__img { display: grid; place-items: center; width: 180px; height: 180px; border-radius: 50%; background: #F3EEE8; overflow: hidden; }
 .hsj-drop__img img { width: 100%; height: 100%; object-fit: cover; }
-.hsj-drop__plus { font-size: 64px; line-height: 1; color: var(--ink); }
+.hsj-drop__plus { color: var(--stamp); }
+.hsj-drop__plus .hsj-ico { width: 52px; height: 52px; stroke-width: 1.5; }
 .hsj-drop__text { font-size: 17px; font-weight: 600; }
 .hsj-photo-note:empty { display: none; }
 .hsj-privacy { display: none; }
@@ -122,9 +145,56 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
   .hsj-h1 { font-size: 32px; margin-bottom: 10px; }
   .hsj-example img { aspect-ratio: 16 / 9; }
   .hsj-hook .hsj-lead { display: none; }
-  .hsj-lines li { font-size: 13.5px; }
-  .hsj-print { font-size: 16px; }
+  .hsj-h2 { font-size: 24px; }
+  .hsj-letter p { font-size: 16px; }
+  .hsj-letter { gap: 6px; }
+  .hsj-drop__img { width: 140px; height: 140px; }
   .hsj-styles .hsj-style__art { aspect-ratio: 1 / 1; }
 }
+/* the smallest phones (iPhone SE first generation, 320 x 568): tighter taps and spacing, still 40 px targets */
+@media (max-height: 600px) {
+  .hsj-pills { gap: 6px; }
+  .hsj-pill { min-height: 40px; padding: 8px 12px; font-size: 14.5px; }
+  .hsj-pills--rows .hsj-pill { min-height: 48px; font-size: 16px; }
+  .hsj-head { margin-bottom: 10px; }
+  .hsj-h2 { font-size: 22px; }
+  .hsj-dock { padding-top: 8px; margin-top: 10px; }
+  .hsj-seg { min-height: 44px; padding: 6px 10px; }
+  .hsj-seg .hsj-ico { width: 20px; height: 20px; }
+}
 @media (prefers-reduced-motion: reduce) { .hsj-group { animation: none; } .hsj-pill:active { transform: none; } }
-@media (min-width: 900px) { .hsj__screen { padding-top: 24px; } }
+/* the desktop aside lives only on a desktop */
+.hsj-aside { display: none; }
+
+/* desktop (Krish, 29 Oct: "treat desktop users like they are on a desktop, this should feel like a
+   premium desktop site"): two columns, a large example gift and the gift so far beside the
+   question, everything centred in the window; the hook is a split hero */
+@media (min-width: 900px) {
+  .hsj__screen { padding-top: 24px; }
+  .hsj__screen--step { max-width: 1120px; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-auto-rows: min-content; column-gap: clamp(40px, 6vw, 88px); align-content: center; padding: 48px 40px; }
+  .hsj__screen--step > :not(.hsj-aside) { grid-column: 2; }
+  .hsj-aside { display: grid; gap: 16px; grid-column: 1; grid-row: 1 / span 6; align-self: center; }
+  .hsj-aside__art { position: relative; margin: 0; border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px -36px rgba(30, 23, 20, 0.6), 0 0 0 1px #EFE6DD; }
+  .hsj-aside__art img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+  .hsj-aside__card { background: var(--paper); border-radius: 18px; padding: 16px 18px; box-shadow: 0 0 0 1px #EFE6DD; }
+  .hsj-aside__card .hsj-eyebrow { margin: 0 0 4px; }
+  .hsj-aside__line { margin: 0; font-size: 18px; font-weight: 600; }
+  .hsj__screen--step .hsj-head { margin-top: 0; }
+  .hsj-progress { margin-bottom: 28px; }
+  .hsj-h2 { font-size: 34px; line-height: 1.12; }
+  .hsj__screen--step .hsj-dock { position: static; background: none; padding-bottom: 0; }
+  .hsj__screen--step .hsj-body--words { min-height: 0; }
+  .hsj-note { flex: none; height: 300px; }
+  .hsj__screen--step[data-hsj-screen="words"] { height: auto; }
+  .hsj-pill:hover, .hsj-seg:hover, .hsj-style:hover, .hsj-back:hover { border-color: var(--ink); }
+  .hsj-btn:hover:not(:disabled) { background: #2A2321; }
+  .hsj-pill, .hsj-seg, .hsj-style, .hsj-btn, .hsj-back { transition: background .15s, border-color .15s, color .15s; }
+  /* the hook: words and the button on the left, the example gift large on the right */
+  .hsj-hook { max-width: 1120px; min-height: calc(100vh - 140px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-auto-rows: min-content; column-gap: clamp(40px, 6vw, 88px); align-content: center; padding: 48px 40px; }
+  .hsj-hook > * { grid-column: 1; }
+  .hsj-hook .hsj-example { grid-column: 2; grid-row: 1 / span 7; align-self: center; }
+  .hsj-hook .hsj-example img { height: auto; aspect-ratio: 3 / 2; }
+  .hsj-hook .hsj-h1 { font-size: clamp(44px, 4.6vw, 64px); }
+  .hsj-hook .hsj-lead { display: block; font-size: 19px; max-width: 34ch; }
+  .hsj-hook .hsj-dock { max-width: 380px; }
+}
