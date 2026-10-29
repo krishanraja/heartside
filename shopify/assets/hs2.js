@@ -3125,4 +3125,1036 @@
       cartTidy.mo = new MutationObserver(function (records) {
         if (queued || !records.some(function (r) { return touches(r.target) || Array.prototype.some.call(r.addedNodes, touches); })) return;
         queued = true;
-        setTimeout(function () { queued = false; run([Truncated]
+        setTimeout(function () { queued = false; run(); }, 60);
+      });
+      cartTidy.mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+  }
+  // the server already drew the design (cart-products.liquid); Teeinblue may still be rendering its
+  // copy just after a generation, so a design that fails to load is asked for again, 6 times at most
+  function cartDesignRetry(img) {
+    if (img.__hs2Retry) return;
+    img.__hs2Retry = 0;
+    var again = function () {
+      if (img.complete && img.naturalWidth) return;
+      if (++img.__hs2Retry > 6 || !/^\/\/cdn\.teeinblue\.com\/customizations\//.test(img.getAttribute('src') || '')) return;
+      setTimeout(function () { img.src = img.getAttribute('src').split('?')[0] + '?v=' + Date.now(); }, 3500);
+    };
+    img.addEventListener('error', again);
+    if (img.complete && !img.naturalWidth) again();
+  }
+  function cartPicture(row, url) {
+    var designed = row.querySelector('.cart-items__media img[data-hs2-design]');
+    if (designed) { cartDesignRetry(designed); return; }
+    // one owner per thumbnail: a cell Teeinblue's own widget already holds is left to it
+    if (row.querySelector('.cart-items__media .tee-customization-image, .cart-items__media .tee-cart-thumbnail')) return;
+    var img = row.querySelector('.cart-items__media img');
+    if (!img) return;
+    if (!url) {
+      if (img.__hs2Original) {
+        img.src = img.__hs2Original.src;
+        if (img.__hs2Original.srcset) img.setAttribute('srcset', img.__hs2Original.srcset);
+        else img.removeAttribute('srcset');
+        if (img.__hs2Original.alt !== null) img.setAttribute('alt', img.__hs2Original.alt);
+        else img.removeAttribute('alt');
+        img.removeAttribute('data-hs2-src'); img.classList.remove('hs2-cart-preview');
+        delete img.__hs2Original;
+      }
+      return;
+    }
+    if (img.getAttribute('data-hs2-src') === url) return;
+    if (!img.__hs2Original) img.__hs2Original = {src: img.getAttribute('src'), srcset: img.getAttribute('srcset'), alt: img.getAttribute('alt')};
+    img.setAttribute('data-hs2-src', url);
+    img.src = url; img.removeAttribute('srcset');
+    img.setAttribute('alt', 'Your personalized artwork');
+    img.classList.add('hs2-cart-preview');
+  }
+
+  /* Helio can lay its header over the first section (a transparent header). When it
+     does, push the hero down by the overlap so the stamp and headline never sit under
+     the logo or menu. Turning the overlay off in Helio's header settings also fixes it. */
+  function clearHeader() {
+    // whichever of ours opens the page: the hero on the homepage and landing, the buy box on a product page
+    var hero = document.querySelector('[data-hs2-hero]') || document.querySelector('[data-hs3]') || document.querySelector('.hs2-product');
+    var header = document.querySelector('.header-section, header.shopify-section');
+    if (!hero || !header || window.scrollY > 10) return;
+    var box = hero.closest('.shopify-section') || hero;
+    // a box's own padding never moves its top edge, so measure without clearing it first: the
+    // clear-then-pad used to make the page jump on every resize and load (27 Oct)
+    var top = box.getBoundingClientRect().top;
+    /* The drawn header can extend past its section box (Helio draws the row as an overlay, so
+       the section measures 0 px). Measure the row itself, never what hangs off it: walking every
+       element inside the header counted menus and overlays, and on Krish's screen (19 Oct) pushed
+       the chat down a grey band of about 135 px, or a whole screen. */
+    var bottom = header.getBoundingClientRect().bottom;
+    var rows = header.querySelectorAll('header-component, .header__row, .header__underlay');
+    if (!rows.length) rows = header.querySelectorAll('header, .header');
+    Array.prototype.forEach.call(rows, function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.width && r.height) bottom = Math.max(bottom, r.bottom);
+    });
+    bottom = Math.min(bottom, top + 200); // never more than a header can be tall
+    var overlap = bottom - top, want = overlap > 0 ? Math.ceil(overlap + 12) : 0;
+    // write only a real change (more than 1 px), so a repeat measurement never shifts the page
+    if (Math.abs(want - (parseFloat(box.style.paddingTop) || 0)) > 1) box.style.paddingTop = want ? want + 'px' : '';
+    // a sticky gallery has to stop below the same line, or it slides back under the logo on scroll
+    var de = document.documentElement, clear = Math.max(0, Math.ceil(bottom));
+    if (Math.abs(clear - (parseFloat(de.style.getPropertyValue('--hs2-clear')) || 0)) > 1) de.style.setProperty('--hs2-clear', clear + 'px');
+  }
+
+  /* =================================================================== screens
+     Every section is one screen tall (hs2.css). The script supplies what CSS can't
+     know: where the hero starts under Helio's header, how far to scale the poster,
+     how many FAQ tickets fit, and whether the memo needs to scroll as a ticker. */
+  function stickyHead() {
+    var h = 0;
+    document.querySelectorAll('#header-group > .shopify-section, .shopify-section-group-header-group').forEach(function (sec) {
+      if (sec.classList.contains('hs2-section')) return;
+      var cs = window.getComputedStyle(sec);
+      if (cs.display === 'none' || (cs.position !== 'sticky' && cs.position !== 'fixed')) return;
+      var inner = sec.querySelector('header-component, header, .header') || sec;
+      h = Math.max(h, Math.round(inner.getBoundingClientRect().height));
+    });
+    document.documentElement.style.setProperty('--hs2-head', h + 'px');
+    return h;
+  }
+  function heroTop() {
+    var hero = document.querySelector('[data-hs2-hero]');
+    if (!hero) return;
+    var top = Math.max(0, Math.round(hero.getBoundingClientRect().top + window.scrollY));
+    document.documentElement.style.setProperty('--hs2-hero-top', top + 'px');
+  }
+  function fitPoster() {
+    var stage = document.querySelector('[data-hs2-stage]'), box = document.querySelector('[data-hs2-poster-box]');
+    if (!stage || !box) return;
+    var review = stage.closest('.hs2-review');
+    var zoomed = review && review.classList.contains('is-zoomed');
+    var w = zoomed ? window.innerWidth - 24 : stage.clientWidth;
+    var h = zoomed ? window.innerHeight - 80 : stage.clientHeight;
+    var nh = box.offsetHeight || 640;
+    var sc = Math.min((w - 16) / 480, (h - (zoomed ? 0 : 44)) / (nh + 30));
+    sc = Math.max(0.18, Math.min(zoomed ? 1.5 : 1, sc));
+    box.style.setProperty('--hs2-scale', sc.toFixed(3));
+  }
+  function zoom() {
+    var review = document.querySelector('[data-hs2-review]');
+    if (!review || review.__hs2z) return; review.__hs2z = true;
+    var open = function () {
+      review.classList.add('is-zoomed'); document.documentElement.style.overflow = 'hidden'; fitPoster();
+      var c = review.querySelector('[data-hs2-zoom-close]'); if (c) c.focus();
+    };
+    var close = function () {
+      review.classList.remove('is-zoomed'); document.documentElement.style.overflow = ''; fitPoster();
+      var z = review.querySelector('[data-hs2-zoom]'); if (z && z.offsetParent) z.focus();
+    };
+    var z = review.querySelector('[data-hs2-zoom]'), c = review.querySelector('[data-hs2-zoom-close]'), stage = review.querySelector('[data-hs2-stage]');
+    if (z) z.addEventListener('click', open);
+    if (c) c.addEventListener('click', close);
+    if (stage) stage.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      if (review.classList.contains('is-zoomed')) close(); else if (z && z.offsetParent) open();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && review.classList.contains('is-zoomed')) close(); });
+  }
+  function ticker() {
+    document.querySelectorAll('[data-hs2-memo]').forEach(function (bar) {
+      var track = bar.querySelector('[data-hs2-ticker]'), vp = bar.querySelector('.hs2-memo__viewport');
+      if (!track || !vp) return;
+      bar.classList.remove('is-ticker');
+      track.querySelectorAll('.is-clone').forEach(function (c) { c.remove(); });
+      var item = track.querySelector('.hs2-memo__item');
+      if (!item || reduced) return;
+      item.style.whiteSpace = 'nowrap'; item.style.display = 'inline-block';
+      var w = item.getBoundingClientRect().width;
+      item.style.whiteSpace = ''; item.style.display = '';
+      if (w <= vp.clientWidth - 32) return;
+      var clone = item.cloneNode(true);
+      clone.classList.add('is-clone'); clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
+      bar.classList.add('is-ticker');
+      bar.style.setProperty('--ticker-s', Math.max(16, Math.round((w + 64) / 42)) + 's');
+    });
+  }
+  function fitFaq() {
+    var list = document.querySelector('[data-hs2-faq]');
+    if (!list || list.__hs2open) return;
+    var sec = list.closest('.hs2-faq'), more = list.querySelector('[data-hs2-faq-more]');
+    var tickets = Array.prototype.slice.call(list.querySelectorAll('.hs2-ticket'));
+    tickets.forEach(function (t) { t.classList.remove('is-folded'); });
+    if (more) more.hidden = true;
+    if (!sec || !more) return;
+    var room = window.innerHeight - (stickyHead.h || 0) + 2, shown = tickets.length;
+    if (sec.offsetHeight <= room) return;
+    more.hidden = false;
+    while (sec.offsetHeight > room && shown > 2) {
+      shown--;
+      if (tickets[shown].open) { shown++; break; }
+      tickets[shown].classList.add('is-folded');
+      more.querySelector('[data-hs2-faq-more-n]').textContent = tickets.length - shown;
+    }
+    if (shown === tickets.length) more.hidden = true;
+  }
+  function faq() {
+    var list = document.querySelector('[data-hs2-faq]');
+    if (!list || list.__hs2) return; list.__hs2 = true;
+    var tickets = Array.prototype.slice.call(list.querySelectorAll('.hs2-ticket'));
+    tickets.forEach(function (t) {
+      t.addEventListener('toggle', function () {
+        if (!t.open) return;
+        tickets.forEach(function (o) { if (o !== t && o.open) o.open = false; });
+        track('faq_open', { question: (t.querySelector('.hs2-ticket__q') || {}).textContent || '' });
+      });
+    });
+    var more = list.querySelector('[data-hs2-faq-more]');
+    if (more) more.addEventListener('click', function () {
+      list.__hs2open = true;
+      tickets.forEach(function (t) { t.classList.remove('is-folded'); });
+      more.hidden = true;
+    });
+  }
+
+  /* ===================================================================== motion */
+  function reveal() {
+    var els = document.querySelectorAll('[data-hs2-reveal]:not(.is-in)');
+    if (reduced || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('is-in'); }); return; }
+    if (!reveal.io) {
+      reveal.io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); reveal.io.unobserve(en.target); } });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+      reveal.drift = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { en.target.classList.toggle('is-on', en.isIntersecting); });
+      });
+    }
+    els.forEach(function (e) { reveal.io.observe(e); });
+    document.querySelectorAll('.hs2-anim-drift').forEach(function (e) { reveal.drift.observe(e); });
+  }
+  function inkName() {
+    if (reduced) return;
+    clearTimeout(inkName.t);
+    inkName.t = setTimeout(function () {
+      document.querySelectorAll('.hs2-hero h1 [data-hs2="dog"], .hs2-hero h1 [data-hs2="yourdog"]').forEach(function (el) {
+        el.classList.remove('is-inked'); void el.offsetWidth; el.classList.add('is-inked');
+      });
+    }, 250);
+  }
+  function cycleNames() {
+    var inp = document.querySelector('[data-hs2-cycle]');
+    if (!inp || reduced || state.dog) return;
+    var names = inp.getAttribute('data-hs2-cycle').split(','), i = 1, ch = 0, del = false, timer, stopped = false;
+    var stop = function () { stopped = true; clearTimeout(timer); inp.placeholder = names[0]; };
+    inp.addEventListener('focus', stop);
+    inp.addEventListener('input', stop);
+    function step() {
+      if (stopped || inp.value) return;
+      var n = names[i];
+      if (!del) {
+        ch++; inp.placeholder = n.slice(0, ch);
+        if (ch >= n.length) { del = true; timer = setTimeout(step, 1500); return; }
+      } else {
+        ch--; inp.placeholder = n.slice(0, Math.max(ch, 0));
+        if (ch <= 0) { del = false; i = (i + 1) % names.length; }
+      }
+      timer = setTimeout(step, del ? 45 : 95);
+    }
+    timer = setTimeout(function () { del = true; ch = names[0].length; i = 0; step(); }, 2600);
+  }
+
+  /* ====================================================== the review, one step at a time */
+  function steps() {
+    var box = document.querySelector('[data-hs2-steps]');
+    steps.auto = steps.auto || {};
+    if (!box || box.__hs2) return; box.__hs2 = true;
+    var all = box.querySelectorAll('[data-hs2-step]'), n = all.length;
+    all.forEach(function (st) { st.setAttribute('tabindex', '-1'); });
+    function go(k, focus) {
+      clearTimeout(steps.timer); // a pending chip auto-advance must never skip a step
+      k = Math.max(1, Math.min(n, k));
+      var back = k < (steps.at || 1);
+      steps.at = k;
+      all.forEach(function (st) {
+        var on = Number(st.getAttribute('data-hs2-step')) === k;
+        st.classList.toggle('is-on', on);
+        st.classList.toggle('is-back', on && back);
+      });
+      box.querySelectorAll('[data-hs2-step-go]').forEach(function (b) {
+        var i = Number(b.getAttribute('data-hs2-step-go'));
+        b.classList.toggle('is-done', i < k);
+        if (i === k) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+      });
+      var no = box.querySelector('[data-hs2-step-no]'); if (no) no.textContent = k;
+      var bk = box.querySelector('[data-hs2-step-back]'); if (bk) bk.disabled = k === 1;
+      var nx = box.querySelector('[data-hs2-step-next]'); if (nx) nx.hidden = k === n;
+      if (focus) { var cur = box.querySelector('.hs2-step.is-on'); if (cur) cur.focus({ preventScroll: true }); }
+      fitPoster();
+      track('review_step', { step: k });
+    }
+    steps.go = go;
+    var nx = box.querySelector('[data-hs2-step-next]'), bk = box.querySelector('[data-hs2-step-back]');
+    if (nx) nx.addEventListener('click', function () { go(steps.at + 1, true); });
+    if (bk) bk.addEventListener('click', function () { go(steps.at - 1, true); });
+    box.querySelectorAll('[data-hs2-step-go]').forEach(function (b) {
+      b.addEventListener('click', function () { go(Number(b.getAttribute('data-hs2-step-go')), true); });
+    });
+    // step 1's "Skip to the photo": the picks keep their starting answers
+    box.querySelectorAll('[data-hs2-step-skip]').forEach(function (b) {
+      b.addEventListener('click', function () { go(n, true); });
+    });
+    box.querySelectorAll('[data-hs2-step="1"] input').forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(steps.at + 1, true); } });
+    });
+    go(1);
+  }
+  /* Both names print on the poster, so Approve waits for them. It takes the shopper back
+     to step 1, opens the dog's name there if the hero was skipped, and says what HR needs. */
+  function askNames(a) {
+    var review = a.closest('.hs2-review') || document;
+    var box = review.querySelector('[data-hs2-steps]'), nudge = review.querySelector('[data-hs2-names-nudge]');
+    if (!box || !steps.go) return false;
+    var missing = missingNames();
+    var ask = review.querySelector('[data-hs2-ask="dog"]');
+    if (ask && missing.indexOf('dog') !== -1) ask.hidden = false;
+    steps.go(1);
+    if (nudge) {
+      nudge.textContent = nudge.getAttribute(missing.length > 1 ? 'data-both' : 'data-' + missing[0]) || '';
+      nudge.hidden = false;
+      nudge.classList.remove('is-new'); void nudge.offsetWidth; nudge.classList.add('is-new');
+    }
+    var first = box.querySelector('[data-hs2-step="1"] [data-hs2-input="' + missing[0] + '"]');
+    if (first) {
+      box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+      first.focus({ preventScroll: true });
+    }
+    track('names_needed', { missing: missing.join(',') });
+    return true;
+  }
+  /* Approve: the stamp lands on the poster, then the shopper moves on */
+  function approve() {
+    document.querySelectorAll('[data-hs2-approve]').forEach(function (a) {
+      if (a.__hs2a) return; a.__hs2a = true;
+      a.addEventListener('click', function (e) {
+        if (missingNames().length && askNames(a)) { e.preventDefault(); return; }
+        track('approve_clicked', { dog: val('dog') });
+        var review = a.closest('.hs2-review'), stampEl = review && review.querySelector('.hs2-poster__approved');
+        var href = a.getAttribute('href') || '';
+        if (reduced || !stampEl || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        review.classList.add('is-approving');
+        stampEl.classList.remove('is-slam'); void stampEl.offsetWidth; stampEl.classList.add('is-slam');
+        setTimeout(function () {
+          review.classList.remove('is-approving');
+          if (href.charAt(0) === '#') {
+            var t = document.querySelector(href);
+            if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            window.location.href = a.href;
+          }
+        }, 800);
+      });
+    });
+  }
+
+  /* ===================================================== honest urgency
+     Every countdown counts to a real date: Christmas morning, or the confirmed last
+     order date once it is entered in the memo bar's settings. The free video offer
+     shows only inside its dates (docs/V2-FROM-THE-DOG.md section 4). Nothing resets,
+     nothing invents stock. ?hs2_now=YYYY-MM-DD previews another day. */
+  var DAY = 864e5;
+  function parseISO(v) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '').trim());
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+  }
+  function endOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999); }
+  function now() {
+    var q = null;
+    try { q = parseISO(new URLSearchParams(window.location.search).get('hs2_now')); } catch (e) { q = null; }
+    if (!q) return new Date();
+    var t = new Date(); q.setHours(t.getHours(), t.getMinutes(), t.getSeconds());
+    return q;
+  }
+  function config() {
+    var m = document.querySelector('[data-hs2-memo]');
+    if (!m) return {};
+    return {
+      deadline: parseISO(m.getAttribute('data-deadline')),
+      offerStart: parseISO(m.getAttribute('data-offer-start')),
+      offerEnd: parseISO(m.getAttribute('data-offer-end')),
+      offerText: (m.getAttribute('data-offer-label') || '').trim()
+    };
+  }
+  function offerLabel() {
+    // the offer is the read-aloud video: with its button switched off (hs2-review), no line
+    // on any page mentions it
+    if (!document.querySelector('[data-hs2-voice]')) return '';
+    var c = config(), t = now();
+    return c.offerStart && c.offerEnd && c.offerText && t >= c.offerStart && t <= endOfDay(c.offerEnd) ? c.offerText : '';
+  }
+  function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+  function timeline() {
+    var t = now(), c = config();
+    var xmas = new Date(t.getFullYear(), 11, 25);
+    var out = { now: t };
+    if (c.deadline && t <= endOfDay(c.deadline)) { out.deadline = endOfDay(c.deadline); out.dl = Math.ceil((out.deadline - t) / DAY); }
+    if (t < xmas) { out.xmas = xmas; out.xd = Math.floor((xmas - t) / DAY); }
+    return out;
+  }
+  function countdownText(kind) {
+    var tl = timeline(), offer = offerLabel(), parts = [];
+    var dl = tl.dl, xd = tl.xd;
+    var xmasLine = tl.xmas ? (xd < 1 ? 'Christmas morning is tomorrow' : 'Christmas morning in ' + plural(xd, 'day')) : '';
+    var lead = dl ? (dl <= 1 ? 'Last day to order for Christmas' : plural(dl, 'day') + ' left to order for Christmas') : xmasLine;
+    if (kind === 'memo') return dl ? (dl <= 1 ? 'Last day' : plural(dl, 'day') + ' left') : lead;
+    if (kind === 'sub') return dl ? (dl <= 1 ? 'Last day to order for Christmas' : 'Order within ' + plural(dl, 'day') + ' for Christmas') : lead;
+    if (kind === 'buy' || kind === 'product') {
+      if (offer) parts.push('Read-aloud video ' + offer.charAt(0).toLowerCase() + offer.slice(1));
+      if (lead) parts.push(lead);
+      return parts.join(' · ');
+    }
+    return lead;
+  }
+  var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  function parseLoose(text, year) {
+    var s = String(text || '').trim().toLowerCase();
+    if (!s || s.indexOf('[') !== -1) return null;
+    if (s === 'christmas eve') return new Date(year, 11, 24);
+    var iso = parseISO(s); if (iso) return iso;
+    var m = /([a-z]{3})[a-z]*\.?\s+(\d{1,2})/.exec(s) || null, d, mo;
+    if (m) { mo = MONTHS.indexOf(m[1]); d = Number(m[2]); }
+    else { m = /(\d{1,2})\s+([a-z]{3})/.exec(s); if (m) { d = Number(m[1]); mo = MONTHS.indexOf(m[2]); } }
+    return m && mo > -1 ? new Date(year, mo, d) : null;
+  }
+  function urgency() {
+    var tl = timeline();
+    document.querySelectorAll('[data-hs2-countdown]').forEach(function (el) {
+      var txt = countdownText(el.getAttribute('data-hs2-countdown'));
+      if (el.textContent !== txt) el.textContent = txt;
+      el.hidden = !txt;
+    });
+    document.querySelectorAll('[data-hs2-date]').forEach(function (el) {
+      var left = el.parentNode.querySelector('[data-hs2-left]');
+      if (!left) return;
+      var d = parseLoose(el.textContent, tl.now.getFullYear());
+      if (!d) { left.hidden = true; return; }
+      var days = Math.ceil((endOfDay(d) - tl.now) / DAY);
+      left.textContent = days < 1 ? 'Closed' : days === 1 ? 'Last day' : plural(days, 'day') + ' left';
+      left.hidden = false;
+    });
+    var label = document.querySelector('[data-hs2-clock-label]');
+    if (label) label.textContent = tl.deadline ? 'LAST DAY TO ORDER FOR CHRISTMAS IN' : 'CHRISTMAS MORNING IN';
+  }
+  function clock() {
+    var box = document.querySelector('[data-hs2-clock]');
+    if (!box || box.__hs2) return; box.__hs2 = true;
+    var parts = {};
+    box.querySelectorAll('[data-hs2-clock-part]').forEach(function (b) { parts[b.getAttribute('data-hs2-clock-part')] = b; });
+    var timer = null;
+    function paint() {
+      var tl = timeline(), target = tl.deadline || tl.xmas;
+      if (!target) { box.hidden = true; return; }
+      box.hidden = false;
+      var ms = Math.max(0, target - new Date(tl.now.getTime()));
+      var v = { d: Math.floor(ms / DAY), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 };
+      Object.keys(v).forEach(function (k) {
+        var t = (v[k] < 10 ? '0' : '') + v[k];
+        if (parts[k] && parts[k].textContent !== t) {
+          parts[k].textContent = t;
+          if (!reduced && k !== 's') { parts[k].classList.remove('is-flip'); void parts[k].offsetWidth; parts[k].classList.add('is-flip'); }
+        }
+      });
+    }
+    paint();
+    if (!('IntersectionObserver' in window)) { timer = setInterval(paint, 1000); return; }
+    new IntersectionObserver(function (en) {
+      clearInterval(timer); timer = null;
+      if (en[0].isIntersecting) timer = setInterval(paint, 1000);
+    }).observe(box);
+  }
+
+  /* ========================================================== benefits carousel */
+  function carousels() {
+    document.querySelectorAll('[data-hs2-carousel]').forEach(function (list) {
+      if (list.__hs2) return; list.__hs2 = true;
+      var nav = list.parentElement.querySelector('[data-hs2-carousel-nav]');
+      if (!nav) return;
+      var dots = nav.querySelector('[data-hs2-carousel-dots]'), items = Array.prototype.slice.call(list.children);
+      dots.innerHTML = '';
+      items.forEach(function () { dots.appendChild(document.createElement('i')); });
+      function current() {
+        var r = list.getBoundingClientRect(), mid = r.left + r.width / 2, best = 0, bd = Infinity;
+        items.forEach(function (it, i) { var ir = it.getBoundingClientRect(), d = Math.abs(ir.left + ir.width / 2 - mid); if (d < bd) { bd = d; best = i; } });
+        return best;
+      }
+      function paint() { var c = current(); Array.prototype.forEach.call(dots.children, function (d, i) { d.classList.toggle('is-on', i === c); }); }
+      list.addEventListener('scroll', function () { window.requestAnimationFrame(paint); }, { passive: true });
+      nav.querySelectorAll('[data-hs2-carousel-step]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var i = Math.max(0, Math.min(items.length - 1, current() + Number(b.getAttribute('data-hs2-carousel-step'))));
+          list.scrollTo({ left: items[i].offsetLeft - (list.clientWidth - items[i].offsetWidth) / 2, behavior: reduced ? 'auto' : 'smooth' });
+        });
+      });
+      paint();
+    });
+  }
+
+  /* ============================================== the story cards play like a story */
+  var leakAuto = { stopped: false, timer: null };
+  function leakAutoplay() {
+    var phone = document.querySelector('[data-hs2-phone]');
+    if (!phone || phone.__hs2 || reduced || !('IntersectionObserver' in window)) return; phone.__hs2 = true;
+    var ms = 4500;
+    phone.style.setProperty('--leak-s', ms + 'ms');
+    function restart() { phone.classList.remove('is-playing'); void phone.offsetWidth; phone.classList.add('is-playing'); }
+    function tick() { if (leakAuto.stopped) return; stepLeak(1); restart(); leakAuto.timer = setTimeout(tick, ms); }
+    new IntersectionObserver(function (en) {
+      clearTimeout(leakAuto.timer);
+      if (en[0].isIntersecting && !leakAuto.stopped) { restart(); leakAuto.timer = setTimeout(tick, ms); }
+      else phone.classList.remove('is-playing');
+    }, { threshold: 0.6 }).observe(phone);
+  }
+  function stopLeakAuto() {
+    leakAuto.stopped = true; clearTimeout(leakAuto.timer);
+    var p = document.querySelector('[data-hs2-phone]'); if (p) p.classList.remove('is-playing');
+  }
+
+  /* ========================================= Instagram and TikTok in-app browsers
+     They can't download files, so the story card opens full size to press and hold. */
+  function showCard(src) {
+    var ov = document.createElement('div');
+    ov.className = 'hs2 hs2-cardview';
+    ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Your story card');
+    ov.innerHTML = '<div class="hs2-cardview__box"><img alt="Your story card" src="' + src + '"><p>Press and hold the card to save it. Then post it and tag the person.</p><button type="button" class="hs2-btn hs2-btn--blush">Done</button></div>';
+    document.body.appendChild(ov);
+    document.documentElement.style.overflow = 'hidden';
+    var btn = ov.querySelector('button');
+    var close = function () { ov.remove(); document.documentElement.style.overflow = ''; };
+    btn.addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    btn.focus();
+  }
+
+  /* ============================== funnel events for Shopify's customer events and pixels
+     Subscribe in Settings > Customer events (analytics.subscribe('hs2_approve_clicked', ...)). */
+  function track(name, data) {
+    try { if (window.Shopify && window.Shopify.analytics && window.Shopify.analytics.publish) window.Shopify.analytics.publish('hs2_' + name, data || {}); } catch (e) { /* analytics off */ }
+  }
+
+  /* ------------------------------------------------------------- gift list
+     The shop grid (hs2-shop) keeps the gifts a shopper picked in sessionStorage and opens the
+     first. Each product page personalizes as usual (the bridge carries the photo and names);
+     after its Add To Cart, a bar offers the next gift not yet in the cart, then checkout. */
+  var QKEY = 'hs2-queue';
+  function queueGet() { try { var q = JSON.parse(window.sessionStorage.getItem(QKEY) || '[]'); return Array.isArray(q) ? q : []; } catch (e) { return []; } }
+  function queueSet(q) { try { if (q && q.length) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ } }
+  function handleOf(u) { var m = /\/products\/([^/?#]+)/.exec(u || ''); return m ? decodeURIComponent(m[1]) : ''; }
+  function shopRoot() { return (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/'; }
+  function shop() {
+    document.querySelectorAll('[data-hs2-shop]').forEach(function (root) {
+      if (root.__hs2) return; root.__hs2 = true;
+      var boxes = Array.prototype.slice.call(root.querySelectorAll('[data-hs2-shop-check]'));
+      var bar = root.querySelector('[data-hs2-shop-bar]'), go = root.querySelector('[data-hs2-shop-go]');
+      var count = root.querySelector('[data-hs2-shop-count]'), total = root.querySelector('[data-hs2-shop-total]'), hint = root.querySelector('[data-hs2-shop-hint]');
+      var picked = function () { return boxes.filter(function (b) { return b.checked; }); };
+      var update = function () {
+        var p = picked();
+        boxes.forEach(function (b) { var card = b.closest('.hs2-shop__item'); if (card) card.classList.toggle('is-picked', b.checked); });
+        if (bar) bar.hidden = !p.length;
+        if (hint) hint.hidden = p.length > 0;
+        if (!p.length) return;
+        var cents = p.reduce(function (s, b) { return s + (parseInt(b.getAttribute('data-price'), 10) || 0); }, 0);
+        if (count) count.textContent = p.length === 1 ? '1 gift' : p.length + ' gifts';
+        if (total) total.textContent = '$' + (cents % 100 ? (cents / 100).toFixed(2) : String(cents / 100));
+        if (go) go.textContent = (p.length === 1 ? go.getAttribute('data-one') : go.getAttribute('data-many')) || go.textContent;
+      };
+      boxes.forEach(function (b) {
+        b.addEventListener('change', function () { update(); if (b.checked) track('shop_pick', { gift: b.getAttribute('data-title') }); });
+      });
+      if (go) go.addEventListener('click', function (e) {
+        var p = picked();
+        if (!p.length) return;
+        e.preventDefault();
+        var q = p.map(function (b) { return { url: b.getAttribute('data-url'), title: b.getAttribute('data-title') }; });
+        queueSet(q);
+        track('shop_go', { gifts: q.length });
+        window.location.href = q[0].url;
+      });
+      update();
+    });
+  }
+  /* Teeinblue adds to the cart with its own request; watch for any successful /cart/add.
+     Each callback gets the added lines as /cart/add answers them (null if unreadable). */
+  /* Teeinblue's Add To Cart posts its own JSON to /cart/add and never reads our form, so the
+     hidden answers (_hs_answers, _hs_lines, _hs_ship_to) never reached an order (found in the
+     live cart test, 21 Oct). Add our properties on the way out. On native artwork routes,
+     our raw _hs values also replace vendor-escaped copies; vendor design identifiers stay intact. */
+  function hsProps() {
+    var o = {}, n = 0, native = nativeArtworkPurchase();
+    document.querySelectorAll('#hs2-product-form [data-hs2-prop]').forEach(function (inp) {
+      var m = /^properties\[(.+)\]$/.exec(inp.name || '');
+      if (m && (inp.value || (native && m[1].indexOf('_hs_') === 0))) { o[m[1]] = inp.value; n++; }
+    });
+    if (native && restoredArtworkChosen()) {
+      // Do not relabel an older image as generated for today's default choices/profile.
+      o._hs_art_source = 'restored-buyer-reviewed';
+      o._hs_art_style = 'Unverified original style (restored artwork)';
+      o._hs_art_tone = 'Unverified original tone (restored artwork)';
+      o._hs_art_profile = '';
+      n++;
+    }
+    return n ? o : null;
+  }
+  function withHsProps(body) {
+    var add = hsProps();
+    if (!add || typeof body !== 'string') return body;
+    try {
+      var j = JSON.parse(body);
+      (Array.isArray(j.items) ? j.items : [j]).forEach(function (it) {
+        if (!it || !it.id) return;
+        it.properties = it.properties || {};
+        Object.keys(add).forEach(function (k) {
+          if (!(k in it.properties) || (nativeArtworkPurchase() && k.indexOf('_hs_') === 0)) it.properties[k] = add[k];
+        });
+        // Teeinblue encoded this label in the observed native cart. Correct only the
+        // known label; never HTML-decode customer prose or customization/design URLs.
+        // one unit per design (28 Oct): Shopify's checkout merge turned 2 of a design into 4
+        if (nativeArtworkPurchase() && it.properties._customization_id && Number(it.quantity) !== 1) it.quantity = 1;
+        if (nativeArtworkPurchase() && Object.prototype.hasOwnProperty.call(it.properties, 'Dog&#39;s name') && !Object.prototype.hasOwnProperty.call(it.properties, "Dog's name")) {
+          it.properties["Dog's name"] = it.properties['Dog&#39;s name'];
+          delete it.properties['Dog&#39;s name'];
+        }
+      });
+      return JSON.stringify(j);
+    } catch (e) { return body; }
+  }
+  function checkoutImageConfig() {
+    var buy = document.querySelector('#buy[data-hs2-checkout-image-enabled="true"]');
+    return nativeArtworkPurchase() && buy ? {endpoint: buy.getAttribute('data-hs2-checkout-image-endpoint') || '', cdnPrefix: buy.getAttribute('data-hs2-checkout-image-cdn-prefix') || ''} : null;
+  }
+  /* Every word about an add, in one line right after Teeinblue's Add to cart, where the buyer is
+     looking (28 Oct: the words went to the top of the form, out of sight, under a bare 30 second
+     spinner). It clears itself after a minute, when the add lands, and when Teeinblue marks a field
+     to fix, since then its own check stopped the add. With no button on the page the words go to the
+     status line above the form, as before. checkoutImageStatus.dog is the dog's possessive, set
+     when an add starts (startedAdd). */
+  function checkoutImageStatus(message) {
+    var status = document.querySelector('[data-hs2-checkout-image-status]');
+    var button = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
+    clearTimeout(checkoutImageStatus.timer);
+    if (!button || !button.parentNode) { if (status) { status.textContent = message; status.hidden = !message; } return; }
+    if (status && !status.hidden) { status.textContent = ''; status.hidden = true; }
+    var note = document.querySelector('[data-hs2-add-note]');
+    if (!note && !message) return; // nothing said yet, nothing to clear
+    if (!note) {
+      note = document.createElement('p');
+      note.className = 'hs2-add-note'; note.setAttribute('data-hs2-add-note', ''); note.setAttribute('role', 'status');
+    }
+    // Teeinblue redraws its button: the line goes back right after it
+    if (button.nextSibling !== note) button.parentNode.insertBefore(note, button.nextSibling);
+    if (note.textContent !== message) note.textContent = message;
+    note.hidden = !message;
+    if (message) checkoutImageStatus.timer = setTimeout(function () { checkoutImageStatus(''); }, 60000);
+    var buy = document.getElementById('buy');
+    if (!checkoutImageStatus.watching && buy && window.MutationObserver) {
+      checkoutImageStatus.watching = true;
+      new window.MutationObserver(function () {
+        var shown = document.querySelector('[data-hs2-add-note]');
+        if (shown && !shown.hidden && document.querySelector('#buy .tee-field--invalid')) checkoutImageStatus('');
+      }).observe(buy, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    }
+  }
+  function prepareCheckoutCart(body) {
+    var config = checkoutImageConfig();
+    if (!config) return null; // The new route is opt-in until its endpoint is verified.
+    if (prepareCheckoutCart.pending) return Promise.reject(new Error('Checkout artwork is already being prepared.'));
+    var revision = function () { return JSON.stringify([blanketReviewKey(), answer('line4'), answer('signed'), hsProps()]); };
+    var identity = revision(), variant = document.querySelector('[data-hs2-variant-id]');
+    var variantId = variant && variant.value;
+    var whose = checkoutImageStatus.dog || 'your', Whose = checkoutImageStatus.dog || 'Your';
+    prepareCheckoutCart.pending = true;
+    checkoutImageStatus('Getting ' + whose + ' picture ready for checkout.');
+    // registration polls while Teeinblue finishes its copy; it never uploads (hs-checkout-image.js)
+    var options = Object.assign({}, config, { onPending: function () { checkoutImageStatus('Almost there.'); } });
+    return Promise.resolve().then(function () {
+      if (!window.HSCheckoutImage) throw new Error('Checkout artwork service is unavailable.');
+      return window.HSCheckoutImage.prepare(body, options);
+    }).then(function (prepared) {
+      var currentVariant = document.querySelector('[data-hs2-variant-id]');
+      if (identity !== revision() || variantId !== (currentVariant && currentVariant.value) || !cityArtSaved() || !blanketReviewAccepted() || !nativePurchaseReady() || blanketUploadPending()) {
+        var changed = new Error('Your artwork selection changed.'); changed.hs2Changed = true; throw changed;
+      }
+      checkoutImageStatus('Almost there.');
+      prepareCheckoutCart.pending = false;
+      return prepared;
+    }).catch(function (error) {
+      prepareCheckoutCart.pending = false;
+      // plain words, and the one thing a buyer must not do: paint again
+      checkoutImageStatus(error && error.hs2Changed
+        ? Whose + ' design changed while it was saving. Check it, then try Add to cart again. You do not need to upload a photo again.'
+        : "That didn't go through. " + Whose + ' design is saved, so you do not need to upload a photo again. Try Add to cart again.');
+      throw error;
+    });
+  }
+  function onCartAdd(cb) {
+    (onCartAdd.cbs = onCartAdd.cbs || []).push(cb);
+    if (onCartAdd.hooked) return;
+    onCartAdd.hooked = true;
+    var fire = function (body) {
+      var items = body && (Array.isArray(body.items) ? body.items : body.variant_id ? [body] : null);
+      checkoutImageStatus(''); // it landed: the line beside the button has said its piece
+      setTimeout(function () { onCartAdd.cbs.forEach(function (f) { try { f(items); } catch (e) { /* keep going */ } }); }, 400);
+    };
+    var isAdd = function (u) { return /\/cart\/add(\.js)?(?:[?#]|$)/.test(String(u || '')); };
+    /* On a redo page (redoMode sets onCartAdd.redo) an add carrying the first design's id again is
+       refused: order #1008 kept the first design under the redo (28 Oct). The words ask for a new
+       photo; nothing here paints, uploads or retries. */
+    var firstDesign = function (body) {
+      if (!onCartAdd.redo || !body) return false;
+      if (typeof body !== 'string') return !!(body.get && body.get('properties[_customization_id]') === onCartAdd.redo);
+      try {
+        var j = JSON.parse(body);
+        return (Array.isArray(j.items) ? j.items : [j]).some(function (it) { return !!it && !!it.properties && it.properties._customization_id === onCartAdd.redo; });
+      } catch (e) { return false; }
+    };
+    var refuse = function () { checkoutImageStatus('This is still your first design. Add a new photo to make another version.'); };
+    // where the 30 seconds go (28 Oct): Teeinblue's own save, our checkout picture, Shopify's add
+    var timed = function (at, ready) {
+      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready }); } catch (e) { /* analytics never holds an add */ }
+      onCartAdd.clickAt = 0;
+    };
+    if (window.fetch) {
+      var f0 = window.fetch;
+      onCartAdd.fetch0 = f0;
+      window.fetch = function (input) {
+        var u = typeof input === 'string' ? input : (input && input.url);
+        var args = arguments;
+        if (isAdd(u) && args[1] && firstDesign(args[1].body)) { refuse(); return Promise.reject(new Error('This is still the first design.')); }
+        if (isAdd(u) && args[1] && typeof args[1].body === 'string') { args = [input, Object.assign({}, args[1], { body: withHsProps(args[1].body) })]; }
+        var at = Date.now(), ready = at;
+        var context = this, preparation = isAdd(u) ? prepareCheckoutCart(args[1] && args[1].body) : null;
+        var pr = preparation ? preparation.then(function (body) { ready = Date.now(); return f0.call(context, input, Object.assign({}, args[1], {body: body})); }) : f0.apply(this, args);
+        if (isAdd(u)) pr.then(function (r) {
+          if (!r || !r.ok) { checkoutImageStatus(''); return; } // Shopify said no; Teeinblue shows why
+          timed(at, ready);
+          var copy = null;
+          try { copy = r.clone(); } catch (e) { /* body already read */ }
+          if (copy) copy.json().then(fire, function () { fire(null); }); else fire(null);
+        }, function () {});
+        return pr;
+      };
+    }
+    if (window.XMLHttpRequest) {
+      var X = window.XMLHttpRequest.prototype, open0 = X.open, send0 = X.send, abort0 = X.abort;
+      X.open = function (m, u) { this.__hs2add = isAdd(u); this.__hs2generation = (this.__hs2generation || 0) + 1; return open0.apply(this, arguments); };
+      X.abort = function () { this.__hs2generation = (this.__hs2generation || 0) + 1; return abort0.apply(this, arguments); };
+      X.send = function (b) {
+        if (this.__hs2add && firstDesign(b)) {
+          refuse();
+          // Teeinblue's XHR client hears a normal failure and releases its button; nothing is sent
+          this.dispatchEvent(new Event('error')); this.dispatchEvent(new Event('loadend'));
+          return;
+        }
+        if (this.__hs2add && typeof b === 'string') arguments[0] = withHsProps(b);
+        var at = Date.now(), ready = at;
+        if (this.__hs2add) this.addEventListener('load', function () {
+          if (this.status < 200 || this.status >= 300) { checkoutImageStatus(''); return; }
+          timed(at, ready);
+          var body = null;
+          try { body = JSON.parse(this.responseText); } catch (e) { /* not JSON */ }
+          fire(body);
+        });
+        var xhr = this, generation = this.__hs2generation;
+        var preparation = this.__hs2add ? prepareCheckoutCart(arguments[0]) : null;
+        if (!preparation) return send0.apply(this, arguments);
+        preparation.then(function (body) {
+          ready = Date.now();
+          if (xhr.__hs2generation === generation) send0.call(xhr, body);
+        }, function () {
+          if (xhr.__hs2generation !== generation) return;
+          // Teeinblue's XHR client receives a normal network failure and releases its button.
+          xhr.dispatchEvent(new Event('error'));
+          xhr.dispatchEvent(new Event('loadend'));
+        });
+      };
+    }
+  }
+  /* Teeinblue's Add To Cart tells nobody: the header's cart count stayed at nothing and the
+     cart drawer stayed shut, leaving a shopper from an ad with a small green line and no next
+     step (in-app test, 6 October). So hs2 tells Helio the way Helio's own Add To Cart does,
+     with Shopify's cart event: the count updates, the drawer refreshes and, for a single
+     gift, opens on its Check out button. On a gift list the drawer stays shut, since the bar
+     below names the next gift. If Helio can't hear it, a bar offers checkout instead.
+     The event is built by hand, field for field as Shopify's standard-events.js builds
+     its CartLinesUpdateEvent, because Shopify minifies theme assets and its minifier turns
+     an import() of that module into a require() that fails in the browser. */
+  var GID = 'gid://shopify/';
+  function money(cents, currency) {
+    var digits = 2;
+    try { digits = new Intl.NumberFormat('en', { style: 'currency', currency: currency }).resolvedOptions().maximumFractionDigits; } catch (e) { /* default */ }
+    return (Number(cents) / 100).toFixed(digits);
+  }
+  function cartForEvent(cart) {
+    return {
+      id: GID + 'Cart/' + cart.token,
+      totalQuantity: cart.item_count,
+      cost: { totalAmount: { amount: money(cart.total_price, cart.currency), currencyCode: cart.currency } },
+      lines: (cart.items || []).map(function (it) {
+        return { id: String(it.key || it.id), quantity: it.quantity, cost: { totalAmount: { amount: money(it.final_line_price, cart.currency), currencyCode: cart.currency } } };
+      }),
+      discountCodes: (Array.isArray(cart.discount_codes) ? cart.discount_codes : []).map(function (c) { return { applicable: c.applicable, code: c.code }; })
+    };
+  }
+  /* One confirmation per add (28 Oct: Teeinblue's green line, this toast and the drawer fired together,
+     and the drawer opened on "Your cart is empty", then 1 item, then 2 within 4 seconds). Helio hears
+     once, after the gift and its Artist's touch (extrasAfterAdd.pending) are both in the cart, with
+     the cart and the drawer's own new markup already read, so the drawer opens on the finished cart.
+     When it opens it is the confirmation; the toast shows only when it does not, and never outlives
+     the next step: it goes after 8 seconds, a scroll past 600px, or on leaving the page. */
+  function announceAdd(items) {
+    var list = queueGet().length > 0;
+    var toast = function (title, sub, href, label) {
+      showNext(title, sub, href, label);
+      var bar = document.querySelector('[data-hs2-next]');
+      if (!bar) return; // on the cart page the next step sits in the page, not over it
+      var from = window.scrollY || 0, timer = null;
+      var gone = function () {
+        clearTimeout(timer);
+        window.removeEventListener('scroll', far);
+        window.removeEventListener('pagehide', gone);
+        var head = bar.querySelector('strong');
+        // only this toast: a later one in the same bar is that one's to clear
+        if (bar.parentNode && head && head.textContent === title) hideNext();
+      };
+      var far = function () { if (Math.abs((window.scrollY || 0) - from) > 600) gone(); };
+      timer = setTimeout(gone, 8000);
+      window.addEventListener('scroll', far, { passive: true });
+      window.addEventListener('pagehide', gone);
+    };
+    var fallback = function () { if (!list) toast('In your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out'); };
+    if (!document.querySelector('cart-icon, cart-drawer-component')) { fallback(); return; }
+    var drawerOpen = function () {
+      var drawer = document.querySelector('cart-drawer-component'), dialog = drawer && drawer.closest ? drawer.closest('dialog') : null;
+      return !!((dialog && dialog.open) || document.querySelector('#cart-drawer dialog[open]'));
+    };
+    var json = function (r) { if (!r.ok) throw new Error('read ' + r.status); return r.json(); };
+    // after every other handler of this add has run, so an Artist's touch on its way is waited for
+    setTimeout(function () {
+      var addon = extrasAfterAdd.pending;
+      var wait = addon ? Promise.race([addon, new Promise(function (resolve) { setTimeout(resolve, 30000); })]) : Promise.resolve();
+      wait.then(function () {
+        var ids = [];
+        Array.prototype.forEach.call(document.querySelectorAll('cart-items-component[data-section-id]'), function (el) {
+          var id = el.getAttribute('data-section-id');
+          if (id && ids.indexOf(id) < 0) ids.push(id);
+        });
+        var markup = ids.length ? fetch(shopRoot() + '?sections=' + encodeURIComponent(ids.join(',')), { credentials: 'same-origin' }).then(json).catch(function () { return null; }) : Promise.resolve(null);
+        return Promise.all([fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(json), markup]);
+      }).then(function (read) {
+        var cart = read[0], sections = read[1];
+        var ev = new Event('shopify:cart:lines-update', { bubbles: true, cancelable: true });
+        ev.action = list ? 'update' : 'add';
+        ev.context = 'product';
+        ev.promise = Promise.resolve({ cart: cartForEvent(cart), detail: { items: cart.items, itemCount: cart.item_count, sections: sections || undefined, source: 'hs2-personalizer', didError: false } });
+        if (!list) ev.lines = (items || []).filter(function (it) { return it && it.variant_id; }).map(function (it) { return { merchandiseId: GID + 'ProductVariant/' + it.variant_id, quantity: it.quantity || 1 }; });
+        document.dispatchEvent(ev);
+        if (list || !(cart.items || []).length) return;
+        // the drawer is the confirmation when it opens; the gift and the way to the next one otherwise
+        setTimeout(function () {
+          if (drawerOpen()) return;
+          var dog = answer('dog');
+          toast(dog ? possessive(dog) + ' gift is in your cart.' : 'Your gift is in your cart.', 'Free US shipping on every order.', shopRoot() + '?step=choose', 'Add another gift');
+        }, 900);
+      }).catch(function () { fallback(); });
+    }, 0);
+  }
+  function hideNext() {
+    var bar = document.querySelector('[data-hs2-next]');
+    if (bar) bar.remove();
+    showNext.held = false;
+    document.documentElement.classList.remove('hs2-has-next');
+    giftFit();
+  }
+  // a bar marked held (the redo's "Your new version is in your cart.") stays until the buyer closes it
+  function showNext(title, sub, href, label) {
+    if (showNext.held) return;
+    var onCart = /^\/cart\/?$/.test(location.pathname);
+    var anchor = onCart && document.querySelector('.cart-totals__tax-note');
+    if (anchor) {
+      // on the cart page the next step sits in the page, beside the totals, not over them
+      var a = document.querySelector('[data-hs2-next-inline]');
+      if (!a) { a = document.createElement('a'); a.className = 'hs2-next-inline'; a.setAttribute('data-hs2-next-inline', ''); anchor.parentNode.insertBefore(a, anchor); }
+      a.href = href; a.textContent = title + ' · ' + label;
+      return;
+    }
+    var bar = document.querySelector('[data-hs2-next]');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'hs2-next';
+      bar.setAttribute('data-hs2-next', '');
+      bar.setAttribute('role', 'status');
+      bar.innerHTML = '<div class="hs2-next__text"><strong></strong><span></span></div><a class="hs2-next__go"></a><button type="button" class="hs2-next__x" aria-label="Close">&times;</button>';
+      bar.querySelector('.hs2-next__x').addEventListener('click', function () { hideNext(); queueSet([]); });
+      document.body.appendChild(bar);
+    }
+    bar.querySelector('strong').textContent = title;
+    bar.querySelector('.hs2-next__text span').textContent = sub;
+    var go = bar.querySelector('.hs2-next__go');
+    go.textContent = label; go.href = href;
+    document.documentElement.classList.add('hs2-has-next');
+    giftFit(); // the bar takes the bottom of a one-screen gift page
+  }
+  // items: the lines an add just put in (onCartAdd), or undefined on a plain page load
+  function queueBar(items) {
+    var q = queueGet();
+    if (!q.length) return;
+    // a redo page makes a new version of a gift already in the cart: the list's bar covered it and
+    // read "All 3 gifts are in your cart" over the new painting (28 Oct, Recording 4)
+    if (/[?&]redo=[a-f0-9-]{36}(?:[&#]|$)/i.test(location.search || '')) { if (!showNext.held) hideNext(); return; }
+    var fromAdd = items !== undefined;
+    fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (cart) {
+        var inCart = {};
+        (cart.items || []).forEach(function (it) { inCart[it.handle] = true; });
+        var here = handleOf(location.pathname);
+        var left = q.filter(function (it) { return !inCart[handleOf(it.url)]; });
+        // on a gift still to personalize, this page is the step: no bar until it's in the cart
+        if (left.some(function (it) { return handleOf(it.url) === here; })) { hideNext(); return; }
+        var next = left[0];
+        if (next) {
+          var done = q.length - left.length;
+          showNext('Next: ' + next.title, done + ' of ' + q.length + ' in your cart. Photo and names carry over.', next.url, 'Personalize it');
+        } else {
+          // the list is done: said once, by the add that finished it; a later page load ends it quietly
+          queueSet([]);
+          if (fromAdd) showNext('All ' + q.length + ' gifts are in your cart', 'Free US shipping on every order.', shopRoot() + 'checkout', 'Check out');
+        }
+      })
+      .catch(function () { /* the bar is a convenience; the cart still works */ });
+  }
+  function confirmAdds() {
+    if (confirmAdds.done || !document.querySelector('#buy')) return;
+    confirmAdds.done = true;
+    onCartAdd(announceAdd);
+  }
+  function giftList() {
+    if (giftList.done) return;
+    giftList.done = true;
+    if (!document.querySelector('#buy') && !/^\/cart\/?$/.test(location.pathname)) return;
+    // nothing to do (and nothing hooked) unless the shopper came through the gift grid
+    if (!queueGet().length) return;
+    onCartAdd(queueBar);
+    queueBar();
+  }
+  /* Helio's search resets itself when its panel "closes", and every reset focuses its input,
+     even while the panel is shut. The shut input sits near the foot of the page, so the browser
+     scrolls there: a shopper landing on a product page watched it slide to the footer three
+     seconds in (the bridge's chip clicks were one trigger). The input may only take focus
+     while it can be seen, which is whenever the shopper has actually opened search. */
+  function guardSearchFocus() {
+    document.querySelectorAll('predictive-search-component input, #cmdk-input').forEach(function (inp) {
+      if (inp.__hs2guard) return;
+      inp.__hs2guard = true;
+      var focus0 = inp.focus;
+      inp.focus = function () {
+        var r = inp.getBoundingClientRect();
+        var shown = r.width > 1 && r.height > 1 && (!inp.checkVisibility || inp.checkVisibility({ opacityProperty: true, visibilityProperty: true }));
+        var dlg = inp.closest('dialog');
+        if (!shown && !(dlg && dlg.open)) return;
+        return focus0.apply(inp, arguments);
+      };
+    });
+  }
+  // a product page that opens on its photo switches to the shopper's live preview once they add one
+  function previewOnPhoto() {
+    var media = document.querySelector('[data-hs2-media][data-open="photo"]');
+    if (!media || previewOnPhoto.done) return;
+    previewOnPhoto.done = true;
+    document.addEventListener('change', function (e) {
+      var t = e.target;
+      if (!t || t.type !== 'file' || !t.closest || !t.closest('.tee-field--photo')) return;
+      setTimeout(function () {
+        media.removeAttribute('data-show');
+        var pv = media.querySelector('[data-hs2-thumb-preview]');
+        media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pv ? 'true' : 'false'); });
+      }, 900);
+    }, true);
+  }
+
+  // Every gift needs Teeinblue's photo and note. Helio's collection quick-add
+  // submits a bare variant, so a catalog card must open the product form first.
+  // Every card does, whatever its handle: a list of handles let a renamed one
+  // (28 Oct, a Teeinblue campaign Update) keep the bare quick add. Only the
+  // Artist's touch add-on, which is no gift, keeps Helio's own button.
+  function personalizeCatalogCards() {
+    var keep = ['artists-touch'];
+    document.querySelectorAll('product-card quick-add-component').forEach(function (quick) {
+      var card = quick.closest('product-card');
+      var productLink = card && card.querySelector('a[href*="/products/"]');
+      var handle = productLink ? handleOf(productLink.href) : '';
+      if (!handle || keep.indexOf(handle) !== -1) return;
+      var link = quick.querySelector('.hs2-catalog-personalize');
+      if (link) { link.href = productLink.href; return; }
+      link = document.createElement('a');
+      link.className = 'button quick-add__button add-to-cart-button hs2-catalog-personalize';
+      link.href = productLink.href;
+      link.textContent = 'Personalize';
+      quick.replaceChildren(link);
+    });
+  }
+  function guardCatalogQuickAdd() {
+    if (guardCatalogQuickAdd.done) return;
+    guardCatalogQuickAdd.done = true;
+    personalizeCatalogCards();
+    if (document.body && window.MutationObserver) {
+      new MutationObserver(personalizeCatalogCards).observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  /* The phone menu: Helio's drawer showed three product cards, with the framed portrait's price and the
+     blanket's blank template picture (CoWork Part B, 28 Oct). hs-footer.liquid renders Heartside's own
+     list with Shopify's prices; it goes at the top of the drawer, and hs-brand.css hides the cards. */
+  function heartsideMenu() {
+    var tpl = document.querySelector('template[data-hs-menu]'), drawer = document.querySelector('.header .menu-drawer');
+    if (tpl && drawer && !drawer.querySelector('.hs-menu') && tpl.content && tpl.content.firstElementChild) {
+      var close = drawer.querySelector('.menu-drawer__close-button'), menu = tpl.content.firstElementChild.cloneNode(true);
+      drawer.insertBefore(menu, close ? close.nextSibling : drawer.firstChild);
+    }
+    // Helio redraws its header after load and replaces the whole drawer, so the list goes back in
+    // whenever that happens, and again as the menu opens
+    var header = document.querySelector('.header');
+    if (!tpl || !header || heartsideMenu.watching) return;
+    heartsideMenu.watching = true;
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('.header__icon--menu')) heartsideMenu(); }, true);
+    if ('MutationObserver' in window) new MutationObserver(function () {
+      if (heartsideMenu.queued) return;
+      heartsideMenu.queued = true;
+      requestAnimationFrame(function () { heartsideMenu.queued = false; heartsideMenu(); });
+    }).observe(header, { childList: true, subtree: true });
+  }
+  function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
+  function init() {
+    if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices) {
+      window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeArtworkPurchase()});
+      window.addEventListener('hs-artwork-choices', artworkChoicesChanged);
+    }
+    guardSearchFocus();
+    bindBlanketRecovery();
+    bindExtras();
+    guardCatalogQuickAdd();
+    bindInputs(); render(); sticky(); gallery(); clearHeader(); heartsideMenu();
+    steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();
+    shop(); giftList(); confirmAdds(); previewOnPhoto(); warmPhotoCheck(); keepTibPhoto(); guardGiftPhoto(); redoMode(); window.addEventListener('hs-artwork-choices', function () { journeyCard(); }); guardMugProof();
+    layout();
+    setInterval(urgency, 60000);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
+    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); });
+    cartTidy();
+  }
+  var resizeT;
+  window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { clearHeader(); layout(); giftFit(); }, 120); });
+  document.addEventListener('focusout', function () { setTimeout(giftFit, 150); });
+  window.addEventListener('load', function () { guardSearchFocus(); clearHeader(); layout(); giftFit(); setTimeout(function () { clearHeader(); layout(); giftFit(); }, 600); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
+  // for tools/preview tests
+  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+})();
