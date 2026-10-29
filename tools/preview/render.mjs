@@ -490,6 +490,8 @@ for (const [kind, p] of Object.entries(catalog)) {
   else skipped.push(`${t} (not in the theme)`);
 }
 if (exists('product.portrait-native.json')) written.push(await page('product-portrait-native-unframed.html', 'product.portrait-native.json', ctxFor('product.portrait-native.json', withVariant(portrait, (v) => v.options[0] === 'Unframed'))));
+// the rebuilt journey (29 Oct), previewed at /?view=journey until it replaces the homepage chat
+if (exists('index.journey.json')) written.push(await page('index-journey.html', 'index.journey.json', ctxFor('index.journey.json')));
 written.push(await cartPage('cart-empty.html', []));
 written.push(await cartPage('cart.html', [cartLine(mug, mug.variants[0])]));
 // the homepage before its products are picked: the chat says which gift is missing

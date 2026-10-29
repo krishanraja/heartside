@@ -1,0 +1,97 @@
+/* The Heartside journey (sections/hs-journey.liquid, assets/hs-journey.js), 29 Oct rebuild.
+   Phone first: one job per screen, the primary button always in reach (the dock sticks to the
+   bottom), taps not typing, 44 px targets. Brand book tokens: cream paper, ink, stamp red. */
+.hsj {
+  --cream: #FBF6F1; --paper: #FFFDF9; --ink: #121010; --body: #3E322D; --muted: #5A4A44;
+  --line: #E2D4C8; --chestnut: #8A4A2B; --stamp: #A8284E;
+  --serif: "HS Fraunces", Georgia, serif; --sans: "HS DM Sans", system-ui, -apple-system, sans-serif; --mono: "HS Courier Prime", "Courier New", monospace;
+  background: var(--cream); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+.hsj *, .hsj *::before, .hsj *::after { box-sizing: border-box; }
+.hsj [hidden] { display: none !important; }
+.hsj button { font-family: inherit; color: inherit; }
+html.hsj-routed .hsj-hook { display: none; }
+.hsj__screen { max-width: 480px; margin: 0 auto; padding: 8px 16px 96px; }
+.hsj h1, .hsj h2 { font-family: var(--serif); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+.hsj p { text-wrap: pretty; }
+.hsj-eyebrow, .hsj-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--chestnut); margin: 0 0 6px; }
+.hsj-h1 { font-size: clamp(34px, 9vw, 46px); line-height: 1.04; margin: 0 0 14px; }
+.hsj-h1 em { font-style: italic; color: var(--stamp); }
+.hsj-h2 { font-size: 26px; line-height: 1.12; }
+.hsj-small { font-size: 13.5px; line-height: 1.45; color: var(--muted); margin: 4px 0 0; }
+.hsj-lead { font-size: 16.5px; line-height: 1.45; color: var(--body); margin: 14px 0 0; }
+.hsj-tag { position: absolute; top: 8px; left: 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--paper); color: var(--ink); border-radius: 6px; padding: 3px 6px; box-shadow: 0 0 0 1px var(--line); }
+.hsj-trust, .hsj-legal { margin-top: 18px; }
+.hsj-legal { font-size: 12px; color: var(--muted); }
+.hsj-legal a { color: inherit; }
+.hsj :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+/* the hook: one example gift with the dog's own words */
+.hsj-example { position: relative; margin: 0; border-radius: 20px; overflow: hidden; background: var(--paper); box-shadow: 0 14px 28px -18px rgba(30, 23, 20, 0.55), 0 0 0 1px #EFE6DD; }
+.hsj-example img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.hsj-example__note { display: grid; gap: 2px; padding: 12px 14px 14px; }
+.hsj-example__for { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--chestnut); }
+.hsj-example__line { font-family: var(--mono); font-size: 16px; color: var(--ink); }
+.hsj-example__sign { font-family: var(--serif); font-style: italic; color: var(--body); }
+
+/* buttons */
+.hsj-btn { appearance: none; border: 0; border-radius: 14px; background: var(--ink); color: var(--cream) !important; font-size: 17px; font-weight: 600; min-height: 54px; padding: 0 20px; width: 100%; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; }
+.hsj-btn:disabled { background: #CFC4BB; cursor: default; }
+.hsj-dock { position: sticky; bottom: 0; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 246, 241, 0), var(--cream) 30%); margin-top: 18px; z-index: 2; }
+.hsj-hook .hsj-dock { position: static; background: none; }
+.hsj-link { appearance: none; background: none; border: 0; padding: 10px 0; min-height: 44px; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.hsj-head { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 16px; }
+.hsj-back { flex: none; appearance: none; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; font-size: 20px; cursor: pointer; }
+
+/* questions: pills only, one group after another */
+.hsj-field { margin: 0 0 18px; }
+.hsj-q { display: block; font-family: var(--serif); font-size: 19px; line-height: 1.25; margin: 0 0 10px; padding: 0; }
+.hsj-input { width: 100%; min-height: 52px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; padding: 0 14px; font-size: 18px; font-family: inherit; color: var(--ink); }
+.hsj-input:focus { border-color: var(--ink); outline: none; }
+.hsj-hint:empty { display: none; }
+.hsj-group { border: 0; margin: 0 0 20px; padding: 0; min-width: 0; animation: hsj-in .25s ease both; }
+@keyframes hsj-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.hsj-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.hsj-pill { appearance: none; border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 10px 15px; min-height: 44px; font-size: 15px; line-height: 1.15; cursor: pointer; text-align: left; transition: background .15s, border-color .15s; }
+.hsj-pill:active { transform: scale(.97); }
+.hsj-pill.is-on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+/* the profile: the words in a box that never changes size, the tone beside them */
+.hsj-card { background: var(--paper); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 0 0 1px #EFE6DD; }
+.hsj-tone { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #F3EEE8; border-radius: 999px; padding: 4px; margin: 0 0 12px; }
+.hsj-seg { appearance: none; border: 0; background: transparent; border-radius: 999px; min-height: 44px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.hsj-seg.is-on { background: var(--ink); color: var(--cream); }
+.hsj-note { position: relative; min-height: 400px; }
+@media (min-width: 420px) { .hsj-note { min-height: 340px; } }
+.hsj-note.is-busy > :not(.hsj-writing) { opacity: .35; transition: opacity .2s; }
+.hsj-voice { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--body); margin: 0 0 10px; }
+.hsj-lines { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 8px; }
+.hsj-lines li { font-family: var(--mono); font-size: 15px; line-height: 1.4; color: var(--ink); padding-left: 14px; position: relative; }
+.hsj-lines li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: var(--stamp); }
+.hsj-gift-line { border-top: 1.5px dashed var(--line); padding-top: 10px; }
+.hsj-print { font-family: var(--mono); font-size: 18px; line-height: 1.35; margin: 2px 0 0; color: var(--ink); }
+.hsj-sign { font-family: var(--serif); font-style: italic; font-size: 17px; margin: 4px 0 0; }
+.hsj-writing { position: absolute; inset: auto 0 0 0; text-align: center; font-size: 14px; color: var(--ink); margin: 0; }
+.hsj-styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hsj-style { appearance: none; border: 2px solid transparent; background: #fff; border-radius: 14px; padding: 4px; cursor: pointer; text-align: center; box-shadow: 0 0 0 1px var(--line); }
+.hsj-style.is-on { border-color: var(--ink); }
+.hsj-style__art { position: relative; display: block; aspect-ratio: 2 / 3; border-radius: 10px; overflow: hidden; background: #F3EEE8; }
+.hsj-style__art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hsj-style__art .hsj-tag { top: 4px; left: 4px; font-size: 9px; }
+.hsj-style__art--plain { background: repeating-linear-gradient(135deg, #F3EEE8 0 10px, #EDE4DA 10px 20px); }
+.hsj-style__name { display: block; font-size: 13px; line-height: 1.2; padding: 6px 2px 2px; }
+
+/* the photo: one big target */
+.hsj-drop { display: grid; justify-items: center; gap: 10px; padding: 18px; border: 2px dashed var(--ink); border-radius: 20px; background: #fff; cursor: pointer; text-align: center; }
+.hsj-file { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.hsj-drop:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
+.hsj-drop__img { display: grid; place-items: center; width: 180px; height: 180px; border-radius: 50%; background: #F3EEE8; overflow: hidden; }
+.hsj-drop__img img { width: 100%; height: 100%; object-fit: cover; }
+.hsj-drop__plus { font-size: 64px; line-height: 1; color: var(--ink); }
+.hsj-drop__text { font-size: 17px; font-weight: 600; }
+.hsj-photo-note:empty { display: none; }
+.hsj-privacy { display: none; }
+
+@media (prefers-reduced-motion: reduce) { .hsj-group { animation: none; } .hsj-pill:active { transform: none; } }
+@media (min-width: 900px) { .hsj__screen { padding-top: 24px; } }

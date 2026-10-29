@@ -1,0 +1,137 @@
+{%- comment -%}
+  The Heartside journey (Krish, 29 Oct: rebuilt after the phone batch, not patched). Six screens,
+  each doing one thing, nothing asked twice, taps instead of typing:
+    1. this first screen (the hook),
+    2. about your dog (?step=about),
+    3. your dog's profile: the words and the look, text only (?step=profile),
+    4. the photo (?step=photo), which hands over to the best-fit gift's page, where it paints,
+    5. the gifts on the real products, and 6. the cart (both on the product pages, hs2.js).
+  Behaviour lives in assets/hs-journey.js. This file holds the first screen, so it shows before
+  the script runs, the gifts from Shopify and the settings.
+{%- endcomment -%}
+{%- render 'hs2-head' -%}
+{%- render 'hs-schema', kind: 'home' -%}
+{%- assign ai_host = section.settings.compose_url | split: '/webhook' | first -%}
+{%- if section.settings.ai_on and ai_host contains 'https://' -%}<link rel="preconnect" href="{{ ai_host }}" crossorigin>{%- endif -%}
+{{ 'hs-journey.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
+{%- assign s = section.settings -%}
+<script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hsj-routed');setTimeout(function(){document.documentElement.classList.remove('hsj-routed')},3500);}</script>
+{%- comment -%} The mug's colors in the brand book's order, only those the product sells. {%- endcomment -%}
+{%- assign mug_hex = '#050505,#191A4D,#216251,#D9292C,#E49EAA' | split: ',' -%}
+{%- assign mug_order = 'Black,Dark Blue,Dark Green,Red,Pink' | split: ',' -%}
+{%- assign mug_n = 0 -%}
+{%- capture mug_colors -%}
+  {%- if s.product_mug != blank -%}
+    {%- for c in mug_order -%}
+      {%- assign ci = forloop.index0 -%}
+      {%- for v in s.product_mug.variants -%}
+        {%- if v.options contains c -%}
+          {%- if mug_n > 0 -%},{%- endif -%}
+          { "name": {{ c | json }}, "hex": {{ mug_hex[ci] | json }}, "id": {{ v.id | json }} }
+          {%- assign mug_n = mug_n | plus: 1 -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+  {%- endif -%}
+{%- endcapture -%}
+<div class="hsj" data-hsj id="journey-{{ section.id }}">
+  <script type="application/json" data-hsj-config>
+    {
+      "composeUrl": {{ s.compose_url | json }},
+      "ai": {{ s.ai_on | json }},
+      "corePurchase": {{ s.core_purchase | json }},
+      "mug": { "colors": [{{ mug_colors | strip }}] },
+      "examples": {
+        "screenprint": {{ 'hs-example-pug-warm-portrait.webp' | asset_url | json }},
+        "collage": {{ 'hs-example-golden-sentimental-portrait.webp' | asset_url | json }}
+      },
+      "gifts": {
+        {%- assign keys = 'mug,blanket,print' | split: ',' -%}
+        {%- for k in keys -%}
+          {%- assign pid = 'product_' | append: k -%}
+          {%- assign p = s[pid] -%}
+          "{{ k }}": {
+            {%- if p != blank -%}
+              "url": {{ p.url | json }}, "handle": {{ p.handle | json }}, "title": {{ p.title | json }},
+              "price": {{ p.price_min | divided_by: 100.0 | json }}, "priceMax": {{ p.price_max | divided_by: 100.0 | json }},
+              {%- assign min_variant = nil -%}
+              {%- for v in p.variants -%}
+                {%- if v.available and v.price == p.price_min -%}{%- assign min_variant = v.id -%}{%- break -%}{%- endif -%}
+              {%- endfor -%}
+              "minVariant": {{ min_variant | json }}
+            {%- else -%}
+              "url": null, "handle": null, "price": null
+            {%- endif -%}
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      }
+    }
+  </script>
+  {%- comment -%} 1. The hook: one example of a dog's own words on a gift for the person it loves, one
+    line on what it takes, one button. Nothing else above the fold (Krish, 29 Oct). {%- endcomment -%}
+  <section class="hsj__screen hsj-hook" data-hsj-screen="hook">
+    <p class="hsj-eyebrow">{{ s.eyebrow }}</p>
+    <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
+    <figure class="hsj-example">
+      <span class="hsj-tag">Example</span>
+      <img src="{{ 'hs-example-pug-hilarious-mug.webp' | asset_url }}" alt="Example: a pug leaping into autumn leaves on a mug, in vintage screenprint." width="720" height="480" loading="eager" decoding="async">
+      <figcaption class="hsj-example__note">
+        <span class="hsj-example__for">{{ s.example_for }}</span>
+        <span class="hsj-example__line">{{ s.example_line }}</span>
+        <span class="hsj-example__sign">Love, {{ s.example_dog }}</span>
+      </figcaption>
+    </figure>
+    <p class="hsj-lead">{{ s.intro }}</p>
+    <div class="hsj-dock">
+      <a class="hsj-btn" href="?step=about" data-hsj-go="about">{{ s.start }}</a>
+      <p class="hsj-small">{{ s.time_line }}</p>
+      <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
+    </div>
+    <p class="hsj-small hsj-trust">{{ s.trust_line }}</p>
+    <p class="hsj-legal">
+      {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
+      {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
+      {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
+      {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a> · {% endif -%}
+      {{ s.legal_note }}
+    </p>
+  </section>
+  <div data-hsj-app></div>
+  <noscript><p class="hsj-small">This page needs JavaScript. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
+  <p class="hsj-privacy" data-hsj-privacy hidden>{{ s.privacy }}</p>
+</div>
+
+{% schema %}
+{
+  "name": "HS journey",
+  "tag": "section",
+  "class": "hsj-section",
+  "settings": [
+    { "type": "paragraph", "content": "The Heartside journey: the first screen, about your dog, the profile and the photo. The painting, the gifts and the cart follow on the product pages. Prices come from the products picked below." },
+    { "type": "header", "content": "First screen" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
+    { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
+    { "type": "text", "id": "example_for", "label": "Example: who it's for", "default": "Pickle's mug for Sam" },
+    { "type": "text", "id": "example_line", "label": "Example: the dog's line", "default": "I take your arrivals very seriously." },
+    { "type": "text", "id": "example_dog", "label": "Example: the dog's name", "default": "Pickle" },
+    { "type": "textarea", "id": "intro", "label": "Line under the example", "default": "Tell us about your dog. We write a note in their voice and paint them onto a mug, a blanket or a portrait for the person they love." },
+    { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
+    { "type": "text", "id": "time_line", "label": "Under the button", "default": "Have a photo of your dog on your phone? It takes about 3 minutes." },
+    { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free US shipping on every order. A person checks every design before it prints." },
+    { "type": "text", "id": "legal_note", "label": "Company note", "default": "Heartside is a Mindmaker LLC company." },
+    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "default": "Your answers go to our writing service only to write your dog's note. Your photo stays on your device until you choose a gift." },
+    { "type": "header", "content": "Gifts and services" },
+    { "type": "product", "id": "product_mug", "label": "Mug product" },
+    { "type": "product", "id": "product_blanket", "label": "Blanket product" },
+    { "type": "product", "id": "product_print", "label": "Portrait product" },
+    { "type": "checkbox", "id": "core_purchase", "label": "Use the native product pages", "default": true },
+    { "type": "checkbox", "id": "ai_on", "label": "Write the note with AI", "info": "Off: the note uses the scripted lines for each answer.", "default": true },
+    { "type": "text", "id": "compose_url", "label": "Compose webhook", "default": "https://krishraja10101.app.n8n.cloud/webhook/heartside-compose" }
+  ],
+  "presets": [{ "name": "HS journey" }]
+}
+{% endschema %}
