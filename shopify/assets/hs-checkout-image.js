@@ -27,10 +27,10 @@
         if (!item || !/^\d+$/.test(String(item.id)) || !item.properties || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(item.properties._customization_id || '')) throw fail();
       });
     } catch (e) { return Promise.reject(fail()); }
-    var fetcher = options.fetch || root.fetch.bind(root), deadline = Date.now() + 25000;
+    var fetcher = options.fetch || root.fetch.bind(root), deadline = Date.now() + 90000;
     function register(item, attempt) {
       var id = item.properties._customization_id, variant = String(item.id), timer;
-      if (Date.now() >= deadline || attempt >= 5) return Promise.reject(fail());
+      if (Date.now() >= deadline || attempt >= 12) return Promise.reject(fail());
       var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       // Shopify signs app-proxy query parameters, not the JSON body. Bind both copies.
       var requestUrl = new URL(target);
@@ -43,7 +43,7 @@
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
       var timeout = new Promise(function (_, reject) {
-        timer = setTimeout(function () { if (controller) controller.abort(); reject(fail()); }, Math.min(8000, Math.max(1, deadline - Date.now())));
+        timer = setTimeout(function () { if (controller) controller.abort(); reject(fail()); }, Math.min(20000, Math.max(1, deadline - Date.now())));
       });
       return Promise.race([request, timeout]).then(function (response) {
           clearTimeout(timer);
