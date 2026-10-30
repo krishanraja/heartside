@@ -282,7 +282,10 @@
   var BACK = '<button type="button" class="hsj-icon-btn" data-hsj-back aria-label="Back">' + ICON.back + '</button>';
   function screen(step, title, sub, body, dockHtml) {
     var i = STEPS.indexOf(step), pct = Math.round((i + 1) / STEPS.length * 100);
-    return '<header class="hsj-bar">' + BACK + '<p class="hsj-bar__step">Step ' + (i + 1) + ' of ' + STEPS.length + '</p></header>' +
+    // three parts, not "Step 1 of 13" (audit, 30 Oct: the count says how long it is before it starts)
+    var part = ASK.indexOf(step) > -1 ? 1 : step === 'words' ? 2 : 3;
+    var label = part === 1 ? (S.dog && step !== 'name' ? 'About ' + esc(names().dog) : 'About your dog') : part === 2 ? 'The note' : 'The look';
+    return '<header class="hsj-bar">' + BACK + '<p class="hsj-bar__step">' + label + ' <span class="hsj-bar__part">· ' + part + ' of 3</span></p></header>' +
       '<div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
       '<main class="hsj-content"><div class="hsj-heading"><h2 class="hsj-headline" id="hsj-q">' + title + '</h2>' + (sub ? '<p class="hsj-support">' + sub + '</p>' : '') + '</div>' +
       '<div class="hsj-body">' + body + '</div></main><footer class="hsj-dock">' + dockHtml + '</footer>';

@@ -101,6 +101,8 @@
       var idle = !art || art.hidden || art.getAttribute('data-state') === 'idle', late = Date.now() - started > 5000;
       root.querySelector('[data-hs-jm-nophoto]').hidden = !(idle && late);
       root.querySelector('[data-hs-jm-photo]').textContent = 'Choose ' + (st.dog ? st.dog + "'s" : 'your dog\'s') + ' photo';
+      var nl = root.querySelector('[data-hs-jm-nophoto-lead]');
+      if (nl && st.dog) nl.textContent = st.dog + "'s photo didn't come with you to this page. Choose it again. It takes a second.";
       title.textContent = idle && late ? 'One photo of ' + dog : 'Painting ' + dog;
       choose.hidden = true; slot.hidden = false; root.querySelector('[data-hs-jm-repaint]').hidden = true; return;
     }

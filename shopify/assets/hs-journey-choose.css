@@ -155,3 +155,10 @@ html.hs-jm-on body { background: #FBF7F3; }
   .hs-jm__title { font-size: 36px; line-height: 44px; }
 }
 
+/* no photo on arrival: the gift's Example and its price stay in view (audit, 30 Oct) */
+.hs-jm__nophoto { display: grid; gap: 12px; }
+.hs-jm__nophoto[hidden] { display: none; }
+.hs-jm__nophoto-art { position: relative; margin: 0; border-radius: 16px; overflow: hidden; background: #F1E9E2; }
+.hs-jm__nophoto-art img { display: block; width: 100%; height: auto; max-height: 44svh; object-fit: cover; }
+.hs-jm__tag { position: absolute; top: 8px; left: 8px; z-index: 1; padding: 2px 8px; border-radius: 6px; background: rgba(26, 21, 20, .82); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.hs-jm__price { margin: 0; font-size: 15px; font-weight: 600; }
