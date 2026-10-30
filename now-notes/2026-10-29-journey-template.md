@@ -1,7 +1,0 @@
-Status: The journey screens and the gift page now use one fixed template, built from the mock Krish approved ("much better, build it into the store"). It is on the release branch and goes to the draft theme only. The live theme is unchanged until Krish's phone batch.
-
-Changed: Every step has an app bar (Back, "Step N of 13") and a progress line, then a headline and one support line, then one component for the job (rows, chips, an outlined field, tone cards, style cards, or the photo drop with tips), then a dock with one primary button. DM Sans throughout, including the gift page titles, on an 8 px grid. On desktop each step is a centered card (headline on the left, choices on the right, the button at bottom right) and the hook is a split hero. The tone cards carry colored icons. The words screen offers "Write it again" as often as the buyer likes. The gift page gives one free repaint in a chosen tone. The copy is Krish's: "Now let's capture {dog}'s vibe.", "Now his/her look", "What style of design do you want?", "Upload your best pic of {dog}", "Give us his/her best pic to paint from". The journey-flow test now covers 1440x900 alongside the six phone sizes, with no scrolling at any of them.
-
-Next: Krish walks the draft on his phone. Then painter v13: a no-words framing, a same-world variation per format, the card format, the person cut-off rule and the walk joke without a person.
-
-North Star check (2026-10-29): holds.
