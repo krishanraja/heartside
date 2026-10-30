@@ -760,8 +760,8 @@
               },
               "movie": {
                 "fit": 2,
-                "text": "the dog curled on the couch on movie night with {pos} chin on a cushion, eyes huge and brimming, ears drooping, completely overwhelmed by the film, lit by the screen's glow",
-                "short": "overwhelmed by the movie"
+                "text": "the dog on the couch on movie night with a cushion clutched over {pos} face, peeking out from behind it with one huge eye at the glowing TV screen, terrified by the film",
+                "short": "hiding behind a cushion from the movie"
               },
               "boss": {
                 "fit": 2,

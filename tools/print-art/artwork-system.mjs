@@ -242,7 +242,7 @@ export function briefFields(input) {
     const play = trophy && !o.noToy ? fill(bl.toy.replace('{toy}', trophy)) : '';
     return fields([
       cap(fill(bl.vary.replace('{moment}', moment).replace('{play}', play))) + '.',
-      fill(bl.same) + (wearItem ? ', every figure ' + wearItem : '') + '.',
+      fill(bl.same) + (wearItem ? ', every figure ' + wearItem + ', the same color in every figure' : '') + '.',
       'Light: ' + tone.light,
       o.noToy ? 'No toys anywhere.' : ''
     ].filter(Boolean).join(' '));
