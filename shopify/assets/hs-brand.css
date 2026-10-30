@@ -325,3 +325,7 @@ li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive
 
 /* an Artist's touch line whose design has left the cart (cart-products.liquid, hs2.js artistTouch) */
 .hs2-artist__orphan { margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--hs-stamp, #8A4A2B); }
+/* the memo is one line from the first paint, before hs2.js turns a long one into a ticker (audit, 30 Oct:
+   at 320 px the order-by line wrapped to two, then the ticker took it to one and the page moved up 32 px).
+   With reduced motion there is no ticker, so it wraps as before. */
+@media (prefers-reduced-motion: no-preference) { .hs2 .hs2-memo.hs-strip .hs2-memo__viewport { white-space: nowrap; overflow: hidden; } }

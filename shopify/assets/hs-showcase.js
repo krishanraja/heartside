@@ -35,7 +35,28 @@
           paint(to);
         });
       }
-      paint(0);
+      // it opens on the painting, the reason to be here (audit, 30 Oct), and nudges once toward the
+      // gift the first time it comes into view, so the slider reads as something to drag
+      paint(1);
+      var touched = false;
+      range.addEventListener('pointerdown', function () { touched = true; });
+      var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!still && 'IntersectionObserver' in window) {
+        var seen = new IntersectionObserver(function (es) {
+          if (!es[0].isIntersecting) return;
+          seen.disconnect();
+          var t0 = null;
+          var step = function (t) {
+            if (touched) return;
+            if (t0 === null) t0 = t;
+            var k = Math.min(1, (t - t0) / 1400), v = 1 + 0.45 * Math.sin(Math.PI * k);
+            range.value = String(v); paint(v);
+            if (k < 1) window.requestAnimationFrame(step);
+          };
+          window.setTimeout(function () { window.requestAnimationFrame(step); }, 400);
+        }, {threshold: 0.6});
+        seen.observe(flow);
+      }
     }
   }
 
@@ -58,6 +79,24 @@
       show('mug');
     }
   }
+
+  // tap any Example to see it large; Escape, the close button or a tap on the backdrop closes it
+  var box = null, last = null;
+  var close = function () { if (!box) return; box.remove(); box = null; document.documentElement.style.overflow = ''; if (last) last.focus(); };
+  root.addEventListener('click', function (e) {
+    var img = e.target.closest && e.target.closest('.hss-fig img');
+    if (!img || img.closest('[data-hss-stage]')) return;
+    last = img.closest('.hss-fig');
+    box = document.createElement('div');
+    box.className = 'hss-zoom'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', img.alt || 'Example');
+    box.innerHTML = '<button type="button" class="hss-zoom__close" aria-label="Close">×</button>';
+    var big = document.createElement('img'); big.src = img.currentSrc || img.src; big.alt = img.alt; box.appendChild(big);
+    box.addEventListener('click', function (ev) { if (ev.target !== big) close(); });
+    document.body.appendChild(box); document.documentElement.style.overflow = 'hidden';
+    box.querySelector('.hss-zoom__close').focus();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  root.querySelectorAll('.hss-fig').forEach(function (f) { if (!f.closest('[data-hss-stage]')) { f.setAttribute('tabindex', '0'); f.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); var i = f.querySelector('img'); if (i) i.click(); } }); } });
 
   // the button goes back to the start of the journey
   var top = root.querySelector('[data-hss-top]');

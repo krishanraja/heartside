@@ -393,23 +393,6 @@
       "bytes": 82530
     },
     {
-      "id": "tone-over",
-      "src": "mockups/golden-over_the_top-portrait/studio-4x5.png",
-      "size": [
-        540,
-        675
-      ],
-      "job": "golden-over_the_top-portrait",
-      "alt": "Example: a framed portrait of a golden retriever in a spotlight, enthroned on a rug. Over the top.",
-      "uses": [
-        "showcase tones"
-      ],
-      "approval": "job golden-over_the_top-portrait approved Krish, 2026-10-30",
-      "source_sha256": "59b999cd3c9cabcd57fd4739f1511c5a0e24a8a508df8ab8eaa4582a2290519d",
-      "output_sha256": "ec55346cc5ee1ba372883b45481759d7e5fcc1ef022c156fd4715bdde3ef5e45",
-      "bytes": 46216
-    },
-    {
       "id": "set-golden",
       "src": "mockups/golden-set/home-4x5.png",
       "size": [
@@ -510,6 +493,74 @@
       "source_sha256": "0063539c9579726833478699740e7dd2edcb1ed873e99e419a0b33003d68f6db",
       "output_sha256": "0b77118bb4051d833f7324936a90163dee9cbc33e91c8f8b880795eded1fa18a",
       "bytes": 62498
+    },
+    {
+      "id": "tone-paint-sentimental",
+      "src": "crops/golden-sentimental-portrait-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-sentimental-portrait",
+      "alt": "Example painting: Maple, a golden retriever, asleep on a rug with a plush toy. Sentimental.",
+      "uses": [
+        "showcase tones"
+      ],
+      "approval": "job golden-sentimental-portrait approved Krish, 2026-10-30",
+      "source_sha256": "26349d260997427d64abb7ba31dbab4a83bf9e29ea4521b0b4bc115799da2e86",
+      "output_sha256": "3e4fab928a0d11f2333f177f4ab8461d649a2d7ba1b0b38ac71cd9c39113b0ee",
+      "bytes": 63902
+    },
+    {
+      "id": "tone-paint-warm",
+      "src": "crops/golden-warm-mug-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example painting: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy. Warm with a wink.",
+      "uses": [
+        "showcase tones"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "4ef1f529c4b6ca3685a04d425392e7275e11cc4fc2975c5bcdf5b20eabbdfde3",
+      "output_sha256": "c47755fcd5de61b0351a42061499f53a51e235444a860099e34c2e56ac05370b",
+      "bytes": 53934
+    },
+    {
+      "id": "tone-paint-hilarious",
+      "src": "crops/golden-hilarious-blanket-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-hilarious-blanket",
+      "alt": "Example painting: Maple, a golden retriever, in a scatter of silly poses with a plush toy. Hilarious.",
+      "uses": [
+        "showcase tones"
+      ],
+      "approval": "job golden-hilarious-blanket approved Krish, 2026-10-30",
+      "source_sha256": "1e1682f40c06f924982ca49100e4f761831cb210fe0325424fadd847ace39dbf",
+      "output_sha256": "feb0300914f05d7884cb7ecdf307140c3da3312d611d723bf70bad9f6068fcf2",
+      "bytes": 77356
+    },
+    {
+      "id": "tone-paint-over",
+      "src": "crops/golden-over_the_top-portrait-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-over_the_top-portrait",
+      "alt": "Example painting: Maple, a golden retriever, enthroned on a rug in a spotlight. Over the top.",
+      "uses": [
+        "showcase tones"
+      ],
+      "approval": "job golden-over_the_top-portrait approved Krish, 2026-10-30",
+      "source_sha256": "ef18df1f93669cac7c2afdc769a3ed5517fc6ccf412eb9408bcc4468b3b8cc38",
+      "output_sha256": "04dd0e17901ed1ba96dd47e154fed957df7ef368f006330ac17d24c4bf81f27a",
+      "bytes": 65012
     }
   ]
 }

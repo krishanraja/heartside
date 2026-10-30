@@ -5,3 +5,6 @@ node_modules/
 tools/preview/out/
 content/out/
 
+
+# Printful photos and local renders for tools/realphoto (its README: inputs are not committed)
+tools/realphoto/src/
