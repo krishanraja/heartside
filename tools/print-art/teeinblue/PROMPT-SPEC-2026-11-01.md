@@ -112,6 +112,8 @@ Recipes `actual-dog-recipes-v13-directed-brief` (recipe SHA-256 `e5d10d326eb50fd
 
 CoWork does this on Krish's computer, one campaign at a time, only after Krish has approved this change by name, and only after the theme carrying v13 is live. Press Update or Sync only in the steps that name them, always after the backup.
 
+**Before any click on Update** (added 30 October, after the v15 blanket apply): open the Update dropdown and untick every "Choose data to sync to Shopify" box first. On 30 October an Update with the boxes ticked renamed the blanket's handle and set its title to the campaign's ("Heartside Personality Blanket - DRAFT 2026-10-23") and its price to the campaign's $89. The store's values are pinned in `tools/preview/catalog.mjs` ($129, "Your Dog's Personality Blanket"), and any Update that syncs data undoes them again.
+
 1. Back up the campaign's current template privately, and record its current prompt SHA-256. It should equal the v12 or the v11 value for that format, listed above. If it is neither, stop and report.
 2. Pick the right campaign. The live portrait product belongs to the campaign "Heartside City Screenprint - DRAFT 2026-10-23". "Your Dog's Portrait" points at a draft reference product and errors on Update; leave it alone.
 3. Replace the photo effect's prompt with the matching block above. Change no other effect setting and no field. The card block waits for a card campaign.
