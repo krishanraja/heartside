@@ -386,9 +386,17 @@
     if (S.notes) delete S.notes[S.tone];
     save(); compose(S.tone);
   }
+  // the gift's price from Shopify, before the photo (audit, 30 Oct: no price showed until the gift page)
+  function priceLine(gift) {
+    var g = cfg.gifts && cfg.gifts[gift];
+    if (!g || g.price == null) return '';
+    var money = function (v) { return '$' + (Math.round(v) === v ? v : v.toFixed(2)); };
+    var from = g.priceMax != null && g.priceMax > g.price ? 'from ' : '';
+    return ' The ' + GIFT_NAME[gift] + ' is ' + from + money(g.price) + ', with free US shipping.';
+  }
   function viewPhoto() {
     var n = names(), gift = bestGift();
-    return screen('photo', 'Give us ' + n.his + ' best pic to paint from', 'We paint ' + esc(n.dog) + ' on the ' + GIFT_NAME[gift] + ' first, then show it on every gift.',
+    return screen('photo', 'Give us ' + n.his + ' best pic to paint from', 'We paint ' + esc(n.dog) + ' on the ' + GIFT_NAME[gift] + ' first, then show it on every gift.' + esc(priceLine(gift)),
       '<label class="hsj-drop" data-hsj-drop>' + '<input type="file" accept="image/*" class="hsj-file" data-hsj-file>' +
       '<span class="hsj-drop__img" data-hsj-preview>' + (photoURL ? '<img src="' + esc(photoURL) + '" alt="Your photo">' : '<span class="hsj-drop__ico">' + ICON.camera + '</span>') + '</span>' +
       '<span class="hsj-drop__text">' + (photoURL ? 'Choose a different photo' : 'Take or choose a photo') + '</span><span class="hsj-drop__sub">It stays on your phone until you choose a gift.</span></label>' +

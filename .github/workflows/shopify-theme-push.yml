@@ -57,6 +57,11 @@ on:
         required: false
         default: ""
         type: string
+      christmas_deadline:
+        description: "Memo bar: last order date for Christmas as YYYY-MM-DD, or none to clear it. Leave empty to keep it."
+        required: false
+        default: ""
+        type: string
       footer_company_note:
         description: "Also put the company note (Mindmaker LLC, Mindmaker Ltd) at the bottom of the footer"
         required: false
@@ -206,11 +211,12 @@ jobs:
           fi
 
       - name: Put the memo bar at the top of the header
-        if: ${{ (inputs.header_memo_bar || inputs.bundle_offer == 'on' || inputs.bundle_offer == 'off' || inputs.artist_touch_product != '') && !inputs.pull_only }}
+        if: ${{ (inputs.header_memo_bar || inputs.bundle_offer == 'on' || inputs.bundle_offer == 'off' || inputs.artist_touch_product != '' || inputs.christmas_deadline != '') && !inputs.pull_only }}
         # the switches reach the script through the environment and are checked before use
         env:
           BUNDLE: ${{ inputs.bundle_offer }}
           ARTIST: ${{ inputs.artist_touch_product }}
+          DEADLINE: ${{ inputs.christmas_deadline }}
         run: |
           if [ ! -f backup/sections/header-group.json ]; then
             echo "::error::The theme has no sections/header-group.json, so the header was left alone."
@@ -223,6 +229,11 @@ jobs:
           args=()
           if [ "$BUNDLE" = "on" ] || [ "$BUNDLE" = "off" ]; then args+=(--bundle "$BUNDLE"); fi
           if [ -n "$ARTIST" ]; then args+=(--artist "$ARTIST"); fi
+          if [ -n "$DEADLINE" ] && ! [[ "$DEADLINE" =~ ^(none|[0-9]{4}-[0-9]{2}-[0-9]{2})$ ]]; then
+            echo "::error::christmas_deadline must be YYYY-MM-DD or none."
+            exit 1
+          fi
+          if [ -n "$DEADLINE" ]; then args+=(--deadline "$DEADLINE"); fi
           cp backup/sections/header-group.json shopify/sections/header-group.json
           node .github/scripts/header-memo.mjs shopify/sections/header-group.json "${args[@]}"
 

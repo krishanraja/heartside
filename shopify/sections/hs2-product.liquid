@@ -94,6 +94,23 @@
 </script>
 
 <div class="hs2">
+  {%- comment -%} Clear the header before the first paint (audit, 30 Oct): Helio draws its header row as an
+    overlay, and hs2.js clearHeader padded the page for it only at DOMContentLoaded, after the page had
+    drawn, so everything dropped about 100 px (layout shift 0.12 on phones, 0.43 on desktop). Same measure
+    and the same 12 px as clearHeader, so its later run finds nothing to change. {%- endcomment -%}
+  <script>
+    (function (box) {
+      try {
+        var header = document.querySelector('.header-section, header.shopify-section');
+        if (!box || !header || window.scrollY > 10) return;
+        var top = box.getBoundingClientRect().top, bottom = header.getBoundingClientRect().bottom;
+        header.querySelectorAll('header-component, .header__row, .header__underlay').forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) bottom = Math.max(bottom, r.bottom); });
+        bottom = Math.min(bottom, top + 200);
+        if (bottom > top) box.style.paddingTop = Math.ceil(bottom - top + 12) + 'px';
+        document.documentElement.style.setProperty('--hs2-clear', Math.max(0, Math.ceil(bottom)) + 'px');
+      } catch (e) { /* hs2.js clearHeader still runs */ }
+    })(document.currentScript.closest('.shopify-section'));
+  </script>
   {%- capture option_labels -%}{ {%- for f in label_from -%}{{ f | handleize | json }}: {{ label_to[forloop.index0] | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%} }{%- endcapture -%}
   <div class="hs2-wrap hs2-product{% if tib %} hs2-product--tib{% endif %}{% if s.photo_shape == 'portrait' %} hs2-product--portrait{% endif %}" id="buy" data-hs2-checkout-image-enabled="{{ s.checkout_image_enabled }}" data-hs2-checkout-image-endpoint="{{ s.checkout_image_endpoint | escape }}" data-hs2-checkout-image-cdn-prefix="{{ s.checkout_image_cdn_prefix | escape }}"{% if v3 %} data-hs2-v3{% endif %}{% if artwork_preview %} data-hs2-city-art-preview{% endif %}{% if s.blanket_art_preview %} data-hs2-blanket-art-preview{% endif %}{% if s.blanket_purchase %} data-hs2-blanket-purchase{% endif %}{% if s.native_artwork_kind != blank and s.native_artwork_kind != 'off' %} data-hs2-artwork-kind="{{ s.native_artwork_kind }}" data-hs2-purchase-enabled="{{ s.native_purchase_enabled }}"{% endif %}{% if s.mug_art_preview %} data-hs2-mug-art-preview{% endif %} data-hs2-option-labels="{{ option_labels | escape }}">
     {%- comment -%} journey mode: the painting on every gift, the bundle, one tick, one button {%- endcomment -%}
@@ -109,7 +126,6 @@
 
     {% endif %}
     <div class="hs2-product__info">
-      {%- if native_artwork -%}{% render 'hs-journey', s: s %}{%- endif -%}
       {%- for block in section.blocks -%}
         {%- case block.type -%}
           {%- when 'stamp' -%}
@@ -135,8 +151,12 @@
                 <script type="application/json" data-hs2-vimages>{ {%- assign vi = 0 -%}{%- assign v_hide = section.settings.hide_media_alt | default: 'shown in your cart' | downcase -%}{%- for v in product.variants -%}{%- assign v_alt = v.featured_media.alt | downcase -%}{%- assign v_mid = v.featured_media.id | append: '' -%}{%- if v.featured_media -%}{%- unless v_alt contains v_hide or v_alt contains 'blank ' or v_alt contains 'checkout tile' or v_mid == '71850515169662' or v_mid == '71856697049470' -%}{%- if vi > 0 -%},{%- endif -%}{%- assign vi = vi | plus: 1 -%}{{ v.id | append: '' | json }}: { "src": {{ v.featured_media | image_url: width: 1200 | json }}, "alt": {{ v.featured_media.alt | default: product.title | json }} }{%- endunless -%}{%- endif -%}{%- endfor -%} }</script>
               {%- endunless -%}
               {%- if block.settings.note != blank -%}<div class="hs2-product__ship">{{ block.settings.note }}</div>{%- endif -%}
-              <div class="hs2-product__when" data-hs2-countdown="product" hidden></div>
+              <div class="hs2-product__when" data-hs2-countdown="product"></div>
+              {%- comment -%} the strongest reassurance on the site, beside the price (audit, 30 Oct) {%- endcomment -%}
+              {%- if native_artwork -%}<p class="hs2-product__promise">A person checks every order before it prints. Misprinted or damaged? Full refund or a free remake.</p>{%- endif -%}
             </div>
+            {%- comment -%} name and price first, then the one way in (audit, 30 Oct: the price sat a screen and a half down) {%- endcomment -%}
+            {%- if native_artwork -%}{% render 'hs-journey', s: s %}{%- endif -%}
             {% endif %}
           {%- when 'description' -%}
             {%- if desc_pick > 0 -%}

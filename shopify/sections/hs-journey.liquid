@@ -93,6 +93,14 @@
     <p class="hsj-lead">{{ s.intro }}</p>
     <div class="hsj-dock">
       <a class="hsj-btn" href="?step=name" data-hsj-go="name"><span>{{ s.start }}</span><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h13M13 6.5 18.5 12 13 17.5"/></svg></a>
+      {%- comment -%} what each gift costs, from Shopify, before anything is asked (audit, 30 Oct) {%- endcomment -%}
+      {%- capture price_line -%}
+        {%- for k in keys -%}
+          {%- assign pid = 'product_' | append: k -%}{%- assign p = s[pid] -%}
+          {%- if p != blank -%}{%- unless forloop.first -%} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
+        {%- endfor -%}
+      {%- endcapture -%}
+      {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }} · Free US shipping</p>{%- endif -%}
       <p class="hsj-small">{{ s.time_line }}</p>
       <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
     </div>

@@ -57,7 +57,10 @@
           }
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {
+            "text": "<p>Your dog, painted from your photo on a 12 × 18 inch print, with a small note from them in the corner.</p><p>Unframed, or in a black, red oak or white frame. Each print is made for your order.</p>"
+          }
         }
       },
       "block_order": [
