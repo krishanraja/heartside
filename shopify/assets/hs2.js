@@ -615,8 +615,8 @@
     var fact = function (src) { var f = facts.filter(function (x) { return x.source === src; })[0]; return f ? f.text : ''; };
     var kind = v3Kind() || (blanketArtPreview() ? 'blanket' : 'portrait');
     try {
-      return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they',
-        home: b.home || '', spot: b.spot || '', together: b.together || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
+      return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they', archetype: b.archetype || '',
+        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
     } catch (e) { return null; }
   }
   function artworkEnergy() {

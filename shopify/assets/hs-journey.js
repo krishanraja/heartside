@@ -241,7 +241,10 @@
     try { var r = breedRow(); if (r && window.HSArtworkEngine) st.hs3_energy = window.HSArtworkEngine.energyFor(r) || ''; } catch (e) { /* unknown breed: no energy */ }
     st.hs3_art_choices = { style: S.style, tone: S.tone };
     // the painter's directed brief (recipes v10) stages the scene from these chip ids, never re-asked
-    st.hs_brief_input = { breed: S.breed || '', pronoun: n.she === 'she' || n.she === 'he' ? n.she : 'they', home: S.home || '', spot: S.spot || '', together: S.together || '',
+    // v15: the breed's corpus archetype (characterFor, same cross rule as energy) and what the dog is to them
+    var archetype = '';
+    try { var ar = breedRow(); if (ar && window.HSArtworkEngine && window.HSArtworkEngine.characterFor) archetype = window.HSArtworkEngine.characterFor(ar) || ''; } catch (e) { /* unknown breed: none */ }
+    st.hs_brief_input = { breed: S.breed || '', pronoun: n.she === 'she' || n.she === 'he' ? n.she : 'they', archetype: archetype, home: S.home || '', spot: S.spot || '', together: S.together || '', meaning: S.meaning || '',
       // the toys in the words the buyer read in the brief (in his mouth, at her paws), kept by the painter
       toys: (window.HSBrief && window.HSBrief.toyWords({ tone: S.tone, pronoun: n.she, together: S.together, toys: S.toys })) || toyText() || '', accessory: S.accessory || '', noToy: !!S.toysDone && !toyText() };
     
@@ -347,7 +350,13 @@
   // the one-sentence brief the painter's moment follows (hs-brief.js), shown as what we'll paint
   function brief() {
     if (!window.HSBrief) return '';
-    return window.HSBrief.brief({ tone: S.tone, breed: S.breed, pronoun: names().she, together: S.together, spot: S.spot, meaning: S.meaning, toys: S.toys, wears: S.accessory || '' });
+    // v15: the scene the painter's composer picks, in the buyer's words, when it is not the activity's own line
+    var scene = '', E = window.HSArtworkEngine;
+    try {
+      var r = breedRow(), toyw = window.HSBrief.toyWords({ tone: S.tone, pronoun: names().she, together: S.together, toys: S.toys });
+      if (E && E.sceneShort) scene = E.sceneShort({ tone: S.tone, archetype: (r && E.characterFor && E.characterFor(r)) || '', home: S.home || '', spot: S.spot || '', together: S.together || '', meaning: S.meaning || '', toys: toyw });
+    } catch (e) { scene = ''; }
+    return window.HSBrief.brief({ tone: S.tone, breed: S.breed, pronoun: names().she, together: S.together, spot: S.spot, meaning: S.meaning, toys: S.toys, wears: S.accessory || '', scene: scene });
   }
   function viewLook() {
     var n = names();
