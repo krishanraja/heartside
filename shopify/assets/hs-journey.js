@@ -568,6 +568,30 @@
     });
   }
 
+  /* Helio lays its header over the home page's first section (a transparent header), and the
+     journey's first screen used to start under the logo and menu (live-gate, 30 Oct: the headline
+     at 32px under a header that ends at 92px). Pad the section by the overlap, as hs2.js does for
+     the old hero. In a step (hsj-focus) the store header is hidden, so the padding comes off. */
+  function clearHeader() {
+    if (!root) return;
+    var box = root.closest('.shopify-section') || root;
+    var header = document.querySelector('.header-section, header.shopify-section');
+    var focus = document.documentElement.classList.contains('hsj-focus');
+    var want = 0;
+    if (header && !focus && window.scrollY <= 10) {
+      // a box's own padding never moves its top edge, so this measures cleanly every time
+      var top = box.getBoundingClientRect().top;
+      var bottom = header.getBoundingClientRect().bottom;
+      var rows = header.querySelectorAll('header-component, .header__row, .header__underlay');
+      Array.prototype.forEach.call(rows, function (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) bottom = Math.max(bottom, r.bottom); });
+      bottom = Math.min(bottom, top + 200);
+      if (bottom > top) want = Math.ceil(bottom - top + 8);
+    } else if (!focus) {
+      return; // scrolled: keep what was measured at the top
+    }
+    if (Math.abs(want - (parseFloat(box.style.paddingTop) || 0)) > 1) box.style.paddingTop = want ? want + 'px' : '';
+  }
+
   /* ------------------------------------------------------------------- start */
   function init() {
     root = document.querySelector('[data-hsj]');
@@ -589,6 +613,11 @@
     var s = stepFromURL();
     if (s && !allowed(s)) go(s, true); else render(s);
     document.documentElement.classList.remove('hsj-routed');
+    clearHeader();
+    window.addEventListener('resize', clearHeader);
+    window.addEventListener('load', clearHeader);
+    // entering or leaving a step toggles hsj-focus on <html>, which shows or hides the header
+    if (window.MutationObserver) new MutationObserver(clearHeader).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
