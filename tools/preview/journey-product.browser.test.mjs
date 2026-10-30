@@ -77,7 +77,7 @@ async function open(size, {photo = true, journeyAge = 0, gift = 'print'} = {}) {
     sessionStorage.setItem('hs2-review', JSON.stringify({
       dog: 'Mowgli', person: 'Sam', hs3_lines: {home: 'a', spot: 'b', together: 'c', meaning: 'You let me live here.'}, hs3_copy_owner: 'generated', hs3_photo_t: photo ? t : 0,
       hs3_art_profile: {version: 1, facts: [{source: 'spot', text: "Rests at their person's feet."}]}, hs3_art_choices: {style: 'collage', tone: 'hilarious'},
-      hs_brief_input: {breed: 'Border Collie', pronoun: 'he', home: 'toy', spot: 'couch', together: 'walk', toys: 'a tennis ball and a big stick', accessory: '', noToy: false},
+      hs_brief_input: {breed: 'Border Collie', pronoun: 'he', archetype: 'Herding Manager', home: 'toy', spot: 'couch', together: 'walk', meaning: 'shadow', toys: 'a tennis ball and a big stick', accessory: '', noToy: false},
       hs_journey: {t: Date.now() - journeyAge, gift, tone: 'hilarious', style: 'collage', gifts: GIFTS},
     }));
   }, [t, photo, journeyAge, gift, GIFTS]);
@@ -125,8 +125,10 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     // recipes v10: the painter's hidden fields carry the directed brief for this dog (PROMPT-SPEC-2026-10-29.md)
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^Keep exactly who he is: this Border Collie's face shape/);
-    // v14: the stated walk is a five-star general, the named toys clamped like a baton, and no person
-    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog leading the morning walk like a five-star general inspecting the troops: .*an utterly serious expression, his tennis ball and big stick clamped like a field marshal's baton\./);
+    // v15: the breed's character joins the identity line, and the composer ranks every answer: the couch
+    // (strength 2) beats the walk that never landed (strength 1), the toys join the scene, and no person
+    assert.match(brief.Energy, /never mirrored\. Character: a herding dog's intense, unblinking work focus, applied to everything\.$/);
+    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog sitting bolt upright in the exact middle of the couch, claiming the best seat like a judge on the bench\. .*Also in the scene: the dog with his tennis ball and big stick\./);
     assert.doesNotMatch(brief['Tone direction'], /person|only their/);
     assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');

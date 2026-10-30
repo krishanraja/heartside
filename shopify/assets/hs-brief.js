@@ -1,8 +1,8 @@
 /* The painting brief: one sentence for the painter, built from the buyer's taps (Krish, 29 Oct: "one-sentence
    briefs that handle all the possible combinations"). It is made on the phone, so it is instant, and it holds
    only what the buyer picked: the breed, the tone, what they do together, where the dog settles, what the dog
-   is to them, up to two toys and what the dog wears. Never a name, a person, a coat or a colour: the photo
-   shows the real dog. tools/bench/briefs.test.mjs walks every combination. */
+   is to them, up to two toys and what the dog wears, and (v15) the scene the painter's composer chose. Never
+   a name, a person, a coat or a colour: the photo shows the real dog. tools/bench/briefs.test.mjs walks every combination. */
 (function (root) {
   var TOYS = {
     'a tennis ball': { hold: 'a tennis ball in {pos} mouth', paws: 'a tennis ball at {pos} paws', sleep: 'a tennis ball tucked under {pos} chin' },
@@ -61,14 +61,17 @@
     if (wear) parts[0] += ' in ' + p.pos + ' ' + wear;
     // a comic premise already says what they are doing at home, so it isn't said twice
     var comic = tone === 'hilarious' || tone === 'over_the_top';
-    var doing = comic && JOKE[o.together] && !/^(walk|car)$/.test(o.together) ? '' : (DOING[o.together] || '');
+    // v15: the engine's composed scene (HSArtworkEngine.sceneShort) leads when the breed's own take, or an
+    // answer about home or what the dog is to them, won the painting's scene; it never says the activity
+    var composed = comic && typeof o.scene === 'string' && o.scene ? fill(o.scene, p) : '';
+    var doing = comic && !composed && JOKE[o.together] && !/^(walk|car)$/.test(o.together) ? '' : (DOING[o.together] || '');
     var where = o.together === 'walk' || o.together === 'car' ? '' : (SPOT[o.spot] || '');
     var scene = where && doing ? where + (/^for /.test(doing) ? ' ' : ', ') + doing : (where || doing);
     if (scene) { if (wear) parts.push(scene); else parts[0] += ' ' + scene; }
     var held = heldToys(o);
     var asleep = o.together === 'naps';
     if (held.length) { if (parts.length === 1 && !wear) parts[0] += ' with ' + held.join(' and '); else parts.push('with ' + held.join(' and ')); }
-    var mood = tone === 'over_the_top' ? (ROYAL[o.together] || 'royally unimpressed') : tone === 'hilarious' ? (JOKE[o.together] || 'looking extremely important') : asleep ? ASLEEP[tone] : ((MOOD[tone] || MOOD.warm)[o.meaning] || 'eyes bright');
+    var mood = composed ? composed : tone === 'over_the_top' ? (ROYAL[o.together] || 'royally unimpressed') : tone === 'hilarious' ? (JOKE[o.together] || 'looking extremely important') : asleep ? ASLEEP[tone] : ((MOOD[tone] || MOOD.warm)[o.meaning] || 'eyes bright');
     parts.push(mood);
     return parts.join(', ') + '.';
   }

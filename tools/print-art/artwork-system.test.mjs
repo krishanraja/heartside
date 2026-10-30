@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {gzipSync} from 'node:zlib';
-import {recipes, prepare, selectTone, energyFor, newSession, selectRequest, begin, timeout, settle, reconcileFailure, previewState} from './artwork-system.mjs';
+import {recipes, prepare, selectTone, energyFor, characterFor, composeScene, sceneShort, newSession, selectRequest, begin, timeout, settle, reconcileFailure, previewState} from './artwork-system.mjs';
 import {nativePrompt, nativeFieldValues, adaptTemplate} from './native-candidate.mjs';
 import {loadCorpus, buildData, render} from '../../breeds-corpus/lookup/build.mjs';
 // esbuild and acorn come from the preview tools' lockfile, as in tools/preview's own tests
@@ -299,8 +299,14 @@ test('the 1 Nov spec stays the record of v13', () => {
   for (const v13 of ['d760818e269faeec49aa4f0e636656aa00c9aaec03bfa98575ea0d9adc337bc5', 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', '9037d553f686c9a1536c79129597d64f4418e60fa2e1958b6f5d6b2914d6c333', '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'])
     assert.ok(spec.includes(v13), 'keeps the v13 hash ' + v13);
 });
-test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+test('the 2 Nov spec stays the record of v14', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-02.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes('actual-dog-recipes-v14-directed-brief'));
+  for (const v14 of ['d760818e269faeec49aa4f0e636656aa00c9aaec03bfa98575ea0d9adc337bc5', 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', '9037d553f686c9a1536c79129597d64f4418e60fa2e1958b6f5d6b2914d6c333', '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'])
+    assert.ok(spec.includes(v14), 'keeps the v14 hash ' + v14);
+});
+test('the native prompt is the short directed frame, and the spec carries it exactly', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-03.md', import.meta.url), 'utf8');
   assert.match(spec, /Status at authoring: \*\*proposed vendor change, not applied\.\*\*/);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
   assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
@@ -561,15 +567,18 @@ test('v11: Hilarious has no velvet or spotlight, keeps the stated place, and kee
     assert.doesNotMatch(nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'he', together: 'walk', toys: 'a tennis ball in his mouth'})['Tone direction'], /with his tennis ball in his mouth/, tone);
   }
   // Over the top keeps its royal staging and always the stated place
-  const ott = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'blanket', pronoun: 'she', together: 'coffee', toys: 'a bone'})['Tone direction'];
+  // v15: the blanket has no scene, so the royal staging is checked on the portrait
+  const ott = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'portrait', pronoun: 'she', together: 'coffee', toys: 'a bone'})['Tone direction'];
   assert.match(ott, /velvet cushion/); assert.match(ott, /Scene: at morning coffee time/);
 });
 test('v11: no unnamed leash, blankets stay in the stated place, and the collage dog is cut paper', () => {
   for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /Avoid: [^\n]*a leash or lead, unless the owner named one/, format);
-  for (const format of ['mug', 'portrait', 'blanket']) assert.match(nativePrompt(format), /The setting is the stated place only, with no invented landscape or scenery\./, format);
+  for (const format of ['mug', 'portrait']) assert.match(nativePrompt(format), /The setting is the stated place only, with no invented landscape or scenery\./, format);
+  // v15: the blanket has no setting at all
+  assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v14-directed-brief');
+  assert.equal(recipes.version, 'actual-dog-recipes-v15-directed-brief');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -656,7 +665,9 @@ test('v13: words are optional; a gift without words is painted edge to edge, and
   assert.ok(!at('blanket').includes(recipes.brief.fill) && !/note/.test(at('blanket')));
   const variations = ['mug', 'portrait', 'blanket', 'card'].map(f => recipes.brief.formats[f].variation);
   assert.equal(new Set(variations).size, 4, 'each gift is its own moment');
-  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(nativePrompt(format).includes('One of a matching set: the same place, medium, light and mood as the dog\'s other gifts, shown here as ' + recipes.brief.formats[format].variation), format);
+  for (const format of ['mug', 'portrait', 'card']) assert.ok(nativePrompt(format).includes('One of a matching set: the same place, medium, light and mood as the dog\'s other gifts, shown here as ' + recipes.brief.formats[format].variation), format);
+  // v15: the blanket's pattern has no place, so it matches the set by dog, medium and mood
+  assert.ok(nativePrompt('blanket').includes('One of a matching set: the same dog, medium and mood as the dog\'s other gifts, shown here as ' + recipes.brief.formats.blanket.variation));
   // the same answers give every format the same scene, medium and identity: only the note line differs
   const fields = f => nativeFieldValues({style: 'collage', tone: 'hilarious', format: f, pronoun: 'she', together: 'walk', toys: 'a frisbee', words: false});
   for (const f of ['mug', 'portrait', 'card']) {
@@ -705,4 +716,227 @@ test('v14: every chip answer, toy pair and worn item fits the Tone direction fie
         assert.ok(t.length <= 1200, [format, tone, pronoun, spot, together, home, toy, t.length].join(' '));
       }
   assert.ok(longest > 1000, 'the check reaches the long cases: ' + longest);
+});
+
+// v15 (29 Oct), painter fixes: Krish called the overlapping blanket poses a "dog centipede"; the blanket
+// is now a scattered pattern of small, whole, separate figures on a plain ground, like a printed fleece
+const blanketPrompts = () => {
+  const out = [];
+  for (const style of Object.keys(recipes.styles)) for (const tone of Object.keys(recipes.tones)) for (const a of [{}, {spot: 'couch', together: 'walk', home: 'spin', meaning: 'boss', toys: 'a frisbee in her mouth', accessory: 'a bandana'}, {together: 'car', toys: 'a bone'}, {noToy: true}])
+    for (const archetype of [undefined, 'Herding Manager', 'Sighthound Sofa Missile']) {
+      const v = nativeFieldValues({style, tone, format: 'blanket', pronoun: 'she', archetype, ...a});
+      out.push([style + ' ' + tone + ' ' + JSON.stringify(a) + ' ' + archetype, nativePrompt('blanket').replace(/\{\{([^}]+)\}\}/g, (_, k) => v[k]), v]);
+    }
+  for (const j of JSON.parse(readFileSync(new URL('../../design/examples-2026-10-29-breeds/jobs.json', import.meta.url), 'utf8')).jobs.filter(j => j.format === 'blanket'))
+    out.push([j.id, readFileSync(new URL('../../' + j.prompt_file, import.meta.url), 'utf8'), j.fields]);
+  return out;
+};
+test('v15: every blanket prompt is a scattered pattern whose figures never overlap, with no scene and no edge to edge', () => {
+  const prompts = blanketPrompts();
+  assert.ok(prompts.length > 200);
+  for (const [name, p, v] of prompts) {
+    assert.ok(p.includes('Dogs never overlap, touch, merge or share a body, and none is cut off except at the blanket\'s outer edge.'), name);
+    assert.match(p, /eight to twelve small, whole, separate figures of the same dog, evenly spaced on one soft, plain ground/, name);
+    assert.match(p, /no scene, furniture or landscape behind the dogs\./, name);
+    assert.doesNotMatch(p, /edge to edge|Scene:|Scene and mood|Camera:|motifs may run off|drawn from this scene|five or six|stated place/i, name);
+    assert.doesNotMatch(v['Tone direction'], /\b(couch|bed|rug|walk|car|coffee|movie|door|doorway|table|room)\b/i, name + ': no setting in the figures');
+    assert.match(v['Tone direction'], /^Figures: several /, name);
+    assert.doesNotMatch(p, /colour/, 'US spelling');
+  }
+  // the tone's moment leads the figures
+  const moment = tone => nativeFieldValues({style: 'ink', tone, format: 'blanket', pronoun: 'he'})['Tone direction'];
+  assert.match(moment('sentimental'), /asleep/); assert.match(moment('warm'), /mid-moment/);
+  assert.match(moment('hilarious'), /deadpan/); assert.match(moment('over_the_top'), /smug/);
+  // the named toy plays in at least two figures and every figure wears the same worn item
+  const t = nativeFieldValues({style: 'ink', tone: 'warm', format: 'blanket', pronoun: 'he', toys: 'a tennis ball in his mouth', accessory: 'a red collar'})['Tone direction'];
+  assert.match(t, /playing with his tennis ball, the toy in at least two figures/);
+  assert.match(t, /every figure wearing a plain, solid-colored red collar with no pattern/);
+});
+test('v15: only the blanket frame changed; the mug, portrait and card blocks are byte for byte v14', () => {
+  const v14 = {mug: 'd760818e269faeec49aa4f0e636656aa00c9aaec03bfa98575ea0d9adc337bc5', portrait: 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', card: '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'};
+  for (const [format, hash] of Object.entries(v14)) assert.equal(sha256(nativePrompt(format)), hash, format);
+  assert.notEqual(sha256(nativePrompt('blanket')), '9037d553f686c9a1536c79129597d64f4418e60fa2e1958b6f5d6b2914d6c333');
+  assert.ok(nativePrompt('blanket').includes('Mood: {{Tone direction}}'));
+});
+
+// v15 (29 Oct), the tone pipeline: the breed corpus archetype as a character per tone, and a composer
+// that ranks every stated answer for the comic tones
+const ARCHETYPES = Object.keys(recipes.brief.character.archetypes);
+const TONES = Object.keys(recipes.tones);
+const withRulings = (rulings, fn) => {
+  const live = recipes.brief.character.rulings, saved = {...live};
+  Object.assign(live, rulings);
+  try { return fn(); } finally { Object.assign(live, saved); }
+};
+test('v15: the two ruling changes ship switched off, so nothing is decided for Krish', () => {
+  assert.deepEqual(recipes.brief.character.rulings, {archetypeScenes: false, jokeProp: false});
+  for (const k of Object.keys(recipes.brief.character.rulings)) assert.match(recipes.brief.character.proposals[k], /^Proposal for Krish, not decided:/);
+  // switched off, no archetype scene or prop reaches any prompt
+  const sceneTexts = ARCHETYPES.flatMap(a => Object.values(recipes.brief.character.archetypes[a].scenes).flatMap(t => Object.values(t)));
+  for (const archetype of ARCHETYPES) for (const tone of TONES) for (const together of Object.keys(recipes.brief.compose.keys.together)) for (const meaning of Object.keys(recipes.brief.compose.keys.meaning)) {
+    const t = nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'she', archetype, together, spot: 'couch', home: 'spin', meaning, toys: 'a bone'})['Tone direction'];
+    for (const sc of sceneTexts) { assert.ok(!t.includes(sc.text.slice(10, 50)), archetype + ' ' + tone + ': ' + sc.text); if (sc.prop) assert.ok(!t.includes(sc.prop.replace(/\{pos\}/, 'her')), sc.prop); }
+  }
+});
+test('v15: every reachable archetype has an affectionate character for each tone, about breed behavior only', () => {
+  for (const [archetype, code] of Object.entries(recipes.energy.byArchetype)) assert.equal(Object.hasOwn(recipes.brief.character.archetypes, archetype), code !== null, archetype);
+  const banned = /\b(person|owner|buyer|people|man|woman|old|age|aging|ageing|sick|ill|illness|die|dying|death|dead|grief|sad|fat|stupid|dumb|lazy|ugly|coat|fur|colou?r|black|white|brown|golden|gray|grey|tan|merle|brindle|fawn|curl|curls|ear up|ears up)\b|[!—]/i;
+  for (const archetype of ARCHETYPES) {
+    const a = recipes.brief.character.archetypes[archetype];
+    assert.ok(a.stereotype.length > 40, archetype);
+    assert.deepEqual(Object.keys(a.tones), TONES, archetype);
+    for (const tone of TONES) { assert.doesNotMatch(a.tones[tone], banned, archetype + ' ' + tone); assert.ok(a.tones[tone].length <= 100, archetype + ' ' + tone); }
+    for (const [tone, scenes] of Object.entries(a.scenes)) {
+      assert.ok(['hilarious', 'over_the_top'].includes(tone), archetype + ' ' + tone);
+      for (const [key, sc] of Object.entries(scenes)) {
+        assert.ok(Object.values(recipes.brief.compose.keys).some(k => Object.values(k).includes(key)), archetype + ' ' + key + ' is a stated answer');
+        assert.ok([1, 2, 3].includes(sc.fit) && sc.text && sc.short, archetype + ' ' + key);
+        assert.doesNotMatch(sc.text + sc.short + (sc.prop || ''), /\bperson\b|only (their|the)|crown|cape|costume|[!—]/, archetype + ' ' + key);
+        // a scene never brings a toy, food or worn item of its own: only the owner's {toy}
+        assert.doesNotMatch(sc.text + (sc.prop || ''), /\b(ball|bone|stick|treat|snack|food|collar|bandana|bow|sweater|harness|hat)s?\b/i, archetype + ' ' + key);
+        if (sc.prop) assert.equal(tone, 'hilarious', 'props are a Hilarious proposal only');
+      }
+    }
+  }
+});
+test('v15: characterFor follows the energy rule, on the theme breed file and the browser engine', () => {
+  const engine = loadEngine(false);
+  let named = 0;
+  for (const [id, name] of breedRows) {
+    const r = breeds.lookup(name);
+    if (r.id !== id) continue;
+    const c = characterFor(r);
+    assert.equal(engine.characterFor(r), c, name);
+    assert.equal(c !== null, energyFor(r) !== null, name);
+    if (c) { named++; assert.equal(recipes.energy.byArchetype[c], energyFor(r), name); }
+  }
+  assert.ok(named > 300, named);
+  for (const q of ['Goldendoodle', 'Cavapoo', 'mixed breed', 'mutt', '']) assert.equal(characterFor(breeds.lookup(q)), null, q);
+  assert.equal(characterFor(breeds.lookup('Pomsky')), 'Spitz Commentator');
+  for (const [q, a] of [['Beagle', 'Scent Detective'], ['Greyhound', 'Sighthound Sofa Missile'], ['Border Collie', 'Herding Manager'], ['Jack Russell Terrier', 'Terrier Menace'], ['Siberian Husky', 'Spitz Commentator'], ['Golden Retriever', 'Retriever']])
+    assert.equal(characterFor(breeds.lookup(q)), a, q);
+});
+test('v15: the character joins the identity line in Energy, inside its 300 characters, for every corpus breed', () => {
+  let longest = 0;
+  for (const [id, name] of breedRows) {
+    const archetype = characterFor(breeds.lookup(name));
+    for (const tone of TONES) for (const pronoun of ['she', 'he', 'they']) {
+      const e = nativeFieldValues({style: 'ink', tone, format: 'mug', pronoun, breed: name, archetype}).Energy;
+      longest = Math.max(longest, e.length);
+      assert.ok(e.length <= 300, name + ' ' + e.length);
+      if (archetype) assert.ok(e.endsWith(' Character: ' + recipes.brief.character.archetypes[archetype].tones[tone] + '.'), name);
+      else assert.doesNotMatch(e, /Character:/, name);
+    }
+  }
+  assert.ok(longest > 200, longest);
+  // an unknown archetype is ignored, never substituted
+  assert.equal(nativeFieldValues({style: 'ink', tone: 'warm', archetype: 'Lion'}).Energy, nativeFieldValues({style: 'ink', tone: 'warm'}).Energy);
+  assert.equal(nativeFieldValues({style: 'ink', tone: 'warm', archetype: '__proto__'}).Energy, nativeFieldValues({style: 'ink', tone: 'warm'}).Energy);
+});
+test('v15: every archetype x tone x answer combination composes one clean, deterministic scene with the facts in it', () => {
+  const k = recipes.brief.compose.keys;
+  const opt = o => [undefined, ...Object.keys(o)];
+  let n = 0, longest = 0;
+  for (const rulings of [{archetypeScenes: false, jokeProp: false}, {archetypeScenes: true, jokeProp: true}]) withRulings(rulings, () => {
+    for (const archetype of [undefined, ...ARCHETYPES]) for (const tone of TONES) for (const together of opt(k.together)) for (const spot of opt(k.spot)) for (const home of opt(k.home)) for (const meaning of opt(k.meaning))
+      for (const toys of [undefined, 'a stick far too big for her in her mouth and a tennis ball at her paws']) for (const format of ['portrait', 'blanket']) {
+        const input = {style: 'ink', tone, format, pronoun: 'she', archetype, together, spot, home, meaning, toys, accessory: 'a harness'};
+        const v = nativeFieldValues(input), t = v['Tone direction'], label = JSON.stringify({...input, ...rulings});
+        n++; longest = Math.max(longest, t.length);
+        assert.deepEqual(nativeFieldValues(input), v, 'deterministic ' + label);
+        assert.ok(t.length <= 1200, label + ' ' + t.length);
+        assert.doesNotMatch(t, /\{|\}|undefined|null|, ,|,,| {2}|\.\.|,\.|: \.|Scene: \./, label + ': ' + t);
+        const sentences = t.split(/(?<=\.) /);
+        assert.equal(new Set(sentences).size, sentences.length, 'no duplicated line: ' + label);
+        // the facts are always there: the toy and the worn item
+        assert.match(t, /\bharness\b/, label);
+        if (toys) assert.match(t, /\bstick\b/, label);
+        if (tone === 'hilarious') {
+          assert.doesNotMatch(t, /\bperson\b|only their/, label);
+          // never both "no theatrical props" and a prop
+          assert.ok(!(t.includes('with no theatrical props or sets') && t.includes('the one small prop above')), label);
+        }
+        if (tone === 'sentimental' && format !== 'blanket') assert.doesNotMatch(t, /morning walk|riding in the car/, label);
+        const c = composeScene(input);
+        if (c && c.pick) {
+          assert.ok(c.candidates.every(x => x.score <= c.pick.score), label);
+          if (!rulings.archetypeScenes) assert.equal(c.pick.source, 'base', label);
+          assert.ok(input[c.pick.slot], 'the scene comes from a stated answer: ' + label);
+        }
+      }
+  });
+  assert.ok(n > 100000, n); assert.ok(longest > 1000, longest);
+});
+test('v15: the composer gives each archetype its own take when the switch is on, and the stated facts still win', () => {
+  const tone = (archetype, t, a, rulings = {archetypeScenes: true, jokeProp: false}) => withRulings(rulings, () => nativeFieldValues({style: 'ink', tone: t, format: 'portrait', pronoun: 'he', archetype, ...a})['Tone direction']);
+  assert.match(tone('Herding Manager', 'hilarious', {together: 'walk'}), /like a sheepdog at a trial/);
+  assert.match(tone('Sighthound Sofa Missile', 'hilarious', {together: 'naps'}), /like a dropped coat/);
+  assert.match(tone('Terrier Menace', 'hilarious', {together: 'walk', spot: 'couch', meaning: 'boss'}), /tiny dictator addressing the nation[^.]*out on the morning walk/);
+  assert.match(tone('Scent Detective', 'hilarious', {together: 'walk'}), /detective on a hot trail/);
+  assert.match(tone('Spitz Commentator', 'hilarious', {together: 'movie'}), /stern film critic/);
+  assert.match(tone('Sighthound Sofa Missile', 'over_the_top', {spot: 'couch'}), /chaise longue/);
+  // the same answers without the archetype, or with the switch off, keep v14's jokes
+  for (const a of [undefined, 'Herding Manager']) assert.match(tone(a, 'hilarious', {together: 'walk'}, a ? {archetypeScenes: false, jokeProp: false} : undefined), /five-star general/);
+  // a beagle and a greyhound no longer get the same joke on the same taps
+  assert.notEqual(tone('Scent Detective', 'hilarious', {together: 'walk'}), tone('Sighthound Sofa Missile', 'hilarious', {together: 'walk'}));
+  // the prop only with its own switch, and only on Hilarious
+  assert.doesNotMatch(tone('Scent Detective', 'hilarious', {together: 'walk'}), /magnifying glass/);
+  const prop = tone('Scent Detective', 'hilarious', {together: 'walk'}, {archetypeScenes: true, jokeProp: true});
+  assert.match(prop, /a small magnifying glass on the ground beside his nose/); assert.match(prop, /plus the one small prop above/); assert.doesNotMatch(prop, /no theatrical props/);
+  // a scene that needs the toy never invents one
+  assert.doesNotMatch(tone('Retriever', 'hilarious', {home: 'toy'}), /butler|waiter|\{toy\}/);
+  assert.match(tone('Retriever', 'hilarious', {home: 'toy', toys: 'a tennis ball'}), /his tennis ball held out like a butler/);
+});
+test('v15: home and meaning reach the painting; Sentimental and Warm carry what the dog is to them', () => {
+  const t = (tone, a) => nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'she', ...a})['Tone direction'];
+  assert.match(t('sentimental', {spot: 'bed', meaning: 'shadow'}), /pressed close, even at rest\./);
+  assert.match(t('warm', {together: 'car', meaning: 'boss'}), /clearly the boss, and happy about it\./);
+  // a mixed breed who spins when they get home beats the walk that never landed
+  assert.match(t('hilarious', {together: 'walk', home: 'spin'}), /mid-spin in a blur of happy circles, ears flying, out on the morning walk/);
+  // the boss of the house presides when no stronger answer is given; the chairman at coffee still wins
+  assert.match(t('hilarious', {spot: 'anywhere', meaning: 'boss'}), /chairman of the board/);
+  assert.match(t('hilarious', {together: 'coffee', meaning: 'boss'}), /staring hard at the plain mug of coffee/);
+  assert.match(t('over_the_top', {spot: 'anywhere', meaning: 'boss'}), /like the head of the household/);
+});
+test('v15: the phone brief names the composed scene, cleanly, for every archetype and answer', () => {
+  const {brief} = createRequire(import.meta.url)('../../shopify/assets/hs-brief.js');
+  const k = recipes.brief.compose.keys;
+  let shown = 0;
+  withRulings({archetypeScenes: true, jokeProp: true}, () => {
+    for (const archetype of [undefined, ...ARCHETYPES]) for (const tone of ['hilarious', 'over_the_top']) for (const together of Object.keys(k.together)) for (const spot of Object.keys(k.spot)) for (const home of Object.keys(k.home)) for (const meaning of Object.keys(k.meaning)) {
+      const scene = sceneShort({tone, archetype, together, spot, home, meaning, toys: 'a tennis ball in his mouth'});
+      const s = brief({breed: 'Beagle', pronoun: 'he', tone, together, spot, meaning, toys: ['a tennis ball'], wears: 'a collar', scene});
+      if (scene) { shown++; assert.ok(s.includes(scene.replace('{pos}', 'his').replace('{obj}', 'him')), s); }
+      assert.ok(s.length <= 220 && s.endsWith('.') && !/ {2}|,,| ,|\.\.|,\.|\{|\}/.test(s), s);
+      assert.doesNotMatch(s, /\bperson\b/, s);
+    }
+  });
+  assert.ok(shown > 1000, shown);
+  assert.equal(sceneShort({tone: 'warm', together: 'walk'}), '');
+});
+test('v15: the breed examples load their own toy, worn item and tone, and the test board is complete and fresh', async () => {
+  const jobs = JSON.parse(readFileSync(new URL('../../design/examples-2026-10-29-breeds/jobs.json', import.meta.url), 'utf8'));
+  assert.equal(jobs.recipe_version, recipes.version); assert.equal(jobs.jobs.length, 24);
+  const marker = {Sentimental: /eyes softly closed|asleep/, 'Warm with a wink': /mid-moment/, Hilarious: /visual joke|deadpan/, 'Over the top': /loving roast|smug/};
+  for (const j of jobs.jobs) {
+    const p = readFileSync(new URL('../../' + j.prompt_file, import.meta.url), 'utf8');
+    const toyName = j.brief.match(/with (?:an? )?(?:stick far too big for (?:him|her|them) in (?:his|her|their) mouth|([a-z ]+?)(?: in| at| tucked| hugged| between| as| across| beside| balanced| guarded|,))/);
+    for (const toy of ['stuffed toy', 'tennis ball', 'squeaky toy', 'frisbee', 'stick', 'bone', 'rope toy']) if (j.brief.includes(toy)) assert.ok(p.includes(toy.replace('big stick', 'stick')), j.id + ' ' + toy);
+    for (const wear of ['collar', 'bandana', 'bow', 'sweater', 'harness']) if (j.brief.includes(' ' + wear)) assert.ok(p.includes('plain, solid-colored ' + wear), j.id + ' ' + wear);
+    assert.match(j.fields['Tone direction'], marker[j.tone], j.id);
+    assert.ok(toyName !== undefined);
+  }
+  // the board is fresh: every file is what tools/print-art/pipeline-test-board.mjs would write now
+  const {boardFiles} = await import('./pipeline-test-board.mjs');
+  for (const [name, body] of Object.entries(boardFiles())) assert.equal(readFileSync(new URL('../../design/pipeline-test-board/' + name, import.meta.url), 'utf8'), body, 'stale ' + name + ': run node tools/print-art/pipeline-test-board.mjs');
+  const board = JSON.parse(readFileSync(new URL('../../design/pipeline-test-board/board.json', import.meta.url), 'utf8'));
+  assert.equal(board.count, 24); assert.equal(board.recipe_version, recipes.version);
+  const seen = new Set(board.cases.map(c => c.archetype + ' ' + c.tone));
+  for (const a of ['Retriever', 'Terrier Menace', 'Sighthound Sofa Missile', 'Scent Detective', 'Herding Manager', 'Spitz Commentator']) for (const t of Object.values(recipes.tones).map(x => x.label)) assert.ok(seen.has(a + ' ' + t), a + ' ' + t);
+  for (const c of board.cases) {
+    const p = readFileSync(new URL('../../' + c.prompt_file, import.meta.url), 'utf8');
+    assert.ok(p.includes('Character: ' + recipes.brief.character.archetypes[c.archetype].tones[Object.keys(recipes.tones).find(k => recipes.tones[k].label === c.tone)] + '.'), c.id);
+    assert.ok(p.includes('plain, solid-colored ' + c.taps.wears.replace(/^a /, '')), c.id);
+    if (/Hilarious|Over the top/.test(c.tone)) assert.equal(c.scene.source, 'archetype', c.id + ' shows the archetype take');
+  }
 });

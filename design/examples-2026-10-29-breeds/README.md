@@ -12,7 +12,7 @@ Every gift we can show today is the same pug. This batch paints six popular bree
 | Juno | German Shepherd | Cut-paper collage | Mug | Blanket | Portrait | Mug |
 
 - `jobs.json`: 24 paintings in two stages. **Stage 1** has 6: one per breed, each in a different tone and gift, so every style and every tone is seen once. **Stage 2** has the other 18 and runs only after a person has reviewed stage 1.
-- `prompts/<id>.txt`: the complete painting prompt for each job, built by `tools/print-art/breed-batch.mjs`. It is the store's own painting prompt (recipes v10, the directed brief from the growth session's control test, `tools/print-art/teeinblue/PROMPT-SPEC-2026-10-29.md`) with its three fields filled exactly as the storefront fills them from the buyer's taps; the fields are also in `jobs.json` as `fields`. The one-sentence brief the phone shows the buyer is in `jobs.json` as `brief`. Never edit a prompt by hand. `node tools/print-art/breed-batch.mjs --check` fails if one is stale.
+- `prompts/<id>.txt`: the complete painting prompt for each job, built by `tools/print-art/breed-batch.mjs`. It is the store's own painting prompt (the directed brief, now recipes v15, `tools/print-art/teeinblue/PROMPT-SPEC-2026-11-03.md`) with its three fields filled exactly as the storefront fills them from the buyer's taps; the fields are also in `jobs.json` as `fields`. The one-sentence brief the phone shows the buyer is in `jobs.json` as `brief`. Never edit a prompt by hand. `node tools/print-art/breed-batch.mjs --check` fails if one is stale.
 
 **Approval.** Nothing is generated until Krish says yes to that stage and its count, below. Every asset is labelled Example wherever Heartside uses it, and a person reviews each one before use.
 

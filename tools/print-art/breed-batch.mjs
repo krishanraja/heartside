@@ -10,13 +10,18 @@
 import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
-import {recipes} from './artwork-system.mjs';
+import vm from 'node:vm';
+import {recipes, characterFor} from './artwork-system.mjs';
 import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const BATCH = '2026-10-29-breeds';
 const out = root + 'design/examples-' + BATCH + '/';
 const {brief, toyWords} = createRequire(import.meta.url)(root + 'shopify/assets/hs-brief.js');
+// v15: the breed's archetype as the journey works it out (HSBreeds.lookup, then characterFor)
+const breedsWindow = {};
+vm.runInNewContext(readFileSync(root + 'shopify/assets/hs-breeds.js', 'utf8'), {window: breedsWindow, self: breedsWindow});
+const archetypeOf = breed => characterFor(breedsWindow.HSBreeds.lookup(breed)) || '';
 
 // What an example buyer tapped for each dog. The photo is a reference the growth session sources:
 // a real photo under a free licence, its credit recorded in credits.json beside the images.
@@ -40,7 +45,8 @@ const jobs = DOGS.flatMap((dog, i) => TONES.map((tone, t) => {
   const moment = brief({...dog, tone});
   // the exact directed brief the storefront writes for this dog's journey answers; the toys keep the
   // brief's own verb (in his mouth, at her paws: recipes v11, 30 Oct)
-  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, spot: dog.spot, together: dog.together, toys: toyWords({...dog, tone}), accessory: dog.wears || ''});
+  // v15: the archetype and what the dog is to them reach the painter too (hs-journey.js bridge)
+  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, archetype: archetypeOf(dog.breed), spot: dog.spot, together: dog.together, meaning: dog.meaning, toys: toyWords({...dog, tone}), accessory: dog.wears || ''});
   const prompt = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, key) => {
     if (!Object.hasOwn(fields, key)) throw new Error('Unknown field ' + key);
     return fields[key];
