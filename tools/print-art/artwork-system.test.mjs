@@ -869,11 +869,11 @@ test('v15: every archetype x tone x answer combination composes one clean, deter
 });
 test('v15: the composer gives each archetype its own take when the switch is on, and the stated facts still win', () => {
   const tone = (archetype, t, a, rulings = {archetypeScenes: true, jokeProp: false}) => withRulings(rulings, () => nativeFieldValues({style: 'ink', tone: t, format: 'portrait', pronoun: 'he', archetype, ...a})['Tone direction']);
-  assert.match(tone('Herding Manager', 'hilarious', {together: 'walk'}), /like a sheepdog at a trial/);
+  assert.match(tone('Herding Manager', 'hilarious', {together: 'walk', toys: 'a frisbee'}), /sheepdog's stalking pose, eyes locked with total intensity on his frisbee/);
   assert.match(tone('Sighthound Sofa Missile', 'hilarious', {together: 'naps'}), /like a dropped coat/);
-  assert.match(tone('Terrier Menace', 'hilarious', {together: 'walk', spot: 'couch', meaning: 'boss'}), /tiny dictator addressing the nation[^.]*out on the morning walk/);
-  assert.match(tone('Scent Detective', 'hilarious', {together: 'walk'}), /detective on a hot trail/);
-  assert.match(tone('Spitz Commentator', 'hilarious', {together: 'movie'}), /stern film critic/);
+  assert.match(tone('Terrier Menace', 'hilarious', {together: 'walk', spot: 'couch', meaning: 'boss'}), /addressing a vast crowd[^.]*out on the morning walk/);
+  assert.match(tone('Scent Detective', 'hilarious', {together: 'walk'}), /nose glued to the ground like a detective on a hot trail/);
+  assert.match(tone('Spitz Commentator', 'hilarious', {together: 'movie'}), /long dramatic howl, one ear back, loudly arguing with the film/);
   assert.match(tone('Sighthound Sofa Missile', 'over_the_top', {spot: 'couch'}), /chaise longue/);
   // the same answers without the archetype, or with the switch off, keep v14's jokes
   for (const a of [undefined, 'Herding Manager']) assert.match(tone(a, 'hilarious', {together: 'walk'}, a ? {archetypeScenes: false, jokeProp: false} : undefined), /five-star general/);

@@ -479,13 +479,14 @@
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog sitting upright at the table at morning coffee like the eager new intern, chest out, the plain mug in front of {obj}, waiting for the first task of the day",
-                "short": "reporting for coffee like the eager new intern"
+                "text": "the dog's {toy} dropped squarely into the plain coffee mug on the table with a big splash, the dog sitting bolt upright beside it, tail wagging, beaming with pride at having served breakfast",
+                "short": "serving the {toy} in the morning coffee",
+                "needsToy": true
               },
               "door": {
                 "fit": 2,
-                "text": "the dog sitting square on the mat by the door like the official greeter at a grand hotel, chest out, with a beaming, professional welcome",
-                "short": "greeting at the door like a hotel doorman"
+                "text": "the dog pressed so close to the closed door that {pos} nose is squashed flat against it, tail wagging so hard that {pos} whole back half is a blur",
+                "short": "nose squashed flat against the door"
               }
             },
             "over_the_top": {
@@ -516,20 +517,21 @@
             "hilarious": {
               "walk": {
                 "fit": 3,
-                "text": "the dog running the morning walk like a sheepdog at a trial: crouched low, eyes locked in an intense stare, one front paw lifted, steering the whole walk by willpower alone",
-                "short": "running the walk like a sheepdog at a trial"
+                "text": "the dog crouched flat on the path in a sheepdog's stalking pose, eyes locked with total intensity on {pos} {toy} lying in the path ahead, one front paw lifted, ready to stop it making a run for it",
+                "short": "herding the {toy} on the walk",
+                "needsToy": true
               },
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog standing like a floor manager on a busy shift, chest out, stare locked, missing nothing",
-                "short": "managing the house like a floor manager",
+                "text": "the dog sitting bolt upright, glaring straight into the camera, plainly taking notes on everyone in the house",
+                "short": "taking notes on the whole house",
                 "prop": "a tiny clipboard tucked under one paw"
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog sitting upright at the table at coffee time like a manager opening the morning meeting, the plain mug in front of {obj}, gaze fixed and serious",
-                "short": "chairing the morning coffee meeting"
+                "text": "the dog at the table with {pos} chin on the edge right beside the plain mug, eyes locked on it in a fierce herding stare, as if the mug might wander off",
+                "short": "herding the morning coffee"
               },
               "couch": {
                 "fit": 2,
@@ -565,24 +567,24 @@
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog standing tall like a tiny dictator addressing the nation: chest out, chin high, one front paw raised, utterly certain of {pos} authority",
-                "short": "ruling the house like a tiny dictator",
+                "text": "a very small dog mid-speech, one front paw raised, chest puffed, mouth open as if addressing a vast crowd, seen from so low {sub} towers like a statue",
+                "short": "addressing the nation",
                 "prop": "a tiny podium underfoot"
               },
               "door": {
                 "fit": 3,
-                "text": "the dog planted square in the doorway like a border guard checking papers, chest out, one eyebrow raised, letting nobody through unchecked",
-                "short": "guarding the door like a border checkpoint"
+                "text": "the small dog planted in the doorway with legs braced wide, blocking it completely, glaring up at the camera with one eyebrow raised: nobody gets in without {pos} say",
+                "short": "blocking the doorway, legs braced"
               },
               "walk": {
                 "fit": 2,
-                "text": "the dog marching at the front of the morning walk like a heavyweight champion entering the ring, chest out, chin up, enormous swagger in a small body",
-                "short": "marching the walk like a heavyweight champion"
+                "text": "the small dog squared up to a single fallen leaf on the path, legs braced, hackles up, glaring at it as {pos} mortal enemy",
+                "short": "squaring up to a leaf on the walk"
               },
               "couch": {
                 "fit": 2,
-                "text": "the dog standing on the top of the couch back like a general on a hilltop, chest out, surveying {pos} territory",
-                "short": "surveying the couch like a general on a hilltop"
+                "text": "the small dog standing on the very top of the couch back, legs braced, chest out, ears blown back, surveying the room far below as if from a mountain summit",
+                "short": "on the summit of the couch"
               }
             },
             "over_the_top": {
@@ -663,18 +665,18 @@
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog at morning coffee time, nose raised toward the plain mug on the table, eyes narrowed like a detective who has just found the key clue",
-                "short": "investigating the coffee like a detective"
+                "text": "the dog with {pos} nose pushed right up to the rim of the plain mug on the table, eyes crossed with concentration, sniffing it with forensic intensity",
+                "short": "sniffing the coffee cross-eyed"
               },
               "feet": {
                 "fit": 2,
-                "text": "the dog nose-down on the rug at floor level, tracking along it like a detective searching a crime scene, ears trailing",
-                "short": "searching the rug like a crime scene"
+                "text": "the dog flat on the rug with {pos} nose pressed hard into one single spot, long ears spread out on the floor, brow deeply furrowed in total concentration",
+                "short": "investigating one spot on the rug"
               },
               "door": {
                 "fit": 2,
-                "text": "the dog with {pos} nose pressed to the gap under the door like a detective gathering clues from the other side",
-                "short": "gathering clues at the door like a detective"
+                "text": "the dog lying flat with {pos} whole snout jammed into the gap under the door, long ears spread on the floor, back end up and tail high, sniffing with total concentration",
+                "short": "snout jammed under the door"
               }
             },
             "over_the_top": {
@@ -705,13 +707,13 @@
               "cool": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog sitting with {pos} back half turned, nose in the air, giving the most withering side-eye over {pos} shoulder like a critic on a bad opening night",
-                "short": "giving the room a critic's side-eye"
+                "text": "the dog sitting with {pos} back to the camera, nose high in the air, looking back over {pos} shoulder with withering, half-closed side-eye, deeply unimpressed with you",
+                "short": "giving you the side-eye"
               },
               "movie": {
                 "fit": 3,
-                "text": "the dog sitting bolt upright on the couch on movie night like a stern film critic, one eyebrow raised at the unseen screen, deeply unimpressed",
-                "short": "reviewing movie night like a stern critic"
+                "text": "the dog sitting bolt upright on movie night, lit by the screen's glow, mouth open in a long dramatic howl, one ear back, loudly arguing with the film",
+                "short": "howling at the movie"
               },
               "walk": {
                 "fit": 2,
@@ -752,19 +754,19 @@
               "shadow": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog sitting dead straight like a secret-service bodyguard on duty, ears up, eyes locked just past the camera, ready to follow the moment anyone moves",
-                "short": "on duty like a devoted bodyguard"
+                "text": "the dog right up against the lens, nose almost touching the camera, eyes huge, so close {pos} face fills the frame: wherever you go, {sub} {is} already there",
+                "short": "nose right up against the lens"
               },
               "movie": {
                 "fit": 2,
-                "text": "the dog curled in the middle of the couch on movie night like a critic at a premiere, chin on a cushion, eyes huge and wet at the unseen screen",
-                "short": "weeping at movie night like a critic at a premiere"
+                "text": "the dog curled on the couch on movie night with {pos} chin on a cushion, eyes huge and brimming, ears drooping, completely overwhelmed by the film, lit by the screen's glow",
+                "short": "overwhelmed by the movie"
               },
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "the dog posing like a pampered celebrity awaiting {pos} fans, chin up, utterly entitled",
-                "short": "waiting for fans like a pampered celebrity"
+                "text": "the dog lounging across the best cushion on {pos} side, one paw draped out, chin high, eyes half-closed, plainly waiting to be served",
+                "short": "waiting to be served"
               }
             },
             "over_the_top": {
@@ -794,19 +796,19 @@
             "hilarious": {
               "door": {
                 "fit": 3,
-                "text": "the dog sitting square in the doorway like a nightclub bouncer, chest out, deadpan, checking an invisible guest list",
-                "short": "working the door like a nightclub bouncer"
+                "text": "the big dog sitting square in the doorway and filling it completely, edge to edge, deadpan, nothing getting past",
+                "short": "filling the whole doorway"
               },
               "feet": {
                 "fit": 2,
-                "text": "the dog flopped flat across the rug like a security barrier, chin down, immovable, guarding the floor with total gravity",
-                "short": "guarding the rug like a security barrier"
+                "text": "the big dog flopped flat across the whole rug, chin down, completely immovable, taking up the entire floor",
+                "short": "taking up the entire floor"
               },
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "the dog seated like the head of security on a state visit, chest out, utterly serious",
-                "short": "on duty like the head of security"
+                "text": "the big dog sitting bolt upright, staring dead into the camera with a completely deadpan, unblinking expression, head tilted just slightly as if asking for your ID",
+                "short": "asking for your ID"
               }
             },
             "over_the_top": {
@@ -836,18 +838,18 @@
               "spin": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog caught mid-spin in a joyful blur, ears and tongue flying, like a figure skater landing the move of a lifetime",
-                "short": "spinning like a figure skater"
+                "text": "the dog caught mid-spin in a joyful blur, ears and tongue flying out sideways, a ring of motion around {obj}",
+                "short": "caught mid-spin"
               },
               "walk": {
                 "fit": 2,
-                "text": "the dog mid-bound on the morning walk, all four paws off the ground, ears flying, tongue out, like a sprinter crossing the finish line",
-                "short": "bounding through the walk like a sprinter"
+                "text": "the dog mid-bound on the morning walk, all four paws off the ground, ears flipped inside out, tongue flapping sideways, caught at the most ridiculous moment",
+                "short": "mid-bound, ears inside out"
               },
               "door": {
                 "fit": 2,
-                "text": "the dog bursting through the doorway mid-leap like a game-show contestant who just won the grand prize",
-                "short": "bursting through the door like a game-show winner"
+                "text": "the dog bursting through the doorway mid-leap, all four paws off the floor, ears flipped inside out, face pure joy, caught at the very peak of the jump",
+                "short": "bursting through the door mid-leap"
               }
             },
             "over_the_top": {
