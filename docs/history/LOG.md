@@ -4,6 +4,12 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-10-30
+
+- reconciled at `54b6b0e`: NOW.md cut to meet the size audit (16,733 characters against a limit of 16,000). Head and as_of re-stamped; `0825532` and `54b6b0e` were already recorded in NOW.md.
+- rolled from NOW.md: the 28 October, after Part B bullet (the cart row for the one-per-design rule says "Each design is one gift, so it stays at one. Nothing was changed.", the plus is served disabled, and `component-cart-items.js` turns it off again after every redraw because Helio's quantity selector re-enabled it).
+- rolled from NOW.md: the 28 October, later (live) bullet (Krish's own walk-through found a flickering cart thumbnail, a painting wait that looked broken, a review tickbox above the picture and no way to add a toy or collar, fixed through #59 and #60, record `docs/evidence/2026-10-28-product-cart-live.md`; CoWork Part B held for a design at quantity 2 checking out as 4 because Shopify's checkout merge doubles a design line above one, so every design is kept at one unit).
+
 ## 2026-10-29
 
 - reconciled at `1a58ff5`: NOW.md cut to meet the size audit (24,376 to about 15,000 characters). "Where it is right now" now states current position only, and "What changed recently" bullets were shortened. The longer 28 October texts (the PR #65 fix list by area, the #59 and #60 follow-up detail, the example-painting batch detail and the 27 October redesign list) remain in git history at `8da4514` and in the linked records under `docs/evidence/`.

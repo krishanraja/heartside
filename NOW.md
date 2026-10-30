@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-29
-head: 9011205
+as_of: 2026-10-30
+head: 54b6b0e
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-29)
+## Where it is right now (as of 2026-10-30)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -55,8 +55,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - The product price read "$119.00" beside "Framed $119". It now reads "$119", as the product cards and the home page do. The cart still shows "$45.00" (Helio's cart formats).
 - **28 October, night:** PR #65 is merged as `8da4514` with CI green. Ruling (Krish, 28 October): "Remove all the approvals. Just have this co-work prompt punch through everything." The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) now carries his yes up front. It keeps one hold (the theme goes live only if the copy passed its gates and the phone tests), the never list (no real card, no Printful confirmation, no message to a customer) and the cap of 14 paintings.
 - **28 October, evening (merged, not live):** The acceptance fixes in PR #65 ([record](docs/evidence/2026-10-28-acceptance-fixes.md)): every photo outcome shows where the buyer tapped and gives up in plain words after 20 seconds; a redo ends with both designs in the cart; names get a count and short forms; Buddy can no longer name a food, toy or place the buyer didn't; the cart groups each add-on under its gift; an hourly guard opens one issue if a product address, checkout picture or the Artist's touch picture breaks. An independent review confirmed 29 findings, all fixed before the merge, each code fix with a test that fails on the old code. Safari's photo handling is proven only by the iPhone test in the CoWork prompt, since no WebKit runs here.
-- **28 October, after Part B (not live yet):** Production readback showed the one-per-design rule holding, but the buyer was told nothing and the plus stayed pressable. The cart row now says "Each design is one gift, so it stays at one. Nothing was changed." and the plus is served disabled; `component-cart-items.js` turns it off again after every redraw because Helio's quantity selector re-enabled it. A small cart fix, not a lever on the number.
-- **28 October, later (live):** Krish's own walk-through found four problems, fixed through [#59](https://github.com/krishanraja/heartside/pull/59) and [#60](https://github.com/krishanraja/heartside/pull/60) (record: [`docs/evidence/2026-10-28-product-cart-live.md`](docs/evidence/2026-10-28-product-cart-live.md)): a flickering cart thumbnail, a painting wait that looked broken, a review tickbox above the picture, and no way to add a toy or collar. CoWork Part B then held for a design at quantity 2 checking out as 4, because Shopify's checkout merge doubles a design line above one; every design is now kept at one unit.
 - **28 October:** The slider now moves the painting. Eight kept example paintings sit behind the `examples_on` switch, set on (Krish's ruling), live through [#62](https://github.com/krishanraja/heartside/pull/62). Two images read Warm instead of Hilarious and stay off the site (`design/examples-2026-10-28/review.md`). The first batch of 19 images showed the tone barely changing the art, so the art prompt was redesigned to send only the chosen style, tone and energy text.
 - **27 October:** The journey redesign went live with the bundle and the Artist's touch add-on after an independent review and a real-store check on an unpublished copy; the three core products and reviewed theme went live with normal payments, and the fee-free blanket order confirmed the accepted artwork reached Teeinblue. Scope and economics moved to stable documents ([scope](docs/SCOPE.md), [economics](docs/ECONOMICS.md)) because dated notes could mislead a reviewer.
 
