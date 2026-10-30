@@ -768,15 +768,18 @@ const withRulings = (rulings, fn) => {
   Object.assign(live, rulings);
   try { return fn(); } finally { Object.assign(live, saved); }
 };
-test('v15: the two ruling changes ship switched off, so nothing is decided for Krish', () => {
-  assert.deepEqual(recipes.brief.character.rulings, {archetypeScenes: false, jokeProp: false});
-  for (const k of Object.keys(recipes.brief.character.rulings)) assert.match(recipes.brief.character.proposals[k], /^Proposal for Krish, not decided:/);
-  // switched off, no archetype scene or prop reaches any prompt
+test('v15: the two ruling changes are decided as Krish ruled after the test board (30 Oct), and all off brings back v14', () => {
+  assert.deepEqual(recipes.brief.character.rulings, {archetypeScenes: true, jokeProp: false});
+  for (const k of Object.keys(recipes.brief.character.rulings)) assert.match(recipes.brief.character.proposals[k], /^Decided \(Krish, 2026-10-30, after the test board\):/);
+  // as shipped, no joke prop reaches any prompt
   const sceneTexts = ARCHETYPES.flatMap(a => Object.values(recipes.brief.character.archetypes[a].scenes).flatMap(t => Object.values(t)));
-  for (const archetype of ARCHETYPES) for (const tone of TONES) for (const together of Object.keys(recipes.brief.compose.keys.together)) for (const meaning of Object.keys(recipes.brief.compose.keys.meaning)) {
-    const t = nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'she', archetype, together, spot: 'couch', home: 'spin', meaning, toys: 'a bone'})['Tone direction'];
+  const each = check => { for (const archetype of ARCHETYPES) for (const tone of TONES) for (const together of Object.keys(recipes.brief.compose.keys.together)) for (const meaning of Object.keys(recipes.brief.compose.keys.meaning))
+    check(archetype, tone, nativeFieldValues({style: 'ink', tone, format: 'portrait', pronoun: 'she', archetype, together, spot: 'couch', home: 'spin', meaning, toys: 'a bone'})['Tone direction']); };
+  each((archetype, tone, t) => { for (const sc of sceneTexts) if (sc.prop) assert.ok(!t.includes(sc.prop.replace(/\{pos\}/, 'her')), sc.prop); });
+  // switched off, no archetype scene or prop reaches any prompt
+  withRulings({archetypeScenes: false, jokeProp: false}, () => each((archetype, tone, t) => {
     for (const sc of sceneTexts) { assert.ok(!t.includes(sc.text.slice(10, 50)), archetype + ' ' + tone + ': ' + sc.text); if (sc.prop) assert.ok(!t.includes(sc.prop.replace(/\{pos\}/, 'her')), sc.prop); }
-  }
+  }));
 });
 test('v15: every reachable archetype has an affectionate character for each tone, about breed behavior only', () => {
   for (const [archetype, code] of Object.entries(recipes.energy.byArchetype)) assert.equal(Object.hasOwn(recipes.brief.character.archetypes, archetype), code !== null, archetype);
@@ -871,10 +874,10 @@ test('v15: the composer gives each archetype its own take when the switch is on,
   const tone = (archetype, t, a, rulings = {archetypeScenes: true, jokeProp: false}) => withRulings(rulings, () => nativeFieldValues({style: 'ink', tone: t, format: 'portrait', pronoun: 'he', archetype, ...a})['Tone direction']);
   assert.match(tone('Herding Manager', 'hilarious', {together: 'walk', toys: 'a frisbee'}), /sheepdog's stalking pose, eyes locked with total intensity on his frisbee/);
   assert.match(tone('Sighthound Sofa Missile', 'hilarious', {together: 'naps'}), /like a dropped coat/);
-  assert.match(tone('Terrier Menace', 'hilarious', {together: 'walk', spot: 'couch', meaning: 'boss'}), /addressing a vast crowd[^.]*out on the morning walk/);
+  assert.match(tone('Terrier Menace', 'hilarious', {together: 'walk', spot: 'couch', meaning: 'boss', toys: 'a squeaky toy'}), /both front paws planted on his squeaky toy[^.]*out on the morning walk/);
   assert.match(tone('Scent Detective', 'hilarious', {together: 'walk'}), /nose glued to the ground like a detective on a hot trail/);
-  assert.match(tone('Spitz Commentator', 'hilarious', {together: 'movie'}), /long dramatic howl, one ear back, loudly arguing with the film/);
-  assert.match(tone('Sighthound Sofa Missile', 'over_the_top', {spot: 'couch'}), /chaise longue/);
+  assert.match(tone('Spitz Commentator', 'hilarious', {together: 'movie'}), /head thrown back mid-howl at it, one paw raised in protest/);
+  assert.match(tone('Sighthound Sofa Missile', 'over_the_top', {spot: 'couch'}), /draped full length across the couch in one long, elegant swoon/);
   // the same answers without the archetype, or with the switch off, keep v14's jokes
   for (const a of [undefined, 'Herding Manager']) assert.match(tone(a, 'hilarious', {together: 'walk'}, a ? {archetypeScenes: false, jokeProp: false} : undefined), /five-star general/);
   // a beagle and a greyhound no longer get the same joke on the same taps

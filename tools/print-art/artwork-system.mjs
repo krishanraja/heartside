@@ -209,7 +209,10 @@ export function briefFields(input) {
     // typed answers are quoted; a home chip with no joke of its own (brings, with no toy named) adds nothing
     const typed = !chosen && key === 'none' && given ? [pick(sc.spotSolo, o.spot), pick(sc.together, o.together), Object.hasOwn(b.compose.keys.home, o.home || '') ? '' : pick(sc.home, o.home)].filter(Boolean).join(', ') : '';
     if (typed) staging += ', ' + typed;
-    figure = chosen ? chosen.short : b.compose.short.hilarious[key].replace('{toy}', trophy);
+    // the blanket's figures carry no setting (v15), so an archetype take that names a place falls back to the tone's own
+    const own = chosen && !/\b(couch|bed|rug|walk|car|coffee|movie|door|doorway|table|room|floor|lens|camera)\b/i.test(chosen.short) ? chosen.short : '';
+    const shorts = b.compose.short.hilarious;
+    figure = own || (shorts[chosen ? chosen.key : key] || shorts[key] || shorts.none).replace('{toy}', trophy);
   } else {
     // Over the top crowns the dog's own spot first, and always keeps the stated place in the scene
     // a toy the owner already placed (in his mouth) keeps its place, so it never rests on the cushion
