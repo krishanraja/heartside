@@ -517,7 +517,7 @@
             "hilarious": {
               "walk": {
                 "fit": 3,
-                "text": "the dog crouched flat on the path in a sheepdog's stalking pose, eyes locked with total intensity on {pos} {toy} lying in the path ahead, one front paw lifted, ready to stop it making a run for it",
+                "text": "the dog crouched flat on the path in a sheepdog's stalking pose, eyes locked with total intensity on {pos} {toy} lying in the path ahead, one front paw lifted, ready to pounce the moment anything moves",
                 "short": "herding the {toy} on the walk",
                 "needsToy": true
               },

@@ -114,7 +114,7 @@ Anything in quotation marks is the owner's own description of their dog: show it
 When part of the person shows, it enters from the edge of the frame on the same ground as the dog and is cut only by the frame edge, never ending in open space or sky; with a low or worm's-eye camera, leave the person out. Avoid: human faces, text, letters, numbers, logos, lettering, patterns on clothing, food and snacks, visible screens, other animals, a leash or lead, unless the owner named one, and any object not named above.
 ```
 
-Recipes `actual-dog-recipes-v15-directed-brief` (recipe SHA-256 `b7b5a555e0355b533a328c5e3754bb086884e7ca5a79a5bb2daf21893b32ca83`). The source of truth is `briefPrompt(format)`, `briefFields(input)` and `composeScene(input)` in `tools/print-art/artwork-system.mjs`. `tools/print-art/artwork-system.test.mjs` fails if a block above differs from `nativePrompt` by one character or if a SHA-256 here is wrong.
+Recipes `actual-dog-recipes-v15-directed-brief` (recipe SHA-256 `87836aaffaadd4719a33d12c929ff853caad9109156f6329bccdc28c3f3840cd`). The source of truth is `briefPrompt(format)`, `briefFields(input)` and `composeScene(input)` in `tools/print-art/artwork-system.mjs`. `tools/print-art/artwork-system.test.mjs` fails if a block above differs from `nativePrompt` by one character or if a SHA-256 here is wrong.
 
 `Ruling (Krish, 2026-10-29): Hilarious may use theatrical staging (a cushion, a spotlight, the buyer's own couch cushions piled high); it never invents the dog's toys, food, clothes, habits or places.` Since v11 Hilarious uses neither the cushion nor the spotlight. The live portrait campaign is "Heartside City Screenprint - DRAFT 2026-10-23".
 
