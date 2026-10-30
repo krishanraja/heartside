@@ -125,10 +125,11 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
     // recipes v10: the painter's hidden fields carry the directed brief for this dog (PROMPT-SPEC-2026-10-29.md)
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^Keep exactly who he is: this Border Collie's face shape/);
-    // v15: the breed's character joins the identity line, and the composer ranks every answer: the couch
-    // (strength 2) beats the walk that never landed (strength 1), the toys join the scene, and no person
+    // v15: the breed's character joins the identity line, and the composer ranks every answer: with
+    // archetype scenes on (Ruling, Krish, 2026-10-30) the Herding Manager's own walk joke wins, staged with
+    // the stated toys, and no person
     assert.match(brief.Energy, /never mirrored\. Character: a herding dog's intense, unblinking work focus, applied to everything\.$/);
-    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog sitting bolt upright in the exact middle of the couch, claiming the best seat like a judge on the bench\. .*Also in the scene: the dog with his tennis ball and big stick\./);
+    assert.match(brief['Tone direction'], /^One visual joke anyone gets at a glance: the dog crouched flat on the path in a sheepdog's stalking pose, eyes locked with total intensity on his tennis ball and big stick lying in the path ahead, one front paw lifted, ready to pounce the moment anything moves\. /);
     assert.doesNotMatch(brief['Tone direction'], /person|only their/);
     assert.match(brief['Style direction'], /^a cut-paper collage\. .*20 to 30 hand-cut paper pieces/);
     assert.ok(await fits(page), 'no scrolling while it paints');

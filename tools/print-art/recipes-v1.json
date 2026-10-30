@@ -451,12 +451,12 @@
     "character": {
       "about": "v15 (29 Oct, the tone pipeline): the breed corpus archetype as an affectionate character for each tone. Sentimental softens it, Warm smiles at it, Hilarious exaggerates it into a visible situation, Over the top crowns it. Each archetype's line for the chosen tone joins the identity line in the Energy field and shapes only mood, pose and expression, as the 27 Oct ruling allows. Its scenes are the archetype's own take on a stated answer; the composer may use them only when rulings.archetypeScenes is on, and their props only when rulings.jokeProp is on. Stereotypes are about breed behavior only, never a buyer, a person, a culture or a dog's health, age or death. A named cross takes a character only when both parents share one archetype (Ruling, Krish, 2026-10-28); a mixed or unknown breed has none and is painted from the buyer's answers alone.",
       "rulings": {
-        "archetypeScenes": false,
+        "archetypeScenes": true,
         "jokeProp": false
       },
       "proposals": {
-        "archetypeScenes": "Proposal for Krish, not decided: amend the 27 Oct ruling so that, for Hilarious and Over the top only, the archetype's well-known behavior may shape the situation the stated answer is staged as (a Herding Manager on the walk runs it like a sheepdog trial; a Sighthound on the couch is draped like a dropped coat). It never adds a toy, food, clothing or place the buyer did not state, and Sentimental and Warm stay mood, pose and expression only.",
-        "jokeProp": "Proposal for Krish, not decided: amend the v13 rule so a Hilarious archetype scene may add the one small prop its joke names (a magnifying glass, a clipboard, a podium), never the dog's own toys, food, clothes or habits, never a costume, and never more than one."
+        "archetypeScenes": "Decided (Krish, 2026-10-30, after the test board): on. For Hilarious and Over the top only, the archetype's well-known behavior may shape the situation the stated answer is staged as. It never adds a toy, food, clothing or place the buyer did not state, and Sentimental and Warm stay mood, pose and expression only.",
+        "jokeProp": "Decided (Krish, 2026-10-30, after the test board): off. It made no visible difference on the board and is one more thing the painter can get wrong; the v13 rule against theatrical props for Hilarious stands."
       },
       "line": "Character: {line}.",
       "archetypes": {
@@ -479,27 +479,28 @@
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog sitting upright at the table at morning coffee like the eager new intern, chest out, the plain mug in front of {obj}, waiting for the first task of the day",
-                "short": "reporting for coffee like the eager new intern"
+                "text": "the dog's {toy} dropped squarely into the plain coffee mug on the table with a big splash, the dog sitting bolt upright beside it, tail wagging, beaming with pride at having served breakfast",
+                "short": "serving the {toy} in the morning coffee",
+                "needsToy": true
               },
               "door": {
                 "fit": 2,
-                "text": "the dog sitting square on the mat by the door like the official greeter at a grand hotel, chest out, with a beaming, professional welcome",
-                "short": "greeting at the door like a hotel doorman"
+                "text": "the dog pressed so close to the closed door that {pos} nose is squashed flat against it, tail wagging so hard that {pos} whole back half is a blur",
+                "short": "nose squashed flat against the door"
               }
             },
             "over_the_top": {
               "brings": {
                 "fit": 3,
                 "needsToy": true,
-                "text": "{sub_cap} {sits} enthroned, presenting {pos} {toy} like a royal gift to the court",
-                "short": "offering {pos} {toy} like a royal gift"
+                "text": "{pos_cap} {toy} displayed on a velvet cushion under a spotlight like a priceless jewel, {sub} sitting beside it in solemn, glowing pride",
+                "short": "presenting the {toy} like a priceless jewel"
               },
               "best": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} tall and beaming like the most beloved monarch in history",
-                "short": "beaming like the most beloved monarch in history"
+                "text": "{sub_cap} {sits} beaming at the top of the couch cushions piled into a towering throne, spotlit, adored and fully aware of it",
+                "short": "beaming from a throne of cushions"
               }
             }
           }
@@ -516,20 +517,21 @@
             "hilarious": {
               "walk": {
                 "fit": 3,
-                "text": "the dog running the morning walk like a sheepdog at a trial: crouched low, eyes locked in an intense stare, one front paw lifted, steering the whole walk by willpower alone",
-                "short": "running the walk like a sheepdog at a trial"
+                "text": "the dog crouched flat on the path in a sheepdog's stalking pose, eyes locked with total intensity on {pos} {toy} lying in the path ahead, one front paw lifted, ready to pounce the moment anything moves",
+                "short": "herding the {toy} on the walk",
+                "needsToy": true
               },
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog standing like a floor manager on a busy shift, chest out, stare locked, missing nothing",
-                "short": "managing the house like a floor manager",
+                "text": "the dog sitting bolt upright, glaring straight into the camera, plainly taking notes on everyone in the house",
+                "short": "taking notes on the whole house",
                 "prop": "a tiny clipboard tucked under one paw"
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog sitting upright at the table at coffee time like a manager opening the morning meeting, the plain mug in front of {obj}, gaze fixed and serious",
-                "short": "chairing the morning coffee meeting"
+                "text": "the dog at the table with {pos} chin on the edge right beside the plain mug, eyes locked on it in a fierce herding stare, as if the mug might wander off",
+                "short": "herding the morning coffee"
               },
               "couch": {
                 "fit": 2,
@@ -541,13 +543,13 @@
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} tall as the chief executive of the household, everything in perfect order around {obj}",
-                "short": "presiding as chief executive of the household"
+                "text": "{sub_cap} {sits} at the top of the couch cushions stacked into a tall, perfectly squared tower, surveying the whole room below, every cushion in exact order",
+                "short": "presiding from a tower of cushions"
               },
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} on a raised cushion like a shepherd surveying {pos} flock, every corner of the room under {pos} watch",
-                "short": "surveying the room like a shepherd"
+                "text": "{sub_cap} {sits} on a tall stack of the couch cushions in the middle of the room, gazing down over every corner, keeping the entire household under {pos} watch",
+                "short": "watching over the room from a cushion tower"
               }
             }
           }
@@ -565,36 +567,37 @@
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog standing tall like a tiny dictator addressing the nation: chest out, chin high, one front paw raised, utterly certain of {pos} authority",
-                "short": "ruling the house like a tiny dictator",
-                "prop": "a tiny podium underfoot"
+                "text": "the small dog standing with both front paws planted on {pos} {toy} like a conquered enemy, chest out, chin high, glaring down into the camera in total victory",
+                "short": "standing over the conquered {toy}",
+                "prop": "a tiny podium underfoot",
+                "needsToy": true
               },
               "door": {
                 "fit": 3,
-                "text": "the dog planted square in the doorway like a border guard checking papers, chest out, one eyebrow raised, letting nobody through unchecked",
-                "short": "guarding the door like a border checkpoint"
+                "text": "the small dog planted in the doorway with legs braced wide, blocking it completely, glaring up at the camera with one eyebrow raised: nobody gets in without {pos} say",
+                "short": "blocking the doorway, legs braced"
               },
               "walk": {
                 "fit": 2,
-                "text": "the dog marching at the front of the morning walk like a heavyweight champion entering the ring, chest out, chin up, enormous swagger in a small body",
-                "short": "marching the walk like a heavyweight champion"
+                "text": "the small dog squared up to a single fallen leaf on the path, legs braced, hackles up, glaring at it as {pos} mortal enemy",
+                "short": "squaring up to a leaf on the walk"
               },
               "couch": {
                 "fit": 2,
-                "text": "the dog standing on the top of the couch back like a general on a hilltop, chest out, surveying {pos} territory",
-                "short": "surveying the couch like a general on a hilltop"
+                "text": "the small dog standing on the very top of the couch back, legs braced, chest out, ears blown back, surveying the room far below as if from a mountain summit",
+                "short": "on the summit of the couch"
               }
             },
             "over_the_top": {
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} on the highest cushion as the supreme ruler of the house, chest out, tiny and absolutely in charge",
-                "short": "the supreme ruler of the house"
+                "text": "a very small dog sitting on the summit of the couch cushions piled many times {pos} height, chest out, gazing down in triumph, the supreme ruler of the house",
+                "short": "on the summit of a cushion mountain"
               },
               "couch": {
                 "fit": 2,
-                "text": "The couch is {pos} fortress, and {sub} {is} its fearless commander, chest out on the highest cushion",
+                "text": "{sub_cap} {sits} spotlit on the top of the couch's cushions piled up like castle walls around {obj}, chest out, the fearless commander of {pos} fortress",
                 "short": "commanding the couch like a fortress"
               }
             }
@@ -634,13 +637,13 @@
             "over_the_top": {
               "couch": {
                 "fit": 3,
-                "text": "The couch is {pos} chaise longue, and {sub} {is} draped across it like an aristocrat awaiting {pos} portrait",
-                "short": "draped across the couch like an aristocrat"
+                "text": "{sub} {is} draped full length across the couch in one long, elegant swoon, one long leg trailing to the floor, spotlit like an old-master portrait of a reclining aristocrat",
+                "short": "draped across the couch in a grand swoon"
               },
               "bed": {
                 "fit": 3,
-                "text": "The bed is {pos} royal chaise, {sub} draped across all of it like a duchess at rest",
-                "short": "draped across the bed like a duchess"
+                "text": "{sub} {is} draped full length across the bed in one long, elegant swoon, long legs trailing over the edge, spotlit like an old-master portrait of a reclining duchess",
+                "short": "draped across the bed in a grand swoon"
               }
             }
           }
@@ -663,31 +666,31 @@
               },
               "coffee": {
                 "fit": 2,
-                "text": "the dog at morning coffee time, nose raised toward the plain mug on the table, eyes narrowed like a detective who has just found the key clue",
-                "short": "investigating the coffee like a detective"
+                "text": "the dog with {pos} nose pushed right up to the rim of the plain mug on the table, eyes crossed with concentration, sniffing it with forensic intensity",
+                "short": "sniffing the coffee cross-eyed"
               },
               "feet": {
                 "fit": 2,
-                "text": "the dog nose-down on the rug at floor level, tracking along it like a detective searching a crime scene, ears trailing",
-                "short": "searching the rug like a crime scene"
+                "text": "the dog flat on the rug with {pos} nose pressed hard into one single spot, long ears spread out on the floor, brow deeply furrowed in total concentration",
+                "short": "investigating one spot on the rug"
               },
               "door": {
                 "fit": 2,
-                "text": "the dog with {pos} nose pressed to the gap under the door like a detective gathering clues from the other side",
-                "short": "gathering clues at the door like a detective"
+                "text": "the dog lying flat with {pos} whole snout jammed into the gap under the door, long ears spread on the floor, back end up and tail high, sniffing with total concentration",
+                "short": "snout jammed under the door"
               }
             },
             "over_the_top": {
               "feet": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} enthroned on the rug at floor level like the great detective of the household, chin high, the case long since solved",
-                "short": "enthroned like the great detective of the house"
+                "text": "{sub_cap} {sits} under one golden spotlight on the rug, nose raised high in triumph, long ears spread out on the floor around {obj} like ceremonial robes",
+                "short": "enthroned on the rug, ears like robes"
               },
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} in state as the household's great detective, chin raised in triumph, every mystery solved",
-                "short": "in state as the household's great detective"
+                "text": "{sub_cap} {sits} in state under one golden spotlight, nose raised in triumph, long ears spread out around {obj} like ceremonial robes, every mystery solved",
+                "short": "in state, ears spread like robes"
               }
             }
           }
@@ -705,13 +708,13 @@
               "cool": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog sitting with {pos} back half turned, nose in the air, giving the most withering side-eye over {pos} shoulder like a critic on a bad opening night",
-                "short": "giving the room a critic's side-eye"
+                "text": "the dog sitting with {pos} back to the camera, nose high in the air, looking back over {pos} shoulder with withering, half-closed side-eye, deeply unimpressed with you",
+                "short": "giving you the side-eye"
               },
               "movie": {
                 "fit": 3,
-                "text": "the dog sitting bolt upright on the couch on movie night like a stern film critic, one eyebrow raised at the unseen screen, deeply unimpressed",
-                "short": "reviewing movie night like a stern critic"
+                "text": "the dog sitting bolt upright on movie night right in front of the glowing TV screen, head thrown back mid-howl at it, one paw raised in protest, loudly arguing with the film",
+                "short": "howling at the movie"
               },
               "walk": {
                 "fit": 2,
@@ -728,13 +731,13 @@
               "cool": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} on a velvet cushion with {pos} back to the room, glancing over {pos} shoulder like a diva refusing an encore",
-                "short": "refusing an encore like a diva"
+                "text": "{sub_cap} {sits} spotlit on a velvet cushion with {pos} back to the camera, glancing over {pos} shoulder, nose high: the diva who will not turn around for anyone",
+                "short": "the diva who will not turn around"
               },
               "bed": {
                 "fit": 2,
-                "text": "The bed is {pos} stage, {sub} sitting at its very center like a diva awaiting applause",
-                "short": "center stage on the bed like a diva"
+                "text": "{sub_cap} {sits} at the very center of the bed under a single spotlight, head thrown back mid-howl as if singing the final aria of the opera",
+                "short": "singing an aria from the bed"
               }
             }
           }
@@ -752,32 +755,32 @@
               "shadow": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog sitting dead straight like a secret-service bodyguard on duty, ears up, eyes locked just past the camera, ready to follow the moment anyone moves",
-                "short": "on duty like a devoted bodyguard"
+                "text": "the dog right up against the lens, nose almost touching the camera, eyes huge, so close {pos} face fills the frame: wherever you go, {sub} {is} already there",
+                "short": "nose right up against the lens"
               },
               "movie": {
                 "fit": 2,
-                "text": "the dog curled in the middle of the couch on movie night like a critic at a premiere, chin on a cushion, eyes huge and wet at the unseen screen",
-                "short": "weeping at movie night like a critic at a premiere"
+                "text": "the dog on the couch on movie night with a cushion clutched over {pos} face, peeking out from behind it with one huge eye at the glowing TV screen, terrified by the film",
+                "short": "hiding behind a cushion from the movie"
               },
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "the dog posing like a pampered celebrity awaiting {pos} fans, chin up, utterly entitled",
-                "short": "waiting for fans like a pampered celebrity"
+                "text": "the dog lounging across the best cushion on {pos} side, one paw draped out, chin high, eyes half-closed, plainly waiting to be served",
+                "short": "waiting to be served"
               }
             },
             "over_the_top": {
               "couch": {
                 "fit": 3,
-                "text": "The couch is {pos} palace, and {sub} {sits} on its plumpest cushion like a cherished royal darling, adored and expecting it",
-                "short": "adored on the couch like a royal darling"
+                "text": "{sub} {is} curled at the top of a mountain of the couch cushions, chin on the softest one, eyes half-closed in total bliss, spotlit like a royal darling",
+                "short": "in bliss on a mountain of cushions"
               },
               "shadow": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} on a velvet cushion like a beloved royal companion, devoted and utterly certain of {pos} place at court",
-                "short": "devoted like a royal companion at court"
+                "text": "{sub_cap} {sits} on a velvet cushion pulled right up to the camera, so close {pos} adoring face fills the frame, gazing up as if at {pos} beloved monarch",
+                "short": "adoring, right up to the camera"
               }
             }
           }
@@ -794,31 +797,31 @@
             "hilarious": {
               "door": {
                 "fit": 3,
-                "text": "the dog sitting square in the doorway like a nightclub bouncer, chest out, deadpan, checking an invisible guest list",
-                "short": "working the door like a nightclub bouncer"
+                "text": "the big dog sitting square in the doorway and filling it completely, edge to edge, deadpan, nothing getting past",
+                "short": "filling the whole doorway"
               },
               "feet": {
                 "fit": 2,
-                "text": "the dog flopped flat across the rug like a security barrier, chin down, immovable, guarding the floor with total gravity",
-                "short": "guarding the rug like a security barrier"
+                "text": "the big dog flopped flat across the whole rug, chin down, completely immovable, taking up the entire floor",
+                "short": "taking up the entire floor"
               },
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "the dog seated like the head of security on a state visit, chest out, utterly serious",
-                "short": "on duty like the head of security"
+                "text": "the big dog sitting bolt upright, staring dead into the camera with a completely deadpan, unblinking expression, head tilted just slightly as if asking for your ID",
+                "short": "asking for your ID"
               }
             },
             "over_the_top": {
               "door": {
                 "fit": 3,
-                "text": "{sub_cap} {sits} at the door like a palace sentry, perfectly still, chest out, guarding the realm",
-                "short": "guarding the door like a palace sentry"
+                "text": "{sub_cap} {sits} in the doorway under a spotlight, perfectly still, chest out, so grand the door frame looks small around {obj}, the sentry of the realm",
+                "short": "filling the doorway like a sentry"
               },
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} tall and still as a statue in a great hall, the noble guardian of the household",
-                "short": "standing guard like a statue in a great hall"
+                "text": "{sub_cap} {sits} perfectly still on a low velvet plinth in the middle of the room, spotlit and posed like a marble statue of the household's noble guardian",
+                "short": "posed on a plinth like a statue"
               }
             }
           }
@@ -836,26 +839,26 @@
               "spin": {
                 "fit": 3,
                 "placeless": true,
-                "text": "the dog caught mid-spin in a joyful blur, ears and tongue flying, like a figure skater landing the move of a lifetime",
-                "short": "spinning like a figure skater"
+                "text": "the dog caught mid-spin in a joyful blur, ears and tongue flying out sideways, a ring of motion around {obj}",
+                "short": "caught mid-spin"
               },
               "walk": {
                 "fit": 2,
-                "text": "the dog mid-bound on the morning walk, all four paws off the ground, ears flying, tongue out, like a sprinter crossing the finish line",
-                "short": "bounding through the walk like a sprinter"
+                "text": "the dog mid-bound on the morning walk, all four paws off the ground, ears flipped inside out, tongue flapping sideways, caught at the most ridiculous moment",
+                "short": "mid-bound, ears inside out"
               },
               "door": {
                 "fit": 2,
-                "text": "the dog bursting through the doorway mid-leap like a game-show contestant who just won the grand prize",
-                "short": "bursting through the door like a game-show winner"
+                "text": "the dog bursting through the doorway mid-leap, all four paws off the floor, ears flipped inside out, face pure joy, caught at the very peak of the jump",
+                "short": "bursting through the door mid-leap"
               }
             },
             "over_the_top": {
               "spin": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} beaming on a velvet cushion like a champion on the winner's podium, tongue out in triumph",
-                "short": "beaming like a champion on the podium"
+                "text": "{sub_cap} {sits} beaming on the couch cushions stacked into a winner's podium, tongue out in triumph, spotlit as the champion",
+                "short": "beaming on a podium of cushions"
               }
             }
           }
@@ -885,8 +888,8 @@
             "over_the_top": {
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} like a celebrity at a photo call, chin lifted, utterly aware of {pos} own charm",
-                "short": "posing like a celebrity at a photo call"
+                "text": "{sub_cap} {sits} spotlit at center with {pos} fur fluffed to glorious maximum volume, chin lifted, utterly aware of {pos} own charm",
+                "short": "fluffed to maximum volume"
               }
             }
           }
