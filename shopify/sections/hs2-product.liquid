@@ -103,6 +103,9 @@
       try {
         var header = document.querySelector('.header-section, header.shopify-section');
         if (!box || !header || window.scrollY > 10) return;
+        // journey mode hides the store header (hs-journey-choose.css), so there is nothing to clear
+        if (/[?&]journey=1/.test(location.search)) return;
+        for (var i = 0; i < sessionStorage.length; i++) if (/^hs2-journey-on:/.test(sessionStorage.key(i))) return;
         var top = box.getBoundingClientRect().top, bottom = header.getBoundingClientRect().bottom;
         header.querySelectorAll('header-component, .header__row, .header__underlay').forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) bottom = Math.max(bottom, r.bottom); });
         bottom = Math.min(bottom, top + 200);
