@@ -17,7 +17,10 @@
   </header>
   <div class="hs-jm__paint" data-hs-jm-paint>
     <div class="hs-jm__nophoto" data-hs-jm-nophoto hidden>
-      <p class="hs-jm__lead">Your photo didn't come through on this page.</p>
+      {%- comment -%} the gift and its price stay in view while the photo is chosen again (audit, 30 Oct) {%- endcomment -%}
+      {%- if product.featured_image -%}<figure class="hs-jm__nophoto-art"><span class="hs-jm__tag">Example</span>{{ product.featured_image | image_url: width: 720 | image_tag: loading: 'lazy', alt: product.featured_image.alt | default: product.title }}</figure>{%- endif -%}
+      <p class="hs-jm__lead" data-hs-jm-nophoto-lead>Your photo didn't come with you to this page. Choose it again. It takes a second.</p>
+      <p class="hs-jm__price">{{ product.title }}, {% if product.price_max > product.price_min %}from {% endif %}{{ product.price_min | money_without_trailing_zeros }}. Free US shipping.</p>
       <button type="button" class="hs-jm__btn" data-hs-jm-photo>Choose your dog's photo</button>
     </div>
   </div>

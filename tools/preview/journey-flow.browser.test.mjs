@@ -101,8 +101,9 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
     assert.equal(await page.locator('[data-hsj-screen="hook"] .hsj-btn').count(), 1, 'one primary button');
     const btn = await page.locator('[data-hsj-go]').boundingBox();
     assert.ok(btn.y + btn.height <= size.height, 'the button is in the first phone screen');
-    // the whole first screen fits, not just the button: nothing below the fold, nothing clipped
-    await noScroll(page, 'hook');
+    // the whole first screen fits, not just the button: nothing below the fold, nothing clipped. The page
+    // itself goes on below the hook (the showcase, and since 30 Oct the store footer), so this checks the
+    // hook's own content, not the page height
     const hookBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-hsj-screen="hook"] *')].filter((e) => e.getClientRects().length && getComputedStyle(e).display !== 'none').map((e) => e.getBoundingClientRect().bottom)));
     assert.ok(hookBottom <= size.height, `the first screen ends at ${hookBottom}px of ${size.height}`);
     await page.screenshot({path: path.join(shots, tag + '-0-hook.png')});
@@ -215,5 +216,23 @@ test('a deep link past the answers lands on the first open question, Back steps 
     assert.match(page.url(), /step=photo/, 'a refused photo paints nothing');
     await page.locator('[data-hsj-override]').click();
     await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/, {timeout: 10000});
+  } finally { await ctx.close(); }
+});
+
+// audit, 30 Oct: on a phone held sideways the Next bar covered the fourth answer, so it could not be tapped
+test('a phone on its side can reach and tap every answer above the button', async () => {
+  const {ctx, page} = await open({width: 844, height: 390});
+  try {
+    await page.goto(`${base}/?step=name`);
+    await page.locator('[data-hsj-name]').fill('Kuku');
+    await page.locator('[data-hsj-next]').click();
+    await pick(page, 'breed', 'Pug'); await pick(page, 'pro', 'she');
+    await page.waitForSelector('[data-hsj-screen="person"]');
+    await pick(page, 'self', 'self');
+    await pick(page, 'home', 'door');
+    await page.waitForSelector('[data-hsj-screen="spot"]');
+    await page.locator('[data-hsj-pick="spot"][data-v="anywhere"]').click({timeout: 5000});
+    await page.waitForURL(/step=together/);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, 'nothing sideways');
   } finally { await ctx.close(); }
 });

@@ -63,6 +63,6 @@ html.hsj-routed .hss, html.hsj-focus .hss { display: none; }
 
 .hss-credit { font-size: 12px; line-height: 16px; color: var(--muted); max-width: 640px; margin-bottom: 24px; }
 .hss-cta { display: flex; }
-.hss-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 28px; border-radius: 28px; background: var(--accent); color: #fff; font-weight: 600; font-size: 16px; text-decoration: none; }
+.hss-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 28px; border-radius: 16px; background: var(--ink); color: #fff; font-weight: 600; font-size: 16px; text-decoration: none; }
 @media (max-width: 719px) { .hss-btn { width: 100%; } }
 @media (prefers-reduced-motion: no-preference) { .hss-fig img { transition: transform 0.3s ease; } }
