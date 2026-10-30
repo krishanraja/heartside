@@ -1,0 +1,515 @@
+{
+  "about": "The approved 29/30 October breed examples the store shows (sections/hs-showcase.liquid, hs-journey.liquid, hs3-chat.liquid). Source: krishanraja/growth-heartside assets/heartside-examples-2026-10-29, only jobs the approvals ledger marks approved. Built by tools/print-art/showcase-assets.py. Every image is an Example.",
+  "source_repo": "krishanraja/growth-heartside",
+  "source_dir": "assets/heartside-examples-2026-10-29",
+  "ledger": "assets/heartside-examples-2026-10-29.approvals.json",
+  "dogs": {
+    "golden": {
+      "name": "Maple",
+      "breed": "Golden Retriever",
+      "style_id": "painterly",
+      "style": "Painterly"
+    },
+    "lab": {
+      "name": "Bear",
+      "breed": "Labrador Retriever",
+      "style_id": "cinematic",
+      "style": "Cinematic"
+    },
+    "frenchie": {
+      "name": "Bao",
+      "breed": "French Bulldog",
+      "style_id": "comic",
+      "style": "Comic book"
+    },
+    "doodle": {
+      "name": "Clover",
+      "breed": "Goldendoodle",
+      "style_id": "screenprint",
+      "style": "Vintage screenprint"
+    },
+    "dachshund": {
+      "name": "Frank",
+      "breed": "Dachshund",
+      "style_id": "ink",
+      "style": "Fine ink drawing"
+    },
+    "shepherd": {
+      "name": "Juno",
+      "breed": "German Shepherd",
+      "style_id": "collage",
+      "style": "Cut-paper collage"
+    }
+  },
+  "images": [
+    {
+      "id": "style-painterly",
+      "src": "crops/golden-sentimental-portrait-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "golden-sentimental-portrait",
+      "alt": "Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job golden-sentimental-portrait approved Krish, 2026-10-30",
+      "source_sha256": "26349d260997427d64abb7ba31dbab4a83bf9e29ea4521b0b4bc115799da2e86",
+      "output_sha256": "01e67d0d18ee9c82139b7756394fc54c6acb6db2302c0161116f14849e16a8aa",
+      "bytes": 30406
+    },
+    {
+      "id": "style-cinematic",
+      "src": "crops/lab-warm-portrait-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "lab-warm-portrait",
+      "alt": "Example: Bear, a black Labrador, in a truck window with a tennis ball and a red bandana, in cinematic style. Warm with a wink.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job lab-warm-portrait approved Krish, 2026-10-30",
+      "source_sha256": "824283c9b3240f2313bb2c318050bf929da0dccabf3f906a2ccf6a4a900178eb",
+      "output_sha256": "f05b50e8a6e09a0479589440925a8363900fcdd011eac8e934f9a176d44011dc",
+      "bytes": 15642
+    },
+    {
+      "id": "style-comic",
+      "src": "crops/frenchie-sentimental-mug-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "frenchie-sentimental-mug",
+      "alt": "Example: Bao, a French bulldog, asleep on a blanket with a blue bone toy, in comic book style. Sentimental.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job frenchie-sentimental-mug approved Krish, 2026-10-30",
+      "source_sha256": "9489a0b711e6150909cdb11dccb50b4e3c158a9ba5ac55a74894140a944e9f60",
+      "output_sha256": "58dc135ef79887ca3633f31b6eecd6439044cd60885a42f999326eb0e448e539",
+      "bytes": 40296
+    },
+    {
+      "id": "style-screenprint",
+      "src": "crops/doodle-sentimental-portrait-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "doodle-sentimental-portrait",
+      "alt": "Example: Clover, a goldendoodle, resting on a red disc under a hand, in vintage screenprint. Sentimental.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job doodle-sentimental-portrait approved Krish, 2026-10-30",
+      "source_sha256": "4e49a1c36fd42245ccf01b65b80474ff9ecf1bd0bbd25824d45608abe33cda73",
+      "output_sha256": "f495dff61336200197a3fe391ca5cb4eb2e6010150e17ae496eeffc19fdd47ad",
+      "bytes": 35552
+    },
+    {
+      "id": "style-ink",
+      "src": "crops/dachshund-warm-portrait-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "dachshund-warm-portrait",
+      "alt": "Example: Frank, a dachshund in a green sweater on a wooden chair holding a bone, in fine ink drawing. Warm with a wink.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job dachshund-warm-portrait approved Krish, 2026-10-30",
+      "source_sha256": "1610a9b088052fbafdf07d09751fd017e38800848eb6d8746dffebba5e406905",
+      "output_sha256": "c967776062a4ba5242e5c2625de63f719d2f2e95595e73ab3b971a37f5e99694",
+      "bytes": 23616
+    },
+    {
+      "id": "style-collage",
+      "src": "crops/shepherd-hilarious-portrait-4x5.png",
+      "size": [
+        360,
+        450
+      ],
+      "job": "shepherd-hilarious-portrait",
+      "alt": "Example: Juno, a German shepherd bounding through a meadow, in cut-paper collage. Hilarious.",
+      "uses": [
+        "journey style card",
+        "showcase gallery"
+      ],
+      "approval": "job shepherd-hilarious-portrait approved Krish, 2026-10-30",
+      "source_sha256": "15599c74025d8da4c419c9ad3fecd2b6894e1fae8dfa5f302f83e14d1a9c9492",
+      "output_sha256": "9b4ceda10b8dd0c181cea125064c44620448dd9ee2a53e387433b2248b08ff2c",
+      "bytes": 41326
+    },
+    {
+      "id": "hero-mug",
+      "src": "paintings/golden-warm-mug.png",
+      "size": [
+        720,
+        480
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy, painted for a mug. Warm with a wink.",
+      "uses": [
+        "journey top"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "15b070bfcc358ed071f92daffbe2558893bef03820cb894a774e2fd00d8ec878",
+      "output_sha256": "ca077d2ad2e39f9fa1e3029f4558a97491a0793014cf24b0e9c6072962e4eff2",
+      "bytes": 49746
+    },
+    {
+      "id": "flow-photo",
+      "src": "photos/golden.jpg",
+      "size": [
+        720,
+        900
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Reference photo: a golden retriever sitting on a tiled floor.",
+      "uses": [
+        "showcase transition"
+      ],
+      "cover": "4x5",
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "6ee7a451908c5f57a2d28e7b3bfdbfa1b6ed1f13ff69873b24a0b620d0c31281",
+      "output_sha256": "fb0a5d96803d5805f1881a35baf6076ac19fd309d64c1d774d38044e3dede62c",
+      "bytes": 37296
+    },
+    {
+      "id": "flow-painting",
+      "src": "crops/golden-warm-mug-4x5.png",
+      "size": [
+        720,
+        900
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.",
+      "uses": [
+        "showcase transition"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "4ef1f529c4b6ca3685a04d425392e7275e11cc4fc2975c5bcdf5b20eabbdfde3",
+      "output_sha256": "e817e27effffb329a9a47d5d6cdf283005fc44c67dd33030b93d2f2d5ebf964a",
+      "bytes": 81718
+    },
+    {
+      "id": "flow-gift",
+      "src": "mockups/golden-warm-mug/hand-4x5.png",
+      "size": [
+        720,
+        900
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example: the painting on a black-handled mug held in a hand.",
+      "uses": [
+        "showcase transition",
+        "showcase scenes"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "6a7ccd13a89174a33e8d101d9eacf87b6a47da1927f73fb98b7844f6bae560ee",
+      "output_sha256": "cd9c25b4febc2b5f5a682ab9d63e0d905bba2d0b347502e6030003d082f50580",
+      "bytes": 50420
+    },
+    {
+      "id": "scene-mug-studio",
+      "src": "mockups/golden-warm-mug/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example: a golden retriever mug, on a plain studio backdrop.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "4f28dd16b4e14c2dbfe37db0f862be82a702b4897e40c0b994ec55cb55e3d351",
+      "output_sha256": "55570e9c15067e61b81d720db4e28b30556856c83397207189b0c101ba526120",
+      "bytes": 31140
+    },
+    {
+      "id": "scene-mug-home",
+      "src": "mockups/golden-warm-mug/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-warm-mug",
+      "alt": "Example: a golden retriever mug, in a bright living room.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job golden-warm-mug approved Krish, 2026-10-30",
+      "source_sha256": "ac0280e70161e4cfcbf7b4a00e1768bebc86d1f4aad4770018e9037a5f871a0d",
+      "output_sha256": "a6b61ae209e8c3a277bf41870e1b3f1a0515d4123e59783d4fd5aafd4f72184a",
+      "bytes": 41956
+    },
+    {
+      "id": "scene-blanket-studio",
+      "src": "mockups/lab-sentimental-blanket/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-sentimental-blanket",
+      "alt": "Example: a sherpa blanket printed with a scatter of small black Labradors, on a plain studio backdrop.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-sentimental-blanket approved Krish, 2026-10-30",
+      "source_sha256": "4a70ca2699a57d01fc6c4769c6ea7dab663f174ae3ffb037d8e7b753702481f6",
+      "output_sha256": "20785a08feda3d552752c0ecde1d363a78153ff2daa3af0c0d86fc5050e59472",
+      "bytes": 63230
+    },
+    {
+      "id": "scene-blanket-home",
+      "src": "mockups/lab-sentimental-blanket/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-sentimental-blanket",
+      "alt": "Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-sentimental-blanket approved Krish, 2026-10-30",
+      "source_sha256": "1d6dee59b8cfdc38ec0498dfb3daeb88337af75d805fb4fff70c4372be1d6e69",
+      "output_sha256": "46bc099d39ded3d6c35a2a7bc52525d9b1f97dca74c1482a5b728061176351ee",
+      "bytes": 55774
+    },
+    {
+      "id": "scene-blanket-hand",
+      "src": "mockups/lab-sentimental-blanket/hand-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-sentimental-blanket",
+      "alt": "Example: a sherpa blanket printed with a scatter of small black Labradors, held in a hand.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-sentimental-blanket approved Krish, 2026-10-30",
+      "source_sha256": "97da4d6950974e01042f53dfd61450022766479969f94239666ac8fff665927c",
+      "output_sha256": "26e0d096213706700c4eeddab3e305ead8b753432e80cbe1668470d257593799",
+      "bytes": 60546
+    },
+    {
+      "id": "scene-portrait-studio",
+      "src": "mockups/lab-warm-portrait/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-warm-portrait",
+      "alt": "Example: a framed portrait of a black Labrador in a truck window, on a plain studio backdrop.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-warm-portrait approved Krish, 2026-10-30",
+      "source_sha256": "6f773479247ff68effae7d13996b457cf94c5172ce89767583c614816f813b9a",
+      "output_sha256": "e16f881aa3b28e6e8bc95f2633df0106c9bafe0490e41a1a427b2b82acce7a1b",
+      "bytes": 20436
+    },
+    {
+      "id": "scene-portrait-home",
+      "src": "mockups/lab-warm-portrait/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-warm-portrait",
+      "alt": "Example: a framed portrait of a black Labrador in a truck window, in a bright living room.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-warm-portrait approved Krish, 2026-10-30",
+      "source_sha256": "74933f98e5e73c79795e32f50c629c3d38040b906bc988c89bd0d3afdc970756",
+      "output_sha256": "5ff72d532414c7dfc07c00d81b978e786bb4036a610a1fbdcc98ec3432736bf1",
+      "bytes": 29748
+    },
+    {
+      "id": "scene-portrait-hand",
+      "src": "mockups/lab-warm-portrait/hand-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "lab-warm-portrait",
+      "alt": "Example: a framed portrait of a black Labrador in a truck window, held in a hand.",
+      "uses": [
+        "showcase scenes"
+      ],
+      "approval": "job lab-warm-portrait approved Krish, 2026-10-30",
+      "source_sha256": "b306d471937d5b527f0fc3b6d6f0e99a4f795989d2e31d7351a1ec7ff4848a1d",
+      "output_sha256": "ed46033906e9bcc8de389df4f81793347fd2305f3b0d03bdc4a46f5ecbc0966a",
+      "bytes": 26758
+    },
+    {
+      "id": "tone-sentimental",
+      "src": "mockups/golden-sentimental-portrait/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-sentimental-portrait",
+      "alt": "Example: a framed portrait of a golden retriever asleep on a rug with a plush toy. Sentimental.",
+      "uses": [
+        "showcase tones",
+        "chat slider"
+      ],
+      "approval": "job golden-sentimental-portrait approved Krish, 2026-10-30",
+      "source_sha256": "06a33e6fa82d0dde39dc78d4ac85170c23e66b29c37f6166f25731a6ef73aa00",
+      "output_sha256": "f2c9e1eed8645b19ed3d0de8b258ff25be089ae531176aab7cd8c0c47d9eb896",
+      "bytes": 44256
+    },
+    {
+      "id": "tone-hilarious",
+      "src": "mockups/golden-hilarious-blanket/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-hilarious-blanket",
+      "alt": "Example: a sherpa blanket printed with a scatter of small golden retrievers in silly poses. Hilarious.",
+      "uses": [
+        "showcase tones",
+        "chat slider"
+      ],
+      "approval": "job golden-hilarious-blanket approved Krish, 2026-10-30",
+      "source_sha256": "a00312dbfdb7a4845a89107c665252373bf9ef894de544e4da72cdf3d0475fd2",
+      "output_sha256": "754666dcc3bf20f953f13b08ea59f06d8dc33338e75570c2152e63fa5d5a102f",
+      "bytes": 82530
+    },
+    {
+      "id": "tone-over",
+      "src": "mockups/golden-over_the_top-portrait/studio-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "golden-over_the_top-portrait",
+      "alt": "Example: a framed portrait of a golden retriever in a spotlight, enthroned on a rug. Over the top.",
+      "uses": [
+        "showcase tones"
+      ],
+      "approval": "job golden-over_the_top-portrait approved Krish, 2026-10-30",
+      "source_sha256": "59b999cd3c9cabcd57fd4739f1511c5a0e24a8a508df8ab8eaa4582a2290519d",
+      "output_sha256": "ec55346cc5ee1ba372883b45481759d7e5fcc1ef022c156fd4715bdde3ef5e45",
+      "bytes": 46216
+    },
+    {
+      "id": "set-golden",
+      "src": "mockups/golden-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:golden",
+      "alt": "Example: Maple, a Golden Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle golden approved Krish, 2026-10-30",
+      "source_sha256": "5cad743c015e0edb5c04478d9411d29c30432b164fd141b6ca8e5fb9671c09c1",
+      "output_sha256": "c14c9dbbca4e46a2ba4395d5a4f07bf3d3218aeb337df1a6acd72238fe0ce475",
+      "bytes": 48506
+    },
+    {
+      "id": "set-lab",
+      "src": "mockups/lab-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:lab",
+      "alt": "Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle lab approved Krish, 2026-10-30",
+      "source_sha256": "04f503179c225e6566f3c6a3bd249546afd392590979e41a13dd1418ae58cf0a",
+      "output_sha256": "bb9f564f214818c543fad406cdb6febe3fca3227eaaefd9642146dfcd646ac80",
+      "bytes": 49976
+    },
+    {
+      "id": "set-frenchie",
+      "src": "mockups/frenchie-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:frenchie",
+      "alt": "Example: Bao, a French Bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle frenchie approved Krish, 2026-10-30",
+      "source_sha256": "ebc67fcb99756533bd88a9bba137c3e5fbb2ff9669baec3f3db4422ceb1295f3",
+      "output_sha256": "ce20121a8d41c6e2283a124f7bb09ce5b87b9c17cb29c3e7a38d81b526a06637",
+      "bytes": 58396
+    },
+    {
+      "id": "set-doodle",
+      "src": "mockups/doodle-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:doodle",
+      "alt": "Example: Clover, a Goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle doodle approved Krish, 2026-10-30",
+      "source_sha256": "c97f1963018fd1a3d64b9f871d517053715c0382732bc01d039b6c57cf848a60",
+      "output_sha256": "702c7079a6ca24e5115cd124e7b8e6eda40227e993de1a8322d7400859834c72",
+      "bytes": 61828
+    },
+    {
+      "id": "set-dachshund",
+      "src": "mockups/dachshund-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:dachshund",
+      "alt": "Example: Frank, a Dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle dachshund approved Krish, 2026-10-30",
+      "source_sha256": "bbbef95cb6b522a98af12407daab5ddfa06ff72a9a64a328f89c5598bcf7db50",
+      "output_sha256": "29044a5d2c66f10299d2bcefd3231f7b2ccfd2e74b1dcf6e0d31504f84f215ad",
+      "bytes": 45024
+    },
+    {
+      "id": "set-shepherd",
+      "src": "mockups/shepherd-set/home-4x5.png",
+      "size": [
+        540,
+        675
+      ],
+      "job": "bundle:shepherd",
+      "alt": "Example: Juno, a German Shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.",
+      "uses": [
+        "showcase sets"
+      ],
+      "approval": "bundle shepherd approved Krish, 2026-10-30",
+      "source_sha256": "0063539c9579726833478699740e7dd2edcb1ed873e99e419a0b33003d68f6db",
+      "output_sha256": "0b77118bb4051d833f7324936a90163dee9cbc33e91c8f8b880795eded1fa18a",
+      "bytes": 62498
+    }
+  ]
+}

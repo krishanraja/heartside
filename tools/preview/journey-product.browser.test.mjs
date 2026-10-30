@@ -101,7 +101,7 @@ const paintDone = page => page.evaluate(() => {
   const a = document.querySelector('[data-hs-art]');
   a.setAttribute = function (k, v) { return Element.prototype.setAttribute.call(this, k, k === 'data-state' ? 'done' : v); };
   a.setAttribute('data-state', 'done');
-  a.querySelector('[data-hs-art-result]').src = '/assets/hs-example-pug-warm-portrait.webp';
+  a.querySelector('[data-hs-art-result]').src = '/assets/hs-ex-style-screenprint.webp';
 });
 
 for (const size of PHONES) test(`${size.width}x${size.height}: the painting starts by itself, once, with nothing asked again and nothing to scroll`, async () => {

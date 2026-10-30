@@ -153,12 +153,12 @@
         <div class="hs3-demo__head"><span class="hs3-label">{{ s.demo_label }}</span><strong data-hs3-demo-name>Sentimental</strong></div>
         {%- if s.examples_on -%}
           {%- comment -%} The slider moves the painting too: one dog at each tone, from the reviewed 28 Oct batch
-            (design/examples-2026-10-28/site.json; Krish, 28 Oct). hs3.js shows the one that matches the slider. {%- endcomment -%}
+            (design/examples-2026-10-30-showcase/site.json; Krish, 28 Oct). hs3.js shows the one that matches the slider. {%- endcomment -%}
           <div class="hs3-demo__art" data-hs3-demo-art>
             <span class="hs3-example">EXAMPLE</span>
-            <img class="hs3-demo__img is-on" src="{{ 'hs-example-pug-sentimental-portrait.webp' | asset_url }}" alt="Example: a pug lying in autumn leaves, soft-eyed and still, in vintage screenprint. Sentimental." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="0">
-            <img class="hs3-demo__img" src="{{ 'hs-example-pug-warm-portrait.webp' | asset_url }}" alt="Example: the same pug standing in the leaves with a head tilt and a small smile, in vintage screenprint. Warm with a wink." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="1" aria-hidden="true">
-            <img class="hs3-demo__img" src="{{ 'hs-example-pug-hilarious-portrait.webp' | asset_url }}" alt="Example: the same pug bounding at you through flying leaves, tongue out, in vintage screenprint. Hilarious." width="600" height="900" loading="lazy" decoding="async" data-hs3-demo-img="2" aria-hidden="true">
+            <img class="hs3-demo__img is-on" src="{{ 'hs-ex-tone-sentimental.webp' | asset_url }}" alt="Example: a framed portrait of a golden retriever asleep on a rug with a plush toy. Sentimental." width="540" height="675" loading="lazy" decoding="async" data-hs3-demo-img="0">
+            <img class="hs3-demo__img" src="{{ 'hs-ex-scene-mug-studio.webp' | asset_url }}" alt="Example: a golden retriever mug, the dog in a play bow with a plush toy. Warm with a wink." width="540" height="675" loading="lazy" decoding="async" data-hs3-demo-img="1" aria-hidden="true">
+            <img class="hs3-demo__img" src="{{ 'hs-ex-tone-hilarious.webp' | asset_url }}" alt="Example: a sherpa blanket printed with a scatter of small golden retrievers in silly poses. Hilarious." width="540" height="675" loading="lazy" decoding="async" data-hs3-demo-img="2" aria-hidden="true">
           </div>
         {%- endif -%}
         <div class="hs3-note hs3-note--demo">
@@ -181,13 +181,13 @@
           <h2 class="hs3-range__h" id="hs3-range-h">{{ s.range_heading }}</h2>
           <p class="hs3-small">{{ s.range_note }}</p>
           <div class="hs3-range__pair">
-            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-mug.webp' | asset_url }}" alt="Example mug art: a golden retriever puppy asleep on a rug, chin on its paws, in cut-paper collage. Sentimental." width="960" height="640" loading="lazy" decoding="async"><figcaption>Mug · Sentimental</figcaption></figure>
-            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-hilarious-mug.webp' | asset_url }}" alt="Example mug art: the same puppy rolling belly-up on the rug with its paws in the air, in cut-paper collage. Hilarious." width="960" height="640" loading="lazy" decoding="async"><figcaption>Mug · Hilarious</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-ex-scene-mug-studio.webp' | asset_url }}" alt="Example: a golden retriever mug on a plain studio backdrop." width="540" height="675" loading="lazy" decoding="async"><figcaption>Mug · Studio</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-ex-scene-mug-home.webp' | asset_url }}" alt="Example: a golden retriever mug in a bright living room." width="540" height="675" loading="lazy" decoding="async"><figcaption>Mug · At home</figcaption></figure>
           </div>
           <div class="hs3-range__tiles">
-            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-portrait.webp' | asset_url }}" alt="Example portrait art: a golden retriever puppy resting its chin on a paw, eyes half closed, in cut-paper collage. Sentimental." width="480" height="720" loading="lazy" decoding="async"><figcaption>Portrait · Sentimental</figcaption></figure>
-            <figure><img class="hs3-range__img" src="{{ 'hs-example-golden-sentimental-blanket.webp' | asset_url }}" alt="Example blanket art: a repeated pattern of a sleepy golden retriever puppy among leaf sprigs and hearts, in cut-paper collage. Sentimental." width="720" height="720" loading="lazy" decoding="async"><figcaption>Blanket · Sentimental</figcaption></figure>
-            <figure><img class="hs3-range__img" src="{{ 'hs-example-pug-hilarious-mug.webp' | asset_url }}" alt="Example mug art: a pug leaping into autumn leaves with its tongue out, in vintage screenprint. Hilarious." width="720" height="480" loading="lazy" decoding="async"><figcaption>Mug · Hilarious</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-ex-scene-portrait-home.webp' | asset_url }}" alt="Example: a framed portrait of a black Labrador in a truck window, in a bright living room." width="540" height="675" loading="lazy" decoding="async"><figcaption>Portrait · At home</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-ex-scene-blanket-home.webp' | asset_url }}" alt="Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room." width="540" height="675" loading="lazy" decoding="async"><figcaption>Blanket · At home</figcaption></figure>
+            <figure><img class="hs3-range__img" src="{{ 'hs-ex-set-golden.webp' | asset_url }}" alt="Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room." width="540" height="675" loading="lazy" decoding="async"><figcaption>Set · Mug, blanket, portrait</figcaption></figure>
           </div>
           <span class="hs3-example">EXAMPLES</span>
         </section>
@@ -395,7 +395,7 @@
       "type": "checkbox",
       "id": "examples_on",
       "label": "Show the example paintings",
-      "info": "The slider's pictures and the Same slider, every gift strip, from design/examples-2026-10-28/site.json.",
+      "info": "The slider's pictures and the Same slider, every gift strip, from design/examples-2026-10-30-showcase/site.json.",
       "default": true
     },
     {

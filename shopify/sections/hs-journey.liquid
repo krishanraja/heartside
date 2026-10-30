@@ -45,10 +45,14 @@
       "ai": {{ s.ai_on | json }},
       "corePurchase": {{ s.core_purchase | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },
-      "hero": {{ 'hs-example-pug-hilarious-mug.webp' | asset_url | json }},
+      "hero": {{ 'hs-ex-hero-mug.webp' | asset_url | json }},
       "examples": {
-        "screenprint": {{ 'hs-example-pug-warm-portrait.webp' | asset_url | json }},
-        "collage": {{ 'hs-example-golden-sentimental-portrait.webp' | asset_url | json }}
+        "painterly": {{ 'hs-ex-style-painterly.webp' | asset_url | json }},
+        "cinematic": {{ 'hs-ex-style-cinematic.webp' | asset_url | json }},
+        "comic": {{ 'hs-ex-style-comic.webp' | asset_url | json }},
+        "screenprint": {{ 'hs-ex-style-screenprint.webp' | asset_url | json }},
+        "ink": {{ 'hs-ex-style-ink.webp' | asset_url | json }},
+        "collage": {{ 'hs-ex-style-collage.webp' | asset_url | json }}
       },
       "gifts": {
         {%- assign keys = 'mug,blanket,print' | split: ',' -%}
@@ -79,7 +83,7 @@
     <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
     <figure class="hsj-example">
       <span class="hsj-tag">Example</span>
-      <img src="{{ 'hs-example-pug-hilarious-mug.webp' | asset_url }}" alt="Example: a pug leaping into autumn leaves on a mug, in vintage screenprint." width="720" height="480" loading="eager" decoding="async">
+      <img src="{{ 'hs-ex-hero-mug.webp' | asset_url }}" alt="Example: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy, painted for a mug. Warm with a wink." width="720" height="480" loading="eager" decoding="async">
       <figcaption class="hsj-example__note">
         <span class="hsj-example__for">{{ s.example_for }}</span>
         <span class="hsj-example__line">{{ s.example_line }}</span>
@@ -117,9 +121,9 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "text", "id": "example_for", "label": "Example: who it's for", "default": "Pickle's mug for Sam" },
-    { "type": "text", "id": "example_line", "label": "Example: the dog's line", "default": "I take your arrivals very seriously." },
-    { "type": "text", "id": "example_dog", "label": "Example: the dog's name", "default": "Pickle" },
+    { "type": "text", "id": "example_for", "label": "Example: who it's for", "default": "Maple's mug for Sam" },
+    { "type": "text", "id": "example_line", "label": "Example: the dog's line", "default": "I saved your spot. It is also my spot." },
+    { "type": "text", "id": "example_dog", "label": "Example: the dog's name", "default": "Maple" },
     { "type": "textarea", "id": "intro", "label": "Line under the example", "default": "Tell us about your dog. We write a note in their voice and paint them onto a mug, a blanket or a portrait for the person they love." },
     { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
     { "type": "text", "id": "time_line", "label": "Under the button", "default": "Have a photo of your dog on your phone? It takes about 3 minutes." },

@@ -8,9 +8,14 @@
         "product_print": "your-dogs-portrait",
         "core_purchase": true
       }
+    },
+    "showcase": {
+      "type": "hs-showcase",
+      "settings": {}
     }
   },
   "order": [
-    "gift"
+    "gift",
+    "showcase"
   ]
 }

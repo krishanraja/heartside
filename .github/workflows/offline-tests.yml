@@ -84,7 +84,7 @@ jobs:
         run: |
           python3 tools/print-art/test_build.py
           python3 tools/print-art/test_generate.py
-          python3 tools/print-art/example-assets.py --check
+          python3 tools/print-art/showcase-assets.py --check
       - name: Economics
         run: python3 tools/economics/test_net_margin.py
       - name: Mug QC and order QC

@@ -13,6 +13,12 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 30 October: the breed examples
+
+- **Showcase.** `sections/hs-showcase.liquid` (with `assets/hs-showcase.css`, `assets/hs-showcase.js` and `snippets/hs-showcase-fig.liquid`) sits under the first screen on the homepage: photo to painting to gift, six dogs in six styles, each gift in three scenes, one dog in four tones, a set per dog. Its pictures are `assets/hs-ex-*.webp`, built by `tools/print-art/showcase-assets.py` from the growth repository's approved set; `design/examples-2026-10-30-showcase/site.json` records each file's source and output hash and its ledger approval. Every picture carries an Example tag.
+- The first screen's picture and the journey's six style cards use the same set. The pug and golden gallery (`hs-example-*`) is retired.
+- Record and screenshots: `docs/evidence/2026-10-30-showcase/README.md`. Go-live: `docs/review/COWORK-SHOWCASE-GO-LIVE.md`.
+
 ## 28 October, before the fixes (#59, #60 and #62 live; #64 merged, not yet pushed)
 
 Records: `docs/evidence/2026-10-28-product-cart-live.md` and `docs/evidence/2026-10-28-examples-live.md`.

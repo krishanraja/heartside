@@ -51,7 +51,7 @@ python tools/print-art/test_generate.py
 python tools/qc/test_order_qc.py
 python tools/qc/test_mug_qc.py
 python tools/economics/test_net_margin.py
-python tools/print-art/example-assets.py --check
+python tools/print-art/showcase-assets.py --check
 node n8n/build.mjs; git diff --exit-code -- n8n/
 git diff --check
 ```
