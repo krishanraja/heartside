@@ -14,7 +14,7 @@ const chat = read('shopify/sections/hs3-chat.liquid');
 const byId = Object.fromEntries(site.images.map(i => [i.id, i]));
 
 test('every picture records the approved file it came from', () => {
-  assert.equal(site.images.length, 27);
+  assert.equal(site.images.length, 30); // 30 Oct audit: the moods row is four paintings of Maple (one product mockup retired)
   for (const img of site.images) {
     assert.match(img.source_sha256, /^[a-f0-9]{64}$/, img.id);
     assert.match(img.output_sha256, /^[a-f0-9]{64}$/, img.id);

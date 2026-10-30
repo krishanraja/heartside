@@ -97,7 +97,7 @@
       {%- capture price_line -%}
         {%- for k in keys -%}
           {%- assign pid = 'product_' | append: k -%}{%- assign p = s[pid] -%}
-          {%- if p != blank -%}{%- unless forloop.first -%} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
+          {%- if p != blank -%}{%- unless forloop.first %} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
         {%- endfor -%}
       {%- endcapture -%}
       {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }} · Free US shipping</p>{%- endif -%}

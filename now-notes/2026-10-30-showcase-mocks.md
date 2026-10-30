@@ -1,0 +1,7 @@
+Status: The showcase opens on the six sets as a large swipe row, with the line "One painting of your dog, on a mug, a blanket and a framed portrait". "One dog, four moods" shows four paintings of Maple, so only the mood changes. The slider opens on the painting and nudges once toward the gift (reduced motion skips the nudge), and every Example opens large on a tap. The memo bar holds one line from the first paint, which stops a 32px shift at 320 wide, and the homepage price line has its spacing fixed. tools/realphoto/variant_mugs.py and variant_frames.py composite an approved painting onto Printful's own photos of each mug colour and frame finish, with no generation. Their renders, together with the per-breed galleries made from the growth session's approved mockups, are on a review sheet with Krish. Nothing is attached to the products until he approves. Merged to main, not live.
+
+Changed: The 30 October audit found that every gift showed one dog, that colour and finish pictures were missing, and that the sets were small tiles at the bottom. It also found the moods row mixed products and the slider opened on a plain photo. The Teeinblue SDK loads on the homepage from its app embed, not the theme, so it is on CoWork's list.
+
+Next: On Krish's yes, attach the colour, finish and breed pictures to the three products and their variants through the Shopify connector, then read them back with handle-check --warn-media.
+
+North Star check (2026-10-30): holds.
