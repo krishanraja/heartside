@@ -42,7 +42,7 @@
     // where a gift has them. A tone change after artwork exists needs a new version.
     var toneHelp = options && options.toneElsewhere ? 'Tone sets the mood of the painting on every gift and of the words on gifts that have them.' : options && options.wordFree ? 'Tone sets the mood of the painting. This gift has no words.' : 'Tone sets the mood of the painting and the words.';
     // two short sentences on the gift page: the photo step below already says what comes next (28 Oct)
-    if (options && options.nativeUpload && !options.wordFree) toneHelp = 'Tone sets the mood of the painting and the words. For a note in a new tone, go back to Buddy.';
+    if (options && options.nativeUpload && !options.wordFree) toneHelp = 'Tone sets the mood of the painting and the words. You can change it any time before you add the photo.';
     toneHelp += ' After you create artwork, changing the tone means making a new version.';
     var updateHelp = options && options.nativeUpload ? '' : ' Your painting follows these choices when you add your photo on the gift page.';
     status.textContent = toneHelp + updateHelp;

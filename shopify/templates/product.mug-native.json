@@ -56,7 +56,10 @@
           }
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {
+            "text": "<p>Your dog, painted from your photo and wrapped around an 11 oz ceramic mug, with a short note from them beside the painting.</p><p>The inside and handle come in black, dark blue, dark green, pink or red. Each mug is printed for your order.</p>"
+          }
         }
       },
       "block_order": [

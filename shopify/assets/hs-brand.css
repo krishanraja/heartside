@@ -150,7 +150,7 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
 .hs-lost { background: var(--hs-cream); color: var(--hs-ink); font-family: var(--hs-sans); padding: 48px var(--hs-gutter) 72px; text-align: center; }
 .hs-lost__in { max-width: var(--hs-frame); margin: 0 auto; }
 .hs-lost__buddy { width: 112px; margin: 0 auto 20px; }
-.hs-lost h1 { margin: 0; font-family: var(--hs-serif); font-size: clamp(40px, 12vw, 52px); font-weight: 650; line-height: 0.98; letter-spacing: -0.01em; text-transform: none; color: var(--hs-ink); }
+.hs-lost h1 { margin: 0; font-family: var(--hs-sans); font-size: clamp(40px, 12vw, 52px); font-weight: 650; line-height: 0.98; letter-spacing: -0.01em; text-transform: none; color: var(--hs-ink); }
 .hs-lost__text { margin: 16px 0 0; color: var(--hs-body); font-size: 17px; line-height: 1.45; }
 .hs-lost__go { margin: 28px 0 0; }
 .hs-lost__links ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 20px; margin: 12px 0 0; padding: 0; list-style: none; }
@@ -215,7 +215,7 @@ header-component.header {
 .hs-menu__start { display: flex; align-items: center; justify-content: center; min-height: 52px; margin: 8px 0 16px; border-radius: var(--hs-radius-control); background: var(--hs-ink); color: var(--hs-cream); font-size: 17px; font-weight: 600; text-decoration: none; }
 .hs-menu ul { list-style: none; margin: 0; padding: 0; }
 .hs-menu li + li { border-top: 1px solid var(--hs-line); }
-.hs-menu li a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; color: var(--hs-ink); font-family: var(--hs-serif); font-size: 21px; text-decoration: none; }
+.hs-menu li a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; color: var(--hs-ink); font-family: var(--hs-sans); font-weight: 600; font-size: 19px; text-decoration: none; }
 .hs-menu li a span:last-child { font-family: var(--hs-sans); font-size: 16px; color: var(--hs-body); }
 .hs-menu__line { margin: 14px 0 0; font-size: 14px; color: var(--hs-muted); }
 .hs-menu__small { display: flex; gap: 22px; margin: 6px 0 0; }
@@ -247,7 +247,7 @@ html:has(#cart-drawer .theme-drawer__dialog[open]) body {
 #cart-drawer .theme-drawer__close-button { color: var(--hs-ink); }
 .cart-page .cart-title :is(h1, h2),
 #cart-drawer .theme-drawer__title {
-  font-family: var(--hs-serif); font-weight: 650; letter-spacing: -0.01em; text-transform: none; color: var(--hs-ink);
+  font-family: var(--hs-sans); font-weight: 700; letter-spacing: -0.02em; text-transform: none; color: var(--hs-ink);
 }
 .cart-page .cart-title :is(h1, h2) { font-size: 31px; line-height: 1.05; }
 #cart-drawer .theme-drawer__title { font-size: 26px; line-height: 1.1; }
@@ -308,7 +308,7 @@ cart-items-component .quantity-selector { border-radius: var(--hs-radius-field);
 /* the empty cart: Buddy and one line (snippets/cart-products) */
 .hs-cart-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 8px 0 16px; text-align: center; }
 .hs-cart-empty__buddy { width: 96px; }
-.hs-cart-empty__line { margin: 0; font-family: "HS Fraunces", Georgia, serif; font-weight: 650; font-size: 22px; line-height: 1.2; color: var(--hs-ink, #121010); }
+.hs-cart-empty__line { margin: 0; font-family: var(--hs-sans, "HS DM Sans", system-ui, sans-serif); font-weight: 600; font-size: 22px; line-height: 1.2; color: var(--hs-ink, #121010); }
 @media (prefers-reduced-motion: no-preference) { .hs-cart-empty .hs-buddy__ear { animation: hs-ear 3.2s ease-in-out infinite; } }
 
 /* Helio's cart says "Taxes and shipping calculated at checkout." in its own markup; it stays hidden

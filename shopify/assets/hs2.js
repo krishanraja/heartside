@@ -867,7 +867,7 @@
       });
     }
     if (!(dog && state.hs3_lines)) {
-      if (line) line.textContent = journeyCard.here ? "Fill it in below. I'll be right here." : "Hi, I'm Buddy. I help dogs pick gifts for their people.";
+      if (line) line.textContent = journeyCard.here ? "Fill it in below. I'll be right here." : "Painted from your dog's photo, with a note in their voice.";
       if (intro) intro.hidden = !!journeyCard.here;
       if (card) card.hidden = true;
       return;
@@ -1643,6 +1643,15 @@
   /* The portrait signs itself: artwork 1378371 prints "Love, " and the Dog's name field, and has no
      Signed field (the 23 Oct design, kept on 28 Oct). So a line under that field says what will be
      signed, as they type, and from 11 letters how many still fit (Signed holds 20: "Love, " + 14). */
+  // the campaign's note placeholder still names the old chat ("Your words from the chat with Buddy");
+  // the homepage is the journey now, so the field says what it is (audit, 30 Oct)
+  function notePlaceholder() {
+    tibFields().forEach(function (f) {
+      if (f.rule.k !== 'line4') return;
+      var inp = f.el.querySelector('textarea, input[type="text"]');
+      if (inp && /buddy|chat/i.test(inp.placeholder || '')) inp.placeholder = 'Your note, a line or two';
+    });
+  }
   function portraitSignLine() {
     if (!document.querySelector('#buy[data-hs2-artwork-kind="print"]')) return;
     var field = tibFields().filter(function (f) { return f.rule.k === 'dog'; })[0];
@@ -2315,6 +2324,7 @@
     // Teeinblue may draw its agreement box again, unticked: it follows ours on every redraw
     syncTibAgreement(!!blanketAcceptedKey && blanketReviewAccepted());
     portraitSignLine();
+    notePlaceholder();
   }
   function tibGallery() {
     var box = document.querySelector('[data-hs2-tib-gallery]'), media = document.querySelector('[data-hs2-media]');

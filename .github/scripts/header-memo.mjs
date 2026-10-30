@@ -3,8 +3,9 @@
 // announcement bar is hidden, not deleted, so it can be switched back on in the
 // theme editor. Used by .github/workflows/shopify-theme-push.yml when
 // "header_memo_bar" is ticked. Optionally it also sets the memo's two store-wide switches:
-// --bundle on|off (show the bundle saving; only once the Shopify discount exists) and
-// --artist <product handle>|none (the Artist's touch add-on product). Every other memo
+// --bundle on|off (show the bundle saving; only once the Shopify discount exists),
+// --artist <product handle>|none (the Artist's touch add-on product) and --deadline
+// YYYY-MM-DD|none (the last order date for Christmas, which the countdowns read). Every other memo
 // setting, including the theme editor's, stays as it is.
 //
 //   node .github/scripts/header-memo.mjs path/to/sections/header-group.json [--bundle on] [--artist artists-touch]
@@ -12,9 +13,10 @@ import fs from 'node:fs';
 
 const file = process.argv[2];
 const flag = (name) => { const i = process.argv.indexOf('--' + name); return i > -1 ? process.argv[i + 1] : undefined; };
-const bundle = flag('bundle'), artist = flag('artist');
+const bundle = flag('bundle'), artist = flag('artist'), deadline = flag('deadline');
 if (bundle !== undefined && !['on', 'off'].includes(bundle)) throw new Error('--bundle takes on or off');
 if (artist !== undefined && !/^(none|[a-z0-9][a-z0-9-]{0,99})$/.test(artist)) throw new Error('--artist takes a product handle or none');
+if (deadline !== undefined && !/^(none|\d{4}-\d{2}-\d{2})$/.test(deadline)) throw new Error('--deadline takes YYYY-MM-DD or none');
 const raw = fs.readFileSync(file, 'utf8');
 // Shopify starts files it writes with a /* comment */, which JSON.parse rejects
 const comment = (raw.match(/^\s*\/\*[\s\S]*?\*\//) || [''])[0];
@@ -56,6 +58,14 @@ if (artist !== undefined) {
   if ((settings.artist_touch_product || '') !== want) {
     if (want) settings.artist_touch_product = want; else delete settings.artist_touch_product;
     changes.push(want ? `Artist's touch add-on: ${want}` : "Artist's touch add-on cleared");
+  }
+}
+if (deadline !== undefined) {
+  // the countdowns read only YYYY-MM-DD (hs2.js parseISO); anything else counts to Christmas morning
+  const want = deadline === 'none' ? '' : deadline;
+  if ((settings.deadline || '') !== want) {
+    if (want) settings.deadline = want; else delete settings.deadline;
+    changes.push(want ? `last order date for Christmas: ${want}` : 'last order date cleared');
   }
 }
 

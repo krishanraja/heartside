@@ -55,3 +55,14 @@ test('a bad switch value stops before writing', () => {
     assert.notEqual(r.status, 0, args.join(' ')); assert.equal(fs.readFileSync(f, 'utf8'), before);
   }
 });
+
+// audit, 30 Oct: the live memo held "Dec 11", which the countdowns can't read, so every page counted to
+// Christmas morning and never said when to order. --deadline writes the one form they read.
+test('--deadline sets the last order date in the form the countdowns read, and none clears it', () => {
+  const f = file(); let r = run(f, '--deadline', '2026-12-10');
+  assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /last order date for Christmas: 2026-12-10/);
+  assert.equal(read(f).sections.hs2_memo.settings.deadline, '2026-12-10');
+  r = run(f, '--deadline', 'Dec 10'); assert.notEqual(r.status, 0, 'only YYYY-MM-DD');
+  r = run(f, '--deadline', 'none'); assert.equal(r.status, 0, r.stderr);
+  assert.equal('deadline' in read(f).sections.hs2_memo.settings, false);
+});

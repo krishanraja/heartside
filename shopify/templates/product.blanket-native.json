@@ -55,7 +55,10 @@
           }
         },
         "description": {
-          "type": "description"
+          "type": "description",
+          "settings": {
+            "text": "<p>Your dog, painted again and again across a 50 × 60 inch blanket: soft fleece on the printed side, warm sherpa on the back.</p><p>No words on this one, just your dog. Each blanket is made for your order.</p>"
+          }
         }
       },
       "block_order": [

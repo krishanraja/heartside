@@ -194,3 +194,12 @@ html:has(.hsj) .shopify-section-group-footer-group, html:has(.hsj) .footer-group
   .hsj-style__art { aspect-ratio: 1 / 1; }
   .hsj-hook .hsj-small, .hsj-legal { text-align: left; }
 }
+
+/* the price line under the hook's button (audit, 30 Oct): every gift's price before any question */
+.hsj-hook .hsj-price { margin-top: 10px !important; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink); text-align: center; }
+@media (max-height: 600px) { .hsj-hook .hsj-price { margin-top: 6px !important; font-size: 12px; line-height: 16px; } }
+@media (min-width: 900px) { .hsj-hook .hsj-price { text-align: left; } }
+/* the price line takes about 44 px of the hook's height, so the example gives it back: the hook still fits one screen */
+.hsj-hook:has(.hsj-price) .hsj-example img { height: clamp(72px, calc(100svh - 544px), 300px); }
+@media (min-height: 701px) { .hsj-hook:has(.hsj-price) .hsj-example img { height: clamp(88px, calc(100svh - 614px), 300px); } }
+@media (min-width: 900px) { .hsj-hook:has(.hsj-price) .hsj-example img { height: auto; } }

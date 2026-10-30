@@ -79,7 +79,7 @@ const product = `<div class="hs2"><div class="hs2-wrap hs2-product hs2-product--
 <div class="teeinblue-item"><div class="vm--container" style="position:fixed;inset:0"><div class="vm--modal" style="position:absolute;top:40px;left:-120px;width:600px;height:480px"><div class="tee-dialog-image-cropper"><img src="/crop.png" alt="" width="560" height="420"></div></div></div></div>`;
 const fns = () => ['relabelOptions', 'tibChrome', 'syncTibAgreement', 'tibGallery', 'tibSlideShown'].map(section).join('\n');
 const stubs = `var state={hs3_lines:{meaning:'x'}}, blanketAcceptedKey='';
-  function nativeArtworkPurchase(){return true;} function blanketReviewAccepted(){return false;} function portraitSignLine(){}
+  function nativeArtworkPurchase(){return true;} function blanketReviewAccepted(){return false;} function portraitSignLine(){} function notePlaceholder(){}
   function v3Kind(){return 'mug';} function blanketArtPreview(){return false;} function previewHasArt(){return false;}`;
 
 for (const minified of [false, true]) {
@@ -162,7 +162,7 @@ test('a buyer from the chat never sees the direct-visit offer flash up before hs
   const journey = await engine.parseAndRender(readFileSync(new URL('shopify/snippets/hs-journey.liquid', root), 'utf8'), {s: {native_artwork_kind: 'mug'}, routes: {root_url: '/'}});
   // what the page shows at its first paint: read as soon as the parser has passed the card
   const html = `<!doctype html><html><head><style>${css}</style></head><body>${journey}<script>window.firstPaint={intro:document.querySelector('[data-hs-journey-intro]').hidden,line:document.querySelector('[data-hs-journey-line]').textContent};</script></body></html>`;
-  for (const [saved, want] of [[{dog: 'Mochi', hs3_lines: {meaning: 'x'}}, {intro: true, line: 'Getting your mug ready.'}], [{dog: 'Mochi'}, {intro: false, line: "Hi, I'm Buddy. I help dogs pick gifts for their people."}], [null, {intro: false, line: "Hi, I'm Buddy. I help dogs pick gifts for their people."}]]) {
+  for (const [saved, want] of [[{dog: 'Mochi', hs3_lines: {meaning: 'x'}}, {intro: true, line: 'Getting your mug ready.'}], [{dog: 'Mochi'}, {intro: false, line: "Painted from your dog's photo, with a note in their voice."}], [null, {intro: false, line: "Painted from your dog's photo, with a note in their voice."}]]) {
     const {page, offsite, errors} = await open(html, {width: 390, height: 844, init: saved ? `sessionStorage.setItem('hs2-review', ${JSON.stringify(JSON.stringify(saved))})` : undefined});
     try {
       assert.deepEqual(await page.evaluate(() => window.firstPaint), want, JSON.stringify(saved));
