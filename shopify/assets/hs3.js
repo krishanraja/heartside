@@ -85,7 +85,7 @@
     var letters = x.replace(/[^A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/g, '');
     var lower = x === x.toLowerCase() && x !== x.toUpperCase();
     var upper = x === x.toUpperCase() && x !== x.toLowerCase() && letters.length > 2;
-    if (!lower && !upper) return x.charAt(0).toUpperCase() + x.slice(1);
+    if (!lower && !upper) return (x.charAt(0).toUpperCase() + x.slice(1)).replace(/([- ][a-z])/g, function (part) { return part.toUpperCase(); });
     return x.toLowerCase().split(/([ \-])/).map(function (part) {
       if (part === ' ' || part === '-' || !part) return part;
       var t = part.charAt(0).toUpperCase() + part.slice(1);
@@ -295,13 +295,27 @@
   /* The n8n code runner sleeps when the site is quiet, and waking it costs about 1.5 s. A
      tiny {"warm":true} call (no AI, no budget) wakes it, and opens the connection, while the
      buyer is still reading or typing, so the real call answers in about a second. */
-  var warmed = {};
+  /* {"warm":true} wakes n8n's code runner, which stops after ~15-40 s idle; a cold one adds ~1.4 s to the
+     next call (29 Oct, tools/perf). So the page warms while the buyer is busy (typing, the tone slider,
+     a note just shown), at most every 12 s and at most 15 times per workflow on a page, which keeps
+     n8n executions bounded. */
+  var warmed = {}, warmCount = {}, keepTimer = null;
   function warm(url) {
     if (!cfg.ai || !url || !window.fetch) return;
     var now = Date.now();
-    if (warmed[url] && now - warmed[url] < 45000) return;
-    warmed[url] = now;
+    if (warmed[url] && now - warmed[url] < 12000) return;
+    if ((warmCount[url] || 0) >= 15) return;
+    warmed[url] = now; warmCount[url] = (warmCount[url] || 0) + 1;
     try { window.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"warm":true}', credentials: 'omit', mode: 'cors', keepalive: true }).catch(function () {}); } catch (e) { /* old browser */ }
+  }
+  // after a note is shown, a buyer often tries another tone within a minute: stay warm for it
+  function keepWarm(url, times) {
+    clearTimeout(keepTimer);
+    if (!times) return;
+    keepTimer = setTimeout(function () {
+      if (S.screen !== 'reveal' || (document.visibilityState && document.visibilityState !== 'visible')) return;
+      warm(url); keepWarm(url, times - 1);
+    }, 12000);
   }
   // the buyer's own words, cut only where a sentence or clause ends (22 Oct: a cut at 43 characters
   // printed "Always ready to run, walk and fetch. Not."); the same rule as n8n/shared.js
@@ -545,6 +559,7 @@
     var lines = {};
     ['home', 'spot', 'together', 'meaning'].forEach(function (k) { var l = r.lines && dogStyle(r.lines[k], k); if (l) lines[k] = l; });
     S.composeRequest = null;
+    keepWarm(cfg.composeUrl, 4);
     if (Object.keys(lines).length !== 4 || (request.rewrite && r.source && r.source !== 'ai') || (request.tone === 'hilarious' && Array.isArray(r.flags) && r.flags.indexOf('grief') !== -1)) {
       ui.toneStatus = 'Could not rewrite this note. Your words are unchanged.';
     } else {
@@ -1065,7 +1080,7 @@
       // a line the buyer has read; if Buddy's note later differs, the note says so
       if (open && meaning) S.noteSeen = meaning;
       h += '<details class="hs3-note-wrap"' + (open ? ' open' : '') + ' data-hs3-notebox><summary class="hs3-label">What ' + esc(n.dog) + ' is writing<span class="hs3-note-wrap__more" aria-hidden="true">' + (facts.length ? facts.length + ' to paint' : '') + '</span></summary>';
-      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
+      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? (n.self ? 'you' : n.rec) : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
       h += '<div class="hs3-note__lines">' + (meaning ? '<div class="hs3-line hs3-ink' + (fresh_ ? ' hs3-ink--new' : '') + '">' + esc(meaning) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>') + '</div>' + sign(n) + '</div>';
       h += '<div class="hs3-paint"><div class="hs3-label">What I\'ll paint</div>' + (facts.length ? '<ul class="hs3-paint__list">' + facts.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '<p class="hs3-small">' + esc(n.dog) + ', just as ' + n.she + ' ' + n.is + '. Your answers add the details.</p>') + '</div></details>';
     } else if (!cfg.artworkCandidates) {
@@ -1075,7 +1090,7 @@
         return t ? '<div class="hs3-line hs3-ink' + (fresh2 ? ' hs3-ink--new' : '') + '">' + esc(t) + '</div>' : '<div class="hs3-line hs3-pencil" aria-hidden="true">_______________________</div>';
       }).join('');
       h += '<div class="hs3-note-wrap"><div class="hs3-label">' + esc(S.step >= 3 ? 'What ' + n.dog + ' wants ' + n.rec + ' to know' : 'What ' + n.dog + ' wants to say') + '</div>';
-      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? n.rec : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
+      h += '<div class="hs3-note"><div class="hs3-note__head"><div class="hs3-note__for">For ' + esc(S.step >= 3 ? (n.self ? 'you' : n.rec) : '________') + '</div>' + img('Your dog', 'hs3-photo--note') + '</div>';
       h += '<div class="hs3-note__lines">' + note + '</div>' + sign(n) + '</div>';
       h += '<div class="hs3-onany"><div class="hs3-small">At the end, put these words on any gift you like:</div>' + pills() + '</div></div>';
     }
@@ -1193,7 +1208,7 @@
       // a line the buyer already read that changed says so here (28 Oct)
       var w = writing('meaning'), line = lineFor('meaning') || '';
       if (!w && line) S.noteSeen = line;
-      h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.rec) + '</div><div class="hs3-note__lines">' + (w ? '<span class="hs3-line hs3-pencil" data-hs3-writing>Buddy is writing your note…</span>' : '<span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(line) + '</span>') + '</div>' + sign(n) + (!w && S.notePolished && !(S.edits && S.edits.meaning != null) ? '<p class="hs3-small" data-hs3-polished>Buddy polished this.</p>' : '') + '</div>';
+      h += '<div class="hs3-note hs3-note--print"><div class="hs3-note__for">For ' + esc(n.self ? 'you' : n.rec) + '</div><div class="hs3-note__lines">' + (w ? '<span class="hs3-line hs3-pencil" data-hs3-writing>Buddy is writing your note…</span>' : '<span class="hs3-line ' + (ui.revealN > 0 ? 'hs3-ink' : 'hs3-pencil') + '">' + esc(line) + '</span>') + '</div>' + sign(n) + (!w && S.notePolished && !(S.edits && S.edits.meaning != null) ? '<p class="hs3-small" data-hs3-polished>Buddy polished this.</p>' : '') + '</div>';
     }
     // what gets painted: open on a wide screen, one tap away on a phone so the button stays in view
     var facts = paintFacts(n);
@@ -1511,7 +1526,7 @@
   function sendTyped(text) {
     text = String(text || '').trim();
     if (!text) return;
-    ui.typing = false; ui.echo = text; ui.flagged = '';
+    ui.typing = false; ui.echo = window.HSArtworkProfile ? window.HSArtworkProfile.tidy(text) : text.replace(/!+/g, '.'); ui.flagged = '';
     var key = ({ 3: 'home', 4: 'spot', 5: 'together', 6: 'meaning' })[S.step];
     if (S.step === 3 && S.more && S.fu) { followAnswer(text, false); return; }
     stepEvent('answered', { kind: 'typed' });
@@ -1641,7 +1656,7 @@
   // Start over: a fresh chat, nothing kept from the last one (the photo is deleted from this device)
   function restart() {
     S = fresh();
-    try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
+    try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); window.sessionStorage.removeItem('hs-artwork-choices-v1'); } catch (e) { /* private mode */ }
     idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
     if (photoURL) { URL.revokeObjectURL(photoURL); photoURL = null; }
     applyRoute('dog'); stepEvent('shown');
@@ -1656,7 +1671,7 @@
       var k = inp.getAttribute('data-hs3-in');
       inp.addEventListener('input', function () {
         inp.classList.remove('is-need');
-        if (k === 'typed') { clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
+        if (k === 'typed') { warm(cfg.typedUrl); clearTimeout(specTimer); specTimer = setTimeout(function () { speculate(inp.value); }, 600); }
         if (k === 'dog' || k === 'rec') { S[k] = inp.value.slice(0, k === 'dog' ? 40 : NAME_MAX); save(); nameHint(k); }
         if (k === 'breed') breedTyped(inp);
         if (k === 'toy' || k === 'accessory') { S[k] = inp.value.slice(0, 80); save(); }
@@ -1704,6 +1719,7 @@
     if (cfg.artworkCandidates && window.HSArtworkChoices) window.HSArtworkChoices.mount(frame.querySelector('[data-hs-art-choices]'), {toneElsewhere: true});
     if (tone) {
       tone.addEventListener('input', function () {
+        warm(cfg.composeUrl);
         var name = ['Sentimental', 'Warm with a wink', 'Hilarious'][Number(tone.value)] || 'Warm with a wink';
         tone.setAttribute('aria-valuetext', name);
         var label = frame.querySelector('[data-hs3-tone-name]'); if (label) label.textContent = name;
@@ -1794,7 +1810,7 @@
     try { q = new URLSearchParams(window.location.search); } catch (e) { /* old browser */ }
     if (q && q.get('hs3') === 'reset') {
       S = fresh();
-      try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); } catch (e) { /* private mode */ }
+      try { window.sessionStorage.removeItem(HS2); window.sessionStorage.removeItem(QKEY); window.sessionStorage.removeItem('hs-artwork-choices-v1'); } catch (e) { /* private mode */ }
       idb('readwrite', function (st) { return st.delete(PHOTO); }).catch(function () {});
       save();
     }

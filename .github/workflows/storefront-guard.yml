@@ -21,6 +21,21 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+    inputs:
+      acceptance:
+        description: "Run the three read-only acceptance gates instead of the hourly catalog monitor"
+        type: boolean
+        default: false
+      theme_id:
+        description: "Unpublished theme ID; leave empty only for the final production checks"
+        required: false
+        default: ""
+        type: string
+      warn_media:
+        description: "Allow the known checkout-media warnings before the live release"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -32,6 +47,7 @@ concurrency:
 
 jobs:
   check:
+    if: github.event_name != 'workflow_dispatch' || !inputs.acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -110,3 +126,83 @@ jobs:
         run: |
           echo "::error::handle-check.mjs did not finish (see the log above)."
           exit 1
+
+  acceptance:
+    if: github.event_name == 'workflow_dispatch' && inputs.acceptance
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      # GitHub prints a job's env before the first step runs, so the theme id is read from the
+      # event and masked here, then exported, instead of sitting in the job's env (29 Oct: it showed
+      # once, unmasked, in the env dump of the first step)
+      - name: Keep the theme id out of the log
+        run: |
+          id=$(jq -r '.inputs.theme_id // ""' "$GITHUB_EVENT_PATH")
+          if [ -n "$id" ]; then echo "::add-mask::$id"; fi
+          echo "THEME_ID=$id" >> "$GITHUB_ENV"
+      - name: Validate and mask target
+        run: |
+          if [ -n "$THEME_ID" ]; then
+            echo "::add-mask::$THEME_ID"
+            [[ "$THEME_ID" =~ ^[0-9]+$ ]] || exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install the existing gate dependencies
+        working-directory: tools/preview
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Preview acceptance
+        id: preview
+        continue-on-error: true
+        working-directory: tools/preview
+        run: |
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--theme "$THEME_ID"); fi
+          node preview-acceptance.mjs "${args[@]}"
+      - name: Live presentation gate
+        id: presentation
+        continue-on-error: true
+        working-directory: tools/preview
+        run: |
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--query "preview_theme_id=$THEME_ID"); fi
+          node live-gate.mjs "${args[@]}"
+      - name: Catalog and address gate
+        id: catalog
+        continue-on-error: true
+        working-directory: tools/preview
+        env:
+          WARN_MEDIA: ${{ inputs.warn_media }}
+        run: |
+          args=()
+          if [ -n "$THEME_ID" ]; then args+=(--theme "$THEME_ID"); fi
+          if [ "$WARN_MEDIA" = "true" ]; then args+=(--warn-media); fi
+          node handle-check.mjs "${args[@]}"
+      - name: Preserve anonymous gate screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-gate-screenshots
+          path: |
+            tools/preview/out/acceptance/*.png
+            tools/preview/out/gate/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Require all three gates
+        if: always()
+        env:
+          PREVIEW: ${{ steps.preview.outcome }}
+          PRESENTATION: ${{ steps.presentation.outcome }}
+          CATALOG: ${{ steps.catalog.outcome }}
+        run: |
+          echo "Preview acceptance: $PREVIEW" >> "$GITHUB_STEP_SUMMARY"
+          echo "Presentation gate: $PRESENTATION" >> "$GITHUB_STEP_SUMMARY"
+          echo "Catalog gate: $CATALOG" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Exit 2 is inconclusive and never a pass. Read individual logs for the exact exit code.' >> "$GITHUB_STEP_SUMMARY"
+          [ "$PREVIEW" = "success" ] && [ "$PRESENTATION" = "success" ] && [ "$CATALOG" = "success" ]

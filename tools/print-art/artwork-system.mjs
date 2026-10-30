@@ -95,6 +95,192 @@ export function energyFor(lookup) {
   return Object.hasOwn(recipes.energy.byArchetype, lookup.tone) ? recipes.energy.byArchetype[lookup.tone] : null;
 }
 
+// The directed brief (v10, 29 Oct; the growth session's control test): what the storefront writes
+// into the three hidden fields the native prompt reads. Energy carries the one identity line (and,
+// since v15, the breed's character for the chosen tone), Tone direction the scene the tone stages
+// (pose, camera, light) from the buyer's own answers, Style direction the medium as material, with the
+// dog made of it. Answers are the journey's chip ids; anything else is the buyer's own words and is
+// quoted. Ruling (Krish, 2026-10-29): Hilarious may use theatrical staging; it never invents the dog's
+// toys, food, clothes, habits or places. Every worn item is plain and solid-colored.
+const BRIEF_PRON = {she: ['she', 'her', 'her', 'is', 'takes', 'sits', 'carries'], he: ['he', 'him', 'his', 'is', 'takes', 'sits', 'carries'], they: ['they', 'them', 'their', 'are', 'take', 'sit', 'carry']};
+const BRIEF_FORMAT = {mug: 'mug', portrait: 'portrait', print: 'portrait', blanket: 'blanket', card: 'card'};
+const briefCap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const briefPlain = (t, max) => String(t == null ? '' : t).replace(/["“”<>{}\[\]\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+const briefBare = t => briefPlain(t, 80).replace(/^(a|an|the|my|her|his|their)\s+/i, '').replace(/\s+and\s+(a|an|the)\s+/gi, ' and ');
+// the owner's toy wording is kept as said (v11): "a tennis ball in his mouth" stays in his mouth; only
+// wording with no verb or place of its own gets "with his ..."; the trophy is the toy itself, its
+// importance in how it is carried, never its size or a held pose
+function briefToy(o) {
+  const raw = briefPlain(o.toys || o.toy || '', 160);
+  const held = /\b(in|at|on|under|between|beside|across|by|hugged|hugging|holding|carrying|clutching|chewing|guarding|tucked|balanced|as a)\b/i.test(raw);
+  const toy = held ? raw : briefBare(raw);
+  const trophy = raw.split(/\s+and\s+/).map(t => briefBare(t.replace(/\s+(?:far\s+)?too\s+(?:big|large|small)\b.*$/i, '')
+    .replace(/\s+(?:in|at|on|under|between|beside|across|by|tucked|balanced|as|hugged|held)\b.*$/i, ''))).filter(Boolean).join(' and ');
+  return {raw, held, toy, trophy};
+}
+// The breed corpus archetype for the character layer (v15), by the same rule as energyFor: an exact
+// match only; a named cross only when both parents resolve exactly to one archetype (Ruling, Krish,
+// 2026-10-28). Never a fact, never shown to the buyer.
+export function characterFor(lookup) {
+  const known = recipes.brief.character.archetypes;
+  if (!lookup || lookup.exact !== true || lookup.kind === 'mixed' || typeof lookup.tone !== 'string') return null;
+  if (lookup.kind === 'crossbreed') {
+    const parents = lookup.parents;
+    if (!Array.isArray(parents) || parents.length !== 2 || parents.some(p => !p || p.kind === 'crossbreed')) return null;
+    const [first, second] = parents.map(characterFor);
+    return first !== null && first === second ? first : null;
+  }
+  return Object.hasOwn(known, lookup.tone) ? lookup.tone : null;
+}
+// The scene composer (v15): every stated answer (what they do together, the dog's spot, what it does
+// when they get home, what it is to them) is a candidate for the Hilarious joke or the Over the top
+// roast. Each scores its tone's strength for that answer, plus the archetype's fit when the archetype
+// has its own take on it and rulings.archetypeScenes is on. The highest wins; a tie goes to the tone's
+// own order of answers. Deterministic: the same inputs always give the same scene.
+export function composeScene(input) {
+  const b = recipes.brief, o = input || {}, c = b.compose, tone = o.tone;
+  if (tone !== 'hilarious' && tone !== 'over_the_top') return null;
+  const table = tone === 'hilarious' ? b.scene.joke : b.scene.roast;
+  const rulings = b.character.rulings;
+  const archetype = typeof o.archetype === 'string' && Object.hasOwn(b.character.archetypes, o.archetype) ? o.archetype : null;
+  const own = archetype && rulings.archetypeScenes ? b.character.archetypes[archetype].scenes[tone] || {} : {};
+  const {trophy} = briefToy(o);
+  const candidates = [];
+  c.order[tone].forEach((slot, rank) => {
+    const answer = o[slot];
+    if (typeof answer !== 'string' || !answer) return;
+    const key = c.keys[slot] && Object.hasOwn(c.keys[slot], answer) ? c.keys[slot][answer] : null;
+    if (!key) return;
+    const mine = Object.hasOwn(own, key) && !(own[key].needsToy && !trophy) ? own[key] : null;
+    const base = Object.hasOwn(table, key) && !(c.needsToy.includes(key) && !trophy);
+    if (!mine && !base) return;
+    candidates.push({slot, key, rank, source: mine ? 'archetype' : 'base', score: (c.strength[tone][key] || 0) + (mine ? mine.fit : 0),
+      text: mine ? mine.text : table[key], short: (mine ? mine.short : c.short[tone][key] || '').replace('{toy}', trophy),
+      placeless: mine ? !!mine.placeless : c.placeless.includes(key), prop: mine && rulings.jokeProp && tone === 'hilarious' && mine.prop ? mine.prop : ''});
+  });
+  candidates.sort((x, y) => y.score - x.score || x.rank - y.rank);
+  return {archetype, pick: candidates[0] || null, candidates};
+}
+export function briefFields(input) {
+  const b = recipes.brief, o = input || {};
+  if (!Object.hasOwn(b.styles, o.style) || !Object.hasOwn(b.tones, o.tone)) throw new Error('Unsupported style or tone');
+  const p = BRIEF_PRON[o.pronoun] || BRIEF_PRON.they;
+  const cap = briefCap, plain = briefPlain;
+  const {raw: toyRaw, held: toyHeld, toy, trophy} = briefToy(o);
+  const fill = t => t.replace(/\{(\w+)\}/g, (m, k) => ({sub: p[0], obj: p[1], pos: p[2], is: p[3], takes: p[4], sits: p[5], carries: p[6], sub_cap: cap(p[0]), pos_cap: cap(p[2]), toy: toy}[k] ?? m));
+  const toyItem = !toy ? '' : toyHeld ? toyRaw : 'with {pos} {toy}';
+  const wear = briefBare(o.accessory || '');
+  const wearItem = wear ? 'wearing a plain, solid-colored ' + wear + ' with no pattern' : '';
+  // a chip id reads from the table; the buyer's own words are quoted, never followed
+  const pick = (table, v) => !v ? '' : Object.hasOwn(table, v) ? table[v] : 'in the owner\'s words: "' + plain(v, 120) + '"';
+  const sc = b.scene, tone = b.tones[o.tone], parts = [], format = BRIEF_FORMAT[o.format], fmt = b.formats[format];
+  const archetype = typeof o.archetype === 'string' && Object.hasOwn(b.character.archetypes, o.archetype) ? o.archetype : null;
+  // what the dog is to them (v15): a chip shapes the Sentimental and Warm expression
+  const feeling = o.meaning && sc.meaning[o.tone] && Object.hasOwn(sc.meaning[o.tone], o.meaning) ? sc.meaning[o.tone][o.meaning] : '';
+  const given = o.together || o.spot || o.home;
+  // one place per scene (v12): a spot and an activity in different places (at her feet, out on the
+  // walk) never share a scene; Sentimental and Over the top keep the spot, Warm and Hilarious the activity
+  const clash = !!(o.spot && o.together && Object.hasOwn(sc.fits, o.together) && Object.hasOwn(sc.spot, o.spot) && !sc.fits[o.together].includes(o.spot));
+  const composed = composeScene({...o, archetype});
+  const chosen = composed && composed.pick;
+  let staging, place = '', toyInJoke = false, prop = '', figure = '';
+  if (o.tone === 'sentimental') {
+    // resting: the dog's spot, with a calm together moment; never an active one (a walk, a car ride)
+    if (o.together && /^(naps|movie|coffee)$/.test(o.together) && !clash) parts.push(pick(sc.together, o.together));
+    if (o.spot) parts.push(pick(sc.spot, o.spot));
+    staging = parts.length ? parts.join(', ') : 'settled in a simple, calm spot at home';
+  } else if (o.tone === 'warm') {
+    const key = o.together || o.home;
+    if (key) parts.push(pick(sc.moment, key));
+    // one moment: a spot only when there is no moment, so a walk never lands on the couch
+    if (o.spot && !parts.length) parts.push(pick(sc.spot, o.spot));
+    staging = parts.length ? parts.join(', ') : 'a happy everyday moment at home';
+  } else if (o.tone === 'hilarious') {
+    // v15: the composer picks the joke from every stated answer; the toy joke only when no answer gave one
+    const key = chosen ? chosen.key : given ? 'none' : toy ? 'toy' : 'none';
+    const text = chosen ? chosen.text : sc.joke[key];
+    // v13: a named toy on the walk is carried like a trophy, and with no toy the stride stays without it
+    if (key === 'walk' && chosen && chosen.source === 'base' && trophy) { staging = text + sc.jokeToy.walk.replace('{toy}', trophy); toyInJoke = true; }
+    else if (key !== 'toy' && /\{toy\}/.test(text)) { staging = text.replace('{toy}', trophy); toyInJoke = true; }
+    else staging = text.replace('{pos} {toy}', toyHeld ? toyRaw : '{pos} {toy}');
+    if (chosen && chosen.prop) { prop = chosen.prop; staging += ', ' + prop; }
+    // a premise with no place of its own is staged where they spend the time, or else the dog's spot (v12: one place)
+    if (chosen && chosen.placeless) { const where = pick(sc.together, o.together) || pick(sc.spotSolo, o.spot); if (where) staging += ', ' + where; }
+    // typed answers are quoted; a home chip with no joke of its own (brings, with no toy named) adds nothing
+    const typed = !chosen && key === 'none' && given ? [pick(sc.spotSolo, o.spot), pick(sc.together, o.together), Object.hasOwn(b.compose.keys.home, o.home || '') ? '' : pick(sc.home, o.home)].filter(Boolean).join(', ') : '';
+    if (typed) staging += ', ' + typed;
+    // the blanket's figures carry no setting (v15), so an archetype take that names a place falls back to the tone's own
+    const own = chosen && !/\b(couch|bed|rug|walk|car|coffee|movie|door|doorway|table|room|floor|lens|camera)\b/i.test(chosen.short) ? chosen.short : '';
+    const shorts = b.compose.short.hilarious;
+    figure = own || (shorts[chosen ? chosen.key : key] || shorts[key] || shorts.none).replace('{toy}', trophy);
+  } else {
+    // Over the top crowns the dog's own spot first, and always keeps the stated place in the scene
+    // a toy the owner already placed (in his mouth) keeps its place, so it never rests on the cushion
+    const key = chosen ? chosen.key : toy && !toyHeld ? 'toy' : 'none';
+    const text = chosen ? chosen.text : sc.roast[key];
+    staging = key !== 'toy' && /\{toy\}/.test(text) ? text.replace('{toy}', trophy) : text;
+    toyInJoke = key !== 'toy' && /\{toy\}/.test(text);
+    // the royal portrait is shot low, so the person stays out of it (v13)
+    place = [pick(sc.spotSolo, o.spot), clash ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
+  }
+  const comic = o.tone === 'hilarious' || o.tone === 'over_the_top';
+  const inStaging = toyInJoke || /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));
+  const items = [toy && !(comic && inStaging) ? toyItem : '', wearItem].filter(Boolean);
+  const character = archetype ? ' ' + b.character.line.replace('{line}', b.character.archetypes[archetype].tones[o.tone]) : '';
+  const breed = plain(o.breed, 60).replace(/\b(mixed|mix|not sure|unknown)\b.*$/i, '').trim();
+  const fields = toneText => ({
+    Energy: fill(b.identity).replace('{breed}', breed || 'dog') + character,
+    'Tone direction': toneText,
+    'Style direction': b.styles[o.style]
+  });
+  if (format === 'blanket') {
+    // v15 (Krish, 29 Oct: the "dog centipede"): the blanket is a scattered pattern of small, whole,
+    // separate figures on a plain ground, so it carries no setting, place or camera, only the tone's
+    // moment, the toy and the worn item
+    const bl = b.blanket;
+    const moment = fill(bl.moments[o.tone].replace('{figure}', figure)) + (feeling ? ', ' + fill(feeling) : '');
+    const play = trophy && !o.noToy ? fill(bl.toy.replace('{toy}', trophy)) : '';
+    return fields([
+      cap(fill(bl.vary.replace('{moment}', moment).replace('{play}', play))) + '.',
+      fill(bl.same) + (wearItem ? ', every figure ' + wearItem + ', the same color in every figure' : '') + '.',
+      'Light: ' + tone.light,
+      o.noToy ? 'No toys anywhere.' : ''
+    ].filter(Boolean).join(' '));
+  }
+  const scene = fill(staging + (items.length ? ', ' + items.join(', ') : ''));
+  const also = items.map(i => /^(with|wearing) /.test(i) ? 'the dog ' + i : i).join('; ');
+  return fields([
+    cap(fill(tone.pose).replace(/\{joke\}/, fill(staging)).replace(/\{joke_ott\}/, cap(fill(staging)))) + (feeling ? ', ' + fill(feeling) : '') + '.',
+    comic ? (place ? 'Scene: ' + fill(place) + '.' : '') + (items.length ? (place ? ' ' : '') + 'Also in the scene: ' + fill(also) + '.' : '') : 'Scene: ' + scene + '.',
+    'Camera: ' + fill(tone.camera) + '.',
+    'Light: ' + tone.light,
+    cap(fill(prop ? tone.itemsProp : tone.items)) + '.',
+    tone.toy && toyInJoke ? fill(tone.toy) + '.' : '',
+    // v13: the note area lives here, not in the saved frame, so a gift without words is painted edge
+    // to edge; words stay on by default on the formats that carry them until the buyer turns them off
+    fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : '',
+    o.noToy ? 'No toys anywhere.' : ''
+  ].filter(Boolean).join(' ').replace(/\{joke(_ott)?\}/g, ''));
+}
+export function briefPrompt(format) {
+  const f = recipes.brief.formats[BRIEF_FORMAT[format]];
+  if (!f) throw new Error('Unknown format');
+  // v13: the person rule sits beside the avoid line; every gift is the same world seen as its own moment
+  // v15: the blanket's own label and matching-set line, since it has no scene
+  return ['Create a new picture of the dog in this photo, ' + f.shape + '. Medium: {{Style direction}}',
+    '{{Energy}} Change everything else: never reuse the photo\'s pose, angle, light or background.',
+    (f.label || 'Scene and mood') + ': {{Tone direction}}',
+    f.framing + ' ' + (f.world || recipes.brief.world).replace('{variation}', f.variation), recipes.brief.quoted,
+    recipes.brief.person + ' ' + recipes.brief.avoid].join('\n\n');
+}
+// The composed scene in the buyer's words, for the phone's one-sentence brief (hs-brief.js): only when
+// the breed's own take, or an answer about home or what the dog is to them, won the scene; otherwise
+// the phone keeps its own line for what they do together.
+export function sceneShort(input) {
+  const c = composeScene(input), w = c && c.pick;
+  return w && (w.source === 'archetype' || w.slot === 'home' || w.slot === 'meaning') ? w.short : '';
+}
+
 export function newSession(request) {
   return {currentKey: request.imageKey, currentProductKey: request.key, pending: null, lastGood: null, completed: [], reconciliation: []};
 }

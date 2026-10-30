@@ -6,7 +6,7 @@ import {chromium} from 'playwright';
 import {transformSync} from 'esbuild';
 const source=process.env.HS_RESTORED_BASELINE?execFileSync('git',['show',process.env.HS_RESTORED_BASELINE+':shopify/assets/hs2.js'],{cwd:new URL('../../',import.meta.url),encoding:'utf8'}):readFileSync(new URL('../../shopify/assets/hs2.js',import.meta.url),'utf8');
 const section=name=>{const i=source.indexOf('  function '+name+'(');assert.notEqual(i,-1,name);return source.slice(i,source.indexOf('\n  function ',i+1));};
-const functions=['possessive','cityArtSource','cityArtSaved','restoredArtworkKey','restoredArtworkAvailable','restoredArtworkChosen','updateRestoredArtworkReview','blanketPurchaseStatus','blanketReviewKey','invalidateBlanketReview','blanketReviewAccepted','artLines','artStage','nudgeReview','updateBlanketPurchaseStatus','bindBlanketRecovery','guardGiftPhoto','hsProps','withHsProps'].map(section).join('\n');
+const functions=['possessive','cityArtSource','cityArtSaved','restoredArtworkKey','restoredArtworkAvailable','restoredArtworkChosen','updateRestoredArtworkReview','blanketPurchaseStatus','blanketReviewKey','invalidateBlanketReview','blanketReviewAccepted','artPhase','artWords','artElapsed','artStage','nudgeReview','updateBlanketPurchaseStatus','bindBlanketRecovery','guardGiftPhoto','hsProps','withHsProps'].map(section).join('\n');
 let browser;before(async()=>{browser=await chromium.launch({headless:true});});after(async()=>{await browser.close();});
 for(const minified of [false,true])test(`${minified?'minified':'source'}: restored native blanket requires explicit exact-design review, preserves identity and invalidates on changed context`,async()=>{
  const page=await browser.newPage();await page.route('**/*',r=>r.abort());

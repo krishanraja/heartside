@@ -63,7 +63,11 @@ for (const minified of [false, true]) {
     const facts = [{source: 'spot', text: "Rests on their person's side of the bed."}, {source: 'together', text: 'coffee in bed on sundays!!'}];
     const html = card('partner', 'she', facts);
     assert.match(html, /Rests on Alex&#39;s side of the bed\. · Coffee in bed on sundays\./); assert.doesNotMatch(html, /their person|!!/);
-    assert.match(card('self', 'she', facts), /Rests on your side of the bed\./);
+    const selfCard = card('self', 'she', facts);
+    assert.match(selfCard, /Rests on your side of the bed\./);
+    assert.match(selfCard, /Pip for you/);
+    assert.doesNotMatch(selfCard, /Pip for Alex/);
+    assert.match(selfCard, /href="\/\?step=person&amp;return=mug"/);
     assert.match(card('partner', '', []), /Pip, just as they are\./, 'no pronoun tapped reads they');
     assert.match(card('partner', 'he', []), /Pip, just as he is\./);
   });

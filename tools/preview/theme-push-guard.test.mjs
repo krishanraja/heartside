@@ -72,7 +72,10 @@ test('storefront guard: hourly at a jittered minute, read-only contents, one iss
   assert.match(yml, /permissions:\n\s+contents: read\n\s+issues: write/);
   assert.match(yml, /node-version: "20"/);
   assert.match(yml, /node tools\/preview\/handle-check\.mjs/);
-  assert.doesNotMatch(yml, /npm (ci|install)/, 'the check needs no install');
+  assert.doesNotMatch(yml.split('\n  acceptance:\n')[0], /npm (ci|install)/, 'the hourly check needs no install');
+  assert.match(yml, /if: github.event_name == 'workflow_dispatch' && inputs.acceptance/);
+  assert.match(yml, /acceptance:[\s\S]*permissions:\n\s+contents: read/);
+  assert.match(yml, /Require all three gates/);
   assert.doesNotMatch(yml, /secrets\./, 'it needs no secret');
   const tell = step(yml, 'Tell Krish').text;
   assert.match(tell, /if: steps\.check\.outputs\.code == '1'/, 'an issue only when something is broken');

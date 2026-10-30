@@ -1,4 +1,5 @@
-// The gift chat on the homepage (templates/index.json: sections/hs3-chat.liquid, assets/hs3.js),
+// The gift chat, the homepage until 29 Oct and now the rollback at /?view=chat (templates/index.chat.json:
+// sections/hs3-chat.liquid, assets/hs3.js),
 // driven on a phone-sized page against today's catalog: the illustrated mug ($45), the portrait
 // ($59 unframed, $119 framed) and the word-free blanket ($129), each opening its own native
 // product template. Run after render.mjs:   cd tools/preview && node chat.mjs
@@ -100,7 +101,7 @@ async function pickOnly(page, keys) {
 
 // 1. the first screen: today's three gifts at today's prices, nothing retired
 {
-  const { ctx, page, errors, external } = await session('index.html');
+  const { ctx, page, errors, external } = await session('index-chat.html');
   await page.screenshot({ path: path.join(shots, '0-home.png') });
   ok(await page.locator('.hs3-hero__h').innerText() === 'Your dog loves you too.', 'home: headline "Your dog loves you too."');
   ok(await noOverflow(page), 'home: no sideways scroll at 390px');
@@ -117,7 +118,7 @@ async function pickOnly(page, keys) {
 
 // 2. chips only, through the reveal and the choice, to the mug's own page (spec 11.1, timed)
 {
-  const { ctx, page, errors, calls, warms, external } = await session('index.html');
+  const { ctx, page, errors, calls, warms, external } = await session('index-chat.html');
   const t0 = Date.now();
   await tap(page, '[data-hs3-start]');
   ok((await bubble(page)).includes("I'm Buddy"), 'chat step 1: Buddy greets');
@@ -182,7 +183,7 @@ async function pickOnly(page, keys) {
 
 // 3. typed answers with the AI, follow-up, compose (spec 11.2)
 {
-  const { ctx, page, errors, calls } = await session('index.html');
+  const { ctx, page, errors, calls } = await session('index-chat.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Kuku'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Sam'); await tap(page, '[data-hs3="next"]');
@@ -218,7 +219,7 @@ async function pickOnly(page, keys) {
 
 // 4. AI refused or slow: falls back cleanly (spec 11.2), and the all-"Not sure" path (11.4)
 for (const mode of ['fail', 'slow']) {
-  const { ctx, page, errors } = await session('index.html', { ai: mode });
+  const { ctx, page, errors } = await session('index-chat.html', { ai: mode });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Pip'); await page.locator('[data-hs3="pro"][data-v="he"]').click(); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Jo'); await tap(page, '[data-hs3="next"]');
@@ -243,7 +244,7 @@ for (const mode of ['fail', 'slow']) {
   await ctx.close();
 }
 {
-  const { ctx, page } = await session('index.html');
+  const { ctx, page } = await session('index-chat.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Moose'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Ana'); await tap(page, '[data-hs3="next"]');
@@ -269,7 +270,7 @@ for (const mode of ['fail', 'slow']) {
 }
 // 4b. speed: a prepared follow-up chip is instant, and a pause while typing sends the answer early
 {
-  const { ctx, page, calls, errors } = await session('index.html', { ai: 'delay' });
+  const { ctx, page, calls, errors } = await session('index-chat.html', { ai: 'delay' });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Kuku'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Sam'); await tap(page, '[data-hs3="next"]');
@@ -305,7 +306,7 @@ for (const mode of ['fail', 'slow']) {
 // 6. a new gift must not inherit a previous dog's photo, and the native page will not order
 //    without the buyer's own finished artwork
 {
-  const { ctx, page } = await session('index.html');
+  const { ctx, page } = await session('index-chat.html');
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Pip');
   // a real dog photo, big and sharp enough for the on-device photo check (hs-photo-quality.js)
@@ -313,7 +314,7 @@ for (const mode of ['fail', 'slow']) {
   await page.waitForFunction(() => window.__hs3api.state().hasPhoto, null, { timeout: 15000 }).catch(() => {});
   const prior = await page.evaluate(() => window.__hs3api.state());
   ok(prior.hasPhoto && prior.photoT > 0, 'photo: attachment belongs to this gift session');
-  await page.goto(`${base}/index.html?hs3=reset`);
+  await page.goto(`${base}/index-chat.html?hs3=reset`);
   const reset = await page.evaluate(() => window.__hs3api.state());
   const bridge = await page.evaluate(() => sessionStorage.getItem('hs2-review'));
   ok(!reset.hasPhoto && !reset.photoT && !bridge, 'new gift: old photo and bridge are cleared');
@@ -332,7 +333,7 @@ for (const mode of ['fail', 'slow']) {
 }
 // 7. narrow phones and the Instagram in-app height, with long names
 for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
-  const { ctx, page } = await session('index.html', { width: w, height: h });
+  const { ctx, page } = await session('index-chat.html', { width: w, height: h });
   await tap(page, '[data-hs3-start]');
   await page.fill('#hs3-dog', 'Bartholomew123'); await tap(page, '[data-hs3="next"]');
   await page.fill('#hs3-rec', 'Maximiliana12'); await tap(page, '[data-hs3="next"]');
@@ -350,10 +351,10 @@ for (const [w, h] of [[360, 740], [390, 664], [430, 932]]) {
     'choose all three': [{ ...done, sel: { mug: true, blanket: true, print: true } }, 'choose', 'choose'], share: [done, 'card', 'share'],
   };
   for (const [w, h] of [[360, 640], [375, 667], [390, 664], [390, 844], [430, 932], [1280, 720], [1440, 900]]) {
-    const { ctx, page } = await session('index.html', { width: w, height: h });
+    const { ctx, page } = await session('index-chat.html', { width: w, height: h });
     const bad = [];
     for (const [name, [st, step, screen]] of Object.entries(routes)) {
-      await withState(page, st, `index.html${step ? `?step=${step}` : ''}`); await page.waitForTimeout(600);
+      await withState(page, st, `index-chat.html${step ? `?step=${step}` : ''}`); await page.waitForTimeout(600);
       const m = await page.evaluate(() => {
         const f = document.querySelector('.hs3__frame'), r = f.getBoundingClientRect();
         const locked = ['overflow', 'overflowY'].some((p) => getComputedStyle(document.documentElement)[p] === 'hidden' || getComputedStyle(document.body)[p] === 'hidden');

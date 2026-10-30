@@ -91,7 +91,7 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
     // painting: said plainly, still blocked
     await page.evaluate(() => { at.requested = true; at.pending = true; });
     await page.click('#teeAtcButton');
-    assert.equal(adds.length, 0); assert.equal((await note()).text, 'Still painting Honey. About a minute.');
+    assert.equal(adds.length, 0); assert.equal((await note()).text, 'Still painting Honey. Most take 1 to 3 minutes.');
 
     // the painting is in, "Yes, this is Honey." unticked: blocked by mouse and by keyboard, and pointed at the tick
     await page.evaluate(() => { at.pending = false; at.saved = true; document.querySelector('[data-hs2-artwork-accept-wrap]').hidden = false; document.querySelector('[data-hs-art]').hidden = false; document.querySelector('[data-hs-art-done]').hidden = false; });

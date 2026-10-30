@@ -490,10 +490,16 @@ for (const [kind, p] of Object.entries(catalog)) {
   else skipped.push(`${t} (not in the theme)`);
 }
 if (exists('product.portrait-native.json')) written.push(await page('product-portrait-native-unframed.html', 'product.portrait-native.json', ctxFor('product.portrait-native.json', withVariant(portrait, (v) => v.options[0] === 'Unframed'))));
+// the rebuilt journey (29 Oct), previewed at /?view=journey until it replaces the homepage chat
+if (exists('index.journey.json')) written.push(await page('index-journey.html', 'index.journey.json', ctxFor('index.journey.json')));
+// the chat, the homepage until 29 Oct, kept one release for rollback at /?view=chat
+if (exists('index.chat.json')) written.push(await page('index-chat.html', 'index.chat.json', ctxFor('index.chat.json')));
 written.push(await cartPage('cart-empty.html', []));
 written.push(await cartPage('cart.html', [cartLine(mug, mug.variants[0])]));
-// the homepage before its products are picked: the chat says which gift is missing
-written.push(await page('index-noproducts.html', 'index.json', ctxFor('index.json'), (t) => {
+// the chat before its products are picked: it says which gift is missing (the rollback chat's
+// template since 29 Oct, when the journey became the homepage)
+const chatTemplate = exists('index.chat.json') ? 'index.chat.json' : 'index.json';
+written.push(await page('index-noproducts.html', chatTemplate, ctxFor(chatTemplate), (t) => {
   for (const s of Object.values(t.sections)) if (s.type === 'hs3-chat' && s.settings) ['product_mug', 'product_blanket', 'product_print', 'product_ornament'].forEach((k) => delete s.settings[k]);
   return t;
 }));
@@ -513,13 +519,13 @@ if (!moved.length) skipped.push('moved templates (no template holds an hs-moved 
 // and tone-concept.mjs open index-gifts.html; mug-bridge.mjs serves product-gift.html). Those
 // templates are moved pages now, so the names carry today's pages: the chat on the homepage and
 // the mug's own page.
-fs.copyFileSync(path.join(out, 'index.html'), path.join(out, 'index-gifts.html'));
+fs.copyFileSync(path.join(out, exists('index.chat.json') ? 'index-chat.html' : 'index.html'), path.join(out, 'index-gifts.html'));
 if (exists('product.mug-native.json')) fs.copyFileSync(path.join(out, 'product-mug-native.html'), path.join(out, 'product-gift.html'));
 
 for (const f of fs.readdirSync(path.join(theme, 'assets'))) fs.copyFileSync(path.join(theme, 'assets', f), path.join(out, 'assets', f));
 fs.copyFileSync(path.join(repo, 'assets', 'heartside-logo.png'), path.join(out, 'assets', 'heartside-logo.png'));
 console.log('rendered', written.join(', '));
-console.log(`copies for older tools: index-gifts.html (the homepage chat)${exists('product.mug-native.json') ? ', product-gift.html (the mug page)' : ''}`);
+console.log(`copies for older tools: index-gifts.html (the chat)${exists('product.mug-native.json') ? ', product-gift.html (the mug page)' : ''}`);
 console.log(`footer: ${OWN_FOOTER ? 'sections/hs-footer.liquid (Helio footer and company note switched off, as footer-heartside.mjs does)' : "Helio's captured footer and the company note"}`);
 if (missingSections.size) console.log(`Helio sections shown as labelled gaps: ${[...missingSections].join(', ')}`);
 if (skipped.length) console.log(`skipped: ${skipped.join('; ')}`);

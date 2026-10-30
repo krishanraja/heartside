@@ -240,7 +240,7 @@
                 # "1x": an Artist's touch whose gift has left the cart
                 assign hs_orphan = hs_addon_for | size | at_most: 1 | append: hs_gift_at
                 # one per design, an Artist's touch too (A9c); "11" is an add-on at one
-                assign hs_one_per = hs_quantity_key | append: hs_addon_for
+                assign hs_one_per = hs_quantity_key | append: hs_addon_for | append: hs_line_id
                 assign hs_addon_one = hs_addon_for | size | at_most: 1 | append: item.quantity
               -%}
               <tr
@@ -548,7 +548,7 @@
                   {%- comment -%} One unit per design (28 Oct): Shopify's checkout merge turned 2 of a design ($258 in the cart)
                     into 4 ($516 in checkout). A design at one has no quantity control; one already above one keeps it, to
                     come back down (component-cart-items.js refuses anything higher). {%- endcomment -%}
-                  {%- if hs_quantity_key != '' and hs_quantity_item.quantity == 1 -%}{%- assign can_update_quantity = false -%}{%- endif -%}
+                  {%- if hs_one_per != '' and hs_quantity_item.quantity == 1 -%}{%- assign can_update_quantity = false -%}{%- endif -%}
                   {%- comment -%} One Artist's touch per design (A9c), the same way: at one it has no quantity control. {%- endcomment -%}
                   {%- if hs_addon_one == '11' -%}{%- assign can_update_quantity = false -%}{%- endif -%}
                   <div class="cart-items__quantity-controls">

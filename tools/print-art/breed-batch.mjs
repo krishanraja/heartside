@@ -1,0 +1,73 @@
+// The breed batch (Krish, 29 Oct: "every gift we can show is the same pug"). Six popular breeds, one in
+// each of the six styles, so the site has a real example for every style card, each in all four tones
+// of the slider, the tones turning across the portrait, the blanket and the mug. Every prompt is the committed Teeinblue
+// prompt from nativePrompt(format) with its fields filled by nativeFieldValues(), exactly as the
+// storefront fills them, and the dog's moment is the one-sentence painting brief the phone builds
+// from the taps (shopify/assets/hs-brief.js). No network, no generation: it writes jobs.json and
+// one prompt file per job for the growth session to paint; --check fails if they are stale.
+//
+//   node tools/print-art/breed-batch.mjs [--check]
+import {readFileSync, writeFileSync, mkdirSync, existsSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
+import vm from 'node:vm';
+import {recipes, characterFor} from './artwork-system.mjs';
+import {nativePrompt, nativeFieldValues} from './native-candidate.mjs';
+
+const root = fileURLToPath(new URL('../../', import.meta.url));
+const BATCH = '2026-10-29-breeds';
+const out = root + 'design/examples-' + BATCH + '/';
+const {brief, toyWords} = createRequire(import.meta.url)(root + 'shopify/assets/hs-brief.js');
+// v15: the breed's archetype as the journey works it out (HSBreeds.lookup, then characterFor)
+const breedsWindow = {};
+vm.runInNewContext(readFileSync(root + 'shopify/assets/hs-breeds.js', 'utf8'), {window: breedsWindow, self: breedsWindow});
+const archetypeOf = breed => characterFor(breedsWindow.HSBreeds.lookup(breed)) || '';
+
+// What an example buyer tapped for each dog. The photo is a reference the growth session sources:
+// a real photo under a free licence, its credit recorded in credits.json beside the images.
+const DOGS = [
+  {id: 'golden', name: 'Maple', breed: 'Golden Retriever', pronoun: 'she', style: 'painterly', together: 'naps', spot: 'feet', meaning: 'hard', toys: ['a stuffed toy'], wears: 'a collar'},
+  {id: 'lab', name: 'Bear', breed: 'Labrador Retriever', pronoun: 'he', style: 'cinematic', together: 'car', spot: 'anywhere', meaning: 'best', toys: ['a tennis ball'], wears: 'a bandana'},
+  {id: 'frenchie', name: 'Bao', breed: 'French Bulldog', pronoun: 'he', style: 'comic', together: 'movie', spot: 'couch', meaning: 'shadow', toys: ['a squeaky toy'], wears: 'a bow'},
+  {id: 'doodle', name: 'Clover', breed: 'Goldendoodle', pronoun: 'she', style: 'screenprint', together: 'walk', spot: 'anywhere', meaning: 'best', toys: ['a frisbee', 'a big stick'], wears: 'a bandana'},
+  {id: 'dachshund', name: 'Frank', breed: 'Dachshund', pronoun: 'he', style: 'ink', together: 'coffee', spot: 'bed', meaning: 'boss', toys: ['a bone'], wears: 'a sweater'},
+  {id: 'shepherd', name: 'Juno', breed: 'German Shepherd', pronoun: 'she', style: 'collage', together: 'walk', spot: 'feet', meaning: 'hard', toys: ['a rope toy'], wears: 'a harness'}
+];
+const TONES = ['sentimental', 'warm', 'hilarious', 'over_the_top'];
+// which gift each tone is painted for, turning per breed so every tone appears on every gift
+const TURN = [['portrait', 'mug', 'blanket', 'portrait'], ['blanket', 'portrait', 'mug', 'blanket'], ['mug', 'blanket', 'portrait', 'mug']];
+const SIZES = {mug: '1536x1024', portrait: '1024x1536', blanket: '1024x1024'};
+// stage 1 is one painting per breed, a different tone each, so every style and tone is seen before more is painted
+const STAGES = [{stage: 1, cap: 6}, {stage: 2, cap: 18}];
+
+const jobs = DOGS.flatMap((dog, i) => TONES.map((tone, t) => {
+  const format = TURN[i % 3][t];
+  const moment = brief({...dog, tone});
+  // the exact directed brief the storefront writes for this dog's journey answers; the toys keep the
+  // brief's own verb (in his mouth, at her paws: recipes v11, 30 Oct)
+  // v15: the archetype and what the dog is to them reach the painter too (hs-journey.js bridge)
+  const fields = nativeFieldValues({style: dog.style, tone, format, breed: dog.breed, pronoun: dog.pronoun, archetype: archetypeOf(dog.breed), spot: dog.spot, together: dog.together, meaning: dog.meaning, toys: toyWords({...dog, tone}), accessory: dog.wears || ''});
+  const prompt = nativePrompt(format).replace(/\{\{([^}]+)\}\}/g, (_, key) => {
+    if (!Object.hasOwn(fields, key)) throw new Error('Unknown field ' + key);
+    return fields[key];
+  });
+  const id = [dog.id, tone, format].join('-');
+  return {id, prompt, stage: t === i % 4 ? 1 : 2, dog: dog.id, example_name: dog.name, breed: dog.breed,
+    photo: 'design/examples-' + BATCH + '/photos/' + dog.id + '.jpg', style: recipes.styles[dog.style].label, tone: recipes.tones[tone].label,
+    format, size: SIZES[format], brief: moment, fields,
+    prompt_file: 'design/examples-' + BATCH + '/prompts/' + id + '.txt', output: 'design/examples-' + BATCH + '/out/' + id + '.png'};
+}));
+for (const s of STAGES) if (jobs.filter(j => j.stage === s.stage).length > s.cap) throw new Error('More jobs than the cap in stage ' + s.stage);
+
+const files = {'jobs.json': JSON.stringify({about: 'Breed example batch, 29 October 2026. Generated by tools/print-art/breed-batch.mjs; do not edit by hand. Every image is an Example and a person reviews it before use. Run one stage at a time, each only after Krish says yes.', recipe_version: recipes.version, stages: STAGES, jobs: jobs.map(({prompt, ...rest}) => rest)}, null, 2) + '\n'};
+for (const j of jobs) files['prompts/' + j.id + '.txt'] = j.prompt + '\n';
+
+if (process.argv.includes('--check')) {
+  const stale = Object.entries(files).filter(([name, body]) => !existsSync(out + name) || readFileSync(out + name, 'utf8') !== body).map(([name]) => name);
+  if (stale.length) { console.error('stale: ' + stale.join(', ') + '\nrun node tools/print-art/breed-batch.mjs'); process.exit(1); }
+  console.log('ok   ' + jobs.length + ' breed example jobs are fresh');
+} else {
+  mkdirSync(out + 'prompts', {recursive: true});
+  for (const [name, body] of Object.entries(files)) writeFileSync(out + name, body);
+  console.log('wrote ' + jobs.length + ' jobs to design/examples-' + BATCH + '/');
+}

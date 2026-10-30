@@ -39,12 +39,12 @@ for(const minified of [false,true]) {
     const out=JSON.parse(await getHelper().prepare(JSON.stringify({items:[line(123),line(456)]}),options(async(_,i)=>response(ready(JSON.parse(i.body).variantId)))));
     assert.notEqual(out.items[0].properties._hs_checkout_bundle_id,out.items[1].properties._hs_checkout_bundle_id);
   });
-  test(mode+': pending polls before ready and a perpetual pending result stops after five requests',async()=>{
+  test(mode+': pending polls before ready and a perpetual pending result stops after twelve requests',async()=>{
     let count=0;
     await getHelper().prepare(JSON.stringify(line()),options(async()=>++count===1?response({state:'pending',retryAfterSeconds:3},202):response(ready())));
     assert.equal(count,2);count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'pending',retryAfterSeconds:5},202);})),/try Add to cart again/);
-    assert.equal(count,5);
+    assert.equal(count,12);
   });
   // 28 Oct, Recording 4: the redo's add failed on the first 503 while Teeinblue was still serving its copy
   test(mode+': 503 preview_unavailable right after painting waits inside the same budget and never uploads',async()=>{
@@ -53,8 +53,52 @@ for(const minified of [false,true]) {
     assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);assert.deepEqual(pending,[1]);
     count=0;
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'preview_unavailable'},503);})),/does not need another upload/);
-    assert.equal(count,5,'the same five-request budget');
-    count=0;await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'other'},503);})));assert.equal(count,1,'any other 503 still fails at once');
+    assert.equal(count,12,'the same twelve-request budget');
+    count=0;await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'other'},503);})));assert.equal(count,1,'an unknown 503 still fails at once');
+  });
+  test(mode+': operational registration failures retry the same design while authorization errors fail closed', async()=>{
+    for(const code of ['image_lookup_failed','image_creation_failed','image_readback_failed']) {
+      let count=0;
+      const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async(_,init)=>{
+        assert.deepEqual(JSON.parse(init.body),{customizationId:uuid,variantId:'123'});
+        return ++count===1?response({state:'error',code},503):response(ready());
+      })));
+      assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
+    }
+    for(const [code,status] of [['invalid_proxy_signature',403],['shop_authentication_failed',503],['image_preparation_disabled',503]]) {
+      let count=0;
+      await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code},status);})));assert.equal(count,1);
+    }
+    let count=0;
+    await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'image_readback_failed'},503);})));assert.equal(count,12);
+  });
+
+  test(mode+': a three-gift add registers two at a time, keeps every identity, and one failure fails the add',async()=>{
+    let live=0,peak=0;const seen=[];
+    const fetch=async(_,i)=>{live++;peak=Math.max(peak,live);const v=JSON.parse(i.body).variantId;seen.push(v);await tick();await tick();live--;return response(ready(v));};
+    const out=JSON.parse(await getHelper().prepare(JSON.stringify({items:[line(1),line(2),line(3)]}),options(fetch)));
+    assert.equal(peak,2,'two at a time');assert.deepEqual(seen.sort(),['1','2','3']);
+    assert.deepEqual(out.items.map(x=>x.properties._hs_checkout_bundle_id),[uuid+'-1',uuid+'-2',uuid+'-3']);
+    await assert.rejects(getHelper().prepare(JSON.stringify({items:[line(1),line(2),line(3)]}),options(async(_,i)=>JSON.parse(i.body).variantId==='2'?response({state:'error',code:'invalid_proxy_signature'},403):response(ready(JSON.parse(i.body).variantId)))));
+  });
+  test(mode+': a slow server answer is waited for up to its own 30 s ceiling, not abandoned at 20 s',()=>{
+    assert.match(helper,/Math\.min\(32000, Math\.max\(1, deadline - Date\.now\(\)\)\)/);
+    assert.doesNotMatch(helper,/Math\.min\(20000/);
+  });
+  test(mode+': waits lengthen after the third try, inside the same 90 s and twelve-request budget',async()=>{
+    const waits=[];const window={location:{href:'https://shop.example/products/gift'}};
+    vm.runInNewContext(minified?transformSync(helper,{minify:true}).code:helper,{window,URL,AbortController,Math,setTimeout:(f,ms)=>{if(ms>=1000&&ms<=9000)waits.push(ms);return setTimeout(f,0);},clearTimeout});
+    let count=0;
+    await window.HSCheckoutImage.prepare(JSON.stringify(line()),options(async()=>++count<=6?response({state:'pending',retryAfterSeconds:3},202):response(ready())));
+    assert.equal(waits.length,6);
+    for(const [i,ms] of waits.entries()){const base=(i<3?3:Math.min(8,3+i-2))*1000;assert.ok(ms>=base&&ms<base+400,i+': '+ms);}
+  });
+  test(mode+': slow saved artwork reaches the cart without another buyer tap',async()=>{
+    let count=0;
+    const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async()=>++count<=6?response({state:'error',code:'preview_unavailable'},503):response(ready()))));
+    assert.equal(count,7);
+    assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
+    assert.equal(out.properties._customization_id,uuid);
   });
   test(mode+': service errors, malformed JSON, hanging body, wrong identity and foreign CDN never become ready',async()=>{
     const bad=[async()=>response({},503),async()=>({status:200,json:async()=>{throw Error('HTML');}}),async()=>({status:200,json:()=>new Promise(()=>{})}),async()=>response({...ready(),variantId:'456'}),async()=>response({...ready(),fileId:null}),async()=>response({...ready(),imageUrl:'https://cdn.shopify.com/s/files/1/4444/5555/6666/files/art.jpg'}),async()=>response({...ready(),properties:{...ready().properties,_hs_checkout_parent:'false'}}),async()=>response({state:'pending',retryAfterSeconds:0},202)];
@@ -118,7 +162,7 @@ for(const minified of [false,true]) {
     resolve(JSON.stringify(line()));await p;await tick();await tick();
     assert.equal(note.hidden,true,'cleared once the add lands');
     assert.equal(t.tracked.length,1);assert.equal(t.tracked[0][0],'add_timing');
-    assert.deepEqual(Object.keys(t.tracked[0][1]),['teeinblue_ms','prepare_ms','add_ms']);
+    assert.deepEqual(Object.keys(t.tracked[0][1]),['teeinblue_ms','prepare_ms','add_ms','retries']);assert.equal(t.tracked[0][1].retries,1);
     // a failure says so in plain words, beside the button, and never asks for another painting
     const f=transport({button:true,prepare:async()=>{throw Error('temporary');}});f.c.checkoutImageStatus.dog="Pip's";
     await assert.rejects(f.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(line())}));

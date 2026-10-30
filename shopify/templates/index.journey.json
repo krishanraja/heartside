@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "gift": {
+      "type": "hs-journey",
+      "settings": {
+        "product_mug": "your-dogs-illustrated-mug",
+        "product_blanket": "your-dogs-personality-blanket",
+        "product_print": "your-dogs-portrait",
+        "core_purchase": true
+      }
+    }
+  },
+  "order": [
+    "gift"
+  ]
+}

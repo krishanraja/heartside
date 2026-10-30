@@ -24,7 +24,7 @@
 // anywhere.
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { CORE, ADDON, REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_MEDIA_IDS, STANDIN_ALT, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
+import { CORE, ADDON, REDIRECTS, TEMPORARY_REDIRECTS, BLANK_MEDIA_IDS, BLANK_ALT, BLANK_FILES, STANDIN_MEDIA_IDS, STANDIN_ALT, STANDIN_FILES, markerSelector, landed } from './catalog.mjs';
 
 const TIMEOUT = 20000;
 // honest about what it is; a challenge for it counts as inconclusive, not as a failure
@@ -98,9 +98,9 @@ export const hasMarker = (html, item) => {
   const a = buyAttributes(html);
   return !!a && Object.entries(item.marker).every(([k, v]) => k in a && (v === '' || a[k] === v));
 };
-// the chat's gift list as the home page's server render gives it
+// the home page's gift list as its server render gives it: the journey's (29 Oct) or the rollback chat's
 export function chatConfig(html) {
-  const m = String(html).match(/<script\b[^>]*\bdata-hs3-config\b[^>]*>([\s\S]*?)<\/script>/i);
+  const m = String(html).match(/<script\b[^>]*\bdata-(?:hsj|hs3)-config\b[^>]*>([\s\S]*?)<\/script>/i);
   if (!m) return null;
   try { return JSON.parse(m[1]); } catch { return null; }
 }
@@ -229,7 +229,7 @@ export async function check({ base = 'https://heartside.io', theme = '' } = {}) 
       if (r.error) return results.push(unknown(from, `could not be read (${r.error})`));
       const why = blocked(r);
       if (why) return results.push(unknown(from, `not checked: ${why}`));
-      if (r.status === 301 && r.location === to) return results.push(ok(from, `301 to ${to}`));
+      if ((r.status === 301 || (r.status === 302 && TEMPORARY_REDIRECTS.includes(from))) && r.location === to) return results.push(ok(from, `${r.status} to ${to}`));
       results.push(fail(from, r.location ? `answers ${r.status} to ${r.location}, expected 301 to ${to}` : `answers HTTP ${r.status}, expected 301 to ${to}`));
     })());
   }

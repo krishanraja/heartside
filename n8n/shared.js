@@ -69,7 +69,7 @@ const CHIP_WORDS = {
   door: ['door'], weekends: ['door'], weekdays: ['door'], hears: ['car', 'hear'],
   toy: ['toy', 'present'], same: ['toy'], closest: ['toy'], shoe: ['shoe'],
   feet: ['feet', 'pillow'], bed: ['bed', 'pillow'], couch: ['couch', 'sofa', 'cushion', 'pillow'],
-  walk: ['walk', 'walks', 'morning'], coffee: ['coffee', 'cup', 'mug', 'morning'], movie: ['movie', 'couch', 'sofa', 'tv'],
+  walk: ['walk', 'walks', 'morning', 'leash'], coffee: ['coffee', 'cup', 'mug', 'morning'], movie: ['movie', 'couch', 'sofa', 'tv'],
   naps: ['nap', 'naps'], car: ['car', 'ride', 'rides', 'road']
 };
 function chipWords(chips) {
@@ -85,8 +85,11 @@ function propsGrounded(text, answerHay, names) {
   const words = String(text || '').toLowerCase().match(/[a-z]+/g) || [];
   return words.every((w, i) => {
     if (!(w in PROP_GROUP) || nm[w]) return true;
-    // "You treat me like family" and "I park myself on your feet" are verbs, not a snack or a place
-    if (/^(treat|park)s?$/.test(w) && /^(you|me|us|them|him|her|it|everyone|myself|yourself|ourselves)$/.test(words[i + 1] || '')) return true;
+    // "You treat me like family", "I treat our naps like work" and "she parks on your feet" are verbs,
+    // not a snack or a place (29 Oct bench: both lost good lines)
+    if (/^(treat|park)(s|ed|ing)?$/.test(w) && /^(you|your|me|my|us|our|them|their|him|his|her|it|its|everyone|myself|yourself|ourselves|herself|himself|itself|themselves|on|in|at|by|beside|next|right|up|down|like)$/.test(words[i + 1] || '')) return true;
+    // a red carpet is a star's welcome, not a rug (29 Oct bench: "Car rides are my red carpet")
+    if (w === 'carpet' && words[i - 1] === 'red') return true;
     return !!have[PROP_GROUP[w]];
   });
 }
@@ -122,13 +125,16 @@ function groundedProse(text, hay) {
 // a gift line: the dog's own words to the person, a sentence may start anywhere, no shouting
 // Krish, 22 Oct: "two-word sentences stacked against two- or three-word sentences are just a clear tell".
 // A line is one natural sentence: reject stacked fragments and the worn lines every model reaches for.
-const WORN = /\b(you're welcome|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
+// "you're welcome" is worn as a punchline on its own, not in "you're welcome to the edge" (29 Oct)
+const WORN = /\b(you're welcome(?! to)|it isn't close|not even close|not sorry|obviously|that's the (deal|rule|list|plan)|the whole list|in this economy)\b/i;
 function staccato(s) {
   const parts = s.split(/[.?;:]+/).map(x => x.trim()).filter(Boolean);
   return parts.length > 2 || (parts.length === 2 && parts.some(x => x.split(/\s+/).length <= 3));
 }
 // Krish, 22 Oct: lines print up to 60 characters; the meaning line stays at 44 because the ornament prints it alone.
-const MAX_LINE = { home: 60, home_follow: 60, spot: 60, together: 60, meaning: 44 };
+// 29 Oct: only the meaning line prints now (mug and portrait); the others show on screen and may run to 80, so a
+// joke can spell out its punchline (Krish's own fix ran 77: "...because you clearly need help with your throwing.")
+const MAX_LINE = { home: 80, home_follow: 80, spot: 80, together: 80, meaning: 44 };
 // hay grounds names and numbers; answerHay (the owner's answers only) grounds every prop (28 Oct)
 function okLine(s, hay, max, answerHay, names) { return okText(s, max || 44) && !THIRD.test(s) && s.indexOf('!') === -1 && !staccato(s) && !WORN.test(s) && groundedProse(s, hay) && propsGrounded(s, answerHay, names); }
 // the buyer's own words, as a gift line, cut only where a sentence or clause ends (22 Oct: a cut at
@@ -154,7 +160,12 @@ function findJson(o, key, depth) {
   if (typeof o === 'string') {
     const s = o.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim();
     if (s.charAt(0) !== '{') return null;
-    try { return findJson(JSON.parse(s), key, depth + 1); } catch (e) { return null; }
+    // a reply with one stray comma or quote before a closing brace (29 Oct bench: a whole note lost to
+    // `"meaning":"...","}`) is repaired once, never guessed at further
+    const parse = (t) => { try { return JSON.parse(t); } catch (e) { return undefined; } };
+    let j = parse(s);
+    if (j === undefined) j = parse(s.replace(/,\s*"\s*([}\]])/g, '$1').replace(/,\s*([}\]])/g, '$1'));
+    return j === undefined ? null : findJson(j, key, depth + 1);
   }
   if (typeof o !== 'object') return null;
   if (!Array.isArray(o) && key in o) return o;

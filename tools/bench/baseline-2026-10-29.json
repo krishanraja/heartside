@@ -1,0 +1,19 @@
+{
+  "what": "The live note writer on 29 Oct (after the tone fix published 09:49 UTC), sent the way the old chat sends: chip ids, scripted draft lines, no toy or accessory. Executions 47845-47852 (Bao, Juno, Earl) and 47853-47854 (Frank, with a typed person's name; the first Frank pair used 'you' as the name, a bench error, and is not counted).",
+  "runs": {
+    "bao":   {"sentimental": {"meaning": "I'm your shadow, and it's where I belong.", "home": "I try to play it cool, but then I see you.", "gift": "blanket"},
+              "hilarious":   {"meaning": "I'm your shadow, and I'm very good at it.", "home": "I act casual for four seconds, then I fall apart.", "gift": "blanket"}},
+    "juno":  {"sentimental": {"meaning": "You're my best friend in the whole world.", "home": "I bring you a toy because I'm so glad you're home.", "gift": "mug"},
+              "hilarious":   {"meaning": "You're my best friend, and I'm very good.", "home": "I bring you a toy because greeting you takes a present.", "gift": "mug"}},
+    "earl":  {"sentimental": {"meaning": "I'll always be close when things feel hard.", "home": "I'm waiting at the door, and I stand up slowly for you.", "gift": "print"},
+              "hilarious":   {"meaning": "Your hard days are my area of expertise.", "home": "I stand at the door because greeting you is a real job.", "gift": "print"}},
+    "frank": {"sentimental": {"meaning": "You're my boss, and I love you most.", "home": "When you walk in, I spin because you're what I waited for.", "gift": "mug"},
+              "hilarious":   {"meaning": "I'm in charge here, and you're my favorite.", "home": "I spin in circles because you came back and I checked.", "gift": "mug"}}
+  },
+  "findings": [
+    "Tone and breed now change the words (sentimental vs hilarious differ for every dog).",
+    "The gift follows one answer only: naps -> blanket, walk -> mug, car -> print, coffee -> mug (the prompt's Pick rule). Tone and every other answer never change it.",
+    "The toy, what the dog wears and the person are never sent; Juno's tennis ball appears nowhere.",
+    "The painting gets one generic sentence per tap (hs-artwork-profile.js), nothing specific to the dog."
+  ]
+}

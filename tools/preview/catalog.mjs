@@ -35,12 +35,15 @@ export const CORE = [
 // Shopify everywhere it is shown; this is only what the guard expects to find.
 export const ADDON = { key: 'artists-touch', handle: 'artists-touch', path: '/products/artists-touch', min: 2900 };
 
-// Old addresses and where each must land, with a 301. The two draft handles are what the
+// Old addresses and their exact destinations. Draft aliases require 301. The two draft handles are what the
 // 28 Oct campaign Update renamed the blanket and the portrait to; Shopify keeps redirects from
 // them to the clean handles CoWork restored. The legacy handles (the-morning-mug and the rest)
 // are left out until CoWork reads Shopify's URL redirect list back, so that no target here is a
 // guess.
 export const REDIRECTS = {
+  '/products/the-framed-print': '/products/your-dogs-portrait',
+  '/products/the-couch-blanket': '/products/your-dogs-personality-blanket',
+  '/products/the-morning-mug': '/products/your-dogs-illustrated-mug',
   '/products/heartside-personality-blanket-draft-2026-10-23': '/products/your-dogs-personality-blanket',
   '/products/heartside-city-screenprint-draft-2026-10-23': '/products/your-dogs-portrait',
 };
@@ -60,7 +63,7 @@ export const REDIRECTS = {
 // set aside, but artists-touch-tile.png is another file from artists-touch.png.
 export const BLANK_MEDIA_IDS = ['71850515169662', '71856697049470'];
 export const BLANK_ALT = /\bblank |shown in your cart/i;
-export const BLANK_FILES = [];
+export const BLANK_FILES = ['6ae042294a133.webp', '261014_iKewQgX0VXLgM560_large.webp', '6ae2a68c7cc45.webp'];
 export const STANDIN_MEDIA_IDS = ['71873863057790'];
 export const STANDIN_ALT = /^artist['’]s touch by heartside$/i;
 export const STANDIN_FILES = ['artists-touch.png', 'heartside-favicon-heart.png'];
@@ -85,3 +88,7 @@ export function landed(requested, finalUrl, redirected = false) {
   if (absolute(requested) && absolute(finalUrl) && a.host !== b.host) return `moved: ${from} now lands on another host`;
   return '';
 }
+
+// Verified 29 Oct: these three legacy aliases return 302 to the exact destinations above.
+// Accept a permanent redirect too; every other alias still requires 301.
+export const TEMPORARY_REDIRECTS = ["/products/the-framed-print","/products/the-couch-blanket","/products/the-morning-mug"];

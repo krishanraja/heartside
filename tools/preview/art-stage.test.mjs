@@ -1,6 +1,6 @@
 // The painting and the finished design (Krish, 28 Oct: the wait "looks broken", and the tickbox
 // sat above the picture where he barely saw it). Real snippet and stylesheet in a browser: while
-// Teeinblue paints, the card names the dog, says what it is doing and eases its bar; the finished
+// Teeinblue paints, the card names the dog, says what is known and sweeps a bar with no value; the finished
 // design then fills the card with the review directly under the picture.
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,8 +31,8 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
     await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div data-hs2-media><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div style="height:200px"></div></div></div>${html}<div class="tee-field--photo"></div></main>`}) : r.abort());
     try {
       await page.goto('https://hs.test/');
-      const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
-      const code = `var pending=true,saved=false,src='',state={},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
+      const fns = ['previewHasArt', 'artPhase', 'artWords', 'artElapsed', 'artStage', 'nudgeReview'].map(section).join('\n');
+      const code = `var pending=true,saved=false,src='',state={},reduced=false,photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
         function blanketNativeError(){return false;}function blanketArtPreview(){return ${kind === 'blanket'};}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
       await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
       // before any painting, a gift page reached without the chat shows its labeled example, not
@@ -51,9 +51,9 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.equal(await page.evaluate(() => { const st = document.querySelector('[data-hs2-stage]'); return st.classList.contains('hs-painting') && getComputedStyle(st, '::after').content; }), '"Painting Pip"', 'the gallery paints too');
       assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-art-photo]').hidden), true, "the buyer's photo shows as the sketch being painted");
       await page.screenshot({path: fileURLToPath(new URL(`${kind}-painting.png`, out))});
-      // forty seconds in, the bar has moved most of the way and the line says so, without claiming the end
-      const later = await page.evaluate(() => { sessionStorage.setItem('hs-art-start:7', String(Date.now() - 40000)); artStage(true); const bar = document.querySelector('[data-hs-art-bar]'); return {pct: Number(bar.getAttribute('aria-valuenow')), line: document.querySelector('[data-hs-art-line]').textContent}; });
-      assert.ok(later.pct > 60 && later.pct < 92, String(later.pct)); assert.match(later.line, /Nearly there/);
+      // forty seconds in, the bar still claims no value and the card counts the time, never a finish
+      const later = await page.evaluate(() => { sessionStorage.setItem('hs-art-start:7', String(Date.now() - 40000)); artStage(true); const bar = document.querySelector('[data-hs-art-bar]'); return {valued: bar.hasAttribute('aria-valuenow'), sweep: getComputedStyle(bar.firstElementChild).animationName, since: document.querySelector('[data-hs-art-elapsed]').textContent, line: document.querySelector('[data-hs-art-line]').textContent}; });
+      assert.equal(later.valued, false); assert.equal(later.sweep, 'hs-art-sweep'); assert.equal(later.since, 'Started 40 seconds ago.'); assert.doesNotMatch(later.line, /nearly/i);
       // the design arrives
       const done = await page.evaluate(async (design) => {
         pending = false; saved = true; src = design; document.querySelector('[data-hs2-artwork-accept-wrap]').hidden = false;
@@ -92,7 +92,7 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} 
   await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__media" data-hs2-media data-tib="on"><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div class="hs2-product__tib" data-hs2-tib-gallery style="height:200px"></div>${tag[0]}</div></div>${html}<div class="tee-field--photo"><img class="tee-photo-image" src=""></div></main>`}) : r.abort());
   try {
     await page.goto('https://hs.test/');
-    const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
+    const fns = ['previewHasArt', 'artPhase', 'artWords', 'artElapsed', 'artStage', 'nudgeReview'].map(section).join('\n');
     const code = `var pending=false,saved=false,src='',state={hs3_lines:{meaning:'I wait by the door.'}},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
       function blanketNativeError(){return false;}function blanketArtPreview(){return false;}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
     await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
@@ -114,8 +114,8 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} 
   await page.route('**/*', r => r.request().url() === 'https://hs.test/' ? r.fulfill({contentType: 'text/html', body: `<!doctype html><style>${css}</style><main id="buy"><div class="hs2-product__media" data-hs2-media data-tib="on"><button data-hs2-thumb-preview aria-current="true"></button><button data-hs2-thumb aria-current="false"></button><div class="hs2-product__stage" data-hs2-stage><div class="hs2-product__tib" data-hs2-tib-gallery style="height:200px"></div></div></div>${html}<div class="tee-field--photo"><img class="tee-photo-image" src=""></div></main>`}) : r.abort());
   try {
     await page.goto('https://hs.test/');
-    const fns = ['previewHasArt', 'artLines', 'artStage', 'nudgeReview'].map(section).join('\n');
-    const code = `var pending=false,saved=false,src='',state={},photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
+    const fns = ['previewHasArt', 'artPhase', 'artWords', 'artElapsed', 'artStage', 'nudgeReview'].map(section).join('\n');
+    const code = `var pending=false,saved=false,src='',state={},reduced=false,photoURL=${JSON.stringify(PHOTO)};function productId(){return 7;}function answer(k){return k==='dog'?'Pip':'';}
       function blanketNativeError(){return false;}function blanketArtPreview(){return false;}function cityArtSaved(){return saved;}function cityArtSource(){return src;}` + fns;
     await page.addScriptTag({content: minified ? transformSync(code, {minify: true}).code : code});
     const show = () => page.evaluate(() => document.querySelector('[data-hs2-media]').getAttribute('data-show'));

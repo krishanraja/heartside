@@ -1,0 +1,11 @@
+Status: Acceptance repair remains on the draft theme. Physical-phone checks and release are pending. Nine of fourteen approved paintings have been used; the five remaining paintings are reserved for the final phone batch and mock checkout. Real payment methods are restored.
+
+Changed: Repaired artwork-detail persistence before blur, hyphenated names, self-gift recipient wording through product handoff, reset choices, typed follow-up action grounding, sample-preview labels, price and redirect checks, and saved-art checkout registration. Registration retries remain bounded and reuse saved art; only recognized transient image failures retry, while authorization and configuration failures stop immediately. Native personalized cart lines now lock to one from their first render, including before bundle transformation.
+
+Changed: The blanket thumbnail was assigned and verified on the reported Shopify order. Mug catalog variants were reconciled to the approved price, and the note and signature received a contrasting cream outline in the published artwork. The saved ninth painting reached cart and checkout with an actual personalized thumbnail and exact text after recovery; a text-only edit also registered successfully without another painting. The original fast registration failure category was not captured and remains unconfirmed.
+
+Changed: Strict preview, presentation and catalog gates all passed on the earlier repaired draft. The final quantity and registration changes, and the structured deadpan Hilarious recipe, require the final full rerun. The revised Hilarious composition is a candidate until a new painting proves the visual joke; it will be assessed within the already planned Android Chrome painting. Existing native prompt blocks remain unchanged.
+
+Next: Complete final offline CI, push the final head to the named draft, rerun all three strict gates, and record current evidence. Then perform the reserved physical-phone checks and final mock checkout, including the new tone and mug contrast visual reviews. Keep live publication conditional on those results, retain the real-payment restoration proof, and cancel only the authorized test orders after evidence capture.
+
+North Star check (2026-10-29): holds.

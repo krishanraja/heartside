@@ -1,0 +1,157 @@
+/* Journey mode on a gift page (snippets/hs-journey-choose.liquid, assets/hs-journey-choose.js).
+   One phone screen, no scrolling: the painting card while it paints, then the painting on every
+   gift, the bundle, one tick and one button in thumb reach. Brand book tokens as hs-journey.css. */
+.hs-jm {
+  --cream: #FBF7F3; --paper: #FFFFFF; --ink: #1A1514; --body: #4A3F3A; --muted: #7A6D66;
+  --line: #E6DCD3; --line-strong: #CDBFB4; --chestnut: #7A6D66; --stamp: #A8284E; --accent-tint: #FBEFF2; --disabled: #E9E1DA; --on-disabled: #A1958E;
+  /* one type family, DM Sans, as the journey (Krish, 29 Oct) */
+  --sans: "HS DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--cream); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.4;
+  max-width: 480px; margin: 0 auto; padding: 8px 16px 12px; box-sizing: border-box;
+  height: 100svh; display: flex; flex-direction: column; grid-column: 1 / -1; width: 100%;
+}
+.hs-jm *, .hs-jm *::before, .hs-jm *::after { box-sizing: border-box; }
+.hs-jm[hidden], .hs-jm [hidden] { display: none !important; }
+.hs-jm button { font-family: inherit; color: inherit; }
+
+/* everything else on the page steps aside. Teeinblue's working parts stay in the page and keep
+   working (photo field, options, add to cart): no display:none, no clip on them, and overflow
+   hidden still lets its fixed framing window show over everything */
+html.hs-jm-on .shopify-section-group-header-group, html.hs-jm-on .header-group,
+html.hs-jm-on .shopify-section-group-footer-group, html.hs-jm-on .footer-group,
+html.hs-jm-on .hs2-next { display: none !important; }
+html.hs-jm-on #buy { display: block !important; padding: 0 !important; }
+html.hs-jm-on #buy > :not(.hs-jm):not(link):not(script) {
+  position: absolute !important; left: 0; top: 0; width: 100% !important; height: 0 !important;
+  overflow: hidden !important; opacity: 0; pointer-events: none; margin: 0 !important; padding: 0 !important;
+}
+html.hs-jm-on body { background: #FBF7F3; }
+
+.hs-jm__head { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.hs-jm__back { display: inline-grid; place-items: center; width: 44px; height: 44px; margin-left: -10px; border-radius: 22px; color: var(--ink); text-decoration: none; }
+.hs-jm-ico { display: block; width: 22px; height: 22px; flex: none; }
+/* the one free repaint (Krish, 29 Oct): a small button in the header, then a sheet of the four tones */
+.hs-jm__repaint { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.hs-jm__repaint .hs-jm-ico { width: 18px; height: 18px; color: var(--stamp); }
+.hs-jm-sheet { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; justify-content: center; background: rgba(18, 16, 16, 0.42); }
+.hs-jm-sheet__panel { width: 100%; max-width: 480px; background: var(--cream); border-radius: 22px 22px 0 0; padding: 18px 16px max(16px, env(safe-area-inset-bottom)); box-shadow: 0 -12px 30px -18px rgba(0, 0, 0, 0.4); }
+.hs-jm-sheet__title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.hs-jm-tones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 6px; }
+.hs-jm-tone { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border: 0; border-radius: 14px; color: #fff; font-size: 16px; font-weight: 600; text-align: left; cursor: pointer; background: linear-gradient(135deg, var(--tone), var(--tone-2)); box-shadow: 0 10px 20px -14px var(--tone); }
+.hs-jm-tone[aria-current="true"] { opacity: 0.55; }
+.hs-jm-tone .hs-jm-ico { width: 24px; height: 24px; }
+.hs-jm-tone--sentimental { --tone: #C2416B; --tone-2: #E07A9A; }
+.hs-jm-tone--warm { --tone: #D9771F; --tone-2: #F2B045; }
+.hs-jm-tone--hilarious { --tone: #6B45E0; --tone-2: #9C7CF5; }
+.hs-jm-tone--over_the_top { --tone: #B98512; --tone-2: #E2BC4A; }
+.hs-jm__keep { width: 100%; min-height: 48px; border: 0; background: none; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.hs-jm__title { font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
+.hs-jm__paint { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.hs-jm__paint .hs-art { margin: 0; padding: 12px; }
+/* the painting card on one phone screen: the picture takes the height the words leave it, and the
+   panel's own title already says "Painting {dog}" */
+.hs-jm__paint .hs-art__canvas { width: min(100%, calc((100svh - 300px) * var(--hs-art-r, 0.8333))); }
+.hs-jm__paint .hs-art__title { display: none; }
+.hs-jm__paint .hs-art__line { margin-top: 10px; }
+.hs-jm__choose { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.hs-jm__lead { margin: 0; color: var(--body); font-size: 15px; }
+
+/* the tiles: this gift first and big, the others beside it */
+.hs-jm__tiles { display: grid; grid-template-columns: 1.35fr 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; flex: 1 1 0; min-height: 0; max-height: 46svh; }
+.hs-jm-tile { position: relative; display: flex; flex-direction: column; min-height: 0; padding: 6px; border: 2px solid var(--line); border-radius: 14px; background: var(--paper); text-align: left; cursor: pointer; }
+.hs-jm-tile:first-child { grid-row: 1 / 3; }
+.hs-jm-tile.is-on { border-color: var(--ink); }
+.hs-jm-tile:not(.is-on) .hs-jm-tile__art { opacity: 0.72; }
+.hs-jm-tile[aria-disabled="true"] { cursor: default; }
+.hs-jm-tile:not([aria-disabled="true"])::after { content: "+"; position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 13px; display: grid; place-items: center; background: var(--paper); box-shadow: 0 0 0 1px var(--line); font-size: 18px; line-height: 1; }
+.hs-jm-tile.is-on:not([aria-disabled="true"])::after { content: "✓"; background: var(--ink); color: var(--paper); box-shadow: none; font-size: 14px; }
+.hs-jm-tile__art { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; border-radius: 10px; background: #F3EAE1; overflow: hidden; }
+.hs-jm-tile__tag { position: absolute; left: 6px; bottom: 6px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--paper); border-radius: 6px; padding: 2px 6px; box-shadow: 0 0 0 1px var(--line); }
+.hs-jm-tile__name { font-weight: 600; font-size: 14px; margin-top: 4px; }
+.hs-jm-tile__price { font-size: 13px; color: var(--muted); }
+
+/* the same painting drawn on each product */
+.hs-jm-mug { position: relative; width: 70%; aspect-ratio: 1 / 1.05; }
+.hs-jm-mug__body { position: absolute; inset: 0 18% 0 0; border-radius: 6px 6px 14px 14px / 6px 6px 18px 18px; background: #fff center / cover no-repeat; box-shadow: inset -10px 0 14px -8px rgba(0,0,0,.25), inset 8px 0 10px -8px rgba(255,255,255,.9), 0 3px 8px rgba(0,0,0,.15); }
+.hs-jm-mug__handle { position: absolute; right: 0; top: 22%; width: 26%; height: 46%; border: 7px solid #fff; border-left: 0; border-radius: 0 40% 40% 0; box-shadow: 2px 2px 4px rgba(0,0,0,.15); }
+.hs-jm-frame { width: 66%; aspect-ratio: 2 / 3; padding: 6%; background: #2B211C; border-radius: 3px; box-shadow: 0 4px 10px rgba(0,0,0,.25); }
+.hs-jm-frame__mat { display: block; width: 100%; height: 100%; padding: 8%; background: #FFFDF9; }
+.hs-jm-frame__art { display: block; width: 100%; height: 100%; background: #fff center / cover no-repeat; }
+.hs-jm-blanket { width: 82%; aspect-ratio: 5 / 6; padding: 6%; border-radius: 14px; background: #EFE6DA; box-shadow: inset 0 0 0 3px #F8F1E8, 0 4px 10px rgba(0,0,0,.18); transform: rotate(-3deg); }
+.hs-jm-blanket__art { display: block; width: 100%; height: 100%; border-radius: 8px; background: #fff center / cover no-repeat; filter: saturate(.95) contrast(.97); }
+
+/* this gift's own options, as pills */
+.hs-jm__options:empty { display: none; }
+.hs-jm-opt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hs-jm-opt__name { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--chestnut); }
+.hs-jm-opt__row { display: flex; gap: 6px; flex-wrap: wrap; }
+.hs-jm-pill { min-height: 36px; padding: 0 12px; border: 1.5px solid var(--line); border-radius: 18px; background: var(--paper); font-size: 14px; cursor: pointer; }
+.hs-jm-pill.is-on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+
+.hs-jm__bundle { margin: 0; font-size: 14px; font-weight: 600; color: var(--stamp); }
+.hs-jm__tick { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; cursor: pointer; }
+.hs-jm__tick input { width: 22px; height: 22px; accent-color: var(--ink); margin: 0; }
+.hs-jm__dock { margin-top: auto; }
+.hs-jm__btn { width: 100%; min-height: 54px; border: 0; border-radius: 27px; background: var(--ink); color: var(--paper) !important; font-size: 17px; font-weight: 600; cursor: pointer; }
+.hs-jm__btn:disabled { background: #8E8682; cursor: not-allowed; }
+.hs-jm__small:empty { display: none; }
+.hs-jm__small { margin: 6px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+@media (max-height: 700px) {
+  .hs-jm__title { font-size: 21px; }
+  .hs-jm__lead { font-size: 14px; }
+  .hs-jm__choose { gap: 6px; }
+  .hs-jm__btn { min-height: 50px; }
+}
+
+/* desktop (Krish, 29 Oct: "a premium desktop site on desktop"): the gifts large on the left, the
+   choices, the tick and the button on the right; the painting card centred at a desktop size */
+@media (min-width: 900px) {
+  .hs-jm { max-width: 1120px; height: auto; min-height: 100vh; padding: 40px; justify-content: center; }
+  .hs-jm__head { margin-bottom: 20px; }
+  .hs-jm__title { font-size: 34px; }
+  .hs-jm__paint { flex: none; align-items: center; }
+  .hs-jm__paint .hs-art { width: min(560px, 100%); }
+  .hs-jm__paint .hs-art__canvas { width: min(100%, calc((100vh - 360px) * var(--hs-art-r, 0.8333))); }
+  .hs-jm__choose { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-auto-rows: min-content; column-gap: clamp(32px, 5vw, 72px); row-gap: 14px; flex: none; }
+  .hs-jm__choose > * { grid-column: 2; }
+  .hs-jm__tiles { grid-column: 1; grid-row: 1 / span 7; max-height: none; height: min(70vh, 640px); }
+  .hs-jm__dock { margin-top: 8px; }
+  .hs-jm-tile:hover, .hs-jm-pill:hover, .hs-jm__repaint:hover { border-color: var(--ink); }
+  .hs-jm-sheet { align-items: center; }
+  .hs-jm-sheet__panel { border-radius: 22px; max-width: 520px; padding: 24px; }
+}
+
+/* the journey's template (Krish approved the mock, 29 Oct): the same bar, headline, components and
+   dock as the steps before it */
+.hs-jm { padding: 0 16px; line-height: 1.5; }
+.hs-jm h1, .hs-jm h2, .hs-jm p, .hs-jm button, .hs-jm label, .hs-jm .hs-art, .hs-jm .hs-art * { font-family: var(--sans) !important; }
+.hs-jm__head { min-height: 56px; gap: 4px; }
+.hs-jm__back { width: 48px; height: 48px; margin-left: -12px; border-radius: 24px; }
+.hs-jm-ico { width: 24px; height: 24px; }
+.hs-jm__title { font-size: 22px; line-height: 28px; letter-spacing: -0.02em; }
+.hs-jm__repaint { height: 40px; min-height: 0; border-color: var(--line-strong); border-radius: 20px; }
+.hs-jm__choose { gap: 12px; padding-top: 4px; }
+.hs-jm__lead { font-size: 15px; line-height: 22px; color: var(--body); }
+.hs-jm-tile { border: 1.5px solid var(--line); border-radius: 16px; padding: 8px; background: var(--paper); }
+.hs-jm-tile.is-on { border-color: var(--stamp); box-shadow: inset 0 0 0 1px var(--stamp); }
+.hs-jm-tile:not(.is-on) .hs-jm-tile__art { opacity: 1; }
+.hs-jm-tile:not([aria-disabled="true"])::after { top: 12px; right: 12px; width: 28px; height: 28px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1.5px var(--line-strong); font-size: 18px; }
+.hs-jm-tile.is-on:not([aria-disabled="true"])::after { background: var(--stamp); color: #fff; box-shadow: none; }
+.hs-jm-tile__art { border-radius: 10px; background: #F1E9E2; }
+.hs-jm-tile__tag { top: 6px; left: 6px; bottom: auto; font-size: 10px; line-height: 14px; letter-spacing: .04em; background: rgba(255, 255, 255, .92); box-shadow: none; }
+.hs-jm-tile__name { font-size: 14px; line-height: 20px; margin-top: 6px; }
+.hs-jm-tile__price { font-size: 14px; line-height: 20px; color: var(--muted); }
+.hs-jm-opt__name { font-size: 12px; line-height: 16px; color: var(--muted); }
+.hs-jm-pill { height: 40px; min-height: 0; padding: 0 16px; border: 1.5px solid var(--line-strong); border-radius: 8px; background: #fff; font-size: 14px; font-weight: 500; }
+.hs-jm-pill.is-on { background: var(--accent-tint); border-color: var(--stamp); color: var(--ink); }
+.hs-jm__bundle { padding: 12px 16px; border-radius: 12px; background: var(--accent-tint); color: var(--stamp); font-size: 14px; line-height: 20px; font-weight: 600; }
+.hs-jm__tick { min-height: 40px; font-size: 16px; font-weight: 500; }
+.hs-jm__tick input { width: 22px; height: 22px; accent-color: var(--stamp); }
+.hs-jm__dock { padding: 12px 0 calc(16px + env(safe-area-inset-bottom)); }
+.hs-jm__btn { height: 56px; min-height: 0; border-radius: 16px; font-size: 16px; }
+.hs-jm__btn:disabled { background: var(--disabled); color: var(--on-disabled) !important; }
+@media (min-width: 900px) {
+  .hs-jm { padding: 40px; }
+  .hs-jm__title { font-size: 36px; line-height: 44px; }
+}
+

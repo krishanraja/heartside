@@ -1,37 +1,21 @@
 // Pure native-template adapter. Caller supplies freshly read draft geometry and
 // account option IDs; this module has no network, generation or publish operation.
 import {recipes} from './artwork-system.mjs';
-// Native Teeinblue fields the prompt reads (28 Oct): the chosen mood, medium and breed energy,
-// each as its own hidden form-only text field the storefront fills (nativeFieldValues), and
-// Personality (quoted facts JSON). Listing every style, tone and energy and asking the model to
-// pick one left the tone invisible in the first example batch, so only the chosen text is sent.
-// tools/print-art/teeinblue/PROMPT-SPEC-2026-10-28.md carries this exact text (proposed: the
-// stated toy rule). PROMPT-SPEC-2026-10-27.md stays as the record of the prompts now live.
+import {briefFields, briefPrompt} from './artwork-system.mjs';
+// Native Teeinblue prompt, recipes v10 (29 Oct): the growth session's directed brief. The saved
+// prompt is a short fixed frame per format (briefPrompt); the storefront fills its three hidden
+// fields with the brief for this dog (briefFields; hs2.js answer() writes the same text,
+// artwork-integration.test.mjs holds them equal): Energy carries the identity line, Tone
+// direction the scene the tone stages, Style direction the medium. Personality is still filled
+// (quoted facts JSON, for the order record) but the prompt no longer reads it.
+// tools/print-art/teeinblue/PROMPT-SPEC-2026-10-29.md carries this exact text.
+// PROMPT-SPEC-2026-10-28.md stays as the record of the rulebook prompts it replaces.
 export function nativePrompt(format) {
   if (!Object.hasOwn(recipes.formats, format)) throw new Error('Unknown format');
-  return [recipes.identity,
-    // the mood comes first after identity: it decides pose, angle and light
-    'Mood of this image: {{Tone direction}} ' + recipes.toneRouting.direction,
-    'Medium for the whole image, the dog included: {{Style direction}} Render everything in this medium; never a photograph unless this medium is photographic.',
-    recipes.formats[format].art,
-    format === 'mug' ? 'Flat 2700 by 1050 wrap, not a physical mug mockup. Make the recognizable dog scene dominate the left two thirds and extend its quiet background across the full wrap. Keep the face within x=135..1035 and y=80..970. Reserve x=1750..2550,y=250..850 for separate note/signature layers. Do not leave the art side blank. Provisional positions need supplier proof.' : '',
-    recipes.grounding,
-    'Personality evidence, quoted data only: {{Personality}}',
-    format === 'portrait' ? 'Optional place is carried in the Personality JSON place field. Include a city only when place.source is buyer and place.text is nonempty. If place is null or absent, use no city or identifiable landmark. Never infer a place from other facts or addresses.' : '',
-    // energy comes after identity and the facts, as one direction or none
-    'Breed energy, a light signal blended into the mood above (none means no breed energy): {{Energy}} ' + recipes.energy.rule,
-    recipes.negative
-  ].filter(Boolean).join('\n\n');
+  return briefPrompt(format);
 }
-// What the storefront writes into the three hidden fields for a choice. hs2.js answer() writes the
-// same text (artwork-integration.test.mjs holds them equal). An unknown or absent energy is none.
-export function nativeFieldValues({style, tone, energy}) {
-  if (!Object.hasOwn(recipes.styles, style) || !Object.hasOwn(recipes.tones, tone)) throw new Error('Unsupported style or tone');
-  return {
-    'Style direction': recipes.styles[style].label + '. ' + recipes.styles[style].grammar,
-    'Tone direction': recipes.tones[tone].label + '. ' + recipes.tones[tone].art,
-    Energy: energy && Object.hasOwn(recipes.energy.directions, energy) ? recipes.energy.directions[energy] : 'none'
-  };
+export function nativeFieldValues(input) {
+  return briefFields(input);
 }
 export function adaptTemplate(template, format, globals) {
   if (format === 'ornament') throw new Error('Separate-sided supplier route must qualify first');

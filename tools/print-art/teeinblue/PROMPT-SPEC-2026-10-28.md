@@ -1,6 +1,14 @@
 # Teeinblue native prompt spec, 28 October 2026 (stated toy rule)
 
-Status: **proposed vendor change, not applied.** The prompts live on the three Heartside artworks today are the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, whose prompt blocks and hashes stay unchanged as the record of what is live. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, in a run Krish approved up front, with a backup first and the product handles read back after.
+Status at authoring on 28 October: **proposed vendor change, not applied.** See the dated 29 October acceptance repair below for the subsequently applied prompt blocks and the pending tone-recipe revision. At authoring, the prompts on the three Heartside artworks were the ones in [`PROMPT-SPEC-2026-10-27.md`](PROMPT-SPEC-2026-10-27.md). CoWork applied them on 28 October and reported the saved hashes matching that file, whose prompt blocks and hashes stay unchanged as the historical application record. Nothing in this repository can apply this spec, and reading it authorizes no change, generation or order. CoWork applies it on Krish's computer, one campaign at a time, in a run Krish approved up front, with a backup first and the product handles read back after.
+
+## 29 October acceptance repair
+
+The three prompt blocks below were applied and hash-verified in the authorized browser acceptance run. Recipe revision `actual-dog-recipes-v8-deadpan-premise` replaces the storefront-supplied Hilarious tone direction with a concrete deadpan composition. The v7 live painting remained a generic happy portrait despite carrying the chosen facts; v8 is a candidate until its painting is visually reviewed. Identity, factual grounding, safety and the three native prompt blocks are unchanged. This revision still requires a fresh painting and release gates.
+
+## 29 October: Over the top (proposed, not applied)
+
+`Ruling (Krish, 2026-10-29): the slider gets a fourth setting, Over the top, a loving roast, and Hilarious must be far funnier than Warm.` Recipes `actual-dog-recipes-v9-over-the-top` (recipe SHA-256 `5e88c07a0bd4c3224c0203f564aa15aef43214c9920b4ea9531be0de226a9abc`) add one tone, `over_the_top`, with its own art direction. The dog is staged as royalty or the star of its own life, grand and symmetrical, smug and royally unimpressed, and it gets no crowns, capes or other unstated objects. Nothing else in the recipes changed, and the three native prompt blocks below are unchanged. The storefront writes the new direction into the existing Tone direction field. The vendor's Artwork tone option keeps its three values, and Over the top selects Hilarious there, so applying this needs no change in the vendor editor. The recipe is a candidate until its painting is visually reviewed.
 
 ## What changed since 27 October
 
@@ -9,7 +17,7 @@ Status: **proposed vendor change, not applied.** The prompts live on the three H
    - The Sentimental tone gains: "A stated toy or accessory rests quietly beside or on the dog."
    - The negative's "No invented city, costume, toy, accessory, occupation, food preference or relationship." becomes "No invented city, costume, occupation, food preference or relationship. No toy or accessory other than the ones in the facts."
 2. **The cross rule.** `Ruling (Krish, 2026-10-28): a cross gets a breed energy only when both parents match.` The 27 October text said two-parent crosses get `none` while its table gave the doodle archetype an energy, and the code followed the table: all 12 named doodle crosses, Cavapoo and Goldendoodle included, got "Poised and a little theatrical". Now a named cross never takes an energy from its own cross archetype. It gets one only when both of its corpus parents look up exactly and share one archetype, and energies are never averaged.
-3. Recipes `actual-dog-recipes-v6-stated-toy` (recipe SHA-256 `552a95d7f26368286c41bf73ee1d62671a5fb3b7163221d3edd74bf4a06725d9`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
+3. Recipes `actual-dog-recipes-v8-deadpan-premise` (recipe SHA-256 `b7630b3edb4b91d73ea3d338190b72fabf495895ee28d9d131b9d701edcf049b`), replacing `actual-dog-recipes-v5-single-direction` (`ac8eef9248bec785ba07ee9f2fbe76ec88021295a3a482951cdd934b4209d495`).
 
 Two parts of this reach the painting through fields the storefront writes, so they ship with the theme and need no vendor change: the Sentimental `Tone direction` text and the cross rule's `Energy` value. The grounding and the negative are in the saved prompt, so they reach the painting only once a campaign has the new block below.
 
@@ -23,7 +31,7 @@ No field is added, removed or renamed. Teeinblue substitutes each `{{Name}}` pla
 
 | Field (exact layer name) | Placeholder | Type | Value the storefront writes |
 |---|---|---|---|
-| Tone direction | `{{Tone direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen tone's label and art direction. The longest, Hilarious, is 965 characters |
+| Tone direction | `{{Tone direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen tone's label and art direction. The Hilarious field is 1173 characters |
 | Style direction | `{{Style direction}}` | Text layer, form only, not printed, not required, max length 1200, default empty | The chosen style's label and definition |
 | Energy | `{{Energy}}` | Text layer, form only, not printed, not required, max length 300, default `none` | The energy direction from the table below, or `none` |
 | Personality | `{{Personality}}` | Existing text layer, form only | Facts JSON from `HSArtworkProfile.serialize`, `toy` and `accessory` included (portrait adds the optional `place`). Max length 1600 on mug and blanket and 3200 on portrait |

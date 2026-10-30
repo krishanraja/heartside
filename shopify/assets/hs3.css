@@ -116,8 +116,8 @@
 .hs3-range__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .hs3-range__tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .hs3-range figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.hs3-range__img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 12px; background: #F3EEE8; }
-.hs3-range__tiles .hs3-range__img { aspect-ratio: 1 / 1; object-position: 50% 30%; }
+.hs3-range__img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; background: #F3EEE8; }
+.hs3-range__tiles .hs3-range__img { aspect-ratio: 4 / 5; }
 .hs3-range figcaption { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .hs3-demo__img { transition: none; } }
 .hs3-legal { margin: 18px 0 0; padding: 4px var(--g) 8px; text-align: center; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
@@ -410,7 +410,7 @@ details.hs3-paint > summary::-webkit-details-marker { display: none; }
   .hs3-range__h, .hs3-range .hs3-small { grid-column: 1 / -1; }
   .hs3-range__h { font-size: 30px; }
   .hs3-range__pair, .hs3-range__tiles { display: contents; }
-  .hs3-range__tiles .hs3-range__img { aspect-ratio: 3 / 4; }
+  .hs3-range__tiles .hs3-range__img { aspect-ratio: 4 / 5; }
   .hs3-legal { grid-area: legal; }
   .hs3-fan { max-width: 620px; gap: 14px; }
   .hs3-fan__name { font-size: 16px; } .hs3-fan__price { font-size: 15px; }

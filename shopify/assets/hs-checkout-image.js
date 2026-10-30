@@ -27,10 +27,10 @@
         if (!item || !/^\d+$/.test(String(item.id)) || !item.properties || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(item.properties._customization_id || '')) throw fail();
       });
     } catch (e) { return Promise.reject(fail()); }
-    var fetcher = options.fetch || root.fetch.bind(root), deadline = Date.now() + 25000;
+    var fetcher = options.fetch || root.fetch.bind(root), deadline = Date.now() + 90000;
     function register(item, attempt) {
       var id = item.properties._customization_id, variant = String(item.id), timer;
-      if (Date.now() >= deadline || attempt >= 5) return Promise.reject(fail());
+      if (Date.now() >= deadline || attempt >= 12) return Promise.reject(fail());
       var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       // Shopify signs app-proxy query parameters, not the JSON body. Bind both copies.
       var requestUrl = new URL(target);
@@ -39,11 +39,12 @@
       var request = Promise.resolve().then(function () {
         return fetcher(requestUrl.href, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', cache: 'no-store', signal: controller ? controller.signal : undefined, body: JSON.stringify({customizationId: id, variantId: variant})});
       }).then(function (response) {
-        if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) throw fail();
+        if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) { if (root.console) root.console.warn('Checkout registration HTTP status', response ? response.status : 0); throw fail(); }
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
       var timeout = new Promise(function (_, reject) {
-        timer = setTimeout(function () { if (controller) controller.abort(); reject(fail()); }, Math.min(8000, Math.max(1, deadline - Date.now())));
+        // the server's run stops at 30 s; waiting past it means a retry never repeats work still running
+        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); reject(fail()); }, Math.min(32000, Math.max(1, deadline - Date.now())));
       });
       return Promise.race([request, timeout]).then(function (response) {
           clearTimeout(timer);
@@ -51,10 +52,16 @@
           // Teeinblue serves its copy of a design a moment after painting it, and until then the
           // server answers 503 preview_unavailable (28 Oct, Recording 4: the redo's add failed on
           // it). That is a wait inside the same budget: registration is asked again, nothing uploads.
+          // A transient lookup, create or readback failure must restart the same idempotent
+          // registration. A valid ready response is still required before the cart can change.
+          var transient = /^(preview_unavailable|image_lookup_failed|image_creation_failed|image_readback_failed)$/.test(data.code || '');
           var wait = response.status === 202 && data.state === 'pending' && (data.retryAfterSeconds === 3 || data.retryAfterSeconds === 5) ? data.retryAfterSeconds
-            : response.status === 503 && data.code === 'preview_unavailable' ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
-          if (response.status === 503 && !wait) throw fail();
+            : response.status === 503 && transient ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
+          if (response.status === 503 && !wait) { if (root.console) root.console.warn('Checkout registration rejected', /^[a-z_]{1,48}$/.test(data.code || '') ? data.code : 'unknown'); throw fail(); }
           if (wait) {
+            // the server's 3 or 5 s, then a little longer after the third try, and a few hundred ms of
+            // jitter so two tabs asking about the same design do not keep arriving together
+            wait = (attempt < 3 ? wait : Math.min(8, wait + attempt - 2)) + Math.random() * 0.4;
             if (Date.now() + wait * 1000 >= deadline) throw fail();
             if (typeof options.onPending === 'function') { try { options.onPending(attempt + 1); } catch (e) { /* words only */ } }
             return new Promise(function (resolve) { setTimeout(resolve, wait * 1000); }).then(function () { return register(item, attempt + 1); });
@@ -66,8 +73,11 @@
           item.properties._hs_checkout_bundle_id = bundle;
       }).then(function (result) { clearTimeout(timer); return result; }, function () { clearTimeout(timer); throw fail(); });
     }
-    // One registration at a time keeps request volume bounded for a multi-item add.
-    return items.reduce(function (chain, item) { return chain.then(function () { return register(item, 0); }); }, Promise.resolve()).then(function () { return JSON.stringify(parsed); });
+    // Two registrations at a time: a three-gift add no longer waits for each in turn, and request
+    // volume stays bounded (the server admits 30 a minute per shop).
+    var queue = items.slice();
+    function lane() { var item = queue.shift(); return item ? register(item, 0).then(lane) : Promise.resolve(); }
+    return Promise.all([lane(), lane()]).then(function () { return JSON.stringify(parsed); });
   }
   root.HSCheckoutImage = {prepare: prepare};
 })(window);

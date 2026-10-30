@@ -50,10 +50,17 @@
     if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone].label;
+      // Teeinblue's Artwork tone option has three values; Over the top selects Hilarious there and its own
+      // direction travels in art_tone_direction (PROMPT-SPEC-2026-10-28.md, 29 Oct)
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'hilarious' : choice.tone].label;
     }
-    // 28 Oct: Teeinblue's prompt reads only the chosen medium, mood and energy, in hidden fields
-    // (tools/print-art/native-candidate.mjs nativeFieldValues writes the same text)
+    // 29 Oct, recipes v10: the directed brief (tools/print-art/artwork-system.mjs briefFields, the same
+    // text native-candidate.mjs nativeFieldValues gives): Energy carries the identity line, Tone
+    // direction the scene the tone stages from the buyer's answers, Style direction the medium
+    if ((cityArtPreview() || nativeArtworkPurchase()) && (k === 'art_style_direction' || k === 'art_tone_direction' || k === 'art_energy')) {
+      var brief = artworkBrief();
+      if (brief) return k === 'art_energy' ? brief.Energy : k === 'art_style_direction' ? brief['Style direction'] : brief['Tone direction'];
+    }
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style_direction' || k === 'art_tone_direction')) {
       var chosen = window.HSArtworkChoices.read(), rs = window.HSArtworkEngine.recipes;
       return k === 'art_style_direction' ? rs.styles[chosen.style].label + '. ' + rs.styles[chosen.style].grammar : rs.tones[chosen.tone].label + '. ' + rs.tones[chosen.tone].art;
@@ -231,7 +238,7 @@
     if (blanketUploadPending()) {
       var recovery = document.querySelector('[data-hs2-upload-recovery]'), who = String(answer('dog') || '').trim() || 'your dog';
       if (recovery && recovery.getClientRects().length) return 'I\'m still working on the photo you sent. If it stopped, open "Artwork failed or stopped?" below.';
-      return "I'm still painting " + who + ' from the photo you sent. It takes about a minute, sometimes two.';
+      return "I'm still painting " + who + ' from the photo you sent. Most paintings take 1 to 3 minutes.';
     }
     if (!nativeBlanketInputsReady()) return 'Your choices are still loading into the painter. Choose the photo again in a moment.';
     return "This browser didn't let me hold your place. Allow this site to save data, then choose the photo again.";
@@ -292,6 +299,78 @@
         Promise.resolve(window.HSPhotoQuality.loadDetector()).then(function (detector) { photoLog(detector ? 'detector:ready' : 'detector:none', { ms: Date.now() - t0 }); });
       } catch (err) { /* the check fails open without it */ }
     }, true);
+  }
+  /* Journey mode (Krish, 29 Oct): a buyer who came through the journey (hs-journey.js) has answered
+     everything and chosen the words, the tone and the look. This page paints at once and asks
+     nothing again: the photo goes to the painter by itself, once, and every question, select and
+     note editor is hidden. A journey is fresh for six hours and only on a ?journey=1 address. */
+  var JOURNEY_HOURS = 6;
+  function journey() {
+    var j = state.hs_journey;
+    if (!j || !j.t || Date.now() - j.t > JOURNEY_HOURS * 36e5) return null;
+    // Teeinblue rewrites the address to ?variant= when an option changes, so the page remembers it
+    // opened from this journey and a reload stays in journey mode
+    var key = 'hs2-journey-on:' + productId();
+    try {
+      if (new URLSearchParams(window.location.search).get('journey') === '1') sessionStorage.setItem(key, String(j.t));
+      else if (sessionStorage.getItem(key) !== String(j.t)) return null;
+    } catch (e) { return null; }
+    return nativeArtworkPurchase() ? j : null;
+  }
+  function journeySentKey(j) { return 'hs2-journey-sent:' + productId() + ':' + j.t; }
+  // sends the saved photo once the painter's fields carry the answers; a reload after the send, or a
+  // painting already saved, never sends again (the upload lock and request keys still stand behind it)
+  // the photo did not carry over: the buyer picks one in Teeinblue's own field, which sends it, so
+  // the automatic send stands down for good on this page (no second painting)
+  function journeyPick() {
+    var j = journey(); if (!j) return false;
+    try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
+    return openPhotoPicker('journey');
+  }
+  /* One free repaint (Krish, 29 Oct: "They should get one free regenerate where they can choose to
+     change the slider one last time"): once the painting is saved, the buyer may pick a tone once
+     more and the same photo is painted again. The words follow when the journey already wrote that
+     tone. Used once per journey and gift page, then gone; a reload never repaints. */
+  function journeyRepaintKey(j) { return 'hs2-journey-repaint:' + productId() + ':' + j.t; }
+  function journeyRepaintLeft() {
+    var j = journey();
+    if (!j || !cityArtSaved()) return false;
+    try { return !sessionStorage.getItem(journeyRepaintKey(j)); } catch (e) { return false; }
+  }
+  function journeyRepaint(tone) {
+    var j = journey(), engine = window.HSArtworkEngine;
+    if (!j || !engine || !Object.prototype.hasOwnProperty.call(engine.recipes.tones, tone) || !journeyRepaintLeft() || !usePhoto.file || blanketUploadPending()) return false;
+    try { sessionStorage.setItem(journeyRepaintKey(j), String(Date.now())); } catch (e) { return false; }
+    var lines = j.notes && j.notes[tone];
+    if (lines) { state.hs3_lines = lines; state.hs3_mug_lines = lines; }
+    state.hs_journey.tone = tone;
+    state.hs3_art_choices = { style: (state.hs3_art_choices || {}).style || j.style, tone: tone };
+    save();
+    try { if (window.HSArtworkChoices) window.HSArtworkChoices.select({ tone: tone }); } catch (e) { /* the fields carry it */ }
+    runBridge();
+    // the hidden fields take the new tone's brief first, then the photo goes again
+    var tries = 0, timer = setInterval(function () {
+      if (++tries > 100) { clearInterval(timer); return; }
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      clearInterval(timer); sendBlanketPhoto();
+    }, 300);
+    return true;
+  }
+  function journeyAutoSend() {
+    var j = journey();
+    if (!j) return;
+    // the page's own restore gives up after 1.5 s; the journey waits for the photo it was promised
+    if (!usePhoto.file) restorePhoto().then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); });
+    var tries = 0, timer = setInterval(function () {
+      tries++;
+      var sent = false;
+      try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
+      if (sent || cityArtSaved() || tries > 150) { clearInterval(timer); return; }
+      if (!usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
+      clearInterval(timer);
+      sendBlanketPhoto();
+    }, 600);
   }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
@@ -360,15 +439,28 @@
   }
   /* The painting, then the finished design (Krish, 28 Oct: the wait "looks broken", and the tickbox
      sat above the picture). While Teeinblue paints, the card shows the buyer's photo as a sketch
-     under a moving wash, lines from their own choices, and a bar that eases toward the end without
-     ever claiming it. The finished design then fills the card with the review right under it. */
-  function artLines(who) {
-    var choice = window.HSArtworkChoices ? window.HSArtworkChoices.read() : null;
-    var STYLE = { cinematic: 'Lighting ' + who + ' like a film still.', painterly: 'Loading the brush for ' + who + '.', screenprint: 'Inking the screens, one color at a time.',
-      comic: 'Inking ' + who + "'s panel lines.", collage: 'Cutting the paper shapes for ' + who + '.', ink: 'Sharpening the pen for ' + who + '.' };
-    var TONE = { sentimental: 'Keeping it soft and tender.', warm: 'Finding the wink.', hilarious: 'Setting up the joke.' };
-    return [(choice && STYLE[choice.style]) || 'Sketching ' + who + '.', 'Getting ' + who + "'s ears exactly right.", (choice && TONE[choice.tone]) || 'Mixing the colors.',
-      'Adding what you told me about ' + who + '.', 'Checking every whisker and marking.'];
+     under a moving wash and says only what is known (29 Oct handover): the photo is being checked on
+     this device, it is with the painter, the framing box is open, or it is going onto the gift.
+     Teeinblue reports nothing between "sent" and "ready", so there is no percentage and no "nearly
+     there": the bar sweeps without a value and the card counts the time since it started. */
+  function artPhase(t, open) {
+    var lock = '';
+    try { lock = (JSON.parse(window.sessionStorage.getItem('hs2-blanket-upload:' + productId()) || 'null') || {}).stage || ''; } catch (e) { lock = ''; }
+    if (open) return 'framing';
+    if (artStage.framed) return 'placing';
+    if (lock === 'preparing') return 'checking';
+    return t > 120000 ? 'long' : 'painting';
+  }
+  function artWords(phase) {
+    return { checking: 'Checking your photo on this device and getting it ready.', painting: 'Your photo is with the painter. The finished picture comes back all at once.',
+      long: "This one is taking longer than most. It's still going, and you don't need to send the photo again.", framing: "It's painted. Check the framing, then Save.", placing: 'Putting it on your gift.' }[phase];
+  }
+  function artElapsed(t) {
+    var s = Math.max(0, Math.floor(t / 1000));
+    if (s < 10) return 'Started just now.';
+    if (s < 60) return 'Started ' + (s - s % 10) + ' seconds ago.';
+    var m = Math.floor(s / 60);
+    return 'Started ' + m + (m === 1 ? ' minute' : ' minutes') + ' ago.';
   }
   function artStage(pending) {
     var card = document.querySelector('[data-hs-art]');
@@ -405,37 +497,33 @@
     // "Artwork failed or stopped?" only once a painting has run two minutes, or on a real error:
     // under a normal run it invited doubt (28 Oct, order 1). The status code still owns hidden.
     var recovery = document.querySelector('[data-hs2-upload-recovery]');
-    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; artStage.tick = null; artStage.at = -1; if (recovery) recovery.style.display = ''; }
+    if (next !== 'painting') { clearInterval(artStage.timer); artStage.timer = null; artStage.tick = null; artStage.framed = false; if (recovery) recovery.style.display = ''; }
     if (next === 'painting') {
       var start = 0;
       try { start = Number(window.sessionStorage.getItem(key)) || 0; if (!start) window.sessionStorage.setItem(key, String(start = Date.now())); } catch (e) { start = artStage.start || (artStage.start = Date.now()); }
       card.querySelector('[data-hs-art-title]').textContent = 'Painting ' + who;
       // honest timing, and Teeinblue's framing box named before it opens by itself (28 Oct)
-      var note = card.querySelector('.hs-art__note'), timing = "About a minute, sometimes two. When it's done, check the framing, then Save.";
+      var note = card.querySelector('.hs-art__note'), timing = "Most paintings take 1 to 3 minutes. When it's done, check the framing, then Save.";
       if (note && note.textContent !== timing) note.textContent = timing;
       photo.hidden = !photoURL;
       if (photoURL && photo.getAttribute('src') !== photoURL) photo.src = photoURL;
       var tick = function () {
-        var t = Date.now() - start, lines = artLines(who), line = card.querySelector('[data-hs-art-line]'), bar = card.querySelector('[data-hs-art-bar]');
-        // eases toward 92% over about a minute; only the finished design ends it
-        var pct = Math.round(92 * (1 - Math.exp(-t / 28000)));
-        // the line only moves forward: each of Buddy's lines once, then the longer waits, then the
-        // framing box while it is open and the moment after it. It used to start over at 25 seconds,
-        // and a timer kept from the first call put "Nearly there" back over an open framing box.
-        var steps = lines.concat(['Nearly there. Good paintings take a minute.', "Still painting. Some take a little longer, and I'm on it.", "It's painted. Check the framing, then Save.", 'Putting it on your gift.']);
-        var framing = steps.length - 2, open = !!document.querySelector('.vm--container');
-        var at = open ? framing : artStage.at >= framing ? framing + 1 : t > 100000 ? framing - 1 : t > 30000 ? lines.length : Math.min(Math.floor(t / 5000), lines.length - 1);
-        artStage.at = Math.max(at, artStage.at == null ? -1 : artStage.at);
-        var say = steps[artStage.at];
+        var t = Date.now() - start, line = card.querySelector('[data-hs-art-line]'), elapsed = card.querySelector('[data-hs-art-elapsed]');
+        var open = !!document.querySelector('.vm--container');
+        // the framing box opens once the painting is back; after it closes the words move on and never
+        // return to "painting" (a timer kept from the first call once put an old line over the open box)
+        if (open) artStage.framed = true;
+        var say = artWords(artPhase(t, open));
         if (line.textContent !== say) line.textContent = say;
-        bar.firstElementChild.style.width = pct + '%'; bar.setAttribute('aria-valuenow', String(pct));
+        var since = artElapsed(t);
+        if (elapsed && elapsed.textContent !== since) elapsed.textContent = since;
         if (recovery) recovery.style.display = t < 120000 ? 'none' : '';
       };
       artStage.tick = tick;
       tick();
       if (!artStage.timer) artStage.timer = setInterval(function () { if (card.getAttribute('data-state') === 'painting' && artStage.tick) artStage.tick(); }, 1000);
       // the moment it starts, bring the painting into view instead of the small loader below
-      if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (was !== 'painting' && card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
     } else {
       try { window.sessionStorage.removeItem(key); } catch (e) { artStage.start = 0; }
     }
@@ -449,7 +537,7 @@
       if (was === 'painting') {
         card.classList.add('is-new');
         setTimeout(function () { card.classList.remove('is-new'); }, 1200);
-        if (card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        if (card.scrollIntoView) card.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
         var title = card.querySelector('[data-hs-art-done-title]');
         if (title.focus) title.focus({ preventScroll: true });
       }
@@ -517,6 +605,20 @@
     return window.HSArtworkProfile ? window.HSArtworkProfile.serialize(profile) : '{"version":1,"facts":[]}';
   }
   // The breed's energy code, worked out in the chat (HSBreeds only loads there). Never a fact.
+  // what the buyer told the journey (hs-journey.js bridge: chip ids, breed and pronoun); a buyer from
+  // the older chat has only the facts, so the toy and the worn item come from those
+  function artworkBrief() {
+    var engine = window.HSArtworkEngine, choice = window.HSArtworkChoices && window.HSArtworkChoices.read();
+    if (!engine || !engine.briefFields || !choice) return null;
+    var b = state.hs_brief_input || {}, facts = [];
+    if (!state.hs_brief_input) { try { facts = JSON.parse(artworkFacts()).facts || []; } catch (e) { facts = []; } }
+    var fact = function (src) { var f = facts.filter(function (x) { return x.source === src; })[0]; return f ? f.text : ''; };
+    var kind = v3Kind() || (blanketArtPreview() ? 'blanket' : 'portrait');
+    try {
+      return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they', archetype: b.archetype || '',
+        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
+    } catch (e) { return null; }
+  }
   function artworkEnergy() {
     var code = state.hs3_energy, engine = window.HSArtworkEngine;
     return code && engine && engine.recipes.energy && Object.prototype.hasOwnProperty.call(engine.recipes.energy.directions, code) ? code : null;
@@ -797,7 +899,7 @@
       if (choice && recipes) { style = recipes.styles[choice.style].label; tone = recipes.tones[choice.tone].label; }
     } catch (e) { /* the choices load after this page's first paint */ }
     var row = function (k, v, href, label) { return '<div class="hs-journey__row"><span class="hs-journey__k">' + k + '</span><span class="hs-journey__v">' + v + '</span>' + (href ? '<a href="' + esc_(href) + '">' + (label || 'Change') + '</a>' : '') + '</div>'; };
-    var html = row('From', esc_(dog) + (person ? ' for ' + esc_(person) : ''), change(person ? 'person' : 'dog'));
+    var html = row('From', esc_(dog) + (chat.rel === 'self' ? ' for you' : person ? ' for ' + esc_(person) : ''), change(chat.rel === 'self' || person ? 'person' : 'dog'));
     html += gift === 'blanket' ? row('Words', 'None. The blanket is all painting.') : row('Words', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>' + esc_(answer('signed')) + '</em>', change('gift-' + gift));
     // the pronoun the chat used, so the two pages agree; none tapped reads "they" (28 Oct)
     var isNow = chat.pro === 'he' ? 'he is' : chat.pro === 'she' ? 'she is' : 'they are';
@@ -1667,7 +1769,7 @@
     var dog = String(answer('dog') || '').trim(), whose = dog ? possessive(dog) : "your dog's", name = dog || 'your dog';
     var say = 'One more thing first. See the message above.';
     if (buy && buy.getAttribute('data-hs2-purchase-enabled') !== 'true') say = 'This gift is not available to order yet.';
-    else if (blanketUploadPending() || (artRequested() && !cityArtSaved())) say = 'Still painting ' + name + '. About a minute.';
+    else if (blanketUploadPending() || (artRequested() && !cityArtSaved())) say = 'Still painting ' + name + '. Most take 1 to 3 minutes.';
     else if (cityArtSaved()) { if (!blanketReviewAccepted()) say = 'Tick the box under ' + whose + ' painting first.'; }
     else if (restoredArtworkAvailable()) say = 'Review your saved design above first, or add a new photo.';
     else if (!nativeBlanketInputsReady()) say = 'One moment. Your choices are still loading.';
@@ -2931,8 +3033,10 @@
     inputs.forEach(function (input) {
       var source = input.getAttribute('data-hs-extra'), had = facts().filter(function (f) { return f.source === source; })[0];
       input.value = had ? had.text : '';
-      input.addEventListener('change', function () {
+      var persistWords = function () {
         var typed = input.value.replace(/\s+/g, ' ').trim().slice(0, 80), text = typed ? tidy(typed).slice(0, 80) : '';
+        var existing = facts().filter(function (f) { return f.source === source; })[0];
+        if ((existing ? existing.text : '') === text) return;
         var now = facts().filter(function (f) { return f.source !== source; });
         if (text) now.push({ source: source, text: text });
         state.hs3_art_profile = { version: 1, facts: now };
@@ -2941,7 +3045,9 @@
         invalidateBlanketReview(); artworkChoicesChanged(); journeyCard(); updateBlanketPurchaseStatus();
         if (said) said.textContent = told().join(' · ');
         track('extras_words', { source: source, filled: !!text });
-      });
+      };
+      input.addEventListener('input', persistWords);
+      input.addEventListener('change', persistWords);
     });
     fold(true);
     var change = box.querySelector('[data-hs-extras-change]');
@@ -3767,7 +3873,8 @@
     prepareCheckoutCart.pending = true;
     checkoutImageStatus('Getting ' + whose + ' picture ready for checkout.');
     // registration polls while Teeinblue finishes its copy; it never uploads (hs-checkout-image.js)
-    var options = Object.assign({}, config, { onPending: function () { checkoutImageStatus('Almost there.'); } });
+    prepareCheckoutCart.retries = 0;
+    var options = Object.assign({}, config, { onPending: function () { prepareCheckoutCart.retries++; checkoutImageStatus('Almost there.'); } });
     return Promise.resolve().then(function () {
       if (!window.HSCheckoutImage) throw new Error('Checkout artwork service is unavailable.');
       return window.HSCheckoutImage.prepare(body, options);
@@ -3812,7 +3919,7 @@
     var refuse = function () { checkoutImageStatus('This is still your first design. Add a new photo to make another version.'); };
     // where the 30 seconds go (28 Oct): Teeinblue's own save, our checkout picture, Shopify's add
     var timed = function (at, ready) {
-      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready }); } catch (e) { /* analytics never holds an add */ }
+      try { track('add_timing', { teeinblue_ms: onCartAdd.clickAt ? at - onCartAdd.clickAt : null, prepare_ms: ready - at, add_ms: Date.now() - ready, retries: prepareCheckoutCart.retries || 0 }); } catch (e) { /* analytics never holds an add */ }
       onCartAdd.clickAt = 0;
     };
     if (window.fetch) {
@@ -4127,6 +4234,7 @@
   }
   function layout() { stickyHead.h = stickyHead(); heroTop(); fitPoster(); ticker(); fitFaq(); }
   function init() {
+    if (journey()) { document.documentElement.classList.add('hs2-journey'); var buyEl = document.getElementById('buy'); if (buyEl) buyEl.classList.add('hs2-journey'); }
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices) {
       window.HSArtworkChoices.mount(document.querySelector('[data-hs-art-choices]'), {wordFree: blanketArtPreview(), nativeUpload: nativeArtworkPurchase()});
       window.addEventListener('hs-artwork-choices', artworkChoicesChanged);
@@ -4142,7 +4250,7 @@
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
     var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
-    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); });
+    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); journeyAutoSend(); });
     cartTidy();
   }
   var resizeT;
@@ -4152,5 +4260,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

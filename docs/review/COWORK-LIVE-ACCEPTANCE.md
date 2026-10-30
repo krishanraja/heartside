@@ -188,7 +188,7 @@ The merge rebuilt two workflows. The first is "Heartside: typed answer (Buddy AI
 | --- | --- |
 | Guard (`jsCode`) | `n8n/guard-typed.js` or `n8n/guard-compose.js`. It keeps "they" when no pronoun was tapped. |
 | Enforce rules (`jsCode`) | `n8n/enforce-typed.js` or `n8n/enforce-compose.js`. It rejects invented foods, toys, objects and places, in Buddy's follow-up question too, and a dog called Biscuit grounds no biscuit. It drops "Not sure" chips, never prints "!", and for a gift for "Me" speaks to you, never by name. |
-| The backup model node (`options.systemMessage`) | The `typed` or `compose` entry in `n8n/prompts.json` |
+| The disabled Voice node (`options.systemMessage`; before 29 October, the backup model node) | The `typed` or `compose` entry in `n8n/prompts.json` |
 
 For each workflow:
 

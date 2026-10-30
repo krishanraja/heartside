@@ -54,7 +54,7 @@ const VIEWS = {
 // inside the first screen, and its chat and phone menu must offer the three clean addresses.
 const GIFTS = CORE.map(({ key, chat, handle, path: p }) => ({ key, chat, handle, path: p }));
 const PAGES = {
-  home: { path: '/', primary: '[data-hs3-start]', gifts: GIFTS },
+  home: { path: '/', primary: '[data-hsj-go="name"], [data-hs3-start]', gifts: GIFTS },
   ...Object.fromEntries(CORE.map((c) => [c.key, { path: c.path, title: c.title, price: c.price, marker: markerSelector(c) }])),
   catalog: { path: '/collections/all' },
   cart: { path: '/cart' },
@@ -107,7 +107,7 @@ function inspect([spec, retiredSource]) {
       headBottom = Math.max(headBottom, r.bottom);
     });
   }
-  const ours = [...document.querySelectorAll('main .hs2 h1, main .hs2 h2, main .hs2 .hs2-stamp, main .hs2 .hs2-btn, main .hs2-product__main, main .hs2-product__media, main .hs3 h1, main .hs3 .hs3-btn, main .hs3-hero__art, main .hs-lost h1, main .hs-lost .hs-btn')];
+  const ours = [...document.querySelectorAll('main .hs2 h1, main .hs2 h2, main .hs2 .hs2-stamp, main .hs2 .hs2-btn, main .hs2-product__main, main .hs2-product__media, main .hs3 h1, main .hs3 .hs3-btn, main .hs3-hero__art, main .hsj h1, main .hsj .hsj-btn, main .hsj-example, main .hs-lost h1, main .hs-lost .hs-btn')];
   for (const el of ours) {
     if (!vis(el)) continue;
     const r = el.getBoundingClientRect();
@@ -118,14 +118,14 @@ function inspect([spec, retiredSource]) {
   const sw = document.documentElement.scrollWidth;
   if (sw > innerWidth + 1) fails.push(`page scrolls sideways (${sw}px wide in a ${innerWidth}px window)`);
   const scrollers = [...document.querySelectorAll('*')].filter((el) => { const o = getComputedStyle(el).overflowX; return o === 'auto' || o === 'scroll' || o === 'hidden'; });
-  document.querySelectorAll('main .hs2 *, main .hs3 *').forEach((el) => {
+  document.querySelectorAll('main .hs2 *, main .hs3 *, main .hsj *').forEach((el) => {
     if (!vis(el) || scrollers.some((s) => s !== el && s.contains(el) && s !== document.documentElement && s !== document.body && !s.classList.contains('page-wrapper'))) return;
     const r = el.getBoundingClientRect();
     if (r.right > innerWidth + 2 || r.left < -2) fails.push(`off the edge: ${label(el)} spans ${Math.round(r.left)}..${Math.round(r.right)}px`);
   });
 
   // 3. text on top of text: headings, buttons, labels and stamps that aren't nested in each other
-  const texts = [...document.querySelectorAll('main h1, main h2, main h3, main .hs2-stamp, main .hs2-btn, main .hs3-btn, main .hs-btn, main label, main .tee-btn, main .hs2-product__price, main .tee-field__heading, main .hs3-fan__name, main .hs3-fan__price, main .hs3-bubble')].filter(vis);
+  const texts = [...document.querySelectorAll('main h1, main h2, main h3, main .hs2-stamp, main .hs2-btn, main .hs3-btn, main .hsj-btn, main .hs-btn, main label, main .tee-btn, main .hs2-product__price, main .tee-field__heading, main .hs3-fan__name, main .hs3-fan__price, main .hs3-bubble')].filter(vis);
   // a turned card (a CSS rotate) widens the screen boxes of everything in it, so two lines in the
   // same turned box are compared by their layout boxes, which the turn does not change
   const turnedBox = (el) => { for (let x = el.parentElement; x && x !== document.body; x = x.parentElement) if (getComputedStyle(x).transform !== 'none') return x; return null; };
@@ -210,7 +210,7 @@ function inspect([spec, retiredSource]) {
     const cs = getComputedStyle(el), box = el.getBoundingClientRect();
     return width <= box.width - ['paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth'].reduce((s, k) => s + (parseFloat(cs[k]) || 0), 0);
   };
-  for (const el of document.querySelectorAll('.hs3-hero__h, .hs3-h2, .hs3-range__h, .hs-journey__line, #buy h1')) {
+  for (const el of document.querySelectorAll('.hs3-hero__h, .hs3-h2, .hs3-range__h, .hsj-h1, .hs-journey__line, #buy h1')) {
     if (!vis(el)) continue;
     const lines = lastLine(el);
     if (lines.length < 2 || lines[lines.length - 1].words.length !== 1) continue;
@@ -235,7 +235,7 @@ function inspect([spec, retiredSource]) {
   if (spec.marker && !document.querySelector(spec.marker)) fails.push(`not on its native template (no ${spec.marker})`);
   if (spec.gifts) {
     let cfg = null;
-    try { cfg = JSON.parse(document.querySelector('[data-hs3-config]').textContent); } catch (e) { cfg = null; }
+    try { cfg = JSON.parse(document.querySelector('[data-hsj-config], [data-hs3-config]').textContent); } catch (e) { cfg = null; }
     if (!cfg || !cfg.gifts) fails.push('no chat config on the first screen');
     else for (const g of spec.gifts) {
       const got = cfg.gifts[g.chat] || {};

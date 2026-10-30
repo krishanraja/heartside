@@ -1,0 +1,9 @@
+{%- comment -%}
+  One example picture for the showcase: always labeled Example, served at the size it was built at.
+  Params: id (hs-ex-<id>.webp), w, h, alt, caption (optional), sub (optional), eager (optional).
+{%- endcomment -%}
+<figure class="hss-fig">
+  <span class="hss-tag">Example</span>
+  <img src="{{ id | prepend: 'hs-ex-' | append: '.webp' | asset_url }}" alt="{{ alt | escape }}" width="{{ w }}" height="{{ h }}" loading="{% if eager %}eager{% else %}lazy{% endif %}" decoding="async">
+  {%- if caption != blank -%}<figcaption><strong>{{ caption }}</strong>{% if sub != blank %}<span>{{ sub }}</span>{% endif %}</figcaption>{%- endif -%}
+</figure>

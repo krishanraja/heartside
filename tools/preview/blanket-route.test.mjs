@@ -146,8 +146,12 @@ test('blanket purchase setting is default off and reads product picker price and
   assert.equal(schema.settings.some(setting=>setting.id==='bundle_offer_live'),false);
 });
 
-test('default Buddy entry point has live core products; the alternate entry points have moved',()=>{
-  const config=JSON.parse(readFileSync(new URL('../../shopify/templates/index.json',import.meta.url),'utf8')).sections.gift.settings;
+test('the homepage journey and the rollback chat have live core products; the alternate entry points have moved',()=>{
+  // 29 Oct: the homepage is the journey; the chat stays one release at /?view=chat for rollback
+  const home=JSON.parse(readFileSync(new URL('../../shopify/templates/index.json',import.meta.url),'utf8')).sections.gift;
+  assert.equal(home.type,'hs-journey');
+  assert.deepEqual([home.settings.product_mug,home.settings.product_blanket,home.settings.product_print,home.settings.core_purchase],['your-dogs-illustrated-mug','your-dogs-personality-blanket','your-dogs-portrait',true]);
+  const config=JSON.parse(readFileSync(new URL('../../shopify/templates/index.chat.json',import.meta.url),'utf8')).sections.gift.settings;
   assert.equal(config.product_blanket,'your-dogs-personality-blanket');
   assert.equal(config.product_print,'your-dogs-portrait');
   assert.equal(config.product_mug,'your-dogs-illustrated-mug');assert.equal(config.artwork_candidates,true);
