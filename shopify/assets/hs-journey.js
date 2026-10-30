@@ -363,7 +363,7 @@
     return screen('look', 'What style of design do you want?', 'Every style is painted from your photo.', '<div class="hsj-styles">' + styles().map(function (s) {
       var src = cfg.examples && cfg.examples[s.id], on = S.style === s.id;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="300" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
     }).join('') + '</div><p class="hsj-brief" data-hsj-brief>' + esc(brief().replace(/^[\w-]+ portrait: /, 'We paint ')) + '</p>', primary('Upload your best pic of ' + esc(n.dog), 'photo', true));
   }

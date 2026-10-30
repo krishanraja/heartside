@@ -30,7 +30,7 @@ test('the live templates still render their own sections, never the moved page',
     assert.ok(types.length && !types.includes('hs-moved'),name);
     if(name.startsWith('product.')) assert.deepEqual(types,['hs2-product'],name);
     // 29 Oct: the homepage is the journey; the chat stays one release at /?view=chat for rollback
-    if(name==='index.json') assert.deepEqual(types,['hs-journey'],name);
+    if(name==='index.json') assert.deepEqual(types,['hs-journey','hs-showcase'],name);
     if(name==='index.chat.json') assert.deepEqual(types,['hs3-chat'],name);
   }
 });
