@@ -47,6 +47,8 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- live: the release fixes are on the live theme, the real card renders full size through PDF.co, and both n8n workflows (the note on the packing slip, the printed card) run every 10 minutes with dryRun off. (2026-10-31)
+- the portrait is going artwork only (Krish chose option A): painter v17 stops asking for a note area on the portrait, and docs/review/COWORK-PORTRAIT-ARTWORK-ONLY.md has CoWork make the painting fill the whole print and Update only the live campaign. (2026-10-31)
 - the release is live (theme published, mug designs without words, card page, digital card email, $12 card on sale, descriptions); this branch fixes what the release found: the mug painting instructions no longer keep room for a note and invite no unnamed toy (painter v16, recorded in PROMPT-SPEC-2026-10-31-v16.md), and the card page prints full size with solid gold through PDF.co. The portrait still prints its note until its layout loses the note strip. (2026-10-31)
 - the CoWork release prompt is written (docs/review/COWORK-RELEASE.md): Krish publishes the "Heartside 31 Oct showcase" theme, CoWork takes the words off the mug and portrait designs and moves the mug's dog to the front, creates the card page, adds the free digital card to the order email (tested) and puts the $12 card on sale. (2026-10-31)
 - the theme is ready for artwork-only gifts on the branch: the note is no longer required on the design (a campaign without note or signature fields needs no words; one that still has them is checked as before), the order carries the whole four-line note in _hs_lines on every gift including the blanket, and the gift page, journey card, homepage and cart say the note comes in the box and on a free digital card and that sets arrive as separate boxes. Both n8n workflows read _hs_lines first. (2026-10-31)
@@ -89,7 +91,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-10-31): push this branch to the live theme on Krish's go, re-run the real card render, then switch both n8n workflows on.
+- Next (2026-10-31): Krish chooses the portrait layout (A painting fills the print, B strip without words, C strip with the dog's name), then places his live mug and blanket order.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
