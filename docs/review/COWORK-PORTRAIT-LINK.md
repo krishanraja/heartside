@@ -1,5 +1,7 @@
 # Claude CoWork: unlink the old draft from the portrait campaign, and retire The Morning Mug campaign
 
+**SUPERSEDED (31 October 2026).** Its premise was wrong: the live portrait runs from the campaign "Heartside City Screenprint - DRAFT 2026-10-23", not "Your Dog's Portrait". See `COWORK-PORTRAIT-ARTWORK-ONLY.md` (done) and `COWORK-CLOSEOUT.md`. Do not run this file.
+
 Status: ASSIGNMENT, not a result. Written 31 October 2026 for Krish to run in CoWork on his own computer, after the audit follow-ups run (`docs/evidence/2026-10-31-cowork-audit-followups/REPORT.md`). Work only from `main`. If `main` does not contain that report, stop and tell Krish.
 
 ## Why this exists, in Krish's terms
