@@ -1,0 +1,3 @@
+Status: the n8n workflow "Heartside: printed Christmas card from the dog" is built and in dry run, not switched on: it finds paid card lines, renders the four panels through PDF.co at Printful's 300 dpi size, and makes and confirms a separate Printful card order to the gift's address; simulated orders and a live read-only run passed. The card page renders at the renderer's size and fits wide mug paintings.
+Next: at release, publish the theme and create the Shopify page "card", then run the workflow once live to prove the first real render before switching dryRun off.
+North Star check (2026-10-31): holds.

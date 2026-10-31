@@ -25,7 +25,19 @@
 {%- endcomment -%}
 <div class="hs2">
   {%- assign artist = s.artist_touch_product -%}
-  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+  {%- comment -%} The printed Christmas card from the dog (Krish, 31 Oct): offered while its product is available and
+    until 11:59 pm Eastern on Thursday 3 December 2026 (1796360399), by the server's clock. hs2.js checks the same
+    moment again, for a page served from cache; the product is set unavailable then too, and the order workflow
+    refuses a card placed after it. {%- endcomment -%}
+  {%- liquid
+    assign card = s.card_product
+    assign hs_now = 'now' | date: '%s' | plus: 0
+    assign card_open = false
+    if card != blank and card.available and hs_now < 1796360399
+      assign card_open = true
+    endif
+  -%}
+  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %}{% if card_open %} data-hs-card-variant="{{ card.selected_or_first_available_variant.id }}" data-hs-card-price="{{ card.price | money_without_trailing_zeros | escape }}" data-hs-card-until="1796360399"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
         <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
@@ -103,6 +115,12 @@
       "id": "artist_touch_product",
       "label": "Artist's touch add-on",
       "info": "The paid hand rework offered on each personalised cart line (adds 5 days). Empty, or a product that isn't available, hides the offer everywhere."
+    },
+    {
+      "type": "product",
+      "id": "card_product",
+      "label": "Printed Christmas card add-on",
+      "info": "The $12 card from the dog, offered with each gift until 11:59 pm Eastern on 3 December 2026. Empty, or a product that isn't available, hides it everywhere."
     }
   ],
   "presets": [

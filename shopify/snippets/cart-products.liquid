@@ -159,10 +159,13 @@
               assign hs_gifts = ','
               assign hs_fors = ','
               assign hs_redos = ','
+              assign hs_cards = ','
               for hs_line in cart.items
                 assign hs_design = hs_line.properties._customization_id | default: hs_line.item_components.first.properties._customization_id | default: ''
                 assign hs_gifts = hs_gifts | append: hs_design | append: '=' | append: forloop.index0 | append: ',' | replace: ',=', ',x'
-                assign hs_fors = hs_fors | append: hs_line.properties._hs_addon_for | append: ',' | replace: ',,', ','
+                # a card (_hs_addon "card") is written "DESIGNcard", so it never takes the Artist's touch offer's place
+                assign hs_fors = hs_fors | append: hs_line.properties._hs_addon_for | append: hs_line.properties._hs_addon | append: ',' | replace: ',,', ','
+                assign hs_cards = hs_cards | append: hs_line.properties._hs_addon | append: hs_line.properties._hs_addon_for | append: ','
                 assign hs_redo_of = hs_line.properties._hs_redo_of | default: hs_line.item_components.first.properties._hs_redo_of | default: ''
                 assign hs_redos = hs_redos | append: hs_redo_of | append: ',' | replace: ',,', ','
               endfor
@@ -205,7 +208,7 @@
               {%- comment -%} Current-row artwork and quantity evidence only; no cart token or buyer answers. {%- endcomment -%}
               {%- capture hs_cart_line -%}
                 {"key":{{ item.key | json }},"variant_id":{{ item.variant_id | json }},"quantity":{{ item.quantity | json }},
-                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }},"_customization_id":{{ item.properties._customization_id | json }},"_hs_redo_of":{{ item.properties._hs_redo_of | json }},"_hs_addon_for":{{ item.properties._hs_addon_for | json }}},
+                "properties":{"_hs_checkout_image":{{ item.properties._hs_checkout_image | json }},"_customization_image":{{ item.properties._customization_image | json }},"_customization_id":{{ item.properties._customization_id | json }},"_hs_redo_of":{{ item.properties._hs_redo_of | json }},"_hs_addon_for":{{ item.properties._hs_addon_for | json }},"_hs_addon":{{ item.properties._hs_addon | json }}},
                 "item_components":[{%- for component in item.item_components -%}
                   {"key":{{ component.key | json }},"variant_id":{{ component.variant_id | json }},"quantity":{{ component.quantity | json }},
                   "properties":{"_hs_checkout_image":{{ component.properties._hs_checkout_image | json }},"_customization_image":{{ component.properties._customization_image | json }},"_customization_id":{{ component.properties._customization_id | json }},"_hs_redo_of":{{ component.properties._hs_redo_of | json }}}}{% unless forloop.last %},{% endunless %}
@@ -237,6 +240,10 @@
                 # "136:/1" keeps the Artist's touch offer's place: a personalized design with no add-on yet
                 assign hs_taken = hs_fors | prepend: 'z' | append: 'z' | split: hs_id_mark | size
                 assign hs_artist_offer = hs_personal | append: hs_uuid | append: '/' | append: hs_taken
+                # "136:/1" keeps the printed card offer's place too: a personalized design with no card yet
+                assign hs_card_mark = ',card' | append: hs_line_id | append: ','
+                assign hs_carded = hs_cards | prepend: 'z' | append: 'z' | split: hs_card_mark | size
+                assign hs_card_offer = hs_personal | append: hs_uuid | append: '/' | append: hs_carded
                 # "1x": an Artist's touch whose gift has left the cart
                 assign hs_orphan = hs_addon_for | size | at_most: 1 | append: hs_gift_at
                 # one per design, an Artist's touch too (A9c); "11" is an add-on at one
@@ -332,7 +339,9 @@
                       {%- if hs_design != '' -%}
                         {%- comment -%} teeinblue-item--customization-images is Teeinblue's own "leave these thumbnails alone" container {%- endcomment -%}
                         <img src="{{ hs_design_src | escape }}" alt="{{ hs_design_alt }}" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
-                        {%- if hs_gift != nil -%}
+                        {%- if hs_gift != nil and item.properties._hs_addon == 'card' -%}
+                          <span class="hs2-cart-addon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M3 6.5h18v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+                        {%- elsif hs_gift != nil -%}
                           <span class="hs2-cart-addon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M16.5 3c1.2 0 4.5 3.3 4.5 4.5 0 1-5.3 6.7-7.3 8l-2-2c1.3-2 3.8-10.5 4.8-10.5Z" fill="currentColor"/><path d="M10.6 14.6l2 2c-.7 2-2.4 4-5.4 4-1.7 0-3.3-.7-4-1.3 2-.3 2.7-1.3 3-2.7.3-1.7 2.4-2.7 4.4-2Z" fill="currentColor"/></svg></span>
                         {%- endif -%}
                       {%- elsif item.image -%}
@@ -528,11 +537,16 @@
                   {%- elsif hs_redo_offer == '1136:/' -%}
                     <div class="hs2-redo" data-hs2-redo><a href="{{ hs_redo_href | escape }}" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span></div>
                   {%- endif -%}
-                  {%- if hs_orphan == '1x' -%}
+                  {%- if hs_orphan == '1x' and item.properties._hs_addon == 'card' -%}
+                    <p class="hs2-artist__orphan" data-hs2-artist-orphan role="status">The gift this card was for is no longer in your cart. Remove this line unless you meant to keep it.</p>
+                  {%- elsif hs_orphan == '1x' -%}
                     <p class="hs2-artist__orphan" data-hs2-artist-orphan role="status">The design this rework was for is no longer in your cart. Remove this line unless you meant to keep it.</p>
                   {%- endif -%}
                   {%- if context != 'drawer' and hs_artist_offer == '136:/1' -%}
                     <div class="hs2-artist-slot" data-hs2-artist-slot></div>
+                  {%- endif -%}
+                  {%- if context != 'drawer' and hs_card_offer == '136:/1' -%}
+                    <div class="hs2-card-slot" data-hs2-card-slot></div>
                   {%- endif -%}
                 </td>
                 <td

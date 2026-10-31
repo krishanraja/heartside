@@ -65,6 +65,11 @@ function heartsideAddonUnits(row) {
   } catch { return null; }
 }
 
+// "card" for a printed Christmas card, "" for an Artist's touch or anything else.
+function heartsideAddonKind(row) {
+  try { return JSON.parse(row.getAttribute('data-hs2-cart-line'))?.properties?._hs_addon || ''; } catch { return ''; }
+}
+
 // One per design (28 Oct, A9c): cart-products.liquid serves the plus of a design and of an Artist's touch
 // disabled and inert, marked data-hs2-one-per. Helio's cart selector manages its buttons client-side: when it
 // connects and on every updateButtonStates it turns that plus back on, as the line has no max. Inert keeps it
@@ -462,7 +467,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
       const refused = quantity > 1 && ((componentKey && quantity >= heartsideComponentUnits(row)) || (nativeUnits !== null && quantity >= nativeUnits))
         ? 'Each design is one gift, so it stays at one. Nothing was changed.'
         : addonUnits !== null && quantity > 1 && quantity >= addonUnits
-          ? "One artist's touch per design. Nothing was changed."
+          ? (heartsideAddonKind(row) === 'card' ? 'One card per gift. Nothing was changed.' : "One artist's touch per design. Nothing was changed.")
           : '';
       if (refused) {
         await this.#refreshCartSection(); // put the number back as it was

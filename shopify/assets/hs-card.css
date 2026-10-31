@@ -19,6 +19,11 @@ html, body { background: #e9e2d8; color: var(--ink); font-family: "HS DM Sans", 
 .hsc-front .hsc-rule { top: 117.5cqw; }
 .hsc-greeting { position: absolute; top: 121.5cqw; left: 0; right: 0; text-align: center; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 7.5cqw; }
 .hsc-cap { position: absolute; top: 132.5cqw; left: 0; right: 0; text-align: center; font-size: 2.6cqw; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
+/* a wide painting (the mug's wrap): a wider mount, the words closer under it */
+.hsc--wide .hsc-mount { top: 30cqw; height: 62cqw; }
+.hsc--wide .hsc-front .hsc-rule { top: 96.5cqw; }
+.hsc--wide .hsc-greeting { top: 100.5cqw; }
+.hsc--wide .hsc-cap { top: 111.5cqw; }
 /* inside left: who it is from, under a gold rule */
 .hsc-inside1 { background: var(--paper); }
 .hsc-inside1 .hsc-rule { top: 70cqw; }
@@ -44,7 +49,7 @@ html, body { background: #e9e2d8; color: var(--ink); font-family: "HS DM Sans", 
 /* one panel at print size, for the printed card's files */
 .hsc--print, .hsc--print body { background: var(--paper); }
 .hsc--print .hsc-stage { padding: 0; gap: 0; display: block; }
-.hsc--print .hsc-panel { display: none; width: 4.15in; height: 6.15in; aspect-ratio: auto; box-shadow: none; }
+.hsc--print .hsc-panel { display: none; width: 100vw; height: 100vh; aspect-ratio: auto; box-shadow: none; }
 .hsc--print .hsc-panel.is-on { display: block; }
 .hsc--print .hsc-inside2.is-on { display: flex; }
 .hsc--print .hsc-actions { display: none !important; }
