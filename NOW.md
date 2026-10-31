@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the release is live (theme published, mug designs without words, card page, digital card email, $12 card on sale, descriptions); this branch fixes what the release found: the mug painting instructions no longer keep room for a note and invite no unnamed toy (painter v16, recorded in PROMPT-SPEC-2026-10-31-v16.md), and the card page prints full size with solid gold through PDF.co. The portrait still prints its note until its layout loses the note strip. (2026-10-31)
 - the CoWork release prompt is written (docs/review/COWORK-RELEASE.md): Krish publishes the "Heartside 31 Oct showcase" theme, CoWork takes the words off the mug and portrait designs and moves the mug's dog to the front, creates the card page, adds the free digital card to the order email (tested) and puts the $12 card on sale. (2026-10-31)
 - the theme is ready for artwork-only gifts on the branch: the note is no longer required on the design (a campaign without note or signature fields needs no words; one that still has them is checked as before), the order carries the whole four-line note in _hs_lines on every gift including the blanket, and the gift page, journey card, homepage and cart say the note comes in the box and on a free digital card and that sets arrive as separate boxes. Both n8n workflows read _hs_lines first. (2026-10-31)
 - the n8n workflow "Heartside: printed Christmas card from the dog" is built and in dry run, not switched on: it finds paid card lines, renders the four panels through PDF.co at Printful's 300 dpi size, and makes and confirms a separate Printful card order to the gift's address; simulated orders and a live read-only run passed. The card page renders at the renderer's size and fits wide mug paintings. (2026-10-31)
@@ -88,7 +89,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-10-31): Krish runs COWORK-RELEASE.md in CoWork and brings the report back.
+- Next (2026-10-31): push this branch to the live theme on Krish's go, re-run the real card render, then switch both n8n workflows on.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
