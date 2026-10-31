@@ -47,6 +47,8 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the release is complete. The mug and portrait print the painting only (the portrait painting fills the whole 12 x 18), the note travels on the packing slip, the free digital card and the optional $12 printed card, both order workflows are live, and the live gates are all clear. (2026-10-31)
+- the small things left after the release are decided: the stray tags are off the live mug and blanket, a full gift set with the $12 card checks out cleanly, Printify needs nothing, and docs/review/COWORK-CLOSEOUT.md has CoWork retire the two stale Teeinblue campaigns, fix the portrait edge and drop City, replace the exposed Printful key, cancel Spocket and tidy the theme library. (2026-10-31)
 - live: the release fixes are on the live theme, the real card renders full size through PDF.co, and both n8n workflows (the note on the packing slip, the printed card) run every 10 minutes with dryRun off. (2026-10-31)
 - the portrait is going artwork only (Krish chose option A): painter v17 stops asking for a note area on the portrait, and docs/review/COWORK-PORTRAIT-ARTWORK-ONLY.md has CoWork make the painting fill the whole print and Update only the live campaign. (2026-10-31)
 - the release is live (theme published, mug designs without words, card page, digital card email, $12 card on sale, descriptions); this branch fixes what the release found: the mug painting instructions no longer keep room for a note and invite no unnamed toy (painter v16, recorded in PROMPT-SPEC-2026-10-31-v16.md), and the card page prints full size with solid gold through PDF.co. The portrait still prints its note until its layout loses the note strip. (2026-10-31)
@@ -91,7 +93,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-10-31): Krish chooses the portrait layout (A painting fills the print, B strip without words, C strip with the dog's name), then places his live mug and blanket order.
+- Next (2026-10-31): Krish places his live order (a mug and a blanket, with the printed card) and checks the note on each slip, Open the card in the email, and the card offer in the cart.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
