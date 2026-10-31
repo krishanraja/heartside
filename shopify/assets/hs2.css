@@ -1369,6 +1369,19 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 .hs-extras__artist label { margin: 8px 0; }
 .hs-extras__photo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
 .hs-extras__status:empty { display: none; }
+/* the printed Christmas card offer (hs-native-artwork.liquid, hs2.js bindCard) */
+.hs-card-offer { margin: 4px 0 16px; padding: 14px 16px; border-radius: 16px; background: #FFFDF9; box-shadow: 0 0 0 1px #E2D4C8; font-size: 14px; }
+.hs-card-offer[hidden], .hs-card-offer [hidden] { display: none !important; }
+.hs-card-offer p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.45; color: #5A4A44; text-wrap: pretty; }
+.hs-card-offer p.hs-card-offer__added { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #121010; }
+.hs-card-offer__status:empty { display: none; }
+.hs2-card-slot:empty { display: none; }
+.hs2-card { margin-top: 10px; }
+.hs2-card button { min-height: 44px; padding: 0 14px; border: 1.5px solid #121010; border-radius: 12px; background: #fff; color: #121010; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-align: start; }
+.hs2-card button:hover { background: #F6EFE6; }
+.hs2-card button:disabled { opacity: .6; cursor: progress; }
+.hs2-card p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.45; color: #5A4A44; }
+.hs2-card p:empty { display: none; }
 /* the gallery while Teeinblue paints: the same wash over the still-empty preview, and the dog's name */
 .hs2-product__stage.hs-painting::before { content: ""; grid-area: stage; z-index: 5; background: radial-gradient(circle at 30% 30%, rgba(240, 192, 192, 0.9), transparent 55%), radial-gradient(circle at 70% 65%, rgba(201, 160, 72, 0.55), transparent 50%), radial-gradient(circle at 40% 85%, rgba(168, 40, 78, 0.3), transparent 45%), #F3EEE8; background-size: 160% 160%; animation: hs-stage-wash 8s ease-in-out infinite alternate; }
 .hs2-product__stage.hs-painting::after { content: attr(data-hs-painting); grid-area: stage; z-index: 6; align-self: center; justify-self: center; padding: 12px 22px; border-radius: 999px; background: rgba(255, 253, 249, 0.92); box-shadow: 0 10px 24px -14px rgba(30, 23, 20, 0.6); font-family: "HS Fraunces", Fraunces, Georgia, serif; font-size: 20px; color: #121010; animation: hs-stage-breathe 2.6s ease-in-out infinite; }

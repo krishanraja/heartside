@@ -2818,7 +2818,8 @@
     [snap.properties || {}].concat((snap.item_components || []).map(function (c) { return c.properties || {}; })).forEach(function (p) {
       id = id || p._customization_id || ''; of = of || p._hs_redo_of || '';
     });
-    return { id: String(id), of: String(of), addonFor: String((snap.properties || {})._hs_addon_for || ''), quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
+    // a printed Christmas card is an add-on too (_hs_addon "card"), never an Artist's touch
+    return { id: String(id), of: String(of), addonFor: String((snap.properties || {})._hs_addon_for || ''), card: (snap.properties || {})._hs_addon === 'card', quantity: snap.quantity, personal: !!row.getAttribute('data-hs2-quantity-key') };
   }
   // the offers sit with the line's title and price, never in the narrow picture column
   function cartOfferHost(row) {
@@ -2912,7 +2913,7 @@
     var variant = memo.getAttribute('data-hs-artist-variant'), price = memo.getAttribute('data-hs-artist-price') || '';
     var lines = [], taken = {}, gifts = {};
     // any line with a design is its gift, merged by the checkout transform or not (N4)
-    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor) taken[f.addonFor] = true; if (f.id) gifts[f.id] = true; } });
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.addonFor && !f.card) taken[f.addonFor] = true; if (f.id) gifts[f.id] = true; } });
     // an add-on whose gift has left the cart (removed, or replaced by a redo) says so, so nobody
     // pays for a rework of a design they no longer have; removing it stays the buyer's tap
     lines.forEach(function (l) {
@@ -2921,7 +2922,7 @@
       if (!host) return;
       var note = document.createElement('p');
       note.className = 'hs2-artist__orphan'; note.setAttribute('data-hs2-artist-orphan', ''); note.setAttribute('role', 'status');
-      note.textContent = 'The design this rework was for is no longer in your cart. Remove this line unless you meant to keep it.';
+      note.textContent = l.card ? 'The gift this card was for is no longer in your cart. Remove this line unless you meant to keep it.' : 'The design this rework was for is no longer in your cart. Remove this line unless you meant to keep it.';
       host.appendChild(note);
     });
     lines.forEach(function (l) {
@@ -3016,6 +3017,116 @@
           journeyCard();
         })
         .catch(function () { /* the cart page still shows both designs */ });
+    });
+  }
+  /* The printed Christmas card from the dog (Krish, 31 Oct): $12, made by Printful from the gift's
+     painting and the note, sent in its own envelope. It goes in as its own line right after the gift,
+     linked by _hs_addon_for like the Artist's touch and marked _hs_addon "card", with a visible
+     Delivery property, so checkout, the order and the workflow all know it. Offered while the memo
+     strip says so (the product is available and its cutoff, data-hs-card-until in seconds, has not
+     passed by the server's clock), and checked again here for a page served from cache. */
+  function cardOpen() {
+    var memo = document.querySelector('[data-hs-card-variant]');
+    if (!memo) return null;
+    var until = Number(memo.getAttribute('data-hs-card-until')) || 0;
+    if (!until || Date.now() / 1000 > until) return null;
+    return { variant: memo.getAttribute('data-hs-card-variant'), price: memo.getAttribute('data-hs-card-price') || '' };
+  }
+  function cardForm(card, design) {
+    var form = new FormData();
+    form.append('id', card.variant); form.append('quantity', '1');
+    form.append('properties[_hs_addon_for]', design);
+    form.append('properties[_hs_addon]', 'card');
+    form.append('properties[Delivery]', 'Ships in its own envelope');
+    return form;
+  }
+  // on the gift page: "Add a printed Christmas card, $12", then "Card added. Remove"
+  function bindCard() {
+    var box = document.querySelector('[data-hs-card-offer]'), card = cardOpen();
+    if (!box || !card || !nativeArtworkPurchase()) return;
+    box.hidden = false;
+    var price = box.querySelector('[data-hs-card-price]');
+    if (price) price.textContent = card.price;
+    var off = box.querySelector('[data-hs-card-offer-off]'), on = box.querySelector('[data-hs-card-offer-on]');
+    var add = box.querySelector('[data-hs-card-add]'), remove = box.querySelector('[data-hs-card-remove]');
+    var choose = function (yes) {
+      box.setAttribute('data-hs-card-state', yes ? 'on' : 'off');
+      if (off) off.hidden = yes;
+      if (on) on.hidden = !yes;
+    };
+    choose(false);
+    if (add) add.addEventListener('click', function () {
+      choose(true);
+      track('card_on', {});
+      if (remove && remove.focus) remove.focus();
+    });
+    if (remove) remove.addEventListener('click', function () {
+      choose(false);
+      track('card_off', {});
+      if (add && add.focus) add.focus();
+    });
+    onCartAdd(cardAfterAdd);
+  }
+  /* After the gift's add: when the buyer chose the card, its line goes in right after the gift.
+     announceAdd waits for it (cardAfterAdd.pending), so the drawer opens once, on both. */
+  function cardAfterAdd(items) {
+    var box = document.querySelector('[data-hs-card-offer]');
+    if (!box || box.hidden || box.getAttribute('data-hs-card-state') !== 'on' || cardAfterAdd.sending) return;
+    var status = box.querySelector('[data-hs-card-status]'), card = cardOpen();
+    var reset = function () {
+      box.setAttribute('data-hs-card-state', 'off');
+      var off = box.querySelector('[data-hs-card-offer-off]'), on = box.querySelector('[data-hs-card-offer-on]');
+      if (off) off.hidden = false;
+      if (on) on.hidden = true;
+    };
+    if (!card) { reset(); status.textContent = 'Your gift is in your cart. The printed card closed on 3 December, so it was not added. Your free digital card still comes with the gift.'; return; }
+    var gift = (items || []).filter(function (it) { return it && it.properties && /^[a-f0-9-]{36}$/i.test(it.properties._customization_id || ''); })[0];
+    if (!gift) { status.textContent = 'Your gift is in your cart. Add the printed card from your cart page.'; return; }
+    track('card_add', { from: 'product' });
+    cardAfterAdd.sending = true;
+    var sent = (onCartAdd.fetch0 || window.fetch).call(window, shopRoot() + 'cart/add.js', { method: 'POST', body: cardForm(card, gift.properties._customization_id), credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); return r.json(); })
+      .then(function (added) {
+        cardAfterAdd.sending = false;
+        reset(); // it is in the cart now: the next gift asks again
+        status.textContent = 'Card added. It ships in its own envelope.';
+        if (!confirmAdds.done) announceAdd([added]);
+        return true;
+      })
+      .catch(function () {
+        cardAfterAdd.sending = false;
+        status.textContent = 'Your gift is in your cart, but the card did not go through. Add it from your cart page.';
+        return false;
+      });
+    cardAfterAdd.pending = sent;
+  }
+  /* In the cart: each gift without a card offers one, in the place cart-products.liquid keeps for it
+     (cart page only, never the drawer). The tap adds it and reloads the cart, as the Artist's touch does. */
+  function cardOffers(rows) {
+    var card = cardOpen();
+    var unslot = function (row) { var slot = row.querySelector('[data-hs2-card-slot]'); if (slot && slot.parentNode) slot.parentNode.removeChild(slot); };
+    if (!card || !/^\/cart\/?$/.test(location.pathname)) { rows.forEach(unslot); return; }
+    var lines = [], has = {};
+    rows.forEach(function (row) { var f = cartLineFacts(row); if (f) { f.row = row; lines.push(f); if (f.card && f.addonFor) has[f.addonFor] = true; } });
+    lines.forEach(function (l) {
+      var slot = l.row.querySelector('[data-hs2-card-slot]');
+      if (!slot) return;
+      if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || has[l.id]) { unslot(l.row); return; }
+      if (slot.querySelector('[data-hs2-card]')) return;
+      var box = document.createElement('div');
+      box.className = 'hs2-card'; box.setAttribute('data-hs2-card', '');
+      box.innerHTML = '<button type="button" data-hs2-card-add></button><p>Your painting on the front, your note inside. It ships in its own envelope.</p><p role="status" data-hs2-card-status></p>';
+      slot.appendChild(box);
+      var btn = box.querySelector('[data-hs2-card-add]'), status = box.querySelector('[data-hs2-card-status]');
+      btn.textContent = 'Add a printed Christmas card, ' + card.price;
+      btn.addEventListener('click', function () {
+        if (btn.disabled) return;
+        btn.disabled = true; status.textContent = 'Adding your card.';
+        track('card_add', { from: 'cart' });
+        fetch(shopRoot() + 'cart/add.js', { method: 'POST', body: cardForm(card, l.id), credentials: 'same-origin', headers: { Accept: 'application/json' } })
+          .then(function (r) { if (!r.ok) throw new Error('add ' + r.status); location.reload(); })
+          .catch(function () { btn.disabled = false; status.textContent = 'That did not go through. Try again.'; });
+      });
     });
   }
   /* Their toy or collar on the product page (Krish, 28 Oct). The words are the chat's own toy and
@@ -3209,6 +3320,7 @@
       });
       redoOffers(Array.prototype.slice.call(rows));
       artistTouch(Array.prototype.slice.call(rows));
+      cardOffers(Array.prototype.slice.call(rows));
       bundleLine(Array.prototype.slice.call(rows));
       document.querySelectorAll('.cart-totals__tax-note small, .cart-totals__tax-note').forEach(function (n) {
         if (n.tagName !== 'SMALL' && n.querySelector('small')) return;
@@ -4056,7 +4168,9 @@
     var json = function (r) { if (!r.ok) throw new Error('read ' + r.status); return r.json(); };
     // after every other handler of this add has run, so an Artist's touch on its way is waited for
     setTimeout(function () {
-      var addon = extrasAfterAdd.pending;
+      // the Artist's touch and the printed card, either on its way (the tests run this alone, without the card)
+      var card = typeof cardAfterAdd === 'function' ? cardAfterAdd.pending : null;
+      var addon = extrasAfterAdd.pending || card ? Promise.all([extrasAfterAdd.pending, card]) : null;
       var wait = addon ? Promise.race([addon, new Promise(function (resolve) { setTimeout(resolve, 30000); })]) : Promise.resolve();
       wait.then(function () {
         var ids = [];
@@ -4202,9 +4316,9 @@
   // submits a bare variant, so a catalog card must open the product form first.
   // Every card does, whatever its handle: a list of handles let a renamed one
   // (28 Oct, a Teeinblue campaign Update) keep the bare quick add. Only the
-  // Artist's touch add-on, which is no gift, keeps Helio's own button.
+  // Artist's touch and printed card add-ons, which are no gifts, keep Helio's own button.
   function personalizeCatalogCards() {
-    var keep = ['artists-touch'];
+    var keep = ['artists-touch', 'christmas-card-from-your-dog'];
     document.querySelectorAll('product-card quick-add-component').forEach(function (quick) {
       var card = quick.closest('product-card');
       var productLink = card && card.querySelector('a[href*="/products/"]');
@@ -4258,7 +4372,7 @@
     }
     guardSearchFocus();
     bindBlanketRecovery();
-    bindExtras();
+    bindExtras(); bindCard();
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader(); heartsideMenu();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();

@@ -38,6 +38,6 @@ for(const minified of [false,true]){
  test(mode+': cart drawer and cart-page note say the shipping truth (Ruling, 27 Oct: free US shipping on every order)',()=>{
   const note={tagName:'SMALL',textContent:'Shipping and taxes calculated at checkout.',querySelector:()=>null};
   const ctx={window:{},document:{querySelectorAll:selector=>selector.startsWith('.cart-items__table-row')?[]:[note],querySelector:()=>({})}};
-  ctx.redoOffers=()=>{};ctx.bundleLine=()=>{};ctx.artistTouch=()=>{};run(['cartTidy'],ctx,minified);ctx.cartTidy();assert.equal(note.textContent,'Free US shipping on every order. Any tax is shown at checkout.');
+  ctx.redoOffers=()=>{};ctx.bundleLine=()=>{};ctx.artistTouch=()=>{};ctx.cardOffers=()=>{};run(['cartTidy'],ctx,minified);ctx.cartTidy();assert.equal(note.textContent,'Free US shipping on every order. Any tax is shown at checkout.');
  });
 }

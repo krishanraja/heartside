@@ -25,7 +25,7 @@ const fixture = name => readFileSync(new URL('./fixtures/' + name, import.meta.u
 const hs2 = asset('hs2.js');
 const part = name => { const i = hs2.indexOf('  function ' + name + '('); assert.notEqual(i, -1, name); return hs2.slice(i, hs2.indexOf('\n  function ', i + 1)); };
 const cartScript = minified => {
-  const code = ['norm', 'cartArtworkImage', 'cartLineFacts', 'cartOfferHost', 'redoOffers', 'bundleLine', 'artistTouch', 'cartTidy', 'cartDesignRetry', 'cartPicture'].map(part).join('\n');
+  const code = ['norm', 'cartArtworkImage', 'cartLineFacts', 'cartOfferHost', 'redoOffers', 'bundleLine', 'artistTouch', 'cardOpen', 'cardForm', 'cardOffers', 'cartTidy', 'cartDesignRetry', 'cartPicture'].map(part).join('\n');
   return `(function () {
   var CART_DROP_PROPS = /^available product$/i, CART_DROP_VALUES = /^(default|default title|1 pc|one size)$/i, cartImages = {};
   var ADDON_TAGS = ['Another photo of my dog', 'Favorite toy', 'Collar or accessory', 'Something else'];

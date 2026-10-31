@@ -35,6 +35,21 @@
                   <p class="hs-extras__status" data-hs-extras-status role="status" aria-live="polite"></p>
                 </div>
               </div>
+              {%- comment -%} The printed Christmas card from the dog (Krish, 31 Oct): $12, the gift's painting on the front
+                and the note inside, made by Printful and sent in its own envelope. A choice in so many words, like the
+                Artist's touch: the button with its price, then "Added. Remove". hs2.js bindCard shows it while the memo
+                strip offers the card (until 11:59 pm Eastern, 3 December) and adds it right after the gift. {%- endcomment -%}
+              <div class="hs-card-offer" data-hs-card-offer data-hs-card-state="off" hidden>
+                <div data-hs-card-offer-off>
+                  <button type="button" class="hs-extras__add" data-hs-card-add><span>Add a printed Christmas card, <span data-hs-card-price></span></span></button>
+                  <p class="hs-card-offer__sub">Your painting on the front, your note inside, signed with a paw. Every gift already comes with a free digital card.</p>
+                </div>
+                <div data-hs-card-offer-on hidden>
+                  <p class="hs-card-offer__added">Card added. <button type="button" class="hs-extras__remove" data-hs-card-remove>Remove</button></p>
+                  <p class="hs-card-offer__sub">It ships on its own, in its own envelope, so it can arrive a few days apart from the gift. Order it by 3&nbsp;December.</p>
+                </div>
+                <p class="hs-card-offer__status" data-hs-card-status role="status" aria-live="polite"></p>
+              </div>
               <p data-hs2-checkout-image-status role="status" aria-live="polite" hidden></p>
               {%- comment -%} the on-device photo check (hs-photo-quality.js): why a photo won't work, and an override for a dog
                 the detector missed. hs2.js photoNote puts each outcome under the button the buyer tapped and right after
