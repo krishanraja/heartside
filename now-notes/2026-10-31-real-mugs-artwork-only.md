@@ -1,0 +1,7 @@
+Status: Live on the three gift pages since 31 October, on Krish's yes. The mug gallery holds 11 pictures: Maple on the real black mug first, the four colours, five more breeds on the real mug, and the set with the real mug; the Black variant shows its new picture. The portrait and blanket galleries carry the Bear set with the real mug. Every real-mug picture is the approved painting wrapped onto Printful's own mug photo at its true proportions (tools/realphoto/variant_mugs.py), artwork only; in the sets the room is mirrored so the painted face shows. The nine stretched AI mug pictures and the two old Bear sets are detached, not deleted, so they stay in Shopify Files. handle-check --warn-media: all clear (18 checks).
+
+Changed: Krish, 31 October: "the mug mocks look stretched, all the dogs faces look widely stretched" and "they dont look like what the product will actually be". Ruling (Krish, 2026-10-31): the gifts are artwork only, and the note in the dog's voice becomes an optional gift-card upsell, released together with the card. He needs no hand packing and no stream of parcels, so docs/review/COWORK-GIFT-NOTE-DISCOVERY.md (read only) asks the live platforms how a note and a bundle reach one address in one parcel. The homepage pictures still show the AI mug.
+
+Next: Krish runs COWORK-GIFT-NOTE-DISCOVERY.md in CoWork and brings back the report; the homepage real-mug pictures go to a draft theme for his check.
+
+North Star check (2026-10-31): holds.
