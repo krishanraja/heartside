@@ -22,8 +22,12 @@
   var img = document.querySelector('[data-hsc-img]');
   img.alt = dog ? 'A painting of ' + dog : 'A painting of the dog';
   img.src = data.img;
-  document.querySelector('[data-hsc-note]').textContent = note;
-  document.querySelector('[data-hsc-to]').textContent = to ? to + ',' : '';
+  // the note opens with a gold initial when its first word starts with two letters ("I'm" keeps no initial)
+  var drop = /^\p{L}\p{L}/u.test(note) ? note.charAt(0) : '';
+  document.querySelector('[data-hsc-drop]').textContent = drop;
+  document.querySelector('[data-hsc-note]').textContent = note.slice(drop.length);
+  document.querySelector('[data-hsc-to]').textContent = to ? 'For ' + to : '';
+  document.querySelector('[data-hsc-cap]').textContent = (dog ? dog + ' \u00b7 ' : '') + 'Christmas ' + new Date().getFullYear();
   document.querySelector('[data-hsc-sign]').textContent = dog ? 'Love, ' + dog : 'Love';
   document.querySelector('[data-hsc-from]').textContent = dog ? 'From ' + dog : '';
   var panel = q.get('panel');
