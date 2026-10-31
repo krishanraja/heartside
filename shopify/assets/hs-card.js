@@ -21,6 +21,9 @@
   var to = String(data.to || '').slice(0, 40).trim();
   var img = document.querySelector('[data-hsc-img]');
   img.alt = dog ? 'A painting of ' + dog : 'A painting of the dog';
+  // a wide painting (the mug's wrap) sits in a wider mount, so the dog is not cropped to a sliver
+  var fit = function () { if (img.naturalWidth && img.naturalWidth > img.naturalHeight * 1.25) root.classList.add('hsc--wide'); };
+  img.addEventListener('load', fit);
   img.src = data.img;
   // the note opens with a gold initial when its first word starts with two letters ("I'm" keeps no initial)
   var drop = /^\p{L}\p{L}/u.test(note) ? note.charAt(0) : '';
@@ -33,10 +36,15 @@
   var panel = q.get('panel');
   if (panel) {
     root.classList.add('hsc--print'); body.classList.add('hsc--print');
+    // the renderer prints each panel on a page 2.5 times the card's size, which its 120 dpi image step
+    // turns into Printful's 300 dpi file (1245 x 1845); the panel fills whatever page it is given
+    var page = document.createElement('style');
+    page.textContent = '@page { size: 10.375in 15.375in; margin: 0; }';
+    document.head.appendChild(page);
     var el = document.querySelector('[data-panel="' + panel + '"]');
     if (el) el.classList.add('is-on');
     var fonts = document.fonts ? document.fonts.ready : Promise.resolve();
-    var pic = panel === 'front' ? (img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; })) : Promise.resolve();
+    var pic = panel === 'front' ? (img.complete ? Promise.resolve(fit()) : new Promise(function (r) { img.addEventListener('load', r); img.addEventListener('error', r); })) : Promise.resolve();
     Promise.all([fonts, pic]).then(function () { root.setAttribute('data-hsc-ready', '1'); });
     return;
   }

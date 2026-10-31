@@ -107,3 +107,16 @@ test('in the cart: a card sits under its gift, says what it is, and both offers 
   assert.match(lost, /The gift this card was for is no longer in your cart\./);
   assert.match((await renderCart([gift(0, ID)], {context: 'drawer'})).html, /^(?![\s\S]*data-hs2-card-slot)/, 'never in the drawer');
 });
+
+test("the card's print panels fill the renderer's page, 2.5 times the card, so PDF.co's 120 dpi image is Printful's 300 dpi file", () => {
+  const css = readFileSync(new URL('../../shopify/assets/hs-card.css', import.meta.url), 'utf8');
+  const js = readFileSync(new URL('../../shopify/assets/hs-card.js', import.meta.url), 'utf8');
+  assert.match(css, /\.hsc--print \.hsc-panel \{ display: none; width: 100vw; height: 100vh;/);
+  assert.match(js, /@page \{ size: 10\.375in 15\.375in; margin: 0; \}/);
+  assert.equal(Math.round(10.375 * 120), 1245); assert.equal(Math.round(15.375 * 120), 1845);
+  // Printful's 4x6 card file is 1842 x 1240 at 300 dpi and may be rotated
+  assert.ok(1245 >= 1240 && 1845 >= 1842);
+  // a wide painting (the mug's wrap) gets the wider mount before the renderer is told the page is ready
+  assert.match(js, /naturalWidth > img\.naturalHeight \* 1\.25\) root\.classList\.add\('hsc--wide'\)/);
+  assert.match(css, /\.hsc--wide \.hsc-mount \{ top: 30cqw; height: 62cqw; \}/);
+});
