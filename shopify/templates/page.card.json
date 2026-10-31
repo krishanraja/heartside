@@ -1,0 +1,5 @@
+{
+  "layout": false,
+  "sections": { "card": { "type": "hs-card", "settings": {} } },
+  "order": ["card"]
+}

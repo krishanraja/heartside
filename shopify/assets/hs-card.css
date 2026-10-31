@@ -1,0 +1,46 @@
+/* The card from the dog (sections/hs-card.liquid). Screen: the front, then the open card. Print panels
+   (?panel=...): one 4.15 x 6.15 in panel, the 4 x 6 card with 0.075 in bleed on every side. */
+:root { --ink: #1A1514; --muted: #6b5f58; --paper: #FFFDF9; --cream: #F4EDE4; --berry: #A8284E; --pine: #2f6b3c; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--cream); color: var(--ink); font-family: "HS DM Sans", system-ui, sans-serif; }
+.hsc-stage { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 32px 16px 16px; }
+.hsc-panel { position: relative; width: min(84vw, 360px); aspect-ratio: 4.15 / 6.15; background: var(--paper); box-shadow: 0 10px 30px rgba(26,21,20,.14); overflow: hidden; container-type: inline-size; }
+.hsc-panel { display: none; }
+.hsc.is-front .hsc-front, .hsc.is-open .hsc-inside1, .hsc.is-open .hsc-inside2 { display: block; }
+/* front: the painting framed by a pine-green edge, holly in two corners, a small greeting */
+.hsc-front { background: #24402c; }
+.hsc-frame { position: absolute; inset: 5.5cqw 5.5cqw 17cqw; border-radius: 1.5cqw; overflow: hidden; background: #1c2f22; }
+.hsc-art { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hsc-holly { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hsc-greeting { position: absolute; left: 0; right: 0; bottom: 5cqw; text-align: center; color: #fff; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 7.4cqw; letter-spacing: .01em; }
+/* inside left: a quiet fall of snow and who it is from */
+.hsc-inside1 { background: var(--paper); }
+.hsc-snow { position: absolute; inset: 0; background-image: radial-gradient(circle, #e6ddd2 1.1cqw, transparent 1.2cqw), radial-gradient(circle, #ece4da .8cqw, transparent .9cqw); background-size: 22cqw 22cqw, 15cqw 15cqw; background-position: 3cqw 4cqw, 11cqw 13cqw; opacity: .7; }
+.hsc-from { position: absolute; left: 10cqw; right: 10cqw; bottom: 12cqw; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 6cqw; color: var(--muted); text-align: center; }
+/* inside right: the note, in the dog's voice, signed with a paw */
+.hsc-inside2 { padding: 14cqw 11cqw; display: none; flex-direction: column; justify-content: center; }
+.hsc.is-open .hsc-inside2, .hsc--print .hsc-inside2.is-on { display: flex; }
+.hsc-to { font-family: "HS Fraunces", Georgia, serif; font-size: 7cqw; margin-bottom: 5cqw; }
+.hsc-note { font-family: "HS Fraunces", Georgia, serif; font-size: 7.6cqw; line-height: 1.35; white-space: pre-wrap; }
+.hsc-sign { margin-top: 7cqw; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 7cqw; display: flex; align-items: center; gap: 2.5cqw; color: var(--berry); }
+.hsc-paw { width: 7cqw; height: 7cqw; color: var(--berry); }
+/* back: the maker's mark, small, clear of Printful's QR code at the lower left */
+.hsc-back { background: var(--paper); display: none; }
+.hsc-mark { position: absolute; top: 44%; left: 0; right: 0; text-align: center; font-family: "HS Fraunces", Georgia, serif; font-size: 8cqw; }
+.hsc-small { position: absolute; top: 54%; left: 12cqw; right: 12cqw; text-align: center; font-size: 3.6cqw; color: var(--muted); }
+/* actions under the card on a screen */
+.hsc-actions { display: flex; gap: 12px; justify-content: center; padding: 8px 16px 40px; }
+.hsc-btn { appearance: none; border: 0; border-radius: 16px; min-height: 52px; padding: 0 24px; background: var(--ink); color: #fff; font: 600 16px "HS DM Sans", system-ui, sans-serif; cursor: pointer; }
+.hsc-btn--quiet { background: transparent; color: var(--ink); border: 1.5px solid #d9cfc5; }
+.hsc-missing { text-align: center; padding: 48px 16px; color: var(--muted); }
+/* one panel at print size, for the printed card's files */
+.hsc--print, .hsc--print body { background: var(--paper); }
+.hsc--print .hsc-stage { padding: 0; gap: 0; display: block; }
+.hsc--print .hsc-panel { display: none; width: 4.15in; height: 6.15in; aspect-ratio: auto; box-shadow: none; }
+.hsc--print .hsc-panel.is-on { display: block; }
+.hsc--print .hsc-actions { display: none !important; }
+@page { size: 4.15in 6.15in; margin: 0; }
+@media print { .hsc-actions { display: none !important; } .hsc-stage { padding: 0; } .hsc-panel { box-shadow: none; break-after: page; } }
+.hsc--print .hsc-inside2.is-on { display: flex; }
+.hsc-front.is-wide .hsc-frame { inset: auto 5.5cqw auto; top: 22cqw; aspect-ratio: 3 / 2; height: auto; }
+.hsc-front.is-wide .hsc-greeting { bottom: auto; top: 108cqw; font-size: 10cqw; }

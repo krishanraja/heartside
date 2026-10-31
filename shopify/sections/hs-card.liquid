@@ -1,0 +1,57 @@
+{%- comment -%}
+  The card from the dog (Krish, 31 Oct 2026): the gift's painting on the front inside a quiet Christmas
+  border, the dog's note inside, signed with a paw. One design, two uses:
+  - /pages/card?d=... is the free digital card every buyer gets (linked from the order email);
+  - /pages/card?d=...&panel=front|inside1|inside2|back draws one 4x6 panel at print size (4.15 x 6.15 in
+    with bleed), which the n8n workflow has PDF.co render into the printed card's Printful files.
+  d is base64url JSON {img, note, dog, to}. Only Teeinblue's or Shopify's CDN may supply the picture.
+  The page draws everything in the browser from d, so nothing about the order is stored here.
+{%- endcomment -%}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>A card from your dog · Heartside</title>
+  <style>
+    @font-face { font-family: "HS Fraunces"; src: url({{ 'hs-fraunces.woff2' | asset_url }}) format("woff2"); font-display: block; }
+    @font-face { font-family: "HS Fraunces"; font-style: italic; src: url({{ 'hs-fraunces-italic.woff2' | asset_url }}) format("woff2"); font-display: block; }
+    @font-face { font-family: "HS DM Sans"; src: url({{ 'hs-dmsans.woff2' | asset_url }}) format("woff2"); font-display: block; }
+  </style>
+  {{ 'hs-card.css' | asset_url | stylesheet_tag }}
+</head>
+<body class="hsc">
+  <main class="hsc-stage" data-hsc>
+    <section class="hsc-panel hsc-front" data-panel="front" aria-label="Card front">
+      <div class="hsc-frame">
+        <img class="hsc-art" data-hsc-img alt="">
+        {%- render 'hs-card-holly' -%}
+      </div>
+      <p class="hsc-greeting">Merry Christmas</p>
+    </section>
+    <section class="hsc-panel hsc-inside1" data-panel="inside1" aria-label="Inside left">
+      <div class="hsc-snow" aria-hidden="true"></div>
+      <p class="hsc-from" data-hsc-from></p>
+    </section>
+    <section class="hsc-panel hsc-inside2" data-panel="inside2" aria-label="Inside right">
+      <p class="hsc-to" data-hsc-to></p>
+      <p class="hsc-note" data-hsc-note></p>
+      <p class="hsc-sign"><span data-hsc-sign></span>{%- render 'hs-card-paw' -%}</p>
+    </section>
+    <section class="hsc-panel hsc-back" data-panel="back" aria-label="Card back">
+      <p class="hsc-mark">Heartside</p>
+      <p class="hsc-small">Painted from a photo, in the dog's own words.</p>
+    </section>
+  </main>
+  <p class="hsc-missing" data-hsc-missing hidden>This card link is incomplete. Open it from your order email.</p>
+  <div class="hsc-actions" data-hsc-actions hidden>
+    <button type="button" class="hsc-btn" data-hsc-open>Open the card</button>
+    <button type="button" class="hsc-btn hsc-btn--quiet" data-hsc-print>Print it</button>
+  </div>
+  <script src="{{ 'hs-card.js' | asset_url }}" defer></script>
+</body>
+</html>
+{% schema %}
+{ "name": "HS card from the dog", "tag": "div", "settings": [] }
+{% endschema %}
