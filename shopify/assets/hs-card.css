@@ -1,0 +1,52 @@
+/* The card from the dog (sections/hs-card.liquid), direction A (Krish, 31 Oct 2026): the painting mounted
+   like a small gallery print on cream, a gold rule, a gold "Merry Christmas" and a caption; inside, the
+   note with a gold initial, signed beside a berry wax seal with a paw. Gold is a printed tone, not foil.
+   Screen: the front, then the open card. Print panels (?panel=...): one 4.15 x 6.15 in panel. */
+:root { --ink: #2a211d; --muted: #7a6a58; --paper: #fffaf2; --cream: #f6efe3; --mount: #fffaf0; --berry: #a8284e; --line: #b8955a; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #e9e2d8; color: var(--ink); font-family: "HS DM Sans", system-ui, sans-serif; }
+.hsc-stage { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 32px 16px 16px; }
+.hsc-panel { position: relative; width: min(84vw, 380px); aspect-ratio: 4.15 / 6.15; background: var(--paper); box-shadow: 0 12px 30px rgba(40,30,20,.18); overflow: hidden; container-type: inline-size; display: none; }
+.hsc.is-front .hsc-front, .hsc.is-open .hsc-inside1 { display: block; }
+.hsc.is-open .hsc-inside2 { display: flex; }
+.hsc-gold { background: linear-gradient(135deg, #8a6a2c, #d8b56a 35%, #a8823a 55%, #e3c78a 75%, #8f6d2e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hsc-grain { position: absolute; inset: 0; opacity: .16; mix-blend-mode: multiply; pointer-events: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.6'/></svg>"); }
+.hsc-rule { position: absolute; left: 37cqw; right: 37cqw; height: 1px; background: var(--line); }
+/* front */
+.hsc-front { background: var(--cream); }
+.hsc-mount { position: absolute; left: 11.5cqw; right: 11.5cqw; top: 13cqw; height: 95cqw; background: var(--mount); padding: 3.5cqw; box-shadow: 0 .3cqw 0 #d9ccb6, 0 2.5cqw 5.5cqw rgba(60,40,20,.18); }
+.hsc-art { width: 100%; height: 100%; object-fit: cover; display: block; outline: 1px solid var(--line); outline-offset: -1px; }
+.hsc-front .hsc-rule { top: 117.5cqw; }
+.hsc-greeting { position: absolute; top: 121.5cqw; left: 0; right: 0; text-align: center; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 7.5cqw; }
+.hsc-cap { position: absolute; top: 132.5cqw; left: 0; right: 0; text-align: center; font-size: 2.6cqw; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); }
+/* inside left: who it is from, under a gold rule */
+.hsc-inside1 { background: var(--paper); }
+.hsc-inside1 .hsc-rule { top: 70cqw; }
+.hsc-from { position: absolute; top: 73cqw; left: 0; right: 0; text-align: center; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 6.5cqw; }
+/* inside right: the note with a gold initial, signed beside a wax seal */
+.hsc-inside2 { background: var(--paper); padding: 17cqw 12cqw; flex-direction: column; justify-content: center; }
+.hsc-to { font-size: 2.8cqw; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); margin-bottom: 5.5cqw; }
+.hsc-note { font-family: "HS Fraunces", Georgia, serif; font-size: 5.3cqw; line-height: 1.5; white-space: pre-wrap; }
+.hsc-drop { float: left; font-size: 17.5cqw; line-height: .78; margin: 1.2cqw 2cqw 0 0; font-family: "HS Fraunces", Georgia, serif; }
+.hsc-drop:empty { display: none; }
+.hsc-sign { margin-top: 7cqw; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 6cqw; display: flex; align-items: center; gap: 3cqw; color: var(--berry); }
+.hsc-seal { width: 11cqw; height: 11cqw; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c84a63, #8e1d38 70%); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 .5cqw 1cqw rgba(0,0,0,.25); }
+.hsc-paw { width: 6cqw; height: 6cqw; color: #f3d7bf; }
+/* back: the maker's mark, small, clear of Printful's QR code at the lower left */
+.hsc-back { background: var(--paper); }
+.hsc-mark { position: absolute; top: 44%; left: 0; right: 0; text-align: center; font-family: "HS Fraunces", Georgia, serif; font-size: 7cqw; }
+.hsc-small { position: absolute; top: 53%; left: 12cqw; right: 12cqw; text-align: center; font-size: 3.2cqw; color: var(--muted); }
+/* actions under the card on a screen */
+.hsc-actions { display: flex; gap: 12px; justify-content: center; padding: 8px 16px 40px; }
+.hsc-btn { appearance: none; border: 0; border-radius: 16px; min-height: 52px; padding: 0 24px; background: #1A1514; color: #fff; font: 600 16px "HS DM Sans", system-ui, sans-serif; cursor: pointer; }
+.hsc-btn--quiet { background: transparent; color: #1A1514; border: 1.5px solid #d9cfc5; }
+.hsc-missing { text-align: center; padding: 48px 16px; color: var(--muted); }
+/* one panel at print size, for the printed card's files */
+.hsc--print, .hsc--print body { background: var(--paper); }
+.hsc--print .hsc-stage { padding: 0; gap: 0; display: block; }
+.hsc--print .hsc-panel { display: none; width: 4.15in; height: 6.15in; aspect-ratio: auto; box-shadow: none; }
+.hsc--print .hsc-panel.is-on { display: block; }
+.hsc--print .hsc-inside2.is-on { display: flex; }
+.hsc--print .hsc-actions { display: none !important; }
+@page { size: 4.15in 6.15in; margin: 0; }
+@media print { .hsc-actions { display: none !important; } .hsc-stage { padding: 0; } .hsc-panel { box-shadow: none; break-after: page; } }
