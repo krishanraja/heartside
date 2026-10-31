@@ -1,3 +1,0 @@
-Status: the theme is ready for artwork-only gifts on the branch: the note is no longer required on the design (a campaign without note or signature fields needs no words; one that still has them is checked as before), the order carries the whole four-line note in _hs_lines on every gift including the blanket, and the gift page, journey card, homepage and cart say the note comes in the box and on a free digital card and that sets arrive as separate boxes. Both n8n workflows read _hs_lines first.
-Next: push to a fresh draft theme and send Krish phone screenshots before release.
-North Star check (2026-10-31): holds.
