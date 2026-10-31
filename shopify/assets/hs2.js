@@ -775,7 +775,11 @@
     if (k === 'signed') { if (typeof state.hs3_signature_override === 'string') return state.hs3_signature_override; var d = (state.dog == null ? '' : String(state.dog)).trim(); return d && state.hs3_lines ? 'Love, ' + d : ''; }
     if (k === 'hs_answers' || k === 'hs_ship_to') return state.hs3_lines ? String(state[k] || '') : '';
     var kind = v3Kind(), order = V3_ORDER[kind] || V3_ORDER.print;
-    if (nativeArtworkPurchase() && !blanketArtPreview() && (k === 'line4' || k === 'hs_lines')) return String(lines.meaning || '');
+    // the gifts are artwork only (Krish, 31 Oct): the note the buyer approved, all four lines, rides the
+    // order in _hs_lines for the packing slip and the card. Teeinblue's own note field, while a campaign
+    // still has one, keeps the one line it printed
+    if (nativeArtworkPurchase() && k === 'hs_lines') return ['home', 'spot', 'together', 'meaning'].map(function (key) { return String(lines[key] || '').trim(); }).filter(Boolean).join('\n');
+    if (nativeArtworkPurchase() && !blanketArtPreview() && k === 'line4') return String(lines.meaning || '');
     if (k === 'hs_lines') return cityArtPreview() ? String(lines.meaning || '') : order.map(function (key) { return lines[key] || ''; }).filter(Boolean).join(' / ');
     var key = order[Number(k.slice(4)) - 1];
     if (!key) return '';
@@ -905,7 +909,8 @@
     } catch (e) { /* the choices load after this page's first paint */ }
     var row = function (k, v, href, label) { return '<div class="hs-journey__row"><span class="hs-journey__k">' + k + '</span><span class="hs-journey__v">' + v + '</span>' + (href ? '<a href="' + esc_(href) + '">' + (label || 'Change') + '</a>' : '') + '</div>'; };
     var html = row('From', esc_(dog) + (chat.rel === 'self' ? ' for you' : person ? ' for ' + esc_(person) : ''), change(chat.rel === 'self' || person ? 'person' : 'dog'));
-    html += gift === 'blanket' ? row('Words', 'None. The blanket is all painting.') : row('Words', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>' + esc_(answer('signed')) + '</em>', change('gift-' + gift));
+    // artwork only (Krish, 31 Oct): the gift is all painting; the note comes in the box and on the free digital card
+    html += row('Note', '<span class="hs-journey__note">' + esc_((state.hs3_lines || {}).meaning || '') + '</span> <em>In the box, and on a free digital card.</em>', change('words'));
     // the pronoun the chat used, so the two pages agree; none tapped reads "they" (28 Oct)
     var isNow = chat.pro === 'he' ? 'he is' : chat.pro === 'she' ? 'she is' : 'they are';
     html += row('What I\'ll paint', facts.length ? facts.map(esc_).join(' · ') : esc_(dog) + ', just as ' + isNow + '.', change('home'));
@@ -1632,9 +1637,14 @@
     if (!buy) return true; // Existing blanket route retains its separate opt-in contract.
     if (buy.getAttribute('data-hs2-purchase-enabled') !== 'true') return false;
     var portrait = buy.getAttribute('data-hs2-artwork-kind') === 'print';
+    // artwork only (Krish, 31 Oct): once a campaign's note and signature layers are gone, so are their
+    // fields, and there are no words to check. While a campaign still has them, they are checked as before.
+    // Until Teeinblue has drawn its form there is nothing to compare, so nothing is ready yet.
+    if (!document.querySelector('.tee-field')) return false;
     return ['line4', portrait ? 'dog' : 'signed'].every(function (key) {
       var field = tibFields().filter(function (f) { return f.rule.k === key; })[0];
-      var input = field && field.el.querySelector('input[type="text"], input:not([type]), textarea');
+      if (!field) return true;
+      var input = field.el.querySelector('input[type="text"], input:not([type]), textarea');
       if (!input) return false;
       var exact = function (value) { return String(value || '').replace(/\s+/g, ' ').trim(); };
       if (portrait && key === 'dog') {
@@ -2889,7 +2899,9 @@
       var gifts = (cart.items || []).filter(function (it) { return !(it.properties && it.properties._hs_addon_for); }).length;
       var saved = Number(cart.total_discount) || 0, say = '';
       if (gifts === 1) say = 'Add a second gift and save 15%. Three saves 20%.';
-      else if (gifts > 1 && saved > 0) say = 'You are saving $' + (saved / 100).toFixed(2).replace(/\.00$/, '') + ' on ' + gifts + ' gifts.';
+      // several gifts are made and sent separately (31 Oct), so the cart says so before checkout
+      else if (gifts > 1 && saved > 0) say = 'You are saving $' + (saved / 100).toFixed(2).replace(/\.00$/, '') + ' on ' + gifts + ' gifts. Each arrives in its own box, with your note inside.';
+      else if (gifts > 1) say = 'Each gift arrives in its own box, with your note inside.';
       bundleLine.seen = seen; bundleLine.say = say;
       show(say);
     }).catch(function () { /* the cart works without it */ }).then(function () {

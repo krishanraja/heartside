@@ -29,11 +29,11 @@ for (const minified of [false, true]) {
     assert.equal(parts['[data-hs-journey-line]'].textContent, "Let's make Pip's mug.");
     assert.equal(parts['[data-hs-journey-intro]'].hidden, true); assert.equal(parts['[data-hs-journey-card]'].hidden, false);
     const html = parts['[data-hs-journey-card]'].innerHTML;
-    assert.match(html, /Pip for Alex/); assert.match(html, /I&#39;m your shadow, and I like it that way\./); assert.match(html, /Love, Pip/);
-    assert.match(html, /href="\/\?step=person&amp;return=mug"/); assert.match(html, /href="\/\?step=gift-mug&amp;return=mug"/); assert.match(html, /href="\/\?step=home&amp;return=mug"/);
+    assert.match(html, /Pip for Alex/); assert.match(html, /I&#39;m your shadow, and I like it that way\./); assert.doesNotMatch(html, /Love, Pip/, 'no signature on an artwork-only gift');
+    assert.match(html, /href="\/\?step=person&amp;return=mug"/); assert.match(html, /href="\/\?step=words&amp;return=mug"/); assert.match(html, /In the box, and on a free digital card\./, 'artwork only (31 Oct): the note goes in the box'); assert.match(html, /href="\/\?step=home&amp;return=mug"/);
     assert.match(html, /Fine ink drawing · Hilarious/); assert.doesNotMatch(html, /new artwork/);
     const blanket = page('blanket', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}, true); run(blanket.ctx);
-    assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /None\. The blanket is all painting\./);
+    assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /<span class="hs-journey__k">Note<\/span>.*In the box, and on a free digital card\./, 'the blanket gets the note in its box too');
     assert.match(blanket.parts['[data-hs-journey-card]'].innerHTML, /Changing these means painting new artwork\./);
     const redo = page('mug', {dog: 'Pip', person: 'Alex', hs3_lines: {meaning: 'x'}}); redo.ctx.redoMode.id = 'a'.repeat(36); run(redo.ctx);
     assert.equal(redo.parts['[data-hs-journey-line]'].textContent, 'Another version, then. Your first design stays in your cart until you choose.');

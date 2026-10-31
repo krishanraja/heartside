@@ -225,7 +225,8 @@
                   </div>
                 {%- endif -%}
                 {%- if native_artwork -%}
-                  {% unless s.blanket_purchase %}<input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">{% endunless %}
+                  {%- comment -%} the note, all four lines, for the packing slip and the card: every gift, the blanket too (artwork only, 31 Oct) {%- endcomment -%}
+                  <input type="hidden" name="properties[_hs_lines]" data-hs2-prop="hs_lines" value="">
                   <input type="hidden" name="properties[_hs_art_profile]" data-hs2-prop="personality" value="">
                   <input type="hidden" name="properties[_hs_art_style]" data-hs2-prop="art_style" value="">
                   <input type="hidden" name="properties[_hs_art_tone]" data-hs2-prop="art_tone" value="">

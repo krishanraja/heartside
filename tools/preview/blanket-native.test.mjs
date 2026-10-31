@@ -179,5 +179,5 @@ test('dedicated purchase template keeps preview protections and worded gifts sep
   // the draft preview template has moved (27 Oct): it only points to the current gifts
   assert.deepEqual(Object.values(JSON.parse(read('shopify/templates/product.blanket-art-preview.json')).sections).map(x=>x.type),['hs-moved']);
   const liquid=read('shopify/sections/hs2-product.liquid');const props=liquid.slice(liquid.indexOf('{%- if native_artwork -%}'),liquid.indexOf('{%- elsif block.settings.v3 -%}'));
-  assert.ok(props.includes('_hs_art_profile'));assert.ok(props.includes('_hs_art_style'));assert.ok(props.includes('_hs_art_tone'));assert.match(props, /unless s\.blanket_purchase.*_hs_lines.*endunless/);
+  assert.ok(props.includes('_hs_art_profile'));assert.ok(props.includes('_hs_art_style'));assert.ok(props.includes('_hs_art_tone'));assert.match(props, /name="properties\[_hs_lines\]"/); assert.doesNotMatch(props, /unless s\.blanket_purchase %\}<input type="hidden" name="properties\[_hs_lines\]"/, 'the blanket carries the note too, for the slip and the card (31 Oct)');
 });

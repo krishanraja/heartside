@@ -3,10 +3,13 @@ colours showed the black mug). No generation: the painting is wrapped onto Print
 colour (design/teeinblue/mug-v3: the pink base, and colors/ made by recolor_mug.py) with the shading layer
 on top, by the same cylindrical wrap as shopify_mug_images.py.
 
-  python3 tools/realphoto/variant_mugs.py <painting.png> <out_dir> [--left 0.5]
+  python3 tools/realphoto/variant_mugs.py <painting.png> <out_dir> [--fit cover|height]
 
-The painting is fitted to the print file's height (2700x1050, as Teeinblue's photo layer does) and centred
-on the outward face. Writes <out_dir>/mug-<colour>.jpg (2048 px) for black, dark-blue, dark-green, pink, red.
+The painting is fitted to the print file's height (2700x1050) and centred on the outward face (the default,
+--fit height). A real mug print is a wide painting made for the whole wrap (31 Oct: the order print files
+are 2700x1050 scenes with the dog toward the front edge), so --fit cover is only right for a painting made
+at the wrap's own 18:7 shape; a 3:2 example covered this way crops the dog (checked 31 Oct). Writes <out_dir>/mug-<colour>.jpg (2048 px)
+for black, dark-blue, dark-green, pink, red.
 """
 import os, sys
 from PIL import Image
@@ -20,8 +23,13 @@ W, H = 2700, 1050
 OUTWARD_CENTRE = 585  # the outward face's centre in the print file (shopify_mug_images.wrap)
 
 
-def print_file(painting):
+def print_file(painting, fit='height'):
     p = painting.convert('RGBA')
+    if fit == 'cover':
+        k = max(W / p.width, H / p.height)
+        p = p.resize((round(p.width * k), round(p.height * k)), Image.LANCZOS)
+        x, y = (p.width - W) // 2, (p.height - H) // 2
+        return p.crop((x, y, x + W, y + H))
     w = round(p.width * H / p.height)
     p = p.resize((w, H), Image.LANCZOS)
     sheet = Image.new('RGBA', (W, H), (255, 255, 255, 255))
@@ -39,8 +47,9 @@ def shaded(base_file):
 
 def main():
     painting, out = sys.argv[1], sys.argv[2]
+    fit = sys.argv[sys.argv.index('--fit') + 1] if '--fit' in sys.argv else 'height'
     os.makedirs(out, exist_ok=True)
-    sheet = print_file(Image.open(painting))
+    sheet = print_file(Image.open(painting), fit)
     tmp = os.path.join(out, '.bases'); os.makedirs(tmp, exist_ok=True)
     for name, f in COLOURS.items():
         # shopify_mug_images.wrap reads mk-outward-shaded.png from its folder M: point it at this colour

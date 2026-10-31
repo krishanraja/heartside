@@ -138,11 +138,12 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
 });
 
 // Krish, 28 Oct: our one tick also answers Teeinblue's "responsible for my personalization" box, so
-// our sentence carries that responsibility itself: the photo on every gift, and the words where
-// the gift has them (the blanket has none).
-test("our confirmation carries Teeinblue's responsibility clause, words only where the gift has them", async () => {
+// our sentence carries that responsibility itself. Since 31 Oct every gift is artwork only, so the
+// photo is the only thing on the gift the buyer answers for.
+test("our confirmation carries Teeinblue's responsibility clause, for the photo on every gift (artwork only)", async () => {
   const snippet = readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8');
   const say = async settings => (await new Liquid().parseAndRender(snippet, {settings})).replace(/\s+/g, ' ');
-  assert.match(await say({native_artwork_kind: 'mug', blanket_purchase: false}), /I want this design on my gift\. I'm responsible for the photo and words I chose\./);
+  assert.match(await say({native_artwork_kind: 'mug', blanket_purchase: false}), /I want this design on my gift\. I'm responsible for the photo I chose\./);
+  assert.doesNotMatch(await say({native_artwork_kind: 'mug', blanket_purchase: false}), /note and signature/);
   assert.match(await say({blanket_purchase: true}), /I want this design on my gift\. I'm responsible for the photo I chose\./);
 });
