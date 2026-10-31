@@ -1,5 +1,4 @@
-# Printed Christmas card add-on built (31 Oct 2026)
-
-Status: built in the theme and tested offline (803 tests, Theme Check, copy rules, minifier, rendered pages); on no Shopify theme yet. The Shopify product "A Christmas card from your dog" ($12, christmas-card-from-your-dog) exists as a DRAFT, so the live store shows nothing.
-Next: at release, set the card product ACTIVE on the Online Store and pick it in the memo bar's "Printed Christmas card add-on" setting; then build the n8n card branch (PDF.co render, Printful card order, refusal after the 3 December cutoff).
-North Star check (2026-10-31): holds. A $12 add-on on each gift raises order value toward $50,000 net sales by 22 February 2027.
+Status: the $12 printed Christmas card add-on is built in the theme (gift page and cart offers, card line linked to its gift, 3 December 11:59 pm ET cutoff) and tested offline; the Shopify product "A Christmas card from your dog" exists as a DRAFT, so the live store shows nothing.
+Changed: Krish asked to build the card add-on after choosing card design A; the card product stays a draft because the All gifts collection would list it on the live store.
+Next: build the n8n card branch (PDF.co render, separate Printful card order, refusal after the cutoff).
+North Star check (2026-10-31): holds.
