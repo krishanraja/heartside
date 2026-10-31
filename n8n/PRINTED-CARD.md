@@ -2,7 +2,7 @@
 
 The workflow "Heartside: printed Christmas card from the dog" runs in n8n, private and never in this repository's Actions, because it reads orders and addresses. It makes the $12 card that buyers add on the gift page or in the cart (`docs/review/LAUNCH-READY-2026-10-31.md`).
 
-**Built:** 31 October 2026. **State:** dry run, not switched on.
+**Built:** 31 October 2026. **State:** live since 31 October 2026, 18:39 UTC, on Krish's go after the release (`dryRun: false`, active).
 
 ## What it does
 
