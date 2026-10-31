@@ -487,7 +487,12 @@
     // after the hold began, and the painting must still come back on show (29 Oct review)
     if (media && !media.__hs2picked) {
       var hold = sample && (blanketArtPreview() || !state.hs3_lines), pick = null;
-      if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = media.querySelector('[data-hs2-thumb]:not([hidden])'); }
+      if (hold && !media.hasAttribute('data-show')) { media.setAttribute('data-show', 'photo'); media.__hs2held = true; pick = null;
+        // the thumbnail of the photo on show, so a variant's own picture is the marked one (31 Oct: the
+        // pink mug opened on its picture while the first thumbnail stayed marked)
+        var onShow = document.querySelector('[data-hs2-main]'), shown = media.querySelectorAll('[data-hs2-thumb]:not([hidden])');
+        for (var ti = 0; ti < shown.length && !pick; ti++) if (onShow && shown[ti].getAttribute('data-hs2-thumb') === onShow.getAttribute('src')) pick = shown[ti];
+        pick = pick || shown[0] || null; }
       else if (!hold && media.__hs2held) { media.removeAttribute('data-show'); media.__hs2held = false; pick = media.querySelector('[data-hs2-thumb-preview]'); }
       if (pick) media.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === pick ? 'true' : 'false'); });
     }
@@ -1469,10 +1474,12 @@
         // the blank technical reference never becomes the product picture (the page already hides it)
         if (img && /shown in your cart|checkout tile|(^|\s)blank\s/i.test(img.alt || '')) img = null;
         // a gift sold in colors shows only that color's pair of photos
-        var col = img && /, (.+?) inside/i.exec(img.alt || '');
+        var col = img && /, (.+?) inside:/i.exec(img.alt || '');
         if (col) document.querySelectorAll('[data-hs2-thumb][data-hs2-color]').forEach(function (b) { b.hidden = b.getAttribute('data-hs2-color') !== col[1].toLowerCase(); });
+        // the chosen variant's own picture is the one variant thumbnail on show (30 Oct)
+        var th = img && document.querySelector('[data-hs2-thumb="' + img.src + '"]');
+        document.querySelectorAll('[data-hs2-vmedia]').forEach(function (b) { b.hidden = b !== th; });
         if (img && main && main.getAttribute('src') !== img.src) {
-          var th = document.querySelector('[data-hs2-thumb="' + img.src + '"]');
           swapMain(img.src, th && th.getAttribute('data-srcset'), img.alt);
           if (th && document.querySelector('[data-hs2-media]').getAttribute('data-show') === 'photo') {
             document.querySelectorAll('[data-hs2-thumb], [data-hs2-thumb-preview]').forEach(function (o) { o.setAttribute('aria-current', o === th ? 'true' : 'false'); });

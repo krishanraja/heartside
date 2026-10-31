@@ -47,3 +47,12 @@ test('the gift page clears the header before the first paint, the way clearHeade
   assert.match(script, /box\.style\.paddingTop = Math\.ceil\(bottom - top \+ 12\) \+ 'px'/);
   assert.match(read('assets/hs2.js'), /var overlap = bottom - top, want = overlap > 0 \? Math\.ceil\(overlap \+ 12\) : 0;/, 'the same 12 px, so clearHeader finds nothing to change');
 });
+
+test('a variant picture is a thumbnail only while its variant is chosen, and the shown photo is the marked one (31 Oct)', () => {
+  const g = read('snippets/hs-product-gallery.liquid');
+  assert.match(g, /data-hs2-vmedia\{% unless first and m\.id == first\.id %\} hidden\{% endunless %\}/);
+  assert.match(g, /for m in product\.media limit: 18/, 'thirteen and fourteen pictures all reach the row');
+  const js = read('assets/hs2.js');
+  assert.match(js, /querySelectorAll\('\[data-hs2-vmedia\]'\)\.forEach\(function \(b\) \{ b\.hidden = b !== th; \}\)/);
+  assert.match(js, /shown\[ti\]\.getAttribute\('data-hs2-thumb'\) === onShow\.getAttribute\('src'\)\) pick = shown\[ti\]/);
+});

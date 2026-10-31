@@ -57,3 +57,17 @@ test('the homepage places the showcase after the journey and the steps hide it',
   assert.equal(index.sections.showcase.type, 'hs-showcase');
   assert.match(read('shopify/assets/hs-showcase.css'), /html\.hsj-routed \.hss[^{]*\{ display: none; \}/);
 });
+
+test('the showcase shows one set at a time and one drifting row, not a wall of tiles (31 Oct)', () => {
+  // Krish, 31 Oct: "it looks so intense to just have all the pictures visible at once"
+  assert.match(showcase, /data-hss-reel>/);
+  assert.match(showcase, /data-hss-strip-track>/);
+  assert.doesNotMatch(showcase, /hss-row--(six|three|four)|data-hss-tabs/, 'the three grids and the gift tabs are gone');
+  const strip = showcase.slice(showcase.indexOf('data-hss-strip-track'), showcase.indexOf('</ul>', showcase.indexOf('data-hss-strip-track')));
+  assert.equal((strip.match(/render 'hs-showcase-fig'/g) || []).length, 19, 'six styles, nine gift photos and four moods');
+  assert.equal((showcase.match(/data-hss-pause/g) || []).length, 2, 'each moving part has a pause button');
+  const js = read('shopify/assets/hs-showcase.js');
+  assert.match(js, /prefers-reduced-motion: reduce/);
+  assert.match(js, /IntersectionObserver/);
+  assert.match(js, /visibilitychange/);
+});
