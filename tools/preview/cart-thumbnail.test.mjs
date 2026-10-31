@@ -111,6 +111,6 @@ for (const minified of [false, true]) {
     cart.items.push({product_title: 'Your Dog’s Portrait', properties: {_customization_id: ID2}}); cart.total_discount = 1240;
     rows = [row('a', 1), row('b', 1), row('c', 1)]; ctx.bundleLine(rows); await new Promise(r => setTimeout(r, 0));
     assert.equal(fetches, 2, 'a new cart is a new read');
-    assert.deepEqual(notes.map(n => n.getAttribute('data-hs2-bundle-say')), ['You are saving $12.40 on 2 gifts.', 'You are saving $12.40 on 2 gifts.']);
+    assert.deepEqual(notes.map(n => n.getAttribute('data-hs2-bundle-say')), ['You are saving $12.40 on 2 gifts. Each arrives in its own box, with your note inside.', 'You are saving $12.40 on 2 gifts. Each arrives in its own box, with your note inside.']);
   });
 }

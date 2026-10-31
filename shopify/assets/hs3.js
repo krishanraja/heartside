@@ -265,7 +265,7 @@
       movie: d + ' has movie night covered. The mug is for mornings, so ' + r + ' get' + s + ' ' + d + ' with every cup.',
       naps: d + ' naps best with ' + r + ' around. The mug keeps ' + d + ' close for the awake parts.',
       car: d + ' would ride anywhere with ' + r + '. With the mug, ' + d + ' comes along to every morning cup too.',
-      skip: d + ' goes on one side, the note on the other. So ' + r + ' start' + s + ' every morning with both.'
+      skip: d + ' goes all the way around the cup. So ' + r + ' start' + s + ' every morning with ' + d + '.'
     };
     return {
       mug: MUG[S.together] || MUG.skip,

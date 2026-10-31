@@ -70,7 +70,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.ok(done.below, 'the review sits under the picture'); assert.ok(done.tall, 'a tap target, not a small tickbox');
       assert.equal(done.painting, false); assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-stage]').classList.contains('hs-painting')), false); assert.equal(done.started, null, 'the next painting starts its own clock');
       assert.doesNotMatch(done.text, /I have checked the finished artwork/);
-      if (kind === 'mug') assert.match(done.text, /the note and signature/); else assert.doesNotMatch(done.text, /note and signature/);
+      assert.doesNotMatch(done.text, /note and signature/, 'artwork only (31 Oct): no gift carries words');
       await page.waitForTimeout(1000); // the reveal
       await page.screenshot({path: fileURLToPath(new URL(`${kind}-done.png`, out)), fullPage: true});
       assert.equal(await page.evaluate(() => nudgeReview() && document.querySelector('[data-hs2-artwork-accept-wrap]').classList.contains('is-nudged')), true, 'a blocked Add to cart points at the review');

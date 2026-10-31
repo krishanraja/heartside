@@ -22,7 +22,9 @@ for(const minified of [false,true]) {
       let variant='first',style='ink',facts='{"version":1,"facts":[]}';
       const c={state:{hs3_lines:{meaning:'One exact note',home:'Other words'},dog:'Test dog'},V3_ORDER:{mug:['home','spot','meaning'],print:['home','spot','together','meaning']},nativeArtworkPurchase:()=>true,blanketArtPreview:()=>false,cityArtPreview:()=>false,v3Kind:()=>kind,productId:()=>1,usePhoto:{t:1},artworkFacts:()=>facts,artworkEnergy:()=>null,document:{querySelector:s=>s==='#buy[data-hs2-artwork-kind]'?{}:s==='[data-hs2-variant-id]'?{value:variant}:null},window:{HSArtworkChoices:{read:()=>({style,tone:'warm'})},HSArtworkEngine:{recipeHash:'recipe'}}};
       run(['v3Answer','artRequestKey'],c,minified);
-      assert.equal(c.v3Answer('line4'),'One exact note');assert.equal(c.v3Answer('hs_lines'),'One exact note');
+      assert.equal(c.v3Answer('line4'),'One exact note');
+      // artwork only (31 Oct): the order carries the whole note the buyer approved, line by line, for the slip and the card
+      assert.equal(c.v3Answer('hs_lines'),'Other words\nOne exact note');
       const first=c.artRequestKey();variant='another-frame-or-color';assert.equal(c.artRequestKey(),first);
       style='comic';assert.notEqual(c.artRequestKey(),first);style='ink';facts='{"version":1,"facts":[{"source":"spot","text":"Rests by the door"}]}';assert.notEqual(c.artRequestKey(),first);
     });
@@ -36,6 +38,16 @@ for(const minified of [false,true]) {
     rendered='Old note';assert.equal(c.nativePurchaseReady(),false);rendered='';
     textPresent=false;assert.equal(c.nativePurchaseReady(),false);textPresent=true;
     layerPresent=false;assert.equal(c.nativePurchaseReady(),false);
+  });
+  test(mode+': artwork only: a design with no note or signature fields needs no words, once Teeinblue has drawn its form',()=>{
+    let drawn=true;
+    const c={nativeArtworkPurchase:()=>true,mugProduct:()=>false,answer:()=>'Love, Pip',document:{querySelector:s=>s==='.tee-field'?(drawn?{}:null):({getAttribute:()=> 'true'})},getElementById:()=>null,tibFields:()=>[]};
+    for (const kind of ['mug','print']) {
+      c.document.querySelector=s=>s==='.tee-field'?(drawn?{}:null):s==='#buy[data-hs2-artwork-kind]'?{getAttribute:k=>k==='data-hs2-artwork-kind'?kind:'true'}:null;
+      run(['mugArtworkValue','nativePurchaseReady'],c,minified);
+      drawn=true;assert.equal(c.nativePurchaseReady(),true,kind+': no words to check');
+      drawn=false;assert.equal(c.nativePurchaseReady(),false,kind+': nothing drawn yet');
+    }
   });
   test(mode+': disabled native purchase gives shopper availability copy without starting a request',()=>{
     let click, message='', blocked=0;
