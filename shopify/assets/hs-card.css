@@ -53,5 +53,11 @@ html, body { background: #e9e2d8; color: var(--ink); font-family: "HS DM Sans", 
 .hsc--print .hsc-panel.is-on { display: block; }
 .hsc--print .hsc-inside2.is-on { display: flex; }
 .hsc--print .hsc-actions { display: none !important; }
-@page { size: 4.15in 6.15in; margin: 0; }
+/* no page size here: the renderer's panel page and the buyer's Print it set their own (hs-card.js), since
+   PDF.co laid each panel out at a size fixed here and centred it small on its larger page (31 Oct) */
+@page { margin: 0; }
+/* printed gold is a solid ink: a gradient clipped to the letters drew a faint box round each gold line in
+   PDF.co's print (31 Oct) */
+@media print { .hsc-gold { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: #b08a45; } }
+.hsc--print .hsc-gold { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: #b08a45; }
 @media print { .hsc-actions { display: none !important; } .hsc-stage { padding: 0; } .hsc-panel { box-shadow: none; break-after: page; } }

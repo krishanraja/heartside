@@ -59,6 +59,13 @@
   });
   document.querySelector('[data-hsc-print]').addEventListener('click', function () {
     body.classList.add('is-front', 'is-open');
+    // the buyer's print is one card-sized page per panel
+    if (!document.querySelector('style[data-hsc-page]')) {
+      var page = document.createElement('style');
+      page.setAttribute('data-hsc-page', '');
+      page.textContent = '@page { size: 4.15in 6.15in; margin: 0; }';
+      document.head.appendChild(page);
+    }
     window.print();
   });
 })();

@@ -1,0 +1,3 @@
+Status: the release is live (theme published, mug designs without words, card page, digital card email, $12 card on sale, descriptions); this branch fixes what the release found: the mug painting instructions no longer keep room for a note and invite no unnamed toy (painter v16, recorded in PROMPT-SPEC-2026-10-31-v16.md), and the card page prints full size with solid gold through PDF.co. The portrait still prints its note until its layout loses the note strip.
+Next: push this branch to the live theme on Krish's go, re-run the real card render, then switch both n8n workflows on.
+North Star check (2026-10-31): holds.
