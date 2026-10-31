@@ -7,15 +7,13 @@ html, body { background: var(--cream); color: var(--ink); font-family: "HS DM Sa
 .hsc-panel { position: relative; width: min(84vw, 360px); aspect-ratio: 4.15 / 6.15; background: var(--paper); box-shadow: 0 10px 30px rgba(26,21,20,.14); overflow: hidden; container-type: inline-size; }
 .hsc-panel { display: none; }
 .hsc.is-front .hsc-front, .hsc.is-open .hsc-inside1, .hsc.is-open .hsc-inside2 { display: block; }
-/* front: the painting framed by a pine-green edge, holly in two corners, a small greeting */
-.hsc-front { background: #24402c; }
-.hsc-frame { position: absolute; inset: 5.5cqw 5.5cqw 17cqw; border-radius: 1.5cqw; overflow: hidden; background: #1c2f22; }
+/* front: the painting on cream, a small greeting under it (Krish, 31 Oct: keep it simple) */
+.hsc-front { background: var(--paper); }
+.hsc-frame { position: absolute; top: 9cqw; left: 9cqw; right: 9cqw; aspect-ratio: 4 / 5; overflow: hidden; background: var(--cream); }
 .hsc-art { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hsc-holly { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.hsc-greeting { position: absolute; left: 0; right: 0; bottom: 5cqw; text-align: center; color: #fff; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 7.4cqw; letter-spacing: .01em; }
-/* inside left: a quiet fall of snow and who it is from */
+.hsc-greeting { position: absolute; left: 0; right: 0; bottom: 14cqw; text-align: center; color: var(--berry); font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 5.6cqw; letter-spacing: .01em; }
+/* inside left: who it is from */
 .hsc-inside1 { background: var(--paper); }
-.hsc-snow { position: absolute; inset: 0; background-image: radial-gradient(circle, #e6ddd2 1.1cqw, transparent 1.2cqw), radial-gradient(circle, #ece4da .8cqw, transparent .9cqw); background-size: 22cqw 22cqw, 15cqw 15cqw; background-position: 3cqw 4cqw, 11cqw 13cqw; opacity: .7; }
 .hsc-from { position: absolute; left: 10cqw; right: 10cqw; bottom: 12cqw; font-family: "HS Fraunces", Georgia, serif; font-style: italic; font-size: 6cqw; color: var(--muted); text-align: center; }
 /* inside right: the note, in the dog's voice, signed with a paw */
 .hsc-inside2 { padding: 14cqw 11cqw; display: none; flex-direction: column; justify-content: center; }
@@ -42,5 +40,3 @@ html, body { background: var(--cream); color: var(--ink); font-family: "HS DM Sa
 @page { size: 4.15in 6.15in; margin: 0; }
 @media print { .hsc-actions { display: none !important; } .hsc-stage { padding: 0; } .hsc-panel { box-shadow: none; break-after: page; } }
 .hsc--print .hsc-inside2.is-on { display: flex; }
-.hsc-front.is-wide .hsc-frame { inset: auto 5.5cqw auto; top: 22cqw; aspect-ratio: 3 / 2; height: auto; }
-.hsc-front.is-wide .hsc-greeting { bottom: auto; top: 108cqw; font-size: 10cqw; }

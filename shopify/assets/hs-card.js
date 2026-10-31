@@ -21,8 +21,6 @@
   var to = String(data.to || '').slice(0, 40).trim();
   var img = document.querySelector('[data-hsc-img]');
   img.alt = dog ? 'A painting of ' + dog : 'A painting of the dog';
-  // a mug's wrap is a wide strip: it shows in a wide window above the greeting; a portrait fills the front
-  img.addEventListener('load', function () { if (img.naturalWidth / img.naturalHeight > 1.25) document.querySelector('.hsc-front').classList.add('is-wide'); });
   img.src = data.img;
   document.querySelector('[data-hsc-note]').textContent = note;
   document.querySelector('[data-hsc-to]').textContent = to ? to + ',' : '';

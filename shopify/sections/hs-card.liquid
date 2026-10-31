@@ -1,6 +1,6 @@
 {%- comment -%}
-  The card from the dog (Krish, 31 Oct 2026): the gift's painting on the front inside a quiet Christmas
-  border, the dog's note inside, signed with a paw. One design, two uses:
+  The card from the dog (Krish, 31 Oct 2026): the gift's painting on cream with a small "Merry Christmas"
+  (Krish, 31 Oct: "keep it simple"), the dog's note inside, signed with a paw. One design, two uses:
   - /pages/card?d=... is the free digital card every buyer gets (linked from the order email);
   - /pages/card?d=...&panel=front|inside1|inside2|back draws one 4x6 panel at print size (4.15 x 6.15 in
     with bleed), which the n8n workflow has PDF.co render into the printed card's Printful files.
@@ -26,12 +26,10 @@
     <section class="hsc-panel hsc-front" data-panel="front" aria-label="Card front">
       <div class="hsc-frame">
         <img class="hsc-art" data-hsc-img alt="" width="1245" height="1845">
-        {%- render 'hs-card-holly' -%}
       </div>
       <p class="hsc-greeting">Merry Christmas</p>
     </section>
     <section class="hsc-panel hsc-inside1" data-panel="inside1" aria-label="Inside left">
-      <div class="hsc-snow" aria-hidden="true"></div>
       <p class="hsc-from" data-hsc-from></p>
     </section>
     <section class="hsc-panel hsc-inside2" data-panel="inside2" aria-label="Inside right">
