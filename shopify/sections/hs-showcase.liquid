@@ -16,11 +16,14 @@
     <h2 class="hss-h" id="hss-h">{{ s.heading }}</h2>
     <p class="hss-lead">{{ s.intro }}</p>
 
-    {%- comment -%} the six sets first and large: one dog on all three gifts is the most persuasive picture here (audit, 30 Oct) {%- endcomment -%}
-    <div class="hss-block hss-sets">
+    {%- comment -%}
+      the six sets first and large (audit, 30 Oct), one at a time (Krish, 31 Oct: "it looks so intense to
+      just have all the pictures visible at once"): the reel fades through them, a swipe skips
+    {%- endcomment -%}
+    <div class="hss-block hss-sets" data-hss-reel>
       <h3 class="hss-h3">{{ s.sets_heading }}</h3>
       <p class="hss-small">{{ s.sets_note }}</p>
-      <ul class="hss-row hss-row--sets">
+      <ul class="hss-row hss-row--sets" data-hss-reel-track>
         <li>{%- render 'hs-showcase-fig', id: 'set-golden', w: 540, h: 675, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: 'Mug, blanket, portrait' -%}</li>
         <li>{%- render 'hs-showcase-fig', id: 'set-lab', w: 540, h: 675, alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bear', sub: 'Mug, blanket, portrait' -%}</li>
         <li>{%- render 'hs-showcase-fig', id: 'set-frenchie', w: 540, h: 675, alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bao', sub: 'Mug, blanket, portrait' -%}</li>
@@ -28,6 +31,10 @@
         <li>{%- render 'hs-showcase-fig', id: 'set-dachshund', w: 540, h: 675, alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Frank', sub: 'Mug, blanket, portrait' -%}</li>
         <li>{%- render 'hs-showcase-fig', id: 'set-shepherd', w: 540, h: 675, alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Juno', sub: 'Mug, blanket, portrait' -%}</li>
       </ul>
+      <div class="hss-ctl" data-hss-reel-ctl hidden>
+        <div class="hss-ticks" data-hss-ticks></div>
+        <button type="button" class="hss-pause" data-hss-pause aria-pressed="false">Pause</button>
+      </div>
     </div>
 
     <div class="hss-block hss-flow" data-hss-flow>
@@ -48,59 +55,39 @@
       <p class="hss-small">{{ s.flow_note }}</p>
     </div>
 
-    <div class="hss-block">
-      <h3 class="hss-h3">{{ s.styles_heading }}</h3>
-      <p class="hss-small">{{ s.styles_note }}</p>
-      <ul class="hss-row hss-row--six">
-        <li>{%- render 'hs-showcase-fig', id: 'style-painterly', w: 360, h: 450, alt: 'Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.', caption: 'Maple', sub: 'Painterly' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'style-cinematic', w: 360, h: 450, alt: 'Example: Bear, a black Labrador, in a truck window with a tennis ball and a red bandana, in cinematic style. Warm with a wink.', caption: 'Bear', sub: 'Cinematic' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'style-comic', w: 360, h: 450, alt: 'Example: Bao, a French bulldog, asleep on a blanket with a blue bone toy, in comic book style. Sentimental.', caption: 'Bao', sub: 'Comic book' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'style-screenprint', w: 360, h: 450, alt: 'Example: Clover, a goldendoodle, resting on a red disc under a hand, in vintage screenprint. Sentimental.', caption: 'Clover', sub: 'Vintage screenprint' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'style-ink', w: 360, h: 450, alt: 'Example: Frank, a dachshund in a green sweater on a wooden chair holding a bone, in fine ink drawing. Warm with a wink.', caption: 'Frank', sub: 'Fine ink drawing' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'style-collage', w: 360, h: 450, alt: 'Example: Juno, a German shepherd bounding through a meadow, in cut-paper collage. Hilarious.', caption: 'Juno', sub: 'Cut-paper collage' -%}</li>
-      </ul>
-    </div>
-
-    <div class="hss-block" data-hss-gifts>
-      <h3 class="hss-h3">{{ s.gifts_heading }}</h3>
-      <p class="hss-small">{{ s.gifts_note }}</p>
-      <div class="hss-tabs" role="tablist" aria-label="Gift" data-hss-tabs hidden>
-        <button type="button" role="tab" aria-selected="true" data-hss-tab="mug">Mug</button>
-        <button type="button" role="tab" aria-selected="false" data-hss-tab="blanket">Blanket</button>
-        <button type="button" role="tab" aria-selected="false" data-hss-tab="portrait">Portrait</button>
-      </div>
-      <div class="hss-panel" data-hss-panel="mug">
-        <ul class="hss-row hss-row--three">
-          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-studio', w: 540, h: 675, alt: 'Example: a golden retriever mug on a plain studio backdrop.', caption: 'Mug', sub: 'Studio' -%}</li>
+    {%- comment -%}
+      styles, gifts and moods in one row that drifts by on its own and runs faster under a flick
+      (Krish, 31 Oct); without the script, or with reduced motion, it is a plain swipe row
+    {%- endcomment -%}
+    <div class="hss-block" data-hss-strip>
+      <h3 class="hss-h3">{{ s.strip_heading }}</h3>
+      <p class="hss-small">{{ s.strip_note }}</p>
+      <div class="hss-strip__view" data-hss-strip-view>
+        <ul class="hss-strip" data-hss-strip-track>
+          <li>{%- render 'hs-showcase-fig', id: 'style-painterly', w: 360, h: 450, alt: 'Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.', caption: 'Painterly', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-sentimental', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, asleep on a rug with a plush toy. Sentimental.', caption: 'Sentimental', sub: 'Maple' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-mug-home', w: 540, h: 675, alt: 'Example: a golden retriever mug in a bright living room.', caption: 'Mug', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-cinematic', w: 360, h: 450, alt: 'Example: Bear, a black Labrador, in a truck window with a tennis ball and a red bandana, in cinematic style. Warm with a wink.', caption: 'Cinematic', sub: 'Bear' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.', caption: 'Mug', sub: 'In the hand' -%}</li>
-        </ul>
-      </div>
-      <div class="hss-panel" data-hss-panel="blanket">
-        <ul class="hss-row hss-row--three">
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-warm', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy. Warm with a wink.', caption: 'Warm with a wink', sub: 'Maple' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-studio', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, on a plain studio backdrop.', caption: 'Blanket', sub: 'Studio' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-comic', w: 360, h: 450, alt: 'Example: Bao, a French bulldog, asleep on a blanket with a blue bone toy, in comic book style. Sentimental.', caption: 'Comic book', sub: 'Bao' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-home', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room.', caption: 'Blanket', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-screenprint', w: 360, h: 450, alt: 'Example: Clover, a goldendoodle, resting on a red disc under a hand, in vintage screenprint. Sentimental.', caption: 'Vintage screenprint', sub: 'Clover' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-hand', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, held in hand.', caption: 'Blanket', sub: 'In the hand' -%}</li>
-        </ul>
-      </div>
-      <div class="hss-panel" data-hss-panel="portrait">
-        <ul class="hss-row hss-row--three">
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-hilarious', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a scatter of silly poses with a plush toy. Hilarious.', caption: 'Hilarious', sub: 'Maple' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-studio', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, on a plain studio backdrop.', caption: 'Portrait', sub: 'Studio' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-ink', w: 360, h: 450, alt: 'Example: Frank, a dachshund in a green sweater on a wooden chair holding a bone, in fine ink drawing. Warm with a wink.', caption: 'Fine ink drawing', sub: 'Frank' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-home', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, in a bright living room.', caption: 'Portrait', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-over', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, enthroned on a rug in a spotlight. Over the top.', caption: 'Over the top', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-collage', w: 360, h: 450, alt: 'Example: Juno, a German shepherd bounding through a meadow, in cut-paper collage. Hilarious.', caption: 'Cut-paper collage', sub: 'Juno' -%}</li>
           <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-hand', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, held in hand.', caption: 'Portrait', sub: 'In the hand' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-studio', w: 540, h: 675, alt: 'Example: a golden retriever mug on a plain studio backdrop.', caption: 'Mug', sub: 'Studio' -%}</li>
         </ul>
       </div>
-    </div>
-
-    <div class="hss-block">
-      <h3 class="hss-h3">{{ s.tones_heading }}</h3>
-      <p class="hss-small">{{ s.tones_note }}</p>
-      <ul class="hss-row hss-row--four">
-        <li>{%- render 'hs-showcase-fig', id: 'tone-paint-sentimental', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, asleep on a rug with a plush toy. Sentimental.', caption: 'Sentimental', sub: 'Maple' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'tone-paint-warm', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy. Warm with a wink.', caption: 'Warm with a wink', sub: 'Maple' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'tone-paint-hilarious', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a scatter of silly poses with a plush toy. Hilarious.', caption: 'Hilarious', sub: 'Maple' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'tone-paint-over', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, enthroned on a rug in a spotlight. Over the top.', caption: 'Over the top', sub: 'Maple' -%}</li>
-      </ul>
+      <div class="hss-ctl" data-hss-strip-ctl hidden>
+        <button type="button" class="hss-pause" data-hss-pause aria-pressed="false">Pause</button>
+      </div>
     </div>
 
     <p class="hss-credit">{{ s.credit }}</p>
@@ -120,14 +107,10 @@
     { "type": "textarea", "id": "intro", "label": "Intro", "default": "Every picture here is an Example, painted from a photo the way yours will be." },
     { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
     { "type": "text", "id": "flow_note", "label": "Photo to gift note", "default": "Drag from the photo to the painting to the mug. Maple, an Example." },
-    { "type": "text", "id": "styles_heading", "label": "Styles heading", "default": "Six dogs, six styles" },
-    { "type": "text", "id": "styles_note", "label": "Styles note", "default": "Every style is painted from your photo." },
-    { "type": "text", "id": "gifts_heading", "label": "Gifts heading", "default": "Mug, blanket, portrait" },
-    { "type": "text", "id": "gifts_note", "label": "Gifts note", "default": "Each gift in the studio, at home and in the hand." },
-    { "type": "text", "id": "tones_heading", "label": "Tones heading", "default": "One dog, four moods" },
-    { "type": "text", "id": "tones_note", "label": "Tones note", "default": "You choose how it sounds, and the painting follows." },
+    { "type": "text", "id": "strip_heading", "label": "Styles, gifts and moods heading", "default": "Six styles, three gifts, four moods" },
+    { "type": "text", "id": "strip_note", "label": "Styles, gifts and moods note", "default": "Every style is painted from your photo, and you choose how it sounds. Flick to go faster." },
     { "type": "text", "id": "sets_heading", "label": "Sets heading", "default": "A set for one dog" },
-    { "type": "text", "id": "sets_note", "label": "Sets note", "default": "One painting of your dog, on a mug, a blanket and a framed portrait. Swipe through six dogs." },
+    { "type": "text", "id": "sets_note", "label": "Sets note", "default": "One painting of your dog, on a mug, a blanket and a framed portrait. Six dogs, one at a time; swipe to skip." },
     { "type": "text", "id": "credit", "label": "Photo credit", "default": "Reference photos from Pexels (Gundula Vogel, Genadi Yakovlev, Marino Kurunić, Oliver Morgan Media, Sharon Snider, Sabine Kosters), used under the Pexels License." },
     { "type": "text", "id": "cta", "label": "Button", "default": "Make one for my dog" }
   ],

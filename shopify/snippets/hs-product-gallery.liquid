@@ -24,11 +24,21 @@
         endunless
       endfor
     endif
-    # A gift sold in colors (the mug) has a pair of photos per color, alt "..., black inside: ...".
+    # A gift once sold in colors with a pair of photos per color, alt "..., black inside: ..." (kept for
+    # any such pair; the 30 Oct colour pictures are variant pictures, below).
     # Only the chosen color's pair is shown; hs2.js swaps the pair when the color changes.
     for opt in product.options_with_values
       if opt.name == 'Color' and opt.values.size > 1
         assign color_key = current.options[forloop.index0] | downcase | prepend: ', ' | append: ' inside'
+      endif
+    endfor
+    # A variant's own picture (a mug colour, a frame finish; 30 Oct) is a thumbnail only while that
+    # variant is chosen, so the row holds one colour, not five; hs2.js swaps it when the choice changes.
+    # The product's first picture stays, since a variant sharing it is not a picture of its own.
+    assign vmedia = ','
+    for v in product.variants
+      if v.featured_media and v.featured_media.id != product.featured_media.id
+        assign vmedia = vmedia | append: v.featured_media.id | append: ','
       endif
     endfor
   endif
@@ -75,11 +85,12 @@
                 <span>Your design</span>
               </button>
             {%- endif -%}
-            {%- for m in product.media limit: 12 -%}
+            {%- for m in product.media limit: 18 -%}
               {%- assign m_alt = m.alt | downcase -%}
               {%- assign m_id = m.id | append: '' -%}
+              {%- assign m_key = ',' | append: m_id | append: ',' -%}
               {%- if hidden_ids contains m_id or m_alt contains hide_alt or m_alt contains 'blank ' or m_alt contains 'checkout tile' -%}{%- continue -%}{%- endif -%}
-              <button type="button"{% if color_key != '' and m_alt contains ' inside' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-srcset="{{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 900 }} 900w, {{ m | image_url: width: 1200 }} 1200w" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if first and m.id == first.id %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
+              <button type="button"{% if vmedia contains m_key %} data-hs2-vmedia{% unless first and m.id == first.id %} hidden{% endunless %}{% endif %}{% if color_key != '' and m_alt contains ' inside:' %} data-hs2-color="{{ m_alt | split: ' inside' | first | split: ', ' | last | escape }}"{% unless m_alt contains color_key %} hidden{% endunless %}{% endif %} data-hs2-thumb="{{ m | image_url: width: 1200 }}" data-srcset="{{ m | image_url: width: 600 }} 600w, {{ m | image_url: width: 900 }} 900w, {{ m | image_url: width: 1200 }} 1200w" data-alt="{{ m.alt | default: product.title | escape }}" aria-current="{% if first and m.id == first.id %}true{% else %}false{% endif %}" aria-label="Show image {{ forloop.index }}">
                 <img src="{{ m | image_url: width: 160 }}" alt="" width="76" height="76" loading="lazy">
               </button>
             {%- endfor -%}
