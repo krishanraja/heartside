@@ -581,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v16-artwork-only-mug');
+  assert.equal(recipes.version, 'actual-dog-recipes-v17-artwork-only-portrait');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -658,12 +658,9 @@ test('v14: the walk joke is a five-star general with no person, and a named toy 
 test('v13: words are optional; a gift without words is painted edge to edge, and every gift is the same world', () => {
   const at = (format, words) => nativeFieldValues({style: 'ink', tone: 'warm', format, pronoun: 'he', spot: 'couch', words})['Tone direction'];
   // v16 (31 Oct): the mug is artwork only, so it always fills the frame; the portrait keeps its note area
-  for (const words of [undefined, true, false]) assert.ok(at('mug', words).endsWith(recipes.brief.fill) && !/note|right third/.test(at('mug', words)), 'the mug fills the frame');
-  for (const format of ['portrait']) {
-    const note = recipes.brief.formats[format].note;
-    assert.ok(at(format).endsWith(note), format + ' keeps the note area by default');
-    assert.ok(at(format, true).endsWith(note));
-    assert.ok(at(format, false).endsWith(recipes.brief.fill) && !at(format, false).includes(note), format + ' without words fills the frame');
+  // v16 and v17 (31 Oct): the mug and the portrait are artwork only, so they always fill the frame
+  for (const format of ['mug', 'portrait']) {
+    for (const words of [undefined, true, false]) assert.ok(at(format, words).endsWith(recipes.brief.fill) && !/note|right third|lower-right/.test(at(format, words)), format + ' fills the frame');
     assert.doesNotMatch(nativePrompt(format), /note|lower-right|right third/, format + ': the saved frame reserves nothing');
   }
   assert.ok(at('card').endsWith(recipes.brief.fill), 'the card front never carries the note');
@@ -691,8 +688,8 @@ test('v13: the folded card is a conditional format with its own frame', () => {
 // v14: collage painted "Leave the lower-right quarter plain" as a bare torn sheet of paper filling a quarter
 test('v14: no prompt asks for the note area to be plain or blank; it is a calm, low-detail part of the scene', () => {
   const calm = 'a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.';
-  for (const format of ['portrait']) assert.ok(recipes.brief.formats[format].note.endsWith(calm), format);
-  assert.equal(recipes.brief.formats.mug.note, undefined, 'v16: the mug keeps no note area');
+  // v16 and v17: no gift keeps a note area any more; the sentence stays here as the record of v14's wording
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.equal(recipes.brief.formats[format].note, undefined, format + ' keeps no note area');
   // "plain" and "blank" may appear only inside that sentence ("plain wall", "never a blank sheet"), never as an ask
   const asks = t => t.replace(calm, '').match(/\b(plain|blank)\b[^.]*\bnote\b|\bnote\b[^.]*\b(plain|blank)\b|\b(left|leave|keep|kept)\b[^.;]*\b(plain|blank)\b(?![^.]*\b(collar|bandana|bow|sweater|harness|mug)\b)/i);
   const prompts = [];
@@ -706,7 +703,8 @@ test('v14: no prompt asks for the note area to be plain or blank; it is a calm, 
     assert.equal(asks(p), null, name + ': ' + (asks(p) || [''])[0]);
     assert.doesNotMatch(p, /Leave the lower-right quarter plain|right third plain|left plain/, name);
   }
-  assert.ok(prompts.filter(([n, p]) => p.includes(calm)).length >= 24, 'the calm note area reaches the mug and portrait prompts');
+  // v17: no prompt carries the note area at all now; nothing asks for an empty or plain patch either
+  assert.equal(prompts.filter(([n, p]) => p.includes(calm)).length, 0, 'no prompt keeps a note area');
 });
 
 // Teeinblue's Tone direction field holds 1200 characters; anything longer is cut at the end, where the note line is
@@ -954,7 +952,7 @@ test('v15: the breed examples load their own toy, worn item and tone, and the te
 // the Tone direction still reserved the note's third, and it added a plush toy nobody named.
 test('v16: the mug block is the one applied in Teeinblue, it fills the frame, and nothing unnamed is invited', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31-v16.md', import.meta.url), 'utf8');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes('actual-dog-recipes-v16-artwork-only-mug'), 'records the v16 recipe version');
   assert.ok(spec.includes(sha256(nativePrompt('mug'))), 'records the mug block hash');
   assert.ok(spec.includes(nativePrompt('mug')), 'carries the mug block exactly as applied');
   assert.match(nativePrompt('mug'), /Place the dog at the front, about a fifth of the way in from the left edge of the image/);
@@ -965,5 +963,18 @@ test('v16: the mug block is the one applied in Teeinblue, it fills the frame, an
     assert.doesNotMatch(plain, /any named toy/);
     const named = nativeFieldValues({style: 'ink', tone, format: 'mug', pronoun: 'he', spot: 'couch', toys: 'a squeaky duck'})['Tone direction'];
     assert.match(named, /duck/); assert.doesNotMatch(named, /No toy, clothing or prop/);
+  }
+});
+
+// v17 (31 Oct): the artwork-only portrait (Krish chose option A): the painting fills the whole print,
+// and the theme's Tone direction no longer keeps the lower-right quarter for a note.
+test('v17: the portrait fills the print, its saved block is unchanged, and the spec records it', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31-v17.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
+  assert.equal(sha256(nativePrompt('portrait')), 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', 'the saved portrait block is byte for byte v14');
+  for (const tone of Object.keys(recipes.tones)) {
+    const t = nativeFieldValues({style: 'screenprint', tone, format: 'portrait', pronoun: 'she', spot: 'couch'})['Tone direction'];
+    assert.ok(t.endsWith(recipes.brief.fill), tone + ': fills the frame'); assert.doesNotMatch(t, /lower-right|small note/);
   }
 });

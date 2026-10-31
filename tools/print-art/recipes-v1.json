@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v16-artwork-only-mug",
+  "version": "actual-dog-recipes-v17-artwork-only-portrait",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -302,7 +302,7 @@
       "portrait": {
         "shape": "vertical 2:3",
         "framing": "Framing: from a little further back, the whole dog in the scene, open space above the head. The setting is the stated place only, with no invented landscape or scenery.",
-        "note": "The lower-right quarter is a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.",
+        "fill": true,
         "variation": "the main moment, the whole dog in the scene"
       },
       "blanket": {
