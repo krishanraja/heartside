@@ -254,7 +254,9 @@ export function briefFields(input) {
     comic ? (place ? 'Scene: ' + fill(place) + '.' : '') + (items.length ? (place ? ' ' : '') + 'Also in the scene: ' + fill(also) + '.' : '') : 'Scene: ' + scene + '.',
     'Camera: ' + fill(tone.camera) + '.',
     'Light: ' + tone.light,
-    cap(fill(prop ? tone.itemsProp : tone.items)) + '.',
+    // nothing named, nothing added (31 Oct release test: "any named toy" on a calm mood drew an unnamed
+    // plush toy); the joke moods already say never a toy the owner did not name
+    !toy && !wearItem && !prop && !/never a toy/.test(tone.items) ? 'No toy, clothing or prop that the owner did not name.' : cap(fill(prop ? tone.itemsProp : tone.items)) + '.',
     tone.toy && toyInJoke ? fill(tone.toy) + '.' : '',
     // v13: the note area lives here, not in the saved frame, so a gift without words is painted edge
     // to edge; words stay on by default on the formats that carry them until the buyer turns them off

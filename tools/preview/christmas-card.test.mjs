@@ -120,3 +120,14 @@ test("the card's print panels fill the renderer's page, 2.5 times the card, so P
   assert.match(js, /naturalWidth > img\.naturalHeight \* 1\.25\) root\.classList\.add\('hsc--wide'\)/);
   assert.match(css, /\.hsc--wide \.hsc-mount \{ top: 30cqw; height: 62cqw; \}/);
 });
+
+test("the card's stylesheet fixes no page size, and printed gold is a solid ink (31 Oct live render)", () => {
+  const css = readFileSync(new URL('../../shopify/assets/hs-card.css', import.meta.url), 'utf8');
+  const js = readFileSync(new URL('../../shopify/assets/hs-card.js', import.meta.url), 'utf8');
+  // PDF.co laid each panel out at a page size fixed in the stylesheet and centred it small on its own page
+  assert.doesNotMatch(css, /@page\s*\{[^}]*size/);
+  assert.match(js, /@page \{ size: 10\.375in 15\.375in; margin: 0; \}/, 'the renderer page, set by the script');
+  assert.match(js, /@page \{ size: 4\.15in 6\.15in; margin: 0; \}/, "the buyer's print, set when they tap Print it");
+  // a gradient clipped to the letters printed a faint box round each gold line
+  assert.match(css, /\.hsc--print \.hsc-gold \{ background: none;[^}]*color: #b08a45; \}/);
+});

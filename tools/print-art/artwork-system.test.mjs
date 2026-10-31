@@ -309,7 +309,8 @@ test('the native prompt is the short directed frame, and the spec carries it exa
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-03.md', import.meta.url), 'utf8');
   assert.match(spec, /Status at authoring: \*\*proposed vendor change, not applied\.\*\*/);
   assert.ok(spec.includes('"Heartside City Screenprint - DRAFT 2026-10-23"'), 'names the live portrait campaign');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  // v16 (31 Oct) moved on; this spec stays the record of v15
+  assert.ok(spec.includes('actual-dog-recipes-v15-directed-brief'), 'records the v15 recipe version');
   assert.ok(spec.includes('Ruling (Krish, 2026-10-29): Hilarious may use theatrical staging'), 'carries the Hilarious ruling');
   // v12 may or may not be applied when v13 goes in, so the spec names both blocks it may replace
   for (const replaced of ['716e35742742b2ecdccb67c50bf6007c7c5d8a27c18015d83f34195bb5276cff', '2ece7afbf715294b3381a26e0fca1247157b6a96f944b7236607546ec079f3e8', '4555a99e997799166a6720cae606530577360a8d7d8156906904d74c2d8710f4',
@@ -335,9 +336,11 @@ test('the native prompt is the short directed frame, and the spec carries it exa
       assert.ok(filled.length < 2800, format + ' ' + style + ' ' + tone + ' ' + filled.length); // a sanity bound, not a vendor limit
       assert.equal(Object.values(recipes.brief.styles).filter(x => filled.includes(x)).length, 1);
     }
-    const block = spec.match(new RegExp('<!-- prompt:' + format + ' -->\\n```text\\n([\\s\\S]*?)\\n```'));
+    // v16 (31 Oct): the mug block is recorded in its own spec; the other three are still the 3 Nov spec's
+    const where = format === 'mug' ? readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31-v16.md', import.meta.url), 'utf8') : spec;
+    const block = where.match(new RegExp('<!-- prompt:' + format + ' -->\\n```text\\n([\\s\\S]*?)\\n```'));
     assert.ok(block, format); assert.equal(block[1], p, format + ' spec text matches nativePrompt exactly');
-    assert.ok(spec.includes(sha256(p)), format + ' spec records the prompt SHA-256');
+    assert.ok(where.includes(sha256(p)), format + ' spec records the prompt SHA-256');
   }
   assert.throws(() => nativeFieldValues({style: 'oil', tone: 'warm'}), /Unsupported/);
   const template = adaptTemplate({layers: [{id: 'layer-1', type: 'photo'}]}, 'portrait', {style: 1, tone: 2});
@@ -578,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v15-directed-brief');
+  assert.equal(recipes.version, 'actual-dog-recipes-v16-artwork-only-mug');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -654,7 +657,9 @@ test('v14: the walk joke is a five-star general with no person, and a named toy 
 });
 test('v13: words are optional; a gift without words is painted edge to edge, and every gift is the same world', () => {
   const at = (format, words) => nativeFieldValues({style: 'ink', tone: 'warm', format, pronoun: 'he', spot: 'couch', words})['Tone direction'];
-  for (const format of ['mug', 'portrait']) {
+  // v16 (31 Oct): the mug is artwork only, so it always fills the frame; the portrait keeps its note area
+  for (const words of [undefined, true, false]) assert.ok(at('mug', words).endsWith(recipes.brief.fill) && !/note|right third/.test(at('mug', words)), 'the mug fills the frame');
+  for (const format of ['portrait']) {
     const note = recipes.brief.formats[format].note;
     assert.ok(at(format).endsWith(note), format + ' keeps the note area by default');
     assert.ok(at(format, true).endsWith(note));
@@ -686,7 +691,8 @@ test('v13: the folded card is a conditional format with its own frame', () => {
 // v14: collage painted "Leave the lower-right quarter plain" as a bare torn sheet of paper filling a quarter
 test('v14: no prompt asks for the note area to be plain or blank; it is a calm, low-detail part of the scene', () => {
   const calm = 'a calm, low-detail continuation of the scene (soft ground, plain wall or sky in the same medium), where a small note will be added later; never a blank sheet, card, label, frame or empty patch.';
-  for (const format of ['mug', 'portrait']) assert.ok(recipes.brief.formats[format].note.endsWith(calm), format);
+  for (const format of ['portrait']) assert.ok(recipes.brief.formats[format].note.endsWith(calm), format);
+  assert.equal(recipes.brief.formats.mug.note, undefined, 'v16: the mug keeps no note area');
   // "plain" and "blank" may appear only inside that sentence ("plain wall", "never a blank sheet"), never as an ask
   const asks = t => t.replace(calm, '').match(/\b(plain|blank)\b[^.]*\bnote\b|\bnote\b[^.]*\b(plain|blank)\b|\b(left|leave|keep|kept)\b[^.;]*\b(plain|blank)\b(?![^.]*\b(collar|bandana|bow|sweater|harness|mug)\b)/i);
   const prompts = [];
@@ -752,8 +758,8 @@ test('v15: every blanket prompt is a scattered pattern whose figures never overl
   assert.match(t, /playing with his tennis ball, the toy in at least two figures/);
   assert.match(t, /every figure wearing a plain, solid-colored red collar with no pattern/);
 });
-test('v15: only the blanket frame changed; the mug, portrait and card blocks are byte for byte v14', () => {
-  const v14 = {mug: 'd760818e269faeec49aa4f0e636656aa00c9aaec03bfa98575ea0d9adc337bc5', portrait: 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', card: '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'};
+test('v15: only the blanket frame changed; the portrait and card blocks are byte for byte v14 (the mug moved on in v16)', () => {
+  const v14 = {portrait: 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', card: '1868aab7a1bf48770259028da9c443ada62311ae4cb0b0c004af5d34bfebacbd'};
   for (const [format, hash] of Object.entries(v14)) assert.equal(sha256(nativePrompt(format)), hash, format);
   assert.notEqual(sha256(nativePrompt('blanket')), '9037d553f686c9a1536c79129597d64f4418e60fa2e1958b6f5d6b2914d6c333');
   assert.ok(nativePrompt('blanket').includes('Mood: {{Tone direction}}'));
@@ -941,5 +947,23 @@ test('v15: the breed examples load their own toy, worn item and tone, and the te
     assert.ok(p.includes('Character: ' + recipes.brief.character.archetypes[c.archetype].tones[Object.keys(recipes.tones).find(k => recipes.tones[k].label === c.tone)] + '.'), c.id);
     assert.ok(p.includes('plain, solid-colored ' + c.taps.wears.replace(/^a /, '')), c.id);
     if (/Hilarious|Over the top/.test(c.tone)) assert.equal(c.scene.source, 'archetype', c.id + ' shows the archetype take');
+  }
+});
+
+// v16 (31 Oct): the artwork-only mug. The release test painting kept the dog in the left half because
+// the Tone direction still reserved the note's third, and it added a plush toy nobody named.
+test('v16: the mug block is the one applied in Teeinblue, it fills the frame, and nothing unnamed is invited', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31-v16.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes(sha256(nativePrompt('mug'))), 'records the mug block hash');
+  assert.ok(spec.includes(nativePrompt('mug')), 'carries the mug block exactly as applied');
+  assert.match(nativePrompt('mug'), /Place the dog at the front, about a fifth of the way in from the left edge of the image/);
+  for (const format of ['portrait', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' unchanged');
+  for (const tone of ['sentimental', 'warm']) {
+    const plain = nativeFieldValues({style: 'ink', tone, format: 'mug', pronoun: 'he', spot: 'couch'})['Tone direction'];
+    assert.match(plain, /No toy, clothing or prop that the owner did not name\./, tone + ': nothing named, nothing added');
+    assert.doesNotMatch(plain, /any named toy/);
+    const named = nativeFieldValues({style: 'ink', tone, format: 'mug', pronoun: 'he', spot: 'couch', toys: 'a squeaky duck'})['Tone direction'];
+    assert.match(named, /duck/); assert.doesNotMatch(named, /No toy, clothing or prop/);
   }
 });
