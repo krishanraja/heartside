@@ -47,6 +47,8 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the n8n workflow "Heartside: printed Christmas card from the dog" is built and in dry run, not switched on: it finds paid card lines, renders the four panels through PDF.co at Printful's 300 dpi size, and makes and confirms a separate Printful card order to the gift's address; simulated orders and a live read-only run passed. The card page renders at the renderer's size and fits wide mug paintings. (2026-10-31)
+- the $12 printed Christmas card add-on is built in the theme (gift page and cart offers, card line linked to its gift, 3 December 11:59 pm ET cutoff) and tested offline; the Shopify product "A Christmas card from your dog" exists as a DRAFT, so the live store shows nothing. (2026-10-31)
 - Built in n8n, dry run, not switched on: "Heartside: dog note on the packing slip, then confirm" (n8n/NOTE-AND-CONFIRM.md). The Printful token and the Shopify app's client credentials both work; Printful accepted a gift message on the never-confirmed cost-quote draft and read it back; the decision logic passed on simulated orders, and a live dry run touched nothing. (2026-10-31)
 - First version of the card from the dog, in the theme, not pushed to any theme: templates/page.card.json (no layout) with sections/hs-card.liquid, assets/hs-card.css and hs-card.js, and the holly and paw snippets. One design serves the free digital card (/pages/card?d=...) and the printed 4x6 Greeting Card (?panel=front|inside1|inside2|back at 4.15 x 6.15 in), which PDF.co will render into Printful's four panels (Krish approved PDF.co on n8n credits, 31 Oct 2026). Printful's card is catalog product 568, variant 14457 (4x6, US). The front is the painting inside a pine-green edge with holly and snow and "Merry Christmas"; inside is the note to the recipient, signed "Love, <dog>" with a paw. (2026-10-31)
 - CoWork launch-ready part 1 is done (docs/evidence/2026-10-31-launch-ready-1-report.md). Printful backup facilities are OFF on Krish's yes; manual confirm and drafts stay ON. The Printful token sits in the n8n credential "Printful - Heartside orders", pasted by Krish. Shopify read access is a Dev Dashboard app "Heartside n8n orders" (read_orders only, installed), which issues 24-hour tokens through the client credentials grant, so the workflow exchanges a client id and secret for a token on each run. (2026-10-31)
@@ -61,6 +63,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-10-31 Krish asked to build the card add-on after choosing card design A; the card product stays a draft because the All gifts collection would list it on the live store.
 - 2026-10-31 Teeinblue's Printful drafts carry the Shopify order name as their external id, which links each draft to its paid order and its note. Orders confirm only after startAfter (31 Oct 2026 15:20 UTC), so the old test drafts are never charged.
 - 2026-10-31 Teeinblue's print files are the card's source: the portrait's is 3600 x 5400, the mug's is a 2700 x 1050 wrap. The mug wrap covers the whole strip with the painting (it is not fitted to the strip's height), so the real-mug gallery pictures built on 31 Oct show the painting smaller than the mug will print it; they need re-rendering with the painting covering the wrap. The wide layout on the card front needs a second design pass.
 - 2026-10-31 The checkout warning from 29 October sits beside two active cart transforms, Teeinblue's add-on price and the Function Studio merge that shows the buyer's design at checkout; a full personalised checkout, stopped before payment, is the next check. The Printify app no longer appears in Shopify's installed apps; this run did not remove it.
@@ -83,7 +86,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-10-31): give n8n an email credential for failure alerts, add the printed card item with the 3 December cutoff, then set dryRun false and activate at release.
+- Next (2026-10-31): at release, publish the theme and create the Shopify page "card", then run the workflow once live to prove the first real render before switching dryRun off.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
