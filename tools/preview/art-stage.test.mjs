@@ -23,6 +23,14 @@ let browser;
 before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser.close(); });
 
+
+// The screenshots are evidence for a person, never a check. Chromium can refuse a capture while the
+// painting card's endless wash animates on a busy runner ("Unable to capture screenshot", CI 31 Oct),
+// so one retry with animations paused; a second refusal still fails the test.
+async function shot(page, opts) {
+  try { await page.screenshot(opts); } catch (e) { if (!/capture screenshot/i.test(String(e))) throw e; await page.screenshot({...opts, animations: 'disabled'}); }
+}
+
 for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artwork_kind: 'blanket'}], ['mug', {blanket_purchase: false, native_artwork_kind: 'mug'}]]) {
   for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'} ${kind}: a painting state that reads as painting, then the design with its review under it`, async () => {
     const html = await new Liquid().parseAndRender(readFileSync(new URL('shopify/snippets/hs-native-artwork.liquid', root), 'utf8'), {settings});
@@ -50,7 +58,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.equal(painting.animated, 'hs-art-wash', 'the wash moves');
       assert.equal(await page.evaluate(() => { const st = document.querySelector('[data-hs2-stage]'); return st.classList.contains('hs-painting') && getComputedStyle(st, '::after').content; }), '"Painting Pip"', 'the gallery paints too');
       assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-art-photo]').hidden), true, "the buyer's photo shows as the sketch being painted");
-      await page.screenshot({path: fileURLToPath(new URL(`${kind}-painting.png`, out))});
+      await shot(page, {path: fileURLToPath(new URL(`${kind}-painting.png`, out))});
       // forty seconds in, the bar still claims no value and the card counts the time, never a finish
       const later = await page.evaluate(() => { sessionStorage.setItem('hs-art-start:7', String(Date.now() - 40000)); artStage(true); const bar = document.querySelector('[data-hs-art-bar]'); return {valued: bar.hasAttribute('aria-valuenow'), sweep: getComputedStyle(bar.firstElementChild).animationName, since: document.querySelector('[data-hs-art-elapsed]').textContent, line: document.querySelector('[data-hs-art-line]').textContent}; });
       assert.equal(later.valued, false); assert.equal(later.sweep, 'hs-art-sweep'); assert.equal(later.since, 'Started 40 seconds ago.'); assert.doesNotMatch(later.line, /nearly/i);
@@ -72,7 +80,7 @@ for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artw
       assert.doesNotMatch(done.text, /I have checked the finished artwork/);
       assert.doesNotMatch(done.text, /note and signature/, 'artwork only (31 Oct): no gift carries words');
       await page.waitForTimeout(1000); // the reveal
-      await page.screenshot({path: fileURLToPath(new URL(`${kind}-done.png`, out)), fullPage: true});
+      await shot(page, {path: fileURLToPath(new URL(`${kind}-done.png`, out)), fullPage: true});
       assert.equal(await page.evaluate(() => nudgeReview() && document.querySelector('[data-hs2-artwork-accept-wrap]').classList.contains('is-nudged')), true, 'a blocked Add to cart points at the review');
       // nothing to show: no card at all
       assert.equal(await page.evaluate(() => { saved = false; return artStage(false) === 'idle' && document.querySelector('[data-hs-art]').hidden; }), true);
