@@ -4,6 +4,12 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-10-31
+
+- reconciled at `499e137`: NOW.md cut to meet the size and bullet audit (20,974 characters against 16,000; 13 recent bullets against 12). Head and as_of re-stamped. The "Payments are unverified" paragraph was shortened because a 29 October note records payments restored, and the "acceptance fixes merged, not live" paragraph was updated because the 30 October theme publish carried them.
+- rolled from NOW.md: the 30 October "Where it is right now" bullets on the journey three parts and gift-page price (detail kept in the merged PRs #85 and #86), the Teeinblue v15 apply bullet (blanket hash moved from 9037d553... to b6aa708e..., read back; rollback is the v13 block from PROMPT-SPEC-2026-11-02.md with every sync box unticked), the six-breed showcase build bullet (built by tools/print-art/showcase-assets.py, SHA-256 recorded in design/examples-2026-10-30-showcase/site.json), and the 29 October recipes v10 to v14 bullets and phone-batch, journey-template and acceptance-repair bullets.
+- rolled from NOW.md: the 29 October "What changed recently" bullets on the v13 shepherd rejection ("if I was paying $119 I would not accept that"), the person rule and folded card front, the v12 results (22 of 24 passed), the journey app bar redesign, the strict gates note, the three CoWork defects of PR #65, and the 28 October evening and slider bullets.
+
 ## 2026-10-30
 
 - reconciled at `54b6b0e`: NOW.md cut to meet the size audit (16,733 characters against a limit of 16,000). Head and as_of re-stamped; `0825532` and `54b6b0e` were already recorded in NOW.md.
