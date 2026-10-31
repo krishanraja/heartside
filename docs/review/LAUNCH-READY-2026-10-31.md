@@ -8,6 +8,11 @@ Status: PLAN, agreed with Krish on 31 October 2026. The Claude Code session buil
 - **The note is in every box.** It prints on Printful's packing slip, inside each gift's own parcel, written for that order.
 - **A free digital card.** Every gift comes with one: the painting on the front and the note inside, on a page the buyer can forward, print or show on the day.
 - **An optional printed card, $12.** It is a 4×6 folded card made in the US, with the painting on the front and the note inside. The page says plainly that it ships in its own envelope.
+- **The printed card is a Christmas card, with a hard cutoff.** The front is the gift's own painting inside a quiet Christmas border (holly, a little snow, a small "Merry Christmas"). Inside is the dog's note, signed with a paw. **The option disappears at 11:59 pm Eastern on Thursday 3 December 2026.** That leaves Printful's slowest case for the 4×6 card (5 business days to make, 10 to ship) plus a day of slack before 23 December. The rule is enforced in three places:
+  - the theme hides the add-on after the cutoff, judged by the server's clock and not the buyer's;
+  - the card product is set unavailable at the cutoff;
+  - the workflow refuses to add a card to any order placed after it, and tells hello@krishraja.com so the card is refunded rather than sent late.
+  The free digital card stays all season.
 - **Sets arrive as a planned sequence.** A set is "three gifts, each in its own box", said before checkout.
 - **Orders confirm themselves.** Once the note is on an order, the automation confirms it in Printful, and Printful charges for it. Krish can switch this back to manual at any time.
 - **Backup facilities off.** Printful's backup facilities are switched off, so the slip message is never dropped.
