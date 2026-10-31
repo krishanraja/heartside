@@ -1,0 +1,35 @@
+{%- comment -%}
+  The free digital card, in Shopify's order confirmation email (Settings, Notifications, Order confirmation).
+  Paste it once, right after the line items. It links the first gift with a painting to /pages/card, whose
+  page (sections/hs-card.liquid, hs-card.js) draws the card from d: base64url JSON {img, note, dog, to}.
+  The note is the whole note the buyer approved (_hs_lines); the dog and the recipient come from the
+  buyer's answers when the gift has no name field (artwork only, 31 Oct). Nothing about the order is
+  stored on the page. Tested by tools/preview/digital-card-email.test.mjs.
+{%- endcomment -%}
+{%- assign hs_card_link = '' -%}
+{%- for hs_line in line_items -%}
+  {%- if hs_card_link == '' -%}
+    {%- assign hs_img = hs_line.properties._tib_design_link_1 | default: '' -%}
+    {%- assign hs_note = hs_line.properties._hs_lines | default: hs_line.properties['Your note'] | default: '' -%}
+    {%- if hs_img != '' and hs_note != '' -%}
+      {%- assign hs_answers = hs_line.properties._hs_answers | default: '' -%}
+      {%- assign hs_dog = hs_line.properties["Dog's name"] | default: '' -%}
+      {%- if hs_dog == '' and hs_answers contains 'Dog: ' -%}{%- assign hs_dog = hs_answers | split: 'Dog: ' | last | split: ' (' | first | split: ' |' | first | strip -%}{%- endif -%}
+      {%- assign hs_to = '' -%}
+      {%- if hs_answers contains 'For: ' -%}
+        {%- assign hs_for = hs_answers | split: 'For: ' | last | split: ' |' | first -%}
+        {%- unless hs_for contains '(self)' -%}{%- assign hs_to = hs_for | split: ' (' | first | strip -%}{%- endunless -%}
+      {%- endif -%}
+      {%- capture hs_json -%}{"img":{{ hs_img | json }},"note":{{ hs_note | json }},"dog":{{ hs_dog | json }},"to":{{ hs_to | json }}}{%- endcapture -%}
+      {%- capture hs_card_link -%}{{ shop.url }}/pages/card?d={{ hs_json | base64_url_safe_encode }}{%- endcapture -%}
+      {%- assign hs_card_dog = hs_dog -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if hs_card_link != '' -%}
+<table class="row"><tr><td style="padding: 24px 0; font-size: 16px; line-height: 1.5;">
+  <p style="margin: 0 0 8px; font-weight: 600;">A card from {% if hs_card_dog != '' %}{{ hs_card_dog }}{% else %}your dog{% endif %}, free with your gift</p>
+  <p style="margin: 0 0 12px;">Your painting on the front, your note inside. Open it, forward it, or print it for the day.</p>
+  <a href="{{ hs_card_link }}" style="display: inline-block; padding: 12px 20px; border-radius: 12px; background: #1A1514; color: #ffffff; text-decoration: none; font-weight: 600;">Open the card</a>
+</td></tr></table>
+{%- endif -%}
