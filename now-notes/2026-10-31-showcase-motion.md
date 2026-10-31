@@ -1,7 +1,0 @@
-Status: On a fresh unpublished copy, "Heartside 31 Oct showcase draft", not live. The homepage showcase shows one set at a time, fading on by itself every 2.2 seconds, with ticks, a swipe that skips and a pause button. Styles, gifts and moods are one row of 19 pictures that drifts by on its own and runs faster under a flick, with its own pause button. Both stop off screen, in a hidden tab, under the pointer and on keyboard focus, and with reduced motion neither moves. On gift pages a variant's own picture (a mug colour, a frame finish) is the one variant thumbnail on show and the one marked current, and the row now reaches all 13 and 14 pictures. The 31 October CoWork report is recorded with a correction: buyers already see Bear and the right note words on the portrait, and the handle error only blocks later Teeinblue changes to it.
-
-Changed: Krish, 31 October: "it looks so intense to just have all the pictures visible at once". The showcase drew about 20 tiles at once; it now draws two pictures in motion plus the photo-to-gift slider. The mug's four colour thumbnails had been hidden by an older colour-pair rule, and the first thumbnail stayed marked when a colour opened on its own picture. docs/review/COWORK-PORTRAIT-LINK.md asks CoWork to unlink the old draft product from the portrait campaign and retire The Morning Mug campaign.
-
-Next: Krish watches the phone and desktop recordings of the draft and says go to publish it, then runs COWORK-PORTRAIT-LINK.md in CoWork.
-
-North Star check (2026-10-31): holds.
