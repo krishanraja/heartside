@@ -7,35 +7,45 @@
   "approved": null,
   "shots": [
     {
-      "n": 1, "time": "0-3s", "frame": "f1.jpg",
+      "n": 1,
+      "time": "0-3s",
+      "frame": "f1.jpg",
       "what": "Morning, a golden retriever rests its chin on the owner's knee and looks up. No product in frame.",
       "words": "Your dog loves you too.",
       "made_by": "Runway: a slow push-in and a blink from the approved still (controlled motion from one still). The still is Higgsfield GPT Image, job e29bf11a.",
       "credits": "Runway, about one 5-second clip from Heartside's share"
     },
     {
-      "n": 2, "time": "3-6s", "frame": "f2.jpg",
+      "n": 2,
+      "time": "3-6s",
+      "frame": "f2.jpg",
       "what": "A wipe from the photo to the painting of the same kind of dog.",
       "words": "One photo.",
       "made_by": "Codex, in code: the wipe between two approved stills. No generator touches the painting.",
       "credits": "Codex allowance"
     },
     {
-      "n": 3, "time": "6-9s", "frame": "f3.jpg",
+      "n": 3,
+      "time": "6-9s",
+      "frame": "f3.jpg",
       "what": "The approved golden retriever mug, a slow push and a soft shadow.",
       "words": "Painted all the way round.",
       "made_by": "Codex, in code, from the live product photo. The mug's printed painting is never sent to a generator.",
       "credits": "Codex allowance"
     },
     {
-      "n": 4, "time": "9-12s", "frame": "f4.jpg",
+      "n": 4,
+      "time": "9-12s",
+      "frame": "f4.jpg",
       "what": "Quick cuts on the beat: doodle, French bulldog, dachshund, Labrador, German shepherd mugs.",
       "words": "Any breed. Any mood.",
       "made_by": "Codex, in code, from the five live product photos.",
       "credits": "Codex allowance"
     },
     {
-      "n": 5, "time": "12-15s", "frame": "f5.jpg",
+      "n": 5,
+      "time": "12-15s",
+      "frame": "f5.jpg",
       "what": "End card over the blurred gift set.",
       "words": "Heartside / Your dog's illustrated mug / $45 / heartside.io / Order by Dec 11 for Christmas",
       "made_by": "Codex: the end card in code, in Heartside's type.",
@@ -43,10 +53,40 @@
       "check_before_build": "Dec 11 is the order-by date the live theme shows; read it again on the live store before the render."
     }
   ],
-  "music": "Epidemic Sound: a warm acoustic track cut to 15 seconds with its edit tool; the recording ID goes in this file.",
+  "music": {
+    "proposed": {
+      "provider": "epidemic_sound",
+      "recording_id": "e7393787-f6df-3738-9a15-4317e316a764",
+      "title": "Misty Blue (Instrumental Version)",
+      "artist": "Velvet Moon",
+      "bpm": 92,
+      "tags": [
+        "acoustic",
+        "hopeful",
+        "laid back",
+        "no vocals"
+      ],
+      "preview": "https://audiocdn.epidemicsound.com/lqmp3/01KTE3D9XFZ2YWPXBRWAAGDF7Q.mp3"
+    },
+    "plan": "Cut to exactly 15s with Epidemic Sound's edit tool after Krish's yes; record the edit's ID here."
+  },
   "sources": {
     "product_photos": "heartside.io live mug gallery (mug-real-golden, -doodle, -frenchie, -dachshund, -lab, set-golden-real), all approved by Krish on 30-31 October",
-    "generated": [{"provider": "higgsfield", "model": "gpt_image_2_5", "job": "e29bf11a-59ef-460d-a66a-2eb81260d03b", "credits": 2.75}, {"provider": "higgsfield", "model": "gpt_image_2_5", "job": "d52bb0fe-534d-43d2-8cfc-236c32be4ede", "credits": 2.75, "used": false}],
+    "generated": [
+      {
+        "provider": "higgsfield",
+        "model": "gpt_image_2_5",
+        "job": "e29bf11a-59ef-460d-a66a-2eb81260d03b",
+        "credits": 2.75
+      },
+      {
+        "provider": "higgsfield",
+        "model": "gpt_image_2_5",
+        "job": "d52bb0fe-534d-43d2-8cfc-236c32be4ede",
+        "credits": 2.75,
+        "used": false
+      }
+    ],
     "control_center_spend": "0a9a9415-13a0-4299-83ac-afd9c72ee8bc (5.5 Higgsfield credits, settled)"
   },
   "build_after_yes": [
