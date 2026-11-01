@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-10-31
+as_of: 2026-11-01
 head: 95f61c7
 lifecycle: live
 production_url: https://heartside.io
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-10-31)
+## Where it is right now (as of 2026-11-01)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- A Codex lane is set up: a session queues a card at codex/queue/<id>.md with a Control Center booking, and Krish's home computer builds it and pushes codex/<id> (codex/README.md). (2026-11-01)
 - the closeout is done. Both stale Teeinblue campaigns are archived and their hidden products deleted, the portrait print reaches every edge with no City field, Spocket is uninstalled and the two broken themes are deleted. The portrait gallery that an accidental full-sync Update replaced is rebuilt from the approved renders. (2026-10-31)
 - the release is complete. The mug and portrait print the painting only (the portrait painting fills the whole 12 x 18), the note travels on the packing slip, the free digital card and the optional $12 printed card, both order workflows are live, and the live gates are all clear. (2026-10-31)
 - the small things left after the release are decided: the stray tags are off the live mug and blanket, a full gift set with the $12 card checks out cleanly, Printify needs nothing, and docs/review/COWORK-CLOSEOUT.md has CoWork retire the two stale Teeinblue campaigns, fix the portrait edge and drop City, replace the exposed Printful key, cancel Spocket and tidy the theme library. (2026-10-31)
@@ -94,7 +95,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-10-31): Krish places his live order. The open small calls are his: removing the archived portrait campaign for good (it stops the handle renames), Dropshipper-ai, and whether Printify stays installed.
+- Next (2026-11-01): Krish places a Codex share for this venture in Control Center; until then reserve_credit_spend refuses and no card is queued.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
@@ -108,7 +109,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - The checkout merge app stays through Christmas at $69 a month (Ruling, Krish, 28 October), and is reviewed in January against measured conversion.
   - Do not claim physical quality or paid-order fulfillment until the sample is inspected.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-10-31): holds.
+- North Star check (2026-11-01): holds.
 
 ## Read next
 
