@@ -119,6 +119,23 @@
       "kept_out_of_repo": "licensed audio, public repository"
     },
     "codex_card": "codex/queue/launch-reel-proof-2026-11-01.md",
-    "dropped": "the photo-to-painting wipe, to keep the proof short"
+    "dropped": "the photo-to-painting wipe, to keep the proof short",
+    "codex": {
+      "card": "launch-reel-proof-2026-11-01",
+      "host": "Lorimer",
+      "result_commit": "b361a50",
+      "finished_at": "2026-11-01T15:47:37Z",
+      "control_center_spend": "a71dfb36-0c12-4eb7-a1f7-769cb59996ed (1 percent of the week, the booked estimate; no measured figure)",
+      "made": "tools/reel/build_launch_reel.py"
+    },
+    "check": {
+      "by": "Claude, 2026-11-01",
+      "acceptance_rerun": "pass (8 frames 1080x1920; py_compile)",
+      "render": "1080x1920, 30 fps, 12.000 s, H.264",
+      "audio": "music muxed outside the repo; mean -19.3 dB, peak -1.0 dB, silence only in the 0.6 s fade at the end",
+      "watched": "13 frames at full size across every scene",
+      "flaw": "each mug photo's own background (242,236,229) is lighter than the canvas (238,232,223), a faint visible band; fix by sampling the canvas colour from the photo",
+      "posted": false
+    }
   }
 }
