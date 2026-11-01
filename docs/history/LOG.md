@@ -4,6 +4,15 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-01
+
+- reconciled at `93780ae`: NOW.md cut to meet the size audit (16,444 characters against 16,000). Head re-stamped. The Codex lane and launch reel proof bullets were already written by each session's closeout.
+- rolled from NOW.md: 2026-10-29 Recipes v11. Hilarious no longer borrows Over the top's velvet cushion and spotlight, its joke keeps the stated place, held toys keep the owner's verb, no unnamed leash, blankets stay in the stated place, and the collage dog is cut paper. Ruling (Krish, 2026-10-29): Hilarious no longer uses the velvet cushion or spotlight; Over the top is the one tone that may.
+- rolled from NOW.md: 2026-10-29 A Teeinblue campaign Update renames the product handle to the campaign title on most runs (28 Oct, 29 Oct twice). Every Update is followed by the storefront check and the repository handle check before anything else.
+- rolled from NOW.md: 2026-10-29 The growth session has its two answers, a recalibration and the mandate to drive organic growth. Ruling (Krish, 2026-10-29): the customer email is krish@heartside.io.
+- rolled from NOW.md: **28 October, night:** PR #65 is merged as `8da4514` with CI green. Ruling (Krish, 28 October): "Remove all the approvals. Just have this co-work prompt punch through everything." The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) now carries his yes up front. It keeps one hold (the theme goes live only if the copy passed its gates and the phone tests), the never list (no real card, no Printful confirmation, no message to a customer) and the cap of 14 paintings.
+- rolled from NOW.md: **27 October:** The journey redesign went live with the bundle and the Artist's touch add-on after an independent review and a real-store check on an unpublished copy; the three core products and reviewed theme went live with normal payments, and the fee-free blanket order confirmed the accepted artwork reached Teeinblue. Scope and economics moved to stable documents ([scope](docs/SCOPE.md), [economics](docs/ECONOMICS.md)) because dated notes could mislead a reviewer.
+
 ## 2026-10-31
 
 - stamped at `95f61c7`: NOW.md was already reconciled by each session's closeout notes (folded by the repository check; `now-notes/` is empty) through the 31 October release, card add-on and closeout. Head re-stamped, no other change. The NOW.md audit passes.

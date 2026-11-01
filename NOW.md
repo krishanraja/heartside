@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-11-01
-head: 95f61c7
+head: 93780ae
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -89,11 +89,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - 2026-10-30 Krish approved the go-live end to end, and CoWork ran it. The draft theme failed the live gate because Helio's transparent home header covered the journey's first screen, so CoWork turned the transparent home header off in the theme settings. The journey now also pads its first screen under any overlapping header itself, so the gate stays clear if that setting is switched back on.
 - 2026-10-30 CoWork pressed Update on the blanket campaign with every data-sync box ticked. That renamed the handle to heartside-personality-blanket-draft-2026-10-23 (restored, with a 301), and set the title to "Heartside Personality Blanket - DRAFT 2026-10-23" and the price to $89. Krish approved restoring the pinned title and the $129 price, and the storefront confirms both. The apply steps now say to untick every "Choose data to sync to Shopify" box before any click on Update.
 - 2026-10-30 The first screen and the gift pages now show real breeds on the real gifts, to convert better; the effect on the trailing four-week number is not measured yet.
-- 2026-10-29 Recipes v11. Hilarious no longer borrows Over the top's velvet cushion and spotlight, its joke keeps the stated place, held toys keep the owner's verb, no unnamed leash, blankets stay in the stated place, and the collage dog is cut paper. Ruling (Krish, 2026-10-29): Hilarious no longer uses the velvet cushion or spotlight; Over the top is the one tone that may.
-- 2026-10-29 A Teeinblue campaign Update renames the product handle to the campaign title on most runs (28 Oct, 29 Oct twice). Every Update is followed by the storefront check and the repository handle check before anything else.
-- 2026-10-29 The growth session has its two answers, a recalibration and the mandate to drive organic growth. Ruling (Krish, 2026-10-29): the customer email is krish@heartside.io.
-- **28 October, night:** PR #65 is merged as `8da4514` with CI green. Ruling (Krish, 28 October): "Remove all the approvals. Just have this co-work prompt punch through everything." The [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) now carries his yes up front. It keeps one hold (the theme goes live only if the copy passed its gates and the phone tests), the never list (no real card, no Printful confirmation, no message to a customer) and the cap of 14 paintings.
-- **27 October:** The journey redesign went live with the bundle and the Artist's touch add-on after an independent review and a real-store check on an unpublished copy; the three core products and reviewed theme went live with normal payments, and the fee-free blanket order confirmed the accepted artwork reached Teeinblue. Scope and economics moved to stable documents ([scope](docs/SCOPE.md), [economics](docs/ECONOMICS.md)) because dated notes could mislead a reviewer.
 
 ## What is next and what is waiting on Krish
 
