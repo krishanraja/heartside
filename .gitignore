@@ -8,3 +8,6 @@ content/out/
 
 # Printful photos and local renders for tools/realphoto (its README: inputs are not committed)
 tools/realphoto/src/
+
+# Generated silent reel and preview frames
+tools/reel/out/
