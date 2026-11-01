@@ -3,8 +3,13 @@
   "venture": "heartside",
   "format": "9:16 vertical, 15 seconds, 1080x1920, for Heartside's own channels (organic, not paid ads)",
   "goal": "Launch the illustrated mug: one photo of your dog becomes a painting all the way round a mug. Serves the North Star (Shopify net sales).",
-  "status": "awaiting_krish",
-  "approved": null,
+  "status": "approved_for_proof_only",
+  "approved": {
+    "date": "2026-11-01",
+    "words": "I'm happy if you, for this purpose only, focus on the fact that this system works and each part of the machine is doing its job correctly and proportionately. You're authorised to produce a short video as an output but I don't think I'm going to be using your storyboard above in real life.",
+    "feedback": "I find these storyboards okay but they're just generic ads. They look more like paid ads rather than organic social and they don't have any humour, any magic, any uniqueness about them. They're not thumb-stopping as such.",
+    "not_for_posting": true
+  },
   "shots": [
     {
       "n": 1,
@@ -94,5 +99,43 @@
     "Epidemic Sound track cut to 15s",
     "One Codex card (codex/queue/launch-reel-2026-11-02.md) for shots 2-5 and the assembly, with every file above as an input",
     "Claude watches and listens to the finished cut at full size against this file before calling it ready"
-  ]
+  ],
+  "proof_build": {
+    "length": "12s",
+    "shot_1": {
+      "provider": "runway",
+      "model": "gen-4-turbo",
+      "task": "ba934a6f-1683-41b4-ae09-5780d0ebc1c8",
+      "credits": 25,
+      "control_center_spend": "9ed7a3b6-ac93-4569-a69d-69e2f16545e5",
+      "file": "inputs/shot1-runway.mp4"
+    },
+    "music": {
+      "provider": "epidemic_sound",
+      "recording_id": "e7393787-f6df-3738-9a15-4317e316a764",
+      "edit_job": "dee54da9-2d7d-4e85-a000-09cf7112a935",
+      "edit_id": "7300610d-2779-42b3-b093-01f489c7b402",
+      "duration_ms": 12000,
+      "kept_out_of_repo": "licensed audio, public repository"
+    },
+    "codex_card": "codex/queue/launch-reel-proof-2026-11-01.md",
+    "dropped": "the photo-to-painting wipe, to keep the proof short",
+    "codex": {
+      "card": "launch-reel-proof-2026-11-01",
+      "host": "Lorimer",
+      "result_commit": "b361a50",
+      "finished_at": "2026-11-01T15:47:37Z",
+      "control_center_spend": "a71dfb36-0c12-4eb7-a1f7-769cb59996ed (1 percent of the week, the booked estimate; no measured figure)",
+      "made": "tools/reel/build_launch_reel.py"
+    },
+    "check": {
+      "by": "Claude, 2026-11-01",
+      "acceptance_rerun": "pass (8 frames 1080x1920; py_compile)",
+      "render": "1080x1920, 30 fps, 12.000 s, H.264",
+      "audio": "music muxed outside the repo; mean -19.3 dB, peak -1.0 dB, silence only in the 0.6 s fade at the end",
+      "watched": "13 frames at full size across every scene",
+      "flaw": "each mug photo's own background (242,236,229) is lighter than the canvas (238,232,223), a faint visible band; fix by sampling the canvas colour from the photo",
+      "posted": false
+    }
+  }
 }
