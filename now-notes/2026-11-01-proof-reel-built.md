@@ -1,3 +1,0 @@
-Status: the production machine ran end to end on a 12-second proof reel that is not for posting: storyboard and Krish's proof-only yes, a Runway shot (25 credits), an Epidemic Sound cut (kept out of this public repository), Codex building tools/reel/build_launch_reel.py on Lorimer from a booked card, and Claude's full-size check with sound. One flaw is recorded in design/launch-reel-2026-11-02/direction.json: the mug photos' background is a shade lighter than the canvas. (2026-11-01)
-Next: set Heartside's organic social tone with Krish in growth-heartside before the next direction pack.
-North Star check (2026-11-01): holds.
