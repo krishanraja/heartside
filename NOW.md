@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- every video or animated asset now starts as a direction pack (codex/README.md, "Direction first"): rough frames and a storyboard Krish sees before anything is built. The first one, the 15-second launch reel for the illustrated mug, is in design/launch-reel-2026-11-02/ and waits on his yes; its two mock stills cost 5.5 Higgsfield credits, booked and settled in Control Center. (2026-11-01) (2026-11-01)
 - A Codex lane is set up: a session queues a card at codex/queue/<id>.md with a Control Center booking, and Krish's home computer builds it and pushes codex/<id> (codex/README.md). (2026-11-01)
 - the closeout is done. Both stale Teeinblue campaigns are archived and their hidden products deleted, the portrait print reaches every edge with no City field, Spocket is uninstalled and the two broken themes are deleted. The portrait gallery that an accidental full-sync Update replaced is rebuilt from the approved renders. (2026-10-31)
 - the release is complete. The mug and portrait print the painting only (the portrait painting fills the whole 12 x 18), the note travels on the packing slip, the free digital card and the optional $12 printed card, both order workflows are live, and the live gates are all clear. (2026-10-31)
@@ -95,7 +96,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-01): Krish places a Codex share for this venture in Control Center; until then reserve_credit_spend refuses and no card is queued.
+- Next (2026-11-01): on Krish's yes to the reel, generate shot 1 in Runway, cut the Epidemic Sound track, and queue the Codex card for shots 2 to 5.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
