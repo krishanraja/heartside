@@ -18,6 +18,12 @@ This repository's North Star is [`docs/NORTH_STAR.md`](docs/NORTH_STAR.md): an a
 Use `docs/HARNESS_CONTEXT.md` for the owning workflow, source of truth and checks. Preserve the goal and accepted decisions when a revision changes one part; explain material trade-offs. Verify the downstream result. Record corrections and observed outcomes through the existing capture path. Experimental results retain their conditions; inferred requirements remain proposals.
 <!-- krish-repo-admin:end -->
 
+## Assets, motion and animation: Codex makes them
+
+Claude directs and checks; Codex makes this venture's assets, motion design and animation, on Krish's home computer,
+from a card in `codex/queue/`. Never ask Krish how to reach Codex: follow [`codex/README.md`](codex/README.md).
+Claude, not Codex, calls Runway and Higgsfield, inside this venture's Control Center share.
+
 <!-- krish-canon:start release=v2026.10.30.1 sha=807cfe066ff1 rendered=2026-10-30 -->
 ## Krish canon
 
