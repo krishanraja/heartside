@@ -5,7 +5,7 @@
   Fraunces (headlines), DM Sans (UI), Courier Prime (paperwork). SIL Open Font License.
 {%- endcomment -%}
 {%- comment -%} hs-brand.css first: the brand tokens hs2.css and every HS section build on. Helio's cross-document view transitions flash on navigation, so pages with our sections switch them off. {%- endcomment -%}
-<link rel="preload" href="{{ 'hs-fraunces.woff2' | asset_url }}" as="font" type="font/woff2" crossorigin>
+{{ 'hs-fraunces.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: 'anonymous' }}
 {{ 'hs-brand.css' | asset_url | stylesheet_tag }}
 <style>@view-transition{navigation:none}</style>
 <style>
