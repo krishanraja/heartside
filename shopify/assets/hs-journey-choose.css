@@ -162,3 +162,49 @@ html.hs-jm-on body { background: #FBF7F3; }
 .hs-jm__nophoto-art img { display: block; width: 100%; height: auto; max-height: 44svh; object-fit: cover; }
 .hs-jm__tag { position: absolute; top: 8px; left: 8px; z-index: 1; padding: 2px 8px; border-radius: 6px; background: rgba(26, 21, 20, .82); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
 .hs-jm__price { margin: 0; font-size: 15px; font-weight: 600; }
+
+/* "Select your gifts" (Krish, 2 Nov): the three gifts side by side, nothing over the pictures, name
+   and price on one line, colours as small circles, the offer in one line, a quiet repaint link.
+   The font system (option A): Fraunces for the heading, DM Sans for the rest. */
+.hs-jm { --serif: "HS Fraunces", "Fraunces", Georgia, serif; }
+.hs-jm .hs-jm__title { font-family: var(--serif) !important; font-weight: 600; font-size: 28px; line-height: 32px; letter-spacing: -0.02em; }
+.hs-jm__head { min-height: 52px; }
+.hs-jm__choose { gap: 14px; padding-top: 6px; }
+.hs-jm__tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; gap: 10px; flex: none; max-height: none; }
+.hs-jm-tile, .hs-jm-tile:first-child { grid-row: auto; position: relative; display: flex; flex-direction: column; gap: 8px; padding: 6px 6px 8px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--paper); cursor: pointer; }
+.hs-jm-tile::after, .hs-jm-tile:not([aria-disabled="true"])::after { content: none; display: none; }
+.hs-jm-tile.is-on { border: 2px solid var(--stamp); box-shadow: none; padding: 5px 5px 7px; }
+.hs-jm-tile__art { flex: none; aspect-ratio: 3 / 4; border-radius: 9px; background: #F1E9E2; overflow: hidden; display: grid; place-items: center; }
+.hs-jm-tile__check { position: absolute; top: -9px; right: -9px; z-index: 1; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 1.5px solid var(--line-strong); font-size: 15px; font-weight: 700; line-height: 1; color: var(--ink); }
+.hs-jm-tile.is-on .hs-jm-tile__check { background: var(--stamp); border-color: var(--stamp); color: #fff; font-size: 13px; }
+.hs-jm-tile__row { display: grid; gap: 0; padding: 0 2px; white-space: nowrap; min-width: 0; }
+.hs-jm-tile__name { margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.hs-jm-tile__price { font-size: 13px; line-height: 18px; color: var(--muted); }
+.hs-jm-tile__bar { position: absolute; left: 12px; right: 12px; bottom: 34px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.85); overflow: hidden; }
+.hs-jm-tile__bar span { display: block; width: 40%; height: 100%; border-radius: 2px; background: var(--stamp); animation: hs-jm-bar 1.4s ease-in-out infinite; }
+@keyframes hs-jm-bar { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.hs-jm-tile.is-painting .hs-jm-tile__art > * { filter: saturate(.7) blur(.4px); opacity: .8; }
+/* the drawn products, sized for a three-up row */
+.hs-jm-mug { width: 82%; }
+.hs-jm-frame { width: 74%; }
+.hs-jm-blanket { width: 84%; transform: none; }
+/* each chosen gift's options: colours as small circles, with the chosen name beside the label */
+.hs-jm__options { display: grid; gap: 10px; }
+.hs-jm-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: nowrap; }
+.hs-jm-opt__name { display: grid; font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--muted); white-space: nowrap; }
+.hs-jm-opt__name b { color: var(--ink); font-size: 15px; line-height: 20px; font-weight: 600; }
+.hs-jm-opt__row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; justify-content: flex-end; }
+.hs-jm-dot { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 0; background: var(--dot); box-shadow: inset 0 0 0 1px rgba(0,0,0,.14); cursor: pointer; }
+.hs-jm-dot.is-on { box-shadow: inset 0 0 0 1px rgba(0,0,0,.14), 0 0 0 2px var(--cream), 0 0 0 4px var(--stamp); }
+.hs-jm-pill { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 16px; }
+.hs-jm__bundle { padding: 10px 14px; font-weight: 400; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs-jm__bundle b { color: var(--stamp); font-weight: 600; }
+.hs-jm__repaint, .hs-jm__repaint:hover { display: block; width: 100%; height: auto; min-height: 36px; margin: 6px 0 0; padding: 0; border: 0; border-radius: 0; background: none; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* the gifts painted in the background: a full page, out of sight and out of reach */
+.hs-jm-frame-bg { position: fixed; left: -10000px; top: 0; width: 390px; height: 844px; border: 0; opacity: 0; pointer-events: none; }
+@media (max-width: 359px) { .hs-jm__bundle { white-space: normal; } .hs-jm-tile__price { font-size: 12px; } }
+@media (min-width: 900px) {
+  .hs-jm .hs-jm__title { font-size: 40px; line-height: 46px; }
+  .hs-jm__tiles { height: auto; grid-row: 1 / span 6; align-self: start; }
+}
+@media (prefers-reduced-motion: reduce) { .hs-jm-tile__bar span { animation: none; width: 100%; opacity: .5; } }

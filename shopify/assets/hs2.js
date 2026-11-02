@@ -2854,7 +2854,7 @@
         try { u = new URL(link.getAttribute('href') || '', location.href); path = (/^(?:\/[^/?#]+)*?\/products\/[^/?#]+/.exec(u.pathname) || [''])[0]; } catch (e) { path = ''; }
         try { variant = String((JSON.parse(l.row.getAttribute('data-hs2-cart-line') || '{}') || {}).variant_id || ''); } catch (e) { variant = ''; }
         if (!/^\d+$/.test(variant)) variant = (u && u.searchParams.get('variant')) || '';
-        if (path) html = '<a href="' + path + '?' + (/^\d+$/.test(variant) ? 'variant=' + variant + '&' : '') + 'redo=' + l.id + '" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span>';
+        if (path) html = '<a href="' + path + '?' + (/^\d+$/.test(variant) ? 'variant=' + variant + '&' : '') + 'redo=' + l.id + '" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays until you choose.</span>';
       }
       if (!html) { if (slot) slot.remove(); return; }
       if (!slot) { slot = document.createElement('div'); slot.className = 'hs2-redo'; slot.setAttribute('data-hs2-redo', ''); host.appendChild(slot); }
@@ -3053,6 +3053,32 @@
     return form;
   }
   // on the gift page: "Add a printed Christmas card, $12", then "Card added. Remove"
+  /* Every gift's picture in the cart opens larger (Krish, 2 Nov: the previews need to be expandable):
+     a tap on the thumbnail shows the design, or the card, full size over the cart; the link to the
+     gift page stays for a browser without this script. */
+  function bindCartZoom() {
+    if (!/^\/cart\/?$/.test(location.pathname) || bindCartZoom.on) return;
+    bindCartZoom.on = true;
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('[data-hs2-zoom]');
+      if (!a) return;
+      var img = a.querySelector('img');
+      if (!img || !img.getAttribute('src')) return;
+      e.preventDefault();
+      var box = document.createElement('dialog');
+      box.className = 'hs2-zoom';
+      var card = a.querySelector('[data-hs2-zoom-card]');
+      box.innerHTML = '<button type="button" class="hs2-zoom__close" aria-label="Close">\u00d7</button>' +
+        (card ? '<div class="hs2-zoom__card">' + card.innerHTML + '</div>' : '<img alt="">');
+      if (!card) { var big = box.querySelector('img'); big.src = img.getAttribute('data-hs2-src') || img.src; big.alt = img.alt || ''; }
+      document.body.appendChild(box);
+      var close = function () { if (box.open) box.close(); if (box.parentNode) box.parentNode.removeChild(box); };
+      box.addEventListener('click', function (ev) { if (ev.target === box || ev.target.closest('.hs2-zoom__close')) close(); });
+      box.addEventListener('close', close);
+      if (box.showModal) box.showModal(); else box.setAttribute('open', '');
+      track('cart_zoom', { card: !!card });
+    }, true);
+  }
   function bindCard() {
     var box = document.querySelector('[data-hs-card-offer]'), card = cardOpen();
     if (!box || !card || !nativeArtworkPurchase()) return;
@@ -3126,11 +3152,14 @@
       if (!l.personal || !/^[a-f0-9-]{36}$/i.test(l.id) || has[l.id]) { unslot(l.row); return; }
       if (slot.querySelector('[data-hs2-card]')) return;
       var box = document.createElement('div');
-      box.className = 'hs2-card'; box.setAttribute('data-hs2-card', '');
-      box.innerHTML = '<button type="button" data-hs2-card-add></button><p>Your painting on the front, your note inside. It ships in its own envelope.</p><p role="status" data-hs2-card-status></p>';
+      // hs2-cardoffer, never hs2-card: that is the homepage's product card, whose clipping and
+      // three-line limit cut this offer's words off (Krish, 2 Nov: "envelope" was cut off)
+      box.className = 'hs2-cardoffer'; box.setAttribute('data-hs2-card', '');
+      box.innerHTML = '<button type="button" data-hs2-card-add><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M3 6.5h18v11H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span data-hs2-card-label></span><b data-hs2-card-price></b></button><p>Printed with your painting and note. Ships in its own envelope.</p><p role="status" data-hs2-card-status></p>';
       slot.appendChild(box);
       var btn = box.querySelector('[data-hs2-card-add]'), status = box.querySelector('[data-hs2-card-status]');
-      btn.textContent = 'Add a printed Christmas card, ' + card.price;
+      box.querySelector('[data-hs2-card-label]').textContent = 'Add a Christmas card';
+      box.querySelector('[data-hs2-card-price]').textContent = card.price;
       btn.addEventListener('click', function () {
         if (btn.disabled) return;
         btn.disabled = true; status.textContent = 'Adding your card.';
@@ -4384,7 +4413,7 @@
     }
     guardSearchFocus();
     bindBlanketRecovery();
-    bindExtras(); bindCard();
+    bindExtras(); bindCard(); bindCartZoom();
     guardCatalogQuickAdd();
     bindInputs(); render(); sticky(); gallery(); clearHeader(); heartsideMenu();
     steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); cycleNames(); leakAutoplay();

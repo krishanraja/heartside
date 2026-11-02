@@ -345,7 +345,7 @@
   function viewWords() {
     var n = names();
     // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
-    return screen('words', "Now let's capture " + esc(n.possessive) + ' vibe.', 'Pick how ' + n.she + (n.she === 'they' ? ' sound' : ' sounds') + '. We paint from this.',
+    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'Pick how ' + n.she + (n.she === 'they' ? ' sound' : ' sounds') + '. We paint from this.',
       '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
         return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
       }).join('') + '</div>', primary('Now ' + n.his + ' look', 'look', true));
@@ -375,10 +375,14 @@
     var box = app && app.querySelector('[data-hsj-note]');
     if (!box) return;
     var n = names(), l = lines(), busy = !!(S.request && S.request.tone === S.tone);
+    // writing: soft shimmering bars where the lines go; when the lines land they arrive one by one
+    var fresh = paintNote.busy && !busy;
+    paintNote.busy = busy;
     box.classList.toggle('is-busy', busy);
-    box.innerHTML = '<div class="hsj-letter">' + ['home', 'spot', 'together', 'meaning'].map(function (k) { return '<p>' + esc(l[k]) + '</p>'; }).join('') +
-      '<p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>' +
-      '<div class="hsj-note__foot"><span class="hsj-note__ask" data-hsj-note-ask>' + (busy ? 'Writing it ' + TONE_LABEL[S.tone].toLowerCase() + '…' : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
+    box.innerHTML = (busy ? '<div class="hsj-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>' :
+      '<div class="hsj-letter' + (fresh ? ' is-fresh' : '') + '">' + ['home', 'spot', 'together', 'meaning'].map(function (k) { return '<p>' + esc(l[k]) + '</p>'; }).join('') +
+      '<p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>') +
+      '<div class="hsj-note__foot"><span class="hsj-note__ask' + (busy ? ' is-writing' : '') + '" data-hsj-note-ask>' + (busy ? 'Writing it ' + TONE_LABEL[S.tone].toLowerCase() : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
       '<button type="button" class="hsj-text-btn" data-hsj-rewrite' + (busy ? ' disabled' : '') + '>' + ICON.redo + '<span>Write it again</span></button></div>';
   }
   // "Write it again" as often as they like (Krish, 29 Oct): the same tone, a fresh draft; past the
@@ -405,9 +409,10 @@
       '<span class="hsj-drop__text">' + (photoURL ? 'Choose a different photo' : 'Take or choose a photo') + '</span><span class="hsj-drop__sub">It stays on your phone until you choose a gift.</span></label>' +
       '<p class="hsj-photo-note" data-hsj-photo-note role="status"></p>' +
       '<button type="button" class="hsj-text-btn" data-hsj-override hidden>It\'s ' + esc(n.dog) + '. Use this photo.</button>' +
-      '<ul class="hsj-tips"><li>' + ICON.face + esc(n.possessive) + ' face clearly in view</li><li>' + ICON.light + 'Good daylight</li><li>' + ICON.one + 'Just ' + esc(n.dog) + ', no other dogs</li></ul>',
+      '<ul class="hsj-tips" data-hsj-tips><li data-hsj-tip="face">' + ICON.face + '<span>' + esc(n.possessive) + ' face clearly in view</span>' + TIP_MARK + '</li><li data-hsj-tip="light">' + ICON.light + '<span>Good daylight</span>' + TIP_MARK + '</li><li data-hsj-tip="one">' + ICON.one + '<span>Just ' + esc(n.dog) + ', no other dogs</span>' + TIP_MARK + '</li></ul>',
       '<button type="button" class="hsj-btn" data-hsj-choose-photo><span>Choose a photo</span>' + ICON.camera + '</button>');
   }
+  var TIP_MARK = '<span class="hsj-tip__mark" aria-hidden="true">' + ICON.check + '</span>';
   function view(step) {
     if (step === 'name') return viewName();
     if (step === 'breed') return viewBreed();
@@ -552,21 +557,52 @@
     var say = app.querySelector('[data-hsj-photo-note]'), over = app.querySelector('[data-hsj-override]');
     if (over) over.hidden = true;
     if (!window.HSPhotoQuality) { usePhoto(f, false); return; }
-    if (say) say.textContent = 'Checking the photo on your phone…';
+    if (say) { say.textContent = ''; say.classList.remove('is-good'); }
+    var check = checkLook(), started = Date.now();
     window.HSPhotoQuality.check(f, { timeout: 6000 }).then(function (r) {
-      var why = r.reasons.map(function (x) { return x.message; }).join(' ');
-      if (r.verdict === 'reject') {
-        track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
-        if (say) say.textContent = why;
-        if (over) over.hidden = !r.overridable;
-        return;
+      // the ticks take their time even when the check is quick, so each one is seen
+      setTimeout(function () {
+        var why = r.reasons.map(function (x) { return x.message; }).join(' ');
+        if (r.verdict === 'reject') {
+          track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+          check.done(r.reasons.map(function (x) { return x.code; }));
+          if (say) say.textContent = why;
+          if (over) over.hidden = !r.overridable;
+          return;
+        }
+        check.done([]);
+        usePhoto(f, false, r.verdict === 'warn' ? why : '');
+      }, Math.max(0, 1500 - (Date.now() - started)));
+    }, function () { check.done([]); usePhoto(f, false); });
+  }
+  /* the check, made visible: the photo fills the frame under a passing light, and the three tips
+     tick off one by one; a tip the photo fails turns amber with the reason underneath */
+  var TIP_OF = { dark: 'light', bright: 'light', dim: 'light', glare: 'light', dogs: 'one', many: 'one', multiple: 'one', several: 'one' };
+  function checkLook() {
+    var drop = app.querySelector('[data-hsj-drop]'), list = app.querySelector('[data-hsj-tips]'), timers = [];
+    var items = list ? Array.prototype.slice.call(list.querySelectorAll('[data-hsj-tip]')) : [];
+    if (drop) {
+      drop.classList.add('has-photo', 'is-checking');
+      if (!drop.querySelector('.hsj-scan')) drop.insertAdjacentHTML('beforeend', '<span class="hsj-scan" aria-hidden="true"></span><span class="hsj-drop__badge" data-hsj-badge></span><span class="hsj-drop__change">Change</span>');
+      drop.querySelector('[data-hsj-badge]').innerHTML = '<span>Checking the photo</span>';
+    }
+    if (list) { list.classList.add('is-checking'); items.forEach(function (li) { li.classList.remove('is-done', 'is-bad'); }); }
+    items.forEach(function (li, i) { timers.push(setTimeout(function () { if (list.classList.contains('is-checking')) li.classList.add('is-done'); }, 420 * (i + 1))); });
+    return { done: function (codes) {
+      timers.forEach(clearTimeout);
+      var bad = {};
+      codes.forEach(function (c) { var k = TIP_OF[c]; if (!k) Object.keys(TIP_OF).forEach(function (w) { if (c.indexOf(w) > -1) k = TIP_OF[w]; }); bad[k || 'face'] = true; });
+      items.forEach(function (li) { var b = !!bad[li.getAttribute('data-hsj-tip')]; li.classList.toggle('is-bad', b); li.classList.toggle('is-done', !b); });
+      if (list) list.classList.remove('is-checking');
+      if (drop) {
+        drop.classList.remove('is-checking');
+        drop.querySelector('[data-hsj-badge]').innerHTML = codes.length ? '<span>Try another photo</span>' : ICON.check + '<span>Looks great</span>';
       }
-      usePhoto(f, false, r.verdict === 'warn' ? why : '');
-    }, function () { usePhoto(f, false); });
+    } };
   }
   function usePhoto(f, overridden, warning) {
     var say = app.querySelector('[data-hsj-photo-note]'), n = names(), gift = bestGift();
-    if (say) say.textContent = (warning ? warning + ' ' : '') + 'Saving the photo…';
+    if (say) say.textContent = warning ? warning + ' ' : '';
     if (overridden) track('photo_override', {});
     savePhoto(f).then(function (ok) {
       if (!ok) { if (say) say.textContent = "This browser couldn't keep the photo. Allow this site to store data, then choose it again."; return; }
@@ -574,7 +610,7 @@
       var url = giftURL(gift);
       if (!url) { if (say) say.textContent = "That gift isn't available right now."; return; }
       track('paint', { gift: gift, tone: S.tone, style: S.style });
-      if (say) say.textContent = 'Off to paint ' + n.dog + '…';
+      if (say) { say.classList.add('is-good'); say.textContent = 'Off to paint ' + n.dog + '…'; }
       window.location.href = url;
     });
   }

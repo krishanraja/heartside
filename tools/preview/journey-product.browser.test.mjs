@@ -28,16 +28,44 @@ const GIFTS = {
   blanket: {url: '/products/your-dogs-personality-blanket?journey=1', handle: 'your-dogs-personality-blanket', price: 89},
   print: {url: '/products/your-dogs-portrait?journey=1', handle: 'your-dogs-portrait', price: 49},
 };
+const STANDIN = '<script>(' + (() => {
+    // count every file handed to Teeinblue's photo field
+  window.__sends = 0;
+  // each gift page has its own product id, as the live pages do (Teeinblue's campaign carries it)
+  const ids = {'your-dogs-illustrated-mug': 101, 'your-dogs-portrait': 102, 'your-dogs-personality-blanket': 103};
+  const pid = ids[(location.pathname.split('/')[2] || '')];
+  if (pid) window.ShopifyAnalytics = {meta: {product: {id: pid}}};
+  document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
+  // the live campaigns carry the painting's hidden fields; the stand-in form gets them here
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.querySelector('#buy input.tee-photo-input');
+    if (!input) return;
+    input.id = 'tee-photo-standin';
+    const photo = input.closest('.tee-field') || input.closest('.tee-photo');
+    photo.classList.add('tee-field--photo');
+    const field = (label, body) => { const d = document.createElement('div'); d.className = 'tee-field'; d.innerHTML = '<div class="tee-field__heading"><span>' + label + '</span></div>' + body; photo.before(d); };
+    const pick = opts => '<select>' + opts.map(o => '<option>' + o + '</option>').join('') + '</select>';
+    field('Personality', '<input type="text">');
+    field('Artwork style', pick(['Cinematic', 'Painterly', 'Vintage screenprint', 'Comic book', 'Cut-paper collage', 'Fine ink drawing']));
+    field('Artwork tone', pick(['Sentimental', 'Warm with a wink', 'Hilarious']));
+    for (const name of ['Style direction', 'Tone direction', 'Energy']) field(name, '<input type="text" data-brief="' + name + '">');
+    document.dispatchEvent(new Event('teeinblue-event-component-injected'));
+  }, true);
+}).toString() + ')();</script>';
 let server, base, browser, cart = [];
 before(async () => {
   server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
     if (u.pathname === '/cart.js') { res.writeHead(200, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({items: cart})); }
+    // the stand-in for Teeinblue's add to cart, from any page or background copy
+    if (u.pathname === '/__add') { cart.push({handle: u.searchParams.get('h')}); res.writeHead(200); return res.end('ok'); }
     let f = path.join(out, decodeURIComponent(u.pathname));
     if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', u.pathname.split('/assets/')[1]);
     else if (u.pathname.startsWith('/products/')) f = path.join(out, PAGE_FOR[u.pathname.split('/')[2]] || 'missing');
     if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
     res.writeHead(200, {'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream'});
+    // every gift page, and each background copy, gets the Teeinblue stand-in before its own scripts
+    if (u.pathname.startsWith('/products/')) return res.end(fs.readFileSync(f, 'utf8').replace('<head>', '<head>' + STANDIN));
     fs.createReadStream(f).pipe(res);
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -54,24 +82,6 @@ async function open(size, {photo = true, journeyAge = 0, gift = 'print'} = {}) {
   await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
   const t = Date.now() - 60000; // a photo saved a minute ago (hs2 drops one older than three days)
   await page.addInitScript(([t, photo, journeyAge, gift, GIFTS]) => {
-    // count every file handed to Teeinblue's photo field
-    window.__sends = 0;
-    document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
-    // the live campaigns carry the painting's hidden fields; the stand-in form gets them here
-    document.addEventListener('DOMContentLoaded', () => {
-      const input = document.querySelector('#buy input.tee-photo-input');
-      if (!input) return;
-      input.id = 'tee-photo-standin';
-      const photo = input.closest('.tee-field') || input.closest('.tee-photo');
-      photo.classList.add('tee-field--photo');
-      const field = (label, body) => { const d = document.createElement('div'); d.className = 'tee-field'; d.innerHTML = '<div class="tee-field__heading"><span>' + label + '</span></div>' + body; photo.before(d); };
-      const pick = opts => '<select>' + opts.map(o => '<option>' + o + '</option>').join('') + '</select>';
-      field('Personality', '<input type="text">');
-      field('Artwork style', pick(['Cinematic', 'Painterly', 'Vintage screenprint', 'Comic book', 'Cut-paper collage', 'Fine ink drawing']));
-      field('Artwork tone', pick(['Sentimental', 'Warm with a wink', 'Hilarious']));
-      for (const name of ['Style direction', 'Tone direction', 'Energy']) field(name, '<input type="text" data-brief="' + name + '">');
-      document.dispatchEvent(new Event('teeinblue-event-component-injected'));
-    }, true);
     if (sessionStorage.getItem('hs2-review')) return;
     sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'hilarious'}));
     sessionStorage.setItem('hs2-review', JSON.stringify({
@@ -147,7 +157,7 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
   } finally { await ctx.close(); }
 });
 
-for (const size of PHONES) test(`${size.width}x${size.height}: the painting on every gift, the bundle, one tick, one button, and the extras queued`, async () => {
+for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts: the others paint in the background, once, and every gift goes in with one button`, async () => {
   const {page, ctx, errors} = await open(size);
   try {
     await page.goto(base + GIFTS.print.url);
@@ -156,34 +166,63 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting on e
     await page.waitForSelector('[data-hs-jm-choose]:not([hidden])', {timeout: 5000});
     const first = await page.evaluate(() => ({
       title: document.querySelector('[data-hs-jm-title]').textContent,
-      tiles: [...document.querySelectorAll('.hs-jm-tile')].map(t => [t.getAttribute('data-hs-jm-gift'), t.querySelector('.hs-jm-tile__tag').textContent, t.getAttribute('aria-pressed')]),
+      tiles: [...document.querySelectorAll('.hs-jm-tile')].map(t => [t.getAttribute('data-hs-jm-gift'), t.getAttribute('data-hs-jm-state'), t.getAttribute('aria-pressed')]),
+      over: document.querySelectorAll('.hs-jm-tile__art .hs-jm-tile__tag').length,
       bundle: document.querySelector('[data-hs-jm-bundle]').textContent, tick: document.querySelector('[data-hs-jm-tick-text]').textContent,
       add: document.querySelector('[data-hs-jm-add]').disabled,
+      wraps: [...document.querySelectorAll('.hs-jm__title, .hs-jm-tile__row, [data-hs-jm-bundle]')].filter(e => e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.5 + 22).map(e => e.textContent),
     }));
-    assert.equal(first.title, 'Mowgli on every gift');
-    assert.deepEqual(first.tiles, [['print', 'Ready', 'true'], ['mug', 'Preview', 'false'], ['blanket', 'Preview', 'false']]);
+    // Krish, 2 Nov: "Select your gifts", the three gifts with nothing over the pictures, no word on a line of its own
+    assert.equal(first.title, 'Select your gifts');
+    assert.deepEqual(first.tiles, [['print', 'done', 'true'], ['mug', 'idle', 'false'], ['blanket', 'idle', 'false']]);
+    assert.equal(first.over, 0, 'no chip over a picture');
     assert.match(first.bundle, /15%.*20%/);
     assert.equal(first.tick, 'Yes, this is Mowgli');
     assert.equal(first.add, true, 'no add before the tick');
+    if (size.width >= 360) assert.deepEqual(first.wraps, [], 'one line each');
     assert.ok(await fits(page), 'the gifts screen fits without scrolling');
     await page.screenshot({path: path.join(shots, size.width + '-gifts.png')});
-    // the painted gift cannot be dropped; a tap picks an extra and the total follows
-    await page.dispatchEvent('[data-hs-jm-gift=print]', 'click'); // aria-disabled: a real tap is refused too
+    // the painted gift cannot be dropped
+    await page.dispatchEvent('[data-hs-jm-gift=print]', 'click');
+    // ticking and unticking while deciding paints nothing (Krish, 2 Nov)
+    await page.click('[data-hs-jm-gift=mug]'); await page.waitForTimeout(600); await page.click('[data-hs-jm-gift=mug]');
     await page.click('[data-hs-jm-gift=blanket]');
     const picked = await page.evaluate(() => ({on: [...document.querySelectorAll('.hs-jm-tile.is-on')].map(t => t.getAttribute('data-hs-jm-gift')), btn: document.querySelector('[data-hs-jm-add]').textContent, bundle: document.querySelector('[data-hs-jm-bundle]').textContent}));
     assert.deepEqual(picked.on, ['print', 'blanket']);
-    assert.match(picked.btn, /^Add 2 gifts · \$\d+/);
-    assert.match(picked.bundle, /^Two gifts: 15% off/);
-    // the option pills drive Teeinblue's own radios
-    const pill = page.locator('.hs-jm-pill:not(.is-on)').first();
-    if (await pill.count()) {
-      const label = (await pill.textContent()).trim();
-      await pill.click(); await page.waitForTimeout(300);
-      assert.equal(await page.evaluate(l => [...document.querySelectorAll('#buy .tee-option input[type=radio]:checked')].some(r => { const lab = r.id && document.querySelector(`label[for="${r.id}"]`); return (lab ? lab.textContent : r.value).trim() === l; }), label), true, 'the pill picked the radio');
+    assert.match(picked.btn, /^Painting the blanket/);
+    assert.match(picked.bundle, /^You save 15% on 2 gifts/);
+    await page.waitForTimeout(3500);
+    const frames = await page.evaluate(() => [...document.querySelectorAll('iframe.hs-jm-frame-bg')].map(f => new URL(f.src).pathname));
+    assert.deepEqual(frames, ['/products/your-dogs-personality-blanket'], 'the blanket paints in the background; the mug, ticked and unticked, never started');
+    // the blanket's own page, out of sight, sends the photo to the painter once
+    const bg = page.frames().find(f => f.url().includes('personality-blanket'));
+    await bg.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    // ticking it off and on again keeps the same painting: no second copy
+    await page.click('[data-hs-jm-gift=blanket]'); await page.click('[data-hs-jm-gift=blanket]'); await page.waitForTimeout(3000);
+    assert.equal(await page.evaluate(() => document.querySelectorAll('iframe.hs-jm-frame-bg').length), 1);
+    assert.equal(await bg.evaluate(() => window.__sends), 1, 'painted once');
+    await bg.evaluate(() => {
+      const a = document.querySelector('[data-hs-art]');
+      a.setAttribute = function (k, v) { return Element.prototype.setAttribute.call(this, k, k === 'data-state' ? 'done' : v); };
+      a.setAttribute('data-state', 'done');
+      a.querySelector('[data-hs-art-result]').src = '/assets/hs-ex-style-collage.webp';
+      const box = document.querySelector('[data-hs2-artwork-accept]'); if (box) { const b = box.cloneNode(); let on = false; Object.defineProperty(b, 'checked', {get: () => on, set: v => { if (v) on = true; }}); box.replaceWith(b); }
+      document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-personality-blanket'); };
+    });
+    await page.waitForFunction(() => document.querySelector('[data-hs-jm-gift=blanket]').getAttribute('data-hs-jm-state') === 'done', null, {timeout: 5000});
+    assert.match(await page.textContent('[data-hs-jm-add]'), /^Add 2 gifts · \$\d+/);
+    // the blanket's own painting is on its tile, and its options join this page's
+    assert.match(await page.evaluate(() => document.querySelector('[data-hs-jm-gift=blanket] .hs-jm-blanket__art').getAttribute('style')), /hs-ex-style-collage/);
+    // a colour or option drives Teeinblue's own radios
+    const opt = page.locator('.hs-jm-dot:not(.is-on), .hs-jm-pill:not(.is-on)').first();
+    if (await opt.count()) {
+      const label = ((await opt.getAttribute('aria-label')) || (await opt.textContent())).trim();
+      const where = (await opt.getAttribute('data-hs-jm-opt')).split(':')[0];
+      await opt.click(); await page.waitForTimeout(300);
+      const doc = where === 'print' ? page : bg;
+      assert.equal(await doc.evaluate(l => [...document.querySelectorAll('#buy .tee-option input[type=radio]:checked')].some(r => { const lab = r.id && document.querySelector(`label[for="${r.id}"]`); return (lab ? lab.textContent : r.value).trim() === l; }), label), true, 'the option clicks Teeinblue');
     }
-    // the tick is hs2's own approval box; the add clicks Teeinblue's own button
-    // hs2's own refusal while a painting is still saving is covered by its tests; the stand-in painting
-    // here is never really saved, so the box is a plain one that hs2's own checks cannot clear
+    // the tick is hs2's own approval box; the add clicks each gift's own Teeinblue button
     await page.evaluate(() => {
       const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode();
       let on = false;
@@ -193,16 +232,12 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting on e
     await page.check('[data-hs-jm-tick]');
     assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-artwork-accept]').checked), true);
     assert.equal(await page.isDisabled('[data-hs-jm-add]'), false);
-    // Teeinblue's own add button, which hs2's add guard runs (add-guard.browser.test.mjs covers that)
-    await page.evaluate(() => { window.__atc = 0; document.querySelector('#buy #teeAtcButton').click = () => { window.__atc++; }; });
+    await page.evaluate(() => { document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-portrait'); }; });
     cart = [];
     await page.click('[data-hs-jm-add]');
-    await page.waitForFunction(() => window.__atc === 1);
-    const q = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-queue') || '[]'));
-    assert.deepEqual(q.map(x => x.url), ['/products/your-dogs-portrait?journey=1', '/products/your-dogs-personality-blanket?journey=1'], 'the extra is queued, in journey mode');
-    // once the gift is in the cart, the blanket's page is next
-    cart = [{handle: 'your-dogs-portrait'}];
-    await page.waitForURL(/your-dogs-personality-blanket\?journey=1/, {timeout: 8000});
+    // both gifts in the cart, the blanket first, then straight to the cart: no second painting screen
+    await page.waitForURL(/\/cart$/, {timeout: 15000});
+    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket', 'your-dogs-portrait']);
     assert.deepEqual(errors, []);
   } finally { cart = []; await ctx.close(); }
 });

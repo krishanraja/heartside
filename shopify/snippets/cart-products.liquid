@@ -334,11 +334,17 @@
                     <a
                       href="{{ item.url }}"
                       class="cart-items__media-container{% if hs_design != '' %} teeinblue-item--customization-images{% endif %}"
+                      {% if hs_design != '' %}data-hs2-zoom aria-label="See {{ item.product.title | escape }} larger"{% endif %}
                       style="--ratio:{{ ratio }};"
                     >
                       {%- if hs_design != '' -%}
                         {%- comment -%} teeinblue-item--customization-images is Teeinblue's own "leave these thumbnails alone" container {%- endcomment -%}
-                        <img src="{{ hs_design_src | escape }}" alt="{{ hs_design_alt }}" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
+                        {%- if hs_gift != nil and item.properties._hs_addon == 'card' -%}
+                          {%- comment -%} the card itself, not its gift: the painting in the card's gold-ruled mount (Krish, 2 Nov) {%- endcomment -%}
+                          <span class="hs2-cartcard" data-hs2-zoom-card><span class="hs2-cartcard__mount"><img src="{{ hs_design_src | escape }}" alt="Your Christmas card: {{ hs_design_alt }}" width="250" height="250" class="hs2-cart-preview hs2-cartcard__art" data-hs2-design data-hs2-src="{{ hs_design | escape }}"></span><span class="hs2-cartcard__cap">Christmas 2026</span></span>
+                        {%- else -%}
+                          <img src="{{ hs_design_src | escape }}" alt="{{ hs_design_alt }}" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
+                        {%- endif -%}
                         {%- if hs_gift != nil and item.properties._hs_addon == 'card' -%}
                           <span class="hs2-cart-addon-badge" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M3 6.5h18v11H3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
                         {%- elsif hs_gift != nil -%}
@@ -535,7 +541,7 @@
                   {%- if hs_redos contains hs_id_mark -%}
                     <div class="hs2-redo" data-hs2-redo><p class="hs2-redo__tag">First version</p><p>You made a new version of this gift. Keep the new one?</p><button type="button" class="hs2-redo__remove" data-hs2-redo-remove>Remove this version</button></div>
                   {%- elsif hs_redo_offer == '1136:/' -%}
-                    <div class="hs2-redo" data-hs2-redo><a href="{{ hs_redo_href | escape }}" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays here until you choose.</span></div>
+                    <div class="hs2-redo" data-hs2-redo><a href="{{ hs_redo_href | escape }}" data-hs2-redo-go>Not quite right? Make another version.</a><span>One redo per gift. Your design stays until you choose.</span></div>
                   {%- endif -%}
                   {%- if hs_orphan == '1x' and item.properties._hs_addon == 'card' -%}
                     <p class="hs2-artist__orphan" data-hs2-artist-orphan role="status">The gift this card was for is no longer in your cart. Remove this line unless you meant to keep it.</p>

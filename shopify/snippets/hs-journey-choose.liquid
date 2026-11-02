@@ -13,7 +13,6 @@
   <header class="hs-jm__head">
     <a class="hs-jm__back" href="/?step=look" aria-label="Back to the look"><svg class="hs-jm-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></a>
     <h2 class="hs-jm__title" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
-    <button type="button" class="hs-jm__repaint" data-hs-jm-repaint hidden><svg class="hs-jm-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 4.5 19.5 9.5 11 18l-5-5Z"/><path d="M6 13c-2 0-3 1.6-3 3.5 0 1.4-.6 2.6-1.5 3 2.6.6 6.5-.3 6.5-3.5"/></svg><span>Repaint free</span></button>
   </header>
   <div class="hs-jm__paint" data-hs-jm-paint>
     <div class="hs-jm__nophoto" data-hs-jm-nophoto hidden>
@@ -25,13 +24,14 @@
     </div>
   </div>
   <div class="hs-jm__choose" data-hs-jm-choose hidden>
-    <p class="hs-jm__lead" data-hs-jm-lead></p>
-    <div class="hs-jm__tiles" role="group" aria-label="Choose your gifts" data-hs-jm-tiles></div>
+    <div class="hs-jm__tiles" role="group" aria-label="Your gifts" data-hs-jm-tiles></div>
     <div class="hs-jm__options" data-hs-jm-options></div>
-    <p class="hs-jm__bundle" data-hs-jm-bundle>Two gifts save 15%. All three save 20%.</p>
+    <p class="hs-jm__bundle" data-hs-jm-bundle><b>You save 15% on 2 gifts.</b> 20% on all 3.</p>
     <label class="hs-jm__tick"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
     <div class="hs-jm__dock"><button type="button" class="hs-jm__btn" data-hs-jm-add disabled>Add to cart</button>
-      <p class="hs-jm__small" data-hs-jm-status role="status"></p></div>
+      <p class="hs-jm__small" data-hs-jm-status role="status"></p>
+      {%- comment -%} the one free repaint, a quiet link under the button (Krish, 2 Nov: the header button looked tacky) {%- endcomment -%}
+      <button type="button" class="hs-jm__repaint" data-hs-jm-repaint hidden>Not quite right? Repaint once, free</button></div>
   </div>
   {%- comment -%} One free repaint (Krish, 29 Oct): pick the tone once more and the same photo is painted again {%- endcomment -%}
   <div class="hs-jm-sheet" data-hs-jm-sheet hidden role="dialog" aria-modal="true" aria-labelledby="hs-jm-sheet-title">

@@ -25,7 +25,7 @@ const fixture = name => readFileSync(new URL('./fixtures/' + name, import.meta.u
 const hs2 = asset('hs2.js');
 const part = name => { const i = hs2.indexOf('  function ' + name + '('); assert.notEqual(i, -1, name); return hs2.slice(i, hs2.indexOf('\n  function ', i + 1)); };
 const cartScript = minified => {
-  const code = ['norm', 'cartArtworkImage', 'cartLineFacts', 'cartOfferHost', 'redoOffers', 'bundleLine', 'artistTouch', 'cardOpen', 'cardForm', 'cardOffers', 'cartTidy', 'cartDesignRetry', 'cartPicture'].map(part).join('\n');
+  const code = ['norm', 'cartArtworkImage', 'cartLineFacts', 'cartOfferHost', 'redoOffers', 'bundleLine', 'artistTouch', 'cardOpen', 'cardForm', 'cardOffers', 'bindCartZoom', 'cartTidy', 'cartDesignRetry', 'cartPicture'].map(part).join('\n');
   return `(function () {
   var CART_DROP_PROPS = /^available product$/i, CART_DROP_VALUES = /^(default|default title|1 pc|one size)$/i, cartImages = {};
   var ADDON_TAGS = ['Another photo of my dog', 'Favorite toy', 'Collar or accessory', 'Something else'];
@@ -33,6 +33,7 @@ const cartScript = minified => {
   function shopRoot() { return '/'; }
   ${minified ? transformSync(code, {minify: true}).code : code}
   window.__cartTidy = cartTidy;
+  if (typeof bindCartZoom === 'function') bindCartZoom();
 })();`;
 };
 const css = {brand: asset('hs-brand.css'), hs2: asset('hs2.css'), standin: fixture('standin.css')};
@@ -243,5 +244,38 @@ for (const model of Object.keys(SQUEEZE)) for (const viewport of [{width: 1280, 
     assert.equal(edge.gutters.length, 6, 'Check out, Discount, the total and three line prices');
     assert.deepEqual(edge.gutters.filter(g => g < 12), [], `Check out, Discount and the prices keep a gutter (${edge.gutters.join(', ')})`);
     assert.deepEqual(offsite, []); assert.deepEqual(errors, []);
+  } finally { await tab.close(); }
+});
+
+// Krish, 2 Nov: the card offer across the row under its gift, one line for its button, nothing cut
+// off; the card in the cart shows as a card; every picture opens larger; no word alone on a line
+test('phone cart at 360: the card offer is one full-width line, the card looks like a card, and a picture opens larger', async () => {
+  const items = [gift(0, ID, {props: {'Your note': 'On the hard days, I stay right beside you.'}}), addon(1, ID, {_hs_addon: 'card', Delivery: 'Ships in its own envelope'}), gift(2, ID2)];
+  const page = await cartPage(false, items);
+  page.html = page.html.replace('data-hs-artist-price="$29"', 'data-hs-artist-price="$29" data-hs-card-variant="888" data-hs-card-price="$12" data-hs-card-until="1796360399"');
+  const {tab, errors} = await open(page, {width: 360, height: 780});
+  try {
+    await tab.evaluate(() => window.__cartTidy());
+    await tab.waitForSelector('[data-hs2-card] button', {timeout: 10000});
+    await tab.waitForTimeout(300);
+    const r = await tab.evaluate(() => {
+      const offer = document.querySelector('[data-hs2-card]'), btn = offer.querySelector('button'), row = offer.closest('tr');
+      const lh = el => parseFloat(getComputedStyle(el).lineHeight) || 20;
+      return {cls: offer.className, btnLines: Math.round(btn.querySelector('span').getBoundingClientRect().height / lh(btn.querySelector('span'))),
+        wide: btn.getBoundingClientRect().width / row.getBoundingClientRect().width, clipped: [...offer.querySelectorAll('p')].some(p => p.scrollHeight > p.clientHeight + 1),
+        card: !!document.querySelector('.hs2-cartcard img'), ratio: (() => { const c = document.querySelector('.hs2-cartcard').getBoundingClientRect(); return c.height / c.width; })()};
+    });
+    await tab.screenshot({path: new URL('./out/cart-card-360.png', import.meta.url).pathname, fullPage: true});
+    assert.equal(r.cls, 'hs2-cardoffer');
+    assert.equal(r.btnLines, 1, 'the offer button is one line');
+    assert.ok(r.wide > 0.8, 'across the row, not squeezed beside the picture: ' + r.wide);
+    assert.equal(r.clipped, false, 'no words cut off');
+    assert.equal(r.card, true, 'the card line shows a card');
+    assert.ok(r.ratio > 1.3 && r.ratio < 1.7, 'a 4 x 6 card: ' + r.ratio);
+    await tab.click('#CartItem-101\\:merged-0 [data-hs2-zoom]');
+    assert.equal(await tab.evaluate(() => !!document.querySelector('dialog.hs2-zoom[open] img')), true, 'the picture opens larger');
+    await tab.click('.hs2-zoom__close');
+    assert.equal(await tab.evaluate(() => !!document.querySelector('dialog.hs2-zoom')), false);
+    assert.deepEqual(errors, []);
   } finally { await tab.close(); }
 });
