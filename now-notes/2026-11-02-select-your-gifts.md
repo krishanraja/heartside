@@ -1,16 +1,4 @@
-Status: Krish's 2 November review of a live order is built and tested on the branch, but not yet pushed to a theme. What changed:
-- **Font system A:** soft Fraunces for headings and names (the dog's name in italic stamp red), DM Sans for everything read or tapped, Courier Prime only for paperwork.
-- **Tones and writing:** the tone buttons fit on one line, and the note shimmers while it is written, then its lines arrive one by one.
-- **Photo check:** the photo fills its frame and three checks tick off in turn.
-- **"Select your gifts":** three clean tiles, colours as circles, the offer on one line, and the repaint as a quiet link.
-- **One painting experience:** extra gifts paint in hidden copies of their pages. A tick must stand for 2.5 seconds before painting starts, each gift is painted once, and one button adds every gift.
-- **Cart:**
-  - the card offer has its own class, on one full-width line;
-  - the card line shows a card;
-  - every picture opens larger;
-  - gift names are in Fraunces;
-  - there are no single words alone on a line.
-
-Next: push to an unpublished draft theme and send Krish phone screenshots. Go live only on his go.
-
-North Star check (2026-11-02): holds. U5: this work removes the second painting wait and the repeated chooser between the photo and the cart.
+Status: Krish's 2 November review of his live order is built and tested on the branch (813 of 813 tests pass), but not yet on the live store. It covers font system A, a premium photo check, and "Select your gifts", where any extra gift is painted in the background so the buyer sees one painting screen. It also fixes the cart's card offer and makes cart pictures open larger.
+Changed: Krish found the second "Painting" screen, the cluttered gift step, the cut-off card offer and the off-brand fonts tacky and duplicative in a real purchase. One painting and one chooser take that second wait out of the path from the photo to the cart.
+Next: push to the draft theme "Heartside 2 Nov gifts draft", send Krish phone screenshots, and go live only on his go.
+North Star check (2026-11-02): holds.
