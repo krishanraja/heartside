@@ -40,3 +40,14 @@ The workflow runs every 10 minutes, and it can also be run by hand.
 - **Switch it on.** Set `dryRun: false`, then activate the workflow. This happens when the theme goes artwork only, before Krish's order as a customer.
 
 The store's myshopify address appears only inside n8n, never here: it is on the never-publish list.
+
+## Changed on 2 November 2026: the note fits Printful's 200 characters
+
+The first live order's note ran to 209 characters, and Printful cut it at 200, dropping the signature to "Lo". The recipient's name was missing too: the journey writes "For: KJ", and the workflow only knew "For: Sam (friend)".
+
+The workflow now:
+- reads both forms of the name;
+- always keeps the greeting, the note's closing line (what the dog means to them) and the signature;
+- drops the middle lines, last first, until the note fits in 200 characters.
+
+For the first order's four lines, that keeps the first, second and last, at 161 characters. The first order itself was already confirmed and could not be changed.
