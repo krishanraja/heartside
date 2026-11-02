@@ -6,5 +6,5 @@ Status: Krish's 2 November review is built, and proven live on the draft theme "
 - **A new n8n workflow** sends each paid order to Printful.
 - **The note workflow** now fits Printful's 200-character gift message.
 Changed: Krish found the second "Painting" screen, the repeated chooser and the cut-off cart offer tacky in a real purchase, and his order sat at Teeinblue for six hours waiting for a manual send. Shopify forbids store pages inside frames, so background painting was replaced by one continuous automatic add.
-Next: CoWork runs COWORK-DROPSURE-CHECKOUT-FONTS.md (DropSure, the broken theme copy, the checkout fonts).
+Next: Krish makes account.heartside.io the primary customer accounts domain (Settings, Domains); CoWork finished DropSure, the broken theme copy and the checkout fonts.
 North Star check (2026-11-02): holds.
