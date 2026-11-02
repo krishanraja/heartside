@@ -1,4 +1,4 @@
-# Claude CoWork: uninstall DropSure, and give the checkout the brand's fonts
+# Claude CoWork: uninstall DropSure, delete a broken theme copy, and give the checkout the brand's fonts
 
 Status: ASSIGNMENT, not a result. Written 2 November 2026 for Krish to run in CoWork on his own computer. Work only from `main` of `krishanraja/heartside`.
 
@@ -33,12 +33,21 @@ The North Star is $50,000 Shopify net sales, trailing four weeks, by 22 February
      - Settings, then Billing, shows no DropSure charge;
      - the four live products are still ACTIVE at their prices: mug $45, blanket $129, portrait $119 and $59, card $12.
 
-2. **Report the checkout's fonts (no changes).**
+2. **STOP: delete the broken theme copy.** Krish said yes on 2 November: "yes delete the broken draft".
+   - In Online Store, then Themes, find the unpublished theme **"Heartside 2 Nov gifts draft"**. Shopify's copy broke it: its layout file is 48 bytes, and its pages have no title.
+   - Delete **that theme only**. Check the name exactly before confirming.
+   - Do not touch any of these:
+     - "Heartside 2 Nov gifts (working draft)", the one that works;
+     - "Heartside 31 Oct showcase", the live theme;
+     - "Heartside audit fixes draft", the rollback.
+   - **Read back:** the theme library no longer lists "Heartside 2 Nov gifts draft", and the live theme is unchanged.
+
+3. **Report the checkout's fonts (no changes).**
    - Go to Settings, then Checkout, then Customize (the checkout editor), then the settings for Typography or Fonts.
    - Report the current heading and body fonts.
    - Report whether the font list offers **Fraunces** and **DM Sans** by name. If the editor also takes uploaded font files, say so.
 
-3. **STOP: set the checkout fonts.** Show Krish the plan:
+4. **STOP: set the checkout fonts.** Show Krish the plan:
    - headings in Fraunces;
    - body in DM Sans.
 
@@ -50,7 +59,7 @@ The North Star is $50,000 Shopify net sales, trailing four weeks, by 22 February
    - a screenshot of the editor's preview: the information step and the Thank you page;
    - the fonts as the editor shows them after a reload.
 
-4. **Final readback (no changes):** run `node tools/preview/live-gate.mjs` until it is all clear.
+5. **Final readback (no changes):** run `node tools/preview/live-gate.mjs` until it is all clear.
 
 ## Report
 
