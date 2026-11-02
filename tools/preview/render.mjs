@@ -80,6 +80,8 @@ const filters = {
   money_with_currency: (cents) => `${money(cents)} USD`,
   money_without_trailing_zeros: (cents) => money(cents).replace(/\.00$/, ''),
   stylesheet_tag: (href) => `<link rel="stylesheet" href="${href}">`,
+  // Shopify's preload_tag: a preload link with the given attributes
+  preload_tag: (href, ...args) => `<link rel="preload" href="${href}" ${args.filter(Array.isArray).map(([k, v]) => `${k}="${v}"`).join(' ')}>`,
   json: (v) => JSON.stringify(v ?? null),
   handleize: (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
   // Shopify's form error list as one line; the stub form never posts, so it is rarely reached

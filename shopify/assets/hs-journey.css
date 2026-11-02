@@ -7,6 +7,7 @@
   --outline: #E6DCD3; --outline-strong: #CDBFB4; --accent: #A8284E; --accent-tint: #FBEFF2;
   --disabled: #E9E1DA; --on-disabled: #A1958E; --chestnut: #8A4A2B;
   --sans: "HS DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --serif: "HS Fraunces", "Fraunces", Georgia, serif;
   --m: 16px; --bar: 56px;
   background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5;
   -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased;
@@ -16,7 +17,7 @@
 .hsj * { font-family: var(--sans); }
 .hsj button { color: inherit; }
 .hsj p { margin: 0; text-wrap: pretty; }
-.hsj h1, .hsj h2 { margin: 0; font-weight: 700; text-wrap: balance; }
+.hsj h1, .hsj h2 { margin: 0; font-weight: 600; text-wrap: balance; }
 .hsj :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 .hsj-ico { display: block; width: 24px; height: 24px; flex: none; }
 html.hsj-routed .hsj-hook { display: none; }
@@ -34,7 +35,11 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-progress { background: var(--outline); overflow: hidden; }
 .hsj-progress span { display: block; height: 100%; background: var(--accent); transition: width .25s; }
 .hsj-content { padding: 24px var(--m) 0; min-height: 0; display: flex; flex-direction: column; }
-.hsj-headline { font-size: 28px; line-height: 34px; letter-spacing: -0.02em; }
+/* the font system (Krish, 2 Nov, option A): Fraunces for headings and the dog's name, in italic
+   stamp red; DM Sans for everything read or tapped; Courier Prime only for paperwork */
+.hsj .hsj-headline, .hsj .hsj-h1, .hsj .hsj-headline em, .hsj .hsj-h1 em { font-family: var(--serif); }
+.hsj-headline { font-size: 30px; line-height: 34px; font-weight: 600; letter-spacing: -0.02em; }
+.hsj-headline em, .hsj-h1 em { font-style: italic; font-weight: 600; color: var(--accent); }
 .hsj-support { margin-top: 8px !important; font-size: 16px; line-height: 24px; color: var(--body); }
 .hsj-body { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; min-height: 0; flex: 1; }
 .hsj-dock { padding: 16px var(--m) calc(16px + env(safe-area-inset-bottom)); }
@@ -69,12 +74,26 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-letter { display: grid; gap: 10px; align-content: start; flex: 1; min-height: 0; overflow: hidden; }
 .hsj-letter p { font-size: 17px; line-height: 26px; color: var(--ink); }
 .hsj-letter .hsj-sign { font-weight: 600; }
-.hsj-note.is-busy .hsj-letter { opacity: .35; transition: opacity .2s; }
+/* writing: the letter's lines become soft bars that shimmer, then the new lines arrive one by one
+   (Krish, 2 Nov: the wait while the copy loads wasn't a nice experience) */
+.hsj-bars { display: grid; gap: 14px; align-content: start; flex: 1; padding-top: 4px; }
+.hsj-bars span { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #F1E9E2 0%, #FBEFF2 40%, #F1E9E2 80%); background-size: 240% 100%; animation: hsj-shimmer 1.3s linear infinite; }
+.hsj-bars span:nth-child(2) { width: 86%; animation-delay: .1s; } .hsj-bars span:nth-child(3) { width: 93%; animation-delay: .2s; }
+.hsj-bars span:nth-child(4) { width: 72%; animation-delay: .3s; } .hsj-bars span:nth-child(5) { width: 34%; margin-top: 4px; animation-delay: .4s; }
+@keyframes hsj-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.hsj-note__ask.is-writing { color: var(--accent); font-weight: 600; }
+.hsj-note__ask.is-writing::after { content: ""; display: inline-block; width: 14px; text-align: left; animation: hsj-dots 1.2s steps(4) infinite; }
+@keyframes hsj-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+.hsj-letter.is-fresh > * { animation: hsj-in .45s var(--ease, cubic-bezier(.2,.8,.2,1)) both; }
+.hsj-letter.is-fresh > *:nth-child(2) { animation-delay: .12s; } .hsj-letter.is-fresh > *:nth-child(3) { animation-delay: .24s; }
+.hsj-letter.is-fresh > *:nth-child(4) { animation-delay: .36s; } .hsj-letter.is-fresh > *:nth-child(5) { animation-delay: .5s; }
+@keyframes hsj-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.hsj-letter .hsj-sign { font-family: var(--serif); font-style: italic; font-weight: 600; color: var(--accent); }
 .hsj-note__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
 .hsj-note__ask { font-size: 13px; line-height: 18px; color: var(--muted); }
 .hsj-tones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: none; }
-.hsj-tone { appearance: none; height: 64px; border: 1.5px solid var(--outline); border-radius: 16px; background: var(--surface); display: flex; align-items: center; gap: 12px; padding: 0 12px; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
-.hsj-tone__ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); }
+.hsj-tone { appearance: none; height: 56px; border: 1.5px solid var(--outline); border-radius: 14px; background: var(--surface); display: flex; align-items: center; gap: 10px; padding: 0 10px; font-size: 14px; font-weight: 600; text-align: left; white-space: nowrap; cursor: pointer; }
+.hsj-tone__ico { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); }
 .hsj-tone.is-on { border-color: var(--c); background: color-mix(in srgb, var(--c) 7%, #fff); box-shadow: inset 0 0 0 1px var(--c); }
 .hsj-tone.is-on .hsj-tone__ico { background: var(--c); color: #fff; }
 .hsj-tone--sentimental { --c: #C2416B; } .hsj-tone--warm { --c: #D9771F; } .hsj-tone--hilarious { --c: #6B45E0; } .hsj-tone--over_the_top { --c: #B98512; }
@@ -106,13 +125,36 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-tips li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 20px; color: var(--body); }
 .hsj-tips .hsj-ico { width: 20px; height: 20px; color: var(--accent); }
 .hsj-privacy { display: none; }
+/* the photo check (Krish, 2 Nov: "much more premium"): the photo fills the frame, a soft light
+   passes over it, and the three tips tick off one by one before it goes to the painter */
+.hsj-drop.has-photo { border-style: solid; border-color: var(--outline); padding: 0; overflow: hidden; }
+.hsj-drop.has-photo .hsj-drop__img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; background: #F1E9E2; }
+.hsj-drop.has-photo .hsj-drop__text, .hsj-drop.has-photo .hsj-drop__sub { display: none; }
+.hsj-scan { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.hsj-drop.is-checking .hsj-scan { opacity: 1; background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,.0) 35%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 65%, transparent 100%); background-size: 100% 260%; animation: hsj-scan 1.6s ease-in-out infinite; }
+@keyframes hsj-scan { from { background-position: 0 120%; } to { background-position: 0 -20%; } }
+.hsj-drop__badge { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: rgba(26,21,20,.78); color: #fff; font-size: 13px; font-weight: 600; backdrop-filter: blur(6px); }
+.hsj-drop__badge .hsj-ico { width: 18px; height: 18px; }
+.hsj-drop__change { position: absolute; right: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 13px; font-weight: 600; }
+.hsj-tips li { transition: color .25s; }
+.hsj-tips li .hsj-tip__mark { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--outline-strong); color: transparent; transition: background .25s, border-color .25s, color .25s, transform .25s; }
+.hsj-tips li .hsj-tip__mark .hsj-ico { width: 14px; height: 14px; color: inherit; }
+.hsj-tips:not(.is-checking) li:not(.is-done):not(.is-bad) .hsj-tip__mark { visibility: hidden; }
+.hsj-tips.is-checking li:not(.is-done):not(.is-bad) .hsj-tip__mark { border-color: var(--accent); border-right-color: transparent; animation: hsj-spin .8s linear infinite; }
+@keyframes hsj-spin { to { transform: rotate(360deg); } }
+.hsj-tips li.is-done { color: var(--ink); }
+.hsj-tips li.is-done .hsj-tip__mark { background: #2E7D4F; border-color: #2E7D4F; color: #fff; transform: scale(1.05); }
+.hsj-tips li.is-bad { color: #9A5B00; }
+.hsj-tips li.is-bad .hsj-ico { color: #B86E00; }
+.hsj-tips li.is-bad .hsj-tip__mark { background: #FFF2DC; border-color: #E0A23A; color: #9A5B00; }
+.hsj-photo-note.is-good { color: #2E7D4F; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .hsj-bars span, .hsj-drop.is-checking .hsj-scan, .hsj-tips.is-checking li .hsj-tip__mark, .hsj-letter.is-fresh > *, .hsj-note__ask.is-writing::after { animation: none !important; } }
 
 /* ------------------------------------------------------------------ the hook */
 .hsj__screen { max-width: 560px; margin: 0 auto; }
 .hsj-hook { padding: 8px var(--m) 8px; }
 .hsj-eyebrow { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px !important; }
 .hsj-h1 { font-size: clamp(34px, 9.5vw, 44px); line-height: 1.08; letter-spacing: -0.03em; margin: 0 0 16px !important; }
-.hsj-h1 em { font-style: normal; color: var(--accent); }
 .hsj-example { position: relative; margin: 0; border-radius: 20px; overflow: hidden; background: var(--surface); border: 1.5px solid var(--outline); }
 .hsj-example img { display: block; width: 100%; aspect-ratio: auto; height: clamp(80px, calc(100svh - 500px), 300px); object-fit: cover; }
 @media (min-height: 701px) { .hsj-example img { height: clamp(96px, calc(100svh - 570px), 300px); } }

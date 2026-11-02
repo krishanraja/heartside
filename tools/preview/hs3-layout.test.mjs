@@ -35,6 +35,7 @@ for (const [name, fn] of Object.entries({
   money,
   money_without_trailing_zeros: c => money(c).replace(/\.00$/, ''),
   stylesheet_tag: h => `<link rel="stylesheet" href="${h}">`,
+  preload_tag: (h, ...args) => `<link rel="preload" href="${h}" ${args.filter(Array.isArray).map(([k, v]) => `${k}="${attr(v)}"`).join(' ')}>`,
   json: v => JSON.stringify(v ?? null),
   default_errors: e => String(e || ''),
 })) engine.registerFilter(name, fn);

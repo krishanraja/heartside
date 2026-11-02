@@ -25,7 +25,7 @@ function holder() {
   return {children: [], parentNode: null,
     appendChild(n) { n.parentNode = this; this.children.push(n); return n; },
     removeChild(n) { this.children.splice(this.children.indexOf(n), 1); n.parentNode = null; return n; },
-    querySelector(s) { return s === '[data-hs2-card]' ? this.children.find(n => n.className === 'hs2-card') || null : null; }};
+    querySelector(s) { return s === '[data-hs2-card]' ? this.children.find(n => n.className === 'hs2-cardoffer') || null : null; }};
 }
 function row(props, personal, {slot = true} = {}) {
   const host = holder(), kept = slot ? host.appendChild(holder()) : null;
@@ -34,9 +34,9 @@ function row(props, personal, {slot = true} = {}) {
     querySelector: s => (s === '[data-hs2-card-slot]' ? (kept && kept.parentNode ? kept : null) : null)};
 }
 function cardBox() {
-  const button = {disabled: false, textContent: '', addEventListener(n, fn) { this.click = fn; }}, status = {textContent: ''};
-  return {className: '', attrs: {}, innerHTML: '', parentNode: null, button, status, setAttribute(k, v) { this.attrs[k] = v; },
-    querySelector: s => (s === '[data-hs2-card-add]' ? button : s === '[data-hs2-card-status]' ? status : null)};
+  const button = {disabled: false, textContent: '', addEventListener(n, fn) { this.click = fn; }}, status = {textContent: ''}, label = {textContent: ''}, price = {textContent: ''};
+  return {className: '', attrs: {}, innerHTML: '', parentNode: null, button, status, label, price, setAttribute(k, v) { this.attrs[k] = v; },
+    querySelector: s => (s === '[data-hs2-card-add]' ? button : s === '[data-hs2-card-status]' ? status : s === '[data-hs2-card-label]' ? label : s === '[data-hs2-card-price]' ? price : null)};
 }
 
 for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}: the cart offers one card per gift until the cutoff, and adds it linked to its gift`, async () => {
@@ -57,8 +57,10 @@ for (const minified of [false, true]) test(`${minified ? 'minified' : 'source'}:
   ctx.cardOffers([g]);
   assert.equal(made.length, 1);
   assert.equal(g.kept.children[0], made[0], 'in the place the Liquid kept for it');
-  assert.equal(made[0].button.textContent, 'Add a printed Christmas card, $12');
-  assert.match(made[0].innerHTML, /ships in its own envelope/);
+  assert.equal(made[0].label.textContent, 'Add a Christmas card');
+  assert.equal(made[0].price.textContent, '$12');
+  assert.equal(made[0].className, 'hs2-cardoffer', "never the homepage card's class, whose clipping cut the words off");
+  assert.match(made[0].innerHTML, /Printed with your painting and note\. Ships in its own envelope\./);
   made[0].button.click(); await new Promise(r => setImmediate(r));
   const [url, body] = posts[0];
   assert.equal(url, '/cart/add.js');

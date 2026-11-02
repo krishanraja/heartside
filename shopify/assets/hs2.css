@@ -1211,7 +1211,7 @@ product-card quick-add-component button { display: none !important; }
     grid-template-columns: clamp(4.5rem, 26cqi, 6.5rem) minmax(0, 1fr);
     column-gap: 14px; /* the design never touches its title, whatever the theme's own gap */
     grid-template-rows: repeat(4, min-content) 1fr;
-    grid-template-areas: 'media info' 'media price' 'media variants' 'media unit' 'media .' 'quantity quantity' 'error error' 'redo redo' 'artist artist';
+    grid-template-areas: 'media info' 'media price' 'media variants' 'media unit' 'media .' 'quantity quantity' 'error error' 'card card' 'redo redo' 'artist artist';
   }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details { display: contents; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__product-info { grid-area: info; min-width: 0; }
@@ -1224,6 +1224,7 @@ product-card quick-add-component button { display: none !important; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__remove { margin-inline-start: auto; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > .hs2-redo { grid-area: redo; min-width: 0; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > :is(.hs2-artist-slot, .hs2-artist, .hs2-artist__orphan) { grid-area: artist; min-width: 0; }
+  cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > .hs2-card-slot { grid-area: card; min-width: 0; }
 }
 /* wider carts (28 Oct, Recording 2: the offers wrapped in a narrow column of an 820px card, the rest of it
    empty): the design, then one text column with the price at its right, the options, the controls, and
@@ -1232,8 +1233,8 @@ product-card quick-add-component button { display: none !important; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) {
     grid-template-columns: clamp(5rem, 15cqi, 7.5rem) minmax(0, 1fr) minmax(var(--cart-item-price-width, 6rem), auto);
     column-gap: 20px;
-    grid-template-rows: repeat(7, min-content) 1fr;
-    grid-template-areas: 'media info price' 'media variants variants' 'media unit unit' 'media quantity quantity' 'media error error' 'media redo redo' 'media artist artist' 'media . .';
+    grid-template-rows: repeat(8, min-content) 1fr;
+    grid-template-areas: 'media info price' 'media variants variants' 'media unit unit' 'media quantity quantity' 'media error error' 'media card card' 'media redo redo' 'media artist artist' 'media . .';
   }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details { display: contents; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__product-info { grid-area: info; min-width: 0; }
@@ -1245,6 +1246,7 @@ product-card quick-add-component button { display: none !important; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__error { grid-area: error; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > .hs2-redo { grid-area: redo; min-width: 0; max-width: 40rem; }
   cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > :is(.hs2-artist-slot, .hs2-artist, .hs2-artist__orphan) { grid-area: artist; min-width: 0; max-width: 40rem; }
+  cart-items-component .cart-items__table-row:not(.cart-items__table-row--full-width-variants) .cart-items__details > .hs2-card-slot { grid-area: card; min-width: 0; max-width: 40rem; }
 }
 cart-items-component .cart-items__table-row--full-width-variants .cart-items__details > :is(.hs2-redo, .hs2-artist-slot, .hs2-artist, .hs2-artist__orphan) { grid-column: 2 / -1; min-width: 0; }
 
@@ -1376,12 +1378,37 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 .hs-card-offer p.hs-card-offer__added { display: flex; align-items: center; gap: 10px; margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #121010; }
 .hs-card-offer__status:empty { display: none; }
 .hs2-card-slot:empty { display: none; }
-.hs2-card { margin-top: 10px; }
-.hs2-card button { min-height: 44px; padding: 0 14px; border: 1.5px solid #121010; border-radius: 12px; background: #fff; color: #121010; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-align: start; }
-.hs2-card button:hover { background: #F6EFE6; }
-.hs2-card button:disabled { opacity: .6; cursor: progress; }
-.hs2-card p { margin: 6px 0 0; font-size: 13.5px; line-height: 1.45; color: #5A4A44; }
-.hs2-card p:empty { display: none; }
+/* the printed card offer in the cart, across the row under its gift (Krish, 2 Nov: its own class,
+   one line for the button, nothing cut off) */
+.hs2-cardoffer { margin-top: 12px; }
+.hs2-cardoffer button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 0 14px; border: 1.5px solid #121010; border-radius: 12px; background: #fff; color: #121010; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-align: start; white-space: nowrap; }
+.hs2-cardoffer button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.hs2-cardoffer button b { font-weight: 600; color: #A8284E; }
+.hs2-cardoffer button svg { flex: none; color: #A8284E; }
+.hs2-cardoffer button:hover { background: #F6EFE6; }
+.hs2-cardoffer button:disabled { opacity: .6; cursor: progress; }
+.hs2-cardoffer p { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: #5A4A44; text-wrap: pretty; }
+.hs2-cardoffer p:empty { display: none; }
+/* the card's own picture in the cart: the painting in its gold-ruled mount, a 4 x 6 card */
+.hs2-cartcard { position: absolute; top: 7%; left: 50%; transform: translateX(-50%); display: grid; grid-template-rows: minmax(0, 1fr) auto; height: 86%; min-height: 0; width: auto; aspect-ratio: 2 / 3; overflow: hidden; margin: 0; padding: 9% 9% 6%; border-radius: 4px; background: #FBF6F1; box-shadow: 0 0 0 1px #E8DCD3, 0 4px 10px rgba(30,23,20,.12); box-sizing: border-box; }
+.hs2-cartcard__mount { display: block; padding: 5%; background: #fff; box-shadow: 0 0 0 1px #B08A45; min-height: 0; overflow: hidden; }
+.hs2-cartcard__art { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 22% 50%; }
+.hs2-cartcard__cap { margin-top: 6%; font: 600 clamp(7px, 1.6cqi, 9px)/1 "HS Courier Prime", "Courier New", monospace; letter-spacing: .12em; text-transform: uppercase; color: #B08A45; text-align: center; white-space: nowrap; }
+.cart-items__media-container:has(.hs2-cartcard) { position: relative; background: #F3EEE8; overflow: hidden; }
+/* every gift's picture opens larger (Krish, 2 Nov) */
+[data-hs2-zoom] { cursor: zoom-in; }
+.hs2-zoom { width: min(92vw, 560px); max-height: 90vh; padding: 0; border: 0; border-radius: 18px; background: #FBF6F1; box-shadow: 0 30px 80px rgba(18,16,16,.45); overflow: visible; }
+.hs2-zoom::backdrop { background: rgba(18,16,16,.6); }
+.hs2-zoom > img { display: block; width: 100%; height: auto; max-height: 86vh; object-fit: contain; border-radius: 18px; background: #F3EEE8; }
+.hs2-zoom__close { position: absolute; top: -14px; right: -10px; z-index: 1; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #121010; color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+.hs2-zoom__card { padding: 8% 10%; }
+.hs2-zoom__card { display: block; }
+.hs2-zoom__card .hs2-cartcard__mount { aspect-ratio: 4 / 5; padding: 4%; }
+.hs2-zoom__card .hs2-cartcard__cap { display: block; margin-top: 18px; font: 600 13px/1 "HS Courier Prime", "Courier New", monospace; letter-spacing: .16em; text-transform: uppercase; color: #B08A45; text-align: center; }
+/* the cart reads in the font system (option A, 2 Nov): gift names in Fraunces, and no word left alone
+   on a line (Krish, 2 Nov: "Mug", "envelope" and "you choose" each took a line of their own) */
+cart-items-component .cart-items__title { font-family: "HS Fraunces", "Fraunces", Georgia, serif; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+cart-items-component :is(.cart-items__properties dd, .hs2-redo span, .hs2-redo p, .hs2-artist__orphan, .hs2-addon-for) { text-wrap: balance; }
 /* the gallery while Teeinblue paints: the same wash over the still-empty preview, and the dog's name */
 .hs2-product__stage.hs-painting::before { content: ""; grid-area: stage; z-index: 5; background: radial-gradient(circle at 30% 30%, rgba(240, 192, 192, 0.9), transparent 55%), radial-gradient(circle at 70% 65%, rgba(201, 160, 72, 0.55), transparent 50%), radial-gradient(circle at 40% 85%, rgba(168, 40, 78, 0.3), transparent 45%), #F3EEE8; background-size: 160% 160%; animation: hs-stage-wash 8s ease-in-out infinite alternate; }
 .hs2-product__stage.hs-painting::after { content: attr(data-hs-painting); grid-area: stage; z-index: 6; align-self: center; justify-self: center; padding: 12px 22px; border-radius: 999px; background: rgba(255, 253, 249, 0.92); box-shadow: 0 10px 24px -14px rgba(30, 23, 20, 0.6); font-family: "HS Fraunces", Fraunces, Georgia, serif; font-size: 20px; color: #121010; animation: hs-stage-breathe 2.6s ease-in-out infinite; }
