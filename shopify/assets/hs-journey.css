@@ -138,7 +138,8 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-drop__change { position: absolute; right: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 13px; font-weight: 600; }
 .hsj-tips li { transition: color .25s; }
 .hsj-tips li .hsj-tip__mark { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--outline-strong); color: transparent; transition: background .25s, border-color .25s, color .25s, transform .25s; }
-.hsj-tips li .hsj-tip__mark .hsj-ico { width: 14px; height: 14px; }
+.hsj-tips li .hsj-tip__mark .hsj-ico { width: 14px; height: 14px; color: inherit; }
+.hsj-tips:not(.is-checking) li:not(.is-done):not(.is-bad) .hsj-tip__mark { visibility: hidden; }
 .hsj-tips.is-checking li:not(.is-done):not(.is-bad) .hsj-tip__mark { border-color: var(--accent); border-right-color: transparent; animation: hsj-spin .8s linear infinite; }
 @keyframes hsj-spin { to { transform: rotate(360deg); } }
 .hsj-tips li.is-done { color: var(--ink); }
