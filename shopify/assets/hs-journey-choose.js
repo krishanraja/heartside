@@ -23,7 +23,20 @@
   // a background copy of a gift page only paints; the parent page drives it
   var framed = false;
   try { framed = window.self !== window.top && window.parent.__hsjm === true; } catch (e) { framed = false; }
-  if (framed) return;
+  if (framed) {
+    /* Teeinblue opens its framing box once a painting is back, and waits for Save. A background copy
+       has nobody to press it (live test, 2 Nov: the gift never finished), so it keeps the framing the
+       painter made for this gift's shape and saves it; the buyer sees the result on its tile. */
+    setInterval(function () {
+      var box = document.querySelector('.vm--container');
+      if (!box) return;
+      var save = Array.prototype.filter.call(box.querySelectorAll('button, .tee-btn, [role="button"]'), function (b) {
+        return /^(save|done|apply|confirm|ok)\b/i.test((b.innerText || b.textContent || '').trim());
+      })[0];
+      if (save && !save.__hsSaved) { save.__hsSaved = true; save.click(); setTimeout(function () { save.__hsSaved = false; }, 4000); }
+    }, 800);
+    return;
+  }
   var GIFTS = ['print', 'mug', 'blanket'];
   var NAME = { mug: 'Mug', blanket: 'Blanket', print: 'Portrait' };
   var LONG = { mug: 'mug', blanket: 'blanket', print: 'portrait' };

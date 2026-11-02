@@ -201,6 +201,9 @@ for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts
     await page.click('[data-hs-jm-gift=blanket]'); await page.click('[data-hs-jm-gift=blanket]'); await page.waitForTimeout(3000);
     assert.equal(await page.evaluate(() => document.querySelectorAll('iframe.hs-jm-frame-bg').length), 1);
     assert.equal(await bg.evaluate(() => window.__sends), 1, 'painted once');
+    // Teeinblue's framing box opens when the painting is back; the background copy saves it itself
+    await bg.evaluate(() => { const d = document.createElement('div'); d.className = 'vm--container'; d.innerHTML = '<div class="vm--modal"><button type="button" class="tee-btn">Cancel</button><button type="button" class="tee-btn">Save</button></div>'; d.querySelectorAll('button')[1].addEventListener('click', () => { window.__saved = (window.__saved || 0) + 1; d.remove(); }); document.body.appendChild(d); });
+    await bg.waitForFunction(() => window.__saved === 1 && !document.querySelector('.vm--container'), null, {timeout: 5000});
     await bg.evaluate(() => {
       const a = document.querySelector('[data-hs-art]');
       a.setAttribute = function (k, v) { return Element.prototype.setAttribute.call(this, k, k === 'data-state' ? 'done' : v); };
