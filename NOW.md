@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-01
+as_of: 2026-11-02
 head: 93780ae
 lifecycle: live
 production_url: https://heartside.io
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-01)
+## Where it is right now (as of 2026-11-02)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- Krish's 2 November review is built, and proven live on the draft theme "Heartside 2 Nov gifts (working draft)". A real run ended with both gifts in the cart, the 15% bundle applied, $88.40 in total. Paid orders now go to Printful without a manual step. Live since 2 November 2026, 15:58 UTC, on Krish's go; live-gate and handle-check are all clear (18 checks). What changed: - **Font system A** across the site. - **A premium photo check.** - **"Select your gifts":** one tick and one button. Each extra gift then paints on one automatic progress screen and adds itself. - **Cart fixes.** - **A new n8n workflow** sends each paid order to Printful. - **The note workflow** now fits Printful's 200-character gift message. (2026-11-02)
 - the production machine ran end to end on a 12-second proof reel that is not for posting: storyboard and Krish's proof-only yes, a Runway shot (25 credits), an Epidemic Sound cut (kept out of this public repository), Codex building tools/reel/build_launch_reel.py on Lorimer from a booked card, and Claude's full-size check with sound. One flaw is recorded in design/launch-reel-2026-11-02/direction.json: the mug photos' background is a shade lighter than the canvas. (2026-11-01) (2026-11-01)
 - every video or animated asset now starts as a direction pack (codex/README.md, "Direction first"): rough frames and a storyboard Krish sees before anything is built. The first one, the 15-second launch reel for the illustrated mug, is in design/launch-reel-2026-11-02/ and waits on his yes; its two mock stills cost 5.5 Higgsfield credits, booked and settled in Control Center. (2026-11-01) (2026-11-01)
 - A Codex lane is set up: a session queues a card at codex/queue/<id>.md with a Control Center booking, and Krish's home computer builds it and pushes codex/<id> (codex/README.md). (2026-11-01)
@@ -74,6 +75,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-02 Krish found the second "Painting" screen, the repeated chooser and the cut-off cart offer tacky in a real purchase, and his order sat at Teeinblue for six hours waiting for a manual send. Shopify forbids store pages inside frames, so background painting was replaced by one continuous automatic add.
 - 2026-10-31 Krish asked to build the card add-on after choosing card design A; the card product stays a draft because the All gifts collection would list it on the live store.
 - 2026-10-31 Teeinblue's Printful drafts carry the Shopify order name as their external id, which links each draft to its paid order and its note. Orders confirm only after startAfter (31 Oct 2026 15:20 UTC), so the old test drafts are never charged.
 - 2026-10-31 Teeinblue's print files are the card's source: the portrait's is 3600 x 5400, the mug's is a 2700 x 1050 wrap. The mug wrap covers the whole strip with the painting (it is not fitted to the strip's height), so the real-mug gallery pictures built on 31 Oct show the painting smaller than the mug will print it; they need re-rendering with the painting covering the wrap. The wide layout on the card front needs a second design pass.
@@ -92,7 +94,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-01): set Heartside's organic social tone with Krish in growth-heartside before the next direction pack.
+- Next (2026-11-02): Krish makes account.heartside.io the primary customer accounts domain (Settings, Domains); CoWork finished DropSure, the broken theme copy and the checkout fonts.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
@@ -106,7 +108,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - The checkout merge app stays through Christmas at $69 a month (Ruling, Krish, 28 October), and is reviewed in January against measured conversion.
   - Do not claim physical quality or paid-order fulfillment until the sample is inspected.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-01): holds.
+- North Star check (2026-11-02): holds.
 
 ## Read next
 
