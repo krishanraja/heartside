@@ -7,43 +7,26 @@
    2 Nov): the three gifts, clean, with nothing over the pictures; each gift's colours as small
    circles; the offer in one line; one tick; one button; and a quiet link for the one free repaint.
 
-   One painting experience, whatever is chosen (Krish, 2 Nov: "there should only ever be one
-   painting Mowgli experience"): a gift ticked here is painted in the background, in a hidden copy
-   of its own page, so its real Teeinblue painting arrives on its tile while the buyer decides. A
-   buyer who ticks and unticks while making up their mind (Krish, 2 Nov) never starts a painting by
-   accident: a gift starts only once it has stayed ticked for a few seconds, each gift is painted at
-   most once, and a painting already made is kept if it is unticked and ticked again. The button
-   adds every chosen gift through its own page's Teeinblue Add to cart, so the order, the print file
-   and the checkout image follow the tested path. A gift that could not be painted in the
-   background is painted on its own page after the others are in the cart, as before. */
+   One choice, then one continuous add (Krish, 2 Nov: "there should only ever be one painting Mowgli
+   experience"). Shopify refuses to show a store page inside another (frame-ancestors 'none'), and
+   Teeinblue paints one product per page, so each extra gift still paints on its own page; but the
+   buyer is never asked again. "Add 2 gifts" adds this gift and opens each extra gift in auto mode:
+   one progress screen ("Putting Mowgli on the mug"), that gift's colours while it paints, Teeinblue's
+   framing saved as painted, the painting shown for a few seconds with a way to repaint, then it goes
+   in the cart by itself and the next gift, or the cart, opens. The buyer's one tick covers them all. */
 (function () {
   'use strict';
   if (window.__hsjm) return;
   window.__hsjm = true;
-  // a background copy of a gift page only paints; the parent page drives it
-  var framed = false;
-  try { framed = window.self !== window.top && window.parent.__hsjm === true; } catch (e) { framed = false; }
-  if (framed) {
-    /* Teeinblue opens its framing box once a painting is back, and waits for Save. A background copy
-       has nobody to press it (live test, 2 Nov: the gift never finished), so it keeps the framing the
-       painter made for this gift's shape and saves it; the buyer sees the result on its tile. */
-    setInterval(function () {
-      var box = document.querySelector('.vm--container');
-      if (!box) return;
-      var save = Array.prototype.filter.call(box.querySelectorAll('button, .tee-btn, [role="button"]'), function (b) {
-        return /^(save|done|apply|confirm|ok)\b/i.test((b.innerText || b.textContent || '').trim());
-      })[0];
-      if (save && !save.__hsSaved) { save.__hsSaved = true; save.click(); setTimeout(function () { save.__hsSaved = false; }, 4000); }
-    }, 800);
-    return;
-  }
+  // an extra gift opened by "Add N gifts" (?hsauto=1) adds itself once it is painted
+  var auto = false;
+  try { auto = new URLSearchParams(window.location.search).get('hsauto') === '1'; } catch (e) { auto = false; }
   var GIFTS = ['print', 'mug', 'blanket'];
   var NAME = { mug: 'Mug', blanket: 'Blanket', print: 'Portrait' };
   var LONG = { mug: 'mug', blanket: 'blanket', print: 'portrait' };
   var QKEY = 'hs2-queue';
-  var SETTLE = 2500; // how long a tick has to stand before its painting starts
-  var GIVE_UP = 240000; // a background painting that has not arrived by then is painted on its own page
-  var root, j, st, here, picked = {}, frames = {}, timers = {}, art = null, started = Date.now(), adding = false;
+  var SHOW = 4; // seconds an auto-mode painting shows before it goes in the cart
+  var root, j, st, here, picked = {}, art = null, started = Date.now(), adding = false, countdown = null, held = false;
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { n = Math.round((Number(n) || 0) * 100) / 100; return '$' + (n % 1 ? n.toFixed(2) : String(n)); }
@@ -57,43 +40,16 @@
   }
   function painted() { return artIn(document); }
 
-  /* ------------------------------------------------------- background paintings */
-  function frameDoc(g) { var f = frames[g]; try { return f && f.el.contentDocument; } catch (e) { return null; } }
-  function frameArt(g) { return artIn(frameDoc(g)); }
-  function status(g) {
-    if (g === here) return painted() ? 'done' : 'painting';
-    var f = frames[g];
-    if (!f) return 'idle';
-    if (frameArt(g)) return 'done';
-    if (f.failed) return 'failed';
-    return 'painting';
-  }
-  function startFrame(g) {
-    var x = gifts()[g];
-    if (frames[g] || !x || !x.url) return;
-    var el = document.createElement('iframe');
-    el.src = x.url + (x.url.indexOf('?') > -1 ? '&' : '?') + 'hsbg=1';
-    el.title = 'Painting the ' + LONG[g];
-    el.setAttribute('aria-hidden', 'true');
-    el.setAttribute('tabindex', '-1');
-    el.className = 'hs-jm-frame-bg';
-    frames[g] = { el: el, t: Date.now(), failed: false };
-    document.body.appendChild(el);
-  }
-  // a tick stands for a few seconds before its gift is painted; an untick in that time costs nothing
-  function settle(g) {
-    clearTimeout(timers[g]);
-    if (!picked[g] || frames[g]) return;
-    timers[g] = setTimeout(function () { if (picked[g] && !adding) { startFrame(g); paint(); } }, SETTLE);
-  }
-  function watchFrames() {
-    Object.keys(frames).forEach(function (g) {
-      var f = frames[g], d = frameDoc(g);
-      if (f.failed || frameArt(g)) return;
-      // the photo did not reach the copy (its page asks for it again), or it took far too long
-      var asked = d && d.querySelector('[data-hs-jm-nophoto]:not([hidden])');
-      if (asked || Date.now() - f.t > GIVE_UP) f.failed = true;
-    });
+  function status(g) { return g === here ? (painted() ? 'done' : 'painting') : 'idle'; }
+  /* Teeinblue opens its framing box once a painting is back and waits for Save. In auto mode the
+     buyer already approved this dog's painting on the first gift, so the painter's framing is saved. */
+  function saveFraming() {
+    var box = document.querySelector('.vm--container');
+    if (!box) return;
+    var save = Array.prototype.filter.call(box.querySelectorAll('button, .tee-btn, [role="button"]'), function (b) {
+      return /^(save|done|apply|confirm|ok)\b/i.test((b.innerText || b.textContent || '').trim());
+    })[0];
+    if (save && !save.__hsSaved) { save.__hsSaved = true; save.click(); setTimeout(function () { save.__hsSaved = false; }, 4000); }
   }
 
   /* ---------------------------------------------------------------- the tiles
@@ -110,13 +66,13 @@
   function order() { return [here].concat(GIFTS.filter(function (g) { return g !== here && gifts()[g] && gifts()[g].url; })); }
   function tiles(src) {
     return order().map(function (g) {
-      var mine = g === here, on = mine || !!picked[g], s = status(g), own = mine ? src : frameArt(g);
-      var wide = g === 'mug' && !!own;
+      var mine = g === here, on = mine || !!picked[g], s = status(g), own = mine ? src : '';
+      var wide = g === 'mug' && mine;
       return '<button type="button" class="hs-jm-tile' + (on ? ' is-on' : '') + (s === 'painting' && !mine ? ' is-painting' : '') + '" aria-pressed="' + on + '"' + (mine ? ' aria-disabled="true"' : '') + ' data-hs-jm-gift="' + g + '" data-hs-jm-state="' + s + '">' +
         '<span class="hs-jm-tile__art">' + preview(g, own || src, wide) + '</span>' +
         '<span class="hs-jm-tile__check" aria-hidden="true">' + (on ? '✓' : '+') + '</span>' +
         '<span class="hs-jm-tile__row"><span class="hs-jm-tile__name">' + NAME[g] + '</span><span class="hs-jm-tile__price">' + esc(priceOf(g, true)) + '</span></span>' +
-        (s === 'painting' && !mine && on ? '<span class="hs-jm-tile__bar" aria-label="Painting the ' + LONG[g] + '"><span></span></span>' : '') + '</button>';
+        '</button>';
     }).join('');
   }
 
@@ -124,7 +80,7 @@
      Teeinblue's own variant radios, on this page or in the gift's background copy. Colours are
      small circles (Krish, 2 Nov: "Everyone knows how to do that"); anything else is a small pill. */
   var SWATCH = { black: '#1d1b1b', white: '#ffffff', 'dark blue': '#26344f', navy: '#26344f', 'dark green': '#2f4a3a', green: '#2f4a3a', pink: '#f2b7c6', red: '#b3262e', 'red oak': '#9b5a32', oak: '#b98a5a', tan: '#d2b48c', grey: '#9a9a9a', gray: '#9a9a9a', cream: '#f3ead8', natural: '#efe3cf', brown: '#6b4a33' };
-  function optionDoc(g) { return g === here ? document : frameDoc(g); }
+  function optionDoc(g) { return g === here ? document : null; }
   function optionList(g) {
     var d = optionDoc(g);
     if (!d) return [];
@@ -140,8 +96,8 @@
     return t || 'Option';
   }
   function options() {
-    var list = order().filter(function (g) { return (g === here || (picked[g] && status(g) === 'done')) && optionList(g).length; });
-    var many = list.length > 1;
+    var list = [here].filter(function (g) { return optionList(g).length; });
+    var many = false;
     return list.map(function (g) {
       var d = optionDoc(g);
       return optionList(g).map(function (opt, i) {
@@ -162,7 +118,7 @@
   }
   function priceOf(g, label) {
     var d = optionDoc(g), p = d && d.querySelector('#buy [data-hs2-price]');
-    if (p && (g === here || status(g) === 'done')) return p.textContent.trim();
+    if (p && g === here) return p.textContent.trim();
     var x = gifts()[g] || {};
     return (label ? 'from ' : '') + money(x.price);
   }
@@ -201,7 +157,7 @@
   function paint() {
     var src = painted(), dog = st.dog || 'your dog';
     var title = root.querySelector('[data-hs-jm-title]'), choose = root.querySelector('[data-hs-jm-choose]'), slot = root.querySelector('[data-hs-jm-paint]');
-    watchFrames();
+    if (auto) return paintAuto(src, dog);
     if (!src) {
       // no painting under way a few seconds in: the photo did not carry over (private mode, a cleared
       // device), so one button opens the phone's picker and the painting starts from it
@@ -222,13 +178,12 @@
     set(root.querySelector('[data-hs-jm-bundle]'), offer(count()));
     button();
   }
-  // a gift ticked moments ago counts as painting: its painting starts once the tick has stood
-  function waiting() { return chosen().filter(function (g) { var x = status(g); return x === 'painting' || x === 'idle'; }); }
+  function waiting() { return painted() ? [] : [here]; }
   function button() {
     var b = root.querySelector('[data-hs-jm-add]'), tick = root.querySelector('[data-hs-jm-tick]');
     var n = count(), wait = waiting();
     if (adding) return;
-    b.textContent = wait.length && wait[0] !== here ? 'Painting the ' + LONG[wait[0]] + '…' : 'Add ' + (n === 1 ? 'to cart' : n + ' gifts') + ' · ' + money(total());
+    b.textContent = 'Add ' + (n === 1 ? 'to cart' : n + ' gifts') + ' · ' + money(total());
     b.disabled = !tick.checked || !painted() || wait.length > 0;
   }
 
@@ -239,7 +194,7 @@
     if (t.hasAttribute('data-hs-jm-gift')) {
       var g = t.getAttribute('data-hs-jm-gift');
       if (g === here) return;
-      picked[g] = !picked[g]; settle(g); paint(); return;
+      picked[g] = !picked[g]; paint(); return;
     }
     if (t.hasAttribute('data-hs-jm-opt')) {
       var at = t.getAttribute('data-hs-jm-opt').split(':'), opt = optionList(at[0])[+at[1]];
@@ -249,17 +204,15 @@
     }
     if (t.hasAttribute('data-hs-jm-add')) add();
     if (t.hasAttribute('data-hs-jm-photo') && window.__hs2api.journeyPick) window.__hs2api.journeyPick();
-    if (t.hasAttribute('data-hs-jm-repaint')) sheet(true);
-    if (t.hasAttribute('data-hs-jm-keep')) sheet(false);
+    if (t.hasAttribute('data-hs-jm-repaint')) { held = true; clearInterval(countdown); countdown = null; sheet(true); }
+    if (t.hasAttribute('data-hs-jm-now')) { held = false; clearInterval(countdown); countdown = null; addAuto(); }
+    if (t.hasAttribute('data-hs-jm-keep')) { sheet(false); if (auto) { held = false; paint(); } }
     if (t.hasAttribute('data-hs-jm-tone')) {
       sheet(false);
       var tone = t.getAttribute('data-hs-jm-tone');
       if (window.__hs2api.journeyRepaint && window.__hs2api.journeyRepaint(tone)) {
-        // the gifts painted in the background are painted again in the new tone too
-        Object.keys(frames).forEach(function (g) {
-          try { var api = frames[g].el.contentWindow.__hs2api; if (api && api.journeyRepaint) api.journeyRepaint(tone); } catch (err) { /* it keeps its painting */ }
-        });
-        root.querySelector('[data-hs-jm-tick]').checked = false; paint();
+        if (!auto) root.querySelector('[data-hs-jm-tick]').checked = false;
+        held = false; paint();
       } else root.querySelector('[data-hs-jm-status]').textContent = "The repaint couldn't start. Your painting is kept.";
     }
   }
@@ -287,44 +240,85 @@
     if (!atc) { say.textContent = 'The cart is still loading. Try again in a moment.'; return; }
     adding = true;
     var b = root.querySelector('[data-hs-jm-add]'); b.disabled = true;
-    var ready = chosen().filter(function (g) { return g !== here && frames[g] && frameArt(g); });
-    var later = chosen().filter(function (g) { return g !== here && ready.indexOf(g) === -1; });
-    // the gifts that could not be painted here go on to their own pages, in journey mode
+    // each extra gift opens in auto mode after this one is in the cart, in the order shown
     var q = [{ url: (gifts()[here] || {}).url || location.pathname + '?journey=1', title: NAME[here] }];
-    later.forEach(function (g) { var x = gifts()[g]; if (x && x.url) q.push({ url: x.url, title: NAME[g] }); });
-    try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (err) { /* hs2's own queue bar still offers the next gift */ }
-    var dog = st.dog || 'your dog', n = chosen().length;
-    say.textContent = 'Adding ' + (n > 1 ? n + ' gifts' : dog) + '…';
-    b.textContent = 'Adding…';
-    var step = Promise.resolve();
-    ready.forEach(function (g) {
-      step = step.then(function () { return addFrom(g); });
+    chosen().forEach(function (g) {
+      var x = gifts()[g];
+      if (g !== here && x && x.url) q.push({ url: x.url + (x.url.indexOf('?') > -1 ? '&' : '?') + 'hsauto=1', title: NAME[g] });
     });
-    step.then(function () { return addHere(atc); }).then(function () {
-      return cart().then(function (c) {
-        var inCart = {}; (c.items || []).forEach(function (i) { inCart[i.handle] = true; });
-        var next = q.slice(1).filter(function (x) { return !inCart[handleOf(x.url)]; })[0];
-        window.location.href = next ? next.url : '/cart';
-      });
-    }, function (why) {
+    try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (err) { /* hs2's own queue bar still offers the next gift */ }
+    say.textContent = 'Adding ' + (st.dog || 'your dog') + '…';
+    b.textContent = 'Adding…';
+    addHere(atc).then(next, function (why) {
       adding = false; button();
       say.textContent = why && why.message ? why.message : 'That took too long. Tap the button again.';
     });
   }
-  function addFrom(g) {
-    var d = frameDoc(g), x = gifts()[g] || {};
-    var atc = d && d.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
-    if (!atc) return Promise.reject(new Error("The " + LONG[g] + " isn't ready yet. Tap the button again."));
-    accept(d, true);
+  // the next gift in the queue that is not in the cart yet, or the cart
+  function next() {
     return cart().then(function (c) {
-      var before = lines(c, x.handle);
-      atc.click();
-      return added(x.handle, before);
+      var inCart = {}; (c.items || []).forEach(function (i) { inCart[i.handle] = true; });
+      var q = []; try { q = JSON.parse(window.sessionStorage.getItem(QKEY) || '[]') || []; } catch (e) { q = []; }
+      var n = q.slice(1).filter(function (x) { return !inCart[handleOf(x.url)]; })[0];
+      window.location.href = n ? n.url : '/cart';
     });
   }
   function addHere(atc) {
     var h = root.getAttribute('data-hs-jm-handle');
     return cart().then(function (c) { var before = lines(c, h); atc.click(); return added(h, before); });
+  }
+
+  /* ---------------------------------------------------------------- auto mode
+     One progress screen for an extra gift: this gift's colours while it paints, then its painting for
+     a few seconds, with a way to repaint, then into the cart. */
+  function queueInfo() {
+    var q = []; try { q = JSON.parse(window.sessionStorage.getItem(QKEY) || '[]') || []; } catch (e) { q = []; }
+    var h = root.getAttribute('data-hs-jm-handle'), at = 0;
+    q.forEach(function (x, i) { if (handleOf(x.url) === h) at = i; });
+    return { at: at + 1, of: Math.max(q.length, at + 1) };
+  }
+  function paintAuto(src, dog) {
+    var title = root.querySelector('[data-hs-jm-title]'), choose = root.querySelector('[data-hs-jm-choose]'), slot = root.querySelector('[data-hs-jm-paint]');
+    var qi = queueInfo(), lead = root.querySelector('[data-hs-jm-auto]');
+    root.classList.add('is-auto');
+    saveFraming();
+    if (lead) lead.textContent = 'Gift ' + qi.at + ' of ' + qi.of + '. The others are in your cart.';
+    set(root.querySelector('[data-hs-jm-options]'), options());
+    if (!src) {
+      title.textContent = 'Putting ' + dog + ' on the ' + LONG[here];
+      slot.hidden = false; choose.hidden = false;
+      root.querySelector('[data-hs-jm-tiles]').hidden = true;
+      root.querySelector('[data-hs-jm-dock-auto]').hidden = true;
+      return;
+    }
+    title.textContent = dog + ' on the ' + LONG[here];
+    slot.hidden = true; choose.hidden = false;
+    var tilesEl = root.querySelector('[data-hs-jm-tiles]');
+    tilesEl.hidden = false;
+    set(tilesEl, '<div class="hs-jm-solo">' + preview(here, src, here === 'mug') + '</div>');
+    root.querySelector('[data-hs-jm-dock-auto]').hidden = false;
+    root.querySelector('[data-hs-jm-repaint]').hidden = !(window.__hs2api.journeyRepaintLeft && window.__hs2api.journeyRepaintLeft()) || adding;
+    if (adding || held || countdown) return;
+    var left = SHOW, say = root.querySelector('[data-hs-jm-auto-say]');
+    say.textContent = 'Adding it to your cart in ' + left + '…';
+    countdown = setInterval(function () {
+      left -= 1;
+      if (left > 0) { say.textContent = 'Adding it to your cart in ' + left + '…'; return; }
+      clearInterval(countdown); countdown = null; addAuto();
+    }, 1000);
+  }
+  function addAuto() {
+    if (adding) return;
+    var atc = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc'), say = root.querySelector('[data-hs-jm-auto-say]');
+    if (!atc || !painted()) { say.textContent = 'Almost ready…'; setTimeout(addAuto, 1500); return; }
+    adding = true;
+    // the buyer's tick on the first gift covers this one: hs2's approval box, then Teeinblue's add
+    accept(document, true);
+    say.textContent = 'Adding the ' + LONG[here] + ' to your cart…';
+    addHere(atc).then(next, function () {
+      adding = false;
+      say.textContent = "That didn't go through. Tap Add now to try again.";
+    });
   }
   function handleOf(url) { var m = /\/products\/([^/?#]+)/.exec(url || ''); return m ? m[1] : ''; }
   function cart() {
@@ -355,9 +349,10 @@
     if (art) root.querySelector('[data-hs-jm-paint]').appendChild(art);
     root.addEventListener('click', onClick);
     root.querySelector('[data-hs-jm-tick]').addEventListener('change', onTick);
+    if (auto) root.classList.add('is-auto');
     paint();
     if (art && window.MutationObserver) new MutationObserver(function () { paint(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
-    setInterval(function () { if (!adding) paint(); }, 1200);
+    setInterval(function () { if (!adding) paint(); else if (auto) saveFraming(); }, 1200);
   }
   // hs2.js sets up its journey state first
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 0); }); else setTimeout(init, 0);

@@ -14,6 +14,8 @@
     <a class="hs-jm__back" href="/?step=look" aria-label="Back to the look"><svg class="hs-jm-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></a>
     <h2 class="hs-jm__title" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
   </header>
+  {%- comment -%} auto mode: an extra gift from "Add N gifts" says where it is in the order (Krish, 2 Nov) {%- endcomment -%}
+  <p class="hs-jm__auto" data-hs-jm-auto></p>
   <div class="hs-jm__paint" data-hs-jm-paint>
     <div class="hs-jm__nophoto" data-hs-jm-nophoto hidden>
       {%- comment -%} the gift and its price stay in view while the photo is chosen again (audit, 30 Oct) {%- endcomment -%}
@@ -28,6 +30,10 @@
     <div class="hs-jm__options" data-hs-jm-options></div>
     <p class="hs-jm__bundle" data-hs-jm-bundle><b>You save 15% on 2 gifts.</b> 20% on all 3.</p>
     <label class="hs-jm__tick"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
+    <div class="hs-jm__dock-auto" data-hs-jm-dock-auto hidden>
+      <p class="hs-jm__auto-say" data-hs-jm-auto-say role="status"></p>
+      <button type="button" class="hs-jm__btn" data-hs-jm-now>Add now</button>
+    </div>
     <div class="hs-jm__dock"><button type="button" class="hs-jm__btn" data-hs-jm-add disabled>Add to cart</button>
       <p class="hs-jm__small" data-hs-jm-status role="status"></p>
       {%- comment -%} the one free repaint, a quiet link under the button (Krish, 2 Nov: the header button looked tacky) {%- endcomment -%}

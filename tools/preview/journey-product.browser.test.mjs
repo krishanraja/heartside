@@ -63,8 +63,11 @@ before(async () => {
     if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', u.pathname.split('/assets/')[1]);
     else if (u.pathname.startsWith('/products/')) f = path.join(out, PAGE_FOR[u.pathname.split('/')[2]] || 'missing');
     if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
+    // Shopify's own headers on every store page: no store page shows inside another (2 Nov: a hidden
+    // copy of a gift page never loaded live, while this server, without them, let the tests pass)
+    if (u.pathname.startsWith('/products/')) { res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('Content-Security-Policy', "frame-ancestors 'none'"); }
     res.writeHead(200, {'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream'});
-    // every gift page, and each background copy, gets the Teeinblue stand-in before its own scripts
+    // every gift page gets the Teeinblue stand-in before its own scripts
     if (u.pathname.startsWith('/products/')) return res.end(fs.readFileSync(f, 'utf8').replace('<head>', '<head>' + STANDIN));
     fs.createReadStream(f).pipe(res);
   });
@@ -157,7 +160,7 @@ for (const size of PHONES) test(`${size.width}x${size.height}: the painting star
   } finally { await ctx.close(); }
 });
 
-for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts: the others paint in the background, once, and every gift goes in with one button`, async () => {
+for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts: one tick, one button, and each extra gift adds itself on one progress screen`, async () => {
   const {page, ctx, errors} = await open(size);
   try {
     await page.goto(base + GIFTS.print.url);
@@ -184,63 +187,52 @@ for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts
     await page.screenshot({path: path.join(shots, size.width + '-gifts.png')});
     // the painted gift cannot be dropped
     await page.dispatchEvent('[data-hs-jm-gift=print]', 'click');
-    // ticking and unticking while deciding paints nothing (Krish, 2 Nov)
-    await page.click('[data-hs-jm-gift=mug]'); await page.waitForTimeout(600); await page.click('[data-hs-jm-gift=mug]');
+    // ticking a gift starts nothing in the background (Shopify refuses frames); it is added after this one
+    await page.click('[data-hs-jm-gift=mug]'); await page.click('[data-hs-jm-gift=mug]');
     await page.click('[data-hs-jm-gift=blanket]');
-    const picked = await page.evaluate(() => ({on: [...document.querySelectorAll('.hs-jm-tile.is-on')].map(t => t.getAttribute('data-hs-jm-gift')), btn: document.querySelector('[data-hs-jm-add]').textContent, bundle: document.querySelector('[data-hs-jm-bundle]').textContent}));
+    const picked = await page.evaluate(() => ({on: [...document.querySelectorAll('.hs-jm-tile.is-on')].map(t => t.getAttribute('data-hs-jm-gift')), btn: document.querySelector('[data-hs-jm-add]').textContent, bundle: document.querySelector('[data-hs-jm-bundle]').textContent, frames: document.querySelectorAll('iframe').length}));
     assert.deepEqual(picked.on, ['print', 'blanket']);
-    assert.match(picked.btn, /^Painting the blanket/);
+    assert.match(picked.btn, /^Add 2 gifts · \$\d+/);
     assert.match(picked.bundle, /^You save 15% on 2 gifts/);
-    await page.waitForTimeout(3500);
-    const frames = await page.evaluate(() => [...document.querySelectorAll('iframe.hs-jm-frame-bg')].map(f => new URL(f.src).pathname));
-    assert.deepEqual(frames, ['/products/your-dogs-personality-blanket'], 'the blanket paints in the background; the mug, ticked and unticked, never started');
-    // the blanket's own page, out of sight, sends the photo to the painter once
-    const bg = page.frames().find(f => f.url().includes('personality-blanket'));
-    await bg.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
-    // ticking it off and on again keeps the same painting: no second copy
-    await page.click('[data-hs-jm-gift=blanket]'); await page.click('[data-hs-jm-gift=blanket]'); await page.waitForTimeout(3000);
-    assert.equal(await page.evaluate(() => document.querySelectorAll('iframe.hs-jm-frame-bg').length), 1);
-    assert.equal(await bg.evaluate(() => window.__sends), 1, 'painted once');
-    // Teeinblue's framing box opens when the painting is back; the background copy saves it itself
-    await bg.evaluate(() => { const d = document.createElement('div'); d.className = 'vm--container'; d.innerHTML = '<div class="vm--modal"><button type="button" class="tee-btn">Cancel</button><button type="button" class="tee-btn">Save</button></div>'; d.querySelectorAll('button')[1].addEventListener('click', () => { window.__saved = (window.__saved || 0) + 1; d.remove(); }); document.body.appendChild(d); });
-    await bg.waitForFunction(() => window.__saved === 1 && !document.querySelector('.vm--container'), null, {timeout: 5000});
-    await bg.evaluate(() => {
-      const a = document.querySelector('[data-hs-art]');
-      a.setAttribute = function (k, v) { return Element.prototype.setAttribute.call(this, k, k === 'data-state' ? 'done' : v); };
-      a.setAttribute('data-state', 'done');
-      a.querySelector('[data-hs-art-result]').src = '/assets/hs-ex-style-collage.webp';
-      const box = document.querySelector('[data-hs2-artwork-accept]'); if (box) { const b = box.cloneNode(); let on = false; Object.defineProperty(b, 'checked', {get: () => on, set: v => { if (v) on = true; }}); box.replaceWith(b); }
-      document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-personality-blanket'); };
-    });
-    await page.waitForFunction(() => document.querySelector('[data-hs-jm-gift=blanket]').getAttribute('data-hs-jm-state') === 'done', null, {timeout: 5000});
-    assert.match(await page.textContent('[data-hs-jm-add]'), /^Add 2 gifts · \$\d+/);
-    // the blanket's own painting is on its tile, and its options join this page's
-    assert.match(await page.evaluate(() => document.querySelector('[data-hs-jm-gift=blanket] .hs-jm-blanket__art').getAttribute('style')), /hs-ex-style-collage/);
+    assert.equal(picked.frames, 0, 'no hidden copies of other pages');
     // a colour or option drives Teeinblue's own radios
     const opt = page.locator('.hs-jm-dot:not(.is-on), .hs-jm-pill:not(.is-on)').first();
     if (await opt.count()) {
       const label = ((await opt.getAttribute('aria-label')) || (await opt.textContent())).trim();
-      const where = (await opt.getAttribute('data-hs-jm-opt')).split(':')[0];
       await opt.click(); await page.waitForTimeout(300);
-      const doc = where === 'print' ? page : bg;
-      assert.equal(await doc.evaluate(l => [...document.querySelectorAll('#buy .tee-option input[type=radio]:checked')].some(r => { const lab = r.id && document.querySelector(`label[for="${r.id}"]`); return (lab ? lab.textContent : r.value).trim() === l; }), label), true, 'the option clicks Teeinblue');
+      assert.equal(await page.evaluate(l => [...document.querySelectorAll('#buy .tee-option input[type=radio]:checked')].some(r => { const lab = r.id && document.querySelector(`label[for="${r.id}"]`); return (lab ? lab.textContent : r.value).trim() === l; }), label), true, 'the option clicks Teeinblue');
     }
-    // the tick is hs2's own approval box; the add clicks each gift's own Teeinblue button
-    await page.evaluate(() => {
-      const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode();
-      let on = false;
-      Object.defineProperty(b, 'checked', {get: () => on, set: v => { if (v) on = true; }});
-      a.replaceWith(b);
-    });
+    // the tick is hs2's own approval box; the add clicks Teeinblue's own button
+    const plainBox = () => { const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode(); let on = false; Object.defineProperty(b, 'checked', {get: () => on, set: v => { if (v) on = true; }}); a.replaceWith(b); };
+    await page.evaluate(plainBox);
     await page.check('[data-hs-jm-tick]');
     assert.equal(await page.evaluate(() => document.querySelector('[data-hs2-artwork-accept]').checked), true);
-    assert.equal(await page.isDisabled('[data-hs-jm-add]'), false);
     await page.evaluate(() => { document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-portrait'); }; });
     cart = [];
     await page.click('[data-hs-jm-add]');
-    // both gifts in the cart, the blanket first, then straight to the cart: no second painting screen
+    // the blanket opens in auto mode: one progress screen, never the chooser or the tick again
+    await page.waitForURL(/your-dogs-personality-blanket\?journey=1&hsauto=1/, {timeout: 10000});
+    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-portrait']);
+    await page.waitForSelector('[data-hs-jm].is-auto:not([hidden])', {timeout: 8000});
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    const auto = await page.evaluate(() => ({title: document.querySelector('[data-hs-jm-title]').textContent, lead: document.querySelector('[data-hs-jm-auto]').textContent, tick: getComputedStyle(document.querySelector('.hs-jm__tick')).display}));
+    assert.equal(auto.title, 'Putting Mowgli on the blanket');
+    assert.equal(auto.lead, 'Gift 2 of 2. The others are in your cart.');
+    assert.equal(auto.tick, 'none', 'not asked again');
+    await page.screenshot({path: path.join(shots, size.width + '-auto-painting.png')});
+    // Teeinblue's framing box opens when the painting is back; auto mode saves it
+    await page.evaluate(() => { const d = document.createElement('div'); d.className = 'vm--container'; d.innerHTML = '<div class="vm--modal"><button type="button" class="tee-btn">Cancel</button><button type="button" class="tee-btn">Save</button></div>'; d.querySelectorAll('button')[1].addEventListener('click', () => { window.__saved = (window.__saved || 0) + 1; d.remove(); }); document.body.appendChild(d); });
+    await page.waitForFunction(() => window.__saved === 1 && !document.querySelector('.vm--container'), null, {timeout: 5000});
+    await page.evaluate(plainBox);
+    await page.evaluate(() => { document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-personality-blanket'); }; });
+    await paintDone(page);
+    await page.waitForFunction(() => /Adding it to your cart in \d/.test(document.querySelector('[data-hs-jm-auto-say]').textContent), null, {timeout: 5000});
+    assert.equal(await page.textContent('[data-hs-jm-title]'), 'Mowgli on the blanket');
+    await page.screenshot({path: path.join(shots, size.width + '-auto-ready.png')});
+    if (size.width >= 360) assert.ok(await fits(page), 'the auto screen fits without scrolling');
+    // after the short count it goes in the cart by itself, approved by the first tick, and the cart opens
     await page.waitForURL(/\/cart$/, {timeout: 15000});
-    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket', 'your-dogs-portrait']);
+    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-portrait', 'your-dogs-personality-blanket']);
     assert.deepEqual(errors, []);
   } finally { cart = []; await ctx.close(); }
 });
