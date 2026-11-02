@@ -14,7 +14,7 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 ---
 # Heartside (heartside.io): where it is right now
 
-<!-- north-star-state {"week_of":"2026-10-26","week_target":250,"current":24,"current_as_of":"2026-10-28","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":4,"urgency_reason":"at 10% of this week's target"} --> **North Star number: U4, far behind.** Shopify net sales, trailing 4 weeks: $24, against $250 this week, on the way to $50,000 by 22 February 2027. A bold swing every day; work that does not move the number waits.
+<!-- north-star-state {"week_of":"2026-11-02","week_target":658,"current":24,"current_as_of":"2026-11-02","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":5,"urgency_reason":"under 40% of the week's target two weeks running (4% now)"} --> **North Star number: U5, stalled.** Shopify net sales, trailing 4 weeks: $24, against $658 this week, on the way to $50,000 by 22 February 2027. Everything else pauses unless it moves the number.
 
 > This is the single current release-state and next-action record. [`docs/SCOPE.md`](docs/SCOPE.md) owns approved scope; [`docs/ECONOMICS.md`](docs/ECONOMICS.md) records the 26 October economic decision: maximize expected total net operating profit subject to a 30% net operating margin floor after all attributable business costs. The earlier mandatory 50% floor is superseded. Configured prices and modeled margins are not realized margin. Later live readback beats this dated record. Earlier checkpoints have moved to [`docs/history/`](docs/history/README.md).
 
