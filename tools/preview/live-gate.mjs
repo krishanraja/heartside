@@ -67,6 +67,9 @@ const PAGES = {
   ...Object.fromEntries(CORE.map((c) => [c.key, { path: c.path, title: c.title, price: c.price, marker: markerSelector(c) }])),
   catalog: { path: '/collections/all' },
   cart: { path: '/cart' },
+  // the Answers library and one answer (3 Nov 2026: the question picker and the answer card)
+  answers: { path: '/blogs/answers' },
+  answer: { path: '/blogs/answers/what-is-a-good-christmas-gift-from-the-dog' },
   missing: { path: '/pages/heartside-gate-missing-page', status: 404 },
 };
 const RETIRED = String(/The Morning Mug|The Couch Blanket|The Framed Print|The Tree Ornament|Annual Review|Body Double|\bUniform\b|\$(?:29|89|24|39)(?:\.00)?\b(?!\.\d)|\bBiscuit\b|your dog has notes/i);

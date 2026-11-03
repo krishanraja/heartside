@@ -524,6 +524,19 @@ if (!moved.length) skipped.push('moved templates (no template holds an hs-moved 
 fs.copyFileSync(path.join(out, exists('index.chat.json') ? 'index-chat.html' : 'index.html'), path.join(out, 'index-gifts.html'));
 if (exists('product.mug-native.json')) fs.copyFileSync(path.join(out, 'product-mug-native.html'), path.join(out, 'product-gift.html'));
 
+// The Answers library and one article per draft (3 Nov: the answer card and the question picker). The
+// articles are fixtures: the three live ones (titles and short answers as Shopify holds them) and the
+// Christmas drafts awaiting Krish's approval.
+if (exists('article.answers.json') && exists('blog.answers.json')) {
+  const rows = [...JSON.parse(fixture('answers-drafts-2026-11-03.json')), ...JSON.parse(fixture('answers-live-2026-11-03.json'))];
+  const articles = rows.map((a, i) => ({ id: 9000 + i, handle: a.handle, title: a.title, tags: a.tags, excerpt: a.summary, content: a.body,
+    url: `answers-${a.handle}.html`, updated_at: '2026-11-03T12:00:00Z' }));
+  const blog = { url: 'answers.html', title: 'Answers', handle: 'answers', articles };
+  const actx = { all_products: byHandle, blog };
+  written.push(await page('answers.html', 'blog.answers.json', { ...actx, template: { name: 'blog', suffix: 'answers' } }));
+  for (const a of articles) written.push(await page(`answers-${a.handle}.html`, 'article.answers.json', { ...actx, article: a, template: { name: 'article', suffix: 'answers' } }));
+}
+
 for (const f of fs.readdirSync(path.join(theme, 'assets'))) fs.copyFileSync(path.join(theme, 'assets', f), path.join(out, 'assets', f));
 fs.copyFileSync(path.join(repo, 'assets', 'heartside-logo.png'), path.join(out, 'assets', 'heartside-logo.png'));
 console.log('rendered', written.join(', '));

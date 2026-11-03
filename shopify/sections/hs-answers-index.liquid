@@ -1,0 +1,81 @@
+{%- comment -%}
+  The Answers library (/blogs/answers) as a question picker (Krish, 3 Nov: "Make this a delightful user
+  experience, and not just an infinite scroll sprawling everywhere"). Occasion chips filter the question cards
+  in place; every card is always in the page, for people and crawlers alike, and without JavaScript all of them
+  show. An article's occasion comes from its tags (christmas, from-the-dog, partner, family, how-it-works).
+  Each card is the question and the first sentence of its short answer. Used by templates/blog.answers.json.
+{%- endcomment -%}
+{%- render 'hs2-head' -%}
+<style>
+  .hs-lib { --ink: #121010; --cream: #FBF6F1; --muted: #5A4A44; --rule: #E8DCD3; --chestnut: #8A4A2B; --red: #A8284E;
+    background: var(--cream); color: var(--ink); padding: 24px 16px 40px; font-family: "HS DM Sans", system-ui, sans-serif; }
+  .hs-lib *, .hs-lib *::before, .hs-lib *::after { box-sizing: border-box; }
+  .hs-lib__in { max-width: 760px; margin: 0 auto; }
+  .hs-lib h1 { font-family: "HS Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(30px, 7.6vw, 44px); line-height: 1.08; margin: 0 0 8px; text-wrap: balance; }
+  .hs-lib h1 em { font-style: italic; color: var(--red); }
+  .hs-lib__intro { margin: 0 0 18px; font-size: 17px; line-height: 1.5; color: var(--muted); text-wrap: pretty; }
+  .hs-lib__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+  .hs-lib__chip { appearance: none; border: 0; min-height: 40px; padding: 8px 14px; border-radius: 20px; background: #fff; box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .hs-lib__chip[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+  .hs-lib__list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .hs-lib__card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 16px 16px 16px 18px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink); text-decoration: none; }
+  .hs-lib__card strong { display: block; color: var(--ink); text-wrap: balance; font-family: "HS Fraunces", Georgia, serif; font-weight: 600; font-size: 19px; line-height: 1.25; margin: 0 0 4px; }
+  .hs-lib__card span { display: block; font-size: 15px; line-height: 1.45; color: var(--muted); text-wrap: pretty; }
+  .hs-lib__card::after { content: ""; width: 32px; height: 32px; border-radius: 16px; background: #E7A1BF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23121010' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h13M13 6.5 18.5 12 13 17.5'/%3E%3C/svg%3E") center / 18px no-repeat; }
+  .hs-lib__card:hover { box-shadow: inset 0 0 0 2px var(--ink); }
+  .hs-lib__item[hidden], .hs-lib__chips[hidden] { display: none; }
+  .hs-lib :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  @media (min-width: 720px) { .hs-lib__list { grid-template-columns: 1fr 1fr; } .hs-lib { padding-top: 40px; } }
+</style>
+{%- assign s = section.settings -%}
+{%- assign occasions = 'christmas,from-the-dog,partner,family,how-it-works' | split: ',' -%}
+{%- assign labels = s.labels | split: ',' -%}
+<section class="hs-lib" data-hs-lib>
+  <div class="hs-lib__in">
+    <h1>{{ s.heading }} <em>{{ s.heading_em }}</em></h1>
+    <p class="hs-lib__intro">{{ s.intro }}</p>
+    <ul class="hs-lib__chips" data-hs-lib-chips hidden>
+      <li><button type="button" class="hs-lib__chip" data-hs-lib-chip="all" aria-pressed="false">{{ s.all_label }}</button></li>
+      {%- for o in occasions -%}
+        {%- assign n = 0 -%}
+        {%- for a in blog.articles -%}{%- if a.tags contains o -%}{%- assign n = n | plus: 1 -%}{%- endif -%}{%- endfor -%}
+        {%- if n > 0 -%}<li><button type="button" class="hs-lib__chip" data-hs-lib-chip="{{ o }}" aria-pressed="false">{{ labels[forloop.index0] | strip }}</button></li>{%- endif -%}
+      {%- endfor -%}
+    </ul>
+    <ul class="hs-lib__list" aria-live="polite">
+      {%- for a in blog.articles -%}
+        {%- assign first = a.excerpt | strip_html | strip | split: '. ' | first -%}
+        {%- unless first contains '.' or first contains '?' -%}{%- assign first = first | append: '.' -%}{%- endunless -%}
+        <li class="hs-lib__item" data-tags="{{ a.tags | join: ' ' }}"><a class="hs-lib__card" href="{{ a.url }}"><span><strong>{{ a.title }}</strong><span>{{ first }}</span></span></a></li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+<script>
+  (function (root) {
+    if (!root) return;
+    var chips = root.querySelector('[data-hs-lib-chips]'), items = root.querySelectorAll('.hs-lib__item');
+    if (!chips) return;
+    chips.hidden = false;
+    var pick = function (tag) {
+      chips.querySelectorAll('[data-hs-lib-chip]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-hs-lib-chip') === tag ? 'true' : 'false'); });
+      items.forEach(function (li) { li.hidden = tag !== 'all' && (' ' + li.getAttribute('data-tags') + ' ').indexOf(' ' + tag + ' ') < 0; });
+    };
+    chips.addEventListener('click', function (e) { var b = e.target.closest('[data-hs-lib-chip]'); if (b) pick(b.getAttribute('data-hs-lib-chip')); });
+    // Christmas first while it has questions (Krish, 3 Nov)
+    pick(chips.querySelector('[data-hs-lib-chip="christmas"]') ? 'christmas' : 'all');
+  })(document.currentScript.previousElementSibling);
+</script>
+
+{% schema %}
+{
+  "name": "HS answers library",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Gifts from your dog," },
+    { "type": "text", "id": "heading_em", "label": "Heading, italic part", "default": "answered." },
+    { "type": "textarea", "id": "intro", "label": "Line under the heading", "default": "Short answers to what people ask before they give a gift from the dog." },
+    { "type": "text", "id": "all_label", "label": "Chip for every question", "default": "All" },
+    { "type": "text", "id": "labels", "label": "Occasion chips, in order", "info": "Christmas, From the dog, Partner, Family, How it works: the tags christmas, from-the-dog, partner, family, how-it-works.", "default": "Christmas,From the dog,Partner,Family,How it works" }
+  ]
+}
+{% endschema %}
