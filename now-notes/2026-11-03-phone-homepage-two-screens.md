@@ -1,0 +1,9 @@
+Status: Krish's 3 November phone homepage is built on branch `claude/kind-keller-hnovrq` and tested locally. It is not yet on any Shopify theme. What changed:
+- **Length.** On a phone the page is about 2 screens, down from about 4 (360x780: 1.96, down from 4.01; 390x844: 1.90, down from 3.74).
+- **Pinned button.** "Make one for my dog" stays at the bottom of the screen, in the logo heart pink (#E7A1BF) with an ink label (about 9:1 contrast). It pulses gently and holds still for people who turn motion off.
+- **Christmas offer card** at the top: a "Christmas offer" badge, the live "N days left" countdown, "Free US shipping" and "15% off 2 gifts, 20% off 3". The saving shows only while the memo strip's bundle switch is on.
+- **Hero.** The six-sets carousel replaces Maple's mug example. The photo-to-gift slider and the styles strip are tightened, and every strip card is now the same height. The six-name photo credit is one line, the duplicate bottom button is gone, and the footer is compact.
+- **Head lines.** Every favicon size from design/brand-v4, the touch icon, a manifest and the page colour, added by the new `head_heartside` push option. Live-gate now checks the home page head. The schema keeps its 27 Oct choice of no zero shipping rate.
+Changed: the live site sent only one 32 px icon. /favicon.ico and the touch icon were 404, the theme colour was empty, and the share image still advertises the ornament and the worded mug.
+Next: Krish's go to push to a draft theme with `head_heartside` ticked, then run preview-acceptance, live-gate and handle-check against it. Separately, his go to upload favicon.ico to Shopify Files with a /favicon.ico redirect, and to book the share-card Codex card (design/share-card-2026-11-03/brief.md).
+North Star check (2026-11-03): holds. U5, $69 against $658 this week; this targets homepage-to-start conversion.

@@ -25,7 +25,8 @@ test('every picture records the approved file it came from', () => {
 });
 
 test('the showcase shows each picture with its manifest alt and size, labeled Example', () => {
-  const tags = [...showcase.matchAll(/render 'hs-showcase-fig', id: '([a-z-]+)', w: (\d+), h: (\d+), alt: '([^']*)'/g)];
+  // 3 Nov: the six sets are the first screen's hero, in the journey section; the rest stay in the showcase
+  const tags = [...(showcase + journey).matchAll(/render 'hs-showcase-fig', id: '([a-z-]+)', w: (\d+), h: (\d+), alt: '([^']*)'/g)];
   assert.ok(tags.length >= 27, 'every picture is placed');
   for (const [, id, w, h, alt] of tags) {
     const img = byId[id];
@@ -60,12 +61,15 @@ test('the homepage places the showcase after the journey and the steps hide it',
 
 test('the showcase shows one set at a time and one drifting row, not a wall of tiles (31 Oct)', () => {
   // Krish, 31 Oct: "it looks so intense to just have all the pictures visible at once"
-  assert.match(showcase, /data-hss-reel>/);
+  // Krish, 3 Nov: the sets carousel replaces the first screen's example, so the reel lives in the hook
+  assert.match(journey, /data-hss-reel>/);
+  assert.doesNotMatch(showcase, /data-hss-reel>/, 'the reel shows once');
   assert.match(showcase, /data-hss-strip-track>/);
   assert.doesNotMatch(showcase, /hss-row--(six|three|four)|data-hss-tabs/, 'the three grids and the gift tabs are gone');
   const strip = showcase.slice(showcase.indexOf('data-hss-strip-track'), showcase.indexOf('</ul>', showcase.indexOf('data-hss-strip-track')));
   assert.equal((strip.match(/render 'hs-showcase-fig'/g) || []).length, 19, 'six styles, nine gift photos and four moods');
-  assert.equal((showcase.match(/data-hss-pause/g) || []).length, 2, 'each moving part has a pause button');
+  assert.equal((showcase.match(/data-hss-pause/g) || []).length, 1, 'the strip has a pause button');
+  assert.equal((journey.match(/data-hss-pause/g) || []).length, 1, 'the reel has a pause button');
   const js = read('shopify/assets/hs-showcase.js');
   assert.match(js, /prefers-reduced-motion: reduce/);
   assert.match(js, /IntersectionObserver/);

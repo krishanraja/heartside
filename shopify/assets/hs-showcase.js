@@ -3,9 +3,12 @@
    drifting row of styles, gifts and moods. Without this file every picture is already on the page. */
 (function () {
   'use strict';
-  var root = document.querySelector('[data-hss]');
-  if (!root || root.__hss) return;
-  root.__hss = true;
+  // 3 Nov: the six sets are the first screen's hero (inside sections/hs-journey.liquid), and the slider
+  // and the strip stay below, so every [data-hss] block on the page runs on its own
+  var roots = document.querySelectorAll('[data-hss]');
+  for (var r = 0; r < roots.length; r++) if (!roots[r].__hss) { roots[r].__hss = true; init(roots[r]); }
+
+  function init(root) {
 
   // photo to painting to gift: 0 is the photo, 1 the painting, 2 the gift
   var flow = root.querySelector('[data-hss-flow]');
@@ -83,7 +86,9 @@
     btn.addEventListener('click', function () {
       w.state.paused = !w.state.paused;
       btn.setAttribute('aria-pressed', w.state.paused ? 'true' : 'false');
-      btn.textContent = w.state.paused ? 'Play' : 'Pause';
+      // an icon button: its name says what a tap does next
+      btn.setAttribute('aria-label', w.state.paused ? 'Play' : 'Pause');
+      btn.classList.toggle('is-paused', w.state.paused);
       w.fire();
     });
   };
@@ -246,5 +251,6 @@
       window.scrollTo(0, 0);
       go.focus();
     });
+  }
   }
 })();

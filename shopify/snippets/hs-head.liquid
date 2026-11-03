@@ -1,0 +1,18 @@
+{%- comment -%}
+  Heartside's own lines in the page head (Krish, 3 Nov 2026: "the favicons don't even show").
+  Helio wrote one 32 px icon and an empty theme colour, which phones, home screens and search
+  results pass over, so a tab or a result showed nothing. This writes the approved brand-v4 heart
+  (design/brand-v4/, byte copies in assets/hs-favicon-*.png) at every size they ask for, the
+  touch icon on cream, a manifest and the page colour. The theme push's "head_heartside" option
+  renders it before </head> and switches Helio's icon and colour lines off
+  (.github/scripts/head-heartside.mjs, which can --restore them). /favicon.ico is a store redirect
+  to design/brand-v4/favicon.ico in Shopify Files.
+{%- endcomment -%}
+<link rel="icon" type="image/png" sizes="16x16" href="{{ 'hs-favicon-16.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ 'hs-favicon-32.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ 'hs-favicon-48.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ 'hs-favicon-192.png' | asset_url }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ 'hs-favicon-180.png' | asset_url }}">
+<link rel="manifest" href="{{ 'hs-manifest.json' | asset_url }}">
+<meta name="theme-color" content="#fbf6f1">
+<meta name="apple-mobile-web-app-title" content="Heartside">

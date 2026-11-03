@@ -13,6 +13,13 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 3 November: the phone homepage in two screens
+
+- **First screen** (`sections/hs-journey.liquid`). It holds the Christmas offer card, the six-sets reel as the hero, one price line, and the button pinned to the bottom on phones. The offer card shows hs2.js's countdown and "Free US shipping", plus the bundle saving, but only while the memo strip's `bundle_offer_live` is on. The reel is the one `hs-showcase.js` already ran; it now runs every `[data-hss]` block on the page. The button is `.hs-btn-heart` (`hs-brand.css`): the logo heart pink `--hs-heart` with an ink label, pulsing, and still under reduced motion. The old example, intro, time, trust and legal settings stay in the schema, marked retired, so a saved theme still loads.
+- **Below it** (`sections/hs-showcase.liquid`). The slider and the strip each have a heading only. Strip cards are one height, the credit is one line that opens to the full credit, and the footer is compact on phones.
+- **Head** (`snippets/hs-head.liquid`). It holds every favicon size (byte copies of `design/brand-v4/`), the touch icon, `assets/hs-manifest.json` and the page colour. Tick `head_heartside` on the guarded push: `.github/scripts/head-heartside.mjs` renders the snippet in the layout and switches Helio's single icon and empty colour off; `--restore` undoes it. `/favicon.ico` needs a Shopify URL redirect to `favicon.ico` in Files.
+- **Checks.** `tools/preview/homepage-phone.browser.test.mjs` covers four phone sizes. `live-gate.mjs` now also reads the home page head (`--head off` skips it).
+
 ## 30 October: the breed examples
 
 - **Showcase.** `sections/hs-showcase.liquid` (with `assets/hs-showcase.css`, `assets/hs-showcase.js` and `snippets/hs-showcase-fig.liquid`) sits under the first screen on the homepage: photo to painting to gift, six dogs in six styles, each gift in three scenes, one dog in four tones, a set per dog. Its pictures are `assets/hs-ex-*.webp`, built by `tools/print-art/showcase-assets.py` from the growth repository's approved set; `design/examples-2026-10-30-showcase/site.json` records each file's source and output hash and its ledger approval. Every picture carries an Example tag.
