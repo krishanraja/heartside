@@ -1,3 +1,0 @@
-Status: No text on the site is cut short: every ellipsis and line clamp is gone from the theme (Krish, 3 Nov: "Ensure text is never truncated."), a source test forbids them, and the homepage test and live-gate fail on any visible text clipped by its box. On short phones (360 x 640, Instagram's 390 x 664) the carousel now stops above the pinned button, which had covered the dog's name and the slide controls; live-gate checks that the pinned button never covers them.
-Next: Grow the Answers library from 3 to about 13 (docs/review/HANDOVER-SEARCH-AND-HEAD-2026-11-03.md, step 5), each article approved by Krish before it publishes.
-North Star check (2026-11-03): holds.
