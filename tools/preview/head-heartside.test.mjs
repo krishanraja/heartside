@@ -34,10 +34,37 @@ const layout = `<!doctype html>
   <body>{{ content_for_layout }}</body>
 </html>
 `;
-const run = (file, ...args) => spawnSync(process.execPath, [script, file, ...args], {encoding: 'utf8'});
+const run = (...args) => spawnSync(process.execPath, [script, ...args], {encoding: 'utf8'});
+const at = (name, rel) => { const f = path.join(dir, name, rel); fs.mkdirSync(path.dirname(f), {recursive: true}); return f; };
+// shaped like the live Helio files (read from the theme, 3 Nov): the header's bare Organization with the old
+// logo, and meta-tags' empty theme colour
+const header = `{% endcapture %}
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Organization",
+    "name": {{ shop.name | json }},
+    {% if settings.logo %}
+      "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
+    {% endif %}
+    "url": {{ request.origin | append: page.url | json }}
+  }
+</script>
+
+<header-component id="header-component">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}</script>
+`;
+const meta = `<meta charset="utf-8">
+<meta
+  name="theme-color"
+  content=""
+>
+<meta property="og:site_name" content="{{ shop.name }}">
+`;
 
 test('renders hs-head once before </head> and switches off Helio\'s icon and colour, not deleting them', () => {
-  const f = path.join(dir, 'a.liquid'); fs.writeFileSync(f, layout);
+  const f = at('a', 'layout/theme.liquid'); fs.writeFileSync(f, layout);
   assert.equal(run(f).status, 0);
   const t = fs.readFileSync(f, 'utf8');
   assert.equal((t.match(/render 'hs-head'/g) || []).length, 1);
@@ -52,11 +79,34 @@ test('renders hs-head once before </head> and switches off Helio\'s icon and col
 });
 
 test('refuses a layout without exactly one </head>', () => {
-  const f = path.join(dir, 'b.liquid'); fs.writeFileSync(f, '<html><body></body></html>');
+  const f = at('b', 'layout/theme.liquid'); fs.writeFileSync(f, '<html><body></body></html>');
   const r = run(f);
   assert.equal(r.status, 1);
   assert.match(r.stdout, /::error::.*Nothing was changed/);
   assert.equal(fs.readFileSync(f, 'utf8'), '<html><body></body></html>');
+});
+
+test('switches off Helio\'s bare Organization and empty theme colour, keeps other JSON-LD, and restores all three files', () => {
+  const l = at('c', 'layout/theme.liquid'), h = at('c', 'sections/header.liquid'), m = at('c', 'snippets/meta-tags.liquid');
+  fs.writeFileSync(l, layout); fs.writeFileSync(h, header); fs.writeFileSync(m, meta);
+  assert.equal(run(l, h, m).status, 0);
+  const ht = fs.readFileSync(h, 'utf8'), mt = fs.readFileSync(m, 'utf8');
+  assert.match(ht, /head-heartside\.mjs off\n<script type="application\/ld\+json">[\s\S]*?"@type": "Organization"[\s\S]*?<\/script>\n\{%- endcomment -%\}/);
+  assert.match(ht, /\n<script type="application\/ld\+json">\{"@context":"https:\/\/schema.org","@type":"BreadcrumbList"/, 'other JSON-LD stays on');
+  assert.doesNotMatch(ht, /render 'hs-head'/, 'only the layout gets the render line');
+  assert.match(mt, /head-heartside\.mjs off\n<meta\n  name="theme-color"/);
+  assert.equal(run(l, h, m).status, 0);
+  assert.equal(fs.readFileSync(h, 'utf8'), ht, 'a second run changes nothing');
+  assert.equal(run(l, h, m, '--restore').status, 0);
+  assert.equal(fs.readFileSync(l, 'utf8'), layout); assert.equal(fs.readFileSync(h, 'utf8'), header); assert.equal(fs.readFileSync(m, 'utf8'), meta);
+});
+
+test('leaves our own Organization alone', () => {
+  const h = at('d', 'sections/header.liquid');
+  const ours = '<script type="application/ld+json">{"@graph":[{"@type": "Organization","@id":"https://heartside.io/#organization"}]}</script>\n';
+  fs.writeFileSync(h, ours);
+  assert.equal(run(h).status, 0);
+  assert.equal(fs.readFileSync(h, 'utf8'), ours);
 });
 
 test('hs-head carries every icon size from the approved brand-v4 set, the manifest and a page colour', () => {

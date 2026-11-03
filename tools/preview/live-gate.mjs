@@ -329,11 +329,11 @@ for (const v of views) {
 await browser.close();
 
 // The head of the home page, as a browser tab, a phone's home screen, a search result and a shared link read it
-// (Krish, 3 Nov 2026: "the favicons don't even show"): icons at 48 px or more and a touch icon, /favicon.ico,
+// (Krish, 3 Nov 2026: "the favicons don't even show"): icons at 48 px or more and a touch icon, /favicon.ico (a warning),
 // a manifest that loads, a page colour, an https share image of 1200x630 that loads, and one Organization.
 // Plain GETs only; the report names paths, never the host.
 if (pages.includes('home') && arg('head', 'on') !== 'off') {
-  const fails = [];
+  const fails = [], warns = [];
   const get = async (u) => { try { const r = await fetch(u, { redirect: 'follow', headers: { 'user-agent': VIEWS.desk.ua } }); return { ok: r.ok, type: r.headers.get('content-type') || '', body: r.ok ? await r.text() : '' }; } catch (e) { return { ok: false, type: '', body: '' }; } };
   const home = await get(BASE + withQuery('/'));
   if (CHALLENGE.test(home.body.slice(0, 4000))) { console.log('??   head: Cloudflare challenge, not checked (inconclusive)'); inconclusive++; }
@@ -351,8 +351,10 @@ if (pages.includes('home') && arg('head', 'on') !== 'off') {
     const touch = links.find((t) => /rel=["']apple-touch-icon["']/i.test(t));
     if (!touch) fails.push('no apple-touch-icon');
     else if (!(await get(abs(attr(touch, 'href')))).ok) fails.push('the touch icon does not load');
+    // Shopify answers /favicon.ico itself with an empty 404, before URL redirects apply, so no theme or store
+    // setting can serve it (CoWork, 3 Nov). Browsers and search use the icon links above, so it only warns.
     const ico = await get(new URL('/favicon.ico', BASE).href);
-    if (!ico.ok || !/image/.test(ico.type)) fails.push('/favicon.ico does not answer with an image');
+    if (!ico.ok || !/image/.test(ico.type)) warns.push('/favicon.ico is not an image (Shopify reserves the path; the icon links carry the favicon)');
     const man = links.find((t) => /rel=["']manifest["']/i.test(t));
     if (!man) fails.push('no manifest');
     else { const m = await get(abs(attr(man, 'href'))); try { JSON.parse(m.body); } catch (e) { fails.push('the manifest does not load as JSON'); } }
@@ -371,6 +373,7 @@ if (pages.includes('home') && arg('head', 'on') !== 'off') {
   }
   if (fails.length) { failed++; console.log('FAIL head (/)'); fails.forEach((f) => console.log('   - ' + f)); }
   else if (home.ok) console.log('ok   head (/)');
+  warns.forEach((w) => console.log('warn head (/): ' + w));
 }
 
 if (failed) console.log(`\n${failed} page/viewport combinations failed${inconclusive ? `, ${inconclusive} not checked (Cloudflare challenge)` : ''}`);

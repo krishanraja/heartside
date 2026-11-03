@@ -78,7 +78,7 @@ on:
         default: false
         type: boolean
       head_heartside:
-        description: "Also put Heartside's head lines (every favicon size, touch icon, manifest, page colour) into the layout, switching Helio's icon and colour off (not deleted)"
+        description: "Also put Heartside's head lines (favicons, touch icon, manifest, page colour) into the layout, switching Helio's icon, empty colour and bare Organization off (not deleted)"
         required: false
         default: false
         type: boolean
@@ -198,7 +198,7 @@ jobs:
       - name: Back up the theme's templates and section groups
         run: |
           mkdir -p backup
-          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json" --only "sections/hs2-*.liquid" --only "config/settings_data.json" --only "layout/theme.liquid"
+          shopify theme pull --theme "$THEME_ID" --path backup --only "templates/*.json" --only "sections/*.json" --only "sections/hs2-*.liquid" --only "config/settings_data.json" --only "layout/theme.liquid" --only "sections/header.liquid" --only "snippets/meta-tags.liquid"
           node .github/scripts/editor-edits.mjs backup
 
       - uses: actions/upload-artifact@v4
@@ -283,7 +283,13 @@ jobs:
           fi
           mkdir -p shopify/layout
           cp backup/layout/theme.liquid shopify/layout/theme.liquid
-          node .github/scripts/head-heartside.mjs shopify/layout/theme.liquid
+          # Helio's header writes a bare Organization and meta-tags an empty theme colour; switch those off
+          # too when the theme has them (3 Nov: two Organizations in the structured data)
+          extra=""
+          for f in sections/header.liquid snippets/meta-tags.liquid; do
+            if [ -f "backup/$f" ]; then cp "backup/$f" "shopify/$f"; extra="$extra shopify/$f"; fi
+          done
+          node .github/scripts/head-heartside.mjs shopify/layout/theme.liquid $extra
 
       - name: Set the favicon
         if: ${{ inputs.favicon != '' && !inputs.pull_only }}
