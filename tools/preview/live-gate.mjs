@@ -54,6 +54,13 @@ const VIEWS = {
 // today's catalog (catalog.mjs); title and price are what the product page shows first (the
 // portrait opens on its first variant, framed). The home page's first-screen button must end
 // inside the first screen, and its chat and phone menu must offer the three clean addresses.
+// claims /llms.txt must not make any more: the gifts are artwork only (Ruling, Krish, 2026-10-31), the
+// ornament is on hold
+const LLMS_RETIRED = [
+  [/ornament/i, 'ornament'],
+  [/carr(?:y|ies) (?:the |a )?(?:owner's )?(?:approved )?(?:short )?(?:note|message)/i, 'a gift carries a note or message'],
+  [/include a short message/i, 'a gift includes a printed message'],
+];
 const GIFTS = CORE.map(({ key, chat, handle, path: p }) => ({ key, chat, handle, path: p }));
 const PAGES = {
   home: { path: '/', primary: '[data-hsj-go="name"], [data-hs3-start]', gifts: GIFTS },
@@ -370,6 +377,20 @@ if (pages.includes('home') && arg('head', 'on') !== 'off') {
       try { const d = JSON.parse(json); for (const n of [d, ...(d['@graph'] || [])].flat()) if (n && n['@type'] === 'Organization') orgs++; } catch (e) { fails.push('a JSON-LD block does not parse'); }
     }
     if (orgs !== 1) fails.push(`${orgs} Organization blocks in the structured data, not one`);
+    // /llms.txt is what AI assistants quote (3 Nov 2026: every price had rendered as ".", and it still
+    // said the mug and portrait carry a printed note after the 31 Oct artwork-only ruling)
+    const llms = await get(new URL('/llms.txt', BASE).href);
+    if (!llms.ok) fails.push('/llms.txt does not load');
+    else {
+      const usd = (c) => '$' + (c % 100 ? (c / 100).toFixed(2) : String(c / 100));
+      for (const c of CORE) {
+        const line = llms.body.split('\n').find((l) => l.includes(c.path + ')')) || '';
+        if (!line) fails.push(`/llms.txt does not list ${c.path}`);
+        else for (const cents of new Set([c.min, c.max])) if (!line.includes(usd(cents))) fails.push(`/llms.txt ${c.path} does not say ${usd(cents)}`);
+      }
+      if (/\]\([^)]*\):\s*\./.test(llms.body)) fails.push('/llms.txt has an empty price (": .")');
+      for (const [re, what] of LLMS_RETIRED) if (re.test(llms.body)) fails.push(`/llms.txt still says ${what}`);
+    }
   }
   if (fails.length) { failed++; console.log('FAIL head (/)'); fails.forEach((f) => console.log('   - ' + f)); }
   else if (home.ok) console.log('ok   head (/)');

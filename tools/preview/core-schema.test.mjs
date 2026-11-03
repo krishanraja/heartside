@@ -7,12 +7,12 @@ const engine=new Liquid();engine.registerFilter('json',v=>JSON.stringify(v));eng
 const handles=['your-dogs-illustrated-mug','your-dogs-personality-blanket','your-dogs-portrait'];
 const catalog=Object.fromEntries(handles.map((handle,i)=>[handle,{title:['Illustrated mug','Word-free sherpa blanket','Portrait'][i],available:true,url:'/products/'+handle}]));
 async function render(data){const html=await engine.parseAndRender(source,data);return JSON.parse(html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1])['@graph'];}
-test('home schema lists only the three available core products and describes the word-free blanket',async()=>{
+test('home schema lists only the three available core products and describes artwork-only gifts',async()=>{
  const graph=await render({kind:'home',all_products:{...catalog,'the-tree-ornament':{title:'Old ornament',available:true,url:'/products/the-tree-ornament'}}});
  const list=graph.find(x=>x['@type']==='ItemList').itemListElement;
  assert.deepEqual(list.map(x=>x.url),handles.map(x=>'https://heartside.io/products/'+x));assert.deepEqual(list.map(x=>x.position),[1,2,3]);
  const description=graph.find(x=>x['@type']==='Organization').description;
- assert.match(description,/word-free sherpa blanket/);assert.match(description,/unframed or framed/);assert.doesNotMatch(description,/ornament|Free US shipping/i);
+ assert.match(description,/sherpa blanket/);assert.match(description,/no words printed/);assert.match(description,/note in the dog's voice comes in the box/);assert.doesNotMatch(description,/carry the owner's approved note/);assert.match(description,/unframed or framed/);assert.doesNotMatch(description,/ornament|Free US shipping/i);
 });
 test('unavailable or missing core entries do not create stale catalog links or invalid JSON',async()=>{
  const graph=await render({kind:'home',all_products:{[handles[0]]:{...catalog[handles[0]],available:false},[handles[2]]:catalog[handles[2]]}});
