@@ -4,7 +4,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync, readdirSync} from 'node:fs';
-import {execFileSync} from 'node:child_process';
 
 const root = new URL('../../', import.meta.url);
 const read = p => readFileSync(new URL(p, root), 'utf8');
@@ -89,5 +88,7 @@ test('the carousel shows the six real-mug sets at 540 and 1080 wide (Krish, 3 No
   }
   assert.doesNotMatch(journey + chat, /hs-ex-set-/, 'the AI-mug sets are gone');
   assert.match(read('shopify/snippets/hs-showcase-fig.liquid'), /srcset="\{\{ hs_540 \}\} 540w, \{\{ hs_1080 \}\} 1080w"/);
-  execFileSync('python3', ['tools/print-art/hero-sets.py', '--check'], {cwd: new URL('../../', import.meta.url)});
+  // the files themselves (sizes, hashes, byte caps) are checked by `python3 tools/print-art/hero-sets.py --check`,
+  // which runs in the python job of .github/workflows/offline-tests.yml
+  for (const s of hero.sets) for (const w of [540, 1080]) assert.ok(existsSync(new URL(`shopify/assets/hs-hero-${s.dog}-${w}.webp`, root)), `${s.dog} ${w}`);
 });
