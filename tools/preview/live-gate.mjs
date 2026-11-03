@@ -137,16 +137,40 @@ function inspect([spec, retiredSource]) {
   const texts = [...document.querySelectorAll('main h1, main h2, main h3, main .hs2-stamp, main .hs2-btn, main .hs3-btn, main .hsj-btn, main .hs-btn, main label, main .tee-btn, main .hs2-product__price, main .tee-field__heading, main .hs3-fan__name, main .hs3-fan__price, main .hs3-bubble')].filter(vis);
   // a turned card (a CSS rotate) widens the screen boxes of everything in it, so two lines in the
   // same turned box are compared by their layout boxes, which the turn does not change
+  const pinnedIn = (el) => { for (let x = el; x && x !== document.body; x = x.parentElement) if (getComputedStyle(x).position === 'fixed') return x; return null; };
   const turnedBox = (el) => { for (let x = el.parentElement; x && x !== document.body; x = x.parentElement) if (getComputedStyle(x).transform !== 'none') return x; return null; };
   const layoutBox = (el) => ({ left: el.offsetLeft, top: el.offsetTop, right: el.offsetLeft + el.offsetWidth, bottom: el.offsetTop + el.offsetHeight });
   for (let i = 0; i < texts.length; i++) for (let j = i + 1; j < texts.length; j++) {
     const a = texts[i], b = texts[j];
     if (a.contains(b) || b.contains(a)) continue;
+    // a pinned bar (position: fixed) floats over the page by design and content scrolls under it; whether it
+    // covers anything that matters on the first screen is checked on its own below
+    if (!!pinnedIn(a) !== !!pinnedIn(b)) continue;
     const turned = turnedBox(a);
     const same = turned && turned === turnedBox(b) && a.offsetParent === b.offsetParent;
     const ra = same ? layoutBox(a) : a.getBoundingClientRect(), rb = same ? layoutBox(b) : b.getBoundingClientRect();
     const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
     if (w > 4 && h > 4) fails.push(`overlap: ${label(a)} and ${label(b)} (${Math.round(w)}x${Math.round(h)}px)`);
+  }
+
+  // 3a. no text cut short by its box (Krish, 3 Nov: "Ensure text is never truncated.")
+  document.querySelectorAll('main *').forEach((el) => {
+    // screen-reader-only text is a 1 px box on purpose
+    if (!vis(el) || el.getBoundingClientRect().width <= 2 || ![...el.childNodes].some((n) => n.nodeType === 3 && n.data.trim())) return;
+    const c = getComputedStyle(el);
+    if (c.textOverflow === 'ellipsis' || (c.overflowX !== 'visible' && el.scrollWidth > el.clientWidth + 1)) fails.push(`text cut short: ${label(el)}`);
+  });
+
+  // 3b. the homepage's pinned button never covers the carousel's headline, the dog's name, the ticks or the pause
+  // (3 Nov: on a 360 x 640 phone it covered the name and the controls)
+  const pin = document.querySelector('.hsj-dock--pin');
+  if (pin && getComputedStyle(pin).position === 'fixed' && vis(pin)) {
+    const pr = pin.getBoundingClientRect();
+    document.querySelectorAll('.hsj-hook__words .hsj-h1, .hsj-hook .hss--hero li.is-on figcaption, .hsj-hook .hss--hero .hss-ctl, .hsj-hook .hss--hero li:first-child figcaption').forEach((el) => {
+      if (!vis(el)) return;
+      const r = el.getBoundingClientRect();
+      if (r.bottom > pr.top + 2 && r.top < pr.bottom) fails.push(`the pinned button covers ${label(el)} (${Math.round(r.bottom - pr.top)}px)`);
+    });
   }
 
   // 4. Teeinblue's own blue, anywhere a shopper can see it. The house palette has no blue at all,

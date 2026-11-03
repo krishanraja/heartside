@@ -178,7 +178,7 @@ html.hs-jm-on body { background: #FBF7F3; }
 .hs-jm-tile__check { position: absolute; top: -9px; right: -9px; z-index: 1; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 1.5px solid var(--line-strong); font-size: 15px; font-weight: 700; line-height: 1; color: var(--ink); }
 .hs-jm-tile.is-on .hs-jm-tile__check { background: var(--stamp); border-color: var(--stamp); color: #fff; font-size: 13px; }
 .hs-jm-tile__row { display: grid; gap: 0; padding: 0 2px; white-space: nowrap; min-width: 0; }
-.hs-jm-tile__name { margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.hs-jm-tile__name { margin: 0; font-size: 14px; line-height: 18px; font-weight: 600; overflow-wrap: anywhere; }
 .hs-jm-tile__price { font-size: 13px; line-height: 18px; color: var(--muted); }
 .hs-jm-tile__bar { display: none; position: absolute; left: 12px; right: 12px; bottom: 34px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.85); overflow: hidden; }
 .hs-jm-tile__bar span { display: block; width: 40%; height: 100%; border-radius: 2px; background: var(--stamp); animation: hs-jm-bar 1.4s ease-in-out infinite; }
@@ -197,7 +197,7 @@ html.hs-jm-on body { background: #FBF7F3; }
 .hs-jm-dot { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 0; background: var(--dot); box-shadow: inset 0 0 0 1px rgba(0,0,0,.14); cursor: pointer; }
 .hs-jm-dot.is-on { box-shadow: inset 0 0 0 1px rgba(0,0,0,.14), 0 0 0 2px var(--cream), 0 0 0 4px var(--stamp); }
 .hs-jm-pill { height: 32px; padding: 0 12px; font-size: 13px; border-radius: 16px; }
-.hs-jm__bundle { padding: 10px 14px; font-weight: 400; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs-jm__bundle { padding: 10px 14px; font-weight: 400; color: var(--ink); text-wrap: balance; }
 .hs-jm__bundle b { color: var(--stamp); font-weight: 600; }
 .hs-jm__repaint, .hs-jm__repaint:hover { display: block; width: 100%; height: auto; min-height: 36px; margin: 6px 0 0; padding: 0; border: 0; border-radius: 0; background: none; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 @media (max-width: 359px) { .hs-jm__bundle { white-space: normal; } .hs-jm-tile__price { font-size: 12px; } }
