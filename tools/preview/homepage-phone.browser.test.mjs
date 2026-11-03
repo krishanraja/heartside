@@ -132,6 +132,8 @@ test('desktop: the photo-to-gift slider sits in the carousel\'s section, under t
   const page = await ctx.newPage();
   await page.route((url) => !url.href.startsWith(base) && !/^(data|blob):/.test(url.href), (r) => r.abort());
   await page.goto(base + '/', {waitUntil: 'load'});
+  // measure once the slider and the reel have taken their running layout
+  await page.waitForSelector('.hsj-hook .hss-flow.is-live');
   await page.waitForTimeout(400);
   const hero = await page.locator('.hsj-hook .hss--hero').boundingBox();
   const btn = await page.locator('.hsj-hook [data-hsj-go="name"]').boundingBox();

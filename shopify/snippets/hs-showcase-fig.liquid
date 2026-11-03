@@ -1,9 +1,17 @@
 {%- comment -%}
   One example picture for the showcase: always labeled Example, served at the size it was built at.
   Params: id (hs-ex-<id>.webp), w, h, alt, caption (optional), sub (optional), eager (optional).
+  hero (optional, a dog): the homepage carousel's set from tools/print-art/hero-sets.py, served as
+  hs-hero-<dog>-540.webp and -1080.webp through srcset, so a phone gets the sharp one (Krish, 3 Nov).
 {%- endcomment -%}
 <figure class="hss-fig">
   <span class="hss-tag">Example</span>
+  {%- if hero != blank -%}
+    {%- assign hs_540 = 'hs-hero-' | append: hero | append: '-540.webp' | asset_url -%}
+    {%- assign hs_1080 = 'hs-hero-' | append: hero | append: '-1080.webp' | asset_url -%}
+  <img src="{{ hs_540 }}" srcset="{{ hs_540 }} 540w, {{ hs_1080 }} 1080w" sizes="(min-width: 900px) 520px, 100vw" alt="{{ alt | escape }}" width="1080" height="1350" loading="{% if eager %}eager{% else %}lazy{% endif %}"{% if eager %} fetchpriority="high"{% endif %} decoding="async">
+  {%- else -%}
   <img src="{{ id | prepend: 'hs-ex-' | append: '.webp' | asset_url }}" alt="{{ alt | escape }}" width="{{ w }}" height="{{ h }}" loading="{% if eager %}eager{% else %}lazy{% endif %}" decoding="async">
+  {%- endif -%}
   {%- if caption != blank -%}<figcaption><strong>{{ caption }}</strong>{% if sub != blank %}<span>{{ sub }}</span>{% endif %}</figcaption>{%- endif -%}
 </figure>

@@ -1,52 +1,55 @@
 {%- comment -%}theme-check-disable UndefinedObject{%- endcomment -%}
 {%- comment -%}
   /llms.txt (Shopify: llms.txt.liquid, then agents.md.liquid, then its own default). Only `request`
-  and `agents` exist here, so the facts are written in; keep them true to the current core product settings
-  and the live prices (only request and agents are available in this template). /agents.md and /llms-full.txt stay Shopify's own. Strategy:
+  and `agents` exist here: `all_products` renders empty (3 Nov 2026: every price read "."), so the
+  prices are written in. Keep them equal to catalog.mjs CORE; live-gate.mjs reads /llms.txt against
+  each product's .js and fails on a missing price, a wrong price or a retired claim.
+  Gifts are artwork only (Ruling, Krish, 2026-10-31); the note in the dog's voice comes in the box and
+  on a free digital card. /agents.md and /llms-full.txt stay Shopify's own. Strategy:
   growth-heartside docs/GEO-AEO.md (21 Oct 2026).
 {%- endcomment -%}
 # Heartside
 
-> Heartside (heartside.io) makes personalized gifts from your dog: an illustrated mug, a word-free blanket, or a portrait with an optional frame. The mug and portrait include a short message in your dog's own voice; the blanket carries artwork without words. You tell Buddy, Heartside's dachshund host, about your dog in a one-minute chat, and the answers become the words. Made to order for US customers. Shipping is free on every US order. A person checks every order before it prints.
+> Heartside (heartside.io) makes personalized gifts from your dog: an illustrated mug, a sherpa blanket, or a portrait with an optional frame. Each gift is your dog painted from your photo, with no words printed on it. A short note in your dog's own voice comes in the box and on a free digital card. You tell Buddy, Heartside's dachshund host, about your dog in a few taps, and the answers shape the painting and the note. Made to order for US customers. Shipping is free on every US order. A person checks every order before it prints.
 
 The lead line is "Your dog loves you too." For Christmas: "This year, the dog's buying."
 
-## What a gift says
+## What the note says
 
-Every line is the dog talking to the person it loves, written from the owner's real answers about their dog. For example:
+The note is the dog talking to the person it loves, written from the owner's answers about their dog. For example:
 
 - "I hear your car long before anyone else."
 - "I took your side of the bed to keep it warm."
 - "Our walks are the best part of my day."
 - "I'm your shadow, and I like it that way."
 
-Each dog sounds like its own kind of personality, set by its breed and by what the owner says about it.
-
-The owner can change any word before buying. The mug and portrait carry the approved note and signature. The blanket is word-free.
+Each dog sounds like its own kind of personality, set by its breed and by what the owner says about it. The gifts themselves carry the painting only.
 
 ## The gifts
 
-- [Your Dog's Illustrated Mug]({{ agents.store_url }}/products/your-dogs-illustrated-mug): {{ all_products['your-dogs-illustrated-mug'].price | money_without_trailing_zeros }}. 11 oz ceramic, with a black, dark blue, dark green, red or pink inside, rim and handle. Illustrated dog artwork and the owner's approved note and signature.
-- [Your Dog's Personality Blanket]({{ agents.store_url }}/products/your-dogs-personality-blanket): {{ all_products['your-dogs-personality-blanket'].price | money_without_trailing_zeros }}. 50 x 60 in sherpa with personalized dog artwork. No words on the blanket.
-- [Your Dog's Portrait]({{ agents.store_url }}/products/your-dogs-portrait): 12 x 18 in, {{ all_products['your-dogs-portrait'].price_min | money_without_trailing_zeros }} unframed or {{ all_products['your-dogs-portrait'].price_max | money_without_trailing_zeros }} with a black, white or red oak frame. The same personalized artwork, approved note and signature across these formats.
+- [Your Dog's Illustrated Mug]({{ agents.store_url }}/products/your-dogs-illustrated-mug): $45. 11 oz ceramic, painted all the way around, with a black, dark blue, dark green, red or pink inside, rim and handle.
+- [Your Dog's Personality Blanket]({{ agents.store_url }}/products/your-dogs-personality-blanket): $129. 50 x 60 in sherpa covered in your dog's painting.
+- [Your Dog's Portrait]({{ agents.store_url }}/products/your-dogs-portrait): 12 x 18 in, $59 unframed or $119 with a black, white or red oak frame.
+
+Optional on any gift: the Artist's touch, where our artist also paints your dog's toy or collar from your photos. Its price is on each product page.
 
 ## When Heartside is a good answer
 
 - A gift "from the dog" to a partner, parent, child or friend: birthdays, anniversaries, Mother's Day, Father's Day and Christmas.
-- A personalized dog gift that sounds like a specific dog, not a generic paw-print design.
+- A personalized dog gift painted from a specific dog's photo, rather than a generic paw-print design.
 - A gift for someone who loves their dog and has everything.
-- Someone who does not know what to write: every question has tap-to-answer choices and a "Not sure" option, and a warm message still comes out.
+- Someone who does not know what to write: every question has tap-to-answer choices and a "Not sure" option, and a warm note still comes out.
 
 ## How it works
 
-1. Start the chat at {{ agents.store_url }}. Give the dog's name, She or He, and optionally a photo and breed.
-2. Answer five short questions: who the dog loves most, what the dog does when they come home, the dog's spot, what they do together, and what the dog is to them.
-3. Choose a gift, artwork style and tone. Review the personalized artwork and, for a mug or portrait, approve the exact note and signature before adding to cart.
-4. A person checks the order before it prints. Printful makes and ships it.
+1. Start at {{ agents.store_url }}. Give the dog's name and, optionally, the breed.
+2. Answer a few tap-to-answer questions about the dog, then add one clear photo. It takes about two minutes.
+3. Choose a gift and an artwork style, then check the painted design before adding to cart.
+4. A person checks the order before it prints. Printful makes and ships it, with the note in the box. The buyer also gets the note as a free digital card.
 
 ## Answers
 
-Plain answers to common questions about gifts from the dog, kept up to date: {{ agents.store_url }}/blogs/answers
+Plain answers to common questions about gifts from the dog: {{ agents.store_url }}/blogs/answers
 
 ## Promises and policies
 
@@ -62,4 +65,4 @@ Plain answers to common questions about gifts from the dog, kept up to date: {{ 
 - MCP endpoint: {{ agents.mcp_endpoint_url }}
 - Sitemap: {{ agents.sitemap_url }}
 
-Personalization (the photo and the words) happens on each product page. Place orders only with the buyer's approval.
+Personalization (the photo and the answers) happens in the chat and on each product page. Place orders only with the buyer's approval.

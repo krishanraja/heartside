@@ -43,6 +43,8 @@
       paint(1);
       var touched = false;
       range.addEventListener('pointerdown', function () { touched = true; });
+      // a tap on Photo, Painting or Gift during the nudge wins; the nudge stops (3 Nov)
+      for (var t = 0; t < steps.length; t++) steps[t].addEventListener('click', function () { touched = true; });
       var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!still && 'IntersectionObserver' in window) {
         var seen = new IntersectionObserver(function (es) {

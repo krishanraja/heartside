@@ -1,0 +1,125 @@
+{
+  "about": "The homepage carousel's six sets with the real product mug (Krish, 3 Nov 2026). Built by tools/print-art/hero-sets.py at 540 and 1080 wide. Every picture is an Example.",
+  "sets": [
+    {
+      "dog": "golden",
+      "name": "Maple",
+      "master": "design/launch-reel-2026-11-02/inputs/set-golden-real.jpg",
+      "made": "approved real product set (live mug gallery, Krish 30-31 Oct)",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "103f5665922f401cb2e1140da84a02bc17bc45e76c88940d338409ef244d9457",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-golden-540.webp",
+          "sha256": "2d44a13d6ca5887a4a3e18e81a0bfd2cb705abc0ce6fbaf9189d6d27a67bb37f",
+          "bytes": 58978
+        },
+        "1080": {
+          "file": "hs-hero-golden-1080.webp",
+          "sha256": "70e80d347d4eeabd88dbbb391c49670f2d020941f92b4696b62dc2bf285eae6a",
+          "bytes": 205044
+        }
+      }
+    },
+    {
+      "dog": "lab",
+      "name": "Bear",
+      "master": "design/examples-2026-11-03-real-mug-sets/set-lab.jpg",
+      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "6e5d53c47406375ca5734f708433b351298c6c78e0e7bb75eb9d03157e59084c",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-lab-540.webp",
+          "sha256": "463f8cb21e5de6a173645432bc2bc5f1a02dfdc8edb39cf7c799f205f0d5ed27",
+          "bytes": 60212
+        },
+        "1080": {
+          "file": "hs-hero-lab-1080.webp",
+          "sha256": "65d8df414d20f644077e3a705772b8a59195b27b510de274942f542403a104f0",
+          "bytes": 155724
+        }
+      }
+    },
+    {
+      "dog": "frenchie",
+      "name": "Bao",
+      "master": "design/examples-2026-11-03-real-mug-sets/set-frenchie.jpg",
+      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "e48b874e8e395ee5ba523634c3605fb525ad599d91fcb20aaeff12922eb59c4d",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-frenchie-540.webp",
+          "sha256": "642c3d1ec68d8193365e9de4d9d2c9def06403a538a1e5cae2ee4a642d7b39e0",
+          "bytes": 67102
+        },
+        "1080": {
+          "file": "hs-hero-frenchie-1080.webp",
+          "sha256": "ac500837dfc205485c04a8aae063b78beb01bc87158637824c0190657d8931e8",
+          "bytes": 191224
+        }
+      }
+    },
+    {
+      "dog": "doodle",
+      "name": "Clover",
+      "master": "design/examples-2026-11-03-real-mug-sets/set-doodle.jpg",
+      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "3c72eb8e18260193c20ef5f8265eb7cb5a8678736a1837dba2d5de4ed78b78f6",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-doodle-540.webp",
+          "sha256": "54ad917fa4304008f03183cc8558e550a3982be454924752e9f23ca6092d6ab3",
+          "bytes": 71744
+        },
+        "1080": {
+          "file": "hs-hero-doodle-1080.webp",
+          "sha256": "33a6bdc9fe41c835fdf67b6884a703073f1fd375c32a3e9b6c3215cccc4d18ac",
+          "bytes": 188666
+        }
+      }
+    },
+    {
+      "dog": "dachshund",
+      "name": "Frank",
+      "master": "design/examples-2026-11-03-real-mug-sets/set-dachshund.jpg",
+      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "e838f067c739c50b5b188565013804cab2bd79927e47417c1377e64807d5a1a7",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-dachshund-540.webp",
+          "sha256": "220b6ba943f8d357c95345c1912c753b222777a5767545d1b0d229d5387fa36d",
+          "bytes": 52970
+        },
+        "1080": {
+          "file": "hs-hero-dachshund-1080.webp",
+          "sha256": "1a953aa4affe243e465470f01626557a23ef40abd0227dfbf244145c09d56eb3",
+          "bytes": 152366
+        }
+      }
+    },
+    {
+      "dog": "shepherd",
+      "name": "Juno",
+      "master": "design/examples-2026-11-03-real-mug-sets/set-shepherd.jpg",
+      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
+      "master_sha256": "1488552fb225adf7ee986c424e14f024a74131d67735d2c075db6594c9e306b3",
+      "outputs": {
+        "540": {
+          "file": "hs-hero-shepherd-540.webp",
+          "sha256": "30bc02b384c1fedf68e4c3eb150b2a5b0c29dde2a6c2630cc25f6cb3b3fbffd3",
+          "bytes": 77074
+        },
+        "1080": {
+          "file": "hs-hero-shepherd-1080.webp",
+          "sha256": "63d619271c281c82a886c6dab453b345acf63c2540785f17c3bbd1d5556426b7",
+          "bytes": 195260
+        }
+      }
+    }
+  ]
+}

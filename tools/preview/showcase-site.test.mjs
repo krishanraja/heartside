@@ -14,7 +14,7 @@ const chat = read('shopify/sections/hs3-chat.liquid');
 const byId = Object.fromEntries(site.images.map(i => [i.id, i]));
 
 test('every picture records the approved file it came from', () => {
-  assert.equal(site.images.length, 30); // 30 Oct audit: the moods row is four paintings of Maple (one product mockup retired)
+  assert.equal(site.images.length, 24); // 30 Oct audit: the moods row is four paintings of Maple; 3 Nov: the six sets moved to design/examples-2026-11-03-real-mug-sets (real mug)
   for (const img of site.images) {
     assert.match(img.source_sha256, /^[a-f0-9]{64}$/, img.id);
     assert.match(img.output_sha256, /^[a-f0-9]{64}$/, img.id);
@@ -27,7 +27,7 @@ test('every picture records the approved file it came from', () => {
 test('the showcase shows each picture with its manifest alt and size, labeled Example', () => {
   // 3 Nov: the six sets are the first screen's hero, in the journey section; the rest stay in the showcase
   const tags = [...(showcase + journey).matchAll(/render 'hs-showcase-fig', id: '([a-z-]+)', w: (\d+), h: (\d+), alt: '([^']*)'/g)];
-  assert.ok(tags.length >= 27, 'every picture is placed');
+  assert.ok(tags.length >= 21, 'every picture is placed');
   for (const [, id, w, h, alt] of tags) {
     const img = byId[id];
     assert.ok(img, id + ' is in the manifest');
@@ -77,4 +77,18 @@ test('the showcase shows one set at a time and one drifting row, not a wall of t
   assert.match(js, /prefers-reduced-motion: reduce/);
   assert.match(js, /IntersectionObserver/);
   assert.match(js, /visibilitychange/);
+});
+
+test('the carousel shows the six real-mug sets at 540 and 1080 wide (Krish, 3 Nov)', () => {
+  const hero = JSON.parse(read('design/examples-2026-11-03-real-mug-sets/site.json'));
+  assert.deepEqual(hero.sets.map((s) => s.dog), ['golden', 'lab', 'frenchie', 'doodle', 'dachshund', 'shepherd']);
+  for (const s of hero.sets) {
+    assert.match(journey, new RegExp(`render 'hs-showcase-fig', hero: '${s.dog}'`), s.dog + ' in the hook');
+    assert.match(s.approval, /^Krish, 2026-11-03/);
+  }
+  assert.doesNotMatch(journey + chat, /hs-ex-set-/, 'the AI-mug sets are gone');
+  assert.match(read('shopify/snippets/hs-showcase-fig.liquid'), /srcset="\{\{ hs_540 \}\} 540w, \{\{ hs_1080 \}\} 1080w"/);
+  // the files themselves (sizes, hashes, byte caps) are checked by `python3 tools/print-art/hero-sets.py --check`,
+  // which runs in the python job of .github/workflows/offline-tests.yml
+  for (const s of hero.sets) for (const w of [540, 1080]) assert.ok(existsSync(new URL(`shopify/assets/hs-hero-${s.dog}-${w}.webp`, root)), `${s.dog} ${w}`);
 });
