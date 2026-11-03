@@ -78,28 +78,17 @@
       }
     }
   </script>
-  {%- comment -%} 1. The hook (Krish, 3 Nov: the phone homepage is two screens at most). The Christmas offer
-    first, the six example sets fading by as the hero (the old mug example was the weakest thing on the
-    page), one price line, and one button that stays pinned to the bottom of the screen in the heart's
-    pink. Policies and the company live in the footer. {%- endcomment -%}
+  {%- comment -%} 1. The hook (Krish, 3 Nov: the phone homepage is two screens at most; the carousel is 70 to 80%
+    of the phone's first screen; one Christmas offer, not two). On a phone the six example sets fill the screen
+    edge to edge with the headline on the picture, and the prices and the button stay pinned to the bottom in
+    the heart's pink. The offer is the memo strip above (sections/hs2-memo.liquid), never a second card. On
+    desktop: the words, prices and button on the left with the photo-to-gift slider under them, the sets on
+    the right. Policies and the company live in the footer. {%- endcomment -%}
   <section class="hsj__screen hsj-hook" data-hsj-screen="hook">
-    <p class="hsj-eyebrow">{{ s.eyebrow }}</p>
-    <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
-    {%- comment -%} The offer reads what the memo strip already knows. The countdown is hs2.js's, to the
-      confirmed last order date (or Christmas morning while none is set); the strip above already says the
-      date, so the card does not repeat it. The saving shows only while the strip's bundle switch is on,
-      so the card never promises a discount that doesn't exist. {%- endcomment -%}
-    <div class="hsj-offer" data-hsj-offer>
-      <p class="hsj-offer__top"><span class="hsj-offer__badge">{{ s.offer_badge }}</span><span class="hsj-offer__count" data-hs2-countdown="memo" hidden></span></p>
-      <p class="hsj-offer__main"><strong>{{ s.offer_ship }}</strong><span class="hsj-offer__bundle" data-hsj-offer-bundle hidden><span aria-hidden="true"> · </span><strong>{{ s.offer_bundle }}</strong></span></p>
+    <div class="hsj-hook__words">
+      <p class="hsj-eyebrow">{{ s.eyebrow }}</p>
+      <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
     </div>
-    <script>
-      (function (card) {
-        var m = document.querySelector('[data-hs2-memo]');
-        if (!card || !m) return;
-        if (m.hasAttribute('data-hs-bundle-live')) card.querySelector('[data-hsj-offer-bundle]').hidden = false;
-      })(document.currentScript.previousElementSibling);
-    </script>
     {%- comment -%} The hero: the six example sets, one at a time (hs-showcase.js runs it, as it did lower down). {%- endcomment -%}
     <div class="hss hss--hero" data-hss>
       <div class="hss-block hss-sets" data-hss-reel>
@@ -124,10 +113,30 @@
         {%- if p != blank -%}{%- unless forloop.first %} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
       {%- endfor -%}
     {%- endcapture -%}
-    {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }}</p>{%- endif -%}
     <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
     <div class="hsj-dock hsj-dock--pin">
+      {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }}</p>{%- endif -%}
       <a class="hsj-btn hs-btn-heart" href="?step=name" data-hsj-go="name"><span>{{ s.start }}</span><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h13M13 6.5 18.5 12 13 17.5"/></svg></a>
+    </div>
+    {%- comment -%} From a photo to a gift (Krish, 3 Nov: on desktop it belongs in the carousel's section). On a phone it
+      follows the first screen, as before; on desktop it fills the column under the button. {%- endcomment -%}
+    <div class="hss hss--flow" data-hss>
+      <div class="hss-block hss-flow" data-hss-flow>
+        <h2 class="hss-h3">{{ s.flow_heading }}</h2>
+        <div class="hss-flow__stage" data-hss-stage>
+          {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
+          {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
+          {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
+        </div>
+        <div class="hss-flow__ctl" data-hss-ctl hidden>
+          <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>
+          <div class="hss-flow__steps">
+            <button type="button" data-hss-step="0">Photo</button>
+            <button type="button" data-hss-step="1">Painting</button>
+            <button type="button" data-hss-step="2">Gift</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
   <div class="hsj-app" data-hsj-app></div>
@@ -146,10 +155,8 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "text", "id": "offer_badge", "label": "Offer card: badge", "default": "Christmas offer" },
-    { "type": "text", "id": "offer_ship", "label": "Offer card: shipping", "default": "Free US shipping" },
-    { "type": "text", "id": "offer_bundle", "label": "Offer card: bundle saving", "info": "Shows only while the memo bar's bundle switch is on, which is ticked only once the Shopify automatic discount exists.", "default": "15% off 2 gifts, 20% off 3" },
     { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
+    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
     { "type": "textarea", "id": "privacy", "label": "AI privacy note", "default": "Your answers go to our writing service only to write your dog's note. Your photo stays on your device until you choose a gift." },
     { "type": "header", "content": "Retired 3 Nov (not shown)" },
     { "type": "paragraph", "content": "Kept so a saved theme still loads. The phone homepage is two screens at most (Krish, 3 Nov), so the example card and the lines under the button are gone; the footer holds the policies." },

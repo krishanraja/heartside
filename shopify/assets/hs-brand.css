@@ -105,6 +105,17 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
   /* phones carry the shipping line alone, so the default line fits on one */
   .hs2 .hs2-memo.hs-strip .hs2-memo__count { display: none; }
 }
+/* The strip as the Christmas offer (Krish, 3 Nov: one offer, not two): the logo heart's pink with ink type, two short
+   centred lines, still. Ink on this pink reads at about 9:1. */
+.hs2 .hs2-memo.hs-strip.hs-strip--offer { background: var(--hs-heart); color: var(--hs-ink); font-family: var(--hs-sans); text-transform: none; letter-spacing: 0; --hs-focus: var(--hs-ink); }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__viewport { padding: 7px 16px 8px; line-height: 1.25; text-align: center; }
+.hs2 .hs2-memo.hs-strip--offer p { margin: 0; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__top { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { margin-top: 2px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.hs2 .hs2-memo.hs-strip.hs-strip--offer .hs2-memo__count { display: inline; margin-left: 0; color: var(--hs-ink); font-weight: 700; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__count[hidden] { display: none; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__count::before { content: " · "; color: var(--hs-ink); font-weight: 700; }
+@media (max-width: 359px) { .hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { font-size: 12.5px; } }
 @media (max-width: 899px) {
   /* hs2.css hides the memo on the v3 product page on phones; the strip now shows on every page */
   html:has(#buy[data-hs2-v3]) [id$="__hs2_memo"].hs2-section { display: block !important; }
@@ -156,8 +167,8 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
   .hs-footer__company { margin-top: 2px; font-size: 11px; }
   .hs-footer__company span { white-space: nowrap; }
 }
-body:has(.hsj-offer) .hs-footer__line { display: none; }
-body:has(.hsj-offer) .hs-footer__links ul { padding-top: 12px; }
+body:has(.hs-strip--offer) .hs-footer__line { display: none; }
+body:has(.hs-strip--offer) .hs-footer__links ul { padding-top: 12px; }
 
 /* ------------------------------------------------- the 404 and moved pages */
 /* sections/hs-404.liquid and sections/hs-moved.liquid: Buddy, one Fraunces line, one button,

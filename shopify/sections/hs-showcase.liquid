@@ -7,7 +7,8 @@
   without it every picture still shows. The journey's own steps hide this section.
   3 Nov (Krish: the phone homepage is two screens at most): the six sets moved up to be the first
   screen's hero (sections/hs-journey.liquid), the headings lost their extra lines, the credit is one line
-  and the pinned button replaces the one that was here.
+  and the pinned button replaces the one that was here. Later on 3 Nov the photo-to-gift slider moved up into the
+  first section too (Krish: on desktop it belongs beside the carousel).
 {%- endcomment -%}
 {%- render 'hs2-head' -%}
 {{ 'hs-showcase.css' | asset_url | stylesheet_tag }}
@@ -15,23 +16,6 @@
 {%- assign s = section.settings -%}
 <section class="hss" data-hss aria-label="Examples">
   <div class="hss__wrap">
-    <div class="hss-block hss-flow" data-hss-flow>
-      <h2 class="hss-h3">{{ s.flow_heading }}</h2>
-      <div class="hss-flow__stage" data-hss-stage>
-        {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
-        {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
-        {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
-      </div>
-      <div class="hss-flow__ctl" data-hss-ctl hidden>
-        <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>
-        <div class="hss-flow__steps">
-          <button type="button" data-hss-step="0">Photo</button>
-          <button type="button" data-hss-step="1">Painting</button>
-          <button type="button" data-hss-step="2">Gift</button>
-        </div>
-      </div>
-    </div>
-
     {%- comment -%}
       styles, gifts and moods in one row that drifts by on its own and runs faster under a flick
       (Krish, 31 Oct); without the script, or with reduced motion, it is a plain swipe row
@@ -80,7 +64,7 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow (retired 3 Nov, not shown)", "default": "Examples" },
     { "type": "text", "id": "heading", "label": "Heading (retired 3 Nov, not shown)", "default": "Your dog, on the gift" },
     { "type": "textarea", "id": "intro", "label": "Intro (retired 3 Nov, not shown)", "default": "Every picture here is an Example, painted from a photo the way yours will be." },
-    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
+    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading (retired 3 Nov, not shown: the slider is in the first section)", "default": "From a photo to a gift" },
     { "type": "text", "id": "flow_note", "label": "Photo to gift note (retired 3 Nov, not shown)", "default": "Drag from the photo to the painting to the mug. Maple, an Example." },
     { "type": "text", "id": "strip_heading", "label": "Styles, gifts and moods heading", "default": "Styles, gifts and moods" },
     { "type": "text", "id": "strip_note", "label": "Styles, gifts and moods note (retired 3 Nov, not shown)", "default": "Every style is painted from your photo, and you choose how it sounds. Flick to go faster." },
