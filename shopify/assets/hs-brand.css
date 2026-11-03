@@ -31,6 +31,8 @@
   --hs-pencil: #b9ada4;      /* draft words only */
   --hs-chestnut: #8a4a2b;    /* Buddy, eyebrow labels, the paw signature, warm shadows */
   --hs-stamp: #a8284e;       /* headline italic accent, a field that needs an answer; never a button */
+  --hs-heart: #e7a1bf;       /* the logo heart's pink: the pinned homepage button, always with an ink label (Krish, 3 Nov) */
+  --hs-heart-rgb: 231 161 191;
   --hs-blush: #f0c0c0;       /* the customer's own replies, Buddy's collar */
   --hs-night: #1e1714;       /* the strip and the share screen */
   --hs-gold: #c9a048;
@@ -103,6 +105,17 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
   /* phones carry the shipping line alone, so the default line fits on one */
   .hs2 .hs2-memo.hs-strip .hs2-memo__count { display: none; }
 }
+/* The strip as the Christmas offer (Krish, 3 Nov: one offer, not two): the logo heart's pink with ink type, two short
+   centred lines, still. Ink on this pink reads at about 9:1. */
+.hs2 .hs2-memo.hs-strip.hs-strip--offer { background: var(--hs-heart); color: var(--hs-ink); font-family: var(--hs-sans); text-transform: none; letter-spacing: 0; --hs-focus: var(--hs-ink); }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__viewport { padding: 7px 16px 8px; line-height: 1.25; text-align: center; }
+.hs2 .hs2-memo.hs-strip--offer p { margin: 0; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__top { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { margin-top: 2px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.hs2 .hs2-memo.hs-strip.hs-strip--offer .hs2-memo__count { display: inline; margin-left: 0; color: var(--hs-ink); font-weight: 700; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__count[hidden] { display: none; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__count::before { content: " · "; color: var(--hs-ink); font-weight: 700; }
+@media (max-width: 359px) { .hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { font-size: 12.5px; } }
 @media (max-width: 899px) {
   /* hs2.css hides the memo on the v3 product page on phones; the strip now shows on every page */
   html:has(#buy[data-hs2-v3]) [id$="__hs2_memo"].hs2-section { display: block !important; }
@@ -142,6 +155,20 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
 }
 .hs-footer__links a:hover { color: var(--hs-ink); text-decoration-color: currentColor; }
 .hs-footer__company { margin-top: 4px; color: var(--hs-muted); font-size: 12px; line-height: 1.45; }
+
+/* the compact footer on a phone (Krish, 3 Nov: the footer took too much room). The links sit in two short
+   rows with 32 px targets, the company note balances over two lines, and the homepage drops the shipping
+   line, which its offer card and the memo strip already carry. */
+@media (max-width: 719px) {
+  .hs-footer { padding: 40px var(--hs-gutter) 16px; }
+  .hs-footer__line { padding-top: 16px; font-size: 11px; }
+  .hs-footer__links ul { gap: 0 12px; margin-top: 2px; }
+  .hs-footer__links a { min-height: 32px; font-size: 12.5px; }
+  .hs-footer__company { margin-top: 2px; font-size: 11px; }
+  .hs-footer__company span { white-space: nowrap; }
+}
+body:has(.hs-strip--offer) .hs-footer__line { display: none; }
+body:has(.hs-strip--offer) .hs-footer__links ul { padding-top: 12px; }
 
 /* ------------------------------------------------- the 404 and moved pages */
 /* sections/hs-404.liquid and sections/hs-moved.liquid: Buddy, one Fraunces line, one button,
@@ -329,3 +356,16 @@ li:is(.product-grid__item, .menu-drawer__featured-content-list-item, .predictive
    at 320 px the order-by line wrapped to two, then the ticker took it to one and the page moved up 32 px).
    With reduced motion there is no ticker, so it wraps as before. */
 @media (prefers-reduced-motion: no-preference) { .hs2 .hs2-memo.hs-strip .hs2-memo__viewport { white-space: nowrap; overflow: hidden; } }
+
+/* The heart button (Krish, 3 Nov: "pin the CTA to the screen at the bottom, make it pulse our brand pink").
+   The logo heart's pink with an ink label (white on this pink reads at about 2:1; ink reads at about 9:1).
+   A soft ring breathes out from it; the button itself never moves, and the ring stops for reduced motion. */
+.hs-btn-heart { background: var(--hs-heart) !important; color: var(--hs-ink) !important; box-shadow: 0 0 0 0 rgb(var(--hs-heart-rgb) / 0.55), 0 10px 24px -12px rgb(var(--hs-ink-rgb) / 0.45); }
+@media (prefers-reduced-motion: no-preference) {
+  .hs-btn-heart { animation: hs-heart-pulse 2.4s ease-out infinite; }
+}
+@keyframes hs-heart-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(var(--hs-heart-rgb) / 0.6), 0 10px 24px -12px rgb(var(--hs-ink-rgb) / 0.45); }
+  70% { box-shadow: 0 0 0 14px rgb(var(--hs-heart-rgb) / 0), 0 10px 24px -12px rgb(var(--hs-ink-rgb) / 0.45); }
+  100% { box-shadow: 0 0 0 0 rgb(var(--hs-heart-rgb) / 0), 0 10px 24px -12px rgb(var(--hs-ink-rgb) / 0.45); }
+}

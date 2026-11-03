@@ -39,7 +39,7 @@ async function gateOn(site, ...args) {
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
     // async, so the stand-in server keeps answering while the gate runs
-    return await new Promise((resolve) => execFile(process.execPath, [gate, '--base', base, '--settle', '250', ...args], {timeout: 120000}, (err, stdout, stderr) => resolve({code: err ? err.code : 0, out: stdout + stderr})));
+    return await new Promise((resolve) => execFile(process.execPath, [gate, '--base', base, '--settle', '250', '--head', 'off', ...args], {timeout: 120000}, (err, stdout, stderr) => resolve({code: err ? err.code : 0, out: stdout + stderr})));
   } finally { server.close(); }
 }
 after(() => { assert.ok(seen.length > 0 && seen.every((h) => h.startsWith('127.0.0.1:')), 'only the stand-in stores were asked'); });

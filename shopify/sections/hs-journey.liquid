@@ -14,6 +14,8 @@
 {%- assign ai_host = section.settings.compose_url | split: '/webhook' | first -%}
 {%- if section.settings.ai_on and ai_host contains 'https://' -%}<link rel="preconnect" href="{{ ai_host }}" crossorigin>{%- endif -%}
 {{ 'hs-journey.css' | asset_url | stylesheet_tag }}
+{{ 'hs-showcase.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-showcase.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-brief.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
@@ -76,42 +78,66 @@
       }
     }
   </script>
-  {%- comment -%} 1. The hook: one example of a dog's own words on a gift for the person it loves, one
-    line on what it takes, one button. Nothing else above the fold (Krish, 29 Oct). {%- endcomment -%}
+  {%- comment -%} 1. The hook (Krish, 3 Nov: the phone homepage is two screens at most; the carousel is 70 to 80%
+    of the phone's first screen; one Christmas offer, not two). On a phone the six example sets fill the screen
+    edge to edge with the headline on the picture, and the prices and the button stay pinned to the bottom in
+    the heart's pink. The offer is the memo strip above (sections/hs2-memo.liquid), never a second card. On
+    desktop: the words, prices and button on the left with the photo-to-gift slider under them, the sets on
+    the right. Policies and the company live in the footer. {%- endcomment -%}
   <section class="hsj__screen hsj-hook" data-hsj-screen="hook">
-    <p class="hsj-eyebrow">{{ s.eyebrow }}</p>
-    <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
-    <figure class="hsj-example">
-      <span class="hsj-tag">Example</span>
-      <img src="{{ 'hs-ex-hero-mug.webp' | asset_url }}" alt="Example: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy, painted for a mug. Warm with a wink." width="720" height="480" loading="eager" decoding="async">
-      <figcaption class="hsj-example__note">
-        <span class="hsj-example__for">{{ s.example_for }}</span>
-        <span class="hsj-example__line">{{ s.example_line }}</span>
-        <span class="hsj-example__sign">Love, {{ s.example_dog }}</span>
-      </figcaption>
-    </figure>
-    <p class="hsj-lead">{{ s.intro }}</p>
-    <div class="hsj-dock">
-      <a class="hsj-btn" href="?step=name" data-hsj-go="name"><span>{{ s.start }}</span><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h13M13 6.5 18.5 12 13 17.5"/></svg></a>
-      {%- comment -%} what each gift costs, from Shopify, before anything is asked (audit, 30 Oct) {%- endcomment -%}
-      {%- capture price_line -%}
-        {%- for k in keys -%}
-          {%- assign pid = 'product_' | append: k -%}{%- assign p = s[pid] -%}
-          {%- if p != blank -%}{%- unless forloop.first %} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
-        {%- endfor -%}
-      {%- endcapture -%}
-      {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }} · Free US shipping</p>{%- endif -%}
-      <p class="hsj-small">{{ s.time_line }}</p>
-      <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
+    <div class="hsj-hook__words">
+      <p class="hsj-eyebrow">{{ s.eyebrow }}</p>
+      <h1 class="hsj-h1">{{ s.headline }} <em>{{ s.headline_em }}</em></h1>
     </div>
-    <p class="hsj-small hsj-trust">{{ s.trust_line }}</p>
-    <p class="hsj-legal">
-      {%- if shop.privacy_policy -%}<a href="{{ shop.privacy_policy.url }}">Privacy</a> · {% endif -%}
-      {%- if shop.terms_of_service -%}<a href="{{ shop.terms_of_service.url }}">Terms</a> · {% endif -%}
-      {%- if shop.shipping_policy -%}<a href="{{ shop.shipping_policy.url }}">Shipping</a> · {% endif -%}
-      {%- if shop.refund_policy -%}<a href="{{ shop.refund_policy.url }}">Refunds</a> · {% endif -%}
-      {{ s.legal_note }}
-    </p>
+    {%- comment -%} The hero: the six example sets, one at a time (hs-showcase.js runs it, as it did lower down). {%- endcomment -%}
+    <div class="hss hss--hero" data-hss>
+      <div class="hss-block hss-sets" data-hss-reel>
+        <ul class="hss-row hss-row--sets" data-hss-reel-track>
+          <li>{%- render 'hs-showcase-fig', id: 'set-golden', w: 540, h: 675, eager: true, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'set-lab', w: 540, h: 675, alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bear', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'set-frenchie', w: 540, h: 675, alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bao', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'set-doodle', w: 540, h: 675, alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Clover', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'set-dachshund', w: 540, h: 675, alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Frank', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'set-shepherd', w: 540, h: 675, alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Juno', sub: 'Mug · Blanket · Portrait' -%}</li>
+        </ul>
+        <div class="hss-ctl" data-hss-reel-ctl hidden>
+          <div class="hss-ticks" data-hss-ticks></div>
+          <button type="button" class="hss-pause" data-hss-pause aria-pressed="false" aria-label="Pause"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path class="hss-pause__bars" d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/><path class="hss-pause__play" d="M8 5l11 7-11 7z" fill="currentColor"/></svg></button>
+        </div>
+      </div>
+    </div>
+    {%- comment -%} what each gift costs, from Shopify, before anything is asked (audit, 30 Oct); one line {%- endcomment -%}
+    {%- capture price_line -%}
+      {%- for k in keys -%}
+        {%- assign pid = 'product_' | append: k -%}{%- assign p = s[pid] -%}
+        {%- if p != blank -%}{%- unless forloop.first %} · {% endunless -%}{%- case k -%}{%- when 'mug' -%}Mug{%- when 'blanket' -%}Blanket{%- else -%}Portrait{%- endcase %} {% if p.price_max > p.price_min %}from {% endif %}{{ p.price_min | money_without_trailing_zeros }}{%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    <p class="hsj-small hsj-resume" data-hsj-resume hidden><button type="button" class="hsj-link" data-hsj-resume-go>Pick up where you left off</button> · <button type="button" class="hsj-link" data-hsj-restart>Start over</button></p>
+    <div class="hsj-dock hsj-dock--pin">
+      {%- if price_line != blank -%}<p class="hsj-price">{{ price_line | strip }}</p>{%- endif -%}
+      <a class="hsj-btn hs-btn-heart" href="?step=name" data-hsj-go="name"><span>{{ s.start }}</span><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h13M13 6.5 18.5 12 13 17.5"/></svg></a>
+    </div>
+    {%- comment -%} From a photo to a gift (Krish, 3 Nov: on desktop it belongs in the carousel's section). On a phone it
+      follows the first screen, as before; on desktop it fills the column under the button. {%- endcomment -%}
+    <div class="hss hss--flow" data-hss>
+      <div class="hss-block hss-flow" data-hss-flow>
+        <h2 class="hss-h3">{{ s.flow_heading }}</h2>
+        <div class="hss-flow__stage" data-hss-stage>
+          {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
+          {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
+          {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
+        </div>
+        <div class="hss-flow__ctl" data-hss-ctl hidden>
+          <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>
+          <div class="hss-flow__steps">
+            <button type="button" data-hss-step="0">Photo</button>
+            <button type="button" data-hss-step="1">Painting</button>
+            <button type="button" data-hss-step="2">Gift</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
   <div class="hsj-app" data-hsj-app></div>
   <noscript><p class="hsj-small">This page needs JavaScript. Turn it on, or email krish@heartside.io and a person will help.</p></noscript>
@@ -129,15 +155,18 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
+    { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
+    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
+    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "default": "Your answers go to our writing service only to write your dog's note. Your photo stays on your device until you choose a gift." },
+    { "type": "header", "content": "Retired 3 Nov (not shown)" },
+    { "type": "paragraph", "content": "Kept so a saved theme still loads. The phone homepage is two screens at most (Krish, 3 Nov), so the example card and the lines under the button are gone; the footer holds the policies." },
     { "type": "text", "id": "example_for", "label": "Example: who it's for", "default": "Maple's mug for Sam" },
     { "type": "text", "id": "example_line", "label": "Example: the dog's line", "default": "I saved your spot. It is also my spot." },
     { "type": "text", "id": "example_dog", "label": "Example: the dog's name", "default": "Maple" },
     { "type": "textarea", "id": "intro", "label": "Line under the example", "default": "Tell us about your dog. We paint them onto a mug, a blanket or a portrait for the person they love, with a note in their voice in the box." },
-    { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
     { "type": "text", "id": "time_line", "label": "Under the button", "default": "Have a photo of your dog on your phone? It takes about 2 minutes." },
     { "type": "text", "id": "trust_line", "label": "Trust line", "default": "Free US shipping on every order. A person checks every design before it prints." },
     { "type": "text", "id": "legal_note", "label": "Company note", "default": "Heartside is a Mindmaker LLC company." },
-    { "type": "textarea", "id": "privacy", "label": "AI privacy note", "default": "Your answers go to our writing service only to write your dog's note. Your photo stays on your device until you choose a gift." },
     { "type": "header", "content": "Gifts and services" },
     { "type": "product", "id": "product_mug", "label": "Mug product" },
     { "type": "product", "id": "product_blanket", "label": "Blanket product" },

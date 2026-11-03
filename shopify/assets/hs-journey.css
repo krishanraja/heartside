@@ -150,28 +150,45 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-photo-note.is-good { color: #2E7D4F; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .hsj-bars span, .hsj-drop.is-checking .hsj-scan, .hsj-tips.is-checking li .hsj-tip__mark, .hsj-letter.is-fresh > *, .hsj-note__ask.is-writing::after { animation: none !important; } }
 
-/* ------------------------------------------------------------------ the hook */
+/* ------------------------------------------------------------------ the hook
+   Krish, 3 Nov: the phone homepage is two screens at most, the carousel is 70 to 80% of the phone's first screen,
+   and there is one Christmas offer (the memo strip), not two. On a phone the six sets fill the screen edge to edge
+   with the headline on the picture; the prices and the button stay pinned to the bottom in the heart's pink. */
 .hsj__screen { max-width: 560px; margin: 0 auto; }
-.hsj-hook { padding: 8px var(--m) 8px; }
-.hsj-eyebrow { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px !important; }
-.hsj-h1 { font-size: clamp(34px, 9.5vw, 44px); line-height: 1.08; letter-spacing: -0.03em; margin: 0 0 16px !important; }
-.hsj-example { position: relative; margin: 0; border-radius: 20px; overflow: hidden; background: var(--surface); border: 1.5px solid var(--outline); }
-.hsj-example img { display: block; width: 100%; aspect-ratio: auto; height: clamp(80px, calc(100svh - 500px), 300px); object-fit: cover; }
-@media (min-height: 701px) { .hsj-example img { height: clamp(96px, calc(100svh - 570px), 300px); } }
-.hsj-example__note { display: grid; gap: 2px; padding: 12px 16px; }
-.hsj-example__for { font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.hsj-example__line { font-size: 17px; line-height: 24px; font-weight: 600; color: var(--ink); }
-.hsj-example__sign { font-size: 14px; color: var(--body); }
-.hsj-lead { font-size: 16px; line-height: 24px; color: var(--body); margin-top: 16px !important; }
-.hsj-hook .hsj-dock { padding: 16px 0 0; }
-.hsj-hook .hsj-small { font-size: 12px; line-height: 16px; color: var(--muted); margin-top: 8px !important; text-align: center; }
+.hsj-hook { padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+.hsj-hook > * { min-width: 0; }
+.hsj-eyebrow { font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 4px !important; }
+.hsj-h1 { font-size: clamp(30px, 9vw, 40px); line-height: 1.04; letter-spacing: -0.03em; margin: 0 !important; }
+/* the hero: the picture fills the width and about 72% of the screen's height, the set shown from the top so the
+   framed portrait, the mug and the blanket all stay in view */
+.hsj-hook .hss--hero { grid-area: 1 / 1; padding: 0; border: 0; background: none; }
+.hsj-hook .hss--hero .hss-block { margin: 0; }
+.hsj-hook .hss--hero .hss-row--sets, .hsj-hook .hss--hero .hss-sets.is-live .hss-row--sets { max-width: none; border-radius: 0; }
+.hsj-hook .hss--hero .hss-fig { border: 0; border-radius: 0; }
+.hsj-hook .hss--hero .hss-fig img { aspect-ratio: auto; width: 100%; height: 72svh; min-height: 300px; max-height: 760px; object-fit: cover; object-position: center top; }
+/* the headline on the picture, over a soft dark foot; the dog's name, the ticks and the pause sit under it */
+.hsj-hook__words { grid-area: 1 / 1; align-self: end; z-index: 3; padding: 0 var(--m) 64px; pointer-events: none; }
+.hsj-hook__words .hsj-eyebrow { display: none; }
+.hsj-hook__words .hsj-h1 { color: #fff; text-shadow: 0 1px 12px rgba(26, 21, 20, 0.35); }
+.hsj-hook__words .hsj-h1 em { color: #FFD3E2; white-space: nowrap; }
+.hsj-hook .hss--hero .hss-fig::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1; pointer-events: none; background: linear-gradient(rgba(26, 21, 20, 0), rgba(26, 21, 20, 0.62) 55%, rgba(26, 21, 20, 0.78)); }
+.hsj-hook .hss--hero .hss-fig figcaption { background: none; padding: 0 64px 28px var(--m); z-index: 2; color: #fff; }
+.hsj-hook .hss--hero .hss-fig figcaption span { color: rgba(255, 255, 255, 0.9); }
+.hsj-hook .hss--hero .hss-ctl { left: var(--m); right: 8px; }
+.hsj-hook .hsj-small { font-size: 12px; line-height: 16px; color: var(--muted); margin-top: 4px !important; text-align: center; }
+.hsj-hook .hsj-resume { padding: 8px var(--m) 0; }
 .hsj-link { appearance: none; background: none; border: 0; padding: 8px 0; min-height: 40px; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.hsj-trust { display: none; }
-.hsj-legal { margin-top: 8px !important; font-size: 11px; line-height: 16px; color: var(--muted); text-align: center; }
-.hsj-legal a { color: inherit; }
-@media (max-height: 700px) { .hsj-hook .hsj-lead { display: none; } }
-@media (max-height: 600px) { .hsj-h1 { font-size: 30px; margin-bottom: 12px !important; } .hsj-example__note { padding: 8px 12px; } .hsj-example__line { font-size: 15px; line-height: 20px; } .hsj-hook .hsj-small { display: none; } }
-
+/* the prices ride with the button: one line, always in view */
+.hsj-hook .hsj-price { margin: 0 0 8px !important; font-size: clamp(11.5px, 3.6vw, 13px); line-height: 18px; font-weight: 600; color: var(--ink); text-align: center; white-space: nowrap; }
+.hsj .hsj-btn.hs-btn-heart { background: #E7A1BF; color: var(--ink) !important; }
+/* the photo-to-gift slider: after the first screen on a phone, under the button on desktop */
+.hsj-hook .hss--flow { padding: 20px var(--m) 4px; border-top: 0; background: none; }
+.hsj-hook .hss--flow .hss-block { margin: 0; }
+@media (max-width: 899px) {
+  .hsj-dock--pin { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px var(--m) calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 247, 243, 0.86), rgba(251, 247, 243, 0.97) 40%); box-shadow: 0 -8px 24px -18px rgba(26, 21, 20, 0.5); }
+  .hsj-dock--pin .hsj-btn { max-width: 528px; margin: 0 auto; }
+  html:not(.hsj-focus):not(.hsj-routed) body:has(.hsj-dock--pin) { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+}
 /* ------------------------------------------------------------------ short phones (640 to 700 high) */
 @media (max-height: 700px) and (max-width: 899px) {
   .hsj-content { padding-top: 16px; }
@@ -226,27 +243,29 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
   .hsj-row, .hsj-chip, .hsj-tone, .hsj-style { transition: border-color .15s, background .15s; }
   .hsj-row:hover, .hsj-chip:hover, .hsj-tone:hover, .hsj-style:hover { border-color: var(--ink); }
   .hsj-btn:hover:not(:disabled) { background: #2E2725; }
-  /* the hook: words and the button on the left, the example gift on the right */
-  .hsj-hook { max-width: 1120px; min-height: calc(100vh - 140px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-auto-rows: min-content; column-gap: 72px; align-content: center; padding: 48px 40px; }
+  /* the hook: the words, prices and button on the left with the photo-to-gift slider under them, the six sets on
+     the right (Krish, 3 Nov) */
+  .hsj-hook { max-width: 1160px; min-height: calc(100vh - 140px); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-auto-rows: min-content; column-gap: 64px; align-content: center; padding: 40px 40px 48px; }
   .hsj-hook > * { grid-column: 1; }
-  .hsj-hook .hsj-example { grid-column: 2; grid-row: 1 / span 7; align-self: center; }
-  .hsj-hook .hsj-example img { height: auto; aspect-ratio: 3 / 2; }
-  .hsj-h1 { font-size: clamp(44px, 4.6vw, 64px); }
-  .hsj-hook .hsj-lead { display: block; font-size: 19px; line-height: 28px; max-width: 34ch; }
-  .hsj-hook .hsj-dock { display: block; max-width: 360px; }
+  .hsj-hook .hsj-hook__words { grid-area: auto; grid-column: 1; align-self: auto; padding: 0; pointer-events: auto; }
+  .hsj-hook__words .hsj-eyebrow { display: block; }
+  .hsj-hook__words .hsj-h1 { color: var(--ink); text-shadow: none; font-size: clamp(44px, 4.4vw, 60px); }
+  .hsj-hook__words .hsj-h1 em { color: var(--accent); }
+  .hsj-hook .hss--hero { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+  .hsj-hook .hss--hero .hss-row--sets, .hsj-hook .hss--hero .hss-sets.is-live .hss-row--sets { border-radius: 20px; }
+  .hsj-hook .hss--hero .hss-fig { border-radius: 20px; }
+  .hsj-hook .hss--hero .hss-fig img { width: 100%; height: auto; aspect-ratio: 4 / 5; max-height: 76vh; min-height: 0; }
+  .hsj-hook .hsj-dock { display: block; max-width: 380px; padding: 20px 0 0; }
   .hsj-hook .hsj-dock .hsj-btn { width: 100%; }
+  .hsj-hook .hsj-price { text-align: left; }
+  .hsj-hook .hss--flow { padding: 28px 0 0; }
+  .hsj-hook .hss--flow .hss-flow.is-live .hss-flow__stage { height: clamp(200px, 30vh, 300px); margin: 0; }
+  .hsj-hook .hss--flow .hss-flow__ctl { margin: 4px 0 0; max-width: 300px; }
+  .hsj .hsj-btn.hs-btn-heart:hover { background: #DE8FB1; }
   .hsj-style__art { aspect-ratio: 1 / 1; }
-  .hsj-hook .hsj-small, .hsj-legal { text-align: left; }
+  .hsj-hook .hsj-small { text-align: left; }
 }
 
-/* the price line under the hook's button (audit, 30 Oct): every gift's price before any question */
-.hsj-hook .hsj-price { margin-top: 10px !important; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--ink); text-align: center; }
-@media (max-height: 600px) { .hsj-hook .hsj-price { margin-top: 6px !important; font-size: 12px; line-height: 16px; } }
-@media (min-width: 900px) { .hsj-hook .hsj-price { text-align: left; } }
-/* the price line takes about 44 px of the hook's height, so the example gives it back: the hook still fits one screen */
-.hsj-hook:has(.hsj-price) .hsj-example img { height: clamp(72px, calc(100svh - 544px), 300px); }
-@media (min-height: 701px) { .hsj-hook:has(.hsj-price) .hsj-example img { height: clamp(88px, calc(100svh - 614px), 300px); } }
-@media (min-width: 900px) { .hsj-hook:has(.hsj-price) .hsj-example img { height: auto; } }
 /* the chapter label beside the back button: "About Mowgli · 1 of 3" */
 .hsj-bar__part { font-weight: 500; color: var(--muted); }
 /* a phone on its side (audit, 30 Oct): the answers scroll above the button instead of under it, so the last

@@ -104,7 +104,9 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
     // the whole first screen fits, not just the button: nothing below the fold, nothing clipped. The page
     // itself goes on below the hook (the showcase, and since 30 Oct the store footer), so this checks the
     // hook's own content, not the page height
-    const hookBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-hsj-screen="hook"] *')].filter((e) => e.getClientRects().length && getComputedStyle(e).display !== 'none').map((e) => e.getBoundingClientRect().bottom)));
+    // since 3 Nov the hook also holds the photo-to-gift slider, which follows the first screen on a phone by
+    // design (Krish: on desktop it sits beside the carousel), so it is left out of the first-screen measure
+    const hookBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-hsj-screen="hook"] *')].filter((e) => !e.closest('.hss--flow') && e.getClientRects().length && getComputedStyle(e).display !== 'none').map((e) => e.getBoundingClientRect().bottom)));
     assert.ok(hookBottom <= size.height, `the first screen ends at ${hookBottom}px of ${size.height}`);
     await page.screenshot({path: path.join(shots, tag + '-0-hook.png')});
     await page.locator('[data-hsj-go]').click();

@@ -18,6 +18,8 @@
 //                                                              # preview bar is hidden)
 //   node live-gate.mjs --pages home,mug --views phone,edge     # a subset
 //   node live-gate.mjs --settle 300                            # shorter waits, for local stand-ins
+//   node live-gate.mjs --head off                              # skip the home page's head check (icons,
+//                                                              # share image, structured data)
 //
 // Read-only: the pages are opened in a fresh browser with no cookies or saved state, every
 // request the pages make that is not a GET (or HEAD) is refused before it leaves the browser,
@@ -107,7 +109,7 @@ function inspect([spec, retiredSource]) {
       headBottom = Math.max(headBottom, r.bottom);
     });
   }
-  const ours = [...document.querySelectorAll('main .hs2 h1, main .hs2 h2, main .hs2 .hs2-stamp, main .hs2 .hs2-btn, main .hs2-product__main, main .hs2-product__media, main .hs3 h1, main .hs3 .hs3-btn, main .hs3-hero__art, main .hsj h1, main .hsj .hsj-btn, main .hsj-example, main .hs-lost h1, main .hs-lost .hs-btn')];
+  const ours = [...document.querySelectorAll('main .hs2 h1, main .hs2 h2, main .hs2 .hs2-stamp, main .hs2 .hs2-btn, main .hs2-product__main, main .hs2-product__media, main .hs3 h1, main .hs3 .hs3-btn, main .hs3-hero__art, main .hsj h1, main .hsj .hsj-btn, main .hsj-hook .hss--hero, main .hs-lost h1, main .hs-lost .hs-btn')];
   for (const el of ours) {
     if (!vis(el)) continue;
     const r = el.getBoundingClientRect();
@@ -325,6 +327,52 @@ for (const v of views) {
   await ctx.close();
 }
 await browser.close();
+
+// The head of the home page, as a browser tab, a phone's home screen, a search result and a shared link read it
+// (Krish, 3 Nov 2026: "the favicons don't even show"): icons at 48 px or more and a touch icon, /favicon.ico,
+// a manifest that loads, a page colour, an https share image of 1200x630 that loads, and one Organization.
+// Plain GETs only; the report names paths, never the host.
+if (pages.includes('home') && arg('head', 'on') !== 'off') {
+  const fails = [];
+  const get = async (u) => { try { const r = await fetch(u, { redirect: 'follow', headers: { 'user-agent': VIEWS.desk.ua } }); return { ok: r.ok, type: r.headers.get('content-type') || '', body: r.ok ? await r.text() : '' }; } catch (e) { return { ok: false, type: '', body: '' }; } };
+  const home = await get(BASE + withQuery('/'));
+  if (CHALLENGE.test(home.body.slice(0, 4000))) { console.log('??   head: Cloudflare challenge, not checked (inconclusive)'); inconclusive++; }
+  else if (!home.ok) { fails.push('the home page did not load'); }
+  else {
+    const head = home.body.split(/<\/head>/i)[0];
+    const tags = (name) => head.match(new RegExp(`<${name}\\b[^>]*>`, 'gi')) || [];
+    const attr = (tag, a) => { const m = new RegExp(`\\b${a}\\s*=\\s*["']([^"']*)["']`, 'i').exec(tag); return m ? m[1] : ''; };
+    const abs = (href) => new URL(href.startsWith('//') ? 'https:' + href : href, BASE).href;
+    const links = tags('link');
+    const icons = links.filter((t) => /\brel=["'](?:shortcut )?icon["']/i.test(t));
+    const big = icons.filter((t) => Math.max(0, ...attr(t, 'sizes').split(/[x ]/i).map(Number).filter(Boolean)) >= 48);
+    if (!big.length) fails.push(`no icon of 48 px or more (search results and phones ask for one); ${icons.length} icon link(s)`);
+    for (const t of icons) if (!(await get(abs(attr(t, 'href')))).ok) fails.push(`an icon does not load (${attr(t, 'sizes') || 'no size'})`);
+    const touch = links.find((t) => /rel=["']apple-touch-icon["']/i.test(t));
+    if (!touch) fails.push('no apple-touch-icon');
+    else if (!(await get(abs(attr(touch, 'href')))).ok) fails.push('the touch icon does not load');
+    const ico = await get(new URL('/favicon.ico', BASE).href);
+    if (!ico.ok || !/image/.test(ico.type)) fails.push('/favicon.ico does not answer with an image');
+    const man = links.find((t) => /rel=["']manifest["']/i.test(t));
+    if (!man) fails.push('no manifest');
+    else { const m = await get(abs(attr(man, 'href'))); try { JSON.parse(m.body); } catch (e) { fails.push('the manifest does not load as JSON'); } }
+    const metas = tags('meta');
+    const meta = (k) => metas.filter((t) => attr(t, 'property') === k || attr(t, 'name') === k).map((t) => attr(t, 'content'));
+    if (!meta('theme-color').some((c) => c.trim())) fails.push('the theme colour is empty');
+    const og = meta('og:image:secure_url')[0] || meta('og:image')[0] || '';
+    if (!/^https:/.test(og)) fails.push('the share image is not https');
+    else if (!(await get(og)).ok) fails.push('the share image does not load');
+    if (meta('og:image:width')[0] !== '1200' || meta('og:image:height')[0] !== '630') fails.push(`the share image is ${meta('og:image:width')[0]}x${meta('og:image:height')[0]}, not 1200x630`);
+    let orgs = 0;
+    for (const [, json] of home.body.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+      try { const d = JSON.parse(json); for (const n of [d, ...(d['@graph'] || [])].flat()) if (n && n['@type'] === 'Organization') orgs++; } catch (e) { fails.push('a JSON-LD block does not parse'); }
+    }
+    if (orgs !== 1) fails.push(`${orgs} Organization blocks in the structured data, not one`);
+  }
+  if (fails.length) { failed++; console.log('FAIL head (/)'); fails.forEach((f) => console.log('   - ' + f)); }
+  else if (home.ok) console.log('ok   head (/)');
+}
+
 if (failed) console.log(`\n${failed} page/viewport combinations failed${inconclusive ? `, ${inconclusive} not checked (Cloudflare challenge)` : ''}`);
 else if (inconclusive) console.log(`\ninconclusive: ${inconclusive} page/viewport combinations met a Cloudflare challenge and were not checked`);
 else console.log('\nall clear');

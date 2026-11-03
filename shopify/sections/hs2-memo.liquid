@@ -37,12 +37,23 @@
       assign card_open = true
     endif
   -%}
-  <div class="hs2-memo hs-strip" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %}{% if card_open %} data-hs-card-variant="{{ card.selected_or_first_available_variant.id }}" data-hs-card-price="{{ card.price | money_without_trailing_zeros | escape }}" data-hs-card-until="1796360399"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+  <div class="hs2-memo hs-strip{% if s.offer_on %} hs-strip--offer{% endif %}" data-hs2-memo{% if s.bundle_offer_live %} data-hs-bundle-live{% endif %}{% if artist != blank and artist.available %} data-hs-artist-variant="{{ artist.selected_or_first_available_variant.id }}" data-hs-artist-price="{{ artist.price | money_without_trailing_zeros | escape }}"{% endif %}{% if card_open %} data-hs-card-variant="{{ card.selected_or_first_available_variant.id }}" data-hs-card-price="{{ card.price | money_without_trailing_zeros | escape }}" data-hs-card-until="1796360399"{% endif %} data-deadline="{{ s.deadline | strip | escape }}" data-offer-start="{{ s.offer_start | strip | escape }}" data-offer-end="{{ s.offer_end | strip | escape }}" data-offer-label="{{ s.offer_label | escape }}">
+    {%- comment -%} The Christmas offer (Krish, 3 Nov: one offer, not two). While "offer_on" is ticked the strip is the
+      offer itself, in the logo heart's pink: the badge line with hs2.js's countdown, then free shipping and, only
+      while the bundle switch says the discount exists, the saving. It sits still; no ticker. Unticked, it is the
+      one-line memo below. {%- endcomment -%}
+    {%- if s.offer_on -%}
+    <div class="hs2-memo__viewport">
+      <p class="hs2-memo__top"><span class="hs2-memo__msg">{{ s.offer_title | escape }}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></p>
+      <p class="hs2-memo__deal">{{ s.offer_deal | escape }}{% if s.bundle_offer_live and s.offer_bundle != blank %}<span aria-hidden="true"> · </span>{{ s.offer_bundle | escape }}{% endif %}</p>
+    </div>
+    {%- else -%}
     <div class="hs2-memo__viewport">
       <div class="hs2-memo__track" data-hs2-ticker>
         <span class="hs2-memo__item"><span class="hs2-memo__msg">{% render 'hs2-t', text: msg %}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></span>
       </div>
     </div>
+    {%- endif -%}
   </div>
 </div>
 
@@ -60,6 +71,33 @@
     ]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "offer_on",
+      "label": "Show the Christmas offer in the strip",
+      "info": "Krish, 3 Nov: the strip is the one offer on every page. Off: the one-line memo below.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "offer_title",
+      "label": "Offer: badge line",
+      "info": "The countdown to the last order date (or Christmas morning) follows it.",
+      "default": "Christmas offer"
+    },
+    {
+      "type": "text",
+      "id": "offer_deal",
+      "label": "Offer: the deal",
+      "default": "Free US shipping"
+    },
+    {
+      "type": "text",
+      "id": "offer_bundle",
+      "label": "Offer: the saving",
+      "info": "Shows only while the bundle switch below is ticked, which is only once the Shopify automatic discount exists.",
+      "default": "15% off 2 gifts, 20% off 3"
+    },
     {
       "type": "text",
       "id": "text",

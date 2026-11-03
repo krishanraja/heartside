@@ -12,7 +12,9 @@ const schema=JSON.parse(source.split('{% schema %}')[1].split('{% endschema %}')
 const defaults=Object.fromEntries(schema.settings.filter(s=>s.id).map(s=>[s.id,s.default]));
 const engine=new Liquid();
 // the strip renders the schema defaults unless a test passes the text a store saved earlier
-const render=(template,deadline='',saved={})=>engine.parseAndRender(body,{template,section:{settings:{...defaults,...saved,deadline}}});
+// the one-line memo is what shows with the Christmas offer switched off (Krish, 3 Nov: the strip is the offer by default)
+const render=(template,deadline='',saved={})=>engine.parseAndRender(body,{template,section:{settings:{...defaults,offer_on:false,...saved,deadline}}});
+const renderOffer=(deadline='2026-12-10',saved={})=>engine.parseAndRender(body,{template:{name:'index',suffix:''},section:{settings:{...defaults,...saved,deadline}}});
 const msg=html=>html.match(/class="hs2-memo__msg">([^<]*)<\/span>/)[1];
 const templates=[{name:'product',suffix:'blanket-native'},{name:'product',suffix:'mug-native'},{name:'product',suffix:'portrait-native'},{name:'product',suffix:'gift'},{name:'product',suffix:'blanket-art-preview'},{name:'product',suffix:''},{name:'index',suffix:'blanket-native'},{name:'index',suffix:''},{name:'cart',suffix:''}];
 
@@ -38,5 +40,16 @@ test('no delivered memo string says shipping is calculated at checkout',async()=
 test('the memo renders as the brand strip and keeps the store-wide countdown dates',async()=>{
   const html=await render({name:'index',suffix:''},'2026-12-10');
   assert.match(html,/class="hs2-memo hs-strip" data-hs2-memo data-deadline="2026-12-10"/);
+  assert.match(await renderOffer(),/class="hs2-memo hs-strip hs-strip--offer" data-hs2-memo data-deadline="2026-12-10"/);
   assert.match(html,/data-offer-start="2026-10-20" data-offer-end="2026-11-01"/);
+});
+
+test('by default the strip is the one Christmas offer: badge, countdown, free shipping, and the saving only when it exists (3 Nov)',async()=>{
+  assert.equal(defaults.offer_on,true);
+  const off=await renderOffer();
+  assert.match(off,/class="hs2-memo__msg">Christmas offer<\/span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden><\/span>/);
+  assert.match(off,/class="hs2-memo__deal">Free US shipping<\/p>/);
+  assert.doesNotMatch(off,/15% off/,'no saving while the bundle switch is off');
+  assert.doesNotMatch(off,/data-hs2-ticker/,'the offer sits still');
+  assert.match(await renderOffer('2026-12-10',{bundle_offer_live:true}),/Free US shipping<span aria-hidden="true"> · <\/span>15% off 2 gifts, 20% off 3<\/p>/);
 });

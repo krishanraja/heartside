@@ -5,63 +5,23 @@
   a review or a result. Pictures are built by tools/print-art/showcase-assets.py from
   design/examples-2026-10-30-showcase/site.json, one small file each. Behavior: assets/hs-showcase.js;
   without it every picture still shows. The journey's own steps hide this section.
+  3 Nov (Krish: the phone homepage is two screens at most): the six sets moved up to be the first
+  screen's hero (sections/hs-journey.liquid), the headings lost their extra lines, the credit is one line
+  and the pinned button replaces the one that was here. Later on 3 Nov the photo-to-gift slider moved up into the
+  first section too (Krish: on desktop it belongs beside the carousel).
 {%- endcomment -%}
 {%- render 'hs2-head' -%}
 {{ 'hs-showcase.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-showcase.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
-<section class="hss" data-hss aria-labelledby="hss-h">
+<section class="hss" data-hss aria-label="Examples">
   <div class="hss__wrap">
-    <p class="hss-eyebrow">{{ s.eyebrow }}</p>
-    <h2 class="hss-h" id="hss-h">{{ s.heading }}</h2>
-    <p class="hss-lead">{{ s.intro }}</p>
-
-    {%- comment -%}
-      the six sets first and large (audit, 30 Oct), one at a time (Krish, 31 Oct: "it looks so intense to
-      just have all the pictures visible at once"): the reel fades through them, a swipe skips
-    {%- endcomment -%}
-    <div class="hss-block hss-sets" data-hss-reel>
-      <h3 class="hss-h3">{{ s.sets_heading }}</h3>
-      <p class="hss-small">{{ s.sets_note }}</p>
-      <ul class="hss-row hss-row--sets" data-hss-reel-track>
-        <li>{%- render 'hs-showcase-fig', id: 'set-golden', w: 540, h: 675, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: 'Mug, blanket, portrait' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'set-lab', w: 540, h: 675, alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bear', sub: 'Mug, blanket, portrait' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'set-frenchie', w: 540, h: 675, alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bao', sub: 'Mug, blanket, portrait' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'set-doodle', w: 540, h: 675, alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Clover', sub: 'Mug, blanket, portrait' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'set-dachshund', w: 540, h: 675, alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Frank', sub: 'Mug, blanket, portrait' -%}</li>
-        <li>{%- render 'hs-showcase-fig', id: 'set-shepherd', w: 540, h: 675, alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Juno', sub: 'Mug, blanket, portrait' -%}</li>
-      </ul>
-      <div class="hss-ctl" data-hss-reel-ctl hidden>
-        <div class="hss-ticks" data-hss-ticks></div>
-        <button type="button" class="hss-pause" data-hss-pause aria-pressed="false">Pause</button>
-      </div>
-    </div>
-
-    <div class="hss-block hss-flow" data-hss-flow>
-      <h3 class="hss-h3">{{ s.flow_heading }}</h3>
-      <div class="hss-flow__stage" data-hss-stage>
-        {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
-        {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
-        {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
-      </div>
-      <div class="hss-flow__ctl" data-hss-ctl hidden>
-        <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>
-        <div class="hss-flow__steps">
-          <button type="button" data-hss-step="0">Photo</button>
-          <button type="button" data-hss-step="1">Painting</button>
-          <button type="button" data-hss-step="2">Gift</button>
-        </div>
-      </div>
-      <p class="hss-small">{{ s.flow_note }}</p>
-    </div>
-
     {%- comment -%}
       styles, gifts and moods in one row that drifts by on its own and runs faster under a flick
       (Krish, 31 Oct); without the script, or with reduced motion, it is a plain swipe row
     {%- endcomment -%}
     <div class="hss-block" data-hss-strip>
-      <h3 class="hss-h3">{{ s.strip_heading }}</h3>
-      <p class="hss-small">{{ s.strip_note }}</p>
+      <h2 class="hss-h3">{{ s.strip_heading }}</h2>
       <div class="hss-strip__view" data-hss-strip-view>
         <ul class="hss-strip" data-hss-strip-track>
           <li>{%- render 'hs-showcase-fig', id: 'style-painterly', w: 360, h: 450, alt: 'Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.', caption: 'Painterly', sub: 'Maple' -%}</li>
@@ -85,13 +45,12 @@
           <li>{%- render 'hs-showcase-fig', id: 'scene-mug-studio', w: 540, h: 675, alt: 'Example: a golden retriever mug on a plain studio backdrop.', caption: 'Mug', sub: 'Studio' -%}</li>
         </ul>
       </div>
-      <div class="hss-ctl" data-hss-strip-ctl hidden>
-        <button type="button" class="hss-pause" data-hss-pause aria-pressed="false">Pause</button>
+      <div class="hss-ctl hss-ctl--strip" data-hss-strip-ctl hidden>
+        <button type="button" class="hss-pause" data-hss-pause aria-pressed="false" aria-label="Pause"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path class="hss-pause__bars" d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/><path class="hss-pause__play" d="M8 5l11 7-11 7z" fill="currentColor"/></svg></button>
       </div>
     </div>
 
-    <p class="hss-credit">{{ s.credit }}</p>
-    <div class="hss-cta"><a class="hss-btn" href="#" data-hss-top>{{ s.cta }}</a></div>
+    <details class="hss-credit"><summary>{{ s.credit_short }}</summary><p>{{ s.credit }}</p></details>
   </div>
 </section>
 
@@ -102,17 +61,18 @@
   "class": "hss-section",
   "settings": [
     { "type": "paragraph", "content": "The example artwork under the first screen. Every picture is an Example: a stock-photo dog painted by the store's painter, never a customer or an order." },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Examples" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Your dog, on the gift" },
-    { "type": "textarea", "id": "intro", "label": "Intro", "default": "Every picture here is an Example, painted from a photo the way yours will be." },
-    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
-    { "type": "text", "id": "flow_note", "label": "Photo to gift note", "default": "Drag from the photo to the painting to the mug. Maple, an Example." },
-    { "type": "text", "id": "strip_heading", "label": "Styles, gifts and moods heading", "default": "Six styles, three gifts, four moods" },
-    { "type": "text", "id": "strip_note", "label": "Styles, gifts and moods note", "default": "Every style is painted from your photo, and you choose how it sounds. Flick to go faster." },
-    { "type": "text", "id": "sets_heading", "label": "Sets heading", "default": "A set for one dog" },
-    { "type": "text", "id": "sets_note", "label": "Sets note", "default": "One painting of your dog, on a mug, a blanket and a framed portrait. Each gift comes in its own box, with your note inside. Six dogs, one at a time; swipe to skip." },
-    { "type": "text", "id": "credit", "label": "Photo credit", "default": "Reference photos from Pexels (Gundula Vogel, Genadi Yakovlev, Marino Kurunić, Oliver Morgan Media, Sharon Snider, Sabine Kosters), used under the Pexels License." },
-    { "type": "text", "id": "cta", "label": "Button", "default": "Make one for my dog" }
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow (retired 3 Nov, not shown)", "default": "Examples" },
+    { "type": "text", "id": "heading", "label": "Heading (retired 3 Nov, not shown)", "default": "Your dog, on the gift" },
+    { "type": "textarea", "id": "intro", "label": "Intro (retired 3 Nov, not shown)", "default": "Every picture here is an Example, painted from a photo the way yours will be." },
+    { "type": "text", "id": "flow_heading", "label": "Photo to gift heading (retired 3 Nov, not shown)", "default": "From a photo to a gift" },
+    { "type": "text", "id": "flow_note", "label": "Photo to gift note (retired 3 Nov, not shown)", "default": "Drag from the photo to the painting to the mug. Maple, an Example." },
+    { "type": "text", "id": "strip_heading", "label": "Styles, gifts and moods heading", "default": "Styles, gifts and moods" },
+    { "type": "text", "id": "strip_note", "label": "Styles, gifts and moods note (retired 3 Nov, not shown)", "default": "Every style is painted from your photo, and you choose how it sounds. Flick to go faster." },
+    { "type": "text", "id": "sets_heading", "label": "Sets heading (retired 3 Nov, not shown)", "default": "A set for one dog" },
+    { "type": "text", "id": "sets_note", "label": "Sets note (retired 3 Nov, not shown)", "default": "One painting of your dog, on a mug, a blanket and a framed portrait. Each gift comes in its own box, with your note inside. Six dogs, one at a time; swipe to skip." },
+    { "type": "text", "id": "credit_short", "label": "Photo credit, one line", "default": "Reference photos: Pexels" },
+    { "type": "text", "id": "credit", "label": "Photo credit, in full (opens from the line)", "default": "Reference photos from Pexels (Gundula Vogel, Genadi Yakovlev, Marino Kurunić, Oliver Morgan Media, Sharon Snider, Sabine Kosters), used under the Pexels License." },
+    { "type": "text", "id": "cta", "label": "Button (retired 3 Nov, not shown)", "default": "Make one for my dog" }
   ],
   "presets": [{ "name": "HS showcase" }]
 }

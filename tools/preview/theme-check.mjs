@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { check } from '@shopify/theme-check-node';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,9 @@ fs.mkdirSync(path.join(theme, 'locales'), { recursive: true });
 fs.writeFileSync(path.join(theme, 'layout', 'theme.liquid'), '<!doctype html><html><head>{{ content_for_header }}</head><body>{{ content_for_layout }}</body></html>\n');
 fs.writeFileSync(path.join(theme, 'config', 'settings_schema.json'), '[]\n');
 fs.writeFileSync(path.join(theme, 'locales', 'en.default.json'), '{}\n');
+// the stub layout gets Heartside's head the way the guarded push gives Helio's (head-heartside.mjs), so
+// snippets/hs-head.liquid is checked as rendered, not reported as orphaned
+execFileSync(process.execPath, [path.resolve(here, '..', '..', '.github', 'scripts', 'head-heartside.mjs'), path.join(theme, 'layout', 'theme.liquid')], { stdio: 'ignore' });
 
 const offenses = await check(theme);
 const ours = offenses.filter((o) => !/layout\/theme\.liquid|config\/|locales\//.test(o.uri));
