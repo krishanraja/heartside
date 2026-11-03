@@ -20,7 +20,7 @@ html.hsj-routed .hss, html.hsj-focus .hss { display: none; }
 .hss-h { font-size: clamp(30px, 7vw, 44px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 700; text-wrap: balance; margin-bottom: 8px; }
 .hss-lead { color: var(--body); max-width: 560px; margin-bottom: 40px; text-wrap: pretty; }
 .hss-block { margin-bottom: 20px; }
-.hss-h3 { font-size: 18px; line-height: 24px; letter-spacing: -0.01em; font-weight: 700; margin: 0 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hss-h3 { font-size: 18px; line-height: 24px; letter-spacing: -0.01em; font-weight: 700; margin: 0 0 8px; text-wrap: balance; }
 .hss-small { font-size: 14px; line-height: 20px; color: var(--muted); margin-bottom: 16px; text-wrap: pretty; }
 
 /* one picture */
@@ -98,7 +98,7 @@ html.hsj-routed .hss, html.hsj-focus .hss { display: none; }
 .hss-strip > li > .hss-fig { flex: 1; display: flex; flex-direction: column; }
 @media (min-width: 720px) { .hss-strip > li { width: 168px; } .hss-strip__view { margin: 0; } .hss-strip { padding: 0 0 8px; } }
 .hss-strip .hss-fig img { aspect-ratio: 4 / 5; width: 100%; height: auto; flex: none; }
-.hss-strip .hss-fig figcaption { display: block; padding: 6px 8px 8px; font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hss-strip .hss-fig figcaption { display: block; padding: 6px 8px 8px; font-size: 12px; line-height: 16px; min-height: 48px; text-wrap: balance; overflow-wrap: anywhere; }
 .hss-strip .hss-fig figcaption strong { font-weight: 600; }
 .hss-strip .hss-fig figcaption span { display: none; }
 .hss-strip .hss-tag { font-size: 10px; padding: 1px 6px; }

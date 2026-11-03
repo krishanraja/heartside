@@ -165,7 +165,10 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-hook .hss--hero .hss-block { margin: 0; }
 .hsj-hook .hss--hero .hss-row--sets, .hsj-hook .hss--hero .hss-sets.is-live .hss-row--sets { max-width: none; border-radius: 0; }
 .hsj-hook .hss--hero .hss-fig { border: 0; border-radius: 0; }
-.hsj-hook .hss--hero .hss-fig img { aspect-ratio: auto; width: 100%; height: 72svh; min-height: 300px; max-height: 760px; object-fit: cover; object-position: center top; }
+/* 72% of the screen where it fits; on a short screen (Krish's 360 x 640 Edge) it stops above the pinned dock so the
+   pinned button never covers the dog's name, the ticks or the pause (the strip and header are about 108 px, the dock
+   about 108 px) */
+.hsj-hook .hss--hero .hss-fig img { aspect-ratio: auto; width: 100%; height: min(72svh, calc(100svh - 228px)); min-height: 280px; max-height: 760px; object-fit: cover; object-position: center top; }
 /* the headline on the picture, over a soft dark foot; the dog's name, the ticks and the pause sit under it */
 .hsj-hook__words { grid-area: 1 / 1; align-self: end; z-index: 3; padding: 0 var(--m) 64px; pointer-events: none; }
 .hsj-hook__words .hsj-eyebrow { display: none; }
@@ -214,7 +217,7 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 }
 /* narrow phones (under 360 wide): labels stay on one line */
 .hsj-text-btn { white-space: nowrap; }
-.hsj-note__ask { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hsj-note__ask { min-width: 0; overflow-wrap: anywhere; }
 .hsj-letter { -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent); }
 @media (max-width: 359px) {
   .hsj-tone { gap: 8px; padding: 0 8px; font-size: 14px; line-height: 18px; }

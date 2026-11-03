@@ -53,7 +53,7 @@ async function open({width, height, motion = 'no-preference', live = true}) {
 }
 
 // 320x568 is the smallest phone the journey supports; it may run a little longer
-const PHONES = [[320, 568, 2.6], [360, 640, 2.4], [360, 740, 2.2], [390, 844, 2.1]];
+const PHONES = [[320, 568, 2.6], [360, 640, 2.4], [390, 664, 2.4], [360, 740, 2.2], [390, 844, 2.1]];
 
 for (const [width, height, most] of PHONES) {
   test(`${width}x${height}: two screens at most, the button pinned in pink the whole way down`, async () => {
@@ -77,13 +77,26 @@ for (const [width, height, most] of PHONES) {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(80);
     const hero = await page.locator('.hsj-hook .hss--hero .hss-row--sets').boundingBox();
-    assert.ok(hero.height >= 0.68 * height || hero.height >= 300, `the carousel is ${Math.round(hero.height / height * 100)}% of the screen`);
+    // 68% or more where the dock leaves room; on a short screen it fills everything between the header and the dock
+    assert.ok(hero.height >= Math.min(0.68 * height, height - 240), `the carousel is ${Math.round(hero.height / height * 100)}% of the screen`);
     assert.equal(Math.round(hero.width), width, 'the carousel runs edge to edge');
     assert.ok(hero.y < height * 0.25, 'the carousel starts in the top quarter');
     const words = await page.locator('.hsj-hook__words .hsj-h1').boundingBox();
     assert.ok(words.y >= hero.y && words.y + words.height <= hero.y + hero.height, 'the headline sits on the picture');
+    // the pinned button never covers the headline, the dog's name, the ticks or the pause (3 Nov: it did on 360 x 640)
+    for (const sel of ['.hsj-hook__words .hsj-h1', '.hsj-hook .hss--hero li:first-child figcaption', '.hsj-hook .hss--hero .hss-ctl']) {
+      const b = await page.locator(sel).first().boundingBox();
+      assert.ok(b && b.y + b.height <= dock.y + 2, `${sel} ends above the pinned button (${Math.round(b.y + b.height)} vs ${Math.round(dock.y)})`);
+    }
     const price = await page.locator('.hsj-dock--pin .hsj-price').boundingBox();
     assert.ok(price && price.y >= dock.y && price.y + price.height <= height, 'the prices ride with the pinned button');
+    // no text is cut short by its box (Krish, 3 Nov: "Ensure text is never truncated.")
+    const clipped = await page.evaluate(() => [...document.querySelectorAll('body *')].filter((el) => {
+      if (!el.offsetParent || el.getBoundingClientRect().width <= 2 || !el.childNodes.length || ![...el.childNodes].some((n) => n.nodeType === 3 && n.data.trim())) return false;
+      const c = getComputedStyle(el);
+      return c.overflow !== 'visible' && c.overflowX !== 'visible' && el.scrollWidth > el.clientWidth + 1;
+    }).map((el) => el.className + ': ' + el.textContent.trim().slice(0, 40)));
+    assert.deepEqual(clipped, []);
     // one offer: the strip; no second card, and the footer drops its own shipping line
     assert.equal(await page.locator('.hsj-offer').count(), 0);
     assert.equal(await page.locator('.hs-strip--offer').count(), 1);

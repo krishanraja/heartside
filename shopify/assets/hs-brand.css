@@ -111,7 +111,7 @@ cart-items-component :is(a, button, summary, input, select, textarea, [tabindex]
 .hs2 .hs2-memo.hs-strip--offer .hs2-memo__viewport { padding: 7px 16px 8px; line-height: 1.25; text-align: center; }
 .hs2 .hs2-memo.hs-strip--offer p { margin: 0; }
 .hs2 .hs2-memo.hs-strip--offer .hs2-memo__top { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
-.hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { margin-top: 2px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.hs2 .hs2-memo.hs-strip--offer .hs2-memo__deal { margin-top: 2px; font-size: 14px; font-weight: 700; text-wrap: balance; }
 .hs2 .hs2-memo.hs-strip.hs-strip--offer .hs2-memo__count { display: inline; margin-left: 0; color: var(--hs-ink); font-weight: 700; }
 .hs2 .hs2-memo.hs-strip--offer .hs2-memo__count[hidden] { display: none; }
 .hs2 .hs2-memo.hs-strip--offer .hs2-memo__count::before { content: " · "; color: var(--hs-ink); font-weight: 700; }
