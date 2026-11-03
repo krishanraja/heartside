@@ -6,4 +6,4 @@ Status: Krish's 3 November phone homepage is built on branch `claude/kind-keller
 - **Head lines.** Every favicon size from design/brand-v4, the touch icon, a manifest and the page colour, added by the new `head_heartside` push option. Live-gate now checks the home page head. The schema keeps its 27 Oct choice of no zero shipping rate.
 Changed: the live site sent only one 32 px icon. /favicon.ico and the touch icon were 404, the theme colour was empty, and the share image still advertises the ornament and the worded mug.
 Next: Krish's go to push to a draft theme with `head_heartside` ticked, then run preview-acceptance, live-gate and handle-check against it. Separately, his go to upload favicon.ico to Shopify Files with a /favicon.ico redirect, and to book the share-card Codex card (design/share-card-2026-11-03/brief.md).
-North Star check (2026-11-03): holds. U5, $69 against $658 this week; this targets homepage-to-start conversion.
+North Star check (2026-11-03): holds.
