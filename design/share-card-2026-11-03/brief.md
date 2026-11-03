@@ -1,6 +1,6 @@
 # Share card, 3 November 2026: brief for a Codex card (not queued yet)
 
-Status: awaiting Krish's go to book the Codex allowance (1 point) and queue it as `codex/queue/share-card-2026-11-03.md`.
+Status: queued as codex/queue/share-card-2026-11-03.md on 3 Nov (Krish: "do that first"), spend 1f246f81-e0dd-4c95-9510-34f217a294fa.
 
 ## Why
 heartside.io's social share image (`heartside-share-1200x630.jpg` in Shopify Files, read live on 3 Nov) is out of date. It says "A mug, a blanket, a print **or an ornament**", but the ornament is on hold. It also shows the old mug with words printed on it, and the 31 Oct ruling made the gifts artwork only. Every link shared in a message or post shows it.
