@@ -1,6 +1,7 @@
 // The phone homepage (Krish, 3 Nov 2026): two screens at most, the button pinned to the bottom in the
-// logo heart's pink and pulsing, the Christmas offer as a visual offer, the six sets as the hero, every
-// strip card the same height, and no line that leaves one word on its own.
+// logo heart's pink and pulsing, the six sets filling 70 to 80% of the first screen, one Christmas offer
+// (the strip) and never a second, every strip card the same height, no line that leaves one word on its
+// own; on desktop the photo-to-gift slider sits beside the carousel.
 //   cd tools/preview && node render.mjs && cd ../.. && node --test tools/preview/homepage-phone.browser.test.mjs
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,7 +41,8 @@ async function open({width, height, motion = 'no-preference', live = true}) {
   if (live) {
     await page.route(base + '/', async (r) => {
       const res = await r.fetch();
-      const body = (await res.text()).replace('data-hs2-memo', 'data-hs2-memo data-hs-bundle-live').replace('data-deadline=""', 'data-deadline="2026-12-10"');
+      const body = (await res.text()).replace('data-hs2-memo', 'data-hs2-memo data-hs-bundle-live').replace('data-deadline=""', 'data-deadline="2026-12-10"')
+        .replace(/(class="hs2-memo__deal">Free US shipping)/, '$1<span aria-hidden="true"> · </span>15% off 2 gifts, 20% off 3');
       await r.fulfill({response: res, body});
     });
   }
@@ -51,7 +53,7 @@ async function open({width, height, motion = 'no-preference', live = true}) {
 }
 
 // 320x568 is the smallest phone the journey supports; it may run a little longer
-const PHONES = [[320, 568, 2.45], [360, 640, 2.2], [360, 780, 2.0], [390, 844, 2.0]];
+const PHONES = [[320, 568, 2.6], [360, 640, 2.4], [360, 740, 2.2], [390, 844, 2.1]];
 
 for (const [width, height, most] of PHONES) {
   test(`${width}x${height}: two screens at most, the button pinned in pink the whole way down`, async () => {
@@ -71,13 +73,21 @@ for (const [width, height, most] of PHONES) {
     const foot = await page.locator('.hs-footer__company').boundingBox();
     const dock = await page.locator('.hsj-dock--pin').boundingBox();
     assert.ok(foot.y + foot.height <= dock.y + 24, 'the company line is not under the button');
-    // the first screen holds the offer, the hero and the prices above the button
+    // the carousel is the first screen: full width, 68% of its height or more, starting under the header
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(80);
-    for (const sel of ['.hsj-offer', '.hsj-hook .hss--hero .hss-row--sets', '.hsj-price']) {
-      const b = await page.locator(sel).boundingBox();
-      assert.ok(b.y + b.height <= dock.y + 12, `${sel} is on the first screen, above the button`);
-    }
+    const hero = await page.locator('.hsj-hook .hss--hero .hss-row--sets').boundingBox();
+    assert.ok(hero.height >= 0.68 * height || hero.height >= 300, `the carousel is ${Math.round(hero.height / height * 100)}% of the screen`);
+    assert.equal(Math.round(hero.width), width, 'the carousel runs edge to edge');
+    assert.ok(hero.y < height * 0.25, 'the carousel starts in the top quarter');
+    const words = await page.locator('.hsj-hook__words .hsj-h1').boundingBox();
+    assert.ok(words.y >= hero.y && words.y + words.height <= hero.y + hero.height, 'the headline sits on the picture');
+    const price = await page.locator('.hsj-dock--pin .hsj-price').boundingBox();
+    assert.ok(price && price.y >= dock.y && price.y + price.height <= height, 'the prices ride with the pinned button');
+    // one offer: the strip; no second card, and the footer drops its own shipping line
+    assert.equal(await page.locator('.hsj-offer').count(), 0);
+    assert.equal(await page.locator('.hs-strip--offer').count(), 1);
+    assert.equal(await page.locator('.hs-footer__line').isVisible(), false);
     await page.screenshot({path: path.join(shots, `${width}x${height}.png`)});
     assert.deepEqual(errors, []);
     await ctx.close();
@@ -103,18 +113,35 @@ test('the button: heart pink with an ink label that reads, pulsing, still for re
   await still.ctx.close();
 });
 
-test('the Christmas offer shows the countdown and the saving only when the store has them', async () => {
+test('the strip is the one Christmas offer: countdown, free shipping, and the saving only when the store has it', async () => {
   const on = await open({width: 360, height: 780});
-  assert.equal(await on.page.locator('.hsj-offer__badge').innerText(), 'CHRISTMAS OFFER');
-  assert.match(await on.page.locator('.hsj-offer__count').innerText(), /^(\d+ days left|Last day)$/);
-  assert.equal(await on.page.locator('[data-hsj-offer-bundle]').isVisible(), true);
+  assert.match(await on.page.locator('.hs-strip--offer .hs2-memo__top').innerText(), /^CHRISTMAS OFFER(?: · )?(\d+ DAYS LEFT|LAST DAY)$/);
+  assert.match(await on.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), /^Free US shipping · 15% off 2 gifts, 20% off 3$/);
+  assert.equal(await on.page.evaluate(() => window.innerWidth), 360, 'the deal line fits a 360 phone');
   await on.ctx.close();
   const off = await open({width: 320, height: 568, live: false});
-  assert.equal(await off.page.locator('[data-hsj-offer-bundle]').isVisible(), false, 'no saving until the discount exists');
+  assert.equal(await off.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), 'Free US shipping', 'no saving until the discount exists');
   // with no date set, the countdown runs to Christmas morning, a longer line that must still fit
-  assert.match(await off.page.locator('.hsj-offer__count').innerText(), /Christmas morning/);
+  assert.match(await off.page.locator('.hs-strip--offer .hs2-memo__top').innerText(), /CHRISTMAS MORNING/);
   assert.equal(await off.page.evaluate(() => window.innerWidth), 320, 'the longer countdown still fits a 320 phone');
   await off.ctx.close();
+});
+
+test('desktop: the photo-to-gift slider sits in the carousel\'s section, under the button', async () => {
+  const ctx = await browser.newContext({viewport: {width: 1440, height: 900}});
+  const page = await ctx.newPage();
+  await page.route((url) => !url.href.startsWith(base) && !/^(data|blob):/.test(url.href), (r) => r.abort());
+  await page.goto(base + '/', {waitUntil: 'load'});
+  await page.waitForTimeout(400);
+  const hero = await page.locator('.hsj-hook .hss--hero').boundingBox();
+  const btn = await page.locator('.hsj-hook [data-hsj-go="name"]').boundingBox();
+  const flow = await page.locator('.hsj-hook [data-hss-stage]').boundingBox();
+  assert.ok(flow.x + flow.width < hero.x, 'the slider is left of the carousel');
+  assert.ok(flow.y > btn.y + btn.height, 'the slider is under the button');
+  assert.ok(flow.y + flow.height <= hero.y + hero.height + 120, 'no big gap: the slider ends near the carousel');
+  await page.click('[data-hss-step="2"]');
+  assert.equal(await page.locator('[data-hss-range]').inputValue(), '2');
+  await ctx.close();
 });
 
 test('every card in the strip is the same height', async () => {
@@ -131,7 +158,7 @@ test('no line on the phone homepage leaves one word on its own', async () => {
   for (const [width, height] of PHONES) {
     const {ctx, page} = await open({width, height});
     const lone = await page.evaluate(() => {
-      const sel = '.hsj-eyebrow, .hsj-h1, .hsj-offer p, .hsj-price, .hss-h3, .hss-credit summary, .hs-footer__company, .hss--hero figcaption';
+      const sel = '.hsj-h1, .hs-strip--offer p, .hsj-price, .hss-h3, .hss-credit summary, .hs-footer__company, .hss--hero figcaption';
       const bad = [];
       for (const el of document.querySelectorAll(sel)) {
         if (!el.offsetParent) continue;

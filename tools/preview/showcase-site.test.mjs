@@ -64,6 +64,9 @@ test('the showcase shows one set at a time and one drifting row, not a wall of t
   // Krish, 3 Nov: the sets carousel replaces the first screen's example, so the reel lives in the hook
   assert.match(journey, /data-hss-reel>/);
   assert.doesNotMatch(showcase, /data-hss-reel>/, 'the reel shows once');
+  // Krish, 3 Nov: on desktop the photo-to-gift slider sits in the carousel's section
+  assert.match(journey, /data-hss-flow>/);
+  assert.doesNotMatch(showcase, /data-hss-flow>/, 'the slider shows once');
   assert.match(showcase, /data-hss-strip-track>/);
   assert.doesNotMatch(showcase, /hss-row--(six|three|four)|data-hss-tabs/, 'the three grids and the gift tabs are gone');
   const strip = showcase.slice(showcase.indexOf('data-hss-strip-track'), showcase.indexOf('</ul>', showcase.indexOf('data-hss-strip-track')));

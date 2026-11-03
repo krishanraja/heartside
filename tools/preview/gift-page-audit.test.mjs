@@ -36,9 +36,9 @@ test('gift-page fields are 16 px and the gift page is set in one sans family', (
 
 test('every gift price shows on the first screen, from Shopify, and on the photo step', () => {
   const s = read('sections/hs-journey.liquid');
-  // Krish, 3 Nov: one price line, and free shipping moves up into the Christmas offer card
-  assert.match(s, /<p class="hsj-price">\{\{ price_line \| strip \}\}<\/p>/);
-  assert.match(s, /<strong>\{\{ s\.offer_ship \}\}<\/strong>/);
+  // Krish, 3 Nov: one price line, pinned with the button; free shipping is in the strip's Christmas offer
+  assert.match(s, /<div class="hsj-dock hsj-dock--pin">\s*\{%- if price_line != blank -%\}<p class="hsj-price">\{\{ price_line \| strip \}\}<\/p>/);
+  assert.match(read('sections/hs2-memo.liquid'), /"id": "offer_deal",[\s\S]*?"default": "Free US shipping"/);
   assert.match(s, /p\.price_min \| money_without_trailing_zeros/, 'prices come from Shopify, never typed');
   assert.match(read('assets/hs-journey.js'), /function priceLine\(gift\)[\s\S]{0,500}free US shipping/);
 });
