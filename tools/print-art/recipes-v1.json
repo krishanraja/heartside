@@ -493,14 +493,14 @@
               "brings": {
                 "fit": 3,
                 "needsToy": true,
-                "text": "{pos_cap} {toy} displayed on a velvet cushion under a spotlight like a priceless jewel, {sub} sitting beside it in solemn, glowing pride",
-                "short": "presenting the {toy} like a priceless jewel"
+                "text": "{sub_cap} {sits} beside {pos} {toy} with one paw resting on it, giving the camera a beaming but pointed look, as if you were meant to throw it ten minutes ago",
+                "short": "one paw on the {toy}, waiting on you pointedly"
               },
               "best": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} beaming at the top of the couch cushions piled into a towering throne, spotlit, adored and fully aware of it",
-                "short": "beaming from a throne of cushions"
+                "text": "{sub_cap} {sits} beaming at the top of the couch cushions piled into a tower, looking down at the camera as if you are very lucky to be friends with someone this great",
+                "short": "beaming down from a tower of cushions"
               }
             }
           }
@@ -543,13 +543,13 @@
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} at the top of the couch cushions stacked into a tall, perfectly squared tower, surveying the whole room below, every cushion in exact order",
-                "short": "presiding from a tower of cushions"
+                "text": "{sub_cap} {sits} on top of the couch cushions stacked into a perfectly squared tower, peering down at the camera with one brow raised, plainly unimpressed with how you run the household",
+                "short": "peering down from a tower of cushions, unimpressed"
               },
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} on a tall stack of the couch cushions in the middle of the room, gazing down over every corner, keeping the entire household under {pos} watch",
-                "short": "watching over the room from a cushion tower"
+                "text": "{sub_cap} {sits} dead center on a stack of the couch cushions, eyes narrowed at the camera like a supervisor who has caught you running late again",
+                "short": "eyes narrowed like a supervisor on a stack of cushions"
               }
             }
           }
@@ -592,13 +592,13 @@
               "boss": {
                 "fit": 3,
                 "placeless": true,
-                "text": "a very small dog sitting on the summit of the couch cushions piled many times {pos} height, chest out, gazing down in triumph, the supreme ruler of the house",
-                "short": "on the summit of a cushion mountain"
+                "text": "a very small dog sitting on the summit of the couch cushions piled many times {pos} height, chest out, looking down at the camera as if you work for {obj}",
+                "short": "on a cushion mountain, looking down at you"
               },
               "couch": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} spotlit on the top of the couch's cushions piled up like castle walls around {obj}, chest out, the fearless commander of {pos} fortress",
-                "short": "commanding the couch like a fortress"
+                "text": "{sub_cap} {sits} spotlit on top of the couch's cushions piled up like castle walls around {obj}, side-eyeing the camera as if you are never getting your seat back",
+                "short": "guarding a cushion fortress, side-eyeing"
               }
             }
           }
@@ -637,13 +637,13 @@
             "over_the_top": {
               "couch": {
                 "fit": 3,
-                "text": "{sub} {is} draped full length across the couch in one long, elegant swoon, one long leg trailing to the floor, spotlit like an old-master portrait of a reclining aristocrat",
-                "short": "draped across the couch in a grand swoon"
+                "text": "{sub} {is} draped full length across the couch in one long, elegant swoon, one long leg trailing to the floor, glancing at the camera with heavy-lidded disdain as if you asked to sit down",
+                "short": "draped across the couch with heavy-lidded disdain"
               },
               "bed": {
                 "fit": 3,
-                "text": "{sub} {is} draped full length across the bed in one long, elegant swoon, long legs trailing over the edge, spotlit like an old-master portrait of a reclining duchess",
-                "short": "draped across the bed in a grand swoon"
+                "text": "{sub} {is} draped full length across the bed in one long, elegant swoon, long legs trailing over the edge, glancing at the camera with heavy-lidded disdain as if you expected some room",
+                "short": "draped across the bed with heavy-lidded disdain"
               }
             }
           }
@@ -683,8 +683,8 @@
             "over_the_top": {
               "feet": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} under one golden spotlight on the rug, nose raised high in triumph, long ears spread out on the floor around {obj} like ceremonial robes",
-                "short": "enthroned on the rug, ears like robes"
+                "text": "{sub_cap} {is} lying on the rug under one golden spotlight, long ears spread out on the floor around {obj} like robes, eyes rolled up at the camera with the weary look of a detective who has caught you",
+                "short": "ears like robes, eyeing you like a caught suspect"
               },
               "boss": {
                 "fit": 2,
@@ -815,8 +815,8 @@
             "over_the_top": {
               "door": {
                 "fit": 3,
-                "text": "{sub_cap} {sits} in the doorway under a spotlight, perfectly still, chest out, so grand the door frame looks small around {obj}, the sentry of the realm",
-                "short": "filling the doorway like a sentry"
+                "text": "{sub_cap} {sits} in the doorway under a spotlight, chest out, so grand the door frame looks small around {obj}, staring at the camera like a bouncer deciding whether you get in",
+                "short": "filling the doorway like a bouncer"
               },
               "anywhere": {
                 "fit": 2,
@@ -857,8 +857,8 @@
               "spin": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} beaming on the couch cushions stacked into a winner's podium, tongue out in triumph, spotlit as the champion",
-                "short": "beaming on a podium of cushions"
+                "text": "{sub_cap} {sits} beaming on the couch cushions stacked into a winner's podium, tongue out in triumph, looking at the camera as if you came second",
+                "short": "beaming on a podium, as if you came second"
               }
             }
           }
@@ -888,8 +888,8 @@
             "over_the_top": {
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} spotlit at center with {pos} fur fluffed to glorious maximum volume, chin lifted, utterly aware of {pos} own charm",
-                "short": "fluffed to maximum volume"
+                "text": "{sub_cap} {sits} spotlit at center with {pos} fur fluffed to glorious maximum volume, chin lifted, glancing at the camera as if you should be taking notes",
+                "short": "fluffed to maximum volume, glancing at you"
               }
             }
           }

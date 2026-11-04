@@ -221,7 +221,8 @@ export function briefFields(input) {
     staging = key !== 'toy' && /\{toy\}/.test(text) ? text.replace('{toy}', trophy) : text;
     toyInJoke = key !== 'toy' && /\{toy\}/.test(text);
     // the royal portrait is shot low, so the person stays out of it (v13)
-    place = [pick(sc.spotSolo, o.spot), clash ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
+    // v18: a roast is awake and looking at you, so a nap never sets its scene ("in the middle of a nap" fought "both eyes open")
+    place = [pick(sc.spotSolo, o.spot), clash || o.together === 'naps' ? '' : pick(sc.together, o.together)].filter(Boolean).join(', ');
   }
   const comic = o.tone === 'hilarious' || o.tone === 'over_the_top';
   const inStaging = toyInJoke || /\{toy\}/.test(staging) || (toyHeld && staging.includes(toyRaw) || staging.includes(cap(toyRaw)));

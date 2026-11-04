@@ -11,3 +11,4 @@ tools/realphoto/src/
 
 # Generated silent reel and preview frames
 tools/reel/out/
+design/pipeline-test-board/out/

@@ -88,9 +88,9 @@ for (const kind of ['blanket', 'mug', 'print']) test(`${kind}: the studio paints
       await page.screenshot({path: path.join(shots, kind + '-150s.png'), fullPage: true});
       // the third beat is a true fact about the breed
       await page.evaluate(() => { window.__hsWaitTest = true; });
-      let fact = '', seen = [];
-      for (let i = 0; i < 30 && !fact; i++) { await page.waitForTimeout(1000); const l = await look(page); fact = l.fact; seen.push(l.say); }
-      if (!fact) console.log(seen);
+      // the fact holds the bubble for one beat (7 s) every third beat; wait for it rather than sample
+      await page.waitForFunction(() => { const f = document.querySelector('[data-hs-wait-fact]'); return f && !f.hidden && f.innerText.length > 20; }, null, {timeout: 45000, polling: 200});
+      const fact = (await look(page)).fact;
       assert.match(fact, /pug|Pompey|China/i, 'a pug fact: ' + fact);
       await page.screenshot({path: path.join(shots, kind + '-fact.png'), fullPage: true});
     }

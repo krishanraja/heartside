@@ -1,0 +1,11 @@
+{
+  "note": "Reference photos for the 4 Nov Roast (recipes v18) test paintings. Pexels licence: free to use, attribution not required but given here. The photo is used only for who the dog is.",
+  "photos": [
+    {"case": "retriever", "breed": "Golden Retriever", "source": "https://www.pexels.com/photo/golden-retriever-portrait-in-natural-light-30810888/", "photographer": "Masood Aslami", "licence": "Pexels"},
+    {"case": "terrier", "breed": "Jack Russell Terrier", "source": "https://www.pexels.com/photo/adorable-jack-russell-terrier-looking-up-29126615/", "photographer": "Edyttka Stawiarska", "licence": "Pexels"},
+    {"case": "sighthound", "breed": "Greyhound", "source": "https://www.pexels.com/photo/lying-greyhound-in-sunlit-field-28506513/", "photographer": "Majkel Berger", "licence": "Pexels"},
+    {"case": "scent", "breed": "Beagle", "source": "https://www.pexels.com/photo/beagle-among-grass-16902231/", "photographer": "see source page", "licence": "Pexels"},
+    {"case": "herding", "breed": "Border Collie", "source": "https://www.pexels.com/photo/close-up-portrait-of-a-border-collie-dog-32635803/", "photographer": "see source page", "licence": "Pexels"},
+    {"case": "spitz", "breed": "Siberian Husky", "source": "https://www.pexels.com/photo/portrait-of-a-smiling-siberian-husky-dog-31452622/", "photographer": "Mathias Reding", "licence": "Pexels"}
+  ]
+}
