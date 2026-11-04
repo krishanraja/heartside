@@ -1,0 +1,3 @@
+Status: Roast breed scenes (PR #115) merged; live theme push run 174 passed on Krish's yes, and the live hs-artwork-engine.js matches main byte for byte. Six Roast paintings from the shipping prompts made (16.5 Higgsfield credits, booked and settled): 4 land clearly, retriever and husky land gently (design/pipeline-test-board/review.md, roast-v18-shipping-sheet.jpg). One prompt flaw seen: the herding scene names couch cushions and the morning walk together.
+Next: Krish judges the next real Roast orders; the herding place clash is fixed and the retriever and spitz Roast faces were sharpened (4 Nov, live after this push).
+North Star check (2026-11-04): holds.

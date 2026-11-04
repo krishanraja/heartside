@@ -187,7 +187,7 @@
         "itemsProp": "the joke's staging comes only from the owner's stated place and activity, made bigger and more serious than life, plus the one small prop above, and never a toy, food, clothing, habit or place the owner did not name"
       },
       "over_the_top": {
-        "pose": "a loving roast anyone gets at a glance: {sub} {is} openly judging {pos} person, who stays out of frame. {joke_ott}. The joke is in the attitude, never the dog's body: a dramatic side-eye down the lens, one brow raised, smug and not impressed. Both eyes open",
+        "pose": "a loving roast anyone gets at a glance: {sub} {is} openly judging {pos} person, who stays out of frame. {joke_ott}. The joke is in the attitude, never the dog's body: a dramatic, exaggerated side-eye down the lens, one brow raised, smug and not impressed. Both eyes open",
         "camera": "a centered, slightly low view, like a grand portrait spoofed for laughs",
         "light": "a dramatic golden spotlight and rich, deep color.",
         "items": "theatrical staging is allowed, such as a velvet cushion, a spotlight or the person's own couch cushions piled high, but no crown, cape or costume, and never a toy, food, clothing, habit or place the owner did not name"
@@ -493,14 +493,14 @@
               "brings": {
                 "fit": 3,
                 "needsToy": true,
-                "text": "{sub_cap} {sits} beside {pos} {toy} with one paw resting on it, giving the camera a beaming but pointed look, as if you were meant to throw it ten minutes ago",
-                "short": "one paw on the {toy}, waiting on you pointedly"
+                "text": "{sub_cap} {sits} with one paw planted firmly on {pos} {toy}, eyebrows raised high and eyes slid all the way sideways at the camera in a big, pointed glare, as if you were meant to throw it ten minutes ago",
+                "short": "paw on the {toy}, a big pointed sideways glare"
               },
               "best": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} beaming at the top of the couch cushions piled into a tower, looking down at the camera as if you are very lucky to be friends with someone this great",
-                "short": "beaming down from a tower of cushions"
+                "text": "{sub_cap} {sits} at the top of the couch cushions piled into a tower, chin up, eyebrows raised, peering down at the camera with an exaggerated look that says you are very lucky to be friends with someone this great",
+                "short": "peering down from a tower of cushions, eyebrows raised"
               }
             }
           }
@@ -548,8 +548,8 @@
               },
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} dead center on a stack of the couch cushions, eyes narrowed at the camera like a supervisor who has caught you running late again",
-                "short": "eyes narrowed like a supervisor on a stack of cushions"
+                "text": "{sub_cap} {sits} dead center, eyes narrowed to slits at the camera like a supervisor who has caught you running late again",
+                "short": "eyes narrowed like a supervisor who caught you late"
               }
             }
           }
@@ -701,7 +701,7 @@
             "sentimental": "a spitz's self-possessed calm, dignified even at rest",
             "warm": "a spitz's knowing, faintly amused look, as if about to share an opinion",
             "hilarious": "a spitz's dry, deeply opinionated side-eye",
-            "over_the_top": "a spitz's regal, faintly scandalized self-regard"
+            "over_the_top": "a spitz's theatrical, openly scandalized self-regard"
           },
           "scenes": {
             "hilarious": {
@@ -731,13 +731,13 @@
               "cool": {
                 "fit": 3,
                 "placeless": true,
-                "text": "{sub_cap} {sits} spotlit on a velvet cushion with {pos} back to the camera, glancing over {pos} shoulder, nose high: the diva who will not turn around for anyone",
-                "short": "the diva who will not turn around"
+                "text": "{sub_cap} {sits} spotlit on a velvet cushion with {pos} back to the camera, glancing over {pos} shoulder with narrowed eyes and nose high: the diva who will not turn around for you",
+                "short": "the diva who will not turn around for you"
               },
               "bed": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} at the very center of the bed under a single spotlight, mid dramatic sigh, glancing at the camera as if you have disappointed {obj} deeply",
-                "short": "sighing dramatically from the bed"
+                "text": "{sub_cap} {sits} at the very center of the bed under a single spotlight, head tipped back mid dramatic sigh, eyes narrowed into a theatrical side-eye at the camera, as if you have disappointed {obj} deeply",
+                "short": "mid dramatic sigh, a theatrical side-eye"
               }
             }
           }

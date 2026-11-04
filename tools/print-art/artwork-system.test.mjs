@@ -995,6 +995,12 @@ test('v18: Roast paints a visible roast inside the fields, and the spec records 
       assert.doesNotMatch(t + v.Energy, risky, [archetype, format, spot].join(' '));
       assert.ok(t.length <= 1200 && v.Energy.length <= 300);
     }
+  // one place per picture: an indoor roast scene never also goes out on the walk
+  for (const archetype of [null, ...Object.keys(recipes.brief.character.archetypes)]) for (const spot of ['couch', 'bed', 'feet', 'anywhere']) for (const meaning of ['boss', 'best', 'shadow'])
+    for (const together of ['walk', 'car']) {
+      const t = nativeFieldValues({style: 'ink', tone: 'over_the_top', format: 'portrait', pronoun: 'he', archetype, spot, together, meaning, home: 'spin', toys: 'a tennis ball'})['Tone direction'];
+      if (/\b(couch|cushions?|bed|rug|doorway)\b/i.test(t.split('Camera:')[0].split('Scene:')[0])) assert.doesNotMatch(t, /walk|car ride|in the car/, [archetype, spot, together].join(' '));
+    }
   // a roast is awake: a nap never sets its scene
   assert.doesNotMatch(nativeFieldValues({style: 'screenprint', tone: 'over_the_top', format: 'portrait', pronoun: 'she', spot: 'couch', together: 'naps'})['Tone direction'], /nap/);
   // hilarious stays the dog being funny about itself
