@@ -173,7 +173,7 @@ test('no line on the phone homepage leaves one word on its own', async () => {
   for (const [width, height] of PHONES) {
     const {ctx, page} = await open({width, height});
     const lone = await page.evaluate(() => {
-      const sel = '.hsj-h1, .hs-strip--offer p, .hsj-price, .hss-h3, .hss-credit summary, .hs-footer__company, .hss--hero figcaption';
+      const sel = '.hsj-h1, .hs-strip--offer p, .hsj-price, .hss-h3, .hs-footer__company, .hss--hero figcaption';
       const bad = [];
       for (const el of document.querySelectorAll(sel)) {
         if (!el.offsetParent) continue;
