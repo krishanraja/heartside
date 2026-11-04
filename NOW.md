@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- Documentation brought up to date with the 4 November release. NOW.md has one accurate live bullet for the day; README.md, NOW.md and SCOPE.md say every gift is artwork only; SCOPE.md records the 4 November rulings (four distinct tones, Roast, true breed facts, the hidden photo check, untickable gifts) and that Track B is built and live; shopify/README.md, tools/print-art/ARTWORK-SYSTEM.md, the test board README, the breed batch README and breeds-corpus/lookup/README.md describe v18, the painting wait and the breed facts. CI now checks the breed facts are fresh. The North Star number is re-read at $45 net (gross $69 less a $24 reversal; $69 had been gross). (2026-11-04)
 - **Live on heartside.io since 4 November, on Krish's yes** (PRs #114, #115 and #116; theme push runs 173, 174 and 175 passed every step, and each pushed file read back from the live theme matches main byte for byte):
   - **One wait, not two.** The photo check runs out of sight: a passing photo goes straight to the painter, and only a refused photo is shown, whole, with Buddy's reason.
   - **The painting wait is a small studio** (`hs-wait.js`): the photo paints in from gray, the dog talks from the studio in its own voice, a true and sourced breed fact appears every third beat (`breeds-corpus/fun_facts.csv` via `hs-breed-facts.js`), the buyer can give treats, and the tab says when the painting is ready.
@@ -81,7 +82,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-04): Krish judges the shipping Roast sheet (`design/pipeline-test-board/roast-v18-shipping-sheet.jpg`) and the first real Roast orders. A repaint of the sharpened retriever and husky faces is about 5.5 credits, on his yes.
+- Next (2026-11-04): Krish judges the shipping Roast sheet and the first real Roast orders; a 5.5-credit repaint of the sharpened retriever and husky faces is ready on his yes.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
