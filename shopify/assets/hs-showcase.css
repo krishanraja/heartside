@@ -55,11 +55,6 @@ html.hsj-routed .hss, html.hsj-focus .hss { display: none; }
 .hss-flow__steps button { appearance: none; background: none; border: 0; min-height: 44px; min-width: 64px; padding: 0 8px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
 .hss-flow__steps button.is-on { color: var(--accent); }
 
-/* the photo credit: one line that opens to the full credit (Krish, 3 Nov) */
-.hss-credit { font-size: 12px; line-height: 16px; color: var(--muted); max-width: 640px; }
-.hss-credit summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; list-style: none; text-decoration: underline; text-underline-offset: 3px; }
-.hss-credit summary::-webkit-details-marker { display: none; }
-.hss-credit p { padding-bottom: 8px; }
 @media (prefers-reduced-motion: no-preference) { .hss-fig img { transition: transform 0.3s ease; } }
 
 /* the six sets, first and large (audit, 30 Oct): on a phone a swipe row of big tiles, on desktop three across */
