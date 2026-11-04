@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- The "Reference photos: Pexels" line under the homepage examples is gone (section markup, its two theme settings, its CSS and its phone-test selector); merged to main. Preview render has no credit and all 10 phone homepage tests pass. The live theme still shows it until the next theme push. (2026-11-04)
 - The Answers redesign ships on Krish's yes ("yes, ship it and publish all three, merge to main"): an article is an answer card (the question, the whole short answer, a real-mug set and the pinned pink button on the first screen; the details as chapters opened one at a time, every word in the page), and the library at /blogs/answers is a question picker with occasion chips, Christmas first. Three Christmas articles publish with it: the last day to order (December 10), a dog lover who has everything, and grandparents from the grandkids' dog. tools/preview/answers.browser.test.mjs covers the layout; live-gate now checks /blogs/answers and an answer page. (2026-11-03)
 - No text on the site is cut short: every ellipsis and line clamp is gone from the theme (Krish, 3 Nov: "Ensure text is never truncated."), a source test forbids them, and the homepage test and live-gate fail on any visible text clipped by its box. On short phones (360 x 640, Instagram's 390 x 664) the carousel now stops above the pinned button, which had covered the dog's name and the slide controls; live-gate checks that the pinned button never covers them. (2026-11-03)
 - The homepage carousel is live with the real product mug in all six sets, served at 1080 px to phones (srcset 540/1080, tools/print-art/hero-sets.py; Krish approved: "looks good, do all 5"). Maple uses her approved real-mug set; the other five are Higgsfield clean plates (mug area only, 13.75 credits) with each dog's real mug photo placed by Codex. The six AI-mug files are retired. CoWork's search and AI facts are merged: /llms.txt carries the real prices ($45, $129, $59, $119) and says every gift is artwork only, and live-gate checks it. Correction for NOW.md's "current core" line: every gift is artwork only with no words printed on it (Ruling, Krish, 2026-10-31); the note in the dog's voice comes in the box and on a free digital card. (2026-11-03)
@@ -71,7 +72,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-03): The next batch of Answers (Mom, Dad, the photo that works best), each drafted in this design and approved by Krish before it publishes.
+- Next (2026-11-04): Krish approves a "Push homepage to a Shopify theme" run to the live theme so the line leaves the store.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Track B:** his first reaction to the mock-ups, then a yes before any code.
@@ -85,7 +86,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - The checkout merge app stays through Christmas at $69 a month (Ruling, Krish, 28 October), and is reviewed in January against measured conversion.
   - Do not claim physical quality or paid-order fulfillment until the sample is inspected.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-03): holds.
+- North Star check (2026-11-04): holds.
 
 ## Read next
 
