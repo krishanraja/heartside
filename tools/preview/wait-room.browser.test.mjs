@@ -130,3 +130,31 @@ test('every line the dog can say keeps the house voice, for every answer', async
     assert.deepEqual(bad, []);
   } finally { await page.close(); }
 });
+
+// Krish, 4 Nov: "Nothing on this page must randomly change size with volatility like that when text is
+// generating." Watch the line under the bubble through typing, a treat and a breed fact: it never moves, and
+// the dog's face stays a circle (a portrait photo once stretched it into a tall oval).
+for (const kind of ['blanket', 'mug']) test(`${kind}: nothing below the bubble moves while the dog talks`, async () => {
+  const {page, errors} = await open(kind, false);
+  try {
+    await paint(page, 5000);
+    await page.waitForFunction(() => document.querySelector('[data-hs-art]').classList.contains('has-wait'));
+    const tops = new Set(), faces = new Set();
+    let sawFact = false;
+    for (let i = 0; i < 160 && !(sawFact && i > 60); i++) {
+      const r = await page.evaluate(() => {
+        const b = document.querySelector('[data-hs-art-line]').getBoundingClientRect().top;
+        const f = document.querySelector('.hs-wait__me img'); // layout size, not the munch animation's scale
+        const fact = document.querySelector('[data-hs-wait-fact]');
+        return {top: Math.round(b), face: f.offsetWidth + 'x' + f.offsetHeight, fact: !!fact && !fact.hidden};
+      });
+      tops.add(r.top); faces.add(r.face); sawFact = sawFact || r.fact;
+      if (i === 10) await page.click('[data-hs-wait-treat]');
+      await page.waitForTimeout(150);
+    }
+    assert.ok(sawFact, 'a breed fact took a turn during the watch');
+    assert.deepEqual([...tops].length, 1, 'the line under the bubble held still: ' + [...tops].join(', '));
+    assert.deepEqual([...faces], ['48x48'], 'the face is a circle');
+    assert.deepEqual(errors, []);
+  } finally { await page.close(); }
+});

@@ -18,9 +18,11 @@
 @keyframes hs-wait-float { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 33% { transform: translate(6px, -9px) rotate(5deg); } 66% { transform: translate(-5px, 6px) rotate(-2deg); } }
 
 /* the talk: the dog's face (tap for a treat) and a speech bubble; every third beat, Buddy's true note */
-.hs-wait__talk { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; margin: 10px 0 14px; }
-.hs-wait__me { position: relative; appearance: none; width: 52px; height: 52px; padding: 0; border: 2px solid #FFFDF9; border-radius: 50%; background: #F3EEE8; box-shadow: 0 0 0 2px #A8284E; overflow: visible; cursor: pointer; color: #A8284E; display: grid; place-items: center; }
-.hs-wait__me img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.hs-wait__talk { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; margin: 10px 0 14px; }
+.hs-wait__me { position: relative; appearance: none; box-sizing: border-box; flex: none; width: 52px; height: 52px; min-width: 0; min-height: 0; max-height: 52px; aspect-ratio: 1; padding: 0; border: 2px solid #FFFDF9; border-radius: 50%; background: #F3EEE8; box-shadow: 0 0 0 2px #A8284E; overflow: visible; cursor: pointer; color: #A8284E; display: grid; place-items: center; }
+/* the photo fills the circle exactly; a percentage height does not resolve inside a button, so a portrait photo
+   used to stretch the face into a tall oval */
+.hs-wait__me img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 .hs-wait__me:focus-visible { outline: 3px solid #121010; outline-offset: 3px; }
 .hs-wait__me.is-fed { animation: hs-wait-munch .5s ease; }
 @keyframes hs-wait-munch { 0%, 100% { transform: none; } 30% { transform: scale(1.12) rotate(-6deg); } 60% { transform: scale(.96) rotate(4deg); } }
@@ -28,7 +30,13 @@
 .hs-wait__crumb { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 2px; background: #C9A048; pointer-events: none; animation: hs-wait-crumb .75s ease-out forwards; }
 @keyframes hs-wait-crumb { from { transform: rotate(var(--a)) translateX(10px); opacity: 1; } to { transform: rotate(var(--a)) translateX(46px) translateY(14px); opacity: 0; } }
 .hs-wait__bubble, .hs-wait__fact { position: relative; min-height: 76px; padding: 10px 14px 12px; border-radius: 4px 18px 18px 18px; background: #fff; box-shadow: 0 0 0 1px #EFE6DD, 0 10px 20px -16px rgba(30, 23, 20, .6); }
-.hs-wait__fact { grid-column: 2; background: #FBF3E3; box-shadow: 0 0 0 1px #EBD9B0; border-radius: 18px; }
+/* the bubble and Buddy's note share one cell and one fixed height (hs-wait.js measures the tallest line it
+   could ever hold and sets --hs-wait-h), so nothing below them moves while words type or the speaker changes */
+.hs-wait__bubble, .hs-wait__fact { grid-column: 2; grid-row: 1; box-sizing: border-box; height: var(--hs-wait-h, auto); overflow: hidden; }
+/* the measuring copy sits in the bubble's own grid cell, so it is exactly the bubble's width */
+.hs-wait__probe { position: absolute; top: 0; left: 0; right: 0; grid-column: 2; grid-row: 1; height: auto !important; min-height: 0 !important; visibility: hidden; pointer-events: none; }
+.hs-wait__rest { visibility: hidden; }
+.hs-wait__fact { background: #FBF3E3; box-shadow: 0 0 0 1px #EBD9B0; border-radius: 18px; }
 .hs-wait__talk.is-fact .hs-wait__me { box-shadow: 0 0 0 2px #C9A048; }
 .hs-wait__who { margin: 0 0 2px; font: 600 12px/16px "HS DM Sans", "DM Sans", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #A8284E; }
 .hs-wait__fact .hs-wait__who { color: #8A6A1F; }
@@ -54,7 +62,7 @@
 @media (max-height: 700px) {
   .hs-jm__paint .hs-art.has-wait .hs-art__note { display: none; }
   .hs-wait__talk { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
-  .hs-wait__me { width: 44px; height: 44px; }
+  .hs-wait__me { width: 44px; height: 44px; max-height: 44px; }
   .hs-wait__bubble, .hs-wait__fact { min-height: 0; padding: 8px 12px 10px; }
   .hs-wait__say, .hs-wait__fact-text { font-size: 15px; }
 }
