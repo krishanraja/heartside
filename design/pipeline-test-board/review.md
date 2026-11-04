@@ -30,3 +30,18 @@ Six paintings (Higgsfield GPT Image 2.5, high, 2k, 2:3; one attempt each; 16.5 c
 | Spitz, bed | Weak: close to neutral; the oversized stick carries more than the face |
 
 No text, people, food or unnamed objects in any of the six.
+
+### Roast, shipping prompts (breed scenes), 4 November 2026
+
+The same six photos, painted from `prompts/`, the prompts buyers get (`archetypeScenes` on), after the breed scenes were rewritten to judge the person; 16.5 credits. Contact sheet: `roast-v18-shipping-sheet.jpg`. Claude's first read, awaiting Krish:
+
+| Case | Claude's read |
+|---|---|
+| Retriever | Better than the generic run: paw on the ball, a sideways look; still a gentle roast |
+| Terrier | Lands: perched on the cushion pile, smug side-eye, looking down at you |
+| Sighthound | Lands: draped, one leg trailing, heavy-lidded disdain |
+| Scent | Lands: eyes rolled up, the caught-you look |
+| Herding | Lands best: narrowed supervisor side-eye. Painted on cushions indoors, ignoring "out on the morning walk" (the prompt names both; worth fixing) |
+| Spitz | Better than the generic run, still mild: one raised brow, the stick does the talking |
+
+No text, people, food or unnamed objects in any of the six.
