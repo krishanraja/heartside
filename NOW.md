@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-11-04
-head: bf6bcbc
+head: f19d17c
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -14,13 +14,13 @@ never_publish: [any credential or the name of any credential, the Shopify store 
 ---
 # Heartside (heartside.io): where it is right now
 
-<!-- north-star-state {"week_of":"2026-11-02","week_target":658,"current":69,"current_as_of":"2026-11-03","current_source":"Shopify Admin API, orders net of refunds, trailing 28 days, read by Control Center","urgency":5,"urgency_reason":"under 40% of the week's target two weeks running (10% now)"} --> **North Star number: U5, stalled.** Shopify net sales, trailing 4 weeks: $69, against $658 this week, on the way to $50,000 by 22 February 2027. Everything else pauses unless it moves the number.
+<!-- north-star-state {"week_of":"2026-11-02","week_target":658,"current":45,"current_as_of":"2026-11-04","current_source":"Shopify Analytics (ShopifyQL net_sales: gross $69 less $24 reversals, 2 orders), trailing 28 days, read by Claude Code","urgency":5,"urgency_reason":"under 40% of the week's target two weeks running (7% now)"} --> **North Star number: U5, stalled.** Shopify net sales, trailing 4 weeks: $45 (gross $69 less a $24 reversal; the $69 shown before was gross), against $658 this week, on the way to $50,000 by 22 February 2027. Everything else pauses unless it moves the number.
 
 > This is the single current release-state and next-action record. [`docs/SCOPE.md`](docs/SCOPE.md) owns approved scope; [`docs/ECONOMICS.md`](docs/ECONOMICS.md) records the 26 October economic decision: maximize expected total net operating profit subject to a 30% net operating margin floor after all attributable business costs. The earlier mandatory 50% floor is superseded. Configured prices and modeled margins are not realized margin. Later live readback beats this dated record. Earlier checkpoints have moved to [`docs/history/`](docs/history/README.md).
 
 ## What it is
 
-Heartside's current core is an illustrated mug, a word-free sherpa blanket, and a portrait available unframed or framed. The mug and portrait carry a short note and signature; the blanket carries illustrations without printed words. Buddy, the brand's dachshund host, gathers the buyer's details, and Teeinblue prepares personalized artwork for Printful production with manual order review. The ornament is on hold, the pillow is a conditional pilot, and the book is planned for 2027. Theme code is in `shopify/` and text workflows in `n8n/`. Lead line: "Your dog loves you too." The 21 October positioning and handoff files are historical snapshots; do not use their old range or prices.
+Heartside's current core is an illustrated mug, a word-free sherpa blanket, and a portrait available unframed or framed. Every gift is artwork only, with no words printed on it (Ruling, Krish, 2026-10-31); the note in the dog's voice comes in the box and on a free digital card. Buddy, the brand's dachshund host, gathers the buyer's details, and Teeinblue prepares personalized artwork for Printful production with manual order review. The ornament is on hold, the pillow is a conditional pilot, and the book is planned for 2027. Theme code is in `shopify/` and text workflows in `n8n/`. Lead line: "Your dog loves you too." The 21 October positioning and handoff files are historical snapshots; do not use their old range or prices.
 
 ## Who it is for and why it matters for Mindmake
 
@@ -41,15 +41,20 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 **Payments (28 October):** CoWork switched Shopify Payments off for the mock orders on 28 October. A 29 October note says real payment methods were restored, but no readback is recorded here, so treat it as unverified until Part 0 of the [CoWork prompt](docs/review/COWORK-LIVE-ACCEPTANCE.md) reads it back.
 
-**The 28 October acceptance fixes** (PR [#65](https://github.com/krishanraja/heartside/pull/65), record [`docs/evidence/2026-10-28-acceptance-fixes.md`](docs/evidence/2026-10-28-acceptance-fixes.md)) reached buyers when the theme was published on 30 October. The one-screen journey (Track B) is not built; nothing is built until Krish says yes to its mock-up.
+**The 28 October acceptance fixes** (PR [#65](https://github.com/krishanraja/heartside/pull/65), record [`docs/evidence/2026-10-28-acceptance-fixes.md`](docs/evidence/2026-10-28-acceptance-fixes.md)) reached buyers when the theme was published on 30 October. The one-screen journey (Track B) was built from Krish's 29 October brief and is live since 2 November.
 
 **Live since 27 and 28 October:** the journey redesign ([record](docs/evidence/2026-10-27-go-live.md)), the 15% and 20% bundle and the $29 Artist's touch add-on, and the example paintings on the first screen ([record](docs/evidence/2026-10-28-examples-live.md)). Real orders paint with the chosen tone and style because CoWork applied the 27 October prompt spec on 28 October. Two High findings stay open for Krish: no print check yet covers the current products, and the $45 mug sits below the 30% floor in every modeled case.
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
-- Roast breed scenes (PR #115) merged; live theme push run 174 passed on Krish's yes, and the live hs-artwork-engine.js matches main byte for byte. Six Roast paintings from the shipping prompts made (16.5 Higgsfield credits, booked and settled): 4 land clearly, retriever and husky land gently (design/pipeline-test-board/review.md, roast-v18-shipping-sheet.jpg). One prompt flaw seen: the herding scene names couch cushions and the morning walk together. (2026-11-04)
-- Live on Krish's yes (2026-11-04): PR #114 merged; theme push run 173 passed every step and the live theme's new files match main byte for byte (hs-wait.js, hs-wait.css, hs-breed-facts.js, hs-journey.js, hs-artwork-engine.js, hs2-product.liquid). The compose note writer is published (Voice, Guard and Enforce read back equal to the repo); the live writer had predated the four-tone prompt until now. Six Roast test paintings made (16.5 Higgsfield credits, booked and settled): 4 land, 2 read weak (design/pipeline-test-board/review.md). Follow-up on this branch, not live: every breed's own Roast scene rewritten to judge the person instead of posing in triumph, and a nap never sets a Roast scene. (2026-11-04)
-- On branch ccr-62d832ed-6jlg0z, not live. The photo check runs out of sight: a passing photo goes straight to the painter, and only a refused one is shown, uncropped. The painting wait is now a small studio (hs-wait.js): the photo paints in from gray, the dog talks from the studio, true sourced breed facts appear (hs-breed-facts.js from breeds-corpus/fun_facts.csv), and the buyer can give treats. Every gift can be unticked, the painted one included. The note never cuts off. "Over the top" shows as Roast: the dog lightly mocking the person getting the gift, in its breed's character, and its painting is now a visible joke (side-eye, hogging the spot) instead of a straight royal portrait. Hilarious stays the dog being funny about itself. Painting recipes are v18 (tools/print-art/teeinblue/PROMPT-SPEC-2026-11-04-v18.md): theme only, saved Teeinblue blocks unchanged, inside every field limit; no image generated from v18 yet. The backup lines differ per tone, and the compose prompt separates the four tones; it is rebuilt but not yet published in n8n. (2026-11-04)
+- **Live on heartside.io since 4 November, on Krish's yes** (PRs #114, #115 and #116; theme push runs 173, 174 and 175 passed every step, and each pushed file read back from the live theme matches main byte for byte):
+  - **One wait, not two.** The photo check runs out of sight: a passing photo goes straight to the painter, and only a refused photo is shown, whole, with Buddy's reason.
+  - **The painting wait is a small studio** (`hs-wait.js`): the photo paints in from gray, the dog talks from the studio in its own voice, a true and sourced breed fact appears every third beat (`breeds-corpus/fun_facts.csv` via `hs-breed-facts.js`), the buyer can give treats, and the tab says when the painting is ready.
+  - **Every gift can be unticked**, the painted one too, and the note never cuts off.
+  - **Four distinct tones; Over the top is shown as Roast** (the id stays `over_the_top`). Roast is the dog lightly mocking the person getting the gift; Hilarious is the dog being funny about itself.
+  - **The Roast painting is a visible roast** (recipes v18, `tools/print-art/teeinblue/PROMPT-SPEC-2026-11-04-v18.md`; theme only, saved Teeinblue blocks unchanged): every breed's scene judges its person, one place per picture, sharper faces.
+  - **The compose note writer is published in n8n.** Voice, Guard and Enforce read back equal to the repo. The live writer had predated the four-tone prompt until then, which likely explains the tones sounding alike.
+  - **Test paintings:** 12 (33 Higgsfield credits, booked and settled), in `design/pipeline-test-board/review.md`. Of the six from the shipping prompts, four land clearly and the retriever and husky land gently; both faces were sharpened afterwards and are not yet repainted. (2026-11-04)
 - The "Reference photos: Pexels" line under the homepage examples is gone (section markup, its two theme settings, its CSS and its phone-test selector); merged to main and pushed to the live theme on Krish's yes. Preview render has no credit and all 10 phone homepage tests pass; the push run passed every step, and the live theme's hs-showcase files read back from Shopify carry no credit. (2026-11-04)
 - The Answers redesign ships on Krish's yes ("yes, ship it and publish all three, merge to main"): an article is an answer card (the question, the whole short answer, a real-mug set and the pinned pink button on the first screen; the details as chapters opened one at a time, every word in the page), and the library at /blogs/answers is a question picker with occasion chips, Christmas first. Three Christmas articles publish with it: the last day to order (December 10), a dog lover who has everything, and grandparents from the grandkids' dog. tools/preview/answers.browser.test.mjs covers the layout; live-gate now checks /blogs/answers and an answer page. (2026-11-03)
 - No text on the site is cut short: every ellipsis and line clamp is gone from the theme (Krish, 3 Nov: "Ensure text is never truncated."), a source test forbids them, and the homepage test and live-gate fail on any visible text clipped by its box. On short phones (360 x 640, Instagram's 390 x 664) the carousel now stops above the pinned button, which had covered the dog's name and the slide controls; live-gate checks that the pinned button never covers them. (2026-11-03)
@@ -61,6 +66,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-04 Krish called the "Checking the photo" screen horrible (it cropped the photo), found the tones "way too similar to each other" and the copy cut off, and could not untick the blanket. The causes: a visible check, a fade mask over the note, one set of backup lines shared by every tone, a live note writer that predated the tone prompt, and a gift page that locked its own gift. Over the top was renamed Roast and redefined.
 - 2026-11-03 the live site sent only one 32 px icon. /favicon.ico and the touch icon were 404, the theme colour was empty, and the share image still advertises the ornament and the worded mug.
 - 2026-11-02 Krish found the second "Painting" screen, the repeated chooser and the cut-off cart offer tacky in a real purchase, and his order sat at Teeinblue for six hours waiting for a manual send. Shopify forbids store pages inside frames, so background painting was replaced by one continuous automatic add.
 - 2026-10-31 Krish asked to build the card add-on after choosing card design A; the card product stays a draft because the All gifts collection would list it on the live store.
@@ -75,10 +81,9 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-04): Krish judges the next real Roast orders; the herding place clash is fixed and the retriever and spitz Roast faces were sharpened (4 Nov, live after this push).
+- Next (2026-11-04): Krish judges the shipping Roast sheet (`design/pipeline-test-board/roast-v18-shipping-sheet.jpg`) and the first real Roast orders. A repaint of the sharpened retriever and husky faces is about 5.5 credits, on his yes.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
-  - **Track B:** his first reaction to the mock-ups, then a yes before any code.
   - **Still open:**
     - whether to lift the one-per-design cap;
     - the real blanket sample order;

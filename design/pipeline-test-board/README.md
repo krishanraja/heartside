@@ -18,6 +18,12 @@ Recipes v15 gives every corpus archetype a character for each tone and lets a co
 - `control/<id>.txt`: the same case as v15 ships, both switches off.
 - Built by `node tools/print-art/pipeline-test-board.mjs`; `--check` fails if any file is stale. Never edit a prompt by hand.
 
+## Which file ships (4 November 2026)
+
+The rulings now stand at `archetypeScenes` on and `jokeProp` off (`recipes.brief.character.rulings`, recipes v18). `prompts/` is built with both switches on and `control/` with both off, so for Sentimental, Warm and Roast the shipping prompt is the `prompts/` file; for Hilarious it is the `prompts/` file without the one small joke prop. Over the top is shown to buyers as **Roast** (the id stays `over_the_top`).
+
+Two Roast boards were painted on 4 November, recorded in `review.md`: `roast-v18-sheet.jpg` (the generic `control/` scenes) and `roast-v18-shipping-sheet.jpg` (the shipping `prompts/` scenes). Photo credits are in `credits.json`; the full-size files stay out of the repository (`out/` is ignored). The retriever and spitz Roast faces were sharpened after the shipping board and are not repainted yet.
+
 ## How to paint it, once Krish says yes
 
 Use the breed example method in `design/examples-2026-10-29-breeds/README.md`, Steps 1 and 2 only: one real photo per breed under a free licence, credited; the photo for who the dog is, never how the picture looks; the full prompt unchanged; one image at `size` with the store's image model; one attempt per case, no retries; save as `out/<id>.png`. No cutouts, crops or mockups for the board.

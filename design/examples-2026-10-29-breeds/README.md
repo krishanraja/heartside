@@ -1,5 +1,7 @@
 # Breed example batch, 29 October 2026
 
+> **4 November 2026:** `jobs.json` and `prompts/` are regenerated from the current recipes (v18) by `node tools/print-art/breed-batch.mjs`, so they no longer match the paintings made on 29 October. The fourth tone is shown to buyers as **Roast** (id `over_the_top`): the dog judging its person, who stays out of frame, instead of the grand, theatrical setting described below.
+
 Every gift we can show today is the same pug. This batch paints six popular breeds, one in each of the six styles, and each breed in all four tones of the slider: Sentimental, Warm, Hilarious and Over the top. The tones rotate across the portrait, the blanket and the mug, so every tone appears on every gift. Each dog has a toy and something it wears, so the accessories show too.
 
 | Dog | Breed | Style | Sentimental | Warm | Hilarious | Over the top |
@@ -52,7 +54,7 @@ Send this unchanged, with the stage number filled in.
 >    - Sentimental: quiet morning light.
 >    - Warm: a cheerful kitchen or sofa.
 >    - Hilarious: a bright, playful setting.
->    - Over the top: a grand, theatrical setting, such as velvet, gold light or a spotlight.
+>    - Over the top (Roast since 4 November): the dog judging its person, who stays out of frame, with a dramatic side-eye; theatrical staging such as a velvet cushion or a spotlight is still allowed.
 > 3. **In hand:** the mug held in two hands, the blanket draped over a sofa arm, or the portrait being hung on a wall. Hands and arms are fine; show no faces.
 >
 > Save each scene at 1:1, 4:5 and 9:16, as `mockups/<id>/<scene>-<ratio>.png`. The scene is `studio`, `home` or `hand`; the ratio is `1x1`, `4x5` or `9x16`.
@@ -95,7 +97,7 @@ For each painting, a person checks the following, and the same checks apply to e
   - **Sentimental:** quiet and tender.
   - **Warm:** bright, with one small beat.
   - **Hilarious:** one clear comic premise.
-  - **Over the top:** grand, theatrical and smug.
+  - **Over the top** (Roast since 4 November): the dog judging its person, side-eye and all.
 - The whole image is in its medium.
 - On a mockup, the painting is unchanged.
 
