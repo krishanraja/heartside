@@ -995,6 +995,8 @@ test('v18: Roast paints a visible roast inside the fields, and the spec records 
       assert.doesNotMatch(t + v.Energy, risky, [archetype, format, spot].join(' '));
       assert.ok(t.length <= 1200 && v.Energy.length <= 300);
     }
+  // a roast is awake: a nap never sets its scene
+  assert.doesNotMatch(nativeFieldValues({style: 'screenprint', tone: 'over_the_top', format: 'portrait', pronoun: 'she', spot: 'couch', together: 'naps'})['Tone direction'], /nap/);
   // hilarious stays the dog being funny about itself
   const h = nativeFieldValues({style: 'screenprint', tone: 'hilarious', format: 'portrait', pronoun: 'he', spot: 'couch'})['Tone direction'];
   assert.doesNotMatch(h, /judging|side-eye|roast/);

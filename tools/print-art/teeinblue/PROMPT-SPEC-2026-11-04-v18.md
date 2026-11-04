@@ -1,6 +1,6 @@
 # Painter prompt spec v18: Roast (4 November 2026)
 
-Recipe version `actual-dog-recipes-v18-roast`, recipes SHA-256 `593dd8ada7fcaa74219dec5ac6ecadaaa0a89586d1753a4e076eb721833821ce`. It follows v17 (`PROMPT-SPEC-2026-10-31-v17.md`).
+Recipe version `actual-dog-recipes-v18-roast`, recipes SHA-256 `ce8ba2bcc334b0e6daf693cb1e3e32076465f9d19ede3e770a36376aae75fe32`. It follows v17 (`PROMPT-SPEC-2026-10-31-v17.md`).
 
 Status: theme-only. It ships with the next theme push. Nothing changes in Teeinblue.
 
@@ -11,7 +11,8 @@ Krish, 4 November: "if we've chosen roast, should be somewhat hilarious and have
 ## What changed (Roast only; Sentimental, Warm and Hilarious are byte for byte v17)
 
 1. **The pose line** is a visible roast: the dog openly judging its person, who stays out of frame, with a dramatic side-eye down the lens, one brow raised, smug. The joke is in the attitude, never the dog's body. The general line no longer says "chin lifted", so a scene's own pose (chin on paws) never conflicts with it.
-2. **The scenes** (spot, toy, boss, none) hog the stated place and judge the viewer: sprawled across the whole couch, starfished across the bed, a long-suffering stare from the rug, a paw planted on the stated toy. Four archetype lines (Retriever, Companion Velcro, Guardian, Scent Detective) and three archetype scenes now carry the roast's attitude.
+2. **The scenes** (spot, toy, boss, none) hog the stated place and judge the viewer: sprawled across the whole couch, starfished across the bed, a long-suffering stare from the rug, a paw planted on the stated toy. Four archetype lines (Retriever, Companion Velcro, Guardian, Scent Detective) carry the roast's attitude, and every archetype's own Roast scene (these ship, with `archetypeScenes` on) now judges the person instead of posing in triumph: the retriever waits on you pointedly, the terrier looks down at you from its cushion mountain, the sighthound swoons with heavy-lidded disdain, the herding dog narrows its eyes like a supervisor, the guardian is a bouncer at the door.
+6. **A roast is awake.** A nap never sets a Roast scene, so "in the middle of a nap" no longer fights "both eyes open".
 3. **The blanket figures** are "smug, hogging the space with diva confidence ... a dramatic side-eye".
 4. **The camera** is "a centered, slightly low view, like a grand portrait spoofed for laughs".
 5. **The buyer's own brief** (`hs-brief.js`) leads "Roast portrait:" and describes the same side-eye.

@@ -15,3 +15,18 @@ The board was painted from the growth repository with the store's own prompts: o
 | 4, 8, 12, 16, 20, 24 | Over the top | Shipped. The roasts were restaged as situations; the sighthound swoon improved clearly, the rest modestly. The shared Over the top frame still pulls every breed toward a seated, spotlit pose: the next thing to improve |
 
 Rulings: `archetypeScenes` on, `jokeProp` off (see `recipes.brief.character.proposals`).
+
+## Roast, recipes v18, 4 November 2026
+
+Six paintings (Higgsfield GPT Image 2.5, high, 2k, 2:3; one attempt each; 16.5 credits; photos in `credits.json`) from the `control/` prompts, so they show the **generic** Roast scene a dog gets when its breed has no Roast scene of its own. They were painted before the breed scenes were rewritten (the shipping `prompts/` use those). Contact sheet: `roast-v18-sheet.jpg`; the full-size files stay out of the repository. Verdicts below are Claude's first read, awaiting Krish.
+
+| Case | Claude's read |
+|---|---|
+| Retriever, couch | Weak: a gentle sideways glance, reads as a calm portrait more than a roast |
+| Terrier, couch | Lands: raised brow, side-eye, smug |
+| Sighthound, couch | Lands: draped, heavy-lidded side-eye |
+| Scent, rug | Lands: long-suffering, unimpressed stare |
+| Herding, walk | Lands, a touch stern: a hard judging glare |
+| Spitz, bed | Weak: close to neutral; the oversized stick carries more than the face |
+
+No text, people, food or unnamed objects in any of the six.
