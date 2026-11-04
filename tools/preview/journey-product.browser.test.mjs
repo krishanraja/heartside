@@ -185,8 +185,12 @@ for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts
     if (size.width >= 360) assert.deepEqual(first.wraps, [], 'one line each');
     assert.ok(await fits(page), 'the gifts screen fits without scrolling');
     await page.screenshot({path: path.join(shots, size.width + '-gifts.png')});
-    // the painted gift cannot be dropped
-    await page.dispatchEvent('[data-hs-jm-gift=print]', 'click');
+    // every gift can be dropped, the painted one too (Krish, 4 Nov: "why can't I unselect the blanket?");
+    // with nothing chosen the button says so and stays off
+    await page.click('[data-hs-jm-gift=print]');
+    const none = await page.evaluate(() => ({on: document.querySelectorAll('.hs-jm-tile.is-on').length, btn: document.querySelector('[data-hs-jm-add]').textContent, off: document.querySelector('[data-hs-jm-add]').disabled}));
+    assert.deepEqual(none, {on: 0, btn: 'Choose a gift', off: true});
+    await page.click('[data-hs-jm-gift=print]');
     // ticking a gift starts nothing in the background (Shopify refuses frames); it is added after this one
     await page.click('[data-hs-jm-gift=mug]'); await page.click('[data-hs-jm-gift=mug]');
     await page.click('[data-hs-jm-gift=blanket]');
@@ -233,6 +237,32 @@ for (const size of PHONES) test(`${size.width}x${size.height}: select your gifts
     // after the short count it goes in the cart by itself, approved by the first tick, and the cart opens
     await page.waitForURL(/\/cart$/, {timeout: 15000});
     assert.deepEqual(cart.map(i => i.handle), ['your-dogs-portrait', 'your-dogs-personality-blanket']);
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});
+
+test('dropping the painted gift: only the chosen gift is painted and added, and nothing goes in the cart from this page', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844});
+  try {
+    await page.goto(base + GIFTS.print.url);
+    await page.waitForSelector('[data-hs-jm]:not([hidden])');
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm-choose]:not([hidden])', {timeout: 5000});
+    await page.click('[data-hs-jm-gift=print]');
+    await page.click('[data-hs-jm-gift=mug]');
+    const on = await page.evaluate(() => ({on: [...document.querySelectorAll('.hs-jm-tile.is-on')].map(t => t.getAttribute('data-hs-jm-gift')), btn: document.querySelector('[data-hs-jm-add]').textContent}));
+    assert.deepEqual(on.on, ['mug']);
+    assert.match(on.btn, /^Add to cart · \$34$/);
+    const plainBox = () => { const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode(); let v = false; Object.defineProperty(b, 'checked', {get: () => v, set: x => { if (x) v = true; }}); a.replaceWith(b); };
+    await page.evaluate(plainBox);
+    await page.evaluate(() => { document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=your-dogs-portrait'); }; });
+    cart = [];
+    await page.check('[data-hs-jm-tick]');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForURL(/your-dogs-illustrated-mug\?journey=1&hsauto=1/, {timeout: 10000});
+    assert.deepEqual(cart, [], 'the portrait was not added');
+    await page.waitForSelector('[data-hs-jm].is-auto:not([hidden])', {timeout: 8000});
+    assert.equal(await page.textContent('[data-hs-jm-auto]'), 'Gift 1 of 1.');
     assert.deepEqual(errors, []);
   } finally { cart = []; await ctx.close(); }
 });

@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v17-artwork-only-portrait",
+  "version": "actual-dog-recipes-v18-roast",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -73,7 +73,7 @@
     "over_the_top": {
       "label": "Over the top",
       "humor": "maximum",
-      "art": "Humor: maximum, a big theatrical scene that reads as a joke from across the room. Staging: the dog as royalty or a star of its own life: the buyer's stated resting place becomes its throne or stage, a stated toy its prize or sceptre, a stated accessory worn like regalia. Composition: grand and symmetrical, the dog centered and elevated, a dramatic low camera looking up, bold rays of light or a spotlight behind. Expression: chin high, eyes half closed, utterly smug and royally unimpressed. Exaggerate the staging and the attitude, never the dog's anatomy; keep markings exact. Light: rich, saturated, theatrical color. Preserve every stated action: resting stays resting. No crowns, capes, costumes or objects the buyer did not state; the regal feeling comes from pose, framing and light. Never fear, pain, illness, danger, humiliation or scolding.",
+      "art": "Humor: maximum. A loving roast you can see: one visual joke that reads from across the room, the dog openly judging its person (always out of frame) about their real habits. Staging: the buyer's stated resting place hogged completely, a stated toy guarded like it was never up for sharing, a stated accessory worn with diva confidence. Expression: a dramatic side-eye straight down the lens, one brow raised, chin lifted, the face of a dog who has seen your habits and is not impressed. Composition: centered and a little low, like a grand portrait spoofed for laughs, with a spotlight behind. Exaggerate the staging and the attitude, never the dog's anatomy; keep markings exact. Light: rich, saturated, theatrical color. Preserve every stated action: resting stays resting. No crowns, capes, costumes or objects the buyer did not state. Never fear, pain, illness, danger, humiliation or scolding.",
       "copy": "A loving roast: the dog teases the person about their real habits from a position of total superiority."
     }
   },
@@ -187,8 +187,8 @@
         "itemsProp": "the joke's staging comes only from the owner's stated place and activity, made bigger and more serious than life, plus the one small prop above, and never a toy, food, clothing, habit or place the owner did not name"
       },
       "over_the_top": {
-        "pose": "a loving roast: {sub} {is} the star of {pos} own life and royally unimpressed with {pos} person. {joke_ott}. Chin lifted, smug, both eyes open",
-        "camera": "a grand, perfectly symmetrical, low and centered view, like a royal portrait",
+        "pose": "a loving roast anyone gets at a glance: {sub} {is} openly judging {pos} person, who stays out of frame. {joke_ott}. The joke is in the attitude, never the dog's body: a dramatic side-eye down the lens, one brow raised, smug and not impressed. Both eyes open",
+        "camera": "a centered, slightly low view, like a grand portrait spoofed for laughs",
         "light": "a dramatic golden spotlight and rich, deep color.",
         "items": "theatrical staging is allowed, such as a velvet cushion, a spotlight or the person's own couch cushions piled high, but no crown, cape or costume, and never a toy, food, clothing, habit or place the owner did not name"
       }
@@ -252,13 +252,13 @@
         "walk": ", {pos} {toy} clamped like a field marshal's baton"
       },
       "roast": {
-        "couch": "The couch is {pos} throne, every cushion {pos} own",
-        "bed": "The bed is {pos} palace, {sub} sprawled across the very middle of it",
-        "feet": "{sub_cap} {sits} enthroned on the rug at floor level as if it were a royal dais",
-        "anywhere": "{sub_cap} {sits} tall and centered as if wherever {sub} {is} were {pos} royal court",
-        "toy": "{pos_cap} {toy} rests on a velvet cushion beside {obj} like a royal treasure",
-        "none": "{sub_cap} {sits} on a velvet cushion as if receiving guests",
-        "boss": "{sub_cap} {sits} in state like the head of the household, receiving the day's business"
+        "couch": "{sub_cap} {is} sprawled across the entire couch, every cushion claimed and not one inch left for anyone else, side-eyeing the camera as if you asked to sit down",
+        "bed": "{sub_cap} {is} starfished across the very middle of the bed, every inch taken, peering over at the camera as if you are lucky to be allowed in at all",
+        "feet": "{sub_cap} {is} lying on the rug at floor level, chin on paws, eyes rolled up at the camera in a long-suffering stare, as if someone is very, very late",
+        "anywhere": "{sub_cap} {sits} dead center, staring straight down the lens with a slow, judging side-eye, clearly the one who really runs the place",
+        "toy": "{sub_cap} {sits} with one paw planted firmly on {pos} {toy}, glancing sideways at the camera as if daring anyone to ask for a turn",
+        "none": "{sub_cap} {sits} on a velvet cushion, chin high, giving the camera a long, unimpressed side-eye",
+        "boss": "{sub_cap} {sits} in state like the head of the household, peering down at the camera with one brow raised, deeply unimpressed with how you run things"
       },
       "fits": {
         "walk": [
@@ -336,7 +336,7 @@
         "sentimental": "curled up asleep, eyes softly closed",
         "warm": "caught mid-moment, both eyes bright, with a small knowing smile",
         "hilarious": "{figure}, deadpan and completely serious, both eyes open",
-        "over_the_top": "smug and royally unimpressed, chin lifted, both eyes open"
+        "over_the_top": "smug, hogging the space with diva confidence, chin lifted, a dramatic side-eye, one brow raised, both eyes open"
       },
       "vary": "Figures: several {moment}; the others sitting or lying{play}. Each figure is the dog alone, with no furniture or setting",
       "toy": ", some playing with {pos} {toy}, the toy in at least two figures",
@@ -438,13 +438,13 @@
           "none": "posing chin high like the subject of an official portrait"
         },
         "over_the_top": {
-          "couch": "enthroned on the couch",
-          "bed": "sprawled across the bed like a palace",
-          "feet": "enthroned on the rug",
-          "anywhere": "holding court like royalty",
-          "boss": "presiding over the household in state",
-          "toy": "beside {pos} {toy} like a royal treasure",
-          "none": "receiving guests on a velvet cushion"
+          "couch": "sprawled across the whole couch, side-eyeing",
+          "bed": "starfished across the bed, every inch taken",
+          "feet": "chin on paws, eyes rolled up in a long-suffering stare",
+          "anywhere": "staring down the lens with a judging side-eye",
+          "boss": "peering down, one brow raised, unimpressed with how you run things",
+          "toy": "one paw on {pos} {toy}, daring anyone to ask",
+          "none": "side-eyeing from a velvet cushion"
         }
       }
     },
@@ -466,7 +466,7 @@
             "sentimental": "a retriever's soft, trusting eyes and gentle, devoted calm",
             "warm": "a retriever's open, eager grin and soft eyes, body angled warmly toward the viewer",
             "hilarious": "a retriever's earnest, overeager helpfulness, played completely straight",
-            "over_the_top": "a retriever's beaming, sunny self-satisfaction"
+            "over_the_top": "a retriever's beaming, wholly unearned smugness"
           },
           "scenes": {
             "hilarious": {
@@ -654,7 +654,7 @@
             "sentimental": "a scent hound's soft, soulful eyes and long, contented sigh",
             "warm": "a scent hound's curious, nose-first friendliness, soft and easygoing",
             "hilarious": "a scent hound's total, detective-grade seriousness about smells",
-            "over_the_top": "a scent hound's grand, world-weary wisdom, a great detective at rest"
+            "over_the_top": "a scent hound's world-weary sigh, a great detective unimpressed by your alibi"
           },
           "scenes": {
             "hilarious": {
@@ -689,8 +689,8 @@
               "boss": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} in state under one golden spotlight, nose raised in triumph, long ears spread out around {obj} like ceremonial robes, every mystery solved",
-                "short": "in state, ears spread like robes"
+                "text": "{sub_cap} {sits} in state under one golden spotlight, long ears spread out around {obj} like ceremonial robes, one eye on the camera, unimpressed by your alibi",
+                "short": "in state, ears like robes, unimpressed by your alibi"
               }
             }
           }
@@ -736,8 +736,8 @@
               },
               "bed": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} at the very center of the bed under a single spotlight, head thrown back mid-howl as if singing the final aria of the opera",
-                "short": "singing an aria from the bed"
+                "text": "{sub_cap} {sits} at the very center of the bed under a single spotlight, mid dramatic sigh, glancing at the camera as if you have disappointed {obj} deeply",
+                "short": "sighing dramatically from the bed"
               }
             }
           }
@@ -748,7 +748,7 @@
             "sentimental": "a companion dog's adoring, close devotion, melted into the moment",
             "warm": "a companion dog's adoring gaze and gentle head tilt, sweetly snug",
             "hilarious": "a companion dog's devotion taken to an absurd, professional level",
-            "over_the_top": "a companion dog's pampered, cherished-darling poise"
+            "over_the_top": "a companion dog's pampered diva attitude, clearly expecting better service"
           },
           "scenes": {
             "hilarious": {
@@ -773,14 +773,14 @@
             "over_the_top": {
               "couch": {
                 "fit": 3,
-                "text": "{sub} {is} curled at the top of a mountain of the couch cushions, chin on the softest one, eyes half-closed in total bliss, spotlit like a royal darling",
-                "short": "in bliss on a mountain of cushions"
+                "text": "{sub} {is} lounging at the top of a mountain of the couch cushions, chin on the softest one, spotlit like a pampered darling and side-eyeing the camera as if the service here is slow",
+                "short": "lounging on a mountain of cushions, side-eyeing"
               },
               "shadow": {
                 "fit": 2,
                 "placeless": true,
-                "text": "{sub_cap} {sits} on a velvet cushion pulled right up to the camera, so close {pos} adoring face fills the frame, gazing up as if at {pos} beloved monarch",
-                "short": "adoring, right up to the camera"
+                "text": "{sub_cap} {sits} on a velvet cushion pulled right up to the camera, so close {pos} face fills the frame, one brow raised, inspecting you as if the service has been slow",
+                "short": "right up to the camera, one brow raised"
               }
             }
           }
@@ -791,7 +791,7 @@
             "sentimental": "a guardian's big, gentle steadiness, quiet strength at rest",
             "warm": "a guardian's kind, steady face and big, soft-eyed calm",
             "hilarious": "a guardian's solemn sense of duty, applied to the smallest things",
-            "over_the_top": "a guardian's noble, statue-like gravity, a palace sentry in repose"
+            "over_the_top": "a guardian's grave, unimpressed stare, like a bouncer who is not letting you in"
           },
           "scenes": {
             "hilarious": {
@@ -820,8 +820,8 @@
               },
               "anywhere": {
                 "fit": 2,
-                "text": "{sub_cap} {sits} perfectly still on a low velvet plinth in the middle of the room, spotlit and posed like a marble statue of the household's noble guardian",
-                "short": "posed on a plinth like a statue"
+                "text": "{sub_cap} {sits} perfectly still on a low velvet plinth in the middle of the room, spotlit and posed like a marble statue of the household's noble guardian, one eye cracked open to check you noticed",
+                "short": "posed like a statue, one eye checking you noticed"
               }
             }
           }

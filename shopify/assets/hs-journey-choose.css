@@ -43,7 +43,7 @@ html.hs-jm-on body { background: #FBF7F3; }
 .hs-jm-tone--sentimental { --tone: #C2416B; --tone-2: #E07A9A; }
 .hs-jm-tone--warm { --tone: #D9771F; --tone-2: #F2B045; }
 .hs-jm-tone--hilarious { --tone: #6B45E0; --tone-2: #9C7CF5; }
-.hs-jm-tone--over_the_top { --tone: #B98512; --tone-2: #E2BC4A; }
+.hs-jm-tone--over_the_top { --tone: #C0391B; --tone-2: #E8704A; }
 .hs-jm__keep { width: 100%; min-height: 48px; border: 0; background: none; font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .hs-jm__title { font-size: 24px; font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
 .hs-jm__paint { flex: 1; display: flex; flex-direction: column; justify-content: center; }

@@ -15,7 +15,7 @@
     'treats': { hold: 'a treat balanced on {pos} nose', paws: 'a treat at {pos} paws', sleep: 'a treat guarded under one paw' }
   };
   var WEARS = { 'a collar': 'collar', 'a bandana': 'bandana', 'a bow': 'bow', 'a sweater': 'sweater', 'a harness': 'harness' };
-  var LEAD = { sentimental: 'Tender portrait:', warm: 'Cheerful portrait:', hilarious: 'Comic portrait:', over_the_top: 'Over-the-top portrait:' };
+  var LEAD = { sentimental: 'Tender portrait:', warm: 'Cheerful portrait:', hilarious: 'Comic portrait:', over_the_top: 'Roast portrait:' };
   // where the moment happens: a walk or a car ride sets the scene; otherwise the dog's own spot does
   var SPOT = { couch: 'on the couch', bed: 'on the bed', feet: "at someone's feet", anywhere: '' };
   var DOING = { walk: 'out on a walk', car: 'riding in the car', coffee: 'by a morning coffee', movie: 'for movie night', naps: 'mid-nap' };
@@ -27,8 +27,9 @@
   var ASLEEP = { sentimental: 'peaceful and safe', warm: 'a sleepy little smile' };
   // hilarious is a visible comic premise, built from what they do together
   var JOKE = { walk: 'leading the way like a general on parade', car: 'ears flying, utterly majestic', coffee: 'supervising the coffee like a boss', movie: 'reviewing the film with deep suspicion', naps: 'snoring with total commitment' };
-  // over the top: the dog as royalty, smug and theatrical, the scene its palace (Krish, 29 Oct: a fourth setting)
-  var ROYAL = { walk: 'marching ahead like royalty on a victory parade', car: 'riding like a celebrity being chauffeured', coffee: 'inspecting the coffee like a palace taster', movie: 'sprawled like a critic at a private screening', naps: 'sprawled like royalty in a palace suite' };
+  // roast (Krish, 4 Nov: "if we've chosen roast, should be somewhat hilarious and have more hilarity in it"):
+  // the dog openly judging its person, side-eye and all, from what they do together
+  var ROYAL = { walk: 'leading the walk and side-eyeing anyone who falls behind', car: 'riding up front like the one who actually decides where we go', coffee: 'side-eyeing the coffee like it was poured too slowly', movie: 'judging the movie choice with one raised brow', naps: 'hogging the whole nap spot and side-eyeing you for asking' };
   var PRON = { he: { pos: 'his', obj: 'him' }, she: { pos: 'her', obj: 'her' }, they: { pos: 'their', obj: 'them' } };
 
   function article(w) { return /^[aeiou]/i.test(w) ? 'an ' : 'a '; }
@@ -71,7 +72,7 @@
     var held = heldToys(o);
     var asleep = o.together === 'naps';
     if (held.length) { if (parts.length === 1 && !wear) parts[0] += ' with ' + held.join(' and '); else parts.push('with ' + held.join(' and ')); }
-    var mood = composed ? composed : tone === 'over_the_top' ? (ROYAL[o.together] || 'royally unimpressed') : tone === 'hilarious' ? (JOKE[o.together] || 'looking extremely important') : asleep ? ASLEEP[tone] : ((MOOD[tone] || MOOD.warm)[o.meaning] || 'eyes bright');
+    var mood = composed ? composed : tone === 'over_the_top' ? (ROYAL[o.together] || 'giving you a long, unimpressed side-eye') : tone === 'hilarious' ? (JOKE[o.together] || 'looking extremely important') : asleep ? ASLEEP[tone] : ((MOOD[tone] || MOOD.warm)[o.meaning] || 'eyes bright');
     parts.push(mood);
     return parts.join(', ') + '.';
   }

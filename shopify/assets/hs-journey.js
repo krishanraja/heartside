@@ -24,7 +24,9 @@
   var NAME_MAX = 14, MAX_CALLS = 14, COMPOSE_MS = 11000;
   var COMPOSE_VERSION = 'journey-v2';
   var TONES = ['sentimental', 'warm', 'hilarious', 'over_the_top'];
-  var TONE_LABEL = { sentimental: 'Sentimental', warm: 'Warm', hilarious: 'Hilarious', over_the_top: 'Over the top' };
+  var TONE_LABEL = { sentimental: 'Sentimental', warm: 'Warm', hilarious: 'Hilarious', over_the_top: 'Roast' };
+  // Krish, 4 Nov: "Over the top should be renamed roast". The id stays over_the_top, which the writer, the
+  // painter and every saved cart already use; only the buyer's word changes.
   /* one line-icon family (24 px grid, 1.75 stroke, round ends), drawn in currentColor (Krish, 29 Oct:
      "premium iconography", the same variety wherever it helps) */
   function icon(paths, cls) { return '<svg class="hsj-ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + paths + '</svg>'; }
@@ -32,7 +34,7 @@
     sentimental: icon('<path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1Z"/>'),
     warm: icon('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'),
     hilarious: icon('<circle cx="12" cy="12" r="9"/><path d="M7.5 13.5h9a4.5 4.5 0 0 1-9 0Z"/><path d="M8 9.5c.6-.8 1.6-.8 2.2 0M13.8 9.5c.6-.8 1.6-.8 2.2 0"/>'),
-    over_the_top: icon('<path d="M3.5 8.5 7.5 12 12 5.5 16.5 12l4-3.5-1.8 9.5H5.3Z"/><path d="M5.5 20.5h13"/>'),
+    over_the_top: icon('<path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.4 2.6-5 3.5-8.4 1.8 1.2 2.7 3 2.6 4.8 1-.6 1.7-1.8 1.9-3.3 2.2 1.7 4 4.3 4 6.9 0 3.2-2.4 5.6-6 5.6Z"/><path d="M12 21c-1.5 0-2.5-1-2.5-2.4 0-1.5 1.2-2.3 1.8-3.6.9.7 1.4 1.6 1.4 2.5.5-.3.9-.9 1-1.6.8.8 1.3 1.7 1.3 2.7 0 1.4-1 2.4-3 2.4Z"/>'),
     back: icon('<path d="M14.5 5.5 8 12l6.5 6.5"/>'),
     next: icon('<path d="M5 12h13M13 6.5 18.5 12 13 17.5"/>'),
     camera: icon('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.6-2.2h5.4L16.3 7h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5Z"/><circle cx="12" cy="12.8" r="3.4"/>'),
@@ -66,12 +68,36 @@
   }
   // the labels the note writer reads, the tap in words (n8n compose, 29 Oct bench)
   function label(id, v) { var g = groups(names()).filter(function (x) { return x.id === id; })[0], o = g && g.opts.filter(function (x) { return x[0] === v; })[0]; return o ? o[1].toLowerCase() : ''; }
-  // the scripted lines, the dog talking (Krish, 20 Oct), used until the writer answers or if it can't
+  /* the scripted lines, the dog talking (Krish, 20 Oct), used until the writer answers or if it can't. One set
+     per tone (Krish, 4 Nov: the tones were "way too similar to each other"; the one set served every tone,
+     so a slow writer showed the same note on all four). Sentimental is tender with no jokes; warm smiles;
+     hilarious is deadpan dog logic about the dog's own importance; roast teases the person's habits only,
+     with the love in the last line. No two tones share a line (tools/preview/note-tones.test.mjs). */
   var LINES = {
-    home: { door: 'I wait by the door until you come home.', toy: "I bring you a present whenever you're back.", spin: "When you walk in, I spin like it's a party.", cool: 'I play it cool for about four seconds.' },
-    spot: { feet: 'Your feet make the best pillow I know.', bed: 'I took your side of the bed to keep it warm.', couch: 'I keep your spot on the couch warm for you.', anywhere: 'Wherever you go, I go.' },
-    together: { walk: 'Our walks are the best part of my day.', coffee: 'Coffee with you is the best part of my morning.', movie: 'Movie night is better with me beside you.', naps: 'My best naps are the ones next to you.', car: "Any car ride is a good one if you're in it." },
-    meaning: { shadow: "I'm your shadow, and I like it that way.", best: "You're my best friend, and I'm yours.", hard: "On the hard days, I'll stay close to you.", boss: 'I run this house, but I love you most.' }
+    sentimental: {
+      home: { door: 'I wait by the door until you come home.', toy: 'I bring you a present because I missed you.', spin: 'When you walk in, my whole body says welcome home.', cool: "I act calm when you come home, but my heart doesn't." },
+      spot: { feet: 'Your feet are where I feel safest.', bed: 'Your side of the bed smells like home to me.', couch: 'I keep your spot on the couch so I can be near you.', anywhere: 'Wherever you are is where I want to be.' },
+      together: { walk: 'Our walks are the best part of my day.', coffee: 'Mornings with you are my favorite kind of quiet.', movie: 'Movie nights mean a whole evening pressed against you.', naps: 'My best naps are the ones next to you.', car: "Any road is a good one if you're on it with me." },
+      meaning: { shadow: 'I follow you everywhere because I never want to miss you.', best: "You're my best friend, and I'm yours forever.", hard: "On the hard days, I'll stay close to you.", boss: 'I run this house, but my heart belongs to you.' }
+    },
+    warm: {
+      home: { door: "I wait by the door so I'm the first thing you see.", toy: "I bring you a present whenever you're back.", spin: "When you walk in, I spin like it's a party.", cool: 'I play it cool for about four seconds.' },
+      spot: { feet: 'Your feet make the best pillow I know.', bed: 'I took your side of the bed to keep it warm.', couch: 'I keep your spot on the couch warm for you.', anywhere: 'Wherever you go, I go.' },
+      together: { walk: 'Our walks are my favorite thing on the calendar.', coffee: 'Coffee with you is the best part of my morning.', movie: 'Movie night is better with me beside you.', naps: "I nap better when you're next to me.", car: "Any car ride is a good one if you're in it." },
+      meaning: { shadow: "I'm your shadow, and I like it that way.", best: "You're my best friend, and I'm yours.", hard: "On the hard days, I'm right here, tail and all.", boss: 'I run this house, but I love you most.' }
+    },
+    hilarious: {
+      home: { door: 'I wait at the door all day because someone has to supervise it.', toy: 'I bring you a sock when you get home, because rent is due.', spin: 'When you walk in, I do three laps, which is the house record.', cool: 'I play it cool when you get home for two whole seconds, a personal best.' },
+      spot: { feet: "I sleep on your feet so they can't leave without me knowing.", bed: "I took your side of the bed, and I've filed the paperwork.", couch: 'I measured the couch, and both good spots are mine.', anywhere: "I follow you to the bathroom because it's my job to inspect it." },
+      together: { walk: 'I take you on walks for your health, and I accept no thanks.', coffee: 'I sit with you at coffee in case the toast needs supervising.', movie: 'On movie nights I watch the snacks, because someone has to.', naps: "I nap next to you to make sure you're doing it right.", car: 'I ride in the car like a very important passenger with no destination.' },
+      meaning: { shadow: 'I follow you everywhere, strictly for security reasons.', best: "You're my best friend, and I've told every squirrel.", hard: "On hard days I lie on you, which I'm told is medicine.", boss: "I'm the boss of this house, and I take the job very seriously." }
+    },
+    over_the_top: {
+      home: { door: "I wait by the door all day, and you're late every single time.", toy: 'I bring you a present because your manners clearly need help.', spin: 'I spin when you walk in, and you still forget the treat.', cool: "I play it cool when you get home so you don't get a big head." },
+      spot: { feet: 'Your feet are a decent pillow, which is your best quality.', bed: 'I took your side of the bed because you were using it wrong.', couch: "I let you sit on the couch, on the bit I don't want.", anywhere: "I follow you everywhere because you'd get lost without me." },
+      together: { walk: "I walk you every day, and you still can't keep up.", coffee: "I sit through your coffee, even though you're slow in the mornings.", movie: 'Movie nights would be better if you shared the popcorn.', naps: "You're a mediocre nap partner, but you're mine.", car: "You drive, I navigate, and honestly I'm carrying us." },
+      meaning: { shadow: 'I keep an eye on you all day, because I love you and you need it.', best: "You're lucky I picked you, and I'd pick you again.", hard: "On your hard days I stay close, and I won't tell anyone.", boss: 'I run this house, and I keep you around because I love you.' }
+    }
   };
   var GIFT_NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' };
 
@@ -130,7 +156,11 @@
   }
   function aboutDone() { return ASK.every(answered); }
   function note(tone) { return S.notes && S.notes[tone || S.tone] || null; }
-  function scripted() { var o = {}; ['home', 'spot', 'together', 'meaning'].forEach(function (k) { o[k] = (LINES[k] || {})[S[k]] || ''; }); return o; }
+  function scripted(tone) {
+    var set = LINES[tone || S.tone] || LINES.warm, o = {};
+    ['home', 'spot', 'together', 'meaning'].forEach(function (k) { o[k] = ((set[k] || {})[S[k]]) || ((LINES.warm[k] || {})[S[k]]) || ''; });
+    return o;
+  }
   function lines() { var c = note(); return c && c.lines ? c.lines : scripted(); }
   // the gift the painting starts on. The writer's pick, but never the mug: it sits under the 30%
   // margin floor (docs/ECONOMICS.md), so a mug pick paints the portrait first and the mug is one
@@ -248,6 +278,8 @@
       // the toys in the words the buyer read in the brief (in his mouth, at her paws), kept by the painter
       toys: (window.HSBrief && window.HSBrief.toyWords({ tone: S.tone, pronoun: n.she, together: S.together, toys: S.toys })) || toyText() || '', accessory: S.accessory || '', noToy: !!S.toysDone && !toyText() };
     
+    // the breed's corpus id, for the painting wait's true facts (hs-wait.js, hs-breed-facts.js)
+    try { var fr = breedRow(); st.hs_breed_id = fr ? fr.id : (window.HSBreeds && S.breed ? ((window.HSBreeds.lookup(S.breed) || {}).id || '') : ''); } catch (e) { st.hs_breed_id = ''; }
     st.hs_ship_to = n.self ? 'Me (the buyer)' : n.person;
     st.hs_journey = { t: Date.now(), gift: gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0, voice: (note() || {}).voice || '', brief: brief(), gifts: journeyGifts(), notes: writtenNotes() };
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
@@ -384,6 +416,27 @@
       '<p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>') +
       '<div class="hsj-note__foot"><span class="hsj-note__ask' + (busy ? ' is-writing' : '') + '" data-hsj-note-ask>' + (busy ? 'Writing it ' + TONE_LABEL[S.tone].toLowerCase() : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
       '<button type="button" class="hsj-text-btn" data-hsj-rewrite' + (busy ? ' disabled' : '') + '>' + ICON.redo + '<span>Write it again</span></button></div>';
+    fitNote();
+  }
+  /* every word of the note shows (Krish, 4 Nov: the copy "gets cut off"). The type steps down from 17 px to a
+     13 px floor until the four lines and the signature fit the card; on the smallest phones, past the floor,
+     the note scrolls inside the card, which keeps its size, so a word is never out of reach. */
+  function fitNote() {
+    var box = app && app.querySelector('[data-hsj-note]'), letter = box && box.querySelector('.hsj-letter');
+    if (!box) return;
+    box.classList.remove('is-long');
+    if (!letter) return;
+    // a box not laid out yet (hidden, or mid-render) measures 0: measure again on the next frame
+    if (letter.clientHeight < 40) { if (!fitNote.retry) { fitNote.retry = true; requestAnimationFrame(function () { fitNote.retry = false; if (letter.isConnected && letter.clientHeight >= 40) fitNote(); }); } return; }
+    var sizes = [17, 16, 15, 14, 13];
+    // measured from the layout, not scrollHeight: the lines arrive with a small slide, and a slide in
+    // progress would read as overflow
+    var fits = function () { var last = letter.lastElementChild; return !last || last.offsetTop + last.offsetHeight <= letter.offsetTop + letter.clientHeight + 1; };
+    for (var i = 0; i < sizes.length; i++) {
+      letter.style.setProperty('--hsj-fs', sizes[i] + 'px');
+      if (fits()) return;
+    }
+    box.classList.add('is-long');
   }
   // "Write it again" as often as they like (Krish, 29 Oct): the same tone, a fresh draft; past the
   // hour's limit it says so kindly and keeps the drafts they have
@@ -405,14 +458,13 @@
     var n = names(), gift = bestGift();
     return screen('photo', 'Give us ' + n.his + ' best pic to paint from', 'We paint ' + esc(n.dog) + ' on the ' + GIFT_NAME[gift] + ' first, then show it on every gift.' + esc(priceLine(gift)),
       '<label class="hsj-drop" data-hsj-drop>' + '<input type="file" accept="image/*" class="hsj-file" data-hsj-file>' +
-      '<span class="hsj-drop__img" data-hsj-preview>' + (photoURL ? '<img src="' + esc(photoURL) + '" alt="Your photo">' : '<span class="hsj-drop__ico">' + ICON.camera + '</span>') + '</span>' +
-      '<span class="hsj-drop__text">' + (photoURL ? 'Choose a different photo' : 'Take or choose a photo') + '</span><span class="hsj-drop__sub">It stays on your phone until you choose a gift.</span></label>' +
+      '<span class="hsj-drop__img" data-hsj-preview><span class="hsj-drop__ico">' + ICON.camera + '</span></span>' +
+      '<span class="hsj-drop__text">Take or choose a photo</span><span class="hsj-drop__sub">It stays on your phone until you choose a gift.</span></label>' +
       '<p class="hsj-photo-note" data-hsj-photo-note role="status"></p>' +
       '<button type="button" class="hsj-text-btn" data-hsj-override hidden>It\'s ' + esc(n.dog) + '. Use this photo.</button>' +
-      '<ul class="hsj-tips" data-hsj-tips><li data-hsj-tip="face">' + ICON.face + '<span>' + esc(n.possessive) + ' face clearly in view</span>' + TIP_MARK + '</li><li data-hsj-tip="light">' + ICON.light + '<span>Good daylight</span>' + TIP_MARK + '</li><li data-hsj-tip="one">' + ICON.one + '<span>Just ' + esc(n.dog) + ', no other dogs</span>' + TIP_MARK + '</li></ul>',
+      '<ul class="hsj-tips" data-hsj-tips><li data-hsj-tip="face">' + ICON.face + '<span>' + esc(n.possessive) + ' face clearly in view</span></li><li data-hsj-tip="light">' + ICON.light + '<span>Good daylight</span></li><li data-hsj-tip="one">' + ICON.one + '<span>Just ' + esc(n.dog) + ', no other dogs</span></li></ul>',
       '<button type="button" class="hsj-btn" data-hsj-choose-photo><span>Choose a photo</span>' + ICON.camera + '</button>');
   }
-  var TIP_MARK = '<span class="hsj-tip__mark" aria-hidden="true">' + ICON.check + '</span>';
   function view(step) {
     if (step === 'name') return viewName();
     if (step === 'breed') return viewBreed();
@@ -456,7 +508,8 @@
       return;
     }
     app.innerHTML = '<div class="hsj__screen hsj__screen--step" data-hsj-screen="' + step + '">' + view(step) + '</div>';
-    if (step === 'words') { paintNote(); compose(S.tone); }
+    if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
+    if (step === 'photo') warmDetector();
     var input = app.querySelector('[data-hsj-name], [data-hsj-person]');
     if (input) { nameHint(input); if (!('ontouchstart' in window)) input.focus(); }
     window.scrollTo(0, Math.max(0, root.getBoundingClientRect().top + window.pageYOffset));
@@ -546,6 +599,33 @@
     if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }
   }
   var pendingFile = null;
+  /* The photo check runs out of sight (Krish, 4 Nov: the "Checking the photo" screen "is horrible, cuts off
+     half the picture, and needs to not be in sight at all"). A photo that passes goes straight to the
+     painter: the button says so for a moment and the painting screen is the next thing seen. Only a photo
+     the check refuses is shown, whole, with Buddy's reason. The dog detector loads while the buyer is on
+     this step and is used only once it is ready, for at most 1.5 s; the pixel checks always run. */
+  var detectorReady = false, detectorAsked = false;
+  function warmDetector() {
+    if (detectorAsked || !window.HSPhotoQuality || !window.HSPhotoQuality.loadDetector) return;
+    detectorAsked = true;
+    setTimeout(function () {
+      try { window.HSPhotoQuality.loadDetector().then(function (d) { detectorReady = !!d; }, function () { detectorReady = false; }); } catch (e) { /* no detector */ }
+    }, 800);
+  }
+  function busyPhoto(on) {
+    var b = app.querySelector('[data-hsj-choose-photo]');
+    if (!b) return;
+    b.disabled = !!on;
+    b.classList.toggle('is-busy', !!on);
+    b.innerHTML = on ? '<span>Off to the painter</span><span class="hsj-btn__dots" aria-hidden="true"></span>' : '<span>Choose a photo</span>' + ICON.camera;
+  }
+  function showRefused(f) {
+    var drop = app.querySelector('[data-hsj-drop]'), prev = app.querySelector('[data-hsj-preview]');
+    if (!drop || !prev) return;
+    drop.classList.add('has-photo');
+    prev.style.setProperty('--hsj-photo', 'url("' + photoURL + '")');
+    prev.innerHTML = '<img src="' + esc(photoURL) + '" alt="The photo you chose">';
+  }
   function onChange(e) {
     var t = e.target;
     if (!t.hasAttribute('data-hsj-file') || !t.files || !t.files[0]) return;
@@ -553,64 +633,35 @@
     pendingFile = f;
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(f);
-    var prev = app.querySelector('[data-hsj-preview]'); if (prev) prev.innerHTML = '<img src="' + esc(photoURL) + '" alt="Your photo">';
     var say = app.querySelector('[data-hsj-photo-note]'), over = app.querySelector('[data-hsj-override]');
     if (over) over.hidden = true;
-    if (!window.HSPhotoQuality) { usePhoto(f, false); return; }
     if (say) { say.textContent = ''; say.classList.remove('is-good'); }
-    var check = checkLook(), started = Date.now();
-    window.HSPhotoQuality.check(f, { timeout: 6000 }).then(function (r) {
-      // the ticks take their time even when the check is quick, so each one is seen
-      setTimeout(function () {
-        var why = r.reasons.map(function (x) { return x.message; }).join(' ');
-        if (r.verdict === 'reject') {
-          track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
-          check.done(r.reasons.map(function (x) { return x.code; }));
-          if (say) say.textContent = why;
-          if (over) over.hidden = !r.overridable;
-          return;
-        }
-        check.done([]);
-        usePhoto(f, false, r.verdict === 'warn' ? why : '');
-      }, Math.max(0, 1500 - (Date.now() - started)));
-    }, function () { check.done([]); usePhoto(f, false); });
-  }
-  /* the check, made visible: the photo fills the frame under a passing light, and the three tips
-     tick off one by one; a tip the photo fails turns amber with the reason underneath */
-  var TIP_OF = { dark: 'light', bright: 'light', dim: 'light', glare: 'light', dogs: 'one', many: 'one', multiple: 'one', several: 'one' };
-  function checkLook() {
-    var drop = app.querySelector('[data-hsj-drop]'), list = app.querySelector('[data-hsj-tips]'), timers = [];
-    var items = list ? Array.prototype.slice.call(list.querySelectorAll('[data-hsj-tip]')) : [];
-    if (drop) {
-      drop.classList.add('has-photo', 'is-checking');
-      if (!drop.querySelector('.hsj-scan')) drop.insertAdjacentHTML('beforeend', '<span class="hsj-scan" aria-hidden="true"></span><span class="hsj-drop__badge" data-hsj-badge></span><span class="hsj-drop__change">Change</span>');
-      drop.querySelector('[data-hsj-badge]').innerHTML = '<span>Checking the photo</span>';
-    }
-    if (list) { list.classList.add('is-checking'); items.forEach(function (li) { li.classList.remove('is-done', 'is-bad'); }); }
-    items.forEach(function (li, i) { timers.push(setTimeout(function () { if (list.classList.contains('is-checking')) li.classList.add('is-done'); }, 420 * (i + 1))); });
-    return { done: function (codes) {
-      timers.forEach(clearTimeout);
-      var bad = {};
-      codes.forEach(function (c) { var k = TIP_OF[c]; if (!k) Object.keys(TIP_OF).forEach(function (w) { if (c.indexOf(w) > -1) k = TIP_OF[w]; }); bad[k || 'face'] = true; });
-      items.forEach(function (li) { var b = !!bad[li.getAttribute('data-hsj-tip')]; li.classList.toggle('is-bad', b); li.classList.toggle('is-done', !b); });
-      if (list) list.classList.remove('is-checking');
-      if (drop) {
-        drop.classList.remove('is-checking');
-        drop.querySelector('[data-hsj-badge]').innerHTML = codes.length ? '<span>Try another photo</span>' : ICON.check + '<span>Looks great</span>';
+    busyPhoto(true);
+    if (!window.HSPhotoQuality) { usePhoto(f, false); return; }
+    var opts = detectorReady ? { timeout: 1500, checkTimeout: 4000 } : { detect: false, checkTimeout: 4000 };
+    window.HSPhotoQuality.check(f, opts).then(function (r) {
+      if (r.verdict === 'reject') {
+        track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+        busyPhoto(false);
+        showRefused(f);
+        if (say) say.textContent = r.reasons.map(function (x) { return x.message; }).join(' ');
+        if (over) over.hidden = !r.overridable;
+        return;
       }
-    } };
+      usePhoto(f, false);
+    }, function () { usePhoto(f, false); });
   }
   function usePhoto(f, overridden, warning) {
     var say = app.querySelector('[data-hsj-photo-note]'), n = names(), gift = bestGift();
-    if (say) say.textContent = warning ? warning + ' ' : '';
+    if (say) say.textContent = '';
     if (overridden) track('photo_override', {});
+    busyPhoto(true);
     savePhoto(f).then(function (ok) {
-      if (!ok) { if (say) say.textContent = "This browser couldn't keep the photo. Allow this site to store data, then choose it again."; return; }
+      if (!ok) { busyPhoto(false); if (say) say.textContent = "This browser couldn't keep the photo. Allow this site to store data, then choose it again."; return; }
       bridge(gift);
       var url = giftURL(gift);
-      if (!url) { if (say) say.textContent = "That gift isn't available right now."; return; }
+      if (!url) { busyPhoto(false); if (say) say.textContent = "That gift isn't available right now."; return; }
       track('paint', { gift: gift, tone: S.tone, style: S.style });
-      if (say) { say.classList.add('is-good'); say.textContent = 'Off to paint ' + n.dog + '…'; }
       window.location.href = url;
     });
   }

@@ -126,6 +126,15 @@ for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one
       const b = await box();
       assert.deepEqual([b.y, b.height], [warm.y, warm.height], 'the tone changes the words, never the layout');
       await noScroll(page, 'words ' + tone);
+      // every line and the signature show whole once they have arrived (Krish, 4 Nov: the copy "gets cut off");
+      // on the smallest phones the note may scroll inside its card instead, never hide
+      await page.waitForTimeout(1100);
+      const cut = await page.evaluate(() => {
+        const letter = document.querySelector('.hsj-letter'), box = letter.getBoundingClientRect(), long = document.querySelector('[data-hsj-note]').classList.contains('is-long');
+        return {long, cut: [...letter.children].filter(p => p.getBoundingClientRect().bottom > box.bottom + 1).map(p => p.textContent)};
+      });
+      if (size.height >= 800) assert.deepEqual(cut, {long: false, cut: []}, 'the whole note shows');
+      else if (cut.cut.length) assert.equal(cut.long, true, 'a note that does not fit scrolls inside its card');
       await page.screenshot({path: path.join(shots, tag + '-words-' + tone + '.png')});
     }
     const before = calls.length;
