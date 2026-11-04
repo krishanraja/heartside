@@ -581,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v17-artwork-only-portrait');
+  assert.equal(recipes.version, 'actual-dog-recipes-v18-roast');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -970,11 +970,32 @@ test('v16: the mug block is the one applied in Teeinblue, it fills the frame, an
 // and the theme's Tone direction no longer keeps the lower-right quarter for a note.
 test('v17: the portrait fills the print, its saved block is unchanged, and the spec records it', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-10-31-v17.md', import.meta.url), 'utf8');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes('actual-dog-recipes-v17-artwork-only-portrait'), 'records the v17 recipe version');
   for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
   assert.equal(sha256(nativePrompt('portrait')), 'dddbf245f588aea4487a9da1dc4c0da6dafa5ce5d2d98c634a4d71ab8b39f6cd', 'the saved portrait block is byte for byte v14');
   for (const tone of Object.keys(recipes.tones)) {
     const t = nativeFieldValues({style: 'screenprint', tone, format: 'portrait', pronoun: 'she', spot: 'couch'})['Tone direction'];
     assert.ok(t.endsWith(recipes.brief.fill), tone + ': fills the frame'); assert.doesNotMatch(t, /lower-right|small note/);
   }
+});
+
+// v18 (4 Nov): Roast. Krish: "Hilarious should be the dog being hilarious, and roast should be the dog lightly
+// mocking the person who's getting the gift". The Roast painting is a visible joke, and nothing in it can be
+// drawn as food, writing or other people.
+test('v18: Roast paints a visible roast inside the fields, and the spec records it', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-04-v18.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
+  const risky = /\b(snacks?|food|treats?|report|list|sign|audience|crowd|footrest|crown|cape|costume)\b/i;
+  for (const archetype of [null, ...Object.keys(recipes.brief.character.archetypes)]) for (const format of ['mug', 'portrait', 'blanket'])
+    for (const spot of ['couch', 'bed', 'feet', 'anywhere', '']) for (const meaning of ['boss', 'best', '']) {
+      const v = nativeFieldValues({style: 'screenprint', tone: 'over_the_top', format, pronoun: 'she', archetype, spot, meaning, home: 'cool', toys: 'a tennis ball'});
+      const t = v['Tone direction'].replace(/no crown, cape or costume, and never a toy, food,/, '');
+      assert.match(t, /side-eye|judging|unimpressed/, [archetype, format, spot].join(' '));
+      assert.doesNotMatch(t + v.Energy, risky, [archetype, format, spot].join(' '));
+      assert.ok(t.length <= 1200 && v.Energy.length <= 300);
+    }
+  // hilarious stays the dog being funny about itself
+  const h = nativeFieldValues({style: 'screenprint', tone: 'hilarious', format: 'portrait', pronoun: 'he', spot: 'couch'})['Tone direction'];
+  assert.doesNotMatch(h, /judging|side-eye|roast/);
 });
