@@ -4,6 +4,10 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-04
+
+- reconciled at `bf6bcbc`: NOW.md share-card bullet cut to meet the line-length audit (1,917 characters, limit 1,500). The older duplicate share-card bullet was superseded by it and removed; its extra detail: the read-back ran inside a browser on heartside.io because the cloud session's network cannot reach the store, as a line-for-line port of live-gate's head check plus handle-check's product, add-on and redirect checks, with all handles ok and two head lines failing (the `/favicon.ico` Shopify limit and a second Organization block left by the 3 Nov push). The 3 Nov phone homepage bullet was also shortened to meet the audit (1,725 characters); dropped detail: the Christmas offer card at the top showed a badge, the live "N days left" countdown, "Free US shipping" and "15% off 2 gifts, 20% off 3", the saving showing only while the memo strip's bundle switch is on; every strip card is the same height, the six-name photo credit is one line and the duplicate bottom button is gone. Head re-stamped.
+
 ## 2026-11-03
 
 - reconciled at `334d4b1`: NOW.md cut to meet the size audit (27,141 characters, 24 "Where it is right now" bullets, 15 older "What changed recently" bullets). Head re-stamped; the 2 November release bullet stays.
