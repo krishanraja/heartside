@@ -49,6 +49,10 @@ A hand-curated list, made for Heartside on 28 October 2026, of 92 rows (74 breed
 
 Edit the CSVs or `build.mjs`, then `node build.mjs && node test.mjs`. `node build.mjs` writes both this folder's `hs-breeds.js` and the theme's copy; `node build.mjs --check` fails if either is stale. `tools/print-art/artwork-system.test.mjs` runs in CI and checks the theme copy against the CSVs, the type-ahead, the parents and the cross rule, on the file as written and as minified. Keep the generated file ES5 (the test parses it as ES5) and small (under 60 KB).
 
+## Breed facts for the painting wait: `facts.mjs`
+
+Krish, 4 Nov: the fun facts shown while a painting is made are true; anything invented lives in the dog's own lines. `node facts.mjs` writes `shopify/assets/hs-breed-facts.js` from `../fun_facts.csv` (one fact per row, each with its `source_url`, for the popular US breeds) and one general, true fact per `functional_family` (`FAMILY` in `facts.mjs`) for every other breed. A named cross gets its parents' facts, and the mixed-breed row its own line. `HSBreedFacts.for(idOrName)` returns up to three. The build refuses an unknown id, a row without a source, an exclamation mark or a dash; `node facts.mjs --check` fails if the theme copy is stale, and CI runs it. `tools/preview/wait-room.browser.test.mjs` shows them in the painting wait.
+
 ## Gaps (found 15 Oct, updated 28 Oct)
 
 Of 93 names US owners commonly type, 16 found no exact row on 15 Oct.

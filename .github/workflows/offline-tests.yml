@@ -48,6 +48,8 @@ jobs:
         run: node tools/preview/copy-lint.mjs --baseline tools/preview/copy-lint-baseline.json
       - name: Browser artwork engine is not stale
         run: node tools/print-art/build-browser.mjs --check
+      - name: Breed facts are not stale
+        run: node breeds-corpus/lookup/facts.mjs --check
       - name: Example batch jobs are fresh
         run: node tools/print-art/example-batch.mjs --check
       - name: Breed example batch is fresh
