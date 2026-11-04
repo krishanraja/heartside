@@ -72,7 +72,10 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 /* the words: the note as a letter, then four tone cards */
 .hsj-note { position: relative; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border: 1.5px solid var(--outline); border-radius: 16px; padding: 20px; }
 .hsj-letter { display: grid; gap: 10px; align-content: start; flex: 1; min-height: 0; overflow: hidden; }
-.hsj-letter p { font-size: 17px; line-height: 26px; color: var(--ink); }
+.hsj-letter p { font-size: var(--hsj-fs, 17px); line-height: 1.5; color: var(--ink); }
+/* the smallest phones: past the 13 px floor the note scrolls inside its card, which keeps its size, with a fade that
+   says there is more */
+.hsj-note.is-long .hsj-letter { overflow-y: auto; overscroll-behavior: contain; -webkit-mask-image: linear-gradient(#000 calc(100% - 20px), transparent); mask-image: linear-gradient(#000 calc(100% - 20px), transparent); padding-bottom: 16px; }
 .hsj-letter .hsj-sign { font-weight: 600; }
 /* writing: the letter's lines become soft bars that shimmer, then the new lines arrive one by one
    (Krish, 2 Nov: the wait while the copy loads wasn't a nice experience) */
@@ -96,7 +99,7 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-tone__ico { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; flex: none; background: color-mix(in srgb, var(--c) 12%, #fff); color: var(--c); }
 .hsj-tone.is-on { border-color: var(--c); background: color-mix(in srgb, var(--c) 7%, #fff); box-shadow: inset 0 0 0 1px var(--c); }
 .hsj-tone.is-on .hsj-tone__ico { background: var(--c); color: #fff; }
-.hsj-tone--sentimental { --c: #C2416B; } .hsj-tone--warm { --c: #D9771F; } .hsj-tone--hilarious { --c: #6B45E0; } .hsj-tone--over_the_top { --c: #B98512; }
+.hsj-tone--sentimental { --c: #C2416B; } .hsj-tone--warm { --c: #D9771F; } .hsj-tone--hilarious { --c: #6B45E0; } .hsj-tone--over_the_top { --c: #C0391B; }
 
 /* the look: six equal style cards */
 .hsj-styles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -125,30 +128,18 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-tips li { display: flex; align-items: center; gap: 12px; font-size: 14px; line-height: 20px; color: var(--body); }
 .hsj-tips .hsj-ico { width: 20px; height: 20px; color: var(--accent); }
 .hsj-privacy { display: none; }
-/* the photo check (Krish, 2 Nov: "much more premium"): the photo fills the frame, a soft light
-   passes over it, and the three tips tick off one by one before it goes to the painter */
+/* a photo the check refuses (Krish, 4 Nov: never cut the picture off): shown whole, on a soft blurred copy
+   of itself, with Buddy's reason underneath. A photo that passes is never shown here: it goes to the painter. */
 .hsj-drop.has-photo { border-style: solid; border-color: var(--outline); padding: 0; overflow: hidden; }
 .hsj-drop.has-photo .hsj-drop__img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; background: #F1E9E2; }
+.hsj-drop.has-photo .hsj-drop__img::before { content: ""; position: absolute; inset: -24px; background: var(--hsj-photo) center / cover no-repeat; filter: blur(18px) saturate(.9); opacity: .6; }
+.hsj-drop.has-photo .hsj-drop__img img { position: relative; object-fit: contain; }
 .hsj-drop.has-photo .hsj-drop__text, .hsj-drop.has-photo .hsj-drop__sub { display: none; }
-.hsj-scan { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
-.hsj-drop.is-checking .hsj-scan { opacity: 1; background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,.0) 35%, rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 65%, transparent 100%); background-size: 100% 260%; animation: hsj-scan 1.6s ease-in-out infinite; }
-@keyframes hsj-scan { from { background-position: 0 120%; } to { background-position: 0 -20%; } }
-.hsj-drop__badge { position: absolute; left: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 8px; border-radius: 999px; background: rgba(26,21,20,.78); color: #fff; font-size: 13px; font-weight: 600; backdrop-filter: blur(6px); }
-.hsj-drop__badge .hsj-ico { width: 18px; height: 18px; }
-.hsj-drop__change { position: absolute; right: 12px; bottom: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--ink); font-size: 13px; font-weight: 600; }
-.hsj-tips li { transition: color .25s; }
-.hsj-tips li .hsj-tip__mark { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--outline-strong); color: transparent; transition: background .25s, border-color .25s, color .25s, transform .25s; }
-.hsj-tips li .hsj-tip__mark .hsj-ico { width: 14px; height: 14px; color: inherit; }
-.hsj-tips:not(.is-checking) li:not(.is-done):not(.is-bad) .hsj-tip__mark { visibility: hidden; }
-.hsj-tips.is-checking li:not(.is-done):not(.is-bad) .hsj-tip__mark { border-color: var(--accent); border-right-color: transparent; animation: hsj-spin .8s linear infinite; }
-@keyframes hsj-spin { to { transform: rotate(360deg); } }
-.hsj-tips li.is-done { color: var(--ink); }
-.hsj-tips li.is-done .hsj-tip__mark { background: #2E7D4F; border-color: #2E7D4F; color: #fff; transform: scale(1.05); }
-.hsj-tips li.is-bad { color: #9A5B00; }
-.hsj-tips li.is-bad .hsj-ico { color: #B86E00; }
-.hsj-tips li.is-bad .hsj-tip__mark { background: #FFF2DC; border-color: #E0A23A; color: #9A5B00; }
+.hsj-btn.is-busy, .hsj-btn.is-busy:disabled { background: var(--ink); color: #fff !important; cursor: progress; }
+.hsj-btn__dots { display: inline-block; width: 16px; text-align: left; }
+.hsj-btn__dots::after { content: ""; animation: hsj-dots 1.2s steps(4) infinite; }
 .hsj-photo-note.is-good { color: #2E7D4F; font-weight: 600; }
-@media (prefers-reduced-motion: reduce) { .hsj-bars span, .hsj-drop.is-checking .hsj-scan, .hsj-tips.is-checking li .hsj-tip__mark, .hsj-letter.is-fresh > *, .hsj-note__ask.is-writing::after { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .hsj-bars span, .hsj-letter.is-fresh > *, .hsj-note__ask.is-writing::after, .hsj-btn__dots::after { animation: none !important; } }
 
 /* ------------------------------------------------------------------ the hook
    Krish, 3 Nov: the phone homepage is two screens at most, the carousel is 70 to 80% of the phone's first screen,
@@ -199,7 +190,7 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
   .hsj-support { font-size: 15px; line-height: 22px; }
   .hsj-body { margin-top: 16px; gap: 12px; }
   .hsj-row { min-height: 52px; padding: 10px 16px; }
-  .hsj-note { padding: 14px 16px; } .hsj-letter { gap: 8px; } .hsj-letter p { font-size: 15px; line-height: 22px; }
+  .hsj-note { padding: 14px 16px; } .hsj-letter { gap: 8px; }
   .hsj-tone { height: 52px; } .hsj-tone__ico { width: 32px; height: 32px; border-radius: 10px; }
   .hsj-style__art { aspect-ratio: 1 / 1; } .hsj-style { gap: 6px; padding: 5px 5px 8px; } .hsj-style__name { font-size: 12.5px; line-height: 16px; }
   .hsj-brief { font-size: 13px; line-height: 18px; }
@@ -218,7 +209,6 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 /* narrow phones (under 360 wide): labels stay on one line */
 .hsj-text-btn { white-space: nowrap; }
 .hsj-note__ask { min-width: 0; overflow-wrap: anywhere; }
-.hsj-letter { -webkit-mask-image: linear-gradient(#000 calc(100% - 24px), transparent); mask-image: linear-gradient(#000 calc(100% - 24px), transparent); }
 @media (max-width: 359px) {
   .hsj-tone { gap: 8px; padding: 0 8px; font-size: 14px; line-height: 18px; }
   .hsj-tone__ico { width: 30px; height: 30px; border-radius: 9px; }
@@ -241,7 +231,8 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
   .hsj-body { margin-top: 0; }
   .hsj-dock { display: flex; justify-content: flex-end; padding: 32px 48px 40px; }
   .hsj-dock .hsj-btn { width: auto; min-width: 200px; padding: 0 24px; }
-  .hsj-note { flex: none; height: 300px; }
+  .hsj-note { flex: none; min-height: 300px; }
+  .hsj-note .hsj-letter { overflow: visible; }
   .hsj-drop { max-height: 240px; }
   .hsj-row, .hsj-chip, .hsj-tone, .hsj-style { transition: border-color .15s, background .15s; }
   .hsj-row:hover, .hsj-chip:hover, .hsj-tone:hover, .hsj-style:hover { border-color: var(--ink); }

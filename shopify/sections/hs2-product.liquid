@@ -171,7 +171,9 @@
             {%- endif -%}
           {%- when 'answers' -%}
             {% if artwork_preview or native_artwork %}<div class="hs-art-choices" id="hs-art-choices" data-hs-art-choices></div>{% endif %}
-            {% if native_artwork %}{% render 'hs-native-artwork', settings: s %}{% endif %}
+            {%- comment -%} The painting wait as a small studio: the photo painting in, the dog's own commentary and true
+              breed facts (Krish, 4 Nov). hs-wait.js only dresses the painting card while hs2.js says it is painting. {%- endcomment -%}
+            {% if native_artwork %}{{ 'hs-wait.css' | asset_url | stylesheet_tag }}<script src="{{ 'hs-breed-facts.js' | asset_url }}" defer="defer"></script><script src="{{ 'hs-wait.js' | asset_url }}" defer="defer"></script>{% render 'hs-native-artwork', settings: s %}{% endif %}
             {%- comment -%} The review's answers, short. Once they are in Teeinblue's preview, its copies of
               them fold away and "Edit details" opens them again. {%- endcomment -%}
             <div class="hs2-answers" data-hs2-answers hidden {{ block.shopify_attributes }}>

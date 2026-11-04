@@ -66,9 +66,9 @@
   function order() { return [here].concat(GIFTS.filter(function (g) { return g !== here && gifts()[g] && gifts()[g].url; })); }
   function tiles(src) {
     return order().map(function (g) {
-      var mine = g === here, on = mine || !!picked[g], s = status(g), own = mine ? src : '';
+      var mine = g === here, on = !!picked[g], s = status(g), own = mine ? src : '';
       var wide = g === 'mug' && mine;
-      return '<button type="button" class="hs-jm-tile' + (on ? ' is-on' : '') + (s === 'painting' && !mine ? ' is-painting' : '') + '" aria-pressed="' + on + '"' + (mine ? ' aria-disabled="true"' : '') + ' data-hs-jm-gift="' + g + '" data-hs-jm-state="' + s + '">' +
+      return '<button type="button" class="hs-jm-tile' + (on ? ' is-on' : '') + (s === 'painting' && !mine ? ' is-painting' : '') + '" aria-pressed="' + on + '" data-hs-jm-gift="' + g + '" data-hs-jm-state="' + s + '">' +
         '<span class="hs-jm-tile__art">' + preview(g, own || src, wide) + '</span>' +
         '<span class="hs-jm-tile__check" aria-hidden="true">' + (on ? '✓' : '+') + '</span>' +
         '<span class="hs-jm-tile__row"><span class="hs-jm-tile__name">' + NAME[g] + '</span><span class="hs-jm-tile__price">' + esc(priceOf(g, true)) + '</span></span>' +
@@ -122,7 +122,9 @@
     var x = gifts()[g] || {};
     return (label ? 'from ' : '') + money(x.price);
   }
-  function chosen() { return order().filter(function (g) { return g === here || picked[g]; }); }
+  // every gift is a choice, this page's too (Krish, 4 Nov: "why can't I unselect the blanket?"); this page's
+  // gift starts chosen, since its painting is the one on screen
+  function chosen() { return order().filter(function (g) { return !!picked[g]; }); }
   function count() { return chosen().length; }
   function total() {
     var n = 0;
@@ -143,7 +145,7 @@
   var TONES = [['sentimental', 'Sentimental', '<path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1Z"/>'],
     ['warm', 'Warm', '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>'],
     ['hilarious', 'Hilarious', '<circle cx="12" cy="12" r="9"/><path d="M7.5 13.5h9a4.5 4.5 0 0 1-9 0Z"/><path d="M8 9.5c.6-.8 1.6-.8 2.2 0M13.8 9.5c.6-.8 1.6-.8 2.2 0"/>'],
-    ['over_the_top', 'Over the top', '<path d="M3.5 8.5 7.5 12 12 5.5 16.5 12l4-3.5-1.8 9.5H5.3Z"/><path d="M5.5 20.5h13"/>']];
+    ['over_the_top', 'Roast', '<path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.4 2.6-5 3.5-8.4 1.8 1.2 2.7 3 2.6 4.8 1-.6 1.7-1.8 1.9-3.3 2.2 1.7 4 4.3 4 6.9 0 3.2-2.4 5.6-6 5.6Z"/><path d="M12 21c-1.5 0-2.5-1-2.5-2.4 0-1.5 1.2-2.3 1.8-3.6.9.7 1.4 1.6 1.4 2.5.5-.3.9-.9 1-1.6.8.8 1.3 1.7 1.3 2.7 0 1.4-1 2.4-3 2.4Z"/>']];
   function sheet(open) {
     var box = root.querySelector('[data-hs-jm-sheet]');
     if (open) {
@@ -183,6 +185,7 @@
     var b = root.querySelector('[data-hs-jm-add]'), tick = root.querySelector('[data-hs-jm-tick]');
     var n = count(), wait = waiting();
     if (adding) return;
+    if (!n) { b.textContent = 'Choose a gift'; b.disabled = true; return; }
     b.textContent = 'Add ' + (n === 1 ? 'to cart' : n + ' gifts') + ' · ' + money(total());
     b.disabled = !tick.checked || !painted() || wait.length > 0;
   }
@@ -193,7 +196,6 @@
     if (!t || !root.contains(t) || adding) return;
     if (t.hasAttribute('data-hs-jm-gift')) {
       var g = t.getAttribute('data-hs-jm-gift');
-      if (g === here) return;
       picked[g] = !picked[g]; paint(); return;
     }
     if (t.hasAttribute('data-hs-jm-opt')) {
@@ -238,15 +240,25 @@
   function add() {
     var atc = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc'), say = root.querySelector('[data-hs-jm-status]');
     if (!atc) { say.textContent = 'The cart is still loading. Try again in a moment.'; return; }
+    if (!count()) return;
     adding = true;
     var b = root.querySelector('[data-hs-jm-add]'); b.disabled = true;
-    // each extra gift opens in auto mode after this one is in the cart, in the order shown
-    var q = [{ url: (gifts()[here] || {}).url || location.pathname + '?journey=1', title: NAME[here] }];
+    // each extra gift opens in auto mode after this one is in the cart, in the order shown. With this page's
+    // gift unticked, nothing is added here: the first chosen gift opens and paints in auto mode, the buyer's
+    // tick here covering it, as it covers every extra gift.
+    var mine = !!picked[here];
+    var q = mine ? [{ url: (gifts()[here] || {}).url || location.pathname + '?journey=1', title: NAME[here] }] : [];
     chosen().forEach(function (g) {
       var x = gifts()[g];
       if (g !== here && x && x.url) q.push({ url: x.url + (x.url.indexOf('?') > -1 ? '&' : '?') + 'hsauto=1', title: NAME[g] });
     });
-    try { if (q.length > 1) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (err) { /* hs2's own queue bar still offers the next gift */ }
+    try { if (q.length > 1 || !mine) window.sessionStorage.setItem(QKEY, JSON.stringify(q)); else window.sessionStorage.removeItem(QKEY); } catch (err) { /* hs2's own queue bar still offers the next gift */ }
+    if (!mine) {
+      say.textContent = 'Putting ' + (st.dog || 'your dog') + ' on the ' + LONG[chosen()[0]] + '…';
+      b.textContent = 'Opening…';
+      window.location.href = q[0].url;
+      return;
+    }
     say.textContent = 'Adding ' + (st.dog || 'your dog') + '…';
     b.textContent = 'Adding…';
     addHere(atc).then(next, function (why) {
@@ -282,7 +294,7 @@
     var qi = queueInfo(), lead = root.querySelector('[data-hs-jm-auto]');
     root.classList.add('is-auto');
     saveFraming();
-    if (lead) lead.textContent = 'Gift ' + qi.at + ' of ' + qi.of + '. The others are in your cart.';
+    if (lead) lead.textContent = 'Gift ' + qi.at + ' of ' + qi.of + '.' + (qi.at > 1 ? ' The others are in your cart.' : '');
     set(root.querySelector('[data-hs-jm-options]'), options());
     if (!src) {
       title.textContent = 'Putting ' + dog + ' on the ' + LONG[here];
@@ -342,6 +354,7 @@
     if (!root || !window.__hs2api || !window.__hs2api.journey || !window.__hs2api.journey()) return;
     here = giftHere();
     if (!here) return;
+    picked[here] = true;
     root.hidden = false;
     document.documentElement.classList.add('hs-jm-on');
     // the painting card moves into the panel, with its listeners

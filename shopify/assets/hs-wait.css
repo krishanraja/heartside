@@ -1,0 +1,61 @@
+/* The painting wait (hs-wait.js; Krish, 4 Nov: "beautiful beautiful visuals", a fun fact, the dog's own running
+   commentary). Brand colours from hs-brand.css: berry #A8284E, gold #C9A048, ink #121010, paper #FFFDF9. */
+.hs-art.has-wait .hs-art__photo { display: none; }
+.hs-art.has-wait .hs-art__wash i { opacity: .35; }
+.hs-wait__stage { position: absolute; inset: 0; z-index: 1; }
+.hs-wait__paint { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hs-wait__paint mask path { transition: stroke-dashoffset .5s linear; }
+.hs-art.has-wait .hs-art__brush { z-index: 3; transition: transform .5s linear; }
+
+/* the dog's favourite things, drifting slowly round the edge of the canvas */
+.hs-wait__things { position: absolute; inset: 0; pointer-events: none; }
+.hs-wait__thing { position: absolute; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 253, 249, .88); color: #A8284E; box-shadow: 0 6px 14px -8px rgba(30, 23, 20, .5); animation: hs-wait-float 9s ease-in-out infinite; animation-delay: calc(var(--i) * -2.3s); }
+.hs-wait__thing:nth-child(1) { top: 8%; left: 7%; }
+.hs-wait__thing:nth-child(2) { top: 14%; right: 8%; color: #C9A048; }
+.hs-wait__thing:nth-child(3) { bottom: 12%; left: 9%; color: #C2416B; }
+.hs-wait__thing:nth-child(4) { bottom: 8%; right: 10%; color: #6B4A33; }
+.hs-wait__ico { width: 22px; height: 22px; }
+@keyframes hs-wait-float { 0%, 100% { transform: translate(0, 0) rotate(-6deg); } 33% { transform: translate(6px, -9px) rotate(5deg); } 66% { transform: translate(-5px, 6px) rotate(-2deg); } }
+
+/* the talk: the dog's face (tap for a treat) and a speech bubble; every third beat, Buddy's true note */
+.hs-wait__talk { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; margin: 10px 0 14px; }
+.hs-wait__me { position: relative; appearance: none; width: 52px; height: 52px; padding: 0; border: 2px solid #FFFDF9; border-radius: 50%; background: #F3EEE8; box-shadow: 0 0 0 2px #A8284E; overflow: visible; cursor: pointer; color: #A8284E; display: grid; place-items: center; }
+.hs-wait__me img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.hs-wait__me:focus-visible { outline: 3px solid #121010; outline-offset: 3px; }
+.hs-wait__me.is-fed { animation: hs-wait-munch .5s ease; }
+@keyframes hs-wait-munch { 0%, 100% { transform: none; } 30% { transform: scale(1.12) rotate(-6deg); } 60% { transform: scale(.96) rotate(4deg); } }
+.hs-wait__count { position: absolute; right: -6px; top: -6px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #C9A048; color: #121010; font: 700 12px/22px "HS DM Sans", "DM Sans", system-ui, sans-serif; text-align: center; }
+.hs-wait__crumb { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 2px; background: #C9A048; pointer-events: none; animation: hs-wait-crumb .75s ease-out forwards; }
+@keyframes hs-wait-crumb { from { transform: rotate(var(--a)) translateX(10px); opacity: 1; } to { transform: rotate(var(--a)) translateX(46px) translateY(14px); opacity: 0; } }
+.hs-wait__bubble, .hs-wait__fact { position: relative; min-height: 76px; padding: 10px 14px 12px; border-radius: 4px 18px 18px 18px; background: #fff; box-shadow: 0 0 0 1px #EFE6DD, 0 10px 20px -16px rgba(30, 23, 20, .6); }
+.hs-wait__fact { grid-column: 2; background: #FBF3E3; box-shadow: 0 0 0 1px #EBD9B0; border-radius: 18px; }
+.hs-wait__talk.is-fact .hs-wait__me { box-shadow: 0 0 0 2px #C9A048; }
+.hs-wait__who { margin: 0 0 2px; font: 600 12px/16px "HS DM Sans", "DM Sans", system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #A8284E; }
+.hs-wait__fact .hs-wait__who { color: #8A6A1F; }
+.hs-wait__say, .hs-wait__fact-text { margin: 0; font-size: 16px; line-height: 1.45; color: #121010; }
+.hs-wait__fact-text { font-family: "HS Fraunces", Fraunces, Georgia, serif; font-size: 16.5px; }
+.hs-wait__say.is-in, .hs-wait__fact-text.is-in { animation: hs-wait-in .4s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hs-wait-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* the bar eases towards the end and fills when the painting lands (hs-wait.js sets the width) */
+.hs-art.has-wait .hs-art__bar span { width: 4%; animation: none; transform: none; transition: width .6s ease-out; }
+.hs-art.has-wait .hs-art__line { font-size: 14px; color: #5A4A44; margin-bottom: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-wait__thing, .hs-wait__me.is-fed, .hs-wait__say.is-in, .hs-wait__fact-text.is-in { animation: none; }
+  .hs-wait__paint mask path, .hs-art.has-wait .hs-art__brush, .hs-art.has-wait .hs-art__bar span { transition: none; }
+  .hs-wait__things { display: none; }
+}
+
+/* in journey mode the card fills one phone screen (hs-journey-choose.css sizes the canvas from the screen's
+   height); the dog's bubble takes about 100 px of it, so the canvas gives that back */
+.hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100svh - 400px) * var(--hs-art-r, 0.8333))); }
+.hs-jm__paint .hs-art.has-wait .hs-wait__talk { margin: 10px 0 8px; }
+@media (max-height: 700px) {
+  .hs-jm__paint .hs-art.has-wait .hs-art__note { display: none; }
+  .hs-wait__talk { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
+  .hs-wait__me { width: 44px; height: 44px; }
+  .hs-wait__bubble, .hs-wait__fact { min-height: 0; padding: 8px 12px 10px; }
+  .hs-wait__say, .hs-wait__fact-text { font-size: 15px; }
+}
+@media (min-width: 900px) { .hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100vh - 460px) * var(--hs-art-r, 0.8333))); } }
