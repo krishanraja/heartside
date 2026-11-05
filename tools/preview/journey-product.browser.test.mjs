@@ -81,26 +81,28 @@ before(async () => {
 after(async () => { await browser?.close(); server?.close(); });
 
 // what the home page hands over (hs-journey.js handOver): the photo's time, the style, the gifts in order, nothing else
-async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first', slowTib = 0, badPhoto = false, onKey = 0} = {}) {
+async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first', slowTib = 0, badPhoto = false, onKey = 0, spot = ''} = {}) {
   const ctx = await browser.newContext({viewport: size, isMobile: size.width < 900, hasTouch: true});
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
   const t = Date.now() - 60000;
-  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey]) => {
+  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey, spot]) => {
     if (slowTib) sessionStorage.setItem('__slowTib', String(slowTib));
     if (sessionStorage.getItem('hs2-review')) return;
     sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'warm'}));
     const review = {dog: answered ? 'Mowgli' : '', person: answered ? 'Sam' : '', hs3_lines: answered ? {home: 'a', spot: 'b', together: 'c', meaning: 'd'} : null, hs3_copy_owner: 'generated', hs3_photo_t: photo ? t : 0,
-      hs3_art_profile: null, hs3_energy: '', hs3_art_choices: {style: 'collage', tone: 'warm'}, hs_brief_input: {breed: '', pronoun: 'they', archetype: '', likeness: true},
+      hs3_art_profile: null, hs3_energy: '', hs3_art_choices: {style: 'collage', tone: 'warm'}, hs_brief_input: {breed: '', pronoun: 'they', archetype: '', likeness: true, spot},
       hs_journey: {t: Date.now() - journeyAge, gift: queue[0], tone: 'warm', style: 'collage', queue: queue.map(g => ({gift: g, url: URLS[g]})), gifts: GIFTS, notes: {}, answered, compose: {url: '', ai: false}}};
     if (mode) review.hs_journey.mode = mode;
     // the page that remembers it opened from this journey (hs2.js journey(): one key per product)
     if (onKey) sessionStorage.setItem('hs2-journey-on:' + onKey, String(review.hs_journey.t));
     sessionStorage.setItem('hs2-review', JSON.stringify(review));
+    // the home page's own answer to where the dog rules the house (asked after the feel since 5 Nov)
+    if (spot && !answered) sessionStorage.setItem('hs-journey', JSON.stringify({spot, tone: 'warm', gifts: {}}));
     if (answered) sessionStorage.setItem('hs-journey', JSON.stringify({dog: 'Mowgli', breed: 'Border Collie', pro: 'he', rel: 'named', person: 'Sam', home: 'door', spot: 'couch', together: 'walk', meaning: 'best', tone: 'warm', noteDone: true, gifts: {}}));
-  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey]);
+  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey, spot]);
   if (photo) {
     await page.goto(base + '/robots.txt');
     // a real dog photo, as the home page keeps it (a tiny one would be refused by the gift page's own check)
@@ -165,6 +167,45 @@ for (const size of PHONES) test(`${size.width}x${size.height}: it paints once by
     assert.equal(await page.evaluate(() => window.__painted), 0, 'no resend on a reload');
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
+});
+
+// recipes v20 (Krish, 5 Nov: "one question on the home page"): where the dog rules the house is answered before the
+// gift page, stages the painting, and is not asked again; a journey begun before the move still asks it, for the note
+test('the place from the home page paints the scene and is not asked again; an older journey still asks it', async () => {
+  const pickQ = (page, g, v) => page.locator(`[data-hsj-pick="${g}"][data-v="${v}"]`).click();
+  const walk = async page => {
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 15000});
+    await page.locator('[data-hsj-name]').fill('Pickles'); await page.locator('[data-hsj-next]').click();
+    await pickQ(page, 'breed', 'Pug'); await pickQ(page, 'pro', 'she');
+    await page.waitForSelector('[data-hsj-screen="person"]');
+    await page.locator('[data-hsj-person]').fill('Mom'); await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="home"]'); await pickQ(page, 'home', 'door');
+    await page.waitForFunction(() => /ask=(spot|together)/.test(location.hash), null, {timeout: 5000});
+    return page.evaluate(() => /ask=(\w+)/.exec(location.hash)[1]);
+  };
+  {
+    const {page, ctx, errors} = await open({width: 390, height: 844}, {spot: 'bed'});
+    try {
+      await page.goto(base + URLS.print);
+      await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+      const tone = await page.evaluate(() => document.querySelector('[data-brief="Tone direction"]').value);
+      assert.match(tone, /^Mood: happy and easy, with a small wink\./);
+      assert.match(tone.split('Camera:')[0], /Scene: on the bed in a bright bedroom at home/, 'the painting is staged where the dog rules');
+      assert.equal(await walk(page), 'together', 'the spot is not asked twice');
+      const answers = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_answers || '');
+      assert.match(answers, /spot: bed/, 'the note still gets the place');
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  }
+  {
+    const {page, ctx, errors} = await open({width: 390, height: 844});
+    try {
+      await page.goto(base + URLS.print);
+      await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+      assert.equal(await walk(page), 'spot', 'a journey without the place asks it here');
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  }
 });
 
 test('a later gift: the same studio, nothing asked, the framing box saved unseen, the painting on the product, and the cart', async () => {

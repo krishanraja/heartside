@@ -240,7 +240,10 @@ export function briefFields(input) {
   if (o.likeness) {
     // v19 (Krish, 4 and 5 Nov): the face is locked to the photo and the tone changes everything around it, the
     // staging, the body, the camera, the light, the color, never the face. Nothing from answers not given yet.
-    const lk = b.likeness, mood = lk.tones[o.tone];
+    // v20 (Krish, 5 Nov: "one question on the home page" sets where the dog rules): the place answer, asked before
+    // the painting, stages the scene of every tone; "wherever you are" and no answer keep the tone's own scene
+    const lk = b.likeness, place = lk.places && Object.hasOwn(lk.places, o.spot || '') ? lk.places[o.spot] : null;
+    const mood = (place && place[o.tone]) || lk.tones[o.tone];
     const locked = {Energy: lk.energy, 'Style direction': b.styles[o.style]};
     if (format === 'blanket') return {...locked, 'Tone direction': lk.blanket.replace('{moment}', lk.figures[o.tone]).replace('{light}', tone.light.replace(/\.$/, '')) + '.'};
     return {...locked, 'Tone direction': [mood, lk.guard, fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' ')};
