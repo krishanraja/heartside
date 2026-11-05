@@ -581,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v20-place-first');
+  assert.equal(recipes.version, 'actual-dog-recipes-v21-roast-wink');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -1023,13 +1023,14 @@ test('v19: journey paintings lock the face to the photo and let each tone change
     for (const tone of Object.keys(recipes.tones)) for (const style of Object.keys(recipes.styles)) {
       const v = nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot: 'anywhere', together: 'walk', toys: 'a tennis ball', accessory: 'a bandana'});
       const t = v['Tone direction'], where = [style, format, tone].join(' ');
-      assert.equal(v.Energy, recipes.brief.likeness.energy, where + ': the face lock is the identity line');
-      assert.doesNotMatch(t.replace(recipes.brief.likeness.guard, ''), faces, where + ': no face direction');
+      const own = format !== 'blanket' && recipes.brief.likeness.faces[tone] || {}, guard = own.guard || recipes.brief.likeness.guard;
+      assert.equal(v.Energy, own.energy || recipes.brief.likeness.energy, where + ': the face lock is the identity line');
+      assert.doesNotMatch(t.replace(guard, ''), faces, where + ': no face direction');
       assert.doesNotMatch(t, /walk|tennis|bandana/i, where + ': nothing from the answers');
       assert.doesNotMatch(t, /stretch/i, where + ': never stretches the body (both judges, 5 Nov)');
       assert.ok(t.length <= 1200 && v.Energy.length <= 300, where);
       if (format === 'blanket') assert.match(t, /^Figures: the same dog again and again, each with the face of the photo/);
-      else { assert.ok(t.includes(recipes.brief.likeness.guard), where + ': the face guard'); assert.ok(t.endsWith(recipes.brief.fill), where + ': fills the frame'); }
+      else { assert.ok(t.includes(guard), where + ': the face guard'); assert.ok(t.endsWith(recipes.brief.fill), where + ': fills the frame'); }
       if (style === 'cinematic') seen.add(t);
     }
     assert.equal(seen.size, 4, format + ': four tones, four different pictures');
@@ -1039,13 +1040,42 @@ test('v19: journey paintings lock the face to the photo and let each tone change
   assert.match(roast, /side-eye|judging|unimpressed/);
 });
 
+// v21 (5 Nov): Krish, "maybe winking or like a cheeky grin, something a bit more anthropomorphic"; of four real
+// Teeinblue paintings, "Wink 1 is good". Roast winks: one eye closed, the rest of the face the dog in the photo, never
+// smug. Only Roast lets the expression change; the other tones keep the calm face, and the blanket's figures are v20.
+test('v21: Roast winks on the mug, portrait and card, the other tones keep the calm face, and the spec records it', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-05-v21.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
+  const lk = recipes.brief.likeness, roast = lk.faces.over_the_top;
+  assert.deepEqual(Object.keys(lk.faces), ['over_the_top'], 'only Roast changes the expression');
+  assert.match(roast.guard, /only the expression is playful\. Never grumpy, mean, smug or exaggerated\./);
+  assert.ok(roast.energy.length <= 300 && /the expression/.test(roast.energy));
+  for (const format of ['mug', 'portrait', 'card']) for (const spot of ['couch', 'bed', 'feet', 'anywhere', '']) for (const tone of Object.keys(recipes.tones)) {
+    const v = nativeFieldValues({style: 'cinematic', tone, format, pronoun: 'they', likeness: true, spot}), t = v['Tone direction'], where = [format, spot, tone].join(' ');
+    if (tone === 'over_the_top') {
+      assert.match(t, /looking straight at the camera with one eye closed in a playful wink/, where);
+      assert.ok(t.includes(roast.guard) && v.Energy === roast.energy, where);
+      assert.doesNotMatch(t.replace(roast.guard, ''), /smug|side-eye|brow|judging|grin/i, where + ': a wink, never smug');
+    } else {
+      // Warm's "with a small wink" is its mood since v19, not an eye direction
+      assert.doesNotMatch(t, /eye closed|playful wink|expression is playful/i, where + ': the calm face');
+      assert.ok(t.includes(lk.guard) && v.Energy === lk.energy, where);
+    }
+  }
+  // the blanket's figures keep v20's calm face and identity line
+  const bl = nativeFieldValues({style: 'cinematic', tone: 'over_the_top', format: 'blanket', pronoun: 'they', likeness: true, spot: 'couch'});
+  assert.equal(bl.Energy, lk.energy); assert.doesNotMatch(bl['Tone direction'], /eye closed|playful wink/);
+});
+
 // v20 (5 Nov): Krish, "one question on the home page", after the feel: where the dog rules the house. That answer is
 // asked before the painting and stages every tone on the mug, portrait and card; "wherever you are" and no answer keep
 // the tone's own scene, and the blanket's figures carry no setting. Roast shows who lost out by the situation alone,
 // with nobody in the picture (SCOPE rule 3: the person stays out of frame).
 test('v20: the place answer stages every tone, the blanket and the face lock stay, and Roast keeps the person out', () => {
+  // v21 adds the wink and records the recipes SHA in its own spec; the saved blocks are v19's
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-05-v20.md', import.meta.url), 'utf8');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes('actual-dog-recipes-v20-place-first'), 'records the v20 recipe version');
   for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
   const lk = recipes.brief.likeness, words = { couch: /\bcouch\b/, bed: /\bbed\b/, feet: /\brug\b/ };
   const banned = /stretch|side-eye|brow|judging|unimpressed|[!\u2014]|cosy|colour|favour/i;
@@ -1057,13 +1087,13 @@ test('v20: the place answer stages every tone, the blanket and the face lock sta
     assert.equal(seen.size, 3, where + ': each place paints a different scene');
     assert.equal(f('anywhere'), f(''), where + ': "wherever you are" is the tone\'s own scene');
     for (const spot of ['couch', 'bed', 'feet']) {
-      const t = f(spot), mood = t.split(lk.guard)[0];
+      const own = lk.faces[tone] || {}, guard = own.guard || lk.guard, t = f(spot), mood = t.split(guard)[0];
       assert.match(mood, words[spot], where + ' ' + spot + ': names the place');
-      assert.ok(t.includes(lk.guard) && t.length <= 1200, where + ' ' + spot);
+      assert.ok(t.includes(guard) && t.length <= 1200, where + ' ' + spot);
       assert.doesNotMatch(t, banned, where + ' ' + spot);
-      assert.equal(nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot}).Energy, lk.energy, where + ': the face lock');
+      assert.equal(nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot}).Energy, own.energy || lk.energy, where + ': the face lock');
       if (tone === 'over_the_top') {
-        assert.match(mood, /^Mood: a loving roast, told by the situation, never the face\./);
+        assert.match(mood, /^Mood: a loving roast, told by the situation and a playful wink\./);
         assert.match(mood, /nobody else in the picture/, where + ' ' + spot + ': the person stays out of frame');
         assert.doesNotMatch(mood, /knees?|hands?\b|\barms?\b|shoulders?|ankles?|\blegs?\b|low view|worm/i, where + ' ' + spot + ': no body part of a person, no low camera');
       }

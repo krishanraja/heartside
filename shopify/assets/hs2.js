@@ -314,6 +314,9 @@
   function journey() {
     var j = state.hs_journey;
     if (!j || !j.t || Date.now() - j.t > JOURNEY_HOURS * 36e5) return null;
+    // the cart's "Make another version" link (?redo=<line>) is the normal page, where the redo lives; journey mode
+    // would hide it (5 Nov, the cart drawer's review)
+    if (/[?&]redo=/.test(window.location.search || '')) return null;
     // Teeinblue rewrites the address to ?variant= when an option changes, so the page remembers it
     // opened from this journey and a reload stays in journey mode
     var key = 'hs2-journey-on:' + productId();

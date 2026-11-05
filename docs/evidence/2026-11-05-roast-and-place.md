@@ -46,3 +46,19 @@ Krish, 5 November: "I picked roast for this particular painting and that hasn't 
 - Krish's own blind pick is the gate. The sheet of all ten paintings is in the session's scratch folder, not in the repo.
 - A stronger couch Roast in the bed winner's pattern (the person's own corner, the cushions under the dog, the couch's throw on the floor, no armrest-to-armrest pose) is untested. Two or three paintings would settle it, and they need his approval.
 - Likewise for the feet: the judges say the dog has to be in the person's own spot for the joke to land, which the "feet" answer does not give.
+
+## Later the same day: lettering proposed and cancelled, then the wink
+
+- **Krish's picks from the blind sheet:** 2 and 7, both the cushion throne. That is the couch text on main. "None of them really look like roast as such."
+- **Couch tests:** three more paintings tried a couch Roast in the bed winner's pattern. The gain was small, and nothing changed.
+- **Lettering on the Roast mug:**
+  - Proposed: a Teeinblue text layer. The AI never paints letters.
+  - Mockups: a stress test of four handwritten fonts on 12 backgrounds found that where the words sit matters more than the font.
+  - Cancelled by Krish the same day: "It's going to add way too many more variables that might go wrong, not to mention design issues, and we don't have time for that."
+- **The wink:**
+  - Krish: "maybe winking or like a cheeky grin, something a bit more anthropomorphic". Smug was ruled out, since v18's smug face cost the likeness.
+  - Four paintings, approved by Krish, on the cushion throne on his Border Collie's mug. Roast had its own face rule ("only the expression is playful. Never grumpy, mean, smug or exaggerated.").
+  - The wink showed in both of its paintings, with the face, ears, blaze, bandana and build unchanged.
+  - The cheeky grin looked unchanged, because the photo already grins.
+  - Krish: "Wink 1 is good." It ships as recipes v21 (`tools/print-art/teeinblue/PROMPT-SPEC-2026-11-05-v21.md`).
+  - Not yet painted with the wink: the bed and feet scenes, the portrait and the card.
