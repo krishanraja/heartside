@@ -1,5 +1,7 @@
 # Krish's five asks, 5 November 2026: investigation and decisions
 
+**Outcome: all five are built and live on heartside.io since 5 November, 19:33 UTC** (PRs #121 to #129; record `docs/evidence/2026-11-05-roast-and-place.md`, state in `NOW.md`). Two choices changed after these reports: the Roast mug's lettering was proposed and cancelled, and Roast winks instead (recipes v21).
+
 After a phone run of the live photo-first journey, Krish asked for five things. A read-only investigation (one investigator per ask, each challenged by a skeptic) produced the reports here. They are working notes, not results: each `*-report.md` is the investigator's design, and each `*-review.md` is the skeptic's corrections, which win where they disagree.
 
 | Ask | Krish's words | Report | Review |
