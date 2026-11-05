@@ -172,6 +172,7 @@ A review workflow over the branch, with an adversarial check of each finding, co
 - Teeinblue's own script failed some fetches in this environment, and one run hit a bot check. Neither is from the theme.
 - The fixes in sections 7 and 8 are proven offline, through the rendered theme in Chromium. The 30-painting cap for live tests was reached, so they have not been re-run through Teeinblue; the first real buyers after go-live are that run.
 - The mug painter's placement of the dog: the brief asks for a fifth of the way in from the left, and the paintings put the face near the far edge. Changing the brief needs paints to prove.
+- Paths no test buyer took (the judges' completeness critic): a cart with two or three gifts and the bundle discount applied; real Safari, the iOS photo picker, HEIC photos, in-app browsers, tablets and enlarged text (every run was Chromium); checkout past the empty form (shipping lines, Alaska, Hawaii and military addresses, express pay, discount codes); "Paint it again" and the cart's "Make another version" through Teeinblue; Black and White frames and the Dark Blue, Pink and Red mugs in a cart; the Vintage screenprint and Fine ink styles; the Artist's touch and the printed card with the December 4 date; Back from the cart or checkout, a second tab, or coming back later; a stall or an upload cut off without a reload. Teeinblue's script logged "Failed to fetch" in 9 of 11 runs; whether that ever loses a painting is unknown.
 
 ## 10. The shipping policy paragraph, for Krish to paste
 
