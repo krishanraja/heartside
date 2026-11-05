@@ -50,9 +50,10 @@
     if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      // Teeinblue's Artwork tone option has three values; Over the top selects Hilarious there and its own
-      // direction travels in art_tone_direction (PROMPT-SPEC-2026-10-28.md, 29 Oct)
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'hilarious' : choice.tone].label;
+      // Teeinblue's Artwork tone option has three values; Roast's own direction travels in art_tone_direction
+      // (PROMPT-SPEC-2026-10-28.md, 29 Oct). Roast is a loving tease, so it selects Warm with a wink there, the
+      // nearest true value, not Hilarious (v19, 5 Nov: two signals pulled the painting different ways)
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'warm' : choice.tone].label;
     }
     // 29 Oct, recipes v10: the directed brief (tools/print-art/artwork-system.mjs briefFields, the same
     // text native-candidate.mjs nativeFieldValues gives): Energy carries the identity line, Tone
@@ -325,6 +326,7 @@
   function journeyPick() {
     var j = journey(); if (!j) return false;
     try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
+    journeyAutoSend.state = 'picked'; journeyAutoSend.mine = true;
     return openPhotoPicker('journey');
   }
   /* One free repaint (Krish, 29 Oct: "They should get one free regenerate where they can choose to
@@ -341,6 +343,7 @@
     var j = journey(), engine = window.HSArtworkEngine;
     if (!j || !engine || !Object.prototype.hasOwnProperty.call(engine.recipes.tones, tone) || !journeyRepaintLeft() || !usePhoto.file || blanketUploadPending()) return false;
     try { sessionStorage.setItem(journeyRepaintKey(j), String(Date.now())); } catch (e) { return false; }
+    journeyAutoSend.mine = true;
     var lines = j.notes && j.notes[tone];
     if (lines) { state.hs3_lines = lines; state.hs3_mug_lines = lines; }
     state.hs_journey.tone = tone;
@@ -356,21 +359,105 @@
     }, 300);
     return true;
   }
+  /* Photo first (4 Nov): the buyer answers about the dog and the note while the gift paints, on this page
+     (hs-journey.js in gift mode). Their answers go onto the order here: the names, the note's lines and the
+     answers, read by Teeinblue's note fields at the next bridge. Nothing that painted the picture is touched
+     (the facts, the style and tone, the energy, the brief), so the painting is never read as stale. */
+  var JOURNEY_ANSWER_KEYS = ['dog', 'person', 'hs_ship_to', 'hs_answers', 'hs_breed_id', 'hs3_lines', 'hs3_mug_lines'];
+  function journeyAnswers(p) {
+    if (!p || !journey()) return false;
+    JOURNEY_ANSWER_KEYS.forEach(function (k) { if (Object.prototype.hasOwnProperty.call(p, k)) state[k] = p[k]; });
+    if (p.journey && state.hs_journey) ['tone', 'voice', 'notes', 'answered'].forEach(function (k) { if (Object.prototype.hasOwnProperty.call(p.journey, k)) state.hs_journey[k] = p.journey[k]; });
+    save();
+    try { runBridge(); } catch (e) { /* the next tick fills the fields */ }
+    return true;
+  }
+  /* What the journey's gift page may say about the photo (5 Nov: on the live store Teeinblue's painter
+     takes longer than five seconds to open, and all ten test buyers were told their photo was lost while
+     it was on the page): 'checking' until this device's copy is read, 'nophoto' only when it is not
+     there, 'waiting' while the photo waits for the painter to open, 'sent', and 'stuck' when the painter
+     never opened in the 90 seconds the send waits. */
   function journeyAutoSend() {
     var j = journey();
     if (!j) return;
+    journeyAutoSend.state = usePhoto.file ? 'waiting' : 'checking';
     // the page's own restore gives up after 1.5 s; the journey waits for the photo it was promised
-    if (!usePhoto.file) restorePhoto().then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); });
+    if (!usePhoto.file) restorePhoto().then(function (rec) {
+      if (rec && !usePhoto.file) usePhoto(rec.file, rec.t);
+      if (journeyAutoSend.state === 'checking') journeyAutoSend.state = usePhoto.file ? 'waiting' : 'nophoto';
+    });
     var tries = 0, timer = setInterval(function () {
       tries++;
+      // the buyer is choosing a photo in Teeinblue's picker: the automatic send stands down for good
+      if (journeyAutoSend.state === 'picked') { clearInterval(timer); return; }
       var sent = false;
       try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
-      if (sent || cityArtSaved() || tries > 150) { clearInterval(timer); return; }
-      if (!usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); if (sent && !journeyAutoSend.mine) journeyOrphan(j); return; }
+      if (tries > 150) { journeyAutoSend.state = usePhoto.file ? 'stuck' : 'nophoto'; clearInterval(timer); return; }
+      if (!usePhoto.file) return;
+      if (journeyAutoSend.state !== 'waiting') journeyAutoSend.state = 'waiting';
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
       try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
       clearInterval(timer);
-      sendBlanketPhoto();
+      journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
+      sendBlanketPhoto(); journeyWatch();
     }, 600);
+  }
+  /* A send can still be refused after it leaves: the device check on this page (the dog detector may be
+     ready here when it was not on the home page), a photo field Teeinblue redrew, or a failed preparation.
+     Each says why in hs2's own note spots, which journey mode hides (5 Nov review: the buyer then waited on
+     "Almost there" for ever). journeyRefused() puts the reason, and the "It's my dog" override where there
+     is one, on journeyStatus 'refused'; journeyWatch() is the backstop for a send that simply vanished: no
+     lock, nothing checking or preparing and nothing saved for 15 seconds. */
+  function journeyRefused(text, override) {
+    if (!journey() || !journeyAutoSend.mine || ['sent', 'picked'].indexOf(journeyAutoSend.state) === -1) return;
+    journeyAutoSend.state = 'refused';
+    journeyAutoSend.note = text || "The painter didn't take this photo.";
+    journeyAutoSend.override = override || null;
+  }
+  function journeyWatch() {
+    clearInterval(journeyWatch.timer);
+    var idle = 0;
+    journeyWatch.timer = setInterval(function () {
+      if (journeyAutoSend.state !== 'sent' || cityArtSaved()) { clearInterval(journeyWatch.timer); return; }
+      var busy = blanketUploadPending() || keepTibPhoto.preparing || keepTibPhoto.checking || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading');
+      idle = busy ? 0 : idle + 1;
+      if (idle >= 15) { clearInterval(journeyWatch.timer); journeyRefused(photoNote.text, photoNote.override); }
+    }, 1000);
+  }
+  function journeyOverride() {
+    var go = journeyAutoSend.override;
+    if (journeyAutoSend.state !== 'refused' || typeof go !== 'function') return false;
+    journeyAutoSend.state = 'sent'; journeyAutoSend.override = null;
+    go(); journeyWatch();
+    return true;
+  }
+  /* A painting lives in the page that sent the photo. Sent by an earlier page (a reload, Back then
+     Forward, a check page in between), it never arrives here (5 Nov, a test buyer on the live store
+     waited eight minutes on "Almost there"). Once the painter has been open here for 20 seconds with
+     nothing painting, nothing saved and nothing to restore, the status says 'interrupted', and
+     journeyResume() sends the same photo once more on the buyer's tap. */
+  function journeyOrphan(j) {
+    var since = 0, timer = setInterval(function () {
+      if (journeyAutoSend.mine || cityArtSaved() || restoredArtworkAvailable()) { clearInterval(timer); return; }
+      var busy = keepTibPhoto.preparing || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading');
+      if (busy || !nativeBlanketInputsReady() || !photoInput()) { since = 0; return; }
+      if (!since) since = Date.now();
+      if (Date.now() - since >= 20000) { clearInterval(timer); if (journeyAutoSend.state === 'sent') journeyAutoSend.state = 'interrupted'; }
+    }, 1000);
+  }
+  function journeyResume() {
+    var j = journey();
+    if (!j || journeyAutoSend.state !== 'interrupted' || !usePhoto.file) return false;
+    resetBlanketUpload(); // clears the earlier page's lock; it never sends anything itself
+    try { sessionStorage.setItem(journeySentKey(j), 'resumed:' + Date.now()); } catch (e) { /* the send below still runs once */ }
+    journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
+    var tries = 0, timer = setInterval(function () {
+      if (++tries > 100) { clearInterval(timer); return; }
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      clearInterval(timer); sendBlanketPhoto(); journeyWatch();
+    }, 300);
+    return true;
   }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
@@ -379,6 +466,10 @@
     try {
       var transfer = new DataTransfer(); transfer.items.add(usePhoto.file);
       target.files = transfer.files;
+      // the journey's photo was checked once, on the home page's photo step, and the buyer may have said
+      // "It's my dog" there: it is not checked again out of sight (5 Nov review: a second, hidden check
+      // could refuse it with nowhere to say so)
+      if (journey() && target.files[0]) target.__hs2CheckedPhoto = target.files[0];
       // The capture handler persists the single-request guard before native dispatch.
       // No timers, refill API or retry follows this explicit click.
       target.dispatchEvent(new Event('change', { bubbles: true }));
@@ -620,8 +711,9 @@
     var fact = function (src) { var f = facts.filter(function (x) { return x.source === src; })[0]; return f ? f.text : ''; };
     var kind = v3Kind() || (blanketArtPreview() ? 'blanket' : 'portrait');
     try {
+      // v19, photo first (Krish, 4 Nov): the gift paints before any other answer, as the exact dog in the photo
       return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they', archetype: b.archetype || '',
-        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
+        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy, likeness: !!b.likeness });
     } catch (e) { return null; }
   }
   function artworkEnergy() {
@@ -1047,7 +1139,7 @@
     });
   }
   function savePhoto(file, t) {
-    idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).catch(function () {});
+    return idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).then(function () { return true; }, function () { return false; });
   }
   function restorePhoto() {
     return idb('readwrite', function (st) {
@@ -1055,7 +1147,7 @@
       req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= PHOTO_DAYS * 864e5) st.delete(PHOTO); };
       return req;
     }).then(function (rec) {
-      if (!state.hs3_photo_t || !rec || !rec.file || rec.t !== state.hs3_photo_t || Date.now() - rec.t >= PHOTO_DAYS * 864e5) return null;
+      if (!state.hs3_photo_t || !rec || !rec.file || (rec.t !== state.hs3_photo_t && rec.t !== state.hs3_photo_next) || Date.now() - rec.t >= PHOTO_DAYS * 864e5) return null;
       return rec;
     }).catch(function () { return null; });
   }
@@ -2567,6 +2659,7 @@
               again.dispatchEvent(new Event('change', { bubbles: true }));
             } : null);
             track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+            journeyRefused(photoNote.text, photoNote.override);
             return;
           }
           keepTibPhoto.warn = r.verdict === 'warn' ? r.reasons.map(function (x) { return x.message; }).join(' ') : '';
@@ -2576,7 +2669,7 @@
           if (target && target !== inp) {
             try { var moved = new DataTransfer(); moved.items.add(f); target.files = moved.files; } catch (err) { target = null; }
           }
-          if (!target) { inp.value = ''; photoLog('detach', { stage: 'check' }); photoNote(photoReason({ code: 'detached' }, f)); return; }
+          if (!target) { inp.value = ''; photoLog('detach', { stage: 'check' }); photoNote(photoReason({ code: 'detached' }, f)); journeyRefused(photoNote.text); return; }
           if (target !== inp) photoLog('redrawn', { id: target.id || '' });
           target.__hs2CheckedPhoto = f;
           target.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2626,6 +2719,7 @@
           resetBlanketUpload(); inp.value = '';
           photoLog('prepare:error', { ms: Date.now() - p0, code: err && err.code || '', name: err && err.name || '', message: err && err.message || '' });
           photoNote(photoReason(err, f));
+          journeyRefused(photoNote.text);
         });
         return;
       }
@@ -2640,8 +2734,11 @@
       markHanded(t);
       usePhoto(f, t);
       if (cityArtPreview() || nativeArtworkPurchase()) markArtRequested();
-      state.hs3_photo_t = t; save();
-      savePhoto(f, t);
+      // the photo is stored on the device after this, and a reload can land in between (5 Nov: a reload
+      // right after the send lost the photo). The time it will carry is recorded first, so the restore
+      // accepts the photo before the write or after it, and never a photo from another tab.
+      state.hs3_photo_next = t; save();
+      Promise.resolve(savePhoto(f, t)).then(function (ok) { if (ok) state.hs3_photo_t = t; if (state.hs3_photo_next === t) delete state.hs3_photo_next; save(); });
       track('photo_attached', { where: 'personalizer' });
     }, true);
   }
@@ -3451,6 +3548,9 @@
     var header = document.querySelector('.header-section, header.shopify-section');
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
+    // journey mode hides the store header (hs-journey-choose.css; the snippet sets it before the first paint),
+    // so there is nothing to clear (5 Nov: padding put in, then taken out, moved the panel)
+    if (document.documentElement.classList.contains('hs-jm-on')) return;
     // a box's own padding never moves its top edge, so measure without clearing it first: the
     // clear-then-pad used to make the page jump on every resize and load (27 Oct)
     var top = box.getBoundingClientRect().top;
@@ -4432,5 +4532,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyNote: function () { return { text: journeyAutoSend.note || '', override: typeof journeyAutoSend.override === 'function' }; }, journeyOverride: journeyOverride, journeyResume: journeyResume, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

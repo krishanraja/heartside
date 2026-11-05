@@ -1479,3 +1479,7 @@ html.hs2-has-next #buy:is([data-hs2-artwork-kind], [data-hs2-blanket-purchase]) 
 .hs-journey__line { font-family: var(--sans); font-weight: 600; font-size: 17px; line-height: 1.3; }
 .hs-art-choices label { font-size: 14px; }
 .hs-art-choices select, #buy .tee-form-wrapper input:not([type="radio"]):not([type="checkbox"]), #buy .tee-form-wrapper select, #buy .tee-form-wrapper textarea { font-size: 16px; }
+
+/* journey mode (hs-journey-choose.css has the rest): the store header steps aside before it can paint (5 Nov) */
+html.hs-jm-on .shopify-section-group-header-group, html.hs-jm-on .header-group, html.hs-jm-on .shopify-section-group-footer-group, html.hs-jm-on .footer-group { display: none !important; }
+html.hs-jm-on body { background: #FBF7F3; }

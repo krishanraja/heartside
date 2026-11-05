@@ -39,12 +39,19 @@
       var request = Promise.resolve().then(function () {
         return fetcher(requestUrl.href, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', cache: 'no-store', signal: controller ? controller.signal : undefined, body: JSON.stringify({customizationId: id, variantId: variant})});
       }).then(function (response) {
+        // Shopify's app proxy answers 502 or 504 when the server is slower than it waits: the same
+        // registration is asked again inside the budget, like the server's own transient codes
+        if (response && (response.status === 502 || response.status === 504)) return {status: response.status, data: {code: 'proxy_timeout'}};
         if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) { if (root.console) root.console.warn('Checkout registration HTTP status', response ? response.status : 0); throw fail(); }
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
-      var timeout = new Promise(function (_, reject) {
-        // the server's run stops at 30 s; waiting past it means a retry never repeats work still running
-        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); reject(fail()); }, Math.min(32000, Math.max(1, deadline - Date.now())));
+      request.catch(function () { /* settled by the race below */ });
+      var timeout = new Promise(function (resolve) {
+        // the server's run stops at 30 s; waiting past it means a retry never repeats work still running,
+        // so a request that outlives it is asked again inside the same budget (5 Nov, ten buyers on the
+        // live store: the portrait's and the blanket's first add failed on a slow first registration,
+        // and a second tap went through)
+        timer = setTimeout(function () { if (controller) controller.abort(); if (root.console) root.console.warn('Checkout registration request timed out'); resolve({status: 0, data: {code: 'request_timeout'}}); }, Math.min(32000, Math.max(1, deadline - Date.now())));
       });
       return Promise.race([request, timeout]).then(function (response) {
           clearTimeout(timer);
@@ -55,7 +62,9 @@
           // A transient lookup, create or readback failure must restart the same idempotent
           // registration. A valid ready response is still required before the cart can change.
           var transient = /^(preview_unavailable|image_lookup_failed|image_creation_failed|image_readback_failed)$/.test(data.code || '');
-          var wait = response.status === 202 && data.state === 'pending' && (data.retryAfterSeconds === 3 || data.retryAfterSeconds === 5) ? data.retryAfterSeconds
+          var slow = data.code === 'proxy_timeout' || data.code === 'request_timeout';
+          var wait = slow ? 3
+            : response.status === 202 && data.state === 'pending' && (data.retryAfterSeconds === 3 || data.retryAfterSeconds === 5) ? data.retryAfterSeconds
             : response.status === 503 && transient ? (data.retryAfterSeconds === 3 ? 3 : 5) : 0;
           if (response.status === 503 && !wait) { if (root.console) root.console.warn('Checkout registration rejected', /^[a-z_]{1,48}$/.test(data.code || '') ? data.code : 'unknown'); throw fail(); }
           if (wait) {

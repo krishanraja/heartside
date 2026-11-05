@@ -34,13 +34,17 @@ test('gift-page fields are 16 px and the gift page is set in one sans family', (
   assert.doesNotMatch(brand, /\.hs-cart-empty__line \{[^}]*Fraunces/, 'empty cart line in sans');
 });
 
-test('every gift price shows on the first screen, from Shopify, and on the photo step', () => {
+test('every gift price shows on the first screen, from Shopify, and on the gifts step', () => {
   const s = read('sections/hs-journey.liquid');
   // Krish, 3 Nov: one price line, pinned with the button; free shipping is in the strip's Christmas offer
   assert.match(s, /<div class="hsj-dock hsj-dock--pin">\s*\{%- if price_line != blank -%\}<p class="hsj-price">\{\{ price_line \| strip \}\}<\/p>/);
   assert.match(read('sections/hs2-memo.liquid'), /"id": "offer_deal",[\s\S]*?"default": "Free US shipping"/);
   assert.match(s, /p\.price_min \| money_without_trailing_zeros/, 'prices come from Shopify, never typed');
-  assert.match(read('assets/hs-journey.js'), /function priceLine\(gift\)[\s\S]{0,500}free US shipping/);
+  // photo first (4 Nov): the prices sit on each gift's card, from Shopify's variants, with free US shipping under them
+  assert.match(s, /"variants": \[\{%- for v in p\.variants -%\}\{ "id": \{\{ v\.id \| json \}\}, "options": \{\{ v\.options \| json \}\}, "price": \{\{ v\.price \| divided_by: 100\.0 \| json \}\}/);
+  const js = read('assets/hs-journey.js');
+  assert.match(js, /var price = Number\(x\.priceMax\) > Number\(x\.price\) \? 'from ' \+ money\(x\.price\) : money\(x\.price\);/);
+  assert.match(js, /<b>' \+ esc\(CHRISTMAS\) \+ '<\/b> Free US shipping\./);
 });
 
 test('the gift page clears the header before the first paint, the way clearHeader does', () => {

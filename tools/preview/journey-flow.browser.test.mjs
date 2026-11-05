@@ -1,9 +1,12 @@
-// The rebuilt journey (29 Oct; sections/hs-journey.liquid, assets/hs-journey.js), walked on a phone
-// against the rendered theme with the note writer stubbed. Krish's rules: one question per screen, no
-// scrolling, nothing typed but the dog's name and the recipient's name, nothing asked twice, four tones
-// that change the words without moving the page, and the painting never starts on the mug ("the UI
-// always recommends the mug 10 times out of 10"). Screens go to out/journey-flow/.
-// It is previewed at /?view=journey (templates/index.journey.json) until it replaces the homepage.
+// The journey, photo first (Krish, 4 Nov, after a real purchase: "one step at a time, non-duplicative, in the
+// right order, and then the user purchases"; "'What style of design do you want?' is what the whole of this
+// app experience should look like"; the painting screen "for a few seconds, which then can fade into the next
+// steps of all the user inputs"). Walked on phones against the rendered theme, the note writer and Teeinblue
+// stubbed, from the first screen to the cart:
+//   the photo, the style, the gifts with each colour chosen once, "Start painting"; on the first gift's page the
+//   painter starts at once, the studio shows, the questions follow while it paints, then the painting on the
+//   product, one tick, one add; the next gift paints the same photo and asks nothing; then the cart.
+// Screens go to out/journey-flow/.
 //   cd tools/preview && node render.mjs && cd ../.. && node --test tools/preview/journey-flow.browser.test.mjs
 import {test, before, after} from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,22 +25,55 @@ const PAGE_FOR = {'your-dogs-illustrated-mug': 'product-mug-native.html', 'your-
 const NOTES = {
   sentimental: {voice: 'A quiet, devoted friend.', lines: {home: 'I wait by the door until you come home.', spot: 'Your side of the couch stays warm with me.', together: 'Our walks are the best part of my day.', meaning: 'On the hard days, I stay right next to you.'}},
   warm: {voice: 'A loyal friend with a small smile.', lines: {home: "I'm at the door because I keep count.", spot: 'I save the couch for you, and I guard it well.', together: 'Our walk is the part of my day I never skip.', meaning: "On hard days, I'm the one who stays by you."}},
-  hilarious: {voice: 'A deadpan roommate who takes every habit seriously.', lines: {home: 'I take your arrivals very seriously, so I wait.', spot: "I keep your spot warm because the couch can't be trusted.", together: 'Our walk is the best part of my day, and I will testify.', meaning: 'Hard days are my specialty, so I stay close.'}},
+  hilarious: {voice: 'A deadpan roommate.', lines: {home: 'I take your arrivals very seriously, so I wait.', spot: "I keep your spot warm because the couch can't be trusted.", together: 'Our walk is the best part of my day, and I will testify.', meaning: 'Hard days are my specialty, so I stay close.'}},
   over_the_top: {voice: 'A smug star.', lines: {home: 'I wait at the door like a star waiting for a very slow driver.', spot: 'You may sit on whatever part of the couch I leave you.', together: 'I take you on walks because you would never find the outside alone.', meaning: 'I let you live here, and I love you.'}}
 };
-let server, base, browser;
+// Teeinblue on each gift page: its hidden painting fields, a count of every photo handed to it, and its add
+const STANDIN = '<script>(' + (() => {
+  window.__sends = 0;
+  // a painting request is hs2's upload lock reaching "sent", written just before the photo goes to Teeinblue;
+  // the file field itself sees the photo more than once (the hand-over, then the cleaned photo)
+  window.__painted = 0;
+  const set = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (k, v) { if (/^hs2-blanket-upload:/.test(k) && /"stage":"sent"/.test(v)) window.__painted++; return set.call(this, k, v); };
+  // the rendered pages' own product ids, so hs2.js and the inline journey check use the same key
+  const ids = {'your-dogs-illustrated-mug': 16160217956734, 'your-dogs-portrait': 16151384260990, 'your-dogs-personality-blanket': 16158073880958};
+  const pid = ids[(location.pathname.split('/')[2] || '')];
+  if (pid) window.ShopifyAnalytics = {meta: {product: {id: pid}}};
+  document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.querySelector('#buy input.tee-photo-input');
+    if (!input) return;
+    input.id = 'tee-photo-standin';
+    const photo = input.closest('.tee-field') || input.closest('.tee-photo');
+    photo.classList.add('tee-field--photo');
+    const field = (label, body) => { const d = document.createElement('div'); d.className = 'tee-field'; d.innerHTML = '<div class="tee-field__heading"><span>' + label + '</span></div>' + body; photo.before(d); };
+    const pick = opts => '<select>' + opts.map(o => '<option>' + o + '</option>').join('') + '</select>';
+    field('Personality', '<input type="text">');
+    field('Artwork style', pick(['Cinematic', 'Painterly', 'Vintage screenprint', 'Comic book', 'Cut-paper collage', 'Fine ink drawing']));
+    field('Artwork tone', pick(['Sentimental', 'Warm with a wink', 'Hilarious']));
+    for (const name of ['Style direction', 'Tone direction', 'Energy']) field(name, '<input type="text" data-brief="' + name + '">');
+    document.dispatchEvent(new Event('teeinblue-event-component-injected'));
+  }, true);
+}).toString() + ')();</script>';
+
+let server, base, browser, cart = [];
 before(async () => {
-  // offline CI runs the tests before its render step, so the page is rendered here when it is missing
   if (!fs.existsSync(path.join(out, 'index-journey.html'))) execFileSync(process.execPath, ['render.mjs'], {cwd: here, stdio: 'ignore'});
   server = http.createServer((req, res) => {
     const u = new URL(req.url, 'http://x');
+    if (u.pathname === '/cart.js') { res.writeHead(200, {'Content-Type': 'application/json'}); return res.end(JSON.stringify({items: cart})); }
+    if (u.pathname === '/__add') { cart.push({handle: u.searchParams.get('h')}); res.writeHead(200); return res.end('ok'); }
+    if (u.pathname === '/cart') { res.writeHead(200, {'Content-Type': 'text/html'}); return res.end('<!doctype html><title>Cart</title><h1>Cart</h1>'); }
     let f = path.join(out, decodeURIComponent(u.pathname));
     if (u.pathname === '/') f = path.join(out, 'index-journey.html');
     if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', u.pathname.split('/assets/')[1]);
     else if (u.pathname.startsWith('/products/')) f = path.join(out, PAGE_FOR[u.pathname.split('/')[2]] || 'missing');
     if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); res.end(); return; }
     const type = f.endsWith('.html') ? 'text/html' : f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : f.endsWith('.webp') ? 'image/webp' : f.endsWith('.jpg') ? 'image/jpeg' : f.endsWith('.woff2') ? 'font/woff2' : 'application/octet-stream';
-    res.writeHead(200, {'Content-Type': type}); fs.createReadStream(f).pipe(res);
+    res.writeHead(200, {'Content-Type': type});
+    if (u.pathname.startsWith('/products/')) return res.end(fs.readFileSync(f, 'utf8').replace('<head>', '<head>' + STANDIN));
+    fs.createReadStream(f).pipe(res);
   });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
@@ -45,8 +81,8 @@ before(async () => {
 });
 after(async () => { await browser.close(); server.close(); });
 
-async function open({width = 390, height = 844, gift} = {}) {
-  const ctx = await browser.newContext({viewport: {width, height}, hasTouch: true, isMobile: true});
+async function open({width = 390, height = 844} = {}) {
+  const ctx = await browser.newContext({viewport: {width, height}, hasTouch: true, isMobile: width < 900});
   const page = await ctx.newPage();
   const calls = [], errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -57,193 +93,374 @@ async function open({width = 390, height = 844, gift} = {}) {
     if (body.warm) return route.fulfill({status: 200, contentType: 'application/json', headers: {'Access-Control-Allow-Origin': '*'}, body: '{"warm":true}'});
     calls.push(body);
     await new Promise((r) => setTimeout(r, 150));
-    const n = NOTES[body.note_tone];
-    // the writer still picks the mug for walks and coffee; the journey must not paint it first
-    return route.fulfill({status: 200, contentType: 'application/json', headers: {'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({...n, recommended_gift: gift || 'mug', reason: '', flags: [], source: 'ai'})});
+    return route.fulfill({status: 200, contentType: 'application/json', headers: {'Access-Control-Allow-Origin': '*'}, body: JSON.stringify({...NOTES[body.note_tone], recommended_gift: 'mug', reason: '', flags: [], source: 'ai'})});
   });
   return {ctx, page, calls, errors};
 }
 const pick = (page, group, v) => page.locator(`[data-hsj-pick="${group}"][data-v="${v}"]`).click();
-// the phones that matter, smallest to largest (29 Oct, Krish: "Guaranteed no scroll on every device"):
-// iPhone SE 1st gen, small Android (Krish's Edge phone), iPhone SE 2/3, iPhone 12 to 15, Pixel, Pro Max
 const SIZES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932}, {width: 1440, height: 900}];
-// every screen fits the phone: nothing below the fold (Krish, 29 Oct: "It must be a no-scroll experience")
 async function noScroll(page, where) {
   const {sh, ih} = await page.evaluate(() => ({sh: document.documentElement.scrollHeight, ih: window.innerHeight}));
   assert.ok(sh <= ih + 1, `${where} scrolls: ${sh} > ${ih}`);
 }
-// answers every question screen in order, checking each one is one question with nothing to type but the names
-async function answer(page, a, shot) {
-  await page.waitForURL(/step=name/);
-  const step = async (id) => { await page.waitForURL(new RegExp('step=' + id)); await page.waitForSelector(`[data-hsj-screen="${id}"]`); if (shot) { await noScroll(page, id); await page.screenshot({path: path.join(shots, shot + '-' + id + '.png')}); } };
-  await step('name');
-  await page.locator('[data-hsj-name]').fill(a.name);
+// a painting Teeinblue has finished and saved, on whatever gift page is open
+const paintDone = page => page.evaluate(() => {
+  const a = document.querySelector('[data-hs-art]');
+  a.setAttribute = function (k, v) { return Element.prototype.setAttribute.call(this, k, k === 'data-state' ? 'done' : v); };
+  a.setAttribute('data-state', 'done');
+  a.querySelector('[data-hs-art-result]').src = '/assets/hs-ex-style-screenprint.webp';
+});
+// the tick is hs2's own approval box, which wants Teeinblue's real saved painting; the stand-in takes the tick,
+// and Teeinblue's own add button adds this page's gift to the stand-in cart
+const ready = page => page.evaluate(() => {
+  const a = document.querySelector('[data-hs2-artwork-accept]'), b = a.cloneNode(); let on = false;
+  Object.defineProperty(b, 'checked', {get: () => on, set: v => { on = !!v; }}); a.replaceWith(b);
+  document.querySelector('#buy #teeAtcButton').click = () => { fetch('/__add?h=' + location.pathname.split('/')[2]); };
+});
+// the top of each frame and the dock stay put: nothing above the button moves while the dog talks or the painting lands
+const frameBox = page => page.evaluate(() => { const f = document.querySelector('[data-hs-jm-frame]'), d = f && f.querySelector('.hsj-dock'); return d ? Math.round(d.getBoundingClientRect().top) : -1; });
+
+// the home page: photo, style, gifts, each colour chosen once, then the first gift's page
+async function home(page, size, shot) {
+  await page.goto(`${base}/`);
+  await page.locator('[data-hsj-go]').first().click();
+  await page.waitForURL(/step=photo/);
+  await page.waitForSelector('[data-hsj-screen="photo"]');
+  if (size.width < 900) await noScroll(page, 'photo');
+  if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-1-photo.png')});
+  await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+  await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+  await page.waitForURL(/step=look/);
+  await page.waitForSelector('[data-hsj-screen="look"]');
+  if (size.width < 900) await noScroll(page, 'look');
+  await page.locator('[data-hsj-style="painterly"]').click();
+  assert.equal(await page.locator('[data-hsj-style="painterly"]').getAttribute('aria-pressed'), 'true');
+  if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-2-look.png')});
   await page.locator('[data-hsj-next]').click();
-  await step('breed'); await pick(page, 'breed', a.breed);
-  await step('pro'); await pick(page, 'pro', a.pro);
-  await step('person');
-  if (a.person) { await page.locator('[data-hsj-person]').fill(a.person); await page.locator('[data-hsj-next]').click(); } else await pick(page, 'self', 'self');
-  for (const id of ['home', 'spot', 'together', 'meaning']) { await step(id); await pick(page, id, a[id]); }
-  await step('toy');
-  for (const t of a.toys || []) await pick(page, 'toy', t);
+  // the tone, before the painting: it changes the scene and the light, never the face (recipes v19)
+  await page.waitForURL(/step=tone/);
+  await page.waitForSelector('[data-hsj-screen="tone"]');
+  if (size.width < 900) await noScroll(page, 'tone');
+  await page.locator('[data-hsj-feel="over_the_top"]').click();
+  assert.equal(await page.locator('[data-hsj-feel="over_the_top"]').getAttribute('aria-pressed'), 'true');
+  if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2b-tone.png')});
   await page.locator('[data-hsj-next]').click();
-  await step('wears'); await pick(page, 'wears', a.wears || '');
-  await page.waitForURL(/step=words/);
+  await page.waitForURL(/step=gifts/);
+  await page.waitForSelector('[data-hsj-screen="gifts"]');
+  // the store's bundle switch, as the memo strip carries it when bundle_offer_live is on
+  await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-hs-bundle-live', ''));
+  assert.equal(await page.locator('[data-hsj-start]').isDisabled(), true, 'nothing paints before a gift is chosen');
+  // the portrait, framed in white, and the mug, dark green: each choice made here, once
+  await page.locator('[data-hsj-gift="print"]').click();
+  const printOpts = await page.locator('[data-hsj-gift-card="print"] [data-hsj-variant]').allTextContents();
+  assert.deepEqual(printOpts.map(t => t.trim()).sort(), ['Black frame, $119', 'Red Oak frame, $119', 'Unframed, $59', 'White frame, $119']);
+  await page.locator('[data-hsj-gift-card="print"] [data-hsj-variant]', {hasText: 'White frame'}).click();
+  await page.locator('[data-hsj-gift="mug"]').click();
+  await page.locator('[data-hsj-gift-card="mug"] [aria-label="Dark Green"]').click();
+  assert.equal(await page.locator('[data-hsj-gift-card="mug"] .hsj-gift__opt-name b').textContent(), 'Dark Green');
+  assert.match(await page.locator('[data-hsj-offer]').textContent(), /save 15% on these 2/);
+  assert.match(await page.locator('.hsj-when').textContent(), /Order by December 4 for Christmas delivery to a US address/);
+  if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-3-gifts.png'), fullPage: false});
+  await page.locator('[data-hsj-start]').click();
+  await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/);
 }
 
-for (const size of SIZES) test(`the journey at ${size.width}x${size.height}: one question per screen, no scrolling, two names typed, four tones in place, the best-fit gift first`, async () => {
+for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: photo, style, gifts once, then it paints while the questions run, then the painting, one add per gift, the cart`, async () => {
+  cart = [];
   const {ctx, page, calls, errors} = await open(size);
-  const tag = size.width + '';
+  const shot = size.width + 'x' + size.height;
   try {
-    await page.goto(`${base}/`);
-    // the hook: one example, one button
-    assert.equal(await page.locator('.hsj-h1').innerText(), 'Your dog loves you too.');
-    assert.equal(await page.locator('[data-hsj-screen="hook"] .hsj-btn').count(), 1, 'one primary button');
-    const btn = await page.locator('[data-hsj-go]').boundingBox();
-    assert.ok(btn.y + btn.height <= size.height, 'the button is in the first phone screen');
-    // the whole first screen fits, not just the button: nothing below the fold, nothing clipped. The page
-    // itself goes on below the hook (the showcase, and since 30 Oct the store footer), so this checks the
-    // hook's own content, not the page height
-    // since 3 Nov the hook also holds the photo-to-gift slider, which follows the first screen on a phone by
-    // design (Krish: on desktop it sits beside the carousel), so it is left out of the first-screen measure
-    const hookBottom = await page.evaluate(() => Math.max(...[...document.querySelectorAll('[data-hsj-screen="hook"] *')].filter((e) => !e.closest('.hss--flow') && e.getClientRects().length && getComputedStyle(e).display !== 'none').map((e) => e.getBoundingClientRect().bottom)));
-    assert.ok(hookBottom <= size.height, `the first screen ends at ${hookBottom}px of ${size.height}`);
-    await page.screenshot({path: path.join(shots, tag + '-0-hook.png')});
-    await page.locator('[data-hsj-go]').click();
-    await answer(page, {name: 'mowgli', breed: 'Labrador Retriever', pro: 'he', person: 'sam', home: 'door', spot: 'anywhere', together: 'walk', meaning: 'hard', toys: ['a tennis ball', 'a big stick'], wears: 'a bandana'}, tag);
-
-    // the words: the four tones change the note in a box that never moves
-    await page.waitForFunction(() => /hard days, I'm the one/.test(document.querySelector('[data-hsj-note]').innerText));
-    await noScroll(page, 'words');
-    const box = async () => (await page.locator('[data-hsj-note]').boundingBox());
-    const warm = await box();
-    assert.match(await page.locator('[data-hsj-note]').innerText(), /On hard days, I'm the one who stays by you\.[\s\S]*Love, Mowgli/);
-    assert.equal(await page.locator('[data-hsj-tone]').count(), 4, 'four settings');
-    await page.screenshot({path: path.join(shots, tag + '-words-warm.png')});
-    for (const [tone, text] of [['hilarious', /my specialty/], ['over_the_top', /I let you live here/]]) {
-      await page.locator(`[data-hsj-tone="${tone}"]`).click();
-      await page.waitForFunction((re) => new RegExp(re).test(document.querySelector('[data-hsj-note]').innerText), text.source);
-      const b = await box();
-      assert.deepEqual([b.y, b.height], [warm.y, warm.height], 'the tone changes the words, never the layout');
-      await noScroll(page, 'words ' + tone);
-      // every line and the signature show whole once they have arrived (Krish, 4 Nov: the copy "gets cut off");
-      // on the smallest phones the note may scroll inside its card instead, never hide
-      await page.waitForTimeout(1100);
-      const cut = await page.evaluate(() => {
-        const letter = document.querySelector('.hsj-letter'), box = letter.getBoundingClientRect(), long = document.querySelector('[data-hsj-note]').classList.contains('is-long');
-        return {long, cut: [...letter.children].filter(p => p.getBoundingClientRect().bottom > box.bottom + 1).map(p => p.textContent)};
-      });
-      if (size.height >= 800) assert.deepEqual(cut, {long: false, cut: []}, 'the whole note shows');
-      else if (cut.cut.length) assert.equal(cut.long, true, 'a note that does not fit scrolls inside its card');
-      await page.screenshot({path: path.join(shots, tag + '-words-' + tone + '.png')});
-    }
-    const before = calls.length;
-    await page.locator('[data-hsj-tone="warm"]').click();
-    await page.waitForTimeout(500);
-    assert.equal(calls.length, before, 'each tone is written once');
-    assert.deepEqual(calls.map((c) => c.note_tone), ['warm', 'hilarious', 'over_the_top']);
-    const c = calls[0];
-    assert.equal(c.dog.name, 'Mowgli'); assert.equal(c.dog.breed, 'Labrador Retriever');
-    assert.deepEqual(c.recipient, {name: 'Sam', relation: 'named'}, 'the recipient is the name typed');
-    assert.equal(c.answers.find((x) => x.id === 'together').label, 'walks', 'each tap reaches the writer as words');
-    assert.equal(c.answers.find((x) => x.id === 'toy').typed, 'a tennis ball and a big stick', 'two toys');
-    assert.equal(c.answers.find((x) => x.id === 'wears').typed, 'a bandana');
+    await home(page, size, shot);
+    // the hand-over carries only what paints the picture, and the painter is asked for the dog in the photo
+    const hand = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')));
+    assert.equal(hand.hs_journey.mode, 'photo-first');
+    assert.deepEqual(hand.hs_journey.queue.map(q => q.gift), ['print', 'mug'], 'the portrait paints first, then the mug');
+    assert.match(hand.hs_journey.queue[0].url, /variant=/);
+    assert.equal(hand.hs3_art_choices.style, 'painterly');
+    assert.equal(hand.hs3_art_choices.tone, 'over_the_top', 'the painter gets the tone chosen before it paints');
+    assert.equal(hand.hs_brief_input.likeness, true);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await page.waitForSelector('[data-hs-jm]:not([hidden]) [data-hs-jm-frame]:not([hidden]) [data-hs-jm-paint] [data-hs-art]');
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Painting your dog');
+    const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
+    assert.match(brief.Energy, /^The face and build are locked to the photo/);
+    assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation, never the face\./);
+    assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/, ''), /side-eye|brow|smug|judging/);
+    assert.match(brief['Style direction'], /painterly|painting/i);
+    if (size.width < 900) await noScroll(page, 'the studio');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-4-studio.png')});
+    // a few seconds of the studio, then the questions, in the same frame, with the painting badge
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 12000});
+    await page.waitForSelector('[data-hsj-screen="name"] [data-hsj-paint]');
+    if (size.width < 900) await noScroll(page, 'the first question');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-5-name.png')});
+    await page.locator('[data-hsj-name]').fill('Pickles');
+    await page.locator('[data-hsj-next]').click();
+    await pick(page, 'breed', 'Pug'); await pick(page, 'pro', 'she');
+    await page.waitForSelector('[data-hsj-screen="person"]');
+    await page.locator('[data-hsj-person]').fill('Mom');
+    await page.locator('[data-hsj-next]').click();
+    for (const [id, v] of [['home', 'door'], ['spot', 'couch'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); if (size.width < 900) await noScroll(page, id); await pick(page, id, v); }
+    await page.waitForSelector('[data-hsj-screen="words"]');
+    for (let i = 0; i < 50 && !calls.length; i++) await page.waitForTimeout(100);
     await page.locator('[data-hsj-tone="hilarious"]').click();
-
-    // the look: six styles and the painting brief, on one screen
+    await page.waitForFunction(() => /arrivals very seriously/.test(document.querySelector('[data-hsj-note]').textContent), null, {timeout: 8000});
+    if (size.width < 900) await noScroll(page, 'the note');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-6-note.png')});
+    // the painting is not back yet: the studio again, in the same frame, then the painting on the product
     await page.locator('[data-hsj-next]').click();
-    await page.waitForURL(/step=look/);
-    await noScroll(page, 'look');
-    assert.equal(await page.locator('[data-hsj-style]').count(), 6, 'six styles');
-    assert.match(await page.locator('[data-hsj-brief]').innerText(), /^We paint a Labrador Retriever in his bandana, out on a walk, with a stick far too big for him/);
-    await page.locator('[data-hsj-style="collage"]').click();
-    await page.screenshot({path: path.join(shots, tag + '-look.png')});
-
-    // reload keeps the step and the answers; Back goes one screen back
-    await page.reload();
-    await page.waitForSelector('[data-hsj-screen="look"]');
-    assert.equal(await page.locator('[data-hsj-style="collage"]').getAttribute('aria-pressed'), 'true');
-
-    // the photo: one big target, then the painting starts on the best-fit gift
-    await page.locator('[data-hsj-next]').click();
-    await page.waitForURL(/step=photo/);
-    await noScroll(page, 'photo');
-    const drop = await page.locator('[data-hsj-drop]').boundingBox();
-    assert.ok(drop.height >= 200 && drop.width >= (size.width >= 900 ? 400 : size.width - 40), 'one big tappable target, the width of the screen on a phone');
-    await page.screenshot({path: path.join(shots, tag + '-photo.png')});
-    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
-    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
-    await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/, {timeout: 10000});
-    const bridge = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')));
-    assert.equal(bridge.hs_journey.gift, 'print', 'a walker who sleeps nowhere near paints the portrait first, never the mug the writer picked');
-    assert.deepEqual(bridge.hs3_art_choices, {style: 'collage', tone: 'hilarious'});
-    assert.equal(bridge.hs3_lines.meaning, 'Hard days are my specialty, so I stay close.');
-    assert.equal(bridge.dog, 'Mowgli'); assert.equal(bridge.person, 'Sam');
-    assert.ok(bridge.hs3_photo_t > 0, 'the photo is saved for the gift');
-    assert.ok((bridge.hs3_art_profile.facts || []).some((f) => /tennis ball and a big stick/.test(f.text)), 'both toys reach the painting');
-    assert.ok((bridge.hs3_art_profile.facts || []).some((f) => /bandana/.test(f.text)), 'what the dog wears reaches the painting');
-    assert.deepEqual(errors.filter((e) => !/HSPhotoQuality|detector/i.test(e)), []);
+    await page.waitForSelector('[data-hs-jm][data-phase="wait"]');
+    assert.match(await page.locator('[data-hs-jm-title]').textContent(), /^Still painting /);
+    // the questions are over, so the address no longer points at one (5 Nov, ten-buyer run)
+    assert.equal(await page.evaluate(() => location.hash), '', 'no #ask= once the note is done');
+    const dockWaiting = await frameBox(page);
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Pickles on the portrait');
+    assert.equal(await frameBox(page), dockWaiting, 'the dock does not move when the painting lands');
+    assert.equal(await page.locator('[data-hs-jm-tick-text]').textContent(), 'Yes, this is Pickles');
+    assert.equal(await page.locator('[data-hs-jm-add]').isDisabled(), true, 'the add waits for the tick');
+    if (size.width < 900) await noScroll(page, 'the reveal');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-7-reveal.png')});
+    // the order carries the note and the names before it is added
+    const order = await page.evaluate(() => ({dog: window.__hs2api.state.dog, person: window.__hs2api.state.person, lines: window.__hs2api.state.hs3_lines, tone: window.__hs2api.state.hs_journey.tone}));
+    assert.equal(order.dog, 'Pickles'); assert.equal(order.person, 'Mom');
+    assert.match(order.lines.home, /arrivals very seriously/); assert.equal(order.tone, 'hilarious');
+    await ready(page);
+    await page.locator('[data-hs-jm-tick]').check();
+    assert.match(await page.locator('[data-hs-jm-add]').textContent(), /Add it, then paint the mug/);
+    await page.locator('[data-hs-jm-add]').click();
+    // the mug: its own page paints the same photo, in the same style, and asks nothing
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/, {timeout: 20000});
+    assert.deepEqual(cart.map(c => c.handle), ['your-dogs-portrait']);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Now the mug');
+    await page.waitForTimeout(7000);
+    assert.equal(await page.evaluate(() => /ask=/.test(location.hash)), false, 'no question is asked again');
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Pickles on the mug');
+    assert.equal(await page.evaluate(() => document.querySelectorAll('[data-hsj-variant], .hs-jm-dot, .hs-jm-pill').length), 0, 'no colour is asked again');
+    await ready(page);
+    await page.locator('[data-hs-jm-tick]').check();
+    assert.match(await page.locator('[data-hs-jm-add]').textContent(), /^Add to cart/);
+    await page.locator('[data-hs-jm-add]').click();
+    await page.waitForURL(/\/cart$/, {timeout: 20000});
+    assert.deepEqual(cart.map(c => c.handle), ['your-dogs-portrait', 'your-dogs-illustrated-mug'], 'two gifts, each added once');
+    assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
 
-test('a dog that sleeps near them paints the blanket first, a boss the portrait; nothing paints the mug first', async () => {
-  for (const [a, page_] of [[{name: 'Pip', breed: 'Pug', pro: 'she', person: 'Mom', home: 'spin', spot: 'feet', together: 'movie', meaning: 'best'}, /your-dogs-personality-blanket/],
-    [{name: 'Kuku', breed: 'Mixed', pro: 'she', home: 'cool', spot: 'bed', together: 'car', meaning: 'boss'}, /your-dogs-portrait/]]) {
-    const {ctx, page} = await open({gift: 'mug'});
-    try {
-      await page.goto(`${base}/?step=name`);
-      await answer(page, a);
-      await page.waitForFunction((n) => new RegExp('Love, ' + n).test(document.querySelector('[data-hsj-note]').innerText), a.name);
-      await page.locator('[data-hsj-next]').click();
-      await page.locator('[data-hsj-next]').click();
-      await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
-      await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
-      await page.waitForURL(page_, {timeout: 10000});
-    } finally { await ctx.close(); }
-  }
-});
-
-test('a deep link past the answers lands on the first open question, Back steps one screen, and a rejected photo stays put', async () => {
-  const {ctx, page, calls} = await open();
+test('a deep link past the photo lands on the photo, Back steps one screen, and a refused photo stays put', async () => {
+  const {ctx, page} = await open();
   try {
-    await page.goto(`${base}/?step=photo`);
-    await page.waitForURL(/step=name/);
-    await page.locator('[data-hsj-name]').fill('Kuku');
-    await page.locator('[data-hsj-name]').press('Enter');
-    await page.waitForURL(/step=breed/);
-    await page.locator('[data-hsj-back]').click();
-    await page.waitForURL(/step=name/);
-    assert.equal(await page.locator('[data-hsj-name]').inputValue(), 'Kuku', 'Back keeps the answer');
-    await page.goto(`${base}/?step=name`);
-    await answer(page, {name: 'Kuku', breed: 'Mixed', pro: 'she', home: 'cool', spot: 'bed', together: 'car', meaning: 'boss'});
-    for (let i = 0; i < 50 && !calls.length; i++) await page.waitForTimeout(100);
-    assert.equal(calls[0].recipient.relation, 'self');
-    await page.locator('[data-hsj-next]').click();
-    await page.locator('[data-hsj-next]').click();
+    await page.goto(`${base}/?step=gifts`);
     await page.waitForURL(/step=photo/);
     await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'reject', overridable: true, reasons: [{code: 'no_dog', message: "I couldn't find a dog in this photo."}]})}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
     await page.waitForFunction(() => /couldn't find a dog/.test(document.querySelector('[data-hsj-photo-note]').textContent));
-    assert.match(page.url(), /step=photo/, 'a refused photo paints nothing');
+    assert.match(page.url(), /step=photo/, 'a refused photo goes nowhere');
     await page.locator('[data-hsj-override]').click();
-    await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/, {timeout: 10000});
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=gifts/);
+    await page.locator('[data-hsj-back]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=gifts/);
+    await page.locator('[data-hsj-gift="blanket"]').click();
+    assert.equal(await page.locator('[data-hsj-gift-card="blanket"] [data-hsj-variant]').count(), 0, 'the blanket has nothing to choose');
+    await page.locator('[data-hsj-gift="blanket"]').click();
+    assert.equal(await page.locator('[data-hsj-start]').isDisabled(), true, 'unticking the only gift stops the start');
   } finally { await ctx.close(); }
 });
 
-// audit, 30 Oct: on a phone held sideways the Next bar covered the fourth answer, so it could not be tapped
-test('a phone on its side can reach and tap every answer above the button', async () => {
-  const {ctx, page} = await open({width: 844, height: 390});
+test('a buyer from a gift page finds that gift already chosen', async () => {
+  const {ctx, page} = await open();
   try {
-    await page.goto(`${base}/?step=name`);
-    await page.locator('[data-hsj-name]').fill('Kuku');
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
     await page.locator('[data-hsj-next]').click();
-    await pick(page, 'breed', 'Pug'); await pick(page, 'pro', 'she');
-    await page.waitForSelector('[data-hsj-screen="person"]');
-    await pick(page, 'self', 'self');
-    await pick(page, 'home', 'door');
-    await page.waitForSelector('[data-hsj-screen="spot"]');
-    await page.locator('[data-hsj-pick="spot"][data-v="anywhere"]').click({timeout: 5000});
-    await page.waitForURL(/step=together/);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), 0, 'nothing sideways');
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    assert.equal(await page.locator('[data-hsj-gift="blanket"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
+  } finally { await ctx.close(); }
+});
+
+test("a double tap answers one screen, never the next one it lands on", async () => {
+  const {ctx, page} = await open();
+  try {
+    await page.goto(`${base}/?step=photo`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    // 5 Nov, a test buyer on the live store: a double tap on the style's Next skipped the tone, unseen
+    await page.locator('[data-hsj-next]').dblclick();
+    await page.waitForURL(/step=tone/);
+    await page.waitForTimeout(400);
+    assert.match(page.url(), /step=tone/, 'the tone is still on screen, waiting for its own answer');
+    // two separate taps are two answers, however quick
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=gifts/);
+  } finally { await ctx.close(); }
+});
+
+test('a double tap on a gift card chooses it once, never takes it back', async () => {
+  const {ctx, page} = await open();
+  try {
+    await page.goto(`${base}/?step=photo`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    // 5 Nov, a test buyer on the live store: a double tap chose the mug and took it back
+    await page.locator('[data-hsj-gift="mug"]').dblclick();
+    assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'true');
+    // with the store's bundle switch off, no saving is promised (5 Nov review)
+    assert.equal((await page.locator('[data-hsj-offer]').textContent()).trim(), '');
+    assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
+    await page.locator('[data-hsj-gift="mug"]').click();
+    assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'false', 'a single tap still takes it back');
+  } finally { await ctx.close(); }
+});
+
+// 5 Nov judges: a photo of two dogs was accepted in 0.3 seconds, before the dog detector had loaded, and the blanket
+// painted one of them with nothing said. The detector finishes its check out of sight; Start painting then asks once.
+test('a photo with two dogs: the check finishes out of sight, and Start painting asks once, another photo or this one', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    // the detector is not ready when the photo is chosen; it loads a moment later and sees two dogs
+    await page.evaluate(() => { window.__checks = []; window.HSPhotoQuality = {
+      check: (f, o) => { window.__checks.push(o && o.detect === false ? 'pixels' : 'dogs'); return Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: [], detection: null} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}); },
+      loadDetector: () => new Promise(r => setTimeout(() => r({}), 400))}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
+    assert.deepEqual(await page.evaluate(() => window.__checks), ['pixels', 'dogs'], 'the dog check ran once the detector was ready');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    await page.waitForTimeout(600);
+    assert.equal(await page.textContent('#hsj-dogs-title'), 'More than one dog in this photo');
+    assert.match(page.url(), /step=gifts/, 'nothing paints yet');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-two-dogs.png')});
+    // another photo: back to the photo step, and a photo of one dog goes straight on
+    await page.locator('[data-hsj-dogs-repick]').click();
+    await page.waitForURL(/step=photo/);
+    await page.evaluate(() => { window.HSPhotoQuality.check = () => Promise.resolve({verdict: 'ok', reasons: []}); });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForTimeout(800);
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+  } finally { await ctx.close(); }
+});
+
+test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it paints', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    await page.waitForTimeout(600);
+    await page.locator('[data-hsj-dogs-keep]').click();
+    await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: a double tap on Start painting put its second tap on the sheet's button in the same place and painted
+// the two-dog photo unread. The safe answer sits there now, and the sheet ignores a double tap and its first half second.
+test('a double tap on Start painting opens the two-dog question and never answers it', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForTimeout(400);
+    await page.locator('[data-hsj-start]').dblclick();
+    await page.waitForTimeout(1000);
+    assert.equal(await page.isVisible('[data-hsj-dogs]'), true, 'the question stays up');
+    assert.match(page.url(), /step=gifts/, 'nothing paints');
+    // the button under the finger is the safe one
+    const under = await page.evaluate(() => { const s = document.querySelector('[data-hsj-start]').getBoundingClientRect(); const e = document.elementFromPoint(s.left + s.width / 2, s.top + s.height / 2); return e && e.closest('button') && e.closest('button').hasAttribute('data-hsj-dogs-repick'); });
+    assert.equal(under, true, 'Choose another photo sits where Start painting was');
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: the detector was ready but ran out of time on this photo, so no dog check ran and none followed
+test('a dog check that ran out of time is finished out of sight, and Start painting asks', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.__checks = []; window.HSPhotoQuality = {
+      check: () => { const n = window.__checks.push('check'); return Promise.resolve(n === 1 ? {verdict: 'ok', reasons: [], detection: null, timedOut: true} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}); },
+      loadDetector: () => Promise.resolve({})}; });
+    await page.waitForTimeout(1500); // the detector is warm before the photo is chosen
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: a reload while the late check ran lost it for good, and the two-dog photo painted unasked
+test('a reload while the dog check runs: it runs again from the photo on the device', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    // the real photo check is held back by a stand-in that survives the reload; the detector answers only on the second page
+    await page.addInitScript(() => {
+      const second = sessionStorage.getItem('__reloaded') === '1';
+      const stub = {check: (f, o) => Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: [], detection: null} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}),
+        loadDetector: () => second ? Promise.resolve({}) : new Promise(() => {})};
+      Object.defineProperty(window, 'HSPhotoQuality', {get: () => stub, set: () => {}, configurable: true});
+    });
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.evaluate(() => sessionStorage.setItem('__reloaded', '1'));
+    await page.reload();
+    await page.waitForSelector('[data-hsj-screen="look"]');
+    await page.waitForFunction(() => JSON.parse(sessionStorage.getItem('hs-journey') || '{}').photoDogs === true, null, {timeout: 6000});
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
   } finally { await ctx.close(); }
 });

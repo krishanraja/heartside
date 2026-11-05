@@ -581,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v18-roast');
+  assert.equal(recipes.version, 'actual-dog-recipes-v19-face-locked-tones');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -984,7 +984,7 @@ test('v17: the portrait fills the print, its saved block is unchanged, and the s
 // drawn as food, writing or other people.
 test('v18: Roast paints a visible roast inside the fields, and the spec records it', () => {
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-04-v18.md', import.meta.url), 'utf8');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes('actual-dog-recipes-v18-roast'), 'records the v18 recipe version');
   for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
   const risky = /\b(snacks?|food|treats?|report|list|sign|audience|crowd|footrest|crown|cape|costume)\b/i;
   for (const archetype of [null, ...Object.keys(recipes.brief.character.archetypes)]) for (const format of ['mug', 'portrait', 'blanket'])
@@ -1006,4 +1006,34 @@ test('v18: Roast paints a visible roast inside the fields, and the spec records 
   // hilarious stays the dog being funny about itself
   const h = nativeFieldValues({style: 'screenprint', tone: 'hilarious', format: 'portrait', pronoun: 'he', spot: 'couch'})['Tone direction'];
   assert.doesNotMatch(h, /judging|side-eye|roast/);
+});
+
+// v19 (4 and 5 Nov): photo first, face-locked tones. Krish: "Each gift should look like that same exact dog", and the
+// tones must still change the picture "without making the dog look arrogant or completely different, or grumpy or
+// mean". A journey painting locks the face to the photo; each tone changes the staging, body, camera and light, never
+// the face, and nothing comes from answers not given yet. Every older path is unchanged.
+test('v19: journey paintings lock the face to the photo and let each tone change everything else', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-04-v19.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
+  const faces = /side-eye|brow|smug(?! or)|grin|deadpan|chin lifted|judging|unimpressed|diva|bratty/i;
+  for (const format of ['mug', 'portrait', 'blanket']) {
+    const seen = new Set();
+    for (const tone of Object.keys(recipes.tones)) for (const style of Object.keys(recipes.styles)) {
+      const v = nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot: 'couch', together: 'walk', toys: 'a tennis ball', accessory: 'a bandana'});
+      const t = v['Tone direction'], where = [style, format, tone].join(' ');
+      assert.equal(v.Energy, recipes.brief.likeness.energy, where + ': the face lock is the identity line');
+      assert.doesNotMatch(t.replace(recipes.brief.likeness.guard, ''), faces, where + ': no face direction');
+      assert.doesNotMatch(t, /walk|tennis|bandana/i, where + ': nothing from the answers');
+      assert.doesNotMatch(t, /stretch/i, where + ': never stretches the body (both judges, 5 Nov)');
+      assert.ok(t.length <= 1200 && v.Energy.length <= 300, where);
+      if (format === 'blanket') assert.match(t, /^Figures: the same dog again and again, each with the face of the photo/);
+      else { assert.ok(t.includes(recipes.brief.likeness.guard), where + ': the face guard'); assert.ok(t.endsWith(recipes.brief.fill), where + ': fills the frame'); }
+      if (style === 'cinematic') seen.add(t);
+    }
+    assert.equal(seen.size, 4, format + ': four tones, four different pictures');
+  }
+  // without likeness, v18 stands
+  const roast = nativeFieldValues({style: 'screenprint', tone: 'over_the_top', format: 'portrait', pronoun: 'she', spot: 'couch'})['Tone direction'];
+  assert.match(roast, /side-eye|judging|unimpressed/);
 });

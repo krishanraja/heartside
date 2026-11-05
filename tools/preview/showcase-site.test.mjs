@@ -92,3 +92,12 @@ test('the carousel shows the six real-mug sets at 540 and 1080 wide (Krish, 3 No
   // which runs in the python job of .github/workflows/offline-tests.yml
   for (const s of hero.sets) for (const w of [540, 1080]) assert.ok(existsSync(new URL(`shopify/assets/hs-hero-${s.dog}-${w}.webp`, root)), `${s.dog} ${w}`);
 });
+
+// 5 Nov judges (every buyer): the steps say Warm and Roast, and the home page's examples said "Warm with a wink" and
+// "Over the top" (Krish, 4 Nov: Over the top is Roast). One name for each tone wherever a buyer reads it.
+test('the home page names the tones as the steps do', () => {
+  const captions = [...showcase.matchAll(/id: 'tone-[a-z-]+'[^%]*caption: '([^']*)'/g)].map(m => m[1]);
+  assert.ok(captions.length >= 2, 'tone examples found');
+  for (const c of captions) assert.ok(['Sentimental', 'Warm', 'Hilarious', 'Roast'].includes(c), c);
+  assert.doesNotMatch(showcase, /Over the top|Warm with a wink/);
+});

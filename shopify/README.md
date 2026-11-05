@@ -13,6 +13,32 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 5 November: photo first, each choice once, one painting per gift
+
+Krish's 4 November purchase found three paintings, a second colour choice and the blanket's pattern on every gift. The journey now runs in one order, and every choice is made once (record: `docs/evidence/2026-11-04-photo-first-journey.md`):
+- **Home page** (`assets/hs-journey.js`, home mode): the photo, then the look, then the feel, then the gifts.
+  - The feel is one tap on four tone cards.
+  - The gifts are shown large on real product photos. Each gift's colour or frame is chosen there, once, beside the bundle and the store's own timing ("Order by December 4 for Christmas delivery to a US address").
+  - `handOver()` writes the photo-first state (`hs2-review`, `hs_journey.mode = 'photo-first'`, the queue of gift addresses).
+- **Gift page** (`snippets/hs-journey-choose.liquid`, `assets/hs-journey-choose.js`):
+  - In journey mode (`?journey=1`) the page steps aside for one frame. An inline check sets `hs-jm-on` while the page parses, so the product page never paints under it.
+  - The photo goes to Teeinblue by itself, once (hs2.js `journeyAutoSend`).
+  - The studio shows from the first paint of the page: the easel (`data-hs-jm-easel`) carries the buyer's own photo until hs2.js shows its painting card in the same place. It ends about 6 s after the tap (at least 2.5 s after the script runs), then the questions run in the same frame while it paints. Later gifts ask nothing. On desktop the questions use the studio's own 1040 px card.
+  - The reveal shows Teeinblue's own mockups ("On the gift") and the whole print, uncropped. The last gift's reveal says the Christmas date from the memo strip's `data-deadline`, only until that day ends.
+  - A gift already added from this journey says so on Back (`hs-jm-added:<handle>:<journey time>`), and never paints again.
+  - One tick and one add. Teeinblue's framing box is saved, never shown.
+- **What hs2.js tells the gift page**, as `__hs2api.journeyStatus()`:
+  - `checking`, `waiting` and `sent`;
+  - `nophoto`: the photo is really not on this device, so one button opens Teeinblue's picker;
+  - `picked`;
+  - `interrupted`: sent by a page that is gone (a reload, or Back then Forward), so the frame says "The painting stopped" and `journeyResume()` paints again on one tap;
+  - `stuck`: the painter never opened in 90 s, so the frame says so and one tap reloads;
+  - `refused`: the photo was refused after it left (`journeyRefused()`: the device check, a redrawn photo field, a failed preparation, or `journeyWatch()` seeing nothing happen for 15 s). `journeyNote()` gives the reason and whether "It's my dog" can override (`journeyOverride()`); otherwise one tap opens Teeinblue's picker.
+- **The add** waits out hs2's checkout registration (`hs-checkout-image.js`, up to 90 s, which now retries a slow first registration). It shows hs2's words in the dock, and presses once more by itself if hs2 says the copy failed.
+- **Taps and layout.** A double tap answers one screen, never the next, and a double tap on a gift card or colour is one tap. The address drops `#ask=` when the questions end, and Back after them steps past every question at once. The breed search replaces the list, so a 320 px phone sees its suggestions. The progress line only moves forward across both pages.
+- **More than one dog.** The home page's dog detector finishes its check out of sight after the photo is accepted (`lateDogs`); if it sees more than one dog, Start painting asks once: another photo, or this one anyway.
+- **Tests:** `tools/preview/journey-flow.browser.test.mjs` (home to cart, six phones and desktop) and `journey-product.browser.test.mjs` (the gift page, including a 9 s painter, a reload mid-paint, a refused photo, a painter that never starts, Back to an added gift, a slow checkout copy, a 320 px breed search, the empty-studio check and the 1280x800 questions).
+
 ## 4 November: one wait, the painting studio, any gift, four tones
 
 - **Photo step** (`assets/hs-journey.js`, `hs-journey.css`). The photo check runs out of sight: the button reads "Off to the painter" and a passing photo goes straight to the gift page. Only a refused photo is shown, whole on a blurred copy of itself, with Buddy's reason. The dog detector loads while the buyer is on the step and is used only if it is ready, for at most 1.5 s. The tips no longer tick green.

@@ -27,6 +27,22 @@ The typed-answer and compose workflows each pass the model's reply through an En
 - `cd n8n && node test-rules.mjs && node test-voice.mjs` runs the rule cases offline. Both exit 1 when any case fails, so CI goes red.
 - `node n8n/lab.mjs > lab-workflow.js` refreshes `lab-cases.json` from the current prompts for the manual voice lab.
 
+## 5 November: what was found
+
+**The compose writer.**
+- Published on 5 November, with the live system message hash-checked against `prompts.json`.
+- It no longer copies its own example of "but", and its tone examples now fit the 44-character printed line (`docs/evidence/2026-11-04-photo-first-journey.md`).
+
+**The typed writer.**
+- It still runs its 29 October system message.
+- Main's `typed` prompt has carried unpublished changes since at least 31 October: the comic characters, and an 80-character rule for on-screen lines while the typed output asks for 60.
+- Publish it only after testing it on its own.
+
+**Never call the webhooks from a cloud test browser.**
+- A cloud session's network proxy adds the n8n API key to every request to the n8n host.
+- n8n keeps webhook request headers in its execution log.
+- Test the writers with manual executions inside n8n instead.
+
 ## Publishing the typed and compose workflows
 
 A rule change here reaches buyers only after the rebuilt workflows are published in n8n. Since 29 October a Claude Code session publishes them through the n8n connector (Ruling, Krish, 29 October: "just do it automatically, everything is set to allow in the connectors"), with the version history as the rollback. The fields that carry the rules in "Heartside: typed answer (Buddy AI)" and "Heartside: compose gift lines (Buddy AI)":

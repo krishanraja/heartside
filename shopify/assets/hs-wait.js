@@ -166,8 +166,53 @@
     factEl = bubble.querySelector('[data-hs-wait-fact]');
     avatar = bubble.querySelector('[data-hs-wait-treat]');
     avatar.addEventListener('click', function () { treat(d); });
+    fitTalk(d);
+  }
+
+  /* The bubble never changes size (Krish, 4 Nov: "Nothing on this page must randomly change size with
+     volatility like that when text is generating"). Every line the dog or Buddy could say is measured once
+     at the bubble's real width, and the bubble is held at the tallest of them; it is measured again only
+     when the width or the fonts change, never while text is typing. */
+  function fitTalk(d) {
+    if (!bubble) return;
+    var L = lines(d), facts = window.HSBreedFacts ? window.HSBreedFacts.for(d.breed) : [], breed = breedName(d);
+    var says = L.open.concat(L.mid, L.long, TREATS.map(function (t) { return t.replace('{n}', '99'); }));
+    var probe = document.createElement('div');
+    probe.className = 'hs-wait__probe';
+    probe.setAttribute('aria-hidden', 'true');
+    probe.innerHTML = '<p class="hs-wait__who"></p><p></p>';
+    bubble.appendChild(probe);
+    var who = probe.firstChild, p = probe.lastChild, tallest = 0;
+    function measure(kind, label, list) {
+      probe.className = 'hs-wait__probe ' + (kind === 'fact' ? 'hs-wait__fact' : 'hs-wait__bubble');
+      p.className = kind === 'fact' ? 'hs-wait__fact-text' : 'hs-wait__say';
+      who.textContent = label;
+      list.forEach(function (t) { p.textContent = t; tallest = Math.max(tallest, probe.offsetHeight); });
+    }
+    measure('say', d.dog + ', live from the studio', says);
+    if (facts.length) measure('fact', "Buddy's note" + (breed ? ' on ' + breed : ''), facts);
+    bubble.removeChild(probe);
+    if (tallest) bubble.style.setProperty('--hs-wait-h', Math.ceil(tallest) + 'px');
+    if (!fitTalk.watching) {
+      fitTalk.watching = true;
+      var w = bubble.offsetWidth, again = function () { if (bubble && bubble.offsetWidth !== w) { w = bubble.offsetWidth; fitTalk(info()); } };
+      if (window.ResizeObserver) new ResizeObserver(function () { again(); }).observe(card);
+      else window.addEventListener('resize', again);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (bubble) fitTalk(info()); });
+    }
   }
   var typing = null;
+  // the whole line is laid out from the first letter, with the part not yet typed held invisible, so words
+  // never jump from one line to the next as they arrive
+  function typed(n, text) {
+    var shown = document.createElement('span'), rest = document.createElement('span');
+    shown.textContent = text.slice(0, n);
+    rest.className = 'hs-wait__rest';
+    rest.textContent = text.slice(n);
+    sayEl.textContent = '';
+    sayEl.appendChild(shown);
+    sayEl.appendChild(rest);
+  }
   function say(text) {
     if (!sayEl) return;
     clearInterval(typing);
@@ -179,8 +224,8 @@
     sayEl.classList.remove('is-in'); void sayEl.offsetWidth; sayEl.classList.add('is-in');
     var i = 0;
     sayEl.setAttribute('aria-label', text);
-    sayEl.textContent = '';
-    typing = setInterval(function () { i += 2; sayEl.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typing); sayEl.removeAttribute('aria-label'); } }, 28);
+    typed(0, text);
+    typing = setInterval(function () { i += 2; typed(i, text); if (i >= text.length) { clearInterval(typing); sayEl.textContent = text; sayEl.removeAttribute('aria-label'); } }, 28);
   }
   function fact(text, breed) {
     if (!factEl) return;
@@ -298,7 +343,7 @@
     if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
     if (brush) { brush.style.transform = ''; brush.style.animation = ''; }
     var b = card.querySelector('[data-hs-art-bar] span'); if (b) b.style.width = '';
-    built = false; beat = 0; stage = bubble = null; svg = avatar = null; paths = []; lens = []; follow.src = '';
+    built = false; beat = 0; fitTalk.watching = false; stage = bubble = null; svg = avatar = null; paths = []; lens = []; follow.src = '';
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden && titleWas) { document.title = titleWas; titleWas = ''; } });
 
