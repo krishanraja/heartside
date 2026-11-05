@@ -827,16 +827,18 @@ for (const kind of ['no database', 'another photo']) test(`the easel's early pho
 test('the screen reader hears the studio, never the checking notes under it', async () => {
   const {page, ctx, errors} = await open({width: 390, height: 844});
   try {
+    // the photo's preparation held for 3 s, so hs2's note about it is certainly in the page while the studio shows
+    await page.addInitScript(() => {
+      let real;
+      Object.defineProperty(window, 'HSArtworkPhoto', {configurable: true, get: () => real,
+        set: v => { real = Object.assign({}, v, {prepare: f => new Promise(r => setTimeout(r, 3000)).then(() => v.prepare(f))}); }});
+    });
     await page.goto(base + URLS.print);
-    const heard = [];
-    for (let k = 0; k < 12; k++) {
-      heard.push(await page.locator('body').ariaSnapshot());
-      if (await page.evaluate(() => /ask=name/.test(location.hash))) break;
-      await page.waitForTimeout(250);
-    }
-    const all = heard.join('\n');
-    assert.match(all, /Painting your dog/);
-    assert.doesNotMatch(all, /checking|getting .*photo ready|location data/i, 'nothing about checking reaches the screen reader');
+    await page.waitForFunction(() => /location data/.test((document.querySelector('[data-hs2-photo-inline]') || {}).textContent || ''), null, {timeout: 10000});
+    const heard = await page.locator('body').ariaSnapshot();
+    assert.match(heard, /Painting your dog/);
+    assert.doesNotMatch(heard, /checking|getting .*photo ready|location data/i, 'nothing about checking reaches the screen reader');
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
     assert.equal(await page.evaluate(() => window.__painted), 1, 'it still paints once');
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
