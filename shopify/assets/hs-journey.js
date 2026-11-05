@@ -321,7 +321,15 @@
      through hs2.js, which fills Teeinblue's note fields before the gift is added. The painting's own
      inputs are never touched here. */
   function sendAnswers() {
-    if (MODE !== 'gift' || !window.__hs2api || !window.__hs2api.journeyAnswers) return;
+    if (MODE !== 'gift') return;
+    // this file can run before hs2.js on the gift page (snippets/hs-journey-choose.liquid): an answer given
+    // meanwhile goes on once hs2.js is there, never lost
+    if (!window.__hs2api || !window.__hs2api.journeyAnswers) {
+      if (!sendAnswers.later) sendAnswers.later = setInterval(function () {
+        if (window.__hs2api && window.__hs2api.journeyAnswers) { clearInterval(sendAnswers.later); sendAnswers.later = 0; sendAnswers(); }
+      }, 250);
+      return;
+    }
     var n = names(), l = lines(), done = ASK.every(answered);
     var patch = {
       dog: S.dog && n.dog.length <= NAME_MAX ? n.dog : '',
@@ -990,5 +998,12 @@
     // entering or leaving a step toggles hsj-focus on <html>, which shows or hides the header
     if (window.MutationObserver) new MutationObserver(clearHeader).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  /* On a gift page this file is started ahead of the deferred scripts (snippets/hs-journey-choose.liquid), so it
+     starts once the page is parsed ('interactive'), not at DOMContentLoaded, which waits for every deferred
+     script, Teeinblue's included. On the home page it is a defer script and starts at once. */
+  function boot() { if (boot.done) return; boot.done = true; init(); }
+  if (document.readyState === 'loading') {
+    document.addEventListener('readystatechange', function () { if (document.readyState !== 'loading') boot(); });
+    document.addEventListener('DOMContentLoaded', boot);
+  } else boot();
 })();

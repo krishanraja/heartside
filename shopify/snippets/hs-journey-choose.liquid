@@ -12,9 +12,11 @@
 {{ 'hs-journey-choose.css' | asset_url | stylesheet_tag }}
 {%- comment -%} the easel's talk uses the wait room's styles; linked here so it is styled from the first paint {%- endcomment -%}
 {{ 'hs-wait.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'hs-journey-choose.js' | asset_url }}" defer="defer"></script>
+{%- comment -%} The journey's own scripts are fetched at once and started by the loader after the journey check below,
+  ahead of the deferred queue, which waits for Teeinblue's app-v1.js in the head (5 Nov speed review). {%- endcomment -%}
+{{ 'hs-breeds.js' | asset_url | preload_tag: as: 'script' }}
+{{ 'hs-journey.js' | asset_url | preload_tag: as: 'script' }}
+{{ 'hs-journey-choose.js' | asset_url | preload_tag: as: 'script' }}
 <section class="hs-jm" data-hs-jm hidden aria-labelledby="hs-jm-title" data-hs-jm-handle="{{ product.handle | escape }}">
   <div class="hsj hs-jm__frame hsj__screen hsj__screen--step" data-hs-jm-frame>
     <header class="hsj-bar">
@@ -100,4 +102,14 @@
       }
     } catch (e) { /* hs-journey-choose.js decides once the page has loaded */ }
   })(document.currentScript.previousElementSibling);
+</script>
+<script>
+  /* The journey's own scripts, in order, as soon as they arrive (5 Nov speed review). Teeinblue's app block puts
+     app-v1.js (424 KB) in the head as a defer script, and deferred scripts run in document order, so a defer tag
+     here waited for it: on a cold phone the questions came about 16 s after the page opened. Scripts added like
+     this run in their own order, outside that queue; they start once the page is parsed and wait for hs2.js
+     only where they need it. Nothing here touches Teeinblue or the photo. */
+  [{{ 'hs-breeds.js' | asset_url | json }}, {{ 'hs-journey.js' | asset_url | json }}, {{ 'hs-journey-choose.js' | asset_url | json }}].forEach(function (src) {
+    var s = document.createElement('script'); s.src = src; s.async = false; document.head.appendChild(s);
+  });
 </script>
