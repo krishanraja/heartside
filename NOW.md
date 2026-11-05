@@ -88,6 +88,11 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - He can change the add-on's $29 price or end the bundle in Shopify at any time.
   - The checkout merge app stays through Christmas at $69 a month (Ruling, Krish, 28 October), and is reviewed in January against measured conversion.
   - Do not claim physical quality or paid-order fulfillment until the sample is inspected.
+  - **From the photo-first release (5 November; record `docs/evidence/2026-11-04-photo-first-journey.md`):**
+    - paste the drafted Christmas paragraph into the shipping policy (section 10 of the record);
+    - rotate the n8n API key, including the copy pasted into a helper session's chat, and scope the environment's n8n secret to the API and MCP paths;
+    - decide on dog-free variant photos, so checkout's merged line stops showing an example dog under the buyer's painting;
+    - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
 - North Star check (2026-11-05): holds.
 

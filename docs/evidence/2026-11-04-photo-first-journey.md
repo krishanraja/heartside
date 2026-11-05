@@ -187,3 +187,16 @@ Smaller ones fixed in the same pass: the photo no longer hides the easel's brush
 Shopify admin, Settings, Policies, Shipping policy. Replace the "Christmas." paragraph with:
 
 > **Christmas.** Order by December 4 for Christmas delivery to a US address. That is the last day on which the times above still deliver before Christmas Eve. Orders placed after December 4 may arrive after December 25.
+
+## 11. Live on heartside.io (5 November)
+
+On Krish's go-live ruling ("Yes, push it live", once the buyers passed and CI was green), PR #118 was merged to main (`f6c55b1`) with every offline step green locally (875 of 875 tests) and on GitHub. The theme push then ran from main (run 176) to the published theme "Heartside 31 Oct showcase", with the live box ticked and `christmas_deadline` set to 2026-12-04.
+- **The run:** every step passed. Cloudflare blocked the read of product addresses before the push (the workflow warns and goes on); the read-back after the push passed every check: all three gifts on their native templates at the expected prices, the home page's gifts and phone menu, the add-on, and the old addresses redirecting.
+- **Byte for byte:** all 18 theme files this change touches, read back from the live theme by MD5, match main.
+- **The memo strip:** the live `sections/header-group.json` carries `deadline` 2026-12-04, with the bundle, the Artist's touch and the card unchanged.
+- **A no-paint walk on heartside.io** (n8n blocked in the browser, any journey gift page blocked from the home flow):
+  - the home page answers 200, its tone cards read Sentimental and Warm, and the gifts step says "Order by December 4 for Christmas delivery to a US address." at 40% on the progress line;
+  - with the two-dog photo, the live detector found both dogs out of sight, and Start painting asked "More than one dog in this photo", the safe answer under the finger;
+  - a gift page without a journey is the normal page;
+  - a journey gift page with no photo on the device shows the easel at the portrait's 2:3 shape with "The painter is getting ready.", then "Choose your dog's photo". Nothing painted.
+- **The presentation gate** (`tools/preview/live-gate.mjs`, read-only, at desktop, iPhone, Instagram and Android sizes): all clear, once its home-page check looked for the photo-first start button (`data-hsj-go="photo"`) instead of the retired name-first one.

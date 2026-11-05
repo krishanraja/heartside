@@ -63,7 +63,7 @@ const LLMS_RETIRED = [
 ];
 const GIFTS = CORE.map(({ key, chat, handle, path: p }) => ({ key, chat, handle, path: p }));
 const PAGES = {
-  home: { path: '/', primary: '[data-hsj-go="name"], [data-hs3-start]', gifts: GIFTS },
+  home: { path: '/', primary: '[data-hsj-go="photo"], [data-hs3-start]', gifts: GIFTS },
   ...Object.fromEntries(CORE.map((c) => [c.key, { path: c.path, title: c.title, price: c.price, marker: markerSelector(c) }])),
   catalog: { path: '/collections/all' },
   cart: { path: '/cart' },
