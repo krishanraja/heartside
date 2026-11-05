@@ -125,7 +125,7 @@
   function fresh() {
     return { dog: '', breed: '', breedId: '', pro: '', rel: '', person: '', home: null, spot: null, together: null, meaning: null,
       toys: [], toysDone: false, accessory: null, tone: 'warm', style: 'cinematic', notes: {}, request: null, calls: 0, session: '',
-      hasPhoto: false, photoT: 0, photoDogs: false, photoDogsOk: false, photoDogsT: 0, typed: {}, follow: null, gifts: {} };
+      hasPhoto: false, photoT: 0, photoDogs: false, photoDogsOk: false, photoDogsT: 0, photoDogIssue: '', typed: {}, follow: null, gifts: {} };
   }
   function load() {
     var s = null;
@@ -651,7 +651,6 @@
     }
     app.innerHTML = '<div class="hsj__screen hsj__screen--step" data-hsj-screen="' + step + '">' + view(step) + '</div>';
     if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
-    if (step === 'photo') warmDetector();
     if (step === 'look' || step === 'gifts') { thumb(); warm(); }
     if (step === 'look' || step === 'tone' || step === 'spot' || step === 'gifts') dogsAgain();
     var input = app.querySelector('[data-hsj-name], [data-hsj-person]');
@@ -712,7 +711,7 @@
     if (t.hasAttribute('data-hsj-dogs-keep')) { S.photoDogsOk = true; save(); track('photo_dogs_keep', {}); dogsSheet(false); var go0 = app.querySelector('[data-hsj-start]'); if (go0) go0.click(); return; }
     if (t.hasAttribute('data-hsj-start')) {
       if (t.disabled) return;
-      if (S.photoDogs && !S.photoDogsOk) { track('photo_dogs', {}); dogsSheet(true); return; }
+      if (dogAsk()) { track('photo_dogs', { kind: dogAsk() }); dogsSheet(true); return; }
       var queue = handOver();
       if (!queue.length || !queue[0].url) { var say0 = app.querySelector('[data-hsj-offer]'); if (say0) say0.textContent = "That gift isn't available right now."; return; }
       track('paint', { gifts: queue.map(function (x) { return x.gift; }).join(','), style: S.style });
@@ -807,16 +806,10 @@
   /* The photo check runs out of sight (Krish, 4 Nov: the "Checking the photo" screen "is horrible, cuts off
      half the picture, and needs to not be in sight at all"). A photo that passes goes straight to the
      painter: the button says so for a moment and the painting screen is the next thing seen. Only a photo
-     the check refuses is shown, whole, with Buddy's reason. The dog detector loads while the buyer is on
-     this step and is used only once it is ready, for at most 1.5 s; the pixel checks always run. */
-  var detectorReady = false, detectorAsked = false;
-  function warmDetector() {
-    if (detectorAsked || !window.HSPhotoQuality || !window.HSPhotoQuality.loadDetector) return;
-    detectorAsked = true;
-    setTimeout(function () {
-      try { window.HSPhotoQuality.loadDetector().then(function (d) { detectorReady = !!d; }, function () { detectorReady = false; }); } catch (e) { /* no detector */ }
-    }, 800);
-  }
+     the check refuses is shown, whole, with Buddy's reason. Only the pixel checks run at the pick. The dog
+     detector (about 18 MB) loads only once a photo is chosen, on a fast connection, and finishes its check out
+     of sight (lateDogs): Krish, 5 Nov, "the 18 MB dog detector loads only after a photo is chosen, on fast
+     connections, still checking in the background". It never loads on this step before a photo. */
   function busyPhoto(on) {
     var b = app.querySelector('[data-hsj-choose-photo]');
     if (!b) return;
@@ -836,7 +829,7 @@
     if (!t.hasAttribute('data-hsj-file') || !t.files || !t.files[0]) return;
     var f = t.files[0]; t.value = '';
     pendingFile = f;
-    S.photoDogs = false; S.photoDogsOk = false;
+    S.photoDogs = false; S.photoDogsOk = false; S.photoDogIssue = '';
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(f);
     var say = app.querySelector('[data-hsj-photo-note]'), over = app.querySelector('[data-hsj-override]');
@@ -844,8 +837,7 @@
     if (say) { say.textContent = ''; say.classList.remove('is-good'); }
     busyPhoto(true);
     if (!window.HSPhotoQuality) { usePhoto(f, false); return; }
-    var detected = detectorReady, opts = detected ? { timeout: 1500, checkTimeout: 4000 } : { detect: false, checkTimeout: 4000 };
-    window.HSPhotoQuality.check(f, opts).then(function (r) {
+    window.HSPhotoQuality.check(f, { detect: false, checkTimeout: 4000 }).then(function (r) {
       if (r.verdict === 'reject') {
         track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
         busyPhoto(false);
@@ -855,8 +847,8 @@
         return;
       }
       S.photoDogs = manyDogs(r);
-      // the dog check still owed when the detector did not run on this photo (not loaded yet, or out of time)
-      usePhoto(f, false, !(detected && r && r.detection));
+      // the dog check is owed: it runs out of sight once the photo is kept
+      usePhoto(f, false, true);
     }, function () { usePhoto(f, false, true); });
   }
   /* More than one dog in the photo (5 Nov judges: a photo of two dogs was accepted in 0.3 seconds, before the
@@ -864,24 +856,44 @@
      its check out of sight while the buyer picks the look; if it sees more than one dog, Start painting asks
      once: another photo, or this one anyway. */
   function manyDogs(r) { return !!(r && r.reasons && r.reasons.some(function (x) { return x && x.code === 'dogs'; })); }
+  // no dog found, or a dog too small in the frame: once refusals at the pick, now asked at Start painting too
+  function dogIssue(r) {
+    var codes = (r && r.reasons || []).map(function (x) { return x && x.code; });
+    return codes.indexOf('nodog') !== -1 ? 'nodog' : codes.indexOf('far') !== -1 ? 'far' : '';
+  }
+  /* A fast connection: 4g without Data Saver (navigator.connection, Chromium). Safari and Firefox do not say,
+     so there it loads, as the gift page's own check has since 28 Oct (hs2.js warmPhotoCheck); they skip only
+     what they report as slow. */
+  function fastLine() {
+    var c = navigator.connection;
+    if (!c) return true;
+    return !c.saveData && (!c.effectiveType || c.effectiveType === '4g');
+  }
   function lateDogs(f) {
     var Q = window.HSPhotoQuality, t = S.photoT;
-    if (!Q || !Q.loadDetector || lateDogs.running === t) return;
+    if (!Q || !Q.loadDetector || lateDogs.running === t || !fastLine()) return;
     lateDogs.running = t;
     Promise.resolve().then(function () { return Q.loadDetector(); }).then(function (d) {
       return d ? Q.check(f, { timeout: 8000, checkTimeout: 15000 }) : null;
     }).then(function (r) {
       if (lateDogs.running === t) lateDogs.running = 0;
       if (!r || !r.detection || S.photoT !== t) return;
-      S.photoDogs = manyDogs(r); S.photoDogsT = t; save();
+      S.photoDogs = manyDogs(r); S.photoDogIssue = dogIssue(r); S.photoDogsT = t; save();
     }, function () { if (lateDogs.running === t) lateDogs.running = 0; /* no detector: the painter still paints, and nothing is said */ });
   }
   // a reload, or a discarded tab, part way through the late check: it runs again from the photo on this device
   function dogsAgain() {
-    if (MODE !== 'home' || !S.hasPhoto || S.photoDogsT === S.photoT || lateDogs.running === S.photoT || !window.HSPhotoQuality || !window.HSPhotoQuality.loadDetector) return;
+    if (MODE !== 'home' || !S.hasPhoto || S.photoDogsT === S.photoT || lateDogs.running === S.photoT || !window.HSPhotoQuality || !window.HSPhotoQuality.loadDetector || !fastLine()) return;
     var t = S.photoT;
     idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) { if (rec && rec.file && rec.t === t && S.photoT === t) lateDogs(rec.file); }, function () { /* no photo here: nothing to check */ });
   }
+  // what the sheet says: the background check's finding about this photo
+  var DOG_ASK = {
+    dogs: ['More than one dog in this photo', 'Each gift paints one dog, so the other could be left out. A photo of just your dog works best.'],
+    nodog: ["We couldn't find a dog in this photo", 'The painter paints the dog it sees. A photo with your dog clearly in view works best.'],
+    far: ['Your dog looks small in this photo', 'The painting works best when your dog fills more of the photo. A closer one works best.']
+  };
+  function dogAsk() { return S.photoDogsOk ? '' : S.photoDogIssue || (S.photoDogs ? 'dogs' : ''); }
   function dogsSheet(on) {
     var sheet = app && app.querySelector('[data-hsj-dogs]');
     if (!sheet && on) {
@@ -894,6 +906,8 @@
         '<button type="button" class="hsj-btn" data-hsj-dogs-repick><span>Choose another photo</span></button></div>';
       app.appendChild(sheet);
     }
+    var say = DOG_ASK[dogAsk()];
+    if (on && sheet && say) { sheet.querySelector('#hsj-dogs-title').textContent = say[0]; sheet.querySelector('.hsj-sheet__text').textContent = say[1]; }
     if (sheet) sheet.hidden = !on;
     if (on) dogsSheet.at = Date.now();
     if (on && sheet) { var b = sheet.querySelector('[data-hsj-dogs-repick]'); if (b) b.focus(); }

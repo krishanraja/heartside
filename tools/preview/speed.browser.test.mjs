@@ -239,3 +239,81 @@ test('2g. without JavaScript every example picture is still there; with hs-showc
     await page.waitForFunction(() => [...document.querySelectorAll('.hss-fig img')].every(i => i.getAttribute('src')), null, {timeout: 8000});
   } finally { await ctx.close(); }
 });
+
+// ------------------------------------------------------------------------------------- the dog detector
+// Ruling (Krish, 2026-11-05): the 18 MB dog detector loads only after a photo is chosen, on fast connections, still
+// checking in the background. Its "no dog found" and "too far" findings are asked at Start painting, as two dogs are.
+const PHOTO = path.join(here, '../../assets/photos/pug-autumn-leaves.jpg');
+const DETECTOR = /tfjs|coco-ssd|tf\.min\.js|storage\.googleapis\.com/;
+async function photoStep({connection = null} = {}) {
+  const {ctx, page, errors} = await home();
+  const detector = [];
+  page.on('request', r => { if (DETECTOR.test(r.url())) detector.push(r.url()); });
+  if (connection) await page.addInitScript(c => { Object.defineProperty(Navigator.prototype, 'connection', {get: () => c, configurable: true}); }, connection);
+  await page.goto(base + '/?step=photo&gift=blanket');
+  await page.waitForSelector('[data-hsj-file]', {state: 'attached'});
+  return {ctx, page, errors, detector};
+}
+async function toGifts(page) {
+  await page.waitForURL(/step=look/);
+  await page.locator('[data-hsj-next]').click();
+  await page.waitForURL(/step=tone/);
+  await page.locator('[data-hsj-next]').click();
+  await page.waitForSelector('[data-hsj-screen="gifts"]');
+}
+
+test('3a. the photo step never loads the dog detector before a photo is chosen', async () => {
+  const {ctx, page, errors, detector} = await photoStep();
+  try {
+    await page.waitForTimeout(5000);
+    assert.deepEqual(detector, [], 'nothing of the detector is fetched on the photo step');
+    // once a photo is chosen on a fast line, it loads, out of sight
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.waitForFunction(() => true);
+    await page.waitForTimeout(1500);
+    assert.ok(detector.length > 0, 'it loads after the pick');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+for (const [label, connection] of [['a 3G connection', {effectiveType: '3g', saveData: false}], ['Data Saver on', {effectiveType: '4g', saveData: true}]]) {
+  test(`3b. with ${label}, the detector never loads, even after a photo is chosen`, async () => {
+    const {ctx, page, errors, detector} = await photoStep({connection});
+    try {
+      await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+      await toGifts(page);
+      await page.waitForTimeout(2000);
+      assert.deepEqual(detector, []);
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  });
+}
+
+for (const [code, title] of [['nodog', "We couldn't find a dog in this photo"], ['far', 'Your dog looks small in this photo']]) {
+  test(`3c. "${code}" found out of sight: Start painting asks once, the safe answer under the finger, and "Paint this photo anyway" paints`, async () => {
+    const {ctx, page, errors} = await photoStep();
+    try {
+      // the pick runs the pixel checks only; the detector's check comes back later with its finding
+      await page.evaluate(code => { window.__checks = []; window.HSPhotoQuality = {
+        check: (f, o) => { window.__checks.push(o && o.detect === false ? 'pixels' : 'dogs'); return Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: [], detection: null} : {verdict: 'reject', overridable: true, reasons: [{code, message: ''}], detection: {dogs: []}}); },
+        loadDetector: () => new Promise(r => setTimeout(() => r({}), 300))}; }, code);
+      await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+      await toGifts(page);
+      await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
+      assert.deepEqual(await page.evaluate(() => window.__checks), ['pixels', 'dogs'], 'nothing refused at the pick');
+      await page.waitForTimeout(400);
+      await page.locator('[data-hsj-start]').dblclick();
+      await page.waitForTimeout(800);
+      assert.equal(await page.isVisible('[data-hsj-dogs]'), true, 'the question stays up after a double tap');
+      assert.equal(await page.textContent('#hsj-dogs-title'), title);
+      assert.doesNotMatch(await page.textContent('[data-hsj-dogs]'), /!|—/);
+      assert.match(page.url(), /step=gifts/, 'nothing paints yet');
+      const under = await page.evaluate(() => { const s = document.querySelector('[data-hsj-start]').getBoundingClientRect(); const e = document.elementFromPoint(s.left + s.width / 2, s.top + s.height / 2); return e && e.closest('button') && e.closest('button').hasAttribute('data-hsj-dogs-repick'); });
+      assert.equal(under, true, 'Choose another photo sits where Start painting was');
+      await page.locator('[data-hsj-dogs-keep]').click();
+      await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  });
+}
