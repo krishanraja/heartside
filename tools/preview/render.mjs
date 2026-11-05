@@ -386,6 +386,8 @@ async function writePage(file, title, main, ctx = {}) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <link rel="stylesheet" href="assets/standin.css">
+${/* Heartside's head lines, as the theme push renders them before </head> (head_heartside); Shopify's global objects
+   (product on a product page) are visible in it, as they are in a rendered snippet on the store */ ''}${await engine.parseAndRender(fs.readFileSync(path.join(theme, 'snippets', 'hs-head.liquid'), 'utf8'), { shop, routes, request: { design_mode: false }, ...ctx })}
 </head><body>
 <div id="header-group">
 ${memo}

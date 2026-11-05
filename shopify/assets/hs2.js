@@ -291,6 +291,11 @@
       var inp = e.target;
       if (warmPhotoCheck.loaded || !window.HSPhotoQuality || !inp || inp.type !== 'file' || !inp.matches) return;
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]') || !(inp.files && inp.files[0])) return;
+      // the journey's own photo was checked on the home page and is never checked here (keepTibPhoto), so it never
+      // loads the detector (checking review, 5 Nov: a 19 MB download and a WebGL pause, for nothing). A photo the
+      // buyer picks in Teeinblue's own field is a new file, still checked, and still warms it.
+      var f0 = inp.files[0];
+      if (f0 === inp.__hs2CheckedPhoto || f0 === inp.__hs2PreparedPhoto) return;
       var conn = navigator.connection || {};
       if (conn.saveData || /2g/.test(conn.effectiveType || '')) return;
       warmPhotoCheck.loaded = true;
@@ -381,27 +386,39 @@
     var j = journey();
     if (!j) return;
     journeyAutoSend.state = usePhoto.file ? 'waiting' : 'checking';
+    var tries = 0, over = false, timer = 0;
+    var stop = function () { over = true; clearInterval(timer); document.removeEventListener('teeinblue-event-component-injected', onInjected); };
+    /* one attempt, from the 600 ms tick, at once, when the photo is read back and when Teeinblue's fields arrive
+       (checking review, 5 Nov: the first attempt waited a full tick after everything was ready). The sent key
+       is read first in every attempt, so however often it runs the photo goes once. */
+    var attempt = function (counted) {
+      if (over) return;
+      if (counted) tries++;
+      // the buyer is choosing a photo in Teeinblue's picker: the automatic send stands down for good
+      if (journeyAutoSend.state === 'picked') { stop(); return; }
+      var sent = false;
+      try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
+      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; stop(); if (sent && !journeyAutoSend.mine) journeyOrphan(j); return; }
+      if (tries > 150) { journeyAutoSend.state = usePhoto.file ? 'stuck' : 'nophoto'; stop(); return; }
+      if (!usePhoto.file) return;
+      if (journeyAutoSend.state !== 'waiting') journeyAutoSend.state = 'waiting';
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { stop(); return; }
+      stop();
+      journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
+      sendBlanketPhoto(); journeyWatch();
+    };
+    // Teeinblue's fields arrived: the bridge fills them 60 ms later (teeinblue()), then the photo can go
+    var onInjected = function () { setTimeout(function () { attempt(false); }, 90); };
+    document.addEventListener('teeinblue-event-component-injected', onInjected);
     // the page's own restore gives up after 1.5 s; the journey waits for the photo it was promised
     if (!usePhoto.file) restorePhoto().then(function (rec) {
       if (rec && !usePhoto.file) usePhoto(rec.file, rec.t);
       if (journeyAutoSend.state === 'checking') journeyAutoSend.state = usePhoto.file ? 'waiting' : 'nophoto';
+      attempt(false);
     });
-    var tries = 0, timer = setInterval(function () {
-      tries++;
-      // the buyer is choosing a photo in Teeinblue's picker: the automatic send stands down for good
-      if (journeyAutoSend.state === 'picked') { clearInterval(timer); return; }
-      var sent = false;
-      try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
-      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); if (sent && !journeyAutoSend.mine) journeyOrphan(j); return; }
-      if (tries > 150) { journeyAutoSend.state = usePhoto.file ? 'stuck' : 'nophoto'; clearInterval(timer); return; }
-      if (!usePhoto.file) return;
-      if (journeyAutoSend.state !== 'waiting') journeyAutoSend.state = 'waiting';
-      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
-      try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
-      clearInterval(timer);
-      journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
-      sendBlanketPhoto(); journeyWatch();
-    }, 600);
+    timer = setInterval(function () { attempt(true); }, 600);
+    attempt(false);
   }
   /* A send can still be refused after it leaves: the device check on this page (the dog detector may be
      ready here when it was not on the home page), a photo field Teeinblue redrew, or a failed preparation.
@@ -2692,6 +2709,8 @@
         keepTibPhoto.preparing = token;
         photoNote(keepTibPhoto.warn || 'Getting ' + possessive(who) + ' photo ready and removing its location data.');
         photoLog('prepare', { lock: photoLogLock() });
+        // the painting card shows now, in this frame, not on the next delayed status update (checking review, 5 Nov)
+        try { updateBlanketPurchaseStatus(); } catch (err) { /* the observer's update follows */ }
         Promise.resolve().then(function () {
           if (!window.HSArtworkPhoto || typeof DataTransfer !== 'function') { var none = new Error('Photo preparation is unavailable.'); none.code = 'unavailable'; throw none; }
           return window.HSArtworkPhoto.prepare(f);

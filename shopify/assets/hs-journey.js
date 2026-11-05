@@ -513,7 +513,7 @@
     return screen('look', 'What style of design do you want?', 'Every style is painted from your photo.', '<div class="hsj-styles">' + styles().map(function (s) {
       var src = cfg.examples && cfg.examples[s.id], on = S.style === s.id;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
     }).join('') + '</div>' + yours('We paint your dog as they are in your photo, in the style you pick.'), primary('Next: how it feels', 'tone', true));
   }
@@ -524,7 +524,7 @@
     return screen('tone', 'How should it feel?', 'The tone changes the scene and the light. Your dog stays exactly your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
       var src = cfg.toneExamples && cfg.toneExamples[t], on = S.tone === t;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
         '<span class="hsj-style__name">' + esc(TONE_LABEL[t]) + '</span><span class="hsj-style__sub">' + esc(TONE_INFO[t]) + '</span></button>';
     }).join('') + '</div>', primary('Next: their spot', 'spot', true));
   }
@@ -561,7 +561,7 @@
     var price = Number(x.priceMax) > Number(x.price) ? 'from ' + money(x.price) : money(x.price);
     return '<div class="hsj-gift' + (on ? ' is-on' : '') + '" data-hsj-gift-card="' + g + '">' +
       '<button type="button" class="hsj-gift__pick" aria-pressed="' + on + '" data-hsj-gift="' + g + '">' +
-      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" width="540" height="675"><span class="hsj-tag">Example</span>' : '') +
+      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" width="540" height="675"><span class="hsj-tag">Example</span>' : '') +
       '<span class="hsj-gift__check">' + (on ? ICON.check : ICON.plus) + '</span></span>' +
       '<span class="hsj-gift__row"><span class="hsj-gift__name">' + esc(info[0]) + '</span><span class="hsj-gift__price">' + esc(price) + '</span></span>' +
       '<span class="hsj-gift__spec">' + esc(info[1]) + '</span></button>' +
@@ -683,6 +683,14 @@
     render(step);
   }
   function render(step) {
+    // a step to another step moves through the motion layer (moving()); the screen is drawn in its update
+    if (!render.drawing) {
+      var from = render.shown, dir = from && step && from !== step ? (STEPS.indexOf(step) < STEPS.indexOf(from) ? 'back' : 'forward') : '';
+      render.fade = from !== step;
+      render.moved = !!from && from !== step;
+      render.shown = step;
+      if (dir) { moving(dir, function () { render.drawing = true; try { render(step); } finally { render.drawing = false; } focusHead(); }); return; }
+    }
     // when a new screen appeared, so a tap meant for the last one never answers this one
     if (render.step !== step) { render.step = step; render.at = Date.now(); }
     var hook = root.querySelector('[data-hsj-screen="hook"]');
@@ -695,8 +703,10 @@
       resume.forEach(function (el) { el.hidden = !S.hasPhoto; });
       return;
     }
-    app.innerHTML = '<div class="hsj__screen hsj__screen--step" data-hsj-screen="' + step + '">' + view(step) + '</div>';
+    var html = '<div class="hsj__screen hsj__screen--step" data-hsj-screen="' + step + '">' + view(step) + '</div>';
+    if (!keep(app.firstElementChild, html, step)) { app.innerHTML = html; settled(app.querySelector('.hsj-content')); }
     if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
+    ahead(step);
     if (step === 'look' || step === 'gifts') { thumb(); warm(); }
     if (step === 'gifts') warmGift();
     if (step === 'look' || step === 'tone' || step === 'spot' || step === 'gifts') dogsAgain();
@@ -704,6 +714,85 @@
     if (input) { nameHint(input); if (!('ontouchstart' in window)) input.focus(); }
     if (MODE === 'gift') { try { root.dispatchEvent(new CustomEvent('hsj:step', { bubbles: true, detail: { step: step } })); } catch (e) { /* old browser */ } }
     else window.scrollTo(0, Math.max(0, root.getBoundingClientRect().top + window.pageYOffset));
+  }
+  /* Krish, 5 Nov: "each screen doesn't transition to the next one in as beautiful a way as possible. It's a bit
+     juttery." The bar, the progress line and the dock are the same on every step, so they stay: only the content
+     and the dock's button are new. The bar keeps the painting badge's node (its ring keeps turning, its photo stays),
+     and the line keeps its node, so its width glides forward instead of jumping (transitions report, 5 Nov: every
+     step rebuilt the whole screen and faded it in from nothing, so the chrome blinked on every tap). */
+  function keep(cur, html, step) {
+    if (!cur || !cur.classList || !cur.classList.contains('hsj__screen--step')) return false;
+    var box = document.createElement('div');
+    box.innerHTML = html;
+    var nx = box.firstElementChild, part = function (el, cls) { for (var c = el.firstElementChild; c; c = c.nextElementSibling) if (c.classList.contains(cls)) return c; return null; };
+    var ob = part(cur, 'hsj-bar'), nb = part(nx, 'hsj-bar'), ol = part(cur, 'hsj-progress'), nl = part(nx, 'hsj-progress');
+    var oc = part(cur, 'hsj-content'), nc = part(nx, 'hsj-content'), od = part(cur, 'hsj-dock'), nd = part(nx, 'hsj-dock');
+    if (!ob || !nb || !ol || !nl || !oc || !nc || !od || !nd) return false;
+    // the bar: the badge's own node moves into the new bar, so nothing in it starts again
+    var badge = ob.querySelector('[data-hsj-paint]'), slot = nb.querySelector('[data-hsj-paint]');
+    if (badge && slot) slot.parentNode.replaceChild(badge, slot);
+    if (ob.innerHTML !== nb.innerHTML) cur.replaceChild(nb, ob);
+    // the line: the same node, a new width; it only moves forward on a forward step
+    var os = ol.firstElementChild, ns = nl.firstElementChild;
+    if (os && ns && os.style.width !== ns.style.width) os.style.width = ns.style.width;
+    ['aria-valuenow'].forEach(function (a) { if (nl.getAttribute(a) !== ol.getAttribute(a)) ol.setAttribute(a, nl.getAttribute(a)); });
+    cur.replaceChild(nc, oc);
+    cur.replaceChild(nd, od);
+    cur.setAttribute('data-hsj-screen', step);
+    settled(nc);
+    // a sheet over the last screen goes with it, as the old rebuild took it
+    var sheet = app.querySelector('[data-hsj-dogs]'); if (sheet) sheet.parentNode.removeChild(sheet);
+    return true;
+  }
+  /* the next screens' pictures load while this one is read, so a style, feel or gift screen arrives with its
+     pictures (transitions report, 5 Nov: they popped in one by one up to 1.2 s after their screen) */
+  function ahead(step) {
+    // only once the buyer is moving through the steps: a step opened directly downloads no hidden pictures
+    // (speed review, 5 Nov)
+    if (!render.moved) return;
+    var list = [], add = function (o) { if (o) for (var k in o) if (o[k]) list.push(o[k]); };
+    if (step === 'photo') add(cfg.examples);
+    if (step === 'photo' || step === 'look') add(cfg.toneExamples);
+    if (step === 'look' || step === 'tone' || step === 'spot') add(cfg.scenes);
+    ahead.done = ahead.done || {};
+    list.forEach(function (src) { if (ahead.done[src]) return; ahead.done[src] = true; var im = new Image(); im.decoding = 'async'; im.src = src; });
+  }
+  // without View Transitions the new content arrives with a short fade (opacity only, so nothing can scroll), and
+  // only the content; never when the same screen is drawn again (a chip on the toys, the breed search)
+  function settled(content) {
+    if (!content || !render.fade || document.documentElement.hasAttribute('data-hsj-vt')) return;
+    content.classList.add('hsj-content--in');
+  }
+  /* The motion layer (transitions report and review, 5 Nov): a same-document View Transition on the content only.
+     The content leaves 16 px in the direction of travel and the next arrives from the other side, a fade-through
+     of about 340 ms (hs-journey.css). The bar, the line and the dock are never named, so they stay as they are.
+     Without View Transitions the content fades (settled()); with reduced motion the screen simply changes; after
+     a swipe Back that the browser animated itself, nothing is animated again. While a transition runs, html
+     carries data-hsj-vt, and a tap on an answer is not taken until the new screen is there (onClick). */
+  var REDUCED = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function moving(dir, update) {
+    var de = document.documentElement, ev = window.event, quiet = function () {};
+    var run = function () { moving.updating = true; try { update(); } finally { moving.updating = false; } };
+    if (!dir || moving.updating || !document.startViewTransition || (REDUCED && REDUCED.matches) || (ev && ev.type === 'popstate' && ev.hasUAVisualTransition)) { run(); return null; }
+    de.setAttribute('data-hsj-vt', dir);
+    var vt;
+    try { vt = document.startViewTransition(run); } catch (e) { de.removeAttribute('data-hsj-vt'); run(); return null; }
+    moving.vt = vt;
+    if (vt.ready) vt.ready.catch(quiet);
+    if (vt.updateCallbackDone) vt.updateCallbackDone.catch(quiet);
+    vt.finished.catch(quiet).then(function () { if (moving.vt === vt) { moving.vt = null; de.removeAttribute('data-hsj-vt'); } });
+    return vt;
+  }
+  // the gift page's phases move the same way (hs-journey-choose.js)
+  window.HSJMotion = { moving: moving };
+  // the new screen's headline takes the focus, so a screen reader starts there (an input the screen focused keeps it)
+  function focusHead() {
+    var a = document.activeElement;
+    if (a && a.matches && a.matches('input, textarea, select') && app.contains(a)) return;
+    var h = app && app.querySelector('.hsj-headline');
+    if (!h) return;
+    h.setAttribute('tabindex', '-1');
+    try { h.focus({ preventScroll: true }); } catch (e) { /* old browser */ }
   }
   // the buyer's photo for the small thumbnail, from this tab, or from the device after a reload
   function thumb() {
@@ -736,6 +825,8 @@
     var t = e.target.closest('button, a');
     if (!t || !root.contains(t)) return;
     if (ghost(e, t)) { e.preventDefault(); return; }
+    // the screen is still changing: the buyer cannot see what this tap would answer yet (transitions review, 5 Nov)
+    if (document.documentElement.hasAttribute('data-hsj-vt') && ANSWERS.some(function (a) { return t.hasAttribute(a); })) { e.preventDefault(); return; }
     if (t.hasAttribute('data-hsj-go')) { e.preventDefault(); track('start', {}); warm(); go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-resume-go')) { go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-restart')) { S = fresh(); save(); try { window.sessionStorage.removeItem(HS2); } catch (x) { /* fine */ } go(STEPS[0]); return; }

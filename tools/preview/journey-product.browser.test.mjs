@@ -606,7 +606,10 @@ test('the studio as the server sends it: the easel at the gift\'s shape, and not
   for (const [page, ratio] of [['product-mug-native.html', '3 / 2'], ['product-portrait-native.html', '2 / 3'], ['product-blanket-native.html', '5 / 6']]) {
     const html = fs.readFileSync(path.join(out, page), 'utf8');
     assert.match(html, new RegExp('data-hs-jm-easel style="--hs-art-ratio: ' + ratio.replace(/ /g, ' ') + ';'), page);
-    assert.match(html, /data-hs-jm-sub>The painter is getting ready\.</, page);
+    // the studio's line is true from the first paint, before the photo has gone (Krish's default, 5 Nov: the earlier
+    // "The painter is getting ready." read as a checking screen; the copy changed on purpose)
+    assert.match(html, /data-hs-jm-sub>A few quick questions while your painting starts\.</, page);
+    assert.doesNotMatch(html.slice(html.indexOf('data-hs-jm '), html.indexOf('data-hsj-mode')), /checking|getting ready|has started|is painting/i, page);
     assert.doesNotMatch(html.slice(html.indexOf('data-hs-jm '), html.indexOf('data-hsj-mode')), /with the painter/, page);
     assert.ok(html.indexOf('hs-wait.css') < html.indexOf('data-hs-jm-easel'), page + ': the wait styles come before the easel');
   }
@@ -721,4 +724,177 @@ test('the progress line only moves forward from the studio into the questions', 
     const name = await width('[data-hsj-screen="name"] .hsj-progress span');
     assert.deepEqual([studio, name], [45, 50]);
   } finally { await ctx.close(); }
+});
+
+/* Krish, 5 Nov: "before the painting screen, there is still a 2-second pre-painting checking screen, which isn't a
+   very nice experience. Is there no way we can mask that from the user's view?" The studio is the painting card from
+   its first frame: the buyer's photo on the easel at first paint, read from the device before any script runs, one
+   speech bubble with one label and one line that the card takes over as it is, one bar row, and nothing that changes
+   size when the card arrives. Every frame is sampled from the moment the panel shows. */
+const SAMPLER = () => {
+  window.__frames = [];
+  const rect = el => { if (!el) return null; const r = el.getBoundingClientRect(); return r.width ? [Math.round(r.top), Math.round(r.height), Math.round(r.width)] : null; };
+  const seen = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+  const loop = () => {
+    const panel = document.querySelector('[data-hs-jm]');
+    if (panel && !panel.hidden) {
+      const easel = document.querySelector('[data-hs-jm-easel]'), card = document.querySelector('[data-hs-jm-paint] [data-hs-art]');
+      const on = seen(card) ? card : seen(easel) ? easel : null;
+      if (on) {
+        const talk = on.querySelector('.hs-wait__talk'), bub = talk && talk.querySelector('.hs-wait__bubble'), say = bub && bub.querySelector('.hs-wait__say');
+        window.__frames.push({t: Math.round(performance.now()), who: on === card ? 'card' : 'easel', phase: panel.getAttribute('data-phase'),
+          canvas: rect(on.querySelector('.hs-art__canvas')), bubble: rect(bub), bar: rect(on.querySelector('.hs-art__bar')), fill: Math.round((on.querySelector('.hs-art__bar span') || {getBoundingClientRect: () => ({width: 0})}).getBoundingClientRect().width),
+          label: bub ? bub.querySelector('.hs-wait__who').textContent : '', say: say ? say.textContent : '',
+          photo: !!on.querySelector('.hs-art__canvas img[src], .hs-art__canvas svg image'),
+          dock: rect(document.querySelector('[data-hs-jm-frame] [data-hs-jm-add]'))});
+      }
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+};
+for (const size of [{width: 320, height: 568}, {width: 390, height: 844}, {width: 1280, height: 800}, {width: 390, height: 844, reduced: true}]) test(`${size.width}x${size.height}${size.reduced ? ', reduced motion' : ''}: the easel hands over to the painting card with no change of size, label or text`, async () => {
+  const {page, ctx, errors} = await open({width: size.width, height: size.height});
+  try {
+    if (size.reduced) await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.addInitScript(SAMPLER);
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+    await page.waitForFunction(() => window.__frames.some(f => f.who === 'card'), null, {timeout: 8000});
+    await page.waitForTimeout(400);
+    const frames = await page.evaluate(() => window.__frames);
+    const i = frames.findIndex(f => f.who === 'card');
+    assert.ok(i > 0, 'the easel showed before the card: ' + JSON.stringify(frames.slice(0, 3)));
+    const last = frames[i - 1], card = frames[i];
+    const pick = f => ({canvas: f.canvas, bubble: f.bubble, bar: f.bar, fill: Math.min(f.fill, 4), label: f.label, say: f.say, dock: f.dock});
+    assert.deepEqual(pick(card), pick(last), 'the last easel frame and the first card frame are the same');
+    // the bubble keeps one size through the studio, from the first frame to the card's first second
+    const studio = frames.slice(0, i + 20).filter(f => f.bubble);
+    assert.deepEqual([...new Set(studio.map(f => f.bubble[1]))], [studio[0].bubble[1]], 'one bubble height ' + JSON.stringify(studio.map(f => f.bubble[1])));
+    assert.deepEqual([...new Set(studio.map(f => f.dock && f.dock[0]))], [studio[0].dock && studio[0].dock[0]], 'the dock never moves');
+    // the device's photo is read as the page opens (an IndexedDB read, a few frames): on the easel within 300 ms
+    // of the panel's first frame, and in every frame after
+    const from = frames.findIndex(f => f.photo);
+    assert.ok(from !== -1 && frames[from].t - frames[0].t <= 300, "the buyer's photo is on the easel at once " + JSON.stringify(frames.slice(0, 8).map(f => [f.t, f.photo])));
+    assert.ok(frames.slice(from, i).every(f => f.photo), "and it stays there");
+    // the card's picture is drawn at the canvas's own shape, so the photo does not grow when the card takes over
+    // (it was measured while the easel still stood beside it, at half the width)
+    const shape = await page.evaluate(() => { const c = [...document.querySelectorAll('[data-hs-jm-paint] .hs-art__canvas')].find(x => x.getClientRects().length), r = c.getBoundingClientRect(), vb = c.querySelector('.hs-wait__paint').getAttribute('viewBox').split(' ').map(Number); return [Math.round(r.width), Math.round(r.height), vb[2], vb[3]]; });
+    assert.ok(Math.abs(shape[0] / shape[1] - shape[2] / shape[3]) < 0.01, 'the painting is drawn at the canvas shape ' + JSON.stringify(shape));
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// speed review, 5 Nov (fix 3): on the live store the scripts wait behind Teeinblue's for seconds; the photo is on the
+// easel at first paint all the same, read by the snippet's own inline script
+test("the buyer's photo is on the easel at first paint, before any script has run", async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {slowTib: 3000});
+  try {
+    let release;
+    const held = new Promise(r => { release = r; });
+    await page.route(/\/assets\/(hs2|hs-journey-choose|hs-journey|hs-wait)\.js/, async r => { await held; await r.continue(); });
+    const t0 = Date.now();
+    await page.goto(base + URLS.print, {waitUntil: 'commit'});
+    await page.waitForFunction(() => { const im = document.querySelector('[data-hs-jm-photo]'); return im && !im.hidden && im.complete && im.naturalWidth > 0 && getComputedStyle(im).display !== 'none'; }, null, {timeout: 3000});
+    assert.ok(Date.now() - t0 < 3000, 'the photo shows within 3 s');
+    const before = await page.evaluate(() => ({scripts: !!window.__hs2api || !!window.__hsjm, face: !document.querySelector('[data-hs-jm-face]').hidden,
+      sub: document.querySelector('[data-hs-jm-sub]').textContent, box: Math.round(document.querySelector('[data-hs-jm-easel] .hs-art__canvas').getBoundingClientRect().height)}));
+    assert.deepEqual([before.scripts, before.face, before.sub], [false, true, 'A few quick questions while your painting starts.']);
+    release();
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 20000});
+    assert.equal(await page.evaluate(() => Math.round([...document.querySelectorAll('[data-hs-jm-paint] .hs-art__canvas')].find(c => c.getClientRects().length).getBoundingClientRect().height)), before.box, 'the painting box keeps its size');
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'it paints once');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// speed review, 5 Nov: a device with no photo database (or one evicted under storage pressure) is never left with a
+// database the gift page's own photo code cannot use, and a photo of another time is never shown
+for (const kind of ['no database', 'another photo']) test(`the easel's early photo read: ${kind}`, async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {photo: kind === 'another photo', slowTib: 60000});
+  try {
+    if (kind === 'no database') await page.addInitScript(() => { const r = JSON.parse(sessionStorage.getItem('hs2-review')); r.hs3_photo_t = Date.now() - 1000; sessionStorage.setItem('hs2-review', JSON.stringify(r)); });
+    else await page.addInitScript(() => { const r = JSON.parse(sessionStorage.getItem('hs2-review')); r.hs3_photo_t = r.hs3_photo_t + 5; sessionStorage.setItem('hs2-review', JSON.stringify(r)); });
+    await page.goto(base + URLS.print);
+    await page.waitForSelector('[data-hs-jm]:not([hidden])');
+    await page.waitForTimeout(800);
+    assert.equal(await page.evaluate(() => !!window.__hsjmPhoto), false, 'no early photo');
+    // the store the page's own photo code uses is there, and a save then a read go through
+    assert.equal(await page.evaluate(() => new Promise(res => { const o = indexedDB.open('hs2', 1); o.onsuccess = () => { const db = o.result; try { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put({t: 1, file: new Blob(['x'])}, 'probe'); tx.oncomplete = () => { const g = db.transaction('files').objectStore('files').get('probe'); g.onsuccess = () => { db.close(); res(!!g.result); }; }; } catch (e) { db.close(); res(e.name); } }; o.onerror = () => res('error'); })), true);
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// checking review, 5 Nov: VoiceOver read hs2's hidden "Getting your dog's photo ready and removing its location data"
+// during the studio. The product page under the panel is out of the accessibility tree; Teeinblue still works in it.
+test('the screen reader hears the studio, never the checking notes under it', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844});
+  try {
+    // the photo's preparation held for 3 s, so hs2's note about it is certainly in the page while the studio shows
+    await page.addInitScript(() => {
+      let real;
+      Object.defineProperty(window, 'HSArtworkPhoto', {configurable: true, get: () => real,
+        set: v => { real = Object.assign({}, v, {prepare: f => new Promise(r => setTimeout(r, 3000)).then(() => v.prepare(f))}); }});
+    });
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => /location data/.test((document.querySelector('[data-hs2-photo-inline]') || {}).textContent || ''), null, {timeout: 10000});
+    const heard = await page.locator('body').ariaSnapshot();
+    assert.match(heard, /Painting your dog/);
+    assert.doesNotMatch(heard, /checking|getting .*photo ready|location data/i, 'nothing about checking reaches the screen reader');
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'it still paints once');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// checking review, 5 Nov: the photo's first send waited a whole 600 ms tick after the photo and Teeinblue's fields were
+// ready, and the card then waited for a 150 ms delayed status update. It now goes at once, and still only once.
+test('the photo goes to the painter as soon as it and the fields are ready, once, and the card shows at once', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844});
+  try {
+    await page.addInitScript(() => {
+      window.__t = {};
+      document.addEventListener('DOMContentLoaded', () => { window.__t.dcl = performance.now(); });
+      const seen = () => { const a = document.querySelector('[data-hs-art]'); if (a && !a.hidden && a.getAttribute('data-state') === 'painting' && !window.__t.card) window.__t.card = performance.now(); requestAnimationFrame(seen); };
+      requestAnimationFrame(seen);
+    });
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => window.__t.card, null, {timeout: 15000});
+    await page.waitForTimeout(2500);
+    const t = await page.evaluate(() => window.__t);
+    assert.ok(t.card - t.dcl < 450, 'the card shows within 450 ms of the page being parsed: ' + Math.round(t.card - t.dcl) + ' ms');
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'it paints once');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// checking review, 5 Nov: the gift page loaded the 19 MB dog detector for the journey's own photo, which this page
+// never checks (it was checked on the home page). A photo the buyer picks in Teeinblue's own field still loads it.
+test("the journey's own photo never loads the dog detector; a photo picked in Teeinblue's field still does", async () => {
+  const DETECTOR = /tfjs|coco-ssd|tf\.min|ssdlite_mobilenet|lite_mobilenet/;
+  {
+    const {page, ctx, errors} = await open({width: 390, height: 844});
+    try {
+      const hits = [];
+      page.on('request', r => { if (DETECTOR.test(r.url())) hits.push(r.url()); });
+      await page.goto(base + URLS.print);
+      await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+      await page.waitForTimeout(2500);
+      assert.deepEqual(hits, [], 'no detector for the journey photo');
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  }
+  {
+    const {page, ctx} = await open({width: 390, height: 844}, {mode: null});
+    try {
+      const hits = [];
+      page.on('request', r => { if (DETECTOR.test(r.url())) hits.push(r.url()); });
+      await page.goto(base + '/products/your-dogs-portrait');
+      await page.waitForSelector('#tee-photo-standin', {state: 'attached', timeout: 10000});
+      await page.waitForFunction(() => !!window.__hs2api, null, {timeout: 10000});
+      await page.setInputFiles('#tee-photo-standin', path.join(here, '../../assets/photos/pug-autumn-leaves.jpg'));
+      await page.waitForTimeout(1500);
+      assert.ok(hits.length > 0, "a photo picked in Teeinblue's own field loads the detector to check it");
+    } finally { await ctx.close(); }
+  }
 });

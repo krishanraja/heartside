@@ -314,11 +314,32 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-paint.is-done .hsj-paint__ring { animation: none; border-color: var(--accent); }
 .hsj-paint.is-done::after { content: ""; position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; border-radius: 8px; background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 11px no-repeat; }
 @keyframes hsj-spin { to { transform: rotate(360deg); } }
-/* one transition between steps: the new screen fades in. Opacity only: a slide would make the page taller for a
-   moment and let it scroll */
-.hsj__screen--step { animation: hsj-step .24s ease-out both; }
+/* one transition between steps: only the new content fades in; the bar, the progress line and the dock stay as they
+   are, so they never blink (Krish, 5 Nov: "a bit juttery"). Opacity only: a slide would make the page taller for a
+   moment and let it scroll. hs-journey.js keep() marks the content. */
+.hsj-content--in { animation: hsj-step .24s ease-out both; }
 @keyframes hsj-step { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .hsj-paint__ring, .hsj__screen--step { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hsj-paint__ring, .hsj-content--in { animation: none; } }
+/* the motion layer (hs-journey.js moving()): a same-document View Transition on the content only. The page itself is
+   never captured, so the bar, the progress line and the dock are drawn live and never animate; the content leaves
+   16 px in the direction of travel over 120 ms and the next arrives from the other side over 240 ms after 100 ms, a
+   fade-through of about 340 ms. It never changes size or position (its group does not animate). While it runs a tap
+   lands on the transition itself and does nothing (transitions review, 5 Nov: a tap passed through answered a
+   screen the buyer could not see yet); Helio's own ::view-transition { pointer-events: none } is overridden only
+   for these. hs-journey.js also holds the answers back from the keyboard until the new screen is there. */
+html[data-hsj-vt] { view-transition-name: none; }
+html[data-hsj-vt]::view-transition { pointer-events: auto; }
+html[data-hsj-vt] .hsj-content { view-transition-name: hsj-content; }
+::view-transition-group(hsj-content) { animation: none; }
+::view-transition-old(hsj-content) { animation: hsj-vt-out 120ms cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(hsj-content) { animation: hsj-vt-in 240ms cubic-bezier(.2, .8, .2, 1) 100ms both; }
+html[data-hsj-vt="back"]::view-transition-old(hsj-content) { animation-name: hsj-vt-out-back; }
+html[data-hsj-vt="back"]::view-transition-new(hsj-content) { animation-name: hsj-vt-in-back; }
+@keyframes hsj-vt-out { to { opacity: 0; transform: translateX(-16px); } }
+@keyframes hsj-vt-in { from { opacity: 0; transform: translateX(16px); } }
+@keyframes hsj-vt-out-back { to { opacity: 0; transform: translateX(16px); } }
+@keyframes hsj-vt-in-back { from { opacity: 0; transform: translateX(-16px); } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(hsj-content), ::view-transition-new(hsj-content) { animation: none; } }
 
 /* the breed screen can grow past the fold (a long list, or the search and its suggestions): it scrolls inside the
    frame, never under the button (5 Nov, a 320 px phone) */
