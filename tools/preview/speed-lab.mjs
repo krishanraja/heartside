@@ -170,6 +170,9 @@ async function warm() {
   await page.locator('[data-hsj-next]').click();
   await page.waitForURL(/step=tone/);
   await page.locator('[data-hsj-next]').click();
+  await page.waitForURL(/step=spot/);
+  await page.locator('[data-hsj-pick="spot"][data-v="couch"]').click();
+  await page.waitForURL(/step=gifts/);
   await page.waitForSelector('[data-hsj-screen="gifts"]');
   await page.waitForTimeout(20000);
   const warmed = await page.evaluate(() => document.querySelectorAll('[data-hsj-warm]').length);

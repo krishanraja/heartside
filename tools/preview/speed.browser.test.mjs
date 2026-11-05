@@ -259,7 +259,15 @@ async function toGifts(page) {
   await page.locator('[data-hsj-next]').click();
   await page.waitForURL(/step=tone/);
   await page.locator('[data-hsj-next]').click();
+  // where the dog rules (Krish, 5 Nov), then the gifts
+  await spot(page);
   await page.waitForSelector('[data-hsj-screen="gifts"]');
+}
+async function spot(page) {
+  await page.waitForURL(/step=spot/);
+  await page.waitForSelector('[data-hsj-screen="spot"]');
+  await page.locator('[data-hsj-pick="spot"][data-v="couch"]').click();
+  await page.waitForURL(/step=gifts/);
 }
 
 test('3a. the photo step never loads the dog detector before a photo is chosen', async () => {
@@ -335,6 +343,9 @@ test('4a. the gifts step prefetches (never prerenders) exactly the page Start pa
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="spot"]');
+    assert.deepEqual(await warmState(page), {rules: [], prerender: false, files: []}, 'nothing on the spot step');
+    await spot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     let w = await warmState(page);
     assert.equal(w.rules.length, 1, 'one rule set of ours');
