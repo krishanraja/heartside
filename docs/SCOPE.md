@@ -27,6 +27,15 @@ The work serves Heartside's North Star: a recognizable, shareable gift business 
 
 The scope is approved. Do not ask Krish to approve it again. Current configured core retail prices are USD45 mug, USD129 blanket, USD59 unframed portrait and USD119 framed portrait; [`../NOW.md`](../NOW.md) owns the dated price readback. A future price or offer change requires fresh economics and its own authorization. Modeled margins do not certify realized net margin. The pillow pilot and conditional ornament are not automatically core launch products.
 
+### The 4 and 5 November journey rulings
+
+- **Order of the journey.** Photo first, then the look, the feel and the gifts. Every choice is made once, in order, then the purchase (Krish, 4 Nov: "one step at a time, non-duplicative, in the right order").
+- **The painting.** It is the exact dog in the chosen style, with less invented scene. Each gift looks like the same dog, even if the design is per gift. The four tones change the picture without making the dog look arrogant, grumpy, mean or different (Krish, 5 Nov).
+- **Product views.** Real product photos, big and full width, with several views and a close-up of the print.
+- **Look and transitions.** Premium and consistent everywhere. The painting screen shows for a few seconds, then fades into the questions. Nothing changes size while text is generating.
+- **Christmas delivery.** Earlier date, both true: the article, the countdown and the gifts screen say December 4, the latest date on which the shipping policy's own times still deliver before the 24th.
+- **Go live.** Yes, once ten buyers through the real engine pass and CI is green.
+
 ## Non-negotiable instructions
 
 1. **Products first. Website mockups next. Physical samples last.** The core products and mockups have reached the live release checkpoint; Krish's real sample and physical acceptance remain future evidence. Technical flat-art and print-layout checks do not replace physical inspection.
