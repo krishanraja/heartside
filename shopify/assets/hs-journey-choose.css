@@ -20,8 +20,6 @@ html.hs-jm-on body { background: #FBF7F3; }
 /* Teeinblue's own framing box is saved as the painter framed it and never shown (Krish, 4 Nov) */
 html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important; pointer-events: none !important; }
 
-/* the frame: one phone screen, the journey's grid */
-.hs-jm__frame.is-in { animation: hsj-step .28s cubic-bezier(.2, .8, .2, 1) both; }
 /* the questions in the same card as the studio: a phone screen on phones; on desktop the studio frame's own width
    and height, so the card never changes size between steps (5 Nov judges, the one desktop buyer at 1280x800: a
    560 px card kept the home page's 360 px heading column, and every answer sat in a 40 px column) */
@@ -131,7 +129,6 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
   .hs-jm-sheet { align-items: center; }
   .hs-jm-sheet__panel { border-radius: 22px; max-width: 520px; padding: 24px; }
 }
-@media (prefers-reduced-motion: reduce) { .hs-jm__frame.is-in { animation: none; } }
 
 /* the painting stopped (a reload mid-paint): the studio stops pretending to paint, and nothing changes size */
 [data-hs-jm][data-phase="stopped"] .hs-wait__talk,

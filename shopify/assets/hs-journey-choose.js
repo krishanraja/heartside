@@ -178,10 +178,13 @@
     }
     if (askEl) askEl.hidden = true;
     if (window.HSJourney) window.HSJourney.hide();
+    var back = frame.hidden, line = $('[data-hs-jm-progress]');
+    // the frame comes back after the note: its line is set where it now stands before it shows, never animated
+    // back from the studio's 45% (transitions report, 5 Nov: 90%, then 45%, then 95%)
+    if (back && line) line.style.transition = 'none';
     frame.hidden = false;
-    // one transition: the frame fades up a few pixels, as every journey step does
-    frame.classList.remove('is-in'); void frame.offsetWidth; frame.classList.add('is-in');
     paint();
+    if (back && line) { void line.offsetWidth; line.style.transition = ''; }
   }
   function label() {
     var q = queue(), n = q.length, g = here;

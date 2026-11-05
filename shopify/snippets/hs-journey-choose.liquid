@@ -63,10 +63,12 @@
         </div>
       </div>
     </main>
+    {%- comment -%} the button is last, so it sits where it sits on every other journey screen (transitions report,
+      5 Nov: it was 44 px higher here than on the questions); the reading order follows what is seen {%- endcomment -%}
     <footer class="hsj-dock hs-jm__dock">
       <label class="hs-jm__tick" data-hs-jm-tickrow style="visibility:hidden"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
-      <button type="button" class="hsj-btn" data-hs-jm-add><span>Next</span><span class="hsj-btn__dots" aria-hidden="true"></span></button>
       <p class="hs-jm__line" data-hs-jm-line role="status" aria-live="polite"></p>
+      <button type="button" class="hsj-btn" data-hs-jm-add><span>Next</span><span class="hsj-btn__dots" aria-hidden="true"></span></button>
     </footer>
   </div>
   {%- comment -%} the questions, in the same frame, while it paints (hs-journey.js reads data-hsj-mode) {%- endcomment -%}
@@ -91,17 +93,22 @@
   (function (root) {
     try {
       var rv = JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}, j = rv.hs_journey, h = root.getAttribute('data-hs-jm-handle');
-      if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) return;
+      if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) { document.documentElement.classList.remove('hs-jm-on'); return; }
       var on = /[?&]journey=1(&|$)/.test(location.search);
       // the same rules as hs2.js journey(): this product's own key, and a gift in this journey's queue
       // (5 Nov review: any gift's key turned a normal gift page into the panel until the scripts loaded)
       if (!on) on = sessionStorage.getItem('hs2-journey-on:' + {{ product.id | json }}) === String(j.t);
       var mine = (j.queue || []).some(function (q) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); return m && m[1] === h; });
+      // the head (snippets/hs-head.liquid) may have guessed journey mode from the journey alone: this page decides
+      if (!(on && mine)) document.documentElement.classList.remove('hs-jm-on');
       if (on && mine) {
         root.hidden = false; document.documentElement.classList.add('hs-jm-on');
         // a later gift comes after the first one's questions: its line starts where they left it
         var at = 0; (j.queue || []).forEach(function (q, i) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); if (m && m[1] === h && !at) at = i; });
         var bar = root.querySelector('[data-hs-jm-progress]'); if (bar && at > 0) bar.style.width = '95%';
+        // the bar's label as hs-journey-choose.js writes it, so it never changes when the scripts load
+        var n = (j.queue || []).length, step = root.querySelector('[data-hs-jm-step]');
+        if (step && n > 1) { step.innerHTML = 'The painting <span class="hsj-bar__part">· gift ' + (at + 1) + ' of ' + n + '</span>'; step.__html = step.innerHTML; }
         // the words hs-journey-choose.js will write, written now, so nothing flips when it loads
         var NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' }, who = String(rv.dog || '').trim(), g = NAME[((j.queue || [])[at] || {}).gift];
         var set = function (sel, t) { var el = root.querySelector(sel); if (el && t) el.textContent = t; };

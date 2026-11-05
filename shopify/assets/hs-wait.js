@@ -224,7 +224,9 @@
     measureTalk(bubble, d, adopted ? adopted.who : label(d), adopted ? [adopted.say] : []);
     if (!fitTalk.watching) {
       fitTalk.watching = true;
-      var w = bubble.offsetWidth, again = function () { if (bubble && bubble.offsetWidth !== w) { w = bubble.offsetWidth; fitTalk(info()); } };
+      // a card going out of sight (width 0) and back is not a new width: it is never measured again for that
+      // (transitions report, 5 Nov: a 54 ms stall at 4x CPU before "See it painted" moved anything)
+      var w = bubble.offsetWidth, again = function () { var nw = bubble && bubble.offsetWidth; if (nw && nw !== w) { w = nw; fitTalk(info()); } };
       if (window.ResizeObserver) new ResizeObserver(function () { again(); }).observe(card);
       else window.addEventListener('resize', again);
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (bubble) fitTalk(info()); });
