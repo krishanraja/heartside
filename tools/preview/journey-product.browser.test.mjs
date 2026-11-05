@@ -421,6 +421,7 @@ for (const size of [{width: 360, height: 640}, {width: 375, height: 667}, {width
         const where = `${size.width}x${size.height} ${gift} (${font} font): ${JSON.stringify(r)}`;
         if (r.sub) assert.ok(r.pic.top >= r.sub.bottom - 1, 'the picture clears the words: ' + where);
         assert.ok(r.views.bottom - r.views.top <= 46, 'the view chips stay on one row: ' + where);
+        assert.ok(await page.evaluate(() => [...document.querySelectorAll('.hs-jm__views .hsj-chip')].every(c => { const b = c.getBoundingClientRect(); return b.left >= 0 && b.right <= innerWidth && c.scrollWidth <= c.clientWidth + 1; })), 'every view chip is whole and on the screen: ' + where);
         assert.ok(r.rep.bottom <= r.dock.top + 1, 'the repaint link clears the dock: ' + where);
         assert.ok(r.repHit, 'the repaint link can be tapped: ' + where);
         assert.ok(r.scroll, 'nothing scrolls: ' + where);
