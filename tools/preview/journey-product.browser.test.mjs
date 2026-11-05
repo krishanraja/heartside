@@ -841,3 +841,24 @@ test('the screen reader hears the studio, never the checking notes under it', as
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
+
+// checking review, 5 Nov: the photo's first send waited a whole 600 ms tick after the photo and Teeinblue's fields were
+// ready, and the card then waited for a 150 ms delayed status update. It now goes at once, and still only once.
+test('the photo goes to the painter as soon as it and the fields are ready, once, and the card shows at once', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844});
+  try {
+    await page.addInitScript(() => {
+      window.__t = {};
+      document.addEventListener('DOMContentLoaded', () => { window.__t.dcl = performance.now(); });
+      const seen = () => { const a = document.querySelector('[data-hs-art]'); if (a && !a.hidden && a.getAttribute('data-state') === 'painting' && !window.__t.card) window.__t.card = performance.now(); requestAnimationFrame(seen); };
+      requestAnimationFrame(seen);
+    });
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => window.__t.card, null, {timeout: 15000});
+    await page.waitForTimeout(2500);
+    const t = await page.evaluate(() => window.__t);
+    assert.ok(t.card - t.dcl < 450, 'the card shows within 450 ms of the page being parsed: ' + Math.round(t.card - t.dcl) + ' ms');
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'it paints once');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
