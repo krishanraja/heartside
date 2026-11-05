@@ -1,0 +1,37 @@
+{%- comment -%}
+  The cart's "one more gift" drawer (Krish, 5 Nov: "a side draw that bounces out from the left, which offers a
+  special deal at checkout to upsell to other gifts"). Rendered by the memo strip (sections/hs2-memo.liquid) on
+  the cart template only, outside the cart's own redraws, so never in Helio's cart drawer. It writes the three
+  gifts as data, with Shopify's prices, availability and variants, and loads hs-cart-more.css and
+  hs-cart-more.js, which build the drawer and its opener. It adds no height to the page: the opener takes the
+  place the cart already keeps for the bundle line (hs2.css), from the first paint.
+
+  products: all_products, so the three gifts are read by handle
+  root: routes.root_url, for the home journey's start link
+{%- endcomment -%}
+{%- liquid
+  assign hs_more_keys = 'print,mug,blanket' | split: ','
+  assign hs_more_handles = 'your-dogs-portrait,your-dogs-illustrated-mug,your-dogs-personality-blanket' | split: ','
+  assign hs_more_names = 'The portrait|The mug|The blanket' | split: '|'
+  assign hs_more_specs = '12 x 18 in, on matte paper, unframed or framed.|11 oz ceramic, painted all the way round.|50 x 60 in, soft sherpa on the back.' | split: '|'
+  assign hs_more_imgs = 'hs-ex-scene-portrait-home.webp,hs-ex-scene-mug-home.webp,hs-ex-scene-blanket-home.webp' | split: ','
+  assign hs_more_alts = 'Example: a framed portrait of a black Labrador in a truck window, in a bright living room.|Example: a golden retriever mug in a bright living room.|Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room.' | split: '|'
+-%}
+<script type="application/json" data-hs-more-config>
+  {"root": {{ root | default: '/' | json }}, "gifts": [
+  {%- assign hs_more_n = 0 -%}
+  {%- for k in hs_more_keys -%}
+    {%- assign i = forloop.index0 -%}
+    {%- assign p = products[hs_more_handles[i]] -%}
+    {%- if p != blank and p.handle != blank -%}
+      {%- if hs_more_n > 0 -%},{%- endif -%}
+      {%- assign hs_more_n = hs_more_n | plus: 1 -%}
+      {"gift": {{ k | json }}, "handle": {{ p.handle | json }}, "id": {{ p.id | json }}, "url": {{ p.url | json }}, "available": {{ p.available | json }},
+      "name": {{ hs_more_names[i] | json }}, "spec": {{ hs_more_specs[i] | json }}, "img": {{ hs_more_imgs[i] | asset_url | json }}, "alt": {{ hs_more_alts[i] | json }},
+      "variants": [{%- for v in p.variants -%}{"id": {{ v.id | json }}, "options": {{ v.options | json }}, "price": {{ v.price | json }}, "available": {{ v.available | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}
+    {%- endif -%}
+  {%- endfor -%}
+  ]}
+</script>
+{{ 'hs-cart-more.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-cart-more.js' | asset_url }}" defer="defer"></script>

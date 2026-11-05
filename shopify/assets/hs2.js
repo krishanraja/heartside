@@ -3468,6 +3468,8 @@
         var box = n.closest ? n.closest('.cart-totals__tax-note') : null;
         if (box && !box.hasAttribute('data-hs-note')) box.setAttribute('data-hs-note', '');
       });
+      // the cart's lines are drawn: the cart drawer (hs-cart-more.js) reads them again
+      try { document.dispatchEvent(new CustomEvent('hs2:cart')); } catch (e) { /* old browser */ }
       if (need && !cartTidy.busy) {
         cartTidy.busy = true;
         fetch((window.Shopify && window.Shopify.routes && window.Shopify.routes.root || '/') + 'cart.js', { credentials: 'same-origin' })
@@ -4003,6 +4005,47 @@
     btn.focus();
   }
 
+  /* One more gift from the cart (assets/hs-cart-more.js, Krish 5 Nov). A buyer who came through the photo-first
+     journey and answered everything can add another gift to that same journey from the cart: it goes to the
+     end of hs_journey.queue (any earlier entry for it is taken out first, so the page after it is the cart),
+     and its page paints once from the same photo and asks nothing. hs_journey.t never changes: every per-gift
+     key (sent, added, journey-on) hangs on it. Written through this script's own state, since save() would
+     overwrite a copy written to sessionStorage by anyone else. */
+  var MORE_GIFTS = { mug: 1, print: 1, blanket: 1 };
+  function journeyMoreFresh() {
+    var j = state.hs_journey;
+    return !!(j && j.t && Date.now() - j.t <= JOURNEY_HOURS * 36e5 && j.mode === 'photo-first' && j.answered === true && Array.isArray(j.queue)) ? j : null;
+  }
+  function journeyMoreState() {
+    var j = journeyMoreFresh();
+    if (!j) return Promise.resolve({ mode: 'start', photo: false, dog: '', queued: [] });
+    var queued = j.queue.map(function (q) { return handleOf(q && q.url); }).filter(Boolean);
+    return restorePhoto().then(function (rec) {
+      return { mode: 'extend', photo: !!(rec && rec.file), dog: answer('dog') || '', queued: queued };
+    }, function () { return { mode: 'extend', photo: false, dog: answer('dog') || '', queued: queued }; });
+  }
+  function journeyMore(gift, variant, url) {
+    var j = journeyMoreFresh();
+    if (!j || !MORE_GIFTS[gift] || !/^\d+$/.test(String(variant)) || !/^\/(?:[^/?#]+\/)*products\/[^/?#]+\?(?:[^#]*&)?journey=1(?:&|$)/.test(String(url || ''))) return false;
+    var h = handleOf(url);
+    j.queue = j.queue.filter(function (q) { return q && handleOf(q.url) !== h && q.gift !== gift; });
+    j.queue.push({ gift: gift, variant: Number(variant), url: String(url), from: 'cart_more' });
+    save();
+    track('more_extend', { gift: gift });
+    return true;
+  }
+  // on a gift page added from the cart's drawer, the order carries a hidden mark, so its effect can be measured
+  function journeyMoreMark() {
+    var j = journey(), form = document.getElementById('hs2-product-form');
+    if (!j || !form || form.querySelector('[data-hs2-prop="hs_from"]')) return;
+    var here = decodeURIComponent((/\/products\/([^/?#]+)/.exec(window.location.pathname) || ['', ''])[1]);
+    var mine = (j.queue || []).some(function (q) { return q && q.from === 'cart_more' && handleOf(q.url) === here; });
+    if (!mine) return;
+    var inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'properties[_hs_from]'; inp.value = 'cart_more'; inp.setAttribute('data-hs2-prop', 'hs_from');
+    form.appendChild(inp);
+  }
+
   /* ============================== funnel events for Shopify's customer events and pixels
      Subscribe in Settings > Customer events (analytics.subscribe('hs2_approve_clicked', ...)). */
   function track(name, data) {
@@ -4533,4 +4576,8 @@
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
   window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyNote: function () { return { text: journeyAutoSend.note || '', override: typeof journeyAutoSend.override === 'function' }; }, journeyOverride: journeyOverride, journeyResume: journeyResume, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api.journeyMore = journeyMore;
+  window.__hs2api.journeyMoreState = journeyMoreState;
+  window.__hs2api.track = track;
+  journeyMoreMark();
 })();

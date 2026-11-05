@@ -454,7 +454,7 @@ cartEngine.registerTag('doc', blockTag(null));
 cartEngine.registerTag('stylesheet', blockTag((css) => `<style>${css}</style>`));
 
 async function cartPage(file, items) {
-  const ctx = { template: { name: 'cart', suffix: null } };
+  const ctx = { template: { name: 'cart', suffix: null }, all_products: byHandle };
   if (!items.length) return writePage(file, 'Heartside preview: cart, empty', helio.cartEmpty, ctx);
   const tpl = readTemplate('cart.json').sections['cart-section'];
   const total = items.reduce((s, i) => s + i.final_line_price, 0);

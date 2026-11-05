@@ -89,6 +89,16 @@ export function gift(index, id = ID, {props = {}, componentProps = {}} = {}) {
     properties: {_customization_id: id, _hs_checkout_image: prepared(id), 'Dog name': 'Pickle', ...componentProps}, instructions: {can_update_quantity: true, can_remove: true}}];
   return line;
 }
+// a personalized line of any of the three gifts (product {id, handle, title}, variant {id, title, options}), as the
+// checkout merge leaves it: one native component of the same variant (cart-more tests)
+export function giftLine(index, product, variant, price, id = ID, {props = {}, componentProps = {}} = {}) {
+  const v = {compare_at_price: null, ...variant, options: (variant.options || []).map((value, i) => (typeof value === 'string' ? {name: ['Available Product', 'Color', 'Size'][i], value} : value))};
+  const line = base(index, v.id + ':merged-' + index, {has_only_default_variant: false, ...product}, v, price);
+  line.properties = props;
+  line.item_components = [{key: v.id + ':native-' + index, variant_id: v.id, quantity: 1, title: product.title + ' - ' + v.title,
+    properties: {_customization_id: id, _hs_checkout_image: prepared(id), 'Dog name': 'Pickle', ...componentProps}, instructions: {can_update_quantity: true, can_remove: true}}];
+  return line;
+}
 export function addon(index, forId = ID, props = {}) {
   const line = base(index, '777:addon-' + index, ADDON, {id: 777, title: 'Default Title', options: [{name: 'Title', value: 'Default Title'}], compare_at_price: null}, 2900);
   line.properties = {_hs_addon_for: forId, 'What to change': 'Make the ears floppier.', ...props};

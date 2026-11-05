@@ -55,6 +55,8 @@
     </div>
     {%- endif -%}
   </div>
+  {%- comment -%} The "one more gift" drawer, on the cart page only (Krish, 5 Nov): data and its script, no height. {%- endcomment -%}
+  {%- if template.name == 'cart' -%}{% render 'hs-cart-more', products: all_products, root: routes.root_url %}{%- endif -%}
 </div>
 
 {% schema %}
