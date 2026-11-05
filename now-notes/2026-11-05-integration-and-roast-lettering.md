@@ -1,0 +1,3 @@
+Status: main holds the home-page "where does your dog rule the house" step with recipes v20 (PR #122), the cart upsell drawer (PR #123) and the faster pages (PR #124), none of it live; the studio and transitions PR is still to come. A gift-page test now waits for the one send to be counted instead of a fixed 1.5 s. Krish picked the cushion throne (paintings 2 and 7) as the closest Roast; lettering on the Roast mug was proposed and then cancelled by Krish the same day (too many variables and design risks for the time left).
+Next: Krish decides whether to test a livelier Roast face (a wink, or a pleased half-closed look) in a few paintings, given that v18's smug face cost the likeness on 4 Nov.
+North Star check (2026-11-05): holds.

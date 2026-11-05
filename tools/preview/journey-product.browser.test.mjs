@@ -135,6 +135,9 @@ for (const size of PHONES) test(`${size.width}x${size.height}: it paints once by
   try {
     await page.goto(base + URLS.print);
     await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    // the send is counted once the photo's preparation finishes, which a busy CI runner can take more than 1.5 s
+    // to do (5 Nov, one run of PR #124): wait for it, then make sure no second send follows
+    await page.waitForFunction(() => window.__painted >= 1, null, {timeout: 15000});
     await page.waitForTimeout(1500);
     assert.equal(await page.evaluate(() => window.__painted), 1, 'the photo goes to the painter once');
     const view = await page.evaluate(() => {
