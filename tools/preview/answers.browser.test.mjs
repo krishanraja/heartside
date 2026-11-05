@@ -71,7 +71,7 @@ test('the details are chapters: every word in the page, one open at a time', asy
   const html = fs.readFileSync(path.join(out, ARTICLE), 'utf8');
   const drafts = JSON.parse(fs.readFileSync(path.join(here, 'fixtures', 'answers-drafts-2026-11-03.json'), 'utf8'));
   const text = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
-  const body = text(drafts[0].body).replace(/^.*?(?=Order by December 10 for Christmas delivery to a US address\. The strip)/, '');
+  const body = text(drafts[0].body).replace(/^.*?(?=Order by December 4 for Christmas delivery to a US address\. The strip)/, '');
   assert.ok(text(html).includes(body.slice(0, 200)), 'the chapters are in the server HTML');
   const {ctx, page} = await open(ARTICLE);
   const chapters = page.locator('.hs-answer__ch');
@@ -90,7 +90,7 @@ test('the article keeps its structured data, and the FAQ answer is the short ans
   const graph = blocks.flatMap((b) => b['@graph'] || [b]);
   const faq = graph.find((n) => n['@type'] === 'FAQPage');
   assert.ok(faq, 'FAQPage is present');
-  assert.match(faq.mainEntity[0].acceptedAnswer.text, /^Order by December 10 for Christmas delivery to a US address\./);
+  assert.match(faq.mainEntity[0].acceptedAnswer.text, /^Order by December 4 for Christmas delivery to a US address\./);
 });
 
 test('the library: Christmas first, every question on "All", every card there without JavaScript', async () => {

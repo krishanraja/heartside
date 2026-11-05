@@ -1,10 +1,10 @@
 # Three Christmas answers: drafts for Krish (3 November 2026)
 
-Not published. Each goes live only on Krish's yes. Prices are read live from the store; the order-by date (December 10) and the printed-card cutoff (December 3) are read from the live memo strip.
+Not published. Each goes live only on Krish's yes. Prices are read live from the store; the order-by date (December 4) and the printed-card cutoff (December 3) are read from the live memo strip.
 
 ## What is the last day to order a personalized dog gift for Christmas?
 
-**Short answer:** Order by December 10 for Christmas delivery to a US address. Each Heartside gift is painted from your dog's photo and made after you order, and a person checks it before it prints, so it needs that time. Shipping is free.
+**Short answer:** Order by December 4 for Christmas delivery to a US address. Each Heartside gift is painted from your dog's photo and made after you order, and a person checks it before it prints, so it needs that time. Shipping is free.
 
 Tags: answers, christmas, how-it-works, hero-golden
 
@@ -14,7 +14,7 @@ Heartside gifts are made one at a time, after you order. That is why the date co
 
 ### The date
 
-Order by December 10 for Christmas delivery to a US address. The strip at the top of heartside.io counts down the days, and each product page shows its own delivery estimate before you pay.
+Order by December 4 for Christmas delivery to a US address. The strip at the top of heartside.io counts down the days, and each product page shows its own delivery estimate before you pay.
 
 ### What happens after you order
 
@@ -84,7 +84,7 @@ Buddy asks about the dog with tap-to-answer questions, so children can choose th
 
 ### Ship it to them
 
-Enter the grandparents' address at checkout. Shipping is free in the US, and for Christmas, order by December 10.
+Enter the grandparents' address at checkout. Shipping is free in the US, and for Christmas, order by December 4.
 
 ### Related questions
 
