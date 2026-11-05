@@ -136,6 +136,14 @@ async function home(page, size, shot) {
   assert.equal(await page.locator('[data-hsj-style="painterly"]').getAttribute('aria-pressed'), 'true');
   if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-2-look.png')});
   await page.locator('[data-hsj-next]').click();
+  // the tone, before the painting: it changes the scene and the light, never the face (recipes v19)
+  await page.waitForURL(/step=tone/);
+  await page.waitForSelector('[data-hsj-screen="tone"]');
+  if (size.width < 900) await noScroll(page, 'tone');
+  await page.locator('[data-hsj-feel="over_the_top"]').click();
+  assert.equal(await page.locator('[data-hsj-feel="over_the_top"]').getAttribute('aria-pressed'), 'true');
+  if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2b-tone.png')});
+  await page.locator('[data-hsj-next]').click();
   await page.waitForURL(/step=gifts/);
   await page.waitForSelector('[data-hsj-screen="gifts"]');
   assert.equal(await page.locator('[data-hsj-start]').isDisabled(), true, 'nothing paints before a gift is chosen');
@@ -148,7 +156,7 @@ async function home(page, size, shot) {
   await page.locator('[data-hsj-gift-card="mug"] [aria-label="Dark Green"]').click();
   assert.equal(await page.locator('[data-hsj-gift-card="mug"] .hsj-gift__opt-name b').textContent(), 'Dark Green');
   assert.match(await page.locator('[data-hsj-offer]').textContent(), /save 15% on these 2/);
-  assert.match(await page.locator('.hsj-when').textContent(), /Order by December 10 for Christmas delivery to a US address/);
+  assert.match(await page.locator('.hsj-when').textContent(), /Order by December 4 for Christmas delivery to a US address/);
   if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-3-gifts.png'), fullPage: false});
   await page.locator('[data-hsj-start]').click();
   await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/);
@@ -166,12 +174,15 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     assert.deepEqual(hand.hs_journey.queue.map(q => q.gift), ['print', 'mug'], 'the portrait paints first, then the mug');
     assert.match(hand.hs_journey.queue[0].url, /variant=/);
     assert.equal(hand.hs3_art_choices.style, 'painterly');
+    assert.equal(hand.hs3_art_choices.tone, 'over_the_top', 'the painter gets the tone chosen before it paints');
     assert.equal(hand.hs_brief_input.likeness, true);
     await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
     await page.waitForSelector('[data-hs-jm]:not([hidden]) [data-hs-jm-frame]:not([hidden]) [data-hs-jm-paint] [data-hs-art]');
     assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Painting your dog');
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
-    assert.match(brief['Tone direction'], /^A true likeness of this exact dog/);
+    assert.match(brief.Energy, /^The face is locked to the photo/);
+    assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation, never the face\./);
+    assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/, ''), /side-eye|brow|smug|judging/);
     assert.match(brief['Style direction'], /painterly|painting/i);
     if (size.width < 900) await noScroll(page, 'the studio');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-4-studio.png')});
@@ -248,9 +259,11 @@ test('a deep link past the photo lands on the photo, Back steps one screen, and 
     await page.locator('[data-hsj-override]').click();
     await page.waitForURL(/step=look/);
     await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=gifts/);
     await page.locator('[data-hsj-back]').click();
-    await page.waitForURL(/step=look/);
+    await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=gifts/);
     await page.locator('[data-hsj-gift="blanket"]').click();
@@ -267,6 +280,8 @@ test('a buyer from a gift page finds that gift already chosen', async () => {
     await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
     await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     assert.equal(await page.locator('[data-hsj-gift="blanket"]').getAttribute('aria-pressed'), 'true');

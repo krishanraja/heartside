@@ -134,9 +134,9 @@ for (const size of PHONES) test(`${size.width}x${size.height}: it paints once by
     assert.deepEqual(view, {panel: true, phase: 'studio', card: true, title: 'Painting your dog', asked: []});
     // recipes v19: the painter is asked for the dog in the photo, with no scene from answers not given yet
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
-    assert.match(brief.Energy, /^Keep exactly who they are: this dog's face shape/);
-    assert.match(brief['Tone direction'], /^A true likeness of this exact dog/);
-    assert.doesNotMatch(brief['Tone direction'], /couch|walk|joke|side-eye/);
+    assert.match(brief.Energy, /^The face is locked to the photo/);
+    assert.match(brief['Tone direction'], /^Mood: happy and easy, with a small wink\./);
+    assert.doesNotMatch(brief['Tone direction'], /walk|side-eye|brow/);
     assert.match(brief['Style direction'], /^a cut-paper collage\./);
     assert.ok(await fits(page), 'no scrolling while it paints');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, size.width + '-studio.png')});

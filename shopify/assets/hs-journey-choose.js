@@ -258,7 +258,9 @@
       $('[data-hs-jm-sheet]').hidden = true;
       // the same photo and style, painted once more; the note and the names stay as the buyer left them
       var was = artSrc();
-      if (window.__hs2api.journeyRepaint && window.__hs2api.journeyRepaint('warm')) {
+      // the painting's own tone (chosen before it painted), not the note's
+      var paintedTone = (state().hs3_art_choices || {}).tone || 'warm';
+      if (window.__hs2api.journeyRepaint && window.__hs2api.journeyRepaint(paintedTone)) {
         stale = was;
         if (window.HSJourney) window.HSJourney.send();
         $('[data-hs-jm-tick]').checked = false; accept(false);

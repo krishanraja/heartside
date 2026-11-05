@@ -4,7 +4,8 @@
     1. this first screen (the hook),
     2. the photo (?step=photo), kept on the phone,
     3. the style (?step=look),
-    4. the gifts (?step=gifts), each with its colour or frame, chosen once; "Start painting" opens
+    4. the tone (?step=tone), which changes the painting's scene and light, never the dog's face,
+    5. the gifts (?step=gifts), each with its colour or frame, chosen once; "Start painting" opens
        the first gift's page, which paints at once and asks about the dog and the note while it
        paints (snippets/hs-journey-choose.liquid), then shows the painting on the real product.
   Behaviour lives in assets/hs-journey.js. This file holds the first screen, so it shows before
@@ -48,6 +49,12 @@
       "corePurchase": {{ s.core_purchase | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },
       "hero": {{ 'hs-ex-hero-mug.webp' | asset_url | json }},
+      "toneExamples": {
+        "sentimental": {{ 'hs-ex-tone-paint-sentimental.webp' | asset_url | json }},
+        "warm": {{ 'hs-ex-tone-paint-warm.webp' | asset_url | json }},
+        "hilarious": {{ 'hs-ex-tone-paint-hilarious.webp' | asset_url | json }},
+        "over_the_top": {{ 'hs-ex-tone-paint-over.webp' | asset_url | json }}
+      },
       "scenes": {
         "mug": {{ 'hs-ex-scene-mug-home.webp' | asset_url | json }},
         "print": {{ 'hs-ex-scene-portrait-home.webp' | asset_url | json }},

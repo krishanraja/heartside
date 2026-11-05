@@ -50,9 +50,10 @@
     if (k === 'personality' && (cityArtPreview() || nativeArtworkPurchase())) return nativeArtworkEvidence();
     if ((cityArtPreview() || nativeArtworkPurchase()) && window.HSArtworkChoices && (k === 'art_style' || k === 'art_tone')) {
       var choice = window.HSArtworkChoices.read(), recipes = window.HSArtworkEngine.recipes;
-      // Teeinblue's Artwork tone option has three values; Over the top selects Hilarious there and its own
-      // direction travels in art_tone_direction (PROMPT-SPEC-2026-10-28.md, 29 Oct)
-      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'hilarious' : choice.tone].label;
+      // Teeinblue's Artwork tone option has three values; Roast's own direction travels in art_tone_direction
+      // (PROMPT-SPEC-2026-10-28.md, 29 Oct). Roast is a loving tease, so it selects Warm with a wink there, the
+      // nearest true value, not Hilarious (v19, 5 Nov: two signals pulled the painting different ways)
+      return k === 'art_style' ? recipes.styles[choice.style].label : recipes.tones[choice.tone === 'over_the_top' ? 'warm' : choice.tone].label;
     }
     // 29 Oct, recipes v10: the directed brief (tools/print-art/artwork-system.mjs briefFields, the same
     // text native-candidate.mjs nativeFieldValues gives): Energy carries the identity line, Tone

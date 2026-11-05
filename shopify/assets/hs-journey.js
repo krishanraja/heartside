@@ -50,10 +50,11 @@
     one: icon('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/>'),
     brush: icon('<path d="M14.5 4.5 19.5 9.5 11 18l-5-5Z"/><path d="M6 13c-2 0-3 1.6-3 3.5 0 1.4-.6 2.6-1.5 3 2.6.6 6.5-.3 6.5-3.5"/>')
   };
-  /* the home page asks for the photo, the style and the gifts; the gift page asks about the dog and the
-     note while it paints. The toy and what the dog wears are no longer asked: the painting is the dog in
+  /* the home page asks for the photo, the style, the tone and the gifts; the gift page asks about the dog and
+     the note while it paints. The tone comes before the painting (Krish, 5 Nov: the four tones must change the
+     picture while the face stays his dog; recipes v19 lock the face and let the tone change everything else). The toy and what the dog wears are no longer asked: the painting is the dog in
      the photo (Krish, 4 Nov: less invented scene), so they would change nothing. */
-  var HOME = ['photo', 'look', 'gifts'];
+  var HOME = ['photo', 'look', 'tone', 'gifts'];
   var ASK = ['name', 'breed', 'pro', 'person', 'home', 'spot', 'together', 'meaning'];
   var GIFT = ASK.concat(['words']);
   var ALL = HOME.concat(GIFT);
@@ -63,7 +64,9 @@
   // the store's own published words on timing (policies/shipping-policy and the Answers article on the last
   // day to order), quoted, never improved on (Krish, 5 Nov: we never told buyers when it arrives)
   var MAKE_TIME = 'Made after you order: printing takes 2 to 5 business days, then 3 to 7 to arrive in the US.';
-  var CHRISTMAS = 'Order by December 10 for Christmas delivery to a US address.';
+  // Krish, 5 Nov ("earlier date, both true"): the policy's longest times, 5 business days to print and 7 to arrive,
+  // plus its own "December can add a few days", make Friday 4 December the last date both statements hold
+  var CHRISTMAS = 'Order by December 4 for Christmas delivery to a US address.';
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   /* ---------------------------------------------------------------- the questions
@@ -163,6 +166,7 @@
   function answered(step) {
     if (step === 'photo') return !!S.hasPhoto;
     if (step === 'look') return !!S.style;
+    if (step === 'tone') return !!S.tone;
     if (step === 'gifts') return chosenGifts().length > 0;
     if (step === 'name') { var n = nameCase(S.dog); return !!(n && n.length <= NAME_MAX); }
     if (step === 'person') { var p = nameCase(S.person); return S.rel === 'self' || !!(p && p.length <= NAME_MAX); }
@@ -272,10 +276,10 @@
 
   /* ---------------------------------------------------- hand over to the gift
      Photo first: the home page hands the gift page only what paints the picture (the photo's time, the
-     style, the gift and its variant) and the journey marker that tells the page to paint at once. The tone
-     is Warm for the painter, whatever the buyer later picks for the note: the painting is the dog in the
-     photo (recipes v19), and nothing that painted it may change after the photo is sent, or hs2.js would
-     read the finished painting as stale. */
+     style, the tone, the gift and its variant) and the journey marker that tells the page to paint at once.
+     The painting is the dog in the photo with the tone's scene and light (recipes v19), and nothing that
+     painted it changes after the photo is sent, or hs2.js would read the finished painting as stale: a tone
+     changed later, on the note screen, changes the words only. */
   function handOver() {
     var st = {}, queue = chosenGifts().map(function (g) { var v = chosenVariant(g); return { gift: g, variant: v ? v.id : null, url: giftURL(g, v && v.id) }; });
     try { st = JSON.parse(window.sessionStorage.getItem(HS2) || '{}') || {}; } catch (e) { st = {}; }
@@ -287,15 +291,15 @@
     st.hs_answers = '';
     st.hs3_art_profile = window.HSArtworkProfile ? window.HSArtworkProfile.fromChat({}) : null;
     st.hs3_energy = '';
-    st.hs3_art_choices = { style: S.style, tone: 'warm' };
+    st.hs3_art_choices = { style: S.style, tone: S.tone };
     st.hs_brief_input = { breed: '', pronoun: 'they', archetype: '', likeness: true };
     st.hs_breed_id = '';
     st.hs_ship_to = '';
-    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: 'warm', style: S.style, photoT: S.hasPhoto ? S.photoT : 0,
+    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0,
       queue: queue, gifts: journeyGifts(), notes: {}, answered: false, compose: { url: cfg.composeUrl || '', ai: !!cfg.ai } };
     S.giftCfg = giftCfgs; save();
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
-    try { if (window.HSArtworkChoices) window.HSArtworkChoices.select({ style: S.style, tone: 'warm' }); } catch (e) { /* the bridge holds them too */ }
+    try { if (window.HSArtworkChoices) window.HSArtworkChoices.select({ style: S.style, tone: S.tone }); } catch (e) { /* the bridge holds them too */ }
     return queue;
   }
   /* on the gift page: what the buyer just told us goes onto the order (the names, the note, the answers),
@@ -346,15 +350,15 @@
   /* five parts across both pages, not "Step 1 of 12" (audit, 30 Oct: the count says how long it is before
      it starts): the photo, the look, the gifts, then, while it paints, the dog and the note. On the gift
      page the header carries a small painting badge (hs-journey-choose.js keeps it current). */
-  var PART_LABEL = { photo: 'Your photo', look: 'The look', gifts: 'The gifts', words: 'The note' };
-  function partOf(step) { return step === 'photo' ? 1 : step === 'look' ? 2 : step === 'gifts' ? 3 : step === 'words' ? 5 : 4; }
+  var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', gifts: 'The gifts', words: 'The note' };
+  function partOf(step) { return { photo: 1, look: 2, tone: 3, gifts: 4, words: 6 }[step] || 5; }
   function screen(step, title, sub, body, dockHtml) {
     var i = ALL.indexOf(step), pct = Math.round((i + 1) / ALL.length * 100);
     var part = partOf(step);
     var label = PART_LABEL[step] || (S.dog && step !== 'name' ? 'About ' + esc(names().dog) : 'About your dog');
     var back = MODE === 'gift' && step === GIFT[0] ? '<span class="hsj-icon-btn" aria-hidden="true"></span>' : BACK;
     var chip = MODE === 'gift' ? '<span class="hsj-paint" data-hsj-paint role="img" aria-label="Painting your dog"><span class="hsj-paint__img" data-hsj-paint-img></span><span class="hsj-paint__ring"></span></span>' : '';
-    return '<header class="hsj-bar' + (chip ? ' has-paint' : '') + '">' + back + '<p class="hsj-bar__step">' + label + ' <span class="hsj-bar__part">· ' + part + ' of 5</span></p>' + chip + '</header>' +
+    return '<header class="hsj-bar' + (chip ? ' has-paint' : '') + '">' + back + '<p class="hsj-bar__step">' + label + ' <span class="hsj-bar__part">· ' + part + ' of 6</span></p>' + chip + '</header>' +
       '<div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
       '<main class="hsj-content"><div class="hsj-heading"><h2 class="hsj-headline" id="hsj-q">' + title + '</h2>' + (sub ? '<p class="hsj-support">' + sub + '</p>' : '') + '</div>' +
       '<div class="hsj-body">' + body + '</div></main><footer class="hsj-dock">' + dockHtml + '</footer>';
@@ -425,7 +429,18 @@
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
         '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
-    }).join('') + '</div>' + yours('We paint your dog as they are in your photo, in the style you pick.'), primary('Next: the gifts', 'gifts', true));
+    }).join('') + '</div>' + yours('We paint your dog as they are in your photo, in the style you pick.'), primary('Next: how it feels', 'tone', true));
+  }
+  /* the tone, before the painting: it changes the scene, the body and the light, never the face (recipes v19).
+     The same four tones write the note later, and the note screen can still change the words. */
+  var TONE_INFO = { sentimental: 'Quiet and tender.', warm: 'Happy, with a small wink.', hilarious: 'Funny at a glance.', over_the_top: 'A loving roast.' };
+  function viewTone() {
+    return screen('tone', 'How should it feel?', 'The tone changes the scene and the light. Your dog stays exactly your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
+      var src = cfg.toneExamples && cfg.toneExamples[t], on = S.tone === t;
+      return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
+        '<span class="hsj-style__name">' + esc(TONE_LABEL[t]) + '</span><span class="hsj-style__sub">' + esc(TONE_INFO[t]) + '</span></button>';
+    }).join('') + '</div>', primary('Next: the gifts', 'gifts', true));
   }
   // the buyer's own photo, small, so they always know what is being painted
   function yours(text) {
@@ -544,6 +559,7 @@
   }
   function view(step) {
     if (step === 'gifts') return viewGifts();
+    if (step === 'tone') return viewTone();
     if (step === 'name') return viewName();
     if (step === 'breed') return viewBreed();
     if (step === 'pro') return viewPro();
@@ -641,6 +657,11 @@
     if (t.hasAttribute('data-hsj-tone')) { setTone(t.getAttribute('data-hsj-tone')); return; }
     if (t.hasAttribute('data-hsj-rewrite')) { if (!t.disabled) rewriteNote(); return; }
     if (t.hasAttribute('data-hsj-choose-photo')) { var f = app.querySelector('[data-hsj-file]'); if (f) f.click(); return; }
+    if (t.hasAttribute('data-hsj-feel')) {
+      S.tone = t.getAttribute('data-hsj-feel'); save();
+      app.querySelectorAll('[data-hsj-feel]').forEach(function (b) { var on = b === t; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
+      track('tone', { tone: S.tone, where: 'before-painting' }); return;
+    }
     if (t.hasAttribute('data-hsj-style')) {
       S.style = t.getAttribute('data-hsj-style'); save();
       app.querySelectorAll('[data-hsj-style]').forEach(function (b) { var on = b === t; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });

@@ -238,11 +238,12 @@ export function briefFields(input) {
     'Style direction': b.styles[o.style]
   });
   if (o.likeness) {
-    // v19 (Krish, 4 Nov): the photo comes first and the gift paints before any other question, so nothing
-    // from the answers stages the picture: the exact dog, the chosen style, a quiet setting
-    const lk = b.likeness;
-    if (format === 'blanket') return fields(lk.blanket);
-    return fields([fill(lk.portrait), fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' '));
+    // v19 (Krish, 4 and 5 Nov): the face is locked to the photo and the tone changes everything around it, the
+    // staging, the body, the camera, the light, the color, never the face. Nothing from answers not given yet.
+    const lk = b.likeness, mood = lk.tones[o.tone];
+    const locked = {Energy: lk.energy, 'Style direction': b.styles[o.style]};
+    if (format === 'blanket') return {...locked, 'Tone direction': lk.blanket.replace('{moment}', lk.figures[o.tone]).replace('{light}', tone.light.replace(/\.$/, '')) + '.'};
+    return {...locked, 'Tone direction': [mood, lk.guard, fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' ')};
   }
   if (format === 'blanket') {
     // v15 (Krish, 29 Oct: the "dog centipede"): the blanket is a scattered pattern of small, whole,

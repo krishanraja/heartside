@@ -299,6 +299,11 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-offer b { color: var(--accent); font-weight: 600; }
 .hsj-when { display: grid; gap: 4px; font-size: 13px; line-height: 18px; color: var(--muted); flex: none; }
 .hsj-when b { color: var(--ink); font-weight: 600; }
+/* the tone, before the painting: four example paintings of one dog, two by two */
+.hsj-styles--tones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hsj-styles--tones .hsj-style__art { aspect-ratio: 5 / 4; }
+.hsj-style__sub { font-size: 13px; line-height: 18px; color: var(--body); margin-top: -4px; }
+@media (max-height: 700px) { .hsj-styles--tones .hsj-style__art { aspect-ratio: 16 / 10; } .hsj-style__sub { display: none; } }
 /* the painting badge in the header on the gift page: the buyer's photo in a ring that turns while it paints */
 .hsj-bar.has-paint .hsj-bar__step { margin-right: 0 !important; }
 .hsj-paint { position: relative; width: 48px; height: 48px; display: grid; place-items: center; flex: none; }

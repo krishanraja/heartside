@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v19-likeness",
+  "version": "actual-dog-recipes-v19-face-locked-tones",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -897,9 +897,22 @@
       }
     },
     "likeness": {
-      "about": "v19 (Krish, 4 Nov: the painting must look like his exact dog, match the chosen style and invent less scene; the photo comes first and the painting starts before any other question). The Tone direction when a gift paints straight from the photo: no scene, prop or joke from answers the buyer has not given yet. The buyer's tone shapes the note only.",
-      "portrait": "A true likeness of this exact dog: the same face shape, ears, eyes, muzzle, coat colors and markings as in the photo, with {pos} own natural, relaxed expression, both eyes open. Keep anything {sub} {is} wearing in the photo; add nothing else. Scene: a simple, quiet setting, softly out of focus, so the dog is the whole picture. Camera: eye level, close enough that the face is large and clear. Light: soft, flattering natural light. No toy, clothing or prop that is not in the photo.",
-      "blanket": "Figures: the same dog again and again, each a true likeness of the photo (the same face, ears, coat colors and markings), some sitting, some lying, some looking up with a relaxed, happy face. Each figure is the dog alone, with no furniture, setting or props. Every figure is the same dog with the same markings. Light: soft, even natural light."
+      "about": "v19 (Krish, 4 and 5 Nov: the painting must look like his exact dog and still change with the four tones: \"Surely there's a solution here without making the dog look arrogant or completely different, or grumpy or mean\"). Used when the journey paints straight from the photo, with the style and the tone chosen and no other answer yet. The face is locked to the photo; the tone changes the staging, the body, the camera, the light and the color, never the face. v18's Roast asked for an exaggerated side-eye and a raised brow, which rebuilt the face and lost the dog.",
+      "energy": "The face is locked to the photo: the same head shape, ear set, eye color and spacing, muzzle, nose, coat colors and every marking as in the photo, never mirrored and never exaggerated. Only the body, the setting, the light and the medium change.",
+      "guard": "The face stays exactly the dog in the photo, with its own calm, natural expression: never grumpy, mean, smug or exaggerated. Keep anything the dog wears in the photo. No toy, clothing or prop that is not in the photo.",
+      "tones": {
+        "sentimental": "Mood: tender and quiet. The dog resting close and settled, the body soft and relaxed, eyes open and gentle or softly closed. Scene: a quiet, cosy spot at home, softly out of focus. Camera: close, at the dog's own eye level. Light: soft, low window light and a calm, muted palette.",
+        "warm": "Mood: happy and easy, with a small wink. The dog caught mid-moment, relaxed and glad, the body loose and easy. Scene: a bright, lived-in room at home, softly out of focus. Camera: a candid three-quarter view, as if snapped by someone who loves the dog. Light: clear, bright daylight and lively natural color.",
+        "hilarious": "Mood: funny at a glance, told by the situation, never the face. The dog sitting bolt upright and perfectly dignified in the exact center of the frame, as if posing for an official portrait of enormous importance, playing it completely straight. Scene: a plain, grand-looking room, softly out of focus. Camera: a slightly low, centered view that makes the moment look important. Light: bright, punchy light and bold color.",
+        "over_the_top": "Mood: a loving roast, told by the situation, never the face. The dog has taken over the best spot in the house: stretched out across the whole couch, every cushion claimed and not one inch left for anyone else, perfectly relaxed and content. Scene: a couch at home. Camera: a centered, slightly low view, like a grand portrait. Light: a warm golden light and rich, deep color."
+      },
+      "figures": {
+        "sentimental": "several curled up asleep, eyes softly closed",
+        "warm": "several caught mid-moment, relaxed and happy",
+        "hilarious": "several sitting bolt upright and perfectly dignified, as if posing for an official portrait",
+        "over_the_top": "several stretched out across as much space as possible, perfectly content"
+      },
+      "blanket": "Figures: the same dog again and again, each with the face of the photo and its own natural expression: {moment}; the others sitting or lying. Each figure is the dog alone, with no furniture, setting or props. Every figure is the same dog with the same markings. Light: {light}"
     }
   }
 }
