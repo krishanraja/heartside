@@ -307,7 +307,7 @@ for (const [code, title] of [['nodog', "We couldn't find a dog in this photo"], 
       await page.waitForTimeout(800);
       assert.equal(await page.isVisible('[data-hsj-dogs]'), true, 'the question stays up after a double tap');
       assert.equal(await page.textContent('#hsj-dogs-title'), title);
-      assert.doesNotMatch(await page.textContent('[data-hsj-dogs]'), /!|—/);
+      assert.doesNotMatch(await page.textContent('[data-hsj-dogs]'), /!|\u2014/);
       assert.match(page.url(), /step=gifts/, 'nothing paints yet');
       const under = await page.evaluate(() => { const s = document.querySelector('[data-hsj-start]').getBoundingClientRect(); const e = document.elementFromPoint(s.left + s.width / 2, s.top + s.height / 2); return e && e.closest('button') && e.closest('button').hasAttribute('data-hsj-dogs-repick'); });
       assert.equal(under, true, 'Choose another photo sits where Start painting was');
