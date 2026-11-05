@@ -2709,10 +2709,9 @@
         keepTibPhoto.preparing = token;
         photoNote(keepTibPhoto.warn || 'Getting ' + possessive(who) + ' photo ready and removing its location data.');
         photoLog('prepare', { lock: photoLogLock() });
-        // the painting card shows now, not on the next delayed status update (checking review, 5 Nov), and paints
-        // before any of the photo's preparation work starts
+        // the painting card shows now, in this frame, not on the next delayed status update (checking review, 5 Nov)
         try { updateBlanketPurchaseStatus(); } catch (err) { /* the observer's update follows */ }
-        new Promise(function (go) { if (window.requestAnimationFrame) requestAnimationFrame(function () { go(); }); setTimeout(go, 100); }).then(function () {
+        Promise.resolve().then(function () {
           if (!window.HSArtworkPhoto || typeof DataTransfer !== 'function') { var none = new Error('Photo preparation is unavailable.'); none.code = 'unavailable'; throw none; }
           return window.HSArtworkPhoto.prepare(f);
         }).then(function (prepared) {
