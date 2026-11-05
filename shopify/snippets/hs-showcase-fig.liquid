@@ -3,13 +3,24 @@
   Params: id (hs-ex-<id>.webp), w, h, alt, caption (optional), sub (optional), eager (optional).
   hero (optional, a dog): the homepage carousel's set from tools/print-art/hero-sets.py, served as
   hs-hero-<dog>-540.webp and -1080.webp through srcset, so a phone gets the sharp one (Krish, 3 Nov).
+  later (optional): the picture's address waits in data-hss-src / data-hss-srcset and hs-showcase.js fills it
+  in its turn (5 Nov speed ask: the first hero picture first, then one set at a time). The box keeps its
+  width, height and 4/5 shape either way; a noscript copy keeps the picture without JavaScript, and
+  snippets/hs-showcase-later.liquid fills them all if hs-showcase.js never runs.
 {%- endcomment -%}
 <figure class="hss-fig">
   <span class="hss-tag">Example</span>
   {%- if hero != blank -%}
     {%- assign hs_540 = 'hs-hero-' | append: hero | append: '-540.webp' | asset_url -%}
     {%- assign hs_1080 = 'hs-hero-' | append: hero | append: '-1080.webp' | asset_url -%}
+    {%- if later -%}
+  <img data-hss-src="{{ hs_540 }}" data-hss-srcset="{{ hs_540 }} 540w, {{ hs_1080 }} 1080w" sizes="(min-width: 900px) 520px, 100vw" alt="{{ alt | escape }}" width="1080" height="1350" decoding="async"><noscript><img src="{{ hs_540 }}" srcset="{{ hs_540 }} 540w, {{ hs_1080 }} 1080w" sizes="(min-width: 900px) 520px, 100vw" alt="{{ alt | escape }}" width="1080" height="1350" loading="lazy" decoding="async"></noscript>
+    {%- else -%}
   <img src="{{ hs_540 }}" srcset="{{ hs_540 }} 540w, {{ hs_1080 }} 1080w" sizes="(min-width: 900px) 520px, 100vw" alt="{{ alt | escape }}" width="1080" height="1350" loading="{% if eager %}eager{% else %}lazy{% endif %}"{% if eager %} fetchpriority="high"{% endif %} decoding="async">
+    {%- endif -%}
+  {%- elsif later -%}
+  {%- assign hs_src = id | prepend: 'hs-ex-' | append: '.webp' | asset_url -%}
+  <img data-hss-src="{{ hs_src }}" alt="{{ alt | escape }}" width="{{ w }}" height="{{ h }}" decoding="async"><noscript><img src="{{ hs_src }}" alt="{{ alt | escape }}" width="{{ w }}" height="{{ h }}" loading="lazy" decoding="async"></noscript>
   {%- else -%}
   <img src="{{ id | prepend: 'hs-ex-' | append: '.webp' | asset_url }}" alt="{{ alt | escape }}" width="{{ w }}" height="{{ h }}" loading="{% if eager %}eager{% else %}lazy{% endif %}" decoding="async">
   {%- endif -%}

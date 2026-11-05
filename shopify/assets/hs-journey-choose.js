@@ -421,29 +421,36 @@
     if (ready) go('reveal');
   }
 
-  function init() {
+  // the snippet's inline check may have stepped the page aside already: a wrong guess is taken back
+  var dead = false, ticker = 0;
+  function off() {
+    var was = document.documentElement.classList.contains('hs-jm-on');
+    document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true;
+    // the header the guess hid is cleared again (hs2.js listens to resize)
+    if (was) { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* old browser */ } }
+  }
+  // the painting card moves into the frame, with its listeners, at the easel's size; only once hs2.js runs
+  function takeCard() {
+    if (art) return;
+    art = document.querySelector('[data-hs-art]');
+    if (!art) return;
+    $('[data-hs-jm-paint]').appendChild(art);
+    var e = $('[data-hs-jm-easel]');
+    if (e) ['--hs-art-ratio', '--hs-art-r'].forEach(function (v) { var x = art.style.getPropertyValue(v); if (x) e.style.setProperty(v, x); });
+    if (window.MutationObserver) new MutationObserver(function () { tick(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
+  }
+  /* early: this file runs ahead of hs2.js (snippets/hs-journey-choose.liquid), so the studio and the questions
+     start on the snippet's own check (the same rules as hs2.js journey()), and hs2.js confirms it once it runs */
+  function init(early) {
     root = document.querySelector('[data-hs-jm]');
     var st = state(); j = st.hs_journey;
-    // the snippet's inline check may have stepped the page aside already: a wrong guess is taken back
-    var off = function () {
-      var was = document.documentElement.classList.contains('hs-jm-on');
-      document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true;
-      // the header the guess hid is cleared again (hs2.js listens to resize)
-      if (was) { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* old browser */ } }
-    };
-    if (!root || !j || j.mode !== 'photo-first' || !window.__hs2api || !window.__hs2api.journey || !window.__hs2api.journey()) return off();
+    if (!root || !j || j.mode !== 'photo-first' || !early && !(window.__hs2api && window.__hs2api.journey && window.__hs2api.journey())) return off();
     here = giftHere();
     if (!here) return off();
     frame = $('[data-hs-jm-frame]');
     root.hidden = false;
     document.documentElement.classList.add('hs-jm-on');
-    // the painting card moves into the frame, with its listeners, at the easel's size
-    art = document.querySelector('[data-hs-art]');
-    if (art) {
-      $('[data-hs-jm-paint]').appendChild(art);
-      var e = $('[data-hs-jm-easel]');
-      if (e) ['--hs-art-ratio', '--hs-art-r'].forEach(function (v) { var x = art.style.getPropertyValue(v); if (x) e.style.setProperty(v, x); });
-    }
+    if (!early) takeCard();
     root.addEventListener('click', onClick);
     $('[data-hs-jm-tick]').addEventListener('change', onTick);
     root.addEventListener('hsj:done', function () { go(painted() ? 'reveal' : 'wait'); });
@@ -465,10 +472,42 @@
       var b = $('[data-hs-jm-add]'); if (b) b.classList.remove('is-busy');
       status(''); phase = ''; go('added');
     });
-    if (art && window.MutationObserver) new MutationObserver(function () { tick(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
-    setInterval(tick, 700);
+    ticker = setInterval(function () { if (!dead) tick(); }, 700);
   }
-  // hs2.js sets up its journey state first, and hs-journey.js its questions
-  function start() { setTimeout(init, 0); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  // hs2.js has run: it confirms the snippet's check, or the page goes back to the normal gift page
+  function confirmed() {
+    if (!frame) return init();
+    if (!window.__hs2api.journey || !window.__hs2api.journey()) {
+      dead = true; clearInterval(ticker);
+      if (window.HSJourney) window.HSJourney.hide();
+      return off();
+    }
+    takeCard(); tick();
+  }
+  /* hs-journey.js sets up its questions first (the snippet loads it just before this file). hs2.js sets up the
+     journey's state; when it has not run yet, the studio starts on the snippet's check and waits for it. A
+     page whose hs2.js never runs goes back to the normal gift page, as before. */
+  function hs2() { return !!(window.__hs2api && window.__hs2api.journey); }
+  function start() {
+    if (start.done) return;
+    start.done = true;
+    setTimeout(function () {
+      if (hs2()) return init();
+      var early = document.documentElement.classList.contains('hs-jm-on');
+      if (early) init(true);
+      var since = 0, wait = setInterval(function () {
+        if (hs2()) { clearInterval(wait); if (early) confirmed(); else init(); return; }
+        if (document.readyState === 'complete' && (since = since || Date.now()) && Date.now() - since > 20000) {
+          clearInterval(wait);
+          if (early) { dead = true; clearInterval(ticker); if (window.HSJourney) window.HSJourney.hide(); }
+          off();
+        }
+      }, 100);
+    }, 0);
+  }
+  // the page is parsed ('interactive'): DOMContentLoaded would wait for every deferred script, Teeinblue's included
+  if (document.readyState === 'loading') {
+    document.addEventListener('readystatechange', function () { if (document.readyState !== 'loading') start(); });
+    document.addEventListener('DOMContentLoaded', start);
+  } else start();
 })();

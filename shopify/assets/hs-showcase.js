@@ -1,8 +1,52 @@
 /* The example artwork under the first screen (sections/hs-showcase.liquid).
    A slider that fades photo, painting and gift into each other, a reel through the six sets and a
-   drifting row of styles, gifts and moods. Without this file every picture is already on the page. */
+   drifting row of styles, gifts and moods. Without JavaScript every picture is on the page (noscript copies);
+   if this file never runs, snippets/hs-showcase-later.liquid fills the waiting ones after the page loads. */
 (function () {
   'use strict';
+  /* 5 Nov speed ask (Krish: "let's make sure that everything loads as fast as possible"): only the first hero
+     picture loads at first. The rest (hs-showcase-fig, later: true) wait in data-hss-src and are filled here:
+     the hero sets one at a time, each once the one before it has its picture (never tied to window load, which
+     waits for every tracking pixel), the strip and the flow once they come near the screen. Nothing is filled
+     while the showcase is hidden (a journey step). Every box keeps its size: width, height and the 4/5 shape
+     are on the picture from the start. */
+  function hydrate(img) {
+    if (!img || !img.hasAttribute('data-hss-src')) return;
+    var ss = img.getAttribute('data-hss-srcset');
+    if (ss) img.srcset = ss;
+    img.src = img.getAttribute('data-hss-src');
+    img.removeAttribute('data-hss-src'); img.removeAttribute('data-hss-srcset');
+  }
+  window.__hssHydrate = hydrate;
+  function waiting(img) { return !!img && img.hasAttribute('data-hss-src'); }
+  // a picture that failed to load never holds the next one back
+  function ready(img) { return !img || !waiting(img) && img.complete && (img.naturalWidth > 0 || !!img.__hssFailed); }
+  function whenReady(img, fn) {
+    if (ready(img)) return fn();
+    if (img.__hssWait) return;
+    img.__hssWait = true;
+    var done = function (e) { img.__hssWait = false; if (e && e.type === 'error') img.__hssFailed = true; fn(); };
+    img.addEventListener('load', done, {once: true});
+    img.addEventListener('error', done, {once: true});
+  }
+  function hiddenNow(el) { var c = document.documentElement.classList; return c.contains('hsj-routed') || c.contains('hsj-focus') || !el || el.offsetParent === null; }
+  function soon(fn) { if (window.requestIdleCallback) window.requestIdleCallback(fn, {timeout: 500}); else window.setTimeout(fn, 500); }
+  // the strip and the flow: filled once they come within half a screen, and never before the first hero
+  // picture is in (on a phone the flow starts at the first screen's bottom edge), so nothing competes with it
+  function nearScreen(block) {
+    if (!block) return;
+    var fill = function () { block.querySelectorAll('img[data-hss-src]').forEach(hydrate); };
+    var go = function () {
+      var first = document.querySelector('[data-hss-reel] img');
+      if (!first || hiddenNow(first)) fill(); else whenReady(first, fill);
+    };
+    if (!('IntersectionObserver' in window)) { window.addEventListener('load', fill); return; }
+    var io = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting || hiddenNow(block)) return;
+      io.disconnect(); go();
+    }, {rootMargin: '0px 0px 50% 0px'});
+    io.observe(block);
+  }
   // 3 Nov: the six sets are the first screen's hero (inside sections/hs-journey.liquid), and the slider
   // and the strip stay below, so every [data-hss] block on the page runs on its own
   var roots = document.querySelectorAll('[data-hss]');
@@ -30,6 +74,7 @@
         // frames that carry no weight leave the reading order
         for (var f = 0; f < 3; f++) figs[f].setAttribute('aria-hidden', f === near ? 'false' : 'true');
       };
+      nearScreen(flow);
       range.addEventListener('input', function () { paint(parseFloat(range.value)); });
       for (var s = 0; s < steps.length; s++) {
         steps[s].addEventListener('click', function () {
@@ -126,11 +171,32 @@
         var f = slides[k].querySelector('.hss-fig'); if (f) f.tabIndex = on ? 0 : -1;
         dots[k].setAttribute('aria-current', on ? 'true' : 'false');
       }
-      // the next picture loads before its turn
-      var nx = slides[(cur + 1) % slides.length].querySelector('img'); if (nx) nx.loading = 'eager';
+      // a set chosen by a swipe, an arrow or a tick loads at once
+      hydrate(imgAt(cur));
     };
-    var restart = function () { window.clearInterval(timer); timer = playing ? window.setInterval(function () { go(cur + 1); }, 2200) : null; };
-    var rw = watch(reel, function (run) { if (run === playing) return; playing = run; rtrack.setAttribute('aria-live', run ? 'off' : 'polite'); restart(); });
+    var imgAt = function (k) { return slides[k] && slides[k].querySelector('img'); };
+    // one set at a time: the next waiting set is filled once the set before it has its picture, then when the
+    // page is idle (or half a second)
+    var pending = false;
+    var pump = function () {
+      if (pending || hiddenNow(reel)) return;
+      for (var k = 1; k < slides.length; k++) {
+        var im = imgAt(k);
+        if (!waiting(im)) continue;
+        var prev = imgAt(k - 1);
+        if (!ready(prev)) { whenReady(prev, pump); return; }
+        pending = true;
+        soon(function () { pending = false; hydrate(im); pump(); });
+        return;
+      }
+    };
+    // the reel turns only to a set whose picture is there; until then the set on screen stays
+    var restart = function () {
+      window.clearInterval(timer);
+      timer = playing ? window.setInterval(function () { if (ready(imgAt((cur + 1) % slides.length))) go(cur + 1); }, 2200) : null;
+    };
+    var rw = watch(reel, function (run) { pump(); if (run === playing) return; playing = run; rtrack.setAttribute('aria-live', run ? 'off' : 'polite'); restart(); });
+    if (window.MutationObserver) new MutationObserver(pump).observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
     pauser(reel.querySelector('[data-hss-pause]'), rw);
     rtrack.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowRight') { go(cur + 1); restart(); e.preventDefault(); }
@@ -149,6 +215,16 @@
     });
     rtrack.addEventListener('pointercancel', function () { sx = null; });
     go(0);
+    pump();
+  } else if (reel && rtrack) {
+    // reduced motion: the sets are a swipe row with the second one peeking in, so it loads at once and the
+    // rest load as they are swiped to (the browser's own lazy loading works in a sideways row)
+    for (var c = 1; c < slides.length; c++) {
+      var ci = slides[c].querySelector('img');
+      if (!waiting(ci)) continue;
+      if (c > 1 || hiddenNow(reel)) ci.loading = 'lazy';
+      hydrate(ci);
+    }
   }
 
   // styles, gifts and moods in one row that drifts left by itself; a drag moves it under the finger and
@@ -217,6 +293,8 @@
     view.addEventListener('pointercancel', let_go);
     place();
   }
+  // the strip's pictures, originals and loop copies alike, once it comes near the screen
+  if (strip) nearScreen(strip);
 
   // tap any Example to see it large; Escape, the close button or a tap on the backdrop closes it
   var box = null, last = null;
@@ -231,6 +309,7 @@
       img = row[row.indexOf(copy) - row.length / 2].querySelector('img');
     }
     if (!img || img.closest('[data-hss-stage]')) return;
+    hydrate(img);
     last = img.closest('.hss-fig');
     box = document.createElement('div');
     box.className = 'hss-zoom'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', img.alt || 'Example');

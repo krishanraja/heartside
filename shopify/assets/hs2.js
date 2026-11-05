@@ -4564,8 +4564,13 @@
     layout();
     setInterval(urgency, 60000);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
-    var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
-    Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); journeyAutoSend(); });
+    /* a page being prerendered (a speculation rule, Shopify's or a browser's own guess) restores no photo, starts no
+       painter and sends nothing until the buyer really opens it: one painting per gift (5 Nov speed ask) */
+    var begin = function () {
+      var late = new Promise(function (resolve) { setTimeout(function () { resolve(null); }, 1500); });
+      Promise.race([restorePhoto(), late]).then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); teeinblue(); journeyAutoSend(); });
+    };
+    if (document.prerendering) document.addEventListener('prerenderingchange', begin, { once: true }); else begin();
     cartTidy();
   }
   var resizeT;
