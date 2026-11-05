@@ -29,12 +29,23 @@ The scope is approved. Do not ask Krish to approve it again. Current configured 
 
 ### The 4 and 5 November journey rulings
 
-- **Order of the journey.** Photo first, then the look, the feel and the gifts. Every choice is made once, in order, then the purchase (Krish, 4 Nov: "one step at a time, non-duplicative, in the right order").
+- **Order of the journey.** Photo first, then the look, the feel, where the dog rules the house, and the gifts. Every choice is made once, in order, then the purchase (Krish, 4 Nov: "one step at a time, non-duplicative, in the right order"; the place question added 5 Nov).
 - **The painting.** It is the exact dog in the chosen style, with less invented scene. Each gift looks like the same dog, even if the design is per gift. The four tones change the picture without making the dog look arrogant, grumpy, mean or different (Krish, 5 Nov).
 - **Product views.** Real product photos, big and full width, with several views and a close-up of the print.
 - **Look and transitions.** Premium and consistent everywhere. The painting screen shows for a few seconds, then fades into the questions. Nothing changes size while text is generating.
 - **Christmas delivery.** Earlier date, both true: the article, the countdown and the gifts screen say December 4. It is early on purpose: at the shipping policy's slowest times (5 business days to print, then 7 to deliver), an order on December 4 arrives by December 22.
 - **Go live.** Yes, once ten buyers through the real engine pass and CI is green.
+- **The answers reach the painting through one home-page question** (Ruling, Krish, 2026-11-05). After the feel, the buyer says where the dog rules the house: the couch, the bed, your feet, or wherever you are. That place stages the painting on the mug, the portrait and the card. The blanket's figures carry no setting. The gift page asks nothing before it paints.
+- **Roast winks** (Ruling, Krish, 2026-11-05: "Wink 1 is good"). A situation alone did not read as Roast in thirteen real paintings. Roast is the one tone whose expression changes: one eye closed in a playful wink, the rest of the face the dog in the photo, never smug, grumpy or mean. The other tones keep the calm face.
+- **No lettering on the Roast mug** (Ruling, Krish, 2026-11-05): "too many more variables that might go wrong, not to mention design issues." Every gift stays artwork only.
+- **The cart offers one more gift** from a drawer that slides in from the left. It offers the existing bundle, 15% off two gifts and 20% off three or more, with the real saving in dollars (Ruling, Krish, 2026-11-05).
+- **The dog detector loads only after a photo is chosen**, on a fast connection, and keeps checking out of sight (Ruling, Krish, 2026-11-05).
+- **The studio and the screen changes** (Ruling, Krish, 2026-11-05: "Whatever is the most customer-experience-friendly"):
+  - The status line sits above the button, so the button never moves.
+  - A tap during the 340 ms change of screen does nothing, so a double tap never skips a screen.
+  - The dog's first studio line is fixed.
+  - The motion is content only: 16 px and about 340 ms, instant with reduced motion.
+  - There is no transition between the home page and the gift page.
 
 ## Non-negotiable instructions
 

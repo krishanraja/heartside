@@ -13,6 +13,30 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 5 November, evening: Krish's five asks (live since 19:33 UTC)
+
+Built in parallel from `docs/review/asks-2026-11-05/` (PRs #122 to #129). Record: `docs/evidence/2026-11-05-roast-and-place.md`.
+
+- **Where the dog rules the house** (`assets/hs-journey.js`). The home page asks it after the feel: `HOME` is photo, look, tone, spot, gifts. `handOver()` sends `hs_brief_input.spot` to the painter, and recipes v21 stage that place for every tone (`tools/print-art/teeinblue/PROMPT-SPEC-2026-11-05-v20.md`). The gift page no longer asks it; a journey begun before the change still does, for the note. Back to the gifts with the same photo, look, feel and spot keeps the journey, so nothing paints twice.
+- **Roast winks** (recipes v21, `PROMPT-SPEC-2026-11-05-v21.md`). Roast has its own face rule (`brief.likeness.faces`); the other tones and the blanket keep the calm face.
+- **The studio is the painting card from its first frame** (`snippets/hs-journey-choose.liquid`, `assets/hs-journey-choose.js`, `assets/hs-wait.js`):
+  - The inline script puts the buyer's photo on the easel from IndexedDB before any script runs.
+  - `hs-wait.js` takes over the easel's speech bubble unchanged.
+  - The photo is sent as soon as Teeinblue's fields are ready.
+  - The journey's own photo does not load the dog detector again.
+  - In journey mode, `#buy`'s other children are `aria-hidden`.
+- **Screen changes** (`hs-journey.js`, `hs-journey-choose.js`, `tools/preview/journey-motion.browser.test.mjs`):
+  - The bar, the progress line and the dock stay in place between steps; only the content moves.
+  - Content-only same-document View Transitions run on the home steps and the gift page phases (16 px, about 340 ms), with a tap guard.
+  - Reduced motion is instant, and browsers without View Transitions get a fade.
+  - `snippets/hs-head.liquid` sets `hs-jm-on` from the head, so the store header never paints on arrival.
+- **Speed:**
+  - The journey's own scripts no longer wait behind Teeinblue's `app-v1.js`.
+  - The home hero loads one picture set at a time (`assets/hs-showcase.js`, `snippets/hs-showcase-fig.liquid`).
+  - The dog detector loads only after a photo is chosen, on a fast connection. "No dog" and "too far" are asked at Start painting.
+  - The gifts step prefetches the first gift page, and `hs2.js` sends nothing while a page is prerendered.
+- **The cart's "Make another version" link** (`?redo=`) opens the normal gift page. The head, the inline check and `hs2.js` `journey()` all stand down on it.
+
 ## 5 November: photo first, each choice once, one painting per gift
 
 Krish's 4 November purchase found three paintings, a second colour choice and the blanket's pattern on every gift. The journey now runs in one order, and every choice is made once (record: `docs/evidence/2026-11-04-photo-first-journey.md`):
@@ -83,6 +107,6 @@ Record: `docs/evidence/2026-10-28-acceptance-fixes.md`.
 - **One price format (29 Oct).** The product price, the variant prices and the format line all use `money_without_trailing_zeros` ("$119"), as the product cards and the home page do. The cart still uses Helio's "$45.00" format.
 - **Order properties.** Native orders carry `_hs_answers` and `_hs_ship_to` like the older routes.
 - **Cart.** `snippets/cart-products.liquid` lists each Artist's touch line under its gift, and `component-cart-items.js` finds rows by line key, not position. The drawer is an overlay.
-- **One more gift (5 Nov, not live until Krish has looked).** On `/cart` only, while the bundle switch is on, `assets/hs-cart-more.js` opens a drawer from the left once per session (early, never while the buyer is busy) offering the gifts not in the cart with the bundle saving in dollars. Its data comes from `snippets/hs-cart-more.liquid`, rendered by `sections/hs2-memo.liquid` on the cart template. Its opener is the bundle line itself, in the box `hs2.css` keeps for it. A fresh, answered photo-first journey is extended (`journeyMore` in `hs2.js`); otherwise the home journey starts with `?gift=` and `&have=` (`hs-journey.js`). Orders from it carry `_hs_from=cart_more`; events are `hs2_more_*`. Tests: `tools/preview/cart-more.test.mjs` and `cart-more.browser.test.mjs`.
+- **One more gift (live since 5 Nov, 19:33 UTC).** On `/cart` only, while the bundle switch is on, `assets/hs-cart-more.js` opens a drawer from the left once per session (early, never while the buyer is busy) offering the gifts not in the cart with the bundle saving in dollars. Its data comes from `snippets/hs-cart-more.liquid`, rendered by `sections/hs2-memo.liquid` on the cart template. Its opener is the bundle line itself, in the box `hs2.css` keeps for it. A fresh, answered photo-first journey is extended (`journeyMore` in `hs2.js`); otherwise the home journey starts with `?gift=` and `&have=` (`hs-journey.js`). Orders from it carry `_hs_from=cart_more`; events are `hs2_more_*`. Tests: `tools/preview/cart-more.test.mjs` and `cart-more.browser.test.mjs`.
 - **Checkout tiles.** Any photo whose alt text says "checkout tile" is hidden from the gallery, the variant picture map and Buddy's gift fan (`design/checkout-tiles/`).
 - **Guards.** The guarded push runs `tools/preview/handle-check.mjs` before writing anything and again after. A broken product address stops the run. A blank variant picture or the heart stand-in only warns there (`--warn-media`), because the push cannot change product media. `.github/workflows/storefront-guard.yml` runs the same check every hour, pictures included, and opens one issue when something breaks. Until CoWork attaches the checkout tiles, it finds the blank pictures and the stand-in, so expect that issue to be open. The check names each blank variant by gift and variant title, and finds the heart stand-in by its file name, alt text or media id (`tools/preview/catalog.mjs`). Both gates now include Krish's Android Edge size (360×640). `tools/preview/live-gate.mjs` fails a product title's lone last word only when that word could have shared a line with the word before it.
