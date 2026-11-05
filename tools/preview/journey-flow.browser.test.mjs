@@ -194,9 +194,9 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Painting your dog');
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^The face and build are locked to the photo/);
-    assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation, never the face\./);
+    assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation and a playful wink\./);
     assert.match(brief['Tone direction'].split('Camera:')[0], /\bbed\b/, 'the painting is staged on the bed the buyer chose');
-    assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/, ''), /side-eye|brow|smug|judging/);
+    assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/i, ''), /side-eye|brow|smug|judging/);
     assert.match(brief['Style direction'], /painterly|painting/i);
     if (size.width < 900) await noScroll(page, 'the studio');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-4-studio.png')});

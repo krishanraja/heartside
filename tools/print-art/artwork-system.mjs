@@ -244,9 +244,12 @@ export function briefFields(input) {
     // the painting, stages the scene of every tone; "wherever you are" and no answer keep the tone's own scene
     const lk = b.likeness, place = lk.places && Object.hasOwn(lk.places, o.spot || '') ? lk.places[o.spot] : null;
     const mood = (place && place[o.tone]) || lk.tones[o.tone];
-    const locked = {Energy: lk.energy, 'Style direction': b.styles[o.style]};
+    // v21 (Krish, 5 Nov: "winking or like a cheeky grin"; "Wink 1 is good"): only Roast lets the expression change, with
+    // its own face rule; the blanket's small figures and the other tones keep the calm face
+    const face = (format !== 'blanket' && lk.faces && lk.faces[o.tone]) || {};
+    const locked = {Energy: face.energy || lk.energy, 'Style direction': b.styles[o.style]};
     if (format === 'blanket') return {...locked, 'Tone direction': lk.blanket.replace('{moment}', lk.figures[o.tone]).replace('{light}', tone.light.replace(/\.$/, '')) + '.'};
-    return {...locked, 'Tone direction': [mood, lk.guard, fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' ')};
+    return {...locked, 'Tone direction': [mood, face.guard || lk.guard, fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' ')};
   }
   if (format === 'blanket') {
     // v15 (Krish, 29 Oct: the "dog centipede"): the blanket is a scattered pattern of small, whole,
