@@ -683,6 +683,13 @@
     render(step);
   }
   function render(step) {
+    // a step to another step moves through the motion layer (moving()); the screen is drawn in its update
+    if (!render.drawing) {
+      var from = render.shown, dir = from && step && from !== step ? (STEPS.indexOf(step) < STEPS.indexOf(from) ? 'back' : 'forward') : '';
+      render.fade = from !== step;
+      render.shown = step;
+      if (dir) { moving(dir, function () { render.drawing = true; try { render(step); } finally { render.drawing = false; } focusHead(); }); return; }
+    }
     // when a new screen appeared, so a tap meant for the last one never answers this one
     if (render.step !== step) { render.step = step; render.at = Date.now(); }
     var hook = root.querySelector('[data-hsj-screen="hook"]');
@@ -746,10 +753,42 @@
     ahead.done = ahead.done || {};
     list.forEach(function (src) { if (ahead.done[src]) return; ahead.done[src] = true; var im = new Image(); im.decoding = 'async'; im.src = src; });
   }
-  // the new content arrives with a short fade (opacity only, so nothing can scroll), and only the content
+  // without View Transitions the new content arrives with a short fade (opacity only, so nothing can scroll), and
+  // only the content; never when the same screen is drawn again (a chip on the toys, the breed search)
   function settled(content) {
-    if (!content) return;
+    if (!content || !render.fade || document.documentElement.hasAttribute('data-hsj-vt')) return;
     content.classList.add('hsj-content--in');
+  }
+  /* The motion layer (transitions report and review, 5 Nov): a same-document View Transition on the content only.
+     The content leaves 16 px in the direction of travel and the next arrives from the other side, a fade-through
+     of about 340 ms (hs-journey.css). The bar, the line and the dock are never named, so they stay as they are.
+     Without View Transitions the content fades (settled()); with reduced motion the screen simply changes; after
+     a swipe Back that the browser animated itself, nothing is animated again. While a transition runs, html
+     carries data-hsj-vt, and a tap on an answer is not taken until the new screen is there (onClick). */
+  var REDUCED = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function moving(dir, update) {
+    var de = document.documentElement, ev = window.event, quiet = function () {};
+    var run = function () { moving.updating = true; try { update(); } finally { moving.updating = false; } };
+    if (!dir || moving.updating || !document.startViewTransition || (REDUCED && REDUCED.matches) || (ev && ev.type === 'popstate' && ev.hasUAVisualTransition)) { run(); return null; }
+    de.setAttribute('data-hsj-vt', dir);
+    var vt;
+    try { vt = document.startViewTransition(run); } catch (e) { de.removeAttribute('data-hsj-vt'); run(); return null; }
+    moving.vt = vt;
+    if (vt.ready) vt.ready.catch(quiet);
+    if (vt.updateCallbackDone) vt.updateCallbackDone.catch(quiet);
+    vt.finished.catch(quiet).then(function () { if (moving.vt === vt) { moving.vt = null; de.removeAttribute('data-hsj-vt'); } });
+    return vt;
+  }
+  // the gift page's phases move the same way (hs-journey-choose.js)
+  window.HSJMotion = { moving: moving };
+  // the new screen's headline takes the focus, so a screen reader starts there (an input the screen focused keeps it)
+  function focusHead() {
+    var a = document.activeElement;
+    if (a && a.matches && a.matches('input, textarea, select') && app.contains(a)) return;
+    var h = app && app.querySelector('.hsj-headline');
+    if (!h) return;
+    h.setAttribute('tabindex', '-1');
+    try { h.focus({ preventScroll: true }); } catch (e) { /* old browser */ }
   }
   // the buyer's photo for the small thumbnail, from this tab, or from the device after a reload
   function thumb() {
@@ -782,6 +821,8 @@
     var t = e.target.closest('button, a');
     if (!t || !root.contains(t)) return;
     if (ghost(e, t)) { e.preventDefault(); return; }
+    // the screen is still changing: the buyer cannot see what this tap would answer yet (transitions review, 5 Nov)
+    if (document.documentElement.hasAttribute('data-hsj-vt') && ANSWERS.some(function (a) { return t.hasAttribute(a); })) { e.preventDefault(); return; }
     if (t.hasAttribute('data-hsj-go')) { e.preventDefault(); track('start', {}); warm(); go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-resume-go')) { go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-restart')) { S = fresh(); save(); try { window.sessionStorage.removeItem(HS2); } catch (x) { /* fine */ } go(STEPS[0]); return; }

@@ -78,6 +78,11 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 /* the reveal: one square of fixed size holds Teeinblue's mockups (the painting placed on the product by its
    own engine) or the painting itself up close; two chips switch between them */
 .hs-jm__reveal { width: 100%; display: grid; gap: 12px; justify-items: center; }
+/* the painting arrives with a small rise: opacity and 8 px, never a zoom (nothing changes size; Teeinblue's gallery
+   measures itself as it moves in) */
+.hs-jm__reveal:not([hidden]) { animation: hs-jm-rise .42s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes hs-jm-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .hs-jm__reveal:not([hidden]) { animation: none; } }
 .hs-jm__square { position: relative; width: min(100%, calc(100svh - 420px)); aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #F1E9E2; }
 .hs-jm__gallery { position: absolute; inset: 0; display: grid; place-items: center; }
 .hs-jm__gallery [data-hs2-tib-gallery] { width: 100%; }

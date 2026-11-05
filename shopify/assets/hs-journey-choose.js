@@ -164,16 +164,28 @@
   function status(text) { said = text || ''; line(); }
   function setNote(text) { note = text || ''; line(); }
   function show(el, on) { if (el) el.style.visibility = on ? '' : 'hidden'; }
+  /* Each phase moves like a journey step (hs-journey.js moving(): the content only, 16 px forward, a fade-through of
+     about 340 ms; instant with reduced motion). The page's first phase is there at once, and the reveal is drawn
+     at once with its own small rise, never through a captured frame (transitions report, 5 Nov: a deferred reveal
+     let the half-changed card show for a frame). */
   function go(next) {
     if (next === phase) return;
+    var was = phase;
     phase = next;
-    root.setAttribute('data-phase', phase);
+    // the page says which phase it shows once it shows it (the update of a View Transition runs a frame later)
+    var M = window.HSJMotion, run = function () { if (phase === next) { root.setAttribute('data-phase', next); apply(next, was); } };
+    if (!was || next === 'reveal' || !M) run(); else M.moving('forward', run);
+  }
+  function apply(next, was) {
     var askEl = $('[data-hsj]');
     if (phase === 'ask') {
       frame.hidden = true;
       if (askEl) askEl.hidden = false;
       window.HSJourney.ask();
       chip();
+      // the first question's headline takes the focus, unless its field already has it
+      var a = document.activeElement, q = askEl && askEl.querySelector('.hsj-headline');
+      if (q && !(a && a.matches && a.matches('input') && askEl.contains(a))) { q.setAttribute('tabindex', '-1'); try { q.focus({ preventScroll: true }); } catch (e) { /* old browser */ } }
       return;
     }
     if (askEl) askEl.hidden = true;
@@ -185,6 +197,13 @@
     frame.hidden = false;
     paint();
     if (back && line) { void line.offsetWidth; line.style.transition = ''; }
+    if (!was) return;
+    // without View Transitions the frame's new content fades in, as the steps' does; the reveal has its own rise
+    var content = frame.querySelector('.hsj-content');
+    if (content && next !== 'reveal' && !document.documentElement.hasAttribute('data-hsj-vt')) { content.classList.remove('hsj-content--in'); void content.offsetWidth; content.classList.add('hsj-content--in'); }
+    // the new headline takes the focus, so a screen reader starts there
+    var h = $('[data-hs-jm-title]');
+    if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { /* old browser */ } }
   }
   function label() {
     var q = queue(), n = q.length, g = here;
@@ -390,6 +409,8 @@
   function onClick(e) {
     var t = e.target.closest('button');
     if (!t || !frame.contains(t) && !t.closest('[data-hs-jm-sheet]')) return;
+    // the screen is still changing: the buyer cannot see what this tap would do yet
+    if (document.documentElement.hasAttribute('data-hsj-vt') && t.hasAttribute('data-hs-jm-add')) return;
     if (t.hasAttribute('data-hs-jm-add')) {
       if (t.disabled) return;
       if (phase === 'added') { var after = nextGift(); window.location.href = after && after.url ? after.url : '/cart'; return; }

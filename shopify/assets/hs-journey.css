@@ -320,6 +320,26 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-content--in { animation: hsj-step .24s ease-out both; }
 @keyframes hsj-step { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hsj-paint__ring, .hsj-content--in { animation: none; } }
+/* the motion layer (hs-journey.js moving()): a same-document View Transition on the content only. The page itself is
+   never captured, so the bar, the progress line and the dock are drawn live and never animate; the content leaves
+   16 px in the direction of travel over 120 ms and the next arrives from the other side over 240 ms after 100 ms, a
+   fade-through of about 340 ms. It never changes size or position (its group does not animate). While it runs a tap
+   lands on the transition itself and does nothing (transitions review, 5 Nov: a tap passed through answered a
+   screen the buyer could not see yet); Helio's own ::view-transition { pointer-events: none } is overridden only
+   for these. hs-journey.js also holds the answers back from the keyboard until the new screen is there. */
+html[data-hsj-vt] { view-transition-name: none; }
+html[data-hsj-vt]::view-transition { pointer-events: auto; }
+html[data-hsj-vt] .hsj-content { view-transition-name: hsj-content; }
+::view-transition-group(hsj-content) { animation: none; }
+::view-transition-old(hsj-content) { animation: hsj-vt-out 120ms cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(hsj-content) { animation: hsj-vt-in 240ms cubic-bezier(.2, .8, .2, 1) 100ms both; }
+html[data-hsj-vt="back"]::view-transition-old(hsj-content) { animation-name: hsj-vt-out-back; }
+html[data-hsj-vt="back"]::view-transition-new(hsj-content) { animation-name: hsj-vt-in-back; }
+@keyframes hsj-vt-out { to { opacity: 0; transform: translateX(-16px); } }
+@keyframes hsj-vt-in { from { opacity: 0; transform: translateX(16px); } }
+@keyframes hsj-vt-out-back { to { opacity: 0; transform: translateX(16px); } }
+@keyframes hsj-vt-in-back { from { opacity: 0; transform: translateX(-16px); } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(hsj-content), ::view-transition-new(hsj-content) { animation: none; } }
 
 /* the breed screen can grow past the fold (a long list, or the search and its suggestions): it scrolls inside the
    frame, never under the button (5 Nov, a 320 px phone) */

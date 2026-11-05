@@ -220,8 +220,80 @@ for (const [size, reduced] of [...SIZES.map(s => [s, false]), [{width: 390, heig
     assert.deepEqual([gift[i].bubble, gift[i].who, gift[i].say], [gift[i - 1].bubble, gift[i - 1].who, gift[i - 1].say], 'the bubble is the same at the handover');
     // only the content moves: the motion layer animates the content and nothing else
     const named = [...new Set(all.flatMap(f => f.anims).filter(a => a.indexOf('::view-transition') === 0))];
-    assert.ok(named.every(a => /\((hsj-content|root)\)|^::view-transition$/.test(a)), 'only the content is animated: ' + JSON.stringify(named));
+    assert.ok(named.every(a => /\(hsj-content\)$/.test(a)), 'only the content is animated: ' + JSON.stringify(named));
     if (reduced) assert.deepEqual(named, [], 'reduced motion: no transitions at all');
+    else for (const [name, fs] of [['home', home], ['gift', gift]]) assert.ok(fs.some(f => f.anims.includes('::view-transition-new(hsj-content)')), name + ': the content moved through a View Transition');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// transitions review, 5 Nov: while a screen changes, a tap lands on the new screen before the buyer can see it. The
+// 5 Nov double tap that skipped the tone was that kind of failure. A tap on an answer waits until the screen is there.
+async function toLook(page) {
+  await page.goto(base + '/');
+  await page.locator('[data-hsj-go]').first().click();
+  await page.waitForSelector('[data-hsj-screen="photo"]');
+  await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+  await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+  await page.waitForSelector('[data-hsj-screen="look"]'); await settled(page); await page.waitForTimeout(300);
+}
+test('a tap on an answer while the screen is still changing is not taken; the headline takes the focus', async () => {
+  const {ctx, page, errors} = await open({width: 390, height: 844});
+  try {
+    await toLook(page);
+    // a step: the new headline has the focus once the screen is there
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="tone"]'); await settled(page);
+    assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.classList.contains('hsj-headline') && document.activeElement.textContent), 'How should it feel?', 'the new headline has the focus');
+    await page.locator('[data-hsj-back]').click();
+    await page.waitForSelector('[data-hsj-screen="look"]'); await settled(page); await page.waitForTimeout(300);
+    const next = await page.locator('[data-hsj-next]').boundingBox();
+    // the style's Next, then 120 ms later a single tap where the tone's first card will be
+    await page.mouse.click(next.x + next.width / 2, next.y + next.height / 2);
+    await page.waitForTimeout(120);
+    await page.waitForSelector('[data-hsj-screen="tone"] [data-hsj-feel]', {state: 'attached'});
+    const card = await page.locator('[data-hsj-screen="tone"] [data-hsj-feel][aria-pressed="false"]').first().boundingBox();
+    const before = await page.evaluate(() => [...document.querySelectorAll('[data-hsj-feel][aria-pressed="true"]')].map(b => b.getAttribute('data-hsj-feel')));
+    await page.mouse.click(card.x + card.width / 2, card.y + card.height / 2);
+    await settled(page); await page.waitForTimeout(200);
+    const after = await page.evaluate(() => [...document.querySelectorAll('[data-hsj-feel][aria-pressed="true"]')].map(b => b.getAttribute('data-hsj-feel')));
+    assert.deepEqual(after, before, 'the tone is as it was before the early tap');
+    // a tap once the screen is there counts
+    await page.locator('[data-hsj-feel="hilarious"]').click();
+    assert.equal(await page.locator('[data-hsj-feel="hilarious"]').getAttribute('aria-pressed'), 'true');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// where View Transitions are missing, the content fades in (opacity only) and the chrome still holds still
+test('without View Transitions: the content fades in, the chrome holds still, and Back works', async () => {
+  const {ctx, page, errors} = await open({width: 390, height: 844});
+  try {
+    await page.addInitScript(() => { delete Document.prototype.startViewTransition; });
+    await toLook(page);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="tone"]'); await page.waitForTimeout(400);
+    await page.locator('[data-hsj-back]').click();
+    await page.waitForSelector('[data-hsj-screen="look"]'); await page.waitForTimeout(400);
+    const fs = await frames(page);
+    assert.ok(fs.some(f => f.anims.some(a => a === 'hsj-content@hsj-step')), 'the content fades in');
+    assert.ok(!fs.some(f => f.anims.some(a => a.indexOf('::view-transition') === 0) || f.vt), 'no View Transition');
+    assert.deepEqual(fs.filter(f => f.screen && (f.barO < 0.99 || f.lineO < 0.99 || f.btnO < 0.99)).length, 0, 'the chrome never fades');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// Back slides the other way: the content leaves to the right and the earlier screen comes in from the left
+test('Back moves the content the other way, and the line follows it back', async () => {
+  const {ctx, page, errors} = await open({width: 390, height: 844});
+  try {
+    await toLook(page);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="tone"]'); await settled(page); await page.waitForTimeout(300);
+    await page.evaluate(() => { window.__dirs = []; new MutationObserver(() => { const d = document.documentElement.getAttribute('data-hsj-vt'); if (d) window.__dirs.push(d); }).observe(document.documentElement, {attributes: true, attributeFilter: ['data-hsj-vt']}); });
+    await page.locator('[data-hsj-back]').click();
+    await page.waitForSelector('[data-hsj-screen="look"]'); await settled(page);
+    assert.deepEqual(await page.evaluate(() => window.__dirs), ['back']);
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
