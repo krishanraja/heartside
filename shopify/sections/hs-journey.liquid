@@ -63,12 +63,10 @@
       "corePurchase": {{ s.core_purchase | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },
       "hero": {{ 'hs-ex-hero-mug.webp' | asset_url | json }},
-      "toneExamples": {
-        "sentimental": {{ 'hs-ex-tone-paint-sentimental.webp' | asset_url | json }},
-        "warm": {{ 'hs-ex-tone-paint-warm.webp' | asset_url | json }},
-        "hilarious": {{ 'hs-ex-tone-paint-hilarious.webp' | asset_url | json }},
-        "over_the_top": {{ 'hs-ex-tone-paint-over.webp' | asset_url | json }}
-      },
+      {%- comment -%} The tone cards show their icon and words, not the 30 Oct example paintings: those were painted
+      under the old recipes, with plush toys, thrones and scatters of poses that v19 no longer paints (5 Nov
+      review). New examples come from the v19 likeness path, one dog in four tones, on Krish's choice of photo. {%- endcomment -%}
+      "toneExamples": {},
       "scenes": {
         "mug": {{ 'hs-ex-scene-mug-home.webp' | asset_url | json }},
         "print": {{ 'hs-ex-scene-portrait-home.webp' | asset_url | json }},

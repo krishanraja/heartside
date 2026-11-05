@@ -115,12 +115,66 @@ About 26 to 28 paintings went through Teeinblue in the ten-buyer runs and the di
 - **Where it is:** confirmed in compose executions 50411, 50412, 50419, 50420, 50424, 50426 and 50427. Likely also in the ten-buyer runs on 5 November and in the typed writer.
 - **The value is not copied anywhere.**
 - **From then on:** the test browsers block n8n, and the notes were tested inside n8n, where no header is added.
-- **Needs Krish:**
-  - rotate the key;
-  - scope the environment's n8n secret to the API and MCP paths;
-  - approve deleting those executions.
+- **Deleted on Krish's approval (5 November, "I approve deletion of the logged executions"):** all 28 executions that could hold it, 50411, 50412, 50413, 50416, 50418, 50419, 50420, 50424, 50425, 50426, 50427 and 50559 to 50575, through n8n's API with a key Krish put in the environment for it. Each now reads back 404.
+- **Still needs Krish:**
+  - rotate the n8n API key, including the copy pasted into a helper session's chat;
+  - scope the environment's n8n secret to the API and MCP paths.
 
-## 6. Not proven
+## 6. The hardest buyer, after the fixes
+
+Vera, 67, on an iPhone SE (320 px), double-taps everything, types a breed the list does not have (Labradoodle) and reloads while it paints. Through Teeinblue on the test theme:
+- the typed breed's search took the list's place and she moved on;
+- her reload 41 seconds in brought the page back; at 67 seconds it said "The painting stopped", and one tap painted again from the same photo;
+- the framed portrait (red oak, $119) was added on the first press, in 16.8 seconds;
+- layout shift: 0.057 on the home flow and 0.081 on the gift page, under the 0.1 line (before the fixes 0.20 to 0.41 and 0.29 to 0.74);
+- she reached checkout. Nothing typed, nothing paid.
+
+## 7. The judges
+
+Eleven recorded purchases (ten from run 3, Vera after the fixes) went to a workflow of blind judges: per run, a premium-brand director on the screenshots, a cynical non-technical Christmas buyer on the screens and the delivery lines, and a likeness judge comparing each painting with that buyer's own photo. A synthesis ranked every failure by how many buyers hit it, and two refuters then tried to knock down each blocker against the run's own data and screenshots.
+
+**Scores:** mean buyer trust 4.1 of 10, mean director score 4.0, mean likeness 6.9 over eight paintings (5 to 9). Six of eleven reached checkout; two buyers said they would pay.
+
+**Blockers that survived both refuters, and what was done:**
+
+| Blocker (buyers who hit it) | Done |
+|---|---|
+| "Painting your dog" sat empty, a title and a Next button, for 11 to 22 seconds (9 of 11). hs2.js shows its painting card only once the photo has gone, and the live store's scripts load late. | The easel: the buyer's own photo, the wash, the brush and a line from the studio, from the first paint of the page, at the card's size; the card takes its place. The studio now ends about six seconds after the tap, at least 2.5 seconds after the scripts run. Test at 320 and 390 px fails on the old code. |
+| The mug's reveal showed the dog's back half, and "Up close" cut the face off (all 3 mug buyers). | The second view is now "The whole print", uncropped; the mug's line says it prints all the way round and the arrows turn it. The painter's placement (the brief already says a fifth of the way in from the left) was not followed; changing the brief needs paints, so it stays open, below. |
+| The only desktop buyer (1280x800): every question in a 40 px column, the note reading "I w / the / so". | The questions use the studio's own 1040 px card and height on desktop. Test fails on the old code. |
+| A photo of two dogs was accepted in 0.3 seconds and one dog was dropped. The dog detector had not loaded yet, and the check fails open. | The detector finishes its check out of sight while the buyer picks the look; if it sees more than one dog, Start painting asks once: another photo, or this one anyway. Two tests. |
+| The shipping policy said no Christmas date was set, beside "Order by December 4". | The new paragraph is drafted (below). The Shopify connector has no permission to write policies (`write_legal_policies`), so Krish pastes it in the admin. |
+| Checkout's second line showed the product's example dog beside "Dog's name: Honey". | Display only: both refuters found the order line points to the buyer's painting. It is Shopify's merged checkout line, whose child always shows the variant's own photo. Fixing it means dog-free variant photos, a product media change for Krish. |
+
+**Majors fixed in the same pass:** the progress line now only moves forward (gifts 40%, studio 45%, questions 50 to 85%, note 90%, wait 95%, reveal 100%); the home page names the tones as the steps do (Warm, Roast); the last gift's reveal says "Order by December 4 for Christmas delivery to a US address." from the store's own deadline, and only until that day ends; the add says "Adding it to your cart. This can take up to a minute."; the name screens no longer show a stranger's name as a placeholder; the breed line says "It goes in the note. We paint your dog from the photo."; the note screen says a tone there changes the words, never the painting; the wait says "Still painting" and "Most take 1 to 3 minutes", not "Almost there" at 40 seconds.
+
+**Majors left for Krish (taste, trust or store settings):** no reviews or real customers and "Example" on every picture; the painter-in-a-studio copy against "painted with AI"; the note's visibility after the note step and the $12 card beside it; questions that mix the buyer's life with the recipient's; the pre-ticked "Email me with news and offers" at checkout (a checkout setting); the cart line without the dog's name or style; the reveal mockups (Teeinblue's); the hero dog Bear changing colour between products; three gifts painted one after another; a reload still costing a second painting (the painting lives in the page that sent it).
+
+## 8. The code review
+
+A review workflow over the branch, with an adversarial check of each finding, confirmed 13 defects. All are fixed, each with a test that fails on the old code where one could be written:
+- a photo refused after it left (the device check, a redrawn photo field, a failed preparation, or a send that vanished) left the buyer on "Almost there" for ever: the page now says why, with "It's my dog. Paint it." where there is an override, otherwise Teeinblue's own photo field;
+- a photo chosen in Teeinblue's picker was overwritten by the automatic send;
+- the journey's photo was checked a second time, out of sight, where a refusal had nowhere to show;
+- Back to a gift already added offered to paint it again: it now says it is in the cart;
+- a painter that never opened left only a status line: the page says so, and one tap reloads;
+- a second copy merged into one cart line was not counted; the automatic retry used what the first try left of the budget; past the budget the page invited a second add while hs2 was still adding;
+- the studio said "Your photo is with the painter" before it was;
+- the inline journey check used any gift's key, so a normal gift page could step aside until the scripts loaded;
+- taking back a wrong guess left the header hidden;
+- Back after the questions stepped through every question's entry;
+- the blanket's Roast figure still said "stretched out" (recipes SHA now `5c18af39…`, spec updated, and a test fails if any journey Tone direction says "stretch");
+- on phones the reveal's words, picture, repaint link and dock could overlap (tested at five sizes, three gifts).
+
+## 9. Not proven
 
 - The checkout registration's server side: that n8n workflow is not visible to the connector. The fix follows the client's own design for transient failures, and is inferred from the page's words and the second tap.
 - Teeinblue's own script failed some fetches in this environment, and one run hit a bot check. Neither is from the theme.
+- The fixes in sections 7 and 8 are proven offline, through the rendered theme in Chromium. The 30-painting cap for live tests was reached, so they have not been re-run through Teeinblue; the first real buyers after go-live are that run.
+- The mug painter's placement of the dog: the brief asks for a fifth of the way in from the left, and the paintings put the face near the far edge. Changing the brief needs paints to prove.
+
+## 10. The shipping policy paragraph, for Krish to paste
+
+Shopify admin, Settings, Policies, Shipping policy. Replace the "Christmas." paragraph with:
+
+> **Christmas.** Order by December 4 for Christmas delivery to a US address. That is the last day on which the times above still deliver before Christmas Eve. Orders placed after December 4 may arrive after December 25.

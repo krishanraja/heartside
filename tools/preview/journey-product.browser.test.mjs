@@ -26,12 +26,16 @@ const URLS = {print: '/products/your-dogs-portrait?journey=1&variant=58300000000
 const GIFTS = {mug: {url: '/products/your-dogs-illustrated-mug', handle: 'your-dogs-illustrated-mug', price: 45}, blanket: {url: '/products/your-dogs-personality-blanket', handle: 'your-dogs-personality-blanket', price: 129}, print: {url: '/products/your-dogs-portrait', handle: 'your-dogs-portrait', price: 59}};
 const STANDIN = '<script>(' + (() => {
   window.__sends = 0;
+  // any moment the page stepped aside into journey mode, even one the gift page's script took back
+  window.__jmFlash = false;
+  new MutationObserver(() => { if (document.documentElement.classList.contains('hs-jm-on')) window.__jmFlash = true; }).observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
   // a painting request is hs2's upload lock reaching "sent", written just before the photo goes to Teeinblue;
   // the file field itself sees the photo more than once (the hand-over, then the cleaned photo)
   window.__painted = 0;
   const set = Storage.prototype.setItem;
   Storage.prototype.setItem = function (k, v) { if (/^hs2-blanket-upload:/.test(k) && /"stage":"sent"/.test(v)) window.__painted++; return set.call(this, k, v); };
-  const ids = {'your-dogs-illustrated-mug': 101, 'your-dogs-portrait': 102, 'your-dogs-personality-blanket': 103};
+  // the rendered pages' own product ids, so hs2.js and the inline journey check use the same key
+  const ids = {'your-dogs-illustrated-mug': 16160217956734, 'your-dogs-portrait': 16151384260990, 'your-dogs-personality-blanket': 16158073880958};
   const pid = ids[(location.pathname.split('/')[2] || '')];
   if (pid) window.ShopifyAnalytics = {meta: {product: {id: pid}}};
   document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
@@ -77,14 +81,14 @@ before(async () => {
 after(async () => { await browser?.close(); server?.close(); });
 
 // what the home page hands over (hs-journey.js handOver): the photo's time, the style, the gifts in order, nothing else
-async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first', slowTib = 0} = {}) {
+async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first', slowTib = 0, badPhoto = false, onKey = 0} = {}) {
   const ctx = await browser.newContext({viewport: size, isMobile: size.width < 900, hasTouch: true});
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
   const t = Date.now() - 60000;
-  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib]) => {
+  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey]) => {
     if (slowTib) sessionStorage.setItem('__slowTib', String(slowTib));
     if (sessionStorage.getItem('hs2-review')) return;
     sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'warm'}));
@@ -92,18 +96,21 @@ async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'
       hs3_art_profile: null, hs3_energy: '', hs3_art_choices: {style: 'collage', tone: 'warm'}, hs_brief_input: {breed: '', pronoun: 'they', archetype: '', likeness: true},
       hs_journey: {t: Date.now() - journeyAge, gift: queue[0], tone: 'warm', style: 'collage', queue: queue.map(g => ({gift: g, url: URLS[g]})), gifts: GIFTS, notes: {}, answered, compose: {url: '', ai: false}}};
     if (mode) review.hs_journey.mode = mode;
+    // the page that remembers it opened from this journey (hs2.js journey(): one key per product)
+    if (onKey) sessionStorage.setItem('hs2-journey-on:' + onKey, String(review.hs_journey.t));
     sessionStorage.setItem('hs2-review', JSON.stringify(review));
     if (answered) sessionStorage.setItem('hs-journey', JSON.stringify({dog: 'Mowgli', breed: 'Border Collie', pro: 'he', rel: 'named', person: 'Sam', home: 'door', spot: 'couch', together: 'walk', meaning: 'best', tone: 'warm', noteDone: true, gifts: {}}));
-  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib]);
+  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib, onKey]);
   if (photo) {
     await page.goto(base + '/robots.txt');
     // a real dog photo, as the home page keeps it (a tiny one would be refused by the gift page's own check)
-    await page.evaluate(t => fetch('/__photo.jpg').then(r => r.blob()).then(b => new Promise((resolve, reject) => {
+    // badPhoto: a file named like a photo that no browser can open, so the painter's preparation refuses it
+    await page.evaluate(([t, badPhoto]) => (badPhoto ? Promise.resolve(new Blob([new Uint8Array(40000).fill(7)], {type: 'image/jpeg'})) : fetch('/__photo.jpg').then(r => r.blob())).then(b => new Promise((resolve, reject) => {
       const f = new File([b], 'dog.jpg', {type: 'image/jpeg'}); const o = indexedDB.open('hs2', 1);
       o.onupgradeneeded = () => o.result.createObjectStore('files');
       o.onerror = () => reject(o.error);
       o.onsuccess = () => { const tx = o.result.transaction('files', 'readwrite'); tx.objectStore('files').put({file: f, t}, 'headshot'); tx.oncomplete = () => { o.result.close(); resolve(); }; };
-    })), t);
+    })), [t, badPhoto]);
   }
   return {page, ctx, errors};
 }
@@ -184,11 +191,24 @@ test('a later gift: the same studio, nothing asked, the framing box saved unseen
     // the close-up is the painting itself
     await page.click('[data-hs-jm-view="close"]');
     assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-jm-close]').hidden && /hs-ex-style-screenprint/.test(document.querySelector('[data-hs-jm-close] img').src)), true);
+    // the whole print, never a crop (5 Nov judges: a zoomed close-up cut the mug dog's face off at the frame edge)
+    assert.equal((await page.textContent('[data-hs-jm-view="close"]')).trim(), 'The whole print');
+    const whole = await page.evaluate(() => { const img = document.querySelector('[data-hs-jm-close] img'), s = getComputedStyle(img), box = document.querySelector('.hs-jm__square').getBoundingClientRect(), r = img.getBoundingClientRect();
+      return {fit: s.objectFit, transform: s.transform, inside: r.left >= box.left - 1 && r.right <= box.right + 1 && r.top >= box.top - 1 && r.bottom <= box.bottom + 1}; });
+    assert.deepEqual(whole, {fit: 'contain', transform: 'none', inside: true});
+    assert.match(await page.textContent('[data-hs-jm-sub]'), /all the way round the mug/);
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-reveal-later.png')});
+    // the last gift's reveal says the Christmas date from the store's own deadline, and only until that day ends
+    await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-deadline', '2099-12-04'));
+    await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === 'Order by December 4 for Christmas delivery to a US address.', null, {timeout: 3000});
+    await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-deadline', '2020-12-04'));
+    await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === '', null, {timeout: 3000});
     await ready(page);
     assert.equal(await page.isDisabled('[data-hs-jm-add]'), true, 'no add before the tick');
     await page.check('[data-hs-jm-tick]');
     await page.click('[data-hs-jm-add]');
+    // the add says what it is doing (5 Nov judges: 15 to 40 seconds with only a dot on the button)
+    assert.equal(await page.textContent('[data-hs-jm-line]'), 'Adding it to your cart. This can take up to a minute.');
     await page.waitForURL(/\/cart$/, {timeout: 15000});
     assert.deepEqual(cart.map(i => i.handle), ['your-dogs-illustrated-mug']);
     assert.deepEqual(errors, []);
@@ -311,7 +331,8 @@ for (const [name, fails, lands] of [['a slow checkout copy: the dock says what h
       await page.waitForURL(/\/cart$/, {timeout: 20000});
       assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket'], 'one line, after one tap');
     } else {
-      await page.waitForFunction(() => /not ready/.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
+      // the second failure is said once, in the page's own words: the design is kept, one more tap from the buyer
+      await page.waitForFunction(() => /didn't go through\. Your design is saved\. Tap Add to cart again\./.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
       await page.waitForTimeout(2500);
       assert.equal(await page.evaluate(() => window.__presses), 2, 'one automatic press, never a third');
       assert.equal(await page.isDisabled('[data-hs-jm-add]'), false, 'the buyer can try again');
@@ -372,5 +393,226 @@ test('320 px phone: another breed, typed, shows its suggestions above the button
     await page.goBack();
     await page.waitForSelector('[data-hsj-screen="breed"] [data-hsj-pick="breed"][data-v="__other"].is-on');
     assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// 5 Nov review: on 601 to 700 px tall phones the picture covered the support line and the free repaint sat under the dock
+for (const size of [{width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 700}, {width: 320, height: 568}, {width: 412, height: 915}]) test(`${size.width}x${size.height}: the reveal keeps the words, the picture, the repaint and the dock apart`, async () => {
+  for (const gift of ['mug', 'print', 'blanket']) {
+    const {page, ctx} = await open(size, {queue: [gift], answered: true});
+    try {
+      await page.goto(base + URLS[gift]);
+      await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+      await paintDone(page);
+      await page.evaluate(() => { window.__hs2api.journeyRepaintLeft = () => true; });
+      await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+      await page.waitForFunction(() => document.querySelector('[data-hs-jm-repaint]').style.visibility !== 'hidden');
+      await page.waitForTimeout(400);
+      const r = await page.evaluate(() => {
+        const box = s => { const e = document.querySelector(s); const b = e && e.getBoundingClientRect(); return b && b.height ? {top: Math.round(b.top), bottom: Math.round(b.bottom)} : null; };
+        const sub = box('[data-hs-jm-frame] [data-hs-jm-sub]'), pic = box('[data-hs-jm-reveal] .hs-jm__square') || box('[data-hs-jm-reveal]'), rep = box('[data-hs-jm-repaint]'), dock = box('[data-hs-jm-frame] .hsj-dock');
+        const repTop = rep && document.elementFromPoint(160, Math.round((rep.top + rep.bottom) / 2));
+        return {sub, pic, rep, dock, repHit: !!(repTop && repTop.closest('[data-hs-jm-repaint]')), scroll: document.documentElement.scrollHeight <= innerHeight + 1};
+      });
+      const where = `${size.width}x${size.height} ${gift}: ${JSON.stringify(r)}`;
+      if (r.sub) assert.ok(r.pic.top >= r.sub.bottom - 1, 'the picture clears the words: ' + where);
+      assert.ok(r.rep.bottom <= r.dock.top + 1, 'the repaint link clears the dock: ' + where);
+      assert.ok(r.repHit, 'the repaint link can be tapped: ' + where);
+      assert.ok(r.scroll, 'nothing scrolls: ' + where);
+    } finally { await ctx.close(); }
+  }
+});
+
+// 5 Nov review: a photo refused after it left (the painter could not prepare it, the photo field was redrawn, or the
+// send vanished) used to leave the buyer on "Almost there" for ever, the reason in a note spot journey mode hides.
+// The page now says why, with one way on: the same photo again where there is an "It's my dog" override, otherwise
+// Teeinblue's own photo field.
+test('a photo the painter refuses after it was sent: the page says so, and one tap chooses another photo', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {queue: ['print', 'mug'], answered: true, badPhoto: true});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForSelector('[data-hs-jm][data-phase="refused"]', {timeout: 30000});
+    assert.equal(await page.evaluate(() => window.__hs2api.journeyStatus()), 'refused');
+    assert.equal(await page.textContent('[data-hs-jm-title]'), "This photo didn't go through");
+    assert.ok((await page.textContent('[data-hs-jm-sub]')).trim().length > 10, 'the reason is said');
+    assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Choose another photo');
+    assert.equal(await page.isDisabled('[data-hs-jm-add]'), false);
+    assert.ok(await fits(page));
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-refused.png')});
+    await page.evaluate(() => { window.__picked = 0; document.querySelectorAll('#buy input[type=file]').forEach(i => i.addEventListener('click', e => { e.preventDefault(); window.__picked++; })); });
+    await page.click('[data-hs-jm-add]');
+    assert.equal(await page.evaluate(() => window.__picked), 1, "Teeinblue's own photo field opens");
+    await page.waitForTimeout(1500);
+    assert.equal(await page.evaluate(() => window.__hs2api.journeyStatus()), 'picked', 'the pick is not overwritten by the automatic send');
+    assert.notEqual(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'refused');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test("a refusal with an \"It's my dog\" override: one tap sends the same photo again, once", async () => {
+  const {page, ctx} = await open({width: 390, height: 844}, {queue: ['print', 'mug'], answered: true, slowTib: 600000});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    // what hs2.js journeyRefused() leaves when its own check refused the photo and offered the override
+    await page.evaluate(() => { const api = window.__hs2api; let st = 'refused'; window.__overrides = 0;
+      api.journeyStatus = () => st; api.journeyNote = () => ({text: "We couldn't find a dog in this photo.", override: st === 'refused'}); api.journeyOverride = () => { window.__overrides++; st = 'sent'; return true; }; });
+    await page.waitForSelector('[data-hs-jm][data-phase="refused"]', {timeout: 12000});
+    assert.equal(await page.textContent('[data-hs-jm-sub]'), "We couldn't find a dog in this photo.");
+    assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), "It's my dog. Paint it.");
+    await page.click('[data-hs-jm-add]');
+    await page.waitForSelector('[data-hs-jm][data-phase="wait"]', {timeout: 6000});
+    await page.waitForTimeout(1500);
+    assert.equal(await page.evaluate(() => window.__overrides), 1, 'the same photo goes once more');
+    assert.equal(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'wait');
+  } finally { await ctx.close(); }
+});
+
+test("a painter that never starts: the page says so, and one tap reloads it", async () => {
+  const {page, ctx} = await open({width: 390, height: 844}, {queue: ['print', 'mug'], answered: true, slowTib: 600000});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    // hs2.js reports 'stuck' when the painter has not opened in the 90 seconds the send waits
+    await page.evaluate(() => { window.__hs2api.journeyStatus = () => 'stuck'; window.__before = 1; });
+    await page.waitForSelector('[data-hs-jm][data-phase="stuck"]', {timeout: 12000});
+    assert.equal(await page.textContent('[data-hs-jm-title]'), "The painter didn't start");
+    assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Reload the page');
+    assert.ok(await fits(page));
+    await Promise.all([page.waitForEvent('load'), page.click('[data-hs-jm-add]')]);
+    assert.equal(await page.evaluate(() => window.__before), undefined, 'the page reloaded');
+  } finally { await ctx.close(); }
+});
+
+test('Back to a gift already added from this journey: it says it is in the cart, and nothing paints again', async () => {
+  cart = [];
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {queue: ['mug', 'print'], answered: true});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    await ready(page);
+    await page.check('[data-hs-jm-tick]');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForURL(/your-dogs-portrait/, {timeout: 15000, waitUntil: 'commit'});
+    await page.goBack({waitUntil: 'domcontentloaded'});
+    await page.waitForSelector('[data-hs-jm][data-phase="added"]', {timeout: 12000});
+    assert.equal(await page.textContent('[data-hs-jm-title]'), "Mowgli's mug is in your cart");
+    assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Next: the portrait');
+    await page.waitForTimeout(2000);
+    assert.equal(await page.evaluate(() => window.__painted || 0), 0, 'no second painting');
+    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-illustrated-mug'], 'one mug in the cart');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForURL(/your-dogs-portrait/, {timeout: 15000, waitUntil: 'commit'});
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});
+
+test("Back after the questions steps past them in one press, and another gift's journey key never turns this page", async () => {
+  const {page, ctx} = await open({width: 390, height: 844}, {queue: ['print', 'mug'], answered: true});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    // the question screens' history entries, then the address hs-journey.js leaves when the note is done
+    await page.evaluate(() => { history.pushState(null, '', '#ask=name'); history.pushState(null, '', '#ask=words'); history.replaceState(null, '', location.pathname + location.search); });
+    await page.goBack({waitUntil: 'commit'}).catch(() => {});
+    await page.waitForFunction(() => !location.hash, null, {timeout: 5000});
+    await page.waitForTimeout(800);
+    assert.equal(await page.evaluate(() => location.hash), '', 'not back on a question');
+    assert.match(page.url(), /your-dogs-illustrated-mug/);
+  } finally { await ctx.close(); }
+  // the portrait opened without ?journey=1 while only the mug remembers this journey: the normal page, never a flash
+  const other = await open({width: 390, height: 844}, {onKey: 16160217956734});
+  try {
+    await other.page.goto(base + URLS.print.replace('journey=1&', ''));
+    await other.page.waitForTimeout(2500);
+    assert.deepEqual(await other.page.evaluate(() => ({panel: !document.querySelector('[data-hs-jm]').hidden, on: document.documentElement.classList.contains('hs-jm-on'), flash: window.__jmFlash})), {panel: false, on: false, flash: false});
+  } finally { await other.ctx.close(); }
+  // its own key does
+  const own = await open({width: 390, height: 844}, {onKey: 16151384260990});
+  try {
+    await own.page.goto(base + URLS.print.replace('journey=1&', ''));
+    await own.page.waitForSelector('[data-hs-jm]:not([hidden])', {timeout: 8000});
+  } finally { await own.ctx.close(); }
+});
+
+// 5 Nov judges (nine of eleven buyers): "Painting your dog" sat empty, a title and a Next button, until the painter
+// opened. The studio now shows the buyer's own photo on the easel from the first paint of the page, at the size the
+// painting card will take, and the card takes its place without a jump.
+for (const size of [{width: 320, height: 568}, {width: 390, height: 844}]) test(`${size.width}x${size.height}: the studio is never an empty frame while the painter opens`, async () => {
+  const {page, ctx, errors} = await open(size, {slowTib: 9000});
+  try {
+    await page.goto(base + URLS.print, {waitUntil: 'commit'});
+    const filled = () => page.evaluate(() => {
+      const box = document.querySelector('[data-hs-jm-paint]');
+      if (!box || document.querySelector('[data-hs-jm]').hidden) return null;
+      const seen = [...box.querySelectorAll('*')].filter(e => { const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width >= 80 && r.height >= 80 && s.visibility !== 'hidden' && s.display !== 'none' && +s.opacity > 0.5; });
+      return {seen: seen.length, words: document.querySelector('[data-hs-jm-paint]').innerText.trim().length};
+    });
+    await page.waitForSelector('[data-hs-jm]:not([hidden])', {timeout: 8000});
+    for (const at of [300, 2500]) {
+      await page.waitForTimeout(at === 300 ? 300 : 2200);
+      const f = await filled();
+      assert.ok(f && f.seen > 0, at + ' ms: something to look at on the easel ' + JSON.stringify(f));
+      assert.ok(f.words > 10, at + ' ms: a line from the studio ' + JSON.stringify(f));
+    }
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'the painter has not opened yet');
+    await page.screenshot({path: path.join(shots, size.width + '-studio-before-painter.png')});
+    // when the painter opens and the card takes over, the dock does not move
+    const dock = () => page.evaluate(() => Math.round(document.querySelector('[data-hs-jm-frame] .hsj-dock').getBoundingClientRect().top));
+    const before = await dock();
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 20000});
+    await page.waitForTimeout(800);
+    if (await page.getAttribute('[data-hs-jm]', 'data-phase') === 'studio') assert.equal(await dock(), before, 'the dock stays put');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// 5 Nov judges, the only desktop buyer (1280x800): every question on the gift page sat in a 40 to 90 px column, the
+// note read "I w / the / so", and the card changed width at every step. The questions take the journey card's width.
+test('desktop 1280x800: the questions on the gift page use the card, at one width from the studio to the note', async () => {
+  const {page, ctx, errors} = await open({width: 1280, height: 800});
+  try {
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 15000});
+    await page.waitForTimeout(500);
+    const measure = () => page.evaluate(() => {
+      const screen = [...document.querySelectorAll('[data-hsj-screen]')].find(s => s.getBoundingClientRect().width > 0);
+      const field = screen && screen.querySelector('input:not([type=radio]):not([type=checkbox]), .hsj-chip, button.hsj-btn');
+      const card = screen && screen.closest('.hsj__screen, [data-hsj-screen]');
+      return {screen: screen ? Math.round(screen.getBoundingClientRect().width) : 0, field: field ? Math.round(field.getBoundingClientRect().width) : 0};
+    });
+    const name = await measure();
+    assert.ok(name.screen >= 480, 'the question card is wide: ' + JSON.stringify(name));
+    assert.ok(name.field >= 240, 'the name box is a real box: ' + JSON.stringify(name));
+    assert.ok(await fits(page), 'the card fits the window');
+    const sameBox = await page.evaluate(() => { const r = [...document.querySelectorAll('[data-hsj-screen]')].find(s => s.getBoundingClientRect().width > 0).getBoundingClientRect(); return {top: Math.round(r.top), bottom: Math.round(r.bottom)}; });
+    assert.ok(sameBox.bottom <= 800 - 16, 'the card ends inside the window: ' + JSON.stringify(sameBox));
+    await page.screenshot({path: path.join(shots, '1280-ask-name.png')});
+    await page.fill('[data-hsj-screen="name"] input', 'Honey');
+    await page.click('[data-hsj-screen="name"] [data-hsj-next], [data-hsj-screen="name"] .hsj-btn');
+    await page.waitForFunction(() => /ask=breed/.test(location.hash), null, {timeout: 5000});
+    await page.waitForTimeout(400);
+    const breed = await measure();
+    assert.ok(breed.screen >= 480 && Math.abs(breed.screen - name.screen) <= 1, 'the same width: ' + JSON.stringify({name, breed}));
+    await page.screenshot({path: path.join(shots, '1280-ask-breed.png')});
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+// 5 Nov judges (every buyer): the progress line ran backwards, 31% at the gifts, 60% in the studio, 38% at the first
+// question. It now only moves forward: the gifts 40%, the studio 45%, the questions from 50%.
+test('the progress line only moves forward from the studio into the questions', async () => {
+  const {page, ctx} = await open({width: 390, height: 844});
+  try {
+    await page.goto(base + URLS.print);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    const width = sel => page.evaluate(sel => { const s = [...document.querySelectorAll(sel)].find(e => e.getBoundingClientRect().width > 0); return s ? Math.round(s.getBoundingClientRect().width / s.parentElement.getBoundingClientRect().width * 100) : -1; }, sel);
+    const studio = await width('[data-hs-jm-progress]');
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 10000});
+    await page.waitForTimeout(400);
+    const name = await width('[data-hsj-screen="name"] .hsj-progress span');
+    assert.deepEqual([studio, name], [45, 50]);
   } finally { await ctx.close(); }
 });

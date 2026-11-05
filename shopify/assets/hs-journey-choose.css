@@ -22,7 +22,17 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 
 /* the frame: one phone screen, the journey's grid */
 .hs-jm__frame.is-in { animation: hsj-step .28s cubic-bezier(.2, .8, .2, 1) both; }
-.hs-jm__ask .hsj__screen--step { max-width: 560px; }
+/* the questions in the same card as the studio: a phone screen on phones; on desktop the studio frame's own width
+   and height, so the card never changes size between steps (5 Nov judges, the one desktop buyer at 1280x800: a
+   560 px card kept the home page's 360 px heading column, and every answer sat in a 40 px column) */
+@media (max-width: 899px) { .hs-jm__ask .hsj__screen--step { max-width: 560px; } }
+@media (min-width: 900px) {
+  .hs-jm__ask, .hs-jm__ask .hsj-app { width: 100%; }
+  /* the panel already pads the page; the home page's own padding would push the card off the bottom */
+  .hs-jm__ask .hsj-app { min-height: 0; padding: 0; display: block; }
+  .hs-jm__ask .hsj__screen--step { margin: 0 auto; width: min(1040px, calc(100vw - 48px)); max-width: none; height: min(820px, calc(100vh - 64px)); grid-template-rows: 72px 4px minmax(0, 1fr) auto; }
+  .hs-jm__ask .hsj-content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+}
 .hs-jm__body { align-items: center; justify-content: center; gap: 12px; }
 
 /* the painting card in the frame: the headline already says what is happening, so the card shows the canvas,
@@ -32,6 +42,11 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__paint .hs-art__title, .hs-jm__paint .hs-art__line, .hs-jm__paint .hs-art__elapsed, .hs-jm__paint .hs-art__note { display: none !important; }
 .hs-jm__paint .hs-art__canvas, .hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100svh - 470px) * var(--hs-art-r, 0.8333))); }
 .hs-jm__paint .hs-wait__talk { margin: 12px 0 10px; }
+.hs-jm__easel { display: grid; justify-items: stretch; }
+.hs-jm__easel .hs-art__photo { animation-duration: 2.4s; }
+.hs-jm__talk { width: 100%; }
+.hs-jm__talk .hs-wait__me { cursor: default; overflow: hidden; }
+.hs-jm__talk .hs-wait__say { min-height: 40px; }
 
 /* the reveal: one square of fixed size holds Teeinblue's mockups (the painting placed on the product by its
    own engine) or the painting itself up close; two chips switch between them */
@@ -41,7 +56,7 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__gallery [data-hs2-tib-gallery] { width: 100%; }
 .hs-jm__gallery .tee-gallery__thumbs, .hs-jm__gallery .tee-gallery-thumbnails { display: none !important; }
 .hs-jm__close { position: absolute; inset: 0; overflow: hidden; }
-.hs-jm__close img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; transform: scale(1.45); transform-origin: 50% 38%; display: block; }
+.hs-jm__close img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .hs-jm__views { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
 /* the dock: the tick, the button and the quiet link always take their room, shown or not */
@@ -93,3 +108,11 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 /* the support line always keeps two lines of room: the server's text and the script's take the same height */
 .hs-jm__frame .hsj-support { min-height: 48px; }
 @media (max-height: 700px) and (max-width: 899px) { .hs-jm__frame .hsj-support { min-height: 44px; } }
+
+/* phones: the gift picture takes the room the body really has, after the words, the two view chips and the
+   repaint link, so nothing overlaps on any height (5 Nov review: on 601 to 700 px tall phones the picture
+   covered the words and the free repaint sat under the dock) */
+@media (max-width: 899px) {
+  .hs-jm__body { container-type: size; justify-content: safe center; }
+  .hs-jm__square { width: min(100%, calc(100cqh - 112px)); }
+}

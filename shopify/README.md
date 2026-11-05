@@ -23,18 +23,21 @@ Krish's 4 November purchase found three paintings, a second colour choice and th
 - **Gift page** (`snippets/hs-journey-choose.liquid`, `assets/hs-journey-choose.js`):
   - In journey mode (`?journey=1`) the page steps aside for one frame. An inline check sets `hs-jm-on` while the page parses, so the product page never paints under it.
   - The photo goes to Teeinblue by itself, once (hs2.js `journeyAutoSend`).
-  - The studio shows for 6 s, then the questions run in the same frame while it paints. Later gifts ask nothing.
-  - The reveal shows Teeinblue's own mockups ("On the gift") and the painting up close.
+  - The studio shows from the first paint of the page: the easel (`data-hs-jm-easel`) carries the buyer's own photo until hs2.js shows its painting card in the same place. It ends about 6 s after the tap (at least 2.5 s after the script runs), then the questions run in the same frame while it paints. Later gifts ask nothing. On desktop the questions use the studio's own 1040 px card.
+  - The reveal shows Teeinblue's own mockups ("On the gift") and the whole print, uncropped. The last gift's reveal says the Christmas date from the memo strip's `data-deadline`, only until that day ends.
+  - A gift already added from this journey says so on Back (`hs-jm-added:<handle>:<journey time>`), and never paints again.
   - One tick and one add. Teeinblue's framing box is saved, never shown.
 - **What hs2.js tells the gift page**, as `__hs2api.journeyStatus()`:
   - `checking`, `waiting` and `sent`;
   - `nophoto`: the photo is really not on this device, so one button opens Teeinblue's picker;
   - `picked`;
   - `interrupted`: sent by a page that is gone (a reload, or Back then Forward), so the frame says "The painting stopped" and `journeyResume()` paints again on one tap;
-  - `stuck`: the painter never opened in 90 s.
+  - `stuck`: the painter never opened in 90 s, so the frame says so and one tap reloads;
+  - `refused`: the photo was refused after it left (`journeyRefused()`: the device check, a redrawn photo field, a failed preparation, or `journeyWatch()` seeing nothing happen for 15 s). `journeyNote()` gives the reason and whether "It's my dog" can override (`journeyOverride()`); otherwise one tap opens Teeinblue's picker.
 - **The add** waits out hs2's checkout registration (`hs-checkout-image.js`, up to 90 s, which now retries a slow first registration). It shows hs2's words in the dock, and presses once more by itself if hs2 says the copy failed.
-- **Taps and layout.** A double tap answers one screen, never the next, and a double tap on a gift card or colour is one tap. The address drops `#ask=` when the questions end. The breed search replaces the list, so a 320 px phone sees its suggestions.
-- **Tests:** `tools/preview/journey-flow.browser.test.mjs` (home to cart, six phones and desktop) and `journey-product.browser.test.mjs` (the gift page, including a 9 s painter, a reload mid-paint, a slow checkout copy and a 320 px breed search).
+- **Taps and layout.** A double tap answers one screen, never the next, and a double tap on a gift card or colour is one tap. The address drops `#ask=` when the questions end, and Back after them steps past every question at once. The breed search replaces the list, so a 320 px phone sees its suggestions. The progress line only moves forward across both pages.
+- **More than one dog.** The home page's dog detector finishes its check out of sight after the photo is accepted (`lateDogs`); if it sees more than one dog, Start painting asks once: another photo, or this one anyway.
+- **Tests:** `tools/preview/journey-flow.browser.test.mjs` (home to cart, six phones and desktop) and `journey-product.browser.test.mjs` (the gift page, including a 9 s painter, a reload mid-paint, a refused photo, a painter that never starts, Back to an added gift, a slow checkout copy, a 320 px breed search, the empty-studio check and the 1280x800 questions).
 
 ## 4 November: one wait, the painting studio, any gift, four tones
 

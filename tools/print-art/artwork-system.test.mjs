@@ -1025,6 +1025,7 @@ test('v19: journey paintings lock the face to the photo and let each tone change
       assert.equal(v.Energy, recipes.brief.likeness.energy, where + ': the face lock is the identity line');
       assert.doesNotMatch(t.replace(recipes.brief.likeness.guard, ''), faces, where + ': no face direction');
       assert.doesNotMatch(t, /walk|tennis|bandana/i, where + ': nothing from the answers');
+      assert.doesNotMatch(t, /stretch/i, where + ': never stretches the body (both judges, 5 Nov)');
       assert.ok(t.length <= 1200 && v.Energy.length <= 300, where);
       if (format === 'blanket') assert.match(t, /^Figures: the same dog again and again, each with the face of the photo/);
       else { assert.ok(t.includes(recipes.brief.likeness.guard), where + ': the face guard'); assert.ok(t.endsWith(recipes.brief.fill), where + ': fills the frame'); }

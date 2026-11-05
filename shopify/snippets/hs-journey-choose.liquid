@@ -19,22 +19,38 @@
       <a class="hsj-icon-btn" href="/?step=gifts" aria-label="Back to the gifts"><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></a>
       <p class="hsj-bar__step" data-hs-jm-step>The painting</p>
     </header>
-    <div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100"><span data-hs-jm-progress style="width:60%"></span></div>
+    <div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100"><span data-hs-jm-progress style="width:45%"></span></div>
     <main class="hsj-content">
       <div class="hsj-heading">
         <h2 class="hsj-headline" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
         <p class="hsj-support" data-hs-jm-sub>Your photo is with the painter.</p>
       </div>
       <div class="hsj-body hs-jm__body">
-        <div class="hs-jm__paint" data-hs-jm-paint></div>
+        <div class="hs-jm__paint" data-hs-jm-paint>
+          {%- comment -%} The easel: the studio from the first paint of the page, before Teeinblue's painter opens and
+          hs2.js shows its own painting card here (5 Nov judges: nine of eleven buyers saw an empty "Painting your
+          dog"). The buyer's own photo, the wash and the brush, at the card's size; the card takes its place.
+          {%- endcomment -%}
+          <div class="hs-art hs-jm__easel" data-hs-jm-easel>
+            <div class="hs-art__canvas">
+              <div class="hs-art__wash" aria-hidden="true"><i></i><i></i><i></i></div>
+              <img class="hs-art__photo" data-hs-jm-photo alt="" width="480" height="480" hidden>
+              <svg class="hs-art__brush" aria-hidden="true" viewBox="0 0 64 64" width="56" height="56"><path d="M44 6c4 0 14 10 14 14 0 3-16 20-22 24l-6-6c4-6 11-32 14-32Z" fill="#121010"/><path d="M28 40l6 6c-2 6-7 12-16 12-5 0-10-2-12-4 6-1 8-4 9-8 1-5 7-8 13-6Z" fill="#a8284e"/></svg>
+            </div>
+            <div class="hs-wait__talk hs-jm__talk">
+              <span class="hs-wait__me" aria-hidden="true"><img data-hs-jm-face alt="" width="52" height="52" hidden><svg class="hs-wait__ico" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="9" r="2.2"/><circle cx="10" cy="5.6" r="2.2"/><circle cx="14" cy="5.6" r="2.2"/><circle cx="17.5" cy="9" r="2.2"/><path d="M12 11c3 0 6 3.6 6 6.4 0 2-1.6 2.9-3.2 2.9-1.3 0-1.9-.7-2.8-.7s-1.5.7-2.8.7C7.6 20.3 6 19.4 6 17.4 6 14.6 9 11 12 11Z"/></svg></span>
+              <div class="hs-wait__bubble"><p class="hs-wait__who" data-hs-jm-who>Live from the studio</p><p class="hs-wait__say" data-hs-jm-say role="status" aria-live="polite">Getting the paints out. Your photo goes on the easel first.</p></div>
+            </div>
+          </div>
+        </div>
         <div class="hs-jm__reveal" data-hs-jm-reveal hidden>
           <div class="hs-jm__square">
             <div class="hs-jm__gallery" data-hs-jm-gallery></div>
-            <div class="hs-jm__close" data-hs-jm-close hidden><img alt="Your dog's painting, up close" width="1000" height="1200" decoding="async"></div>
+            <div class="hs-jm__close" data-hs-jm-close hidden><img alt="Your dog's painting, the whole print" width="1000" height="1200" decoding="async"></div>
           </div>
           <div class="hs-jm__views" role="group" aria-label="How to see it">
             <button type="button" class="hsj-chip is-on" aria-pressed="true" data-hs-jm-view="product"><span>On the gift</span></button>
-            <button type="button" class="hsj-chip" aria-pressed="false" data-hs-jm-view="close"><span>Up close</span></button>
+            <button type="button" class="hsj-chip" aria-pressed="false" data-hs-jm-view="close"><span>The whole print</span></button>
           </div>
           <button type="button" class="hs-jm__repaint" data-hs-jm-repaint style="visibility:hidden">Not quite right? Paint it again, free</button>
         </div>
@@ -70,9 +86,10 @@
       var j = (JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}).hs_journey, h = root.getAttribute('data-hs-jm-handle');
       if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) return;
       var on = /[?&]journey=1(&|$)/.test(location.search);
-      for (var i = 0; !on && i < sessionStorage.length; i++) { var k = sessionStorage.key(i); if (/^hs2-journey-on:/.test(k) && sessionStorage.getItem(k) === String(j.t)) on = true; }
+      // the same rules as hs2.js journey(): this product's own key, and a gift in this journey's queue
+      // (5 Nov review: any gift's key turned a normal gift page into the panel until the scripts loaded)
+      if (!on) on = sessionStorage.getItem('hs2-journey-on:' + {{ product.id | json }}) === String(j.t);
       var mine = (j.queue || []).some(function (q) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); return m && m[1] === h; });
-      for (var g in (j.gifts || {})) if (j.gifts[g] && j.gifts[g].handle === h) mine = true;
       if (on && mine) { root.hidden = false; document.documentElement.classList.add('hs-jm-on'); }
     } catch (e) { /* hs-journey-choose.js decides once the page has loaded */ }
   })(document.currentScript.previousElementSibling);

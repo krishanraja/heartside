@@ -388,6 +388,8 @@
     });
     var tries = 0, timer = setInterval(function () {
       tries++;
+      // the buyer is choosing a photo in Teeinblue's picker: the automatic send stands down for good
+      if (journeyAutoSend.state === 'picked') { clearInterval(timer); return; }
       var sent = false;
       try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
       if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); if (sent && !journeyAutoSend.mine) journeyOrphan(j); return; }
@@ -398,8 +400,37 @@
       try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
       clearInterval(timer);
       journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
-      sendBlanketPhoto();
+      sendBlanketPhoto(); journeyWatch();
     }, 600);
+  }
+  /* A send can still be refused after it leaves: the device check on this page (the dog detector may be
+     ready here when it was not on the home page), a photo field Teeinblue redrew, or a failed preparation.
+     Each says why in hs2's own note spots, which journey mode hides (5 Nov review: the buyer then waited on
+     "Almost there" for ever). journeyRefused() puts the reason, and the "It's my dog" override where there
+     is one, on journeyStatus 'refused'; journeyWatch() is the backstop for a send that simply vanished: no
+     lock, nothing checking or preparing and nothing saved for 15 seconds. */
+  function journeyRefused(text, override) {
+    if (!journey() || !journeyAutoSend.mine || ['sent', 'picked'].indexOf(journeyAutoSend.state) === -1) return;
+    journeyAutoSend.state = 'refused';
+    journeyAutoSend.note = text || "The painter didn't take this photo.";
+    journeyAutoSend.override = override || null;
+  }
+  function journeyWatch() {
+    clearInterval(journeyWatch.timer);
+    var idle = 0;
+    journeyWatch.timer = setInterval(function () {
+      if (journeyAutoSend.state !== 'sent' || cityArtSaved()) { clearInterval(journeyWatch.timer); return; }
+      var busy = blanketUploadPending() || keepTibPhoto.preparing || keepTibPhoto.checking || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading');
+      idle = busy ? 0 : idle + 1;
+      if (idle >= 15) { clearInterval(journeyWatch.timer); journeyRefused(photoNote.text, photoNote.override); }
+    }, 1000);
+  }
+  function journeyOverride() {
+    var go = journeyAutoSend.override;
+    if (journeyAutoSend.state !== 'refused' || typeof go !== 'function') return false;
+    journeyAutoSend.state = 'sent'; journeyAutoSend.override = null;
+    go(); journeyWatch();
+    return true;
   }
   /* A painting lives in the page that sent the photo. Sent by an earlier page (a reload, Back then
      Forward, a check page in between), it never arrives here (5 Nov, a test buyer on the live store
@@ -424,7 +455,7 @@
     var tries = 0, timer = setInterval(function () {
       if (++tries > 100) { clearInterval(timer); return; }
       if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
-      clearInterval(timer); sendBlanketPhoto();
+      clearInterval(timer); sendBlanketPhoto(); journeyWatch();
     }, 300);
     return true;
   }
@@ -435,6 +466,10 @@
     try {
       var transfer = new DataTransfer(); transfer.items.add(usePhoto.file);
       target.files = transfer.files;
+      // the journey's photo was checked once, on the home page's photo step, and the buyer may have said
+      // "It's my dog" there: it is not checked again out of sight (5 Nov review: a second, hidden check
+      // could refuse it with nowhere to say so)
+      if (journey() && target.files[0]) target.__hs2CheckedPhoto = target.files[0];
       // The capture handler persists the single-request guard before native dispatch.
       // No timers, refill API or retry follows this explicit click.
       target.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2624,6 +2659,7 @@
               again.dispatchEvent(new Event('change', { bubbles: true }));
             } : null);
             track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
+            journeyRefused(photoNote.text, photoNote.override);
             return;
           }
           keepTibPhoto.warn = r.verdict === 'warn' ? r.reasons.map(function (x) { return x.message; }).join(' ') : '';
@@ -2633,7 +2669,7 @@
           if (target && target !== inp) {
             try { var moved = new DataTransfer(); moved.items.add(f); target.files = moved.files; } catch (err) { target = null; }
           }
-          if (!target) { inp.value = ''; photoLog('detach', { stage: 'check' }); photoNote(photoReason({ code: 'detached' }, f)); return; }
+          if (!target) { inp.value = ''; photoLog('detach', { stage: 'check' }); photoNote(photoReason({ code: 'detached' }, f)); journeyRefused(photoNote.text); return; }
           if (target !== inp) photoLog('redrawn', { id: target.id || '' });
           target.__hs2CheckedPhoto = f;
           target.dispatchEvent(new Event('change', { bubbles: true }));
@@ -2683,6 +2719,7 @@
           resetBlanketUpload(); inp.value = '';
           photoLog('prepare:error', { ms: Date.now() - p0, code: err && err.code || '', name: err && err.name || '', message: err && err.message || '' });
           photoNote(photoReason(err, f));
+          journeyRefused(photoNote.text);
         });
         return;
       }
@@ -4495,5 +4532,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyResume: journeyResume, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyNote: function () { return { text: journeyAutoSend.note || '', override: typeof journeyAutoSend.override === 'function' }; }, journeyOverride: journeyOverride, journeyResume: journeyResume, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

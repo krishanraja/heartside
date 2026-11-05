@@ -36,7 +36,8 @@ const STANDIN = '<script>(' + (() => {
   window.__painted = 0;
   const set = Storage.prototype.setItem;
   Storage.prototype.setItem = function (k, v) { if (/^hs2-blanket-upload:/.test(k) && /"stage":"sent"/.test(v)) window.__painted++; return set.call(this, k, v); };
-  const ids = {'your-dogs-illustrated-mug': 101, 'your-dogs-portrait': 102, 'your-dogs-personality-blanket': 103};
+  // the rendered pages' own product ids, so hs2.js and the inline journey check use the same key
+  const ids = {'your-dogs-illustrated-mug': 16160217956734, 'your-dogs-portrait': 16151384260990, 'your-dogs-personality-blanket': 16158073880958};
   const pid = ids[(location.pathname.split('/')[2] || '')];
   if (pid) window.ShopifyAnalytics = {meta: {product: {id: pid}}};
   document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
@@ -146,6 +147,8 @@ async function home(page, size, shot) {
   await page.locator('[data-hsj-next]').click();
   await page.waitForURL(/step=gifts/);
   await page.waitForSelector('[data-hsj-screen="gifts"]');
+  // the store's bundle switch, as the memo strip carries it when bundle_offer_live is on
+  await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-hs-bundle-live', ''));
   assert.equal(await page.locator('[data-hsj-start]').isDisabled(), true, 'nothing paints before a gift is chosen');
   // the portrait, framed in white, and the mug, dark green: each choice made here, once
   await page.locator('[data-hsj-gift="print"]').click();
@@ -207,7 +210,7 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     // the painting is not back yet: the studio again, in the same frame, then the painting on the product
     await page.locator('[data-hsj-next]').click();
     await page.waitForSelector('[data-hs-jm][data-phase="wait"]');
-    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Almost there');
+    assert.match(await page.locator('[data-hs-jm-title]').textContent(), /^Still painting /);
     // the questions are over, so the address no longer points at one (5 Nov, ten-buyer run)
     assert.equal(await page.evaluate(() => location.hash), '', 'no #ask= once the note is done');
     const dockWaiting = await frameBox(page);
@@ -323,8 +326,67 @@ test('a double tap on a gift card chooses it once, never takes it back', async (
     // 5 Nov, a test buyer on the live store: a double tap chose the mug and took it back
     await page.locator('[data-hsj-gift="mug"]').dblclick();
     assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'true');
+    // with the store's bundle switch off, no saving is promised (5 Nov review)
+    assert.equal((await page.locator('[data-hsj-offer]').textContent()).trim(), '');
     assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
     await page.locator('[data-hsj-gift="mug"]').click();
     assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'false', 'a single tap still takes it back');
+  } finally { await ctx.close(); }
+});
+
+// 5 Nov judges: a photo of two dogs was accepted in 0.3 seconds, before the dog detector had loaded, and the blanket
+// painted one of them with nothing said. The detector finishes its check out of sight; Start painting then asks once.
+test('a photo with two dogs: the check finishes out of sight, and Start painting asks once, another photo or this one', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    // the detector is not ready when the photo is chosen; it loads a moment later and sees two dogs
+    await page.evaluate(() => { window.__checks = []; window.HSPhotoQuality = {
+      check: (f, o) => { window.__checks.push(o && o.detect === false ? 'pixels' : 'dogs'); return Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: []} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}]}); },
+      loadDetector: () => new Promise(r => setTimeout(() => r({}), 400))}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
+    assert.deepEqual(await page.evaluate(() => window.__checks), ['pixels', 'dogs'], 'the dog check ran once the detector was ready');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    assert.equal(await page.textContent('#hsj-dogs-title'), 'More than one dog in this photo');
+    assert.match(page.url(), /step=gifts/, 'nothing paints yet');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-two-dogs.png')});
+    // another photo: back to the photo step, and a photo of one dog goes straight on
+    await page.locator('[data-hsj-dogs-repick]').click();
+    await page.waitForURL(/step=photo/);
+    await page.evaluate(() => { window.HSPhotoQuality.check = () => Promise.resolve({verdict: 'ok', reasons: []}); });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForTimeout(800);
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+  } finally { await ctx.close(); }
+});
+
+test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it paints', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}]})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    await page.locator('[data-hsj-dogs-keep]').click();
+    await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
   } finally { await ctx.close(); }
 });

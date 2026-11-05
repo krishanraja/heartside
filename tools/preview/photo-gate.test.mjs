@@ -56,7 +56,7 @@ function harness(minified, verdicts, opts = {}) {
     beginBlanketUpload: () => { if (pending) return false; pending = true; return true; }, resetBlanketUpload: () => { pending = false; ctx.keepTibPhoto.preparing = null; return true; },
     blanketUploadSent: () => { order.push('sent'); return true; },
     artRequestKey: () => key, photoInput: () => live, blanketPurchaseStatus: m => status.push(m), usePhoto, markHanded: () => {}, cityArtPreview: () => false,
-    markArtRequested: () => {}, state: {}, save: () => {}, savePhoto: () => {}, track: (name) => tracked.push(name), productId: () => 7,
+    markArtRequested: () => {}, state: {}, save: () => {}, savePhoto: () => {}, track: (name) => tracked.push(name), productId: () => 7, journeyRefused: () => {},
     answer: k => k === 'dog' ? 'Pip' : '', possessive: n => /s$/i.test(n) ? n + "'" : n + "'s",
     photoLog: (stage, data) => logs.push([stage, data]), photoLogOn: () => false, photoLogFile: () => ({}), photoLogLock: () => '',
     photoLogStart: () => {}, photoLogDraw: () => {},

@@ -322,3 +322,19 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
    frame, never under the button (5 Nov, a 320 px phone) */
 .hsj__screen[data-hsj-screen="breed"] .hsj-content { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 .hsj-chip--quiet { background: transparent; border-style: dashed; }
+
+/* a tone card without an example painting shows its icon, sized for the card (5 Nov review) */
+.hsj-styles--tones .hsj-style__art > svg { width: 40px; height: 40px; color: #A8284E; }
+
+/* one question before painting, as a sheet over the screen (hs-journey.js dogsSheet): more than one dog in the
+   photo. The same sheet as the gift page's free repaint (hs-journey-choose.css), so nothing on the screen moves */
+.hsj-sheet { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; background: rgba(18, 16, 16, .42); }
+.hsj-sheet[hidden] { display: none; }
+.hsj-sheet__panel { width: 100%; max-width: 560px; display: grid; gap: 12px; background: #FBF7F3; border-radius: 22px 22px 0 0; padding: 20px 16px max(16px, env(safe-area-inset-bottom)); box-shadow: 0 -12px 30px -18px rgba(0, 0, 0, .4); }
+.hsj-sheet__title { margin: 0; font-family: "HS Fraunces", "Fraunces", Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.02em; color: #121010; }
+.hsj-sheet__text { margin: 0; font-size: 15px; line-height: 22px; color: #4A3F3A; }
+.hsj-sheet__keep { appearance: none; width: 100%; min-height: 48px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: #121010; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+@media (min-width: 900px) {
+  .hsj-sheet { align-items: center; }
+  .hsj-sheet__panel { border-radius: 22px; padding: 28px; }
+}

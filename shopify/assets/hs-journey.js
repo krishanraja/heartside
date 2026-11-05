@@ -57,7 +57,6 @@
   var HOME = ['photo', 'look', 'tone', 'gifts'];
   var ASK = ['name', 'breed', 'pro', 'person', 'home', 'spot', 'together', 'meaning'];
   var GIFT = ASK.concat(['words']);
-  var ALL = HOME.concat(GIFT);
   var MODE = 'home', STEPS = HOME;
   var MAX_TOYS = 2;
   var GIFT_ORDER = ['print', 'mug', 'blanket'];
@@ -123,7 +122,7 @@
   function fresh() {
     return { dog: '', breed: '', breedId: '', pro: '', rel: '', person: '', home: null, spot: null, together: null, meaning: null,
       toys: [], toysDone: false, accessory: null, tone: 'warm', style: 'cinematic', notes: {}, request: null, calls: 0, session: '',
-      hasPhoto: false, photoT: 0, typed: {}, follow: null, gifts: {} };
+      hasPhoto: false, photoT: 0, photoDogs: false, photoDogsOk: false, typed: {}, follow: null, gifts: {} };
   }
   function load() {
     var s = null;
@@ -352,8 +351,16 @@
      page the header carries a small painting badge (hs-journey-choose.js keeps it current). */
   var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', gifts: 'The gifts', words: 'The note' };
   function partOf(step) { return { photo: 1, look: 2, tone: 3, gifts: 4, words: 6 }[step] || 5; }
+  /* one line that only ever moves forward, across both pages (5 Nov judges: it ran 31% at the gifts, 60% in the
+     studio, 38% at the first question, 100% at the note and 60% again while it painted). The home page's four
+     steps fill 10 to 40%, the studio 45% (hs-journey-choose.js), the questions 50 to 85%, the note 90%, the last
+     wait 95% and the painting on the gift 100%. */
+  function pctOf(step) {
+    var h = HOME.indexOf(step); if (h !== -1) return (h + 1) * 10;
+    var a = GIFT.indexOf(step); return a === -1 ? 0 : Math.round(50 + a * 40 / (GIFT.length - 1));
+  }
   function screen(step, title, sub, body, dockHtml) {
-    var i = ALL.indexOf(step), pct = Math.round((i + 1) / ALL.length * 100);
+    var pct = pctOf(step);
     var part = partOf(step);
     var label = PART_LABEL[step] || (S.dog && step !== 'name' ? 'About ' + esc(names().dog) : 'About your dog');
     var back = MODE === 'gift' && step === GIFT[0] ? '<span class="hsj-icon-btn" aria-hidden="true"></span>' : BACK;
@@ -378,18 +385,23 @@
   }
   function nextOf(step) { return STEPS[STEPS.indexOf(step) + 1] || ''; }
   function viewName() {
-    return screen('name', 'What is your dog called?', 'It signs the note: "Love, ' + esc(nameCase(S.dog) || 'Mowgli') + '".',
-      field('data-hsj-name', "Dog's name", S.dog, 'Mowgli', 'hsj-name') + '<p class="hsj-hint" data-hsj-name-hint aria-live="polite"></p>', primary('Next', 'breed', answered('name')));
+    // no stranger's name in the field or the line (5 Nov judges: a grey "Mowgli" read as already filled in, or as
+    // someone else's order)
+    return screen('name', 'What is your dog called?', S.dog ? 'It signs the note: "Love, ' + esc(nameCase(S.dog)) + '".' : 'Your dog signs the note with it.',
+      field('data-hsj-name', "Dog's name", S.dog, 'Type their name', 'hsj-name') + '<p class="hsj-hint" data-hsj-name-hint aria-live="polite"></p>', primary('Next', 'breed', answered('name')));
   }
+  // the breed shapes the note, never the painting, which comes from the photo (recipes v19; 5 Nov judges: "We paint
+  // the breed you pick" contradicted "painted from your photo", and the breed is asked after painting starts)
+  var BREED_SUB = 'It goes in the note. We paint your dog from the photo.';
   function viewBreed() {
     var n = names(), other = S.breed && BREEDS.indexOf(S.breed) === -1 && S.breed !== 'Mixed';
     // typing a breed: the search and its suggestions take the list's place, so they sit right under the question,
     // above the keyboard and the button (5 Nov: on a 320 px phone the suggestions were under the dock)
-    if (S.breedOther) return screen('breed', 'What breed is ' + esc(n.dog) + '?', 'We paint the breed you pick.',
+    if (S.breedOther) return screen('breed', 'What breed is ' + esc(n.dog) + '?', BREED_SUB,
       '<input class="hsj-input hsj-search" data-hsj-breed-search type="search" autocomplete="off" placeholder="Start typing the breed" aria-label="Search breeds">' +
       '<div class="hsj-chips" data-hsj-breed-list></div><div class="hsj-chips"><button type="button" class="hsj-chip hsj-chip--quiet" data-hsj-pick="breed" data-v="__list"><span>Pick from the list</span></button></div>',
       primary('Next', 'pro', answered('breed')));
-    return screen('breed', 'What breed is ' + esc(n.dog) + '?', 'We paint the breed you pick.', '<div class="hsj-chips" role="group" aria-labelledby="hsj-q">' +
+    return screen('breed', 'What breed is ' + esc(n.dog) + '?', BREED_SUB, '<div class="hsj-chips" role="group" aria-labelledby="hsj-q">' +
       BREEDS.map(function (b) { return chip('breed', b, b, S.breed === b); }).join('') + chip('breed', 'Mixed', 'Mixed or not sure', S.breed === 'Mixed') + chip('breed', '__other', other ? S.breed : 'Another breed', !!other) + '</div>',
       primary('Next', 'pro', answered('breed')));
   }
@@ -401,7 +413,7 @@
   function viewPerson() {
     var n = names();
     return screen('person', 'Who is the gift for?', 'Their first name, as ' + esc(n.dog) + ' would say it.',
-      field('data-hsj-person', 'Their name', S.rel === 'self' ? '' : S.person, 'Sam', 'hsj-person') + '<div class="hsj-chips">' + chip('self', 'self', "It's for me", S.rel === 'self') + '</div>',
+      field('data-hsj-person', 'Their name', S.rel === 'self' ? '' : S.person, 'Type their first name', 'hsj-person') + '<div class="hsj-chips">' + chip('self', 'self', "It's for me", S.rel === 'self') + '</div>',
       primary('Next', 'home', answered('person') && S.rel !== 'self'));
   }
   function viewAsk(step) {
@@ -423,7 +435,7 @@
   function viewWords() {
     var n = names();
     // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
-    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'Pick how ' + n.she + (n.she === 'they' ? ' sound' : ' sounds') + '. This note comes with the gift.',
+    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'This note comes with the gift. A tone here changes its words, never the painting.',
       '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
         return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
       }).join('') + '</div>', primary('See ' + esc(n.dog) + ' painted', 'done', true));
@@ -457,6 +469,9 @@
   var GIFT_INFO = { mug: ['The mug', '11 oz ceramic, painted all the way round.'], print: ['The portrait', '12 x 18 in, on matte paper, unframed or framed.'], blanket: ['The blanket', '50 x 60 in, soft sherpa on the back.'] };
   var HEX = { 'Black': '#050505', 'Dark Blue': '#191A4D', 'Dark Green': '#216251', 'Pink': '#E49EAA', 'Red': '#D9292C' };
   function offerText(n) {
+    // the saving shows only while the store's bundle switch is on (the memo strip's bundle_offer_live,
+    // which also runs the discount), as everywhere else (5 Nov review)
+    if (!document.querySelector('[data-hs-bundle-live]')) return '';
     if (n >= 3) return '<b>You save 20% on all 3.</b>';
     if (n === 2) return '<b>You save 15% on these 2.</b> All 3: 20% off.';
     return '<b>Add a second gift: 15% off.</b> All 3: 20% off.';
@@ -666,8 +681,11 @@
       var at = t.getAttribute('data-hsj-variant').split(':');
       S.gifts[at[0]] = { on: true, variant: at[1] }; save(); paintGifts(); return;
     }
+    if (t.hasAttribute('data-hsj-dogs-repick')) { dogsSheet(false); go('photo'); return; }
+    if (t.hasAttribute('data-hsj-dogs-keep')) { S.photoDogsOk = true; save(); track('photo_dogs_keep', {}); dogsSheet(false); var go0 = app.querySelector('[data-hsj-start]'); if (go0) go0.click(); return; }
     if (t.hasAttribute('data-hsj-start')) {
       if (t.disabled) return;
+      if (S.photoDogs && !S.photoDogsOk) { track('photo_dogs', {}); dogsSheet(true); return; }
       var queue = handOver();
       if (!queue.length || !queue[0].url) { var say0 = app.querySelector('[data-hsj-offer]'); if (say0) say0.textContent = "That gift isn't available right now."; return; }
       track('paint', { gifts: queue.map(function (x) { return x.gift; }).join(','), style: S.style });
@@ -791,6 +809,7 @@
     if (!t.hasAttribute('data-hsj-file') || !t.files || !t.files[0]) return;
     var f = t.files[0]; t.value = '';
     pendingFile = f;
+    S.photoDogs = false; S.photoDogsOk = false;
     if (photoURL) URL.revokeObjectURL(photoURL);
     photoURL = URL.createObjectURL(f);
     var say = app.querySelector('[data-hsj-photo-note]'), over = app.querySelector('[data-hsj-override]');
@@ -798,7 +817,7 @@
     if (say) { say.textContent = ''; say.classList.remove('is-good'); }
     busyPhoto(true);
     if (!window.HSPhotoQuality) { usePhoto(f, false); return; }
-    var opts = detectorReady ? { timeout: 1500, checkTimeout: 4000 } : { detect: false, checkTimeout: 4000 };
+    var detected = detectorReady, opts = detected ? { timeout: 1500, checkTimeout: 4000 } : { detect: false, checkTimeout: 4000 };
     window.HSPhotoQuality.check(f, opts).then(function (r) {
       if (r.verdict === 'reject') {
         track('photo_rejected', { reasons: r.reasons.map(function (x) { return x.code; }).join(',') });
@@ -808,17 +827,48 @@
         if (over) over.hidden = !r.overridable;
         return;
       }
-      usePhoto(f, false);
-    }, function () { usePhoto(f, false); });
+      S.photoDogs = manyDogs(r);
+      usePhoto(f, false, !detected);
+    }, function () { usePhoto(f, false, true); });
+  }
+  /* More than one dog in the photo (5 Nov judges: a photo of two dogs was accepted in 0.3 seconds, before the
+     dog detector had loaded, and the blanket painted one of them with nothing said). The detector finishes
+     its check out of sight while the buyer picks the look; if it sees more than one dog, Start painting asks
+     once: another photo, or this one anyway. */
+  function manyDogs(r) { return !!(r && r.reasons && r.reasons.some(function (x) { return x && x.code === 'dogs'; })); }
+  function lateDogs(f) {
+    var Q = window.HSPhotoQuality, t = S.photoT;
+    if (!Q || !Q.loadDetector) return;
+    Promise.resolve().then(function () { return Q.loadDetector(); }).then(function (d) {
+      return d ? Q.check(f, { timeout: 8000, checkTimeout: 15000 }) : null;
+    }).then(function (r) {
+      if (!r || S.photoT !== t) return;
+      S.photoDogs = manyDogs(r); save();
+    }, function () { /* no detector: the painter still paints, and nothing is said */ });
+  }
+  function dogsSheet(on) {
+    var sheet = app && app.querySelector('[data-hsj-dogs]');
+    if (!sheet && on) {
+      sheet = document.createElement('div');
+      sheet.className = 'hsj-sheet'; sheet.setAttribute('data-hsj-dogs', ''); sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-labelledby', 'hsj-dogs-title');
+      sheet.innerHTML = '<div class="hsj-sheet__panel"><p class="hsj-sheet__title" id="hsj-dogs-title">More than one dog in this photo</p>' +
+        '<p class="hsj-sheet__text">Each gift paints one dog, so the other could be left out. A photo of just your dog works best.</p>' +
+        '<button type="button" class="hsj-btn" data-hsj-dogs-repick><span>Choose another photo</span></button>' +
+        '<button type="button" class="hsj-sheet__keep" data-hsj-dogs-keep>Paint this photo anyway</button></div>';
+      app.appendChild(sheet);
+    }
+    if (sheet) sheet.hidden = !on;
+    if (on && sheet) { var b = sheet.querySelector('[data-hsj-dogs-repick]'); if (b) b.focus(); }
   }
   // a photo that passes is kept on this device and the style comes next; nothing is sent yet
-  function usePhoto(f, overridden) {
+  function usePhoto(f, overridden, late) {
     var say = app.querySelector('[data-hsj-photo-note]');
     if (say) say.textContent = '';
     if (overridden) track('photo_override', {});
     busyPhoto(true);
     savePhoto(f).then(function (ok) {
       if (!ok) { busyPhoto(false); if (say) say.textContent = "This browser couldn't keep the photo. Allow this site to store data, then choose it again."; return; }
+      if (late) lateDogs(f);
       track('photo', {});
       go('look');
     });
@@ -872,7 +922,12 @@
         dog: function () { return S.dog ? names().dog : ''; },
         send: sendAnswers
       };
-      window.addEventListener('popstate', function () { var s = stepFromURL(); if (s) render(allowed(s) ? s : firstOpen()); });
+      window.addEventListener('popstate', function () {
+        var s = stepFromURL();
+        // the questions are over: Back steps past their entries in one press instead of eight (5 Nov review)
+        if (s && S.noteDone) { window.history.back(); return; }
+        if (s) render(allowed(s) ? s : firstOpen());
+      });
       try { root.dispatchEvent(new CustomEvent('hsj:ready', { bubbles: true })); } catch (e) { /* old browser */ }
       return;
     }

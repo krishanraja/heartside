@@ -20,7 +20,10 @@
   if (window.__hsjm) return;
   window.__hsjm = true;
   var NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' };
-  var STUDIO_MS = 6000;
+  // the studio shows for about six seconds from the tap that opened the page (the easel is there from its first
+  // paint), and never less than STUDIO_MIN once this script runs: on the live store the scripts load late
+  // (5 Nov judges: the questions came 11 seconds after the page opened)
+  var STUDIO_MS = 6000, STUDIO_MIN = 2500;
   var root, frame, j, here, art, phase = '', adding = false, studioUntil = 0, galleryMoved = false, view = 'product';
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -49,13 +52,41 @@
   function painted() { var s = artSrc(); return !!s && s !== stale; }
   function photoSrc() { var p = art && art.querySelector('[data-hs-art-photo]'); return p && p.getAttribute('src') || ''; }
   function asking() { return first() && window.HSJourney && !window.HSJourney.done(); }
+  /* The easel (snippets/hs-journey-choose.liquid): the studio before hs2.js shows its painting card, which is
+     hidden until the photo has gone to the painter (5 Nov judges: an empty "Painting your dog" for 11 to 22
+     seconds). It carries the buyer's own photo and a line from the studio, and steps aside for the card. */
+  function cardOn() { return !!art && !art.hidden && art.getAttribute('data-state') !== 'idle'; }
+  function ownPhoto() {
+    if (ownPhoto.url) return ownPhoto.url;
+    var f = window.__hs2api && window.__hs2api.usePhoto && window.__hs2api.usePhoto.file;
+    try { if (f && window.URL && URL.createObjectURL) ownPhoto.url = URL.createObjectURL(f); } catch (e) { /* the wash alone */ }
+    return ownPhoto.url || '';
+  }
+  function easel() {
+    var e = $('[data-hs-jm-easel]');
+    if (!e) return;
+    var on = (phase === 'studio' || phase === 'wait') && !cardOn() && !painted();
+    if (e.hidden !== !on) e.hidden = !on;
+    if (!on) return;
+    var src = photoSrc() || ownPhoto(), d = dog();
+    ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) {
+      var img = $(sel);
+      if (img && src && img.getAttribute('src') !== src) { img.src = src; img.hidden = false; if (img.nextElementSibling) img.nextElementSibling.style.display = 'none'; }
+    });
+    setText('[data-hs-jm-who]', (d ? d + ', live' : 'Live') + ' from the studio');
+    var s = journeyStatus();
+    setText('[data-hs-jm-say]', s === 'sent' ? 'My photo is on the easel. The first strokes go on now.' : src ? 'Getting the paints out. My photo goes on the easel first.' : 'Getting the paints out. Your photo goes on the easel first.');
+  }
   /* The photo did not come to this page (a private window, a cleared device). hs2.js says so once it has
      read this device's copy (journeyStatus): never a timer, because Teeinblue's painter can take well over
      five seconds to open on the live store (5 Nov: all ten test buyers were told a photo on the page was
      lost). After the buyer opens the picker, a pick that sends nothing within a minute asks again. */
-  var picked = 0, STUCK = "The painter didn't open on this page. Reload it to start again. Your photo is saved.";
+  var picked = 0, lastStatus = '';
   function journeyStatus() { return window.__hs2api && window.__hs2api.journeyStatus ? window.__hs2api.journeyStatus() : ''; }
   function idle() { return !!art && (art.hidden || art.getAttribute('data-state') === 'idle'); }
+  // a gift added from this journey: coming Back to its page never offers to paint it again (5 Nov review)
+  function addedKey() { return 'hs-jm-added:' + handle() + ':' + (j && j.t); }
+  function wasAdded() { try { return !!window.sessionStorage.getItem(addedKey()); } catch (e) { return false; } }
   function lost() {
     if (!art || painted()) return false;
     var s = journeyStatus();
@@ -83,6 +114,15 @@
   // the dock's one line: a problem when there is one, otherwise what happens next; it never changes height
   var said = '', note = '';
   function line() { setText('[data-hs-jm-line]', said || note); }
+  /* the Christmas date where the buyer decides (5 Nov judges: every buyer worked it out alone; it was never in
+     view at the reveal). It comes from the store's own deadline (the memo strip's data-deadline, set by the theme
+     push's christmas_deadline) and is said only until that day ends. */
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function christmasLine() {
+    var m = document.querySelector('[data-hs2-memo]'), x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(m && m.getAttribute('data-deadline') || '');
+    if (!x || Date.now() > new Date(+x[1], +x[2] - 1, +x[3], 23, 59, 59).getTime()) return '';
+    return 'Order by ' + MONTHS[+x[2] - 1] + ' ' + (+x[3]) + ' for Christmas delivery to a US address.';
+  }
   function status(text) { said = text || ''; line(); }
   function setNote(text) { note = text || ''; line(); }
   function show(el, on) { if (el) el.style.visibility = on ? '' : 'hidden'; }
@@ -115,12 +155,16 @@
     var d = dog(), who = d || 'your dog', g = here, step = $('[data-hs-jm-step]');
     if (step && step.__html !== label()) { step.innerHTML = label(); step.__html = label(); }
     var bar = $('[data-hs-jm-progress]');
-    if (bar) bar.style.width = (phase === 'reveal' ? 100 : first() ? 60 : 90) + '%';
+    // the journey's one forward line (hs-journey.js pctOf): the studio before the questions, then the wait after
+    // the note, then the painting on the gift
+    if (bar) bar.style.width = (phase === 'reveal' || phase === 'added' ? 100 : first() && (phase === 'studio' || phase === 'nophoto') ? 45 : 95) + '%';
     var paintBox = $('[data-hs-jm-paint]'), reveal = $('[data-hs-jm-reveal]');
     var tick = $('[data-hs-jm-tickrow]'), add = $('[data-hs-jm-add]'), link = $('[data-hs-jm-repaint]');
     if (phase === 'reveal') {
       setText('[data-hs-jm-title]', (d || 'Your dog') + ' on the ' + NAME[g]);
-      setText('[data-hs-jm-sub]', 'This is how it prints. See it on the gift, or up close.');
+      // the whole print, never a crop of it: on a mug the dog can sit round the side (5 Nov judges: all three mug
+      // buyers saw its back half, and a zoomed close-up cut the face off)
+      setText('[data-hs-jm-sub]', g === 'mug' ? 'This is how it prints, all the way round the mug. Turn it with the arrows, or see the whole print.' : 'This is how it prints. See it on the gift, or the whole print.');
       paintBox.hidden = true; reveal.hidden = false;
       moveGallery(); views();
       setText('[data-hs-jm-tick-text]', 'Yes, this is ' + who);
@@ -128,11 +172,35 @@
       var nx = nextGift();
       if (!adding) add.querySelector('span').textContent = nx ? 'Add it, then paint the ' + NAME[nx.gift] : 'Add to cart';
       add.disabled = adding || !$('[data-hs-jm-tick]').checked;
-      setNote(nx ? 'The ' + NAME[nx.gift] + ' paints next, from the same photo. Nothing to answer again.' : '');
+      setNote(nx ? 'The ' + NAME[nx.gift] + ' paints next, from the same photo. Nothing to answer again.' : christmasLine());
       return;
     }
     paintBox.hidden = false; reveal.hidden = true;
+    easel();
     show(tick, false); show(link, false);
+    if (phase === 'added') {
+      var after = nextGift();
+      setText('[data-hs-jm-title]', (d ? d + "'s " : 'Your ') + NAME[g] + ' is in your cart');
+      setText('[data-hs-jm-sub]', "It's painted and added. Nothing more to do here.");
+      add.disabled = false; add.querySelector('span').textContent = after ? 'Next: the ' + NAME[after.gift] : 'Go to the cart';
+      setNote('');
+      return;
+    }
+    if (phase === 'refused') {
+      var why = window.__hs2api.journeyNote ? window.__hs2api.journeyNote() : {};
+      setText('[data-hs-jm-title]', "This photo didn't go through");
+      setText('[data-hs-jm-sub]', why.text || "The painter didn't take this photo.");
+      add.disabled = false; add.querySelector('span').textContent = why.override ? "It's my dog. Paint it." : 'Choose another photo';
+      setNote('');
+      return;
+    }
+    if (phase === 'stuck') {
+      setText('[data-hs-jm-title]', "The painter didn't start");
+      setText('[data-hs-jm-sub]', 'Reload this page to start it again. Your photo is saved.');
+      add.disabled = false; add.querySelector('span').textContent = 'Reload the page';
+      setNote('');
+      return;
+    }
     if (phase === 'stopped') {
       setText('[data-hs-jm-title]', 'The painting stopped');
       setText('[data-hs-jm-sub]', 'It stopped when the page reloaded. One tap paints it again from the same photo.');
@@ -149,7 +217,8 @@
     }
     if (phase === 'studio' && first()) {
       setText('[data-hs-jm-title]', 'Painting ' + who);
-      setText('[data-hs-jm-sub]', 'Your photo is with the painter. A few quick questions while it works.');
+      // said only once the photo has really gone (5 Nov review)
+      setText('[data-hs-jm-sub]', journeyStatus() === 'sent' ? 'Your photo is with the painter. A few quick questions while it works.' : 'The painter is getting ready. A few quick questions while it starts.');
       add.disabled = false; add.querySelector('span').textContent = 'Next';
       setNote('');
     } else if (phase === 'studio') {
@@ -158,8 +227,9 @@
       add.disabled = true; add.querySelector('span').textContent = 'Add to cart';
       setNote('Most paintings take 1 to 3 minutes.');
     } else {
-      setText('[data-hs-jm-title]', 'Almost there');
-      setText('[data-hs-jm-sub]', 'Painting ' + who + '. Most take 1 to 3 minutes.');
+      // honest about the time (5 Nov judges: "Almost there" showed at 40 seconds and stayed for minutes)
+      setText('[data-hs-jm-title]', 'Still painting ' + who);
+      setText('[data-hs-jm-sub]', 'Most take 1 to 3 minutes. It shows here, on the ' + NAME[g] + ', when it is done.');
       add.disabled = true; add.querySelector('span').textContent = 'Add to cart';
       setNote('');
     }
@@ -222,7 +292,8 @@
      Teeinblue's own Add to cart, then the next gift's page or the cart. The note and the names are on the
      order first (hs-journey.js sends them, hs2.js fills Teeinblue's fields). */
   function cart() { return window.fetch('/cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).catch(function () { return { items: [] }; }); }
-  function lines(c) { var h = handle(); return (c.items || []).filter(function (i) { return i.handle === h; }).length; }
+  // copies of this gift in the cart: a second copy merged into one line still counts (5 Nov review)
+  function lines(c) { var h = handle(); return (c.items || []).filter(function (i) { return i.handle === h; }).reduce(function (n, i) { return n + (Number(i.quantity) || 1); }, 0); }
   /* Teeinblue's add waits for hs2.js to register the painting for checkout, which may take up to its 90
      second budget on a large print file (5 Nov, ten buyers on the live store: the portrait's and the
      blanket's first add gave up at 36 s while that ran, and a second tap went through). The dock says
@@ -240,11 +311,13 @@
           asking = false;
           if (lines(c) > before) { clearInterval(timer); resolve(); return; }
           if (FAILED.test(say)) {
-            if (!again) { again = true; status('Almost there.'); atc.click(); return; }
-            clearInterval(timer); reject(new Error(say)); return;
+            // the retry gets the whole budget again, never what the first try left (5 Nov review)
+            if (!again) { again = true; tries = 0; status('Almost there.'); atc.click(); return; }
+            clearInterval(timer); reject(new Error("That didn't go through. Your design is saved. Tap Add to cart again.")); return;
           }
           if (say && say !== said) status(say);
-          if (++tries > 115) { clearInterval(timer); reject(new Error('That took too long. Tap the button again.')); }
+          // past the budget, an add hs2 still reports as running is waited for, never invited a second time
+          if (++tries > 115 && !(say && tries < 175)) { clearInterval(timer); reject(new Error('This is taking longer than it should. Check your cart before you add it again.')); }
         });
       }, 900);
     });
@@ -253,12 +326,15 @@
     var atc = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
     if (!atc) { status('The cart is still loading. Try again in a moment.'); return; }
     adding = true; paint();
+    // the add can take a while (5 Nov judges: 15 to 40 seconds with only a dot on the button): said in words
+    status('Adding it to your cart. This can take up to a minute.');
     var b = $('[data-hs-jm-add]');
     b.disabled = true; b.classList.add('is-busy');
     if (window.HSJourney) window.HSJourney.send();
     try { window.__hs2api.runBridge(); } catch (e) { /* the fields were filled on the last tick */ }
     setTimeout(function () {
       cart().then(function (c) { var before = lines(c); atc.click(); return added(before, atc); }).then(function () {
+        try { window.sessionStorage.setItem(addedKey(), String(Date.now())); } catch (e) { /* the cart still has it */ }
         var nx = nextGift();
         window.location.href = nx && nx.url ? nx.url : '/cart';
       }, function (why) {
@@ -274,10 +350,15 @@
     if (!t || !frame.contains(t) && !t.closest('[data-hs-jm-sheet]')) return;
     if (t.hasAttribute('data-hs-jm-add')) {
       if (t.disabled) return;
-      if (phase === 'nophoto') {
-        // Teeinblue's own photo field opens and sends it; the automatic send stands down (hs2.js journeyPick)
-        if (window.__hs2api.journeyPick) window.__hs2api.journeyPick();
-        picked = Date.now(); studioUntil = Date.now() + STUDIO_MS; go('studio');
+      if (phase === 'added') { var after = nextGift(); window.location.href = after && after.url ? after.url : '/cart'; return; }
+      if (phase === 'stuck') { window.location.reload(); return; }
+      if (phase === 'nophoto' || phase === 'refused') {
+        // "It's my dog": the same photo goes on (hs2.js journeyOverride); otherwise Teeinblue's own photo field
+        // opens and sends the new one, and the automatic send stands down (journeyPick)
+        var api = window.__hs2api, why = phase === 'refused' && api.journeyNote ? api.journeyNote() : {};
+        if (why.override && api.journeyOverride && api.journeyOverride()) { status(''); studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait'); return; }
+        if (!(api.journeyPick && api.journeyPick())) { status('The painter is still loading. Tap again in a moment.'); return; }
+        status(''); picked = Date.now(); studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait');
         return;
       }
       if (phase === 'stopped') {
@@ -310,15 +391,21 @@
   function tick() {
     saveFraming();
     chip();
+    easel();
+    if (phase === 'added') return;
     if (phase === 'reveal') { if (!adding) paint(); return; }
     if (adding || phase === 'ask') return;
-    var ready = painted();
-    if ((phase === 'studio' || phase === 'wait') && lost()) { go('nophoto'); return; }
-    // the painting was sent by a page that is gone (a reload, Back then Forward): say so, one tap paints again
-    if ((phase === 'wait' || phase === 'studio' && !first()) && !ready && journeyStatus() === 'interrupted') { go('stopped'); return; }
-    // the painter never opened on this page: the photo is kept, and a reload starts it again
-    var stuck = !ready && journeyStatus() === 'stuck';
-    if (stuck && said !== STUCK) status(STUCK); else if (!stuck && said === STUCK) status('');
+    var ready = painted(), s = journeyStatus();
+    if (!ready) {
+      if ((phase === 'studio' || phase === 'wait') && lost()) { go('nophoto'); return; }
+      var waiting = phase === 'wait' || phase === 'studio' && !first();
+      // sent by a page that is gone (a reload, Back then Forward): one tap paints again
+      if (waiting && s === 'interrupted') { go('stopped'); return; }
+      // refused on the way (hs2.js journeyRefused), or the painter never opened: said, with one way on
+      if (waiting && s === 'refused') { go('refused'); return; }
+      if (waiting && s === 'stuck') { go('stuck'); return; }
+    }
+    if (phase === 'studio' && first() && s !== lastStatus) { lastStatus = s; paint(); }
     if (phase === 'studio' && first()) {
       // the studio shows for a few seconds, then the questions (or the painting, once they are answered)
       if (Date.now() < studioUntil) return;
@@ -333,23 +420,33 @@
     root = document.querySelector('[data-hs-jm]');
     var st = state(); j = st.hs_journey;
     // the snippet's inline check may have stepped the page aside already: a wrong guess is taken back
-    var off = function () { document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true; };
+    var off = function () {
+      var was = document.documentElement.classList.contains('hs-jm-on');
+      document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true;
+      // the header the guess hid is cleared again (hs2.js listens to resize)
+      if (was) { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* old browser */ } }
+    };
     if (!root || !j || j.mode !== 'photo-first' || !window.__hs2api || !window.__hs2api.journey || !window.__hs2api.journey()) return off();
     here = giftHere();
     if (!here) return off();
     frame = $('[data-hs-jm-frame]');
     root.hidden = false;
     document.documentElement.classList.add('hs-jm-on');
-    // the painting card moves into the frame, with its listeners
+    // the painting card moves into the frame, with its listeners, at the easel's size
     art = document.querySelector('[data-hs-art]');
-    if (art) $('[data-hs-jm-paint]').appendChild(art);
+    if (art) {
+      $('[data-hs-jm-paint]').appendChild(art);
+      var e = $('[data-hs-jm-easel]');
+      if (e) ['--hs-art-ratio', '--hs-art-r'].forEach(function (v) { var x = art.style.getPropertyValue(v); if (x) e.style.setProperty(v, x); });
+    }
     root.addEventListener('click', onClick);
     $('[data-hs-jm-tick]').addEventListener('change', onTick);
     root.addEventListener('hsj:done', function () { go(painted() ? 'reveal' : 'wait'); });
     // a reload part way through the questions goes straight back to them; otherwise the studio first
-    studioUntil = Date.now() + STUDIO_MS;
+    var opened = window.performance && performance.timeOrigin ? performance.timeOrigin : Date.now();
+    studioUntil = Math.max(Date.now() + STUDIO_MIN, opened + STUDIO_MS);
     var resume = window.HSJourney && window.HSJourney.asking() && asking();
-    go(resume ? 'ask' : 'studio');
+    go(wasAdded() ? 'added' : resume ? 'ask' : 'studio');
     if (art && window.MutationObserver) new MutationObserver(function () { tick(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
     setInterval(tick, 700);
   }
