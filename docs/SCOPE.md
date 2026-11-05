@@ -33,7 +33,7 @@ The scope is approved. Do not ask Krish to approve it again. Current configured 
 - **The painting.** It is the exact dog in the chosen style, with less invented scene. Each gift looks like the same dog, even if the design is per gift. The four tones change the picture without making the dog look arrogant, grumpy, mean or different (Krish, 5 Nov).
 - **Product views.** Real product photos, big and full width, with several views and a close-up of the print.
 - **Look and transitions.** Premium and consistent everywhere. The painting screen shows for a few seconds, then fades into the questions. Nothing changes size while text is generating.
-- **Christmas delivery.** Earlier date, both true: the article, the countdown and the gifts screen say December 4, the latest date on which the shipping policy's own times still deliver before the 24th.
+- **Christmas delivery.** Earlier date, both true: the article, the countdown and the gifts screen say December 4. It is early on purpose: at the shipping policy's slowest times (5 business days to print, then 7 to deliver), an order on December 4 arrives by December 22.
 - **Go live.** Yes, once ten buyers through the real engine pass and CI is green.
 
 ## Non-negotiable instructions

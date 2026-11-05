@@ -144,7 +144,7 @@ Eleven recorded purchases (ten from run 3, Vera after the fixes) went to a workf
 | The only desktop buyer (1280x800): every question in a 40 px column, the note reading "I w / the / so". | The questions use the studio's own 1040 px card and height on desktop. Test fails on the old code. |
 | A photo of two dogs was accepted in 0.3 seconds and one dog was dropped. The dog detector had not loaded yet, and the check fails open. | The detector finishes its check out of sight while the buyer picks the look; if it sees more than one dog, Start painting asks once: another photo, or this one anyway. Two tests. |
 | The shipping policy said no Christmas date was set, beside "Order by December 4". | The new paragraph is drafted (below). The Shopify connector has no permission to write policies (`write_legal_policies`), so Krish pastes it in the admin. |
-| Checkout's second line showed the product's example dog beside "Dog's name: Honey". | Display only: both refuters found the order line points to the buyer's painting. It is Shopify's merged checkout line, whose child always shows the variant's own photo. Fixing it means dog-free variant photos, a product media change for Krish. |
+| Checkout's second line showed the product's example dog beside "Dog's name: Honey". | Display only: both refuters found the order line points to the buyer's painting. It is Shopify's merged checkout line, whose child always shows the variant's own catalog photo. Left as it is: a review of the fix (the dog-free checkout tile on the variant) found it would also change the blanket page's opening photo, and make the tile the blanket's picture in the cart's fallback thumbnail, the search cards, the order emails and any Facebook, Instagram or Google catalog it is listed in. Krish's call. |
 
 **Majors fixed in the same pass:** the progress line now only moves forward (gifts 40%, studio 45%, questions 50 to 85%, note 90%, wait 95%, reveal 100%); the home page names the tones as the steps do (Warm, Roast); the last gift's reveal says "Order by December 4 for Christmas delivery to a US address." from the store's own deadline, and only until that day ends; the add says "Adding it to your cart. This can take up to a minute."; the name screens no longer show a stranger's name as a placeholder; the breed line says "It goes in the note. We paint your dog from the photo."; the note screen says a tone there changes the words, never the painting; the wait says "Still painting" and "Most take 1 to 3 minutes", not "Almost there" at 40 seconds.
 
@@ -184,9 +184,9 @@ Smaller ones fixed in the same pass: the photo no longer hides the easel's brush
 
 ## 10. The shipping policy paragraph, for Krish to paste
 
-Shopify admin, Settings, Policies, Shipping policy. Replace the "Christmas." paragraph with:
+Shopify admin, Settings, Policies, Shipping policy. Replace the "Christmas." paragraph with the text below (the CoWork prompt `docs/review/COWORK-SHIPPING-POLICY-CHRISTMAS.md` does it and reads it back). An earlier draft called December 4 "the last day on which the times above still deliver before Christmas Eve"; by the policy's own slowest times an order on December 7 still arrives by December 23, so December 4 is an early, safe date, not the last one.
 
-> **Christmas.** Order by December 4 for Christmas delivery to a US address. That is the last day on which the times above still deliver before Christmas Eve. Orders placed after December 4 may arrive after December 25.
+> **Christmas.** Order by December 4 for Christmas delivery to a US address. Even at the slowest times above, an order placed on December 4 arrives by December 22. Orders placed later may arrive after December 25.
 
 ## 11. Live on heartside.io (5 November)
 
