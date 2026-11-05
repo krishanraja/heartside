@@ -49,9 +49,19 @@
   function painted() { var s = artSrc(); return !!s && s !== stale; }
   function photoSrc() { var p = art && art.querySelector('[data-hs-art-photo]'); return p && p.getAttribute('src') || ''; }
   function asking() { return first() && window.HSJourney && !window.HSJourney.done(); }
-  // the photo did not come to this page (a private window, a cleared device): nothing is painting a few seconds in
-  var opened = Date.now();
-  function lost() { return !!art && !painted() && (art.hidden || art.getAttribute('data-state') === 'idle') && Date.now() - opened > 5000; }
+  /* The photo did not come to this page (a private window, a cleared device). hs2.js says so once it has
+     read this device's copy (journeyStatus): never a timer, because Teeinblue's painter can take well over
+     five seconds to open on the live store (5 Nov: all ten test buyers were told a photo on the page was
+     lost). After the buyer opens the picker, a pick that sends nothing within a minute asks again. */
+  var picked = 0, STUCK = "The painter didn't open on this page. Reload it to start again. Your photo is saved.";
+  function journeyStatus() { return window.__hs2api && window.__hs2api.journeyStatus ? window.__hs2api.journeyStatus() : ''; }
+  function idle() { return !!art && (art.hidden || art.getAttribute('data-state') === 'idle'); }
+  function lost() {
+    if (!art || painted()) return false;
+    var s = journeyStatus();
+    if (s === 'nophoto') return true;
+    return s === 'picked' && idle() && Date.now() - picked > 60000;
+  }
 
   /* Teeinblue opens its framing box once a painting is back and waits for Save. The buyer never sees it:
      the painter's framing is saved as it is (Krish, 4 Nov: the crop box was a fourth screen he had to
@@ -244,7 +254,7 @@
       if (phase === 'nophoto') {
         // Teeinblue's own photo field opens and sends it; the automatic send stands down (hs2.js journeyPick)
         if (window.__hs2api.journeyPick) window.__hs2api.journeyPick();
-        opened = Date.now() + 60000; studioUntil = Date.now() + STUDIO_MS; go('studio');
+        picked = Date.now(); studioUntil = Date.now() + STUDIO_MS; go('studio');
         return;
       }
       if (phase === 'studio' && first() && !painted()) { go(asking() ? 'ask' : 'wait'); return; }
@@ -274,7 +284,10 @@
     if (phase === 'reveal') { if (!adding) paint(); return; }
     if (adding || phase === 'ask') return;
     var ready = painted();
-    if (phase === 'studio' && lost()) { go('nophoto'); return; }
+    if ((phase === 'studio' || phase === 'wait') && lost()) { go('nophoto'); return; }
+    // the painter never opened on this page: the photo is kept, and a reload starts it again
+    var stuck = !ready && journeyStatus() === 'stuck';
+    if (stuck && said !== STUCK) status(STUCK); else if (!stuck && said === STUCK) status('');
     if (phase === 'studio' && first()) {
       // the studio shows for a few seconds, then the questions (or the painting, once they are answered)
       if (Date.now() < studioUntil) return;

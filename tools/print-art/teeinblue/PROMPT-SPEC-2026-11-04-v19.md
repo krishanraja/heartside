@@ -1,6 +1,8 @@
 # Painter prompt spec v19: face-locked tones, photo first (4 and 5 November 2026)
 
-Recipe version `actual-dog-recipes-v19-face-locked-tones`, recipes SHA-256 `8df665f082a020dd81002190a34063241b621deb432f3ff56a8bdc42b98de4b4`. It follows v18 (`PROMPT-SPEC-2026-11-04-v18.md`).
+Recipe version `actual-dog-recipes-v19-face-locked-tones`, recipes SHA-256 `caaa59b816494e1b62bad02ce04493431400edb624e40adaf803df73fb749123`. It follows v18 (`PROMPT-SPEC-2026-11-04-v18.md`).
+
+The first draft of v19 (SHA-256 `8df665f082a020dd81002190a34063241b621deb432f3ff56a8bdc42b98de4b4`) is the one tested against v17 and v18 through Teeinblue on 5 November. Both blind judges noticed that every lying pose stretched the body far beyond the dog's real build. The Roast direction then said "stretched out across the whole couch". This version locks the build as well as the face and drops that word. Nothing else changed.
 
 Status: theme-only. It ships with the next theme push. Nothing changes in Teeinblue.
 
@@ -12,12 +14,12 @@ Krish, 5 November: "Surely there's a solution here without making the dog look a
 
 ## What changed
 
-1. **The face is locked to the photo** (`brief.likeness.energy`, the Energy field): the same head shape, ear set, eye color and spacing, muzzle, nose, coat colors and every marking, never mirrored and never exaggerated. Only the body, the setting, the light and the medium change. The breed "character" line no longer travels in Energy on this path, because it pushed expressions.
+1. **The face and build are locked to the photo** (`brief.likeness.energy`, the Energy field): the same head shape, ear set, eye color and spacing, muzzle, nose, body length, coat colors and every marking, never mirrored, stretched or exaggerated. Only the pose, the setting, the light and the medium change. The breed "character" line no longer travels in Energy on this path, because it pushed expressions.
 2. **Each tone changes everything around the face** (`brief.likeness.tones`), through the staging, the body, the camera, the light and the color:
    - **Sentimental:** resting close, soft window light.
    - **Warm:** a candid moment in daylight.
    - **Hilarious:** sitting bolt upright and dignified, as if for an official portrait, played straight.
-   - **Roast:** the dog has taken over the whole couch, every cushion claimed, perfectly content.
+   - **Roast:** the dog lying across the middle of the couch, every cushion claimed, perfectly content.
 
    Each direction ends with a guard: "The face stays exactly the dog in the photo, with its own calm, natural expression: never grumpy, mean, smug or exaggerated." The blanket keeps its scattered figures, each with the face of the photo, in the tone's moment and light.
 3. **Photo first.** The journey asks for the photo, the style and the tone, then the gifts, and paints before any other answer. Nothing from the later answers (the spot, the walk, the toy) stages the picture; those answers shape the note.
@@ -27,7 +29,7 @@ Every older path (`likeness` absent) is byte for byte v18.
 
 ## Field limits
 
-Across every style, tone and format, Tone direction is at most 709 of the field's 1,200 characters, and Energy is 245 of 300.
+Across every style, tone and format, Tone direction is at most 709 of the field's 1,200 characters, and Energy is 261 of 300.
 
 The four saved blocks, byte for byte as before:
 - mug `aa41590e9e59effb331bbea91d4064a1eb5c3eb7c6bfa47f595a7144041194c6` (v16);

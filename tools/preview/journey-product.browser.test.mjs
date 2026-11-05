@@ -35,7 +35,9 @@ const STANDIN = '<script>(' + (() => {
   const pid = ids[(location.pathname.split('/')[2] || '')];
   if (pid) window.ShopifyAnalytics = {meta: {product: {id: pid}}};
   document.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) window.__sends++; }, true);
-  document.addEventListener('DOMContentLoaded', () => {
+  // Teeinblue on the live store can take well over five seconds to open its fields (5 Nov, ten real buyers)
+  const slow = +(sessionStorage.getItem('__slowTib') || 0);
+  document.addEventListener('DOMContentLoaded', () => setTimeout(() => {
     const input = document.querySelector('#buy input.tee-photo-input');
     if (!input) return;
     input.id = 'tee-photo-standin';
@@ -48,7 +50,7 @@ const STANDIN = '<script>(' + (() => {
     field('Artwork tone', pick(['Sentimental', 'Warm with a wink', 'Hilarious']));
     for (const name of ['Style direction', 'Tone direction', 'Energy']) field(name, '<input type="text" data-brief="' + name + '">');
     document.dispatchEvent(new Event('teeinblue-event-component-injected'));
-  }, true);
+  }, slow), true);
 }).toString() + ')();</script>';
 let server, base, browser, cart = [];
 before(async () => {
@@ -75,14 +77,15 @@ before(async () => {
 after(async () => { await browser?.close(); server?.close(); });
 
 // what the home page hands over (hs-journey.js handOver): the photo's time, the style, the gifts in order, nothing else
-async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first'} = {}) {
+async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'], answered = false, mode = 'photo-first', slowTib = 0} = {}) {
   const ctx = await browser.newContext({viewport: size, isMobile: size.width < 900, hasTouch: true});
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
   const t = Date.now() - 60000;
-  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode]) => {
+  await page.addInitScript(([t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib]) => {
+    if (slowTib) sessionStorage.setItem('__slowTib', String(slowTib));
     if (sessionStorage.getItem('hs2-review')) return;
     sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'warm'}));
     const review = {dog: answered ? 'Mowgli' : '', person: answered ? 'Sam' : '', hs3_lines: answered ? {home: 'a', spot: 'b', together: 'c', meaning: 'd'} : null, hs3_copy_owner: 'generated', hs3_photo_t: photo ? t : 0,
@@ -91,7 +94,7 @@ async function open(size, {photo = true, journeyAge = 0, queue = ['print', 'mug'
     if (mode) review.hs_journey.mode = mode;
     sessionStorage.setItem('hs2-review', JSON.stringify(review));
     if (answered) sessionStorage.setItem('hs-journey', JSON.stringify({dog: 'Mowgli', breed: 'Border Collie', pro: 'he', rel: 'named', person: 'Sam', home: 'door', spot: 'couch', together: 'walk', meaning: 'best', tone: 'warm', noteDone: true, gifts: {}}));
-  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode]);
+  }, [t, photo, journeyAge, queue, URLS, GIFTS, answered, mode, slowTib]);
   if (photo) {
     await page.goto(base + '/robots.txt');
     // a real dog photo, as the home page keeps it (a tiny one would be refused by the gift page's own check)
@@ -209,6 +212,21 @@ test('one free repaint: the same photo once more, then the link is gone', async 
     await page.evaluate(() => { document.querySelector('[data-hs-art-result]').src = '/assets/hs-ex-style-comic.webp'; });
     await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 6000});
     assert.equal(await page.evaluate(() => document.querySelector('[data-hs-jm-repaint]').style.visibility), 'hidden', 'one repaint only');
+  } finally { await ctx.close(); }
+});
+
+test('a painter that takes 9 seconds to open: the photo is never called lost, and it paints once when the painter opens', async () => {
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {slowTib: 9000});
+  try {
+    await page.goto(base + URLS.print);
+    await page.evaluate(() => { window.__phases = []; new MutationObserver(() => { const p = document.querySelector('[data-hs-jm]').getAttribute('data-phase'); if (window.__phases[window.__phases.length - 1] !== p) window.__phases.push(p); }).observe(document.querySelector('[data-hs-jm]'), {attributes: true, attributeFilter: ['data-phase']}); });
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 20000});
+    await page.waitForTimeout(1500);
+    const phases = await page.evaluate(() => window.__phases);
+    assert.ok(!phases.includes('nophoto'), 'never told the photo is lost: ' + phases.join(' > '));
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'one painting');
+    assert.equal(await page.evaluate(() => window.__hs2api.journeyStatus()), 'sent');
+    assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
 

@@ -326,6 +326,7 @@
   function journeyPick() {
     var j = journey(); if (!j) return false;
     try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
+    journeyAutoSend.state = 'picked';
     return openPhotoPicker('journey');
   }
   /* One free repaint (Krish, 29 Oct: "They should get one free regenerate where they can choose to
@@ -370,19 +371,32 @@
     try { runBridge(); } catch (e) { /* the next tick fills the fields */ }
     return true;
   }
+  /* What the journey's gift page may say about the photo (5 Nov: on the live store Teeinblue's painter
+     takes longer than five seconds to open, and all ten test buyers were told their photo was lost while
+     it was on the page): 'checking' until this device's copy is read, 'nophoto' only when it is not
+     there, 'waiting' while the photo waits for the painter to open, 'sent', and 'stuck' when the painter
+     never opened in the 90 seconds the send waits. */
   function journeyAutoSend() {
     var j = journey();
     if (!j) return;
+    journeyAutoSend.state = usePhoto.file ? 'waiting' : 'checking';
     // the page's own restore gives up after 1.5 s; the journey waits for the photo it was promised
-    if (!usePhoto.file) restorePhoto().then(function (rec) { if (rec && !usePhoto.file) usePhoto(rec.file, rec.t); });
+    if (!usePhoto.file) restorePhoto().then(function (rec) {
+      if (rec && !usePhoto.file) usePhoto(rec.file, rec.t);
+      if (journeyAutoSend.state === 'checking') journeyAutoSend.state = usePhoto.file ? 'waiting' : 'nophoto';
+    });
     var tries = 0, timer = setInterval(function () {
       tries++;
       var sent = false;
       try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
-      if (sent || cityArtSaved() || tries > 150) { clearInterval(timer); return; }
-      if (!usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); return; }
+      if (tries > 150) { journeyAutoSend.state = usePhoto.file ? 'stuck' : 'nophoto'; clearInterval(timer); return; }
+      if (!usePhoto.file) return;
+      if (journeyAutoSend.state !== 'waiting') journeyAutoSend.state = 'waiting';
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
       try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
       clearInterval(timer);
+      journeyAutoSend.state = 'sent';
       sendBlanketPhoto();
     }, 600);
   }
@@ -4447,5 +4461,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();
