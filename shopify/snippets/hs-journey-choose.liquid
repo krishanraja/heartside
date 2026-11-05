@@ -61,3 +61,19 @@
     </div>
   </div>
 </section>
+<script>
+  /* journey mode before the first paint, so the product page never shows under the panel and then jumps
+     (5 Nov, ten buyers on the live store). hs-journey-choose.js confirms it once the page has loaded and
+     takes it back if this guessed wrong. */
+  (function (root) {
+    try {
+      var j = (JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}).hs_journey, h = root.getAttribute('data-hs-jm-handle');
+      if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) return;
+      var on = /[?&]journey=1(&|$)/.test(location.search);
+      for (var i = 0; !on && i < sessionStorage.length; i++) { var k = sessionStorage.key(i); if (/^hs2-journey-on:/.test(k) && sessionStorage.getItem(k) === String(j.t)) on = true; }
+      var mine = (j.queue || []).some(function (q) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); return m && m[1] === h; });
+      for (var g in (j.gifts || {})) if (j.gifts[g] && j.gifts[g].handle === h) mine = true;
+      if (on && mine) { root.hidden = false; document.documentElement.classList.add('hs-jm-on'); }
+    } catch (e) { /* hs-journey-choose.js decides once the page has loaded */ }
+  })(document.currentScript.previousElementSibling);
+</script>

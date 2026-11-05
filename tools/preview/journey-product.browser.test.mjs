@@ -280,3 +280,97 @@ test('desktop: the journey card, the painting beside the headline, nothing scrol
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '1440-reveal.png')});
   } finally { await ctx.close(); }
 });
+
+// 5 Nov, ten buyers on the live store: the portrait's and the blanket's first add failed while hs2.js registered
+// the painting for checkout ("Checkout artwork is not ready"), and a second tap went through
+for (const [name, fails, lands] of [['a slow checkout copy: the dock says what hs2 says, and one more press goes through by itself', 1, true],
+  ['a checkout copy that fails twice: hs2 words in the dock, no third press', 2, false]]) test(name, async () => {
+  cart = [];
+  const {page, ctx} = await open({width: 390, height: 844}, {queue: ['blanket'], answered: true});
+  try {
+    await page.goto(base + URLS.blanket);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await page.waitForTimeout(6500);
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 6000});
+    await ready(page);
+    // hs2's checkout step, as the live store showed it: its words go in a line after Teeinblue's button
+    await page.evaluate(fails => {
+      const atc = document.querySelector('#buy #teeAtcButton'), say = text => { let n = document.querySelector('[data-hs2-add-note]'); if (!n) { n = document.createElement('p'); n.setAttribute('data-hs2-add-note', ''); atc.after(n); } n.textContent = text; n.hidden = !text; };
+      window.__presses = 0;
+      atc.click = () => {
+        window.__presses++;
+        say("Getting Mowgli's picture ready for checkout.");
+        setTimeout(() => { if (window.__presses <= fails) say('Checkout artwork is not ready. Please try Add to cart again. Your saved artwork does not need another upload.'); else { say(''); fetch('/__add?h=' + location.pathname.split('/')[2]); } }, 2500);
+      };
+    }, fails);
+    await page.check('[data-hs-jm-tick]');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForFunction(() => /ready for checkout/.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 5000});
+    if (lands) {
+      await page.waitForURL(/\/cart$/, {timeout: 20000});
+      assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket'], 'one line, after one tap');
+    } else {
+      await page.waitForFunction(() => /not ready/.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
+      await page.waitForTimeout(2500);
+      assert.equal(await page.evaluate(() => window.__presses), 2, 'one automatic press, never a third');
+      assert.equal(await page.isDisabled('[data-hs-jm-add]'), false, 'the buyer can try again');
+      assert.deepEqual(cart, []);
+    }
+  } finally { cart = []; await ctx.close(); }
+});
+
+test('a reload mid-paint: the painting from the gone page never arrives, so the page says so, and one tap paints it again, once', async () => {
+  // 5 Nov, a test buyer on the live store: a reload, then Back and Forward, and eight minutes on "Almost there"
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {queue: ['blanket'], answered: true});
+  try {
+    await page.goto(base + URLS.blanket);
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 30000});
+    await page.reload();
+    await page.waitForSelector('[data-hs-jm]:not([hidden])');
+    await page.waitForTimeout(3000);
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'a reload sends nothing by itself');
+    await page.waitForSelector('[data-hs-jm][data-phase="stopped"]', {timeout: 40000});
+    assert.equal(await page.textContent('[data-hs-jm-title]'), 'The painting stopped');
+    assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Paint it again');
+    assert.ok(await fits(page));
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-stopped.png')});
+    await page.click('[data-hs-jm-add]');
+    // the same photo goes through the device check again first (up to its own 10 s ceiling)
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 30000});
+    await page.waitForSelector('[data-hs-jm][data-phase="wait"]');
+    await page.waitForTimeout(3000);
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'one new painting');
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('320 px phone: another breed, typed, shows its suggestions above the button, and one tap answers it', async () => {
+  // 5 Nov, a test buyer on the live store: typing "Labradoodle" on a small phone put the suggestions under the button
+  const {page, ctx, errors} = await open({width: 320, height: 568});
+  try {
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 15000});
+    await page.fill('[data-hsj-name]', 'Barky');
+    await page.click('[data-hsj-next]');
+    await page.waitForSelector('[data-hsj-screen="breed"]');
+    await page.click('[data-hsj-pick="breed"][data-v="__other"]');
+    await page.fill('[data-hsj-breed-search]', 'Labra');
+    await page.waitForSelector('[data-hsj-breed-list] button');
+    const room = await page.evaluate(() => {
+      const s = document.querySelector('[data-hsj-breed-list] button').getBoundingClientRect(), d = [...document.querySelectorAll('.hsj-dock')].map(e => e.getBoundingClientRect()).filter(r => r.height > 0 && r.top > 0)[0];
+      return {suggestionBottom: Math.round(s.bottom), dockTop: Math.round(d.top)};
+    });
+    assert.ok(room.suggestionBottom <= room.dockTop, 'the first suggestion clears the button: ' + JSON.stringify(room));
+    assert.ok(await fits(page));
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '320-breed-search.png')});
+    await page.locator('[data-hsj-breed-list] button').first().click();
+    await page.waitForFunction(() => /ask=pro/.test(location.hash), null, {timeout: 5000});
+    // back to the breed: the typed breed is the one chosen, and the list is one tap away
+    await page.goBack();
+    await page.waitForSelector('[data-hsj-screen="breed"] [data-hsj-pick="breed"][data-v="__other"].is-on');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});

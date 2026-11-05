@@ -73,6 +73,17 @@ for(const minified of [false,true]) {
     await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return response({state:'error',code:'image_readback_failed'},503);})));assert.equal(count,12);
   });
 
+  test(mode+': a slow first registration (the app proxy gives up, or the request outlives the server) is asked again, not failed',async()=>{
+    // 5 Nov, ten buyers on the live store: the portrait's and the blanket's first add failed and a second tap went through
+    for(const first of [async()=>({status:504,json:async()=>{throw Error('HTML');}}),async()=>({status:502,json:async()=>{throw Error('HTML');}}),()=>new Promise(()=>{})]) {
+      let count=0;
+      const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async(...a)=>++count===1?first(...a):response(ready()))));
+      assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
+    }
+    let count=0;
+    await assert.rejects(getHelper().prepare(JSON.stringify(line()),options(async()=>{count++;return {status:504,json:async()=>({})};})),/does not need another upload/);
+    assert.equal(count,12,'a proxy that never answers stops at the same twelve requests');
+  });
   test(mode+': a three-gift add registers two at a time, keeps every identity, and one failure fails the add',async()=>{
     let live=0,peak=0;const seen=[];
     const fetch=async(_,i)=>{live++;peak=Math.max(peak,live);const v=JSON.parse(i.body).variantId;seen.push(v);await tick();await tick();live--;return response(ready(v));};

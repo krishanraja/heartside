@@ -383,9 +383,14 @@
   }
   function viewBreed() {
     var n = names(), other = S.breed && BREEDS.indexOf(S.breed) === -1 && S.breed !== 'Mixed';
+    // typing a breed: the search and its suggestions take the list's place, so they sit right under the question,
+    // above the keyboard and the button (5 Nov: on a 320 px phone the suggestions were under the dock)
+    if (S.breedOther) return screen('breed', 'What breed is ' + esc(n.dog) + '?', 'We paint the breed you pick.',
+      '<input class="hsj-input hsj-search" data-hsj-breed-search type="search" autocomplete="off" placeholder="Start typing the breed" aria-label="Search breeds">' +
+      '<div class="hsj-chips" data-hsj-breed-list></div><div class="hsj-chips"><button type="button" class="hsj-chip hsj-chip--quiet" data-hsj-pick="breed" data-v="__list"><span>Pick from the list</span></button></div>',
+      primary('Next', 'pro', answered('breed')));
     return screen('breed', 'What breed is ' + esc(n.dog) + '?', 'We paint the breed you pick.', '<div class="hsj-chips" role="group" aria-labelledby="hsj-q">' +
-      BREEDS.map(function (b) { return chip('breed', b, b, S.breed === b); }).join('') + chip('breed', 'Mixed', 'Mixed or not sure', S.breed === 'Mixed') + chip('breed', '__other', other ? S.breed : 'Another breed', other || S.breedOther) + '</div>' +
-      (S.breedOther ? '<input class="hsj-input hsj-search" data-hsj-breed-search type="search" autocomplete="off" placeholder="Start typing the breed" aria-label="Search breeds"><div class="hsj-chips" data-hsj-breed-list></div>' : ''),
+      BREEDS.map(function (b) { return chip('breed', b, b, S.breed === b); }).join('') + chip('breed', 'Mixed', 'Mixed or not sure', S.breed === 'Mixed') + chip('breed', '__other', other ? S.breed : 'Another breed', !!other) + '</div>',
       primary('Next', 'pro', answered('breed')));
   }
   function viewPro() {
@@ -635,7 +640,11 @@
   var lastTap = 0, ANSWERS = ['data-hsj-next', 'data-hsj-pick', 'data-hsj-feel', 'data-hsj-style', 'data-hsj-tone', 'data-hsj-gift', 'data-hsj-variant', 'data-hsj-start'];
   function ghost(e, t) {
     var prev = lastTap; lastTap = Date.now();
-    return e.detail > 1 && (render.at || 0) >= prev && ANSWERS.some(function (a) { return t.hasAttribute(a); });
+    if (e.detail < 2) return false;
+    // on a gift card or a colour, a double tap is one tap: the second would take the first back (5 Nov, a test
+    // buyer's double tap left the mug unchosen)
+    if (t.hasAttribute('data-hsj-gift') || t.hasAttribute('data-hsj-variant')) return true;
+    return (render.at || 0) >= prev && ANSWERS.some(function (a) { return t.hasAttribute(a); });
   }
   function onClick(e) {
     var t = e.target.closest('button, a');
@@ -701,6 +710,7 @@
     var step = stepFromURL();
     if (group === 'breed') {
       if (v === '__other') { S.breedOther = true; S.breed = ''; save(); render('breed'); var f = app.querySelector('[data-hsj-breed-search]'); if (f) f.focus(); return; }
+      if (v === '__list') { S.breedOther = false; save(); render('breed'); return; }
       S.breedOther = false; S.breed = v;
     } else if (group === 'self') { S.rel = 'self'; S.person = ''; }
     else if (group === 'toy') {

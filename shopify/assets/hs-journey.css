@@ -317,3 +317,8 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj__screen--step { animation: hsj-step .24s ease-out both; }
 @keyframes hsj-step { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hsj-paint__ring, .hsj__screen--step { animation: none; } }
+
+/* the breed screen can grow past the fold (a long list, or the search and its suggestions): it scrolls inside the
+   frame, never under the button (5 Nov, a 320 px phone) */
+.hsj__screen[data-hsj-screen="breed"] .hsj-content { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.hsj-chip--quiet { background: transparent; border-style: dashed; }

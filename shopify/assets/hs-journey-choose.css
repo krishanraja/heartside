@@ -84,3 +84,12 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
   .hs-jm-sheet__panel { border-radius: 22px; max-width: 520px; padding: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { .hs-jm__frame.is-in { animation: none; } }
+
+/* the painting stopped (a reload mid-paint): the studio stops pretending to paint, and nothing changes size */
+[data-hs-jm][data-phase="stopped"] .hs-wait__talk,
+[data-hs-jm][data-phase="stopped"] .hs-wait__things,
+[data-hs-jm][data-phase="stopped"] .hs-art__bar { visibility: hidden; }
+
+/* the support line always keeps two lines of room: the server's text and the script's take the same height */
+.hs-jm__frame .hsj-support { min-height: 48px; }
+@media (max-height: 700px) and (max-width: 899px) { .hs-jm__frame .hsj-support { min-height: 44px; } }

@@ -326,7 +326,7 @@
   function journeyPick() {
     var j = journey(); if (!j) return false;
     try { sessionStorage.setItem(journeySentKey(j), 'picked:' + Date.now()); } catch (e) { /* the picker still works */ }
-    journeyAutoSend.state = 'picked';
+    journeyAutoSend.state = 'picked'; journeyAutoSend.mine = true;
     return openPhotoPicker('journey');
   }
   /* One free repaint (Krish, 29 Oct: "They should get one free regenerate where they can choose to
@@ -343,6 +343,7 @@
     var j = journey(), engine = window.HSArtworkEngine;
     if (!j || !engine || !Object.prototype.hasOwnProperty.call(engine.recipes.tones, tone) || !journeyRepaintLeft() || !usePhoto.file || blanketUploadPending()) return false;
     try { sessionStorage.setItem(journeyRepaintKey(j), String(Date.now())); } catch (e) { return false; }
+    journeyAutoSend.mine = true;
     var lines = j.notes && j.notes[tone];
     if (lines) { state.hs3_lines = lines; state.hs3_mug_lines = lines; }
     state.hs_journey.tone = tone;
@@ -389,16 +390,43 @@
       tries++;
       var sent = false;
       try { sent = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sent = true; }
-      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); return; }
+      if (sent || cityArtSaved()) { journeyAutoSend.state = 'sent'; clearInterval(timer); if (sent && !journeyAutoSend.mine) journeyOrphan(j); return; }
       if (tries > 150) { journeyAutoSend.state = usePhoto.file ? 'stuck' : 'nophoto'; clearInterval(timer); return; }
       if (!usePhoto.file) return;
       if (journeyAutoSend.state !== 'waiting') journeyAutoSend.state = 'waiting';
       if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
       try { window.sessionStorage.setItem(journeySentKey(j), String(Date.now())); } catch (e) { clearInterval(timer); return; }
       clearInterval(timer);
-      journeyAutoSend.state = 'sent';
+      journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
       sendBlanketPhoto();
     }, 600);
+  }
+  /* A painting lives in the page that sent the photo. Sent by an earlier page (a reload, Back then
+     Forward, a check page in between), it never arrives here (5 Nov, a test buyer on the live store
+     waited eight minutes on "Almost there"). Once the painter has been open here for 20 seconds with
+     nothing painting, nothing saved and nothing to restore, the status says 'interrupted', and
+     journeyResume() sends the same photo once more on the buyer's tap. */
+  function journeyOrphan(j) {
+    var since = 0, timer = setInterval(function () {
+      if (journeyAutoSend.mine || cityArtSaved() || restoredArtworkAvailable()) { clearInterval(timer); return; }
+      var busy = keepTibPhoto.preparing || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading');
+      if (busy || !nativeBlanketInputsReady() || !photoInput()) { since = 0; return; }
+      if (!since) since = Date.now();
+      if (Date.now() - since >= 20000) { clearInterval(timer); if (journeyAutoSend.state === 'sent') journeyAutoSend.state = 'interrupted'; }
+    }, 1000);
+  }
+  function journeyResume() {
+    var j = journey();
+    if (!j || journeyAutoSend.state !== 'interrupted' || !usePhoto.file) return false;
+    resetBlanketUpload(); // clears the earlier page's lock; it never sends anything itself
+    try { sessionStorage.setItem(journeySentKey(j), 'resumed:' + Date.now()); } catch (e) { /* the send below still runs once */ }
+    journeyAutoSend.state = 'sent'; journeyAutoSend.mine = true;
+    var tries = 0, timer = setInterval(function () {
+      if (++tries > 100) { clearInterval(timer); return; }
+      if (blanketUploadPending() || !nativeBlanketInputsReady() || !photoInput()) return;
+      clearInterval(timer); sendBlanketPhoto();
+    }, 300);
+    return true;
   }
   function sendBlanketPhoto() {
     if (!nativeArtworkPurchase() || !usePhoto.file || blanketUploadPending() || !nativeBlanketInputsReady()) return;
@@ -1076,7 +1104,7 @@
     });
   }
   function savePhoto(file, t) {
-    idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).catch(function () {});
+    return idb('readwrite', function (st) { return st.put({ file: file, t: t }, PHOTO); }).then(function () { return true; }, function () { return false; });
   }
   function restorePhoto() {
     return idb('readwrite', function (st) {
@@ -1084,7 +1112,7 @@
       req.onsuccess = function () { var rec = req.result; if (rec && Date.now() - rec.t >= PHOTO_DAYS * 864e5) st.delete(PHOTO); };
       return req;
     }).then(function (rec) {
-      if (!state.hs3_photo_t || !rec || !rec.file || rec.t !== state.hs3_photo_t || Date.now() - rec.t >= PHOTO_DAYS * 864e5) return null;
+      if (!state.hs3_photo_t || !rec || !rec.file || (rec.t !== state.hs3_photo_t && rec.t !== state.hs3_photo_next) || Date.now() - rec.t >= PHOTO_DAYS * 864e5) return null;
       return rec;
     }).catch(function () { return null; });
   }
@@ -2669,8 +2697,11 @@
       markHanded(t);
       usePhoto(f, t);
       if (cityArtPreview() || nativeArtworkPurchase()) markArtRequested();
-      state.hs3_photo_t = t; save();
-      savePhoto(f, t);
+      // the photo is stored on the device after this, and a reload can land in between (5 Nov: a reload
+      // right after the send lost the photo). The time it will carry is recorded first, so the restore
+      // accepts the photo before the write or after it, and never a photo from another tab.
+      state.hs3_photo_next = t; save();
+      Promise.resolve(savePhoto(f, t)).then(function (ok) { if (ok) state.hs3_photo_t = t; if (state.hs3_photo_next === t) delete state.hs3_photo_next; save(); });
       track('photo_attached', { where: 'personalizer' });
     }, true);
   }
@@ -3480,6 +3511,9 @@
     var header = document.querySelector('.header-section, header.shopify-section');
     if (!hero || !header || window.scrollY > 10) return;
     var box = hero.closest('.shopify-section') || hero;
+    // journey mode hides the store header (hs-journey-choose.css; the snippet sets it before the first paint),
+    // so there is nothing to clear (5 Nov: padding put in, then taken out, moved the panel)
+    if (document.documentElement.classList.contains('hs-jm-on')) return;
     // a box's own padding never moves its top edge, so measure without clearing it first: the
     // clear-then-pad used to make the page jump on every resize and load (27 Oct)
     var top = box.getBoundingClientRect().top;
@@ -4461,5 +4495,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyStatus: function () { return journeyAutoSend.state || ''; }, journeyResume: journeyResume, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

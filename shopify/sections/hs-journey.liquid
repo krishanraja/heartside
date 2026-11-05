@@ -41,7 +41,21 @@
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
-<div class="hsj" data-hsj id="journey-{{ section.id }}">
+<div class="hsj" data-hsj id="journey-{{ section.id }}"><script>
+    /* Helio's header is cleared before the first paint, as hs2-product.liquid does, with the same measure as
+       hs-journey.js clearHeader (+8 px), so the hero never drops when the script runs (5 Nov, ten buyers) */
+    (function (box) {
+      try {
+        if (!box || document.documentElement.classList.contains('hsj-focus') || window.scrollY > 10) return;
+        var header = document.querySelector('.header-section, header.shopify-section');
+        if (!header) return;
+        var top = box.getBoundingClientRect().top, bottom = header.getBoundingClientRect().bottom;
+        header.querySelectorAll('header-component, .header__row, .header__underlay').forEach(function (el) { var r = el.getBoundingClientRect(); if (r.width && r.height) bottom = Math.max(bottom, r.bottom); });
+        bottom = Math.min(bottom, top + 200);
+        if (bottom > top) box.style.paddingTop = Math.ceil(bottom - top + 8) + 'px';
+      } catch (e) { /* hs-journey.js clearHeader still runs */ }
+    })(document.currentScript.closest('.shopify-section'));
+  </script>
   <script type="application/json" data-hsj-config>
     {
       "composeUrl": {{ s.compose_url | json }},
@@ -136,14 +150,14 @@
     {%- comment -%} From a photo to a gift (Krish, 3 Nov: on desktop it belongs in the carousel's section). On a phone it
       follows the first screen, as before; on desktop it fills the column under the button. {%- endcomment -%}
     <div class="hss hss--flow" data-hss>
-      <div class="hss-block hss-flow" data-hss-flow>
+      <div class="hss-block hss-flow is-live" data-hss-flow>
         <h2 class="hss-h3">{{ s.flow_heading }}</h2>
         <div class="hss-flow__stage" data-hss-stage>
           {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
           {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
           {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
         </div>
-        <div class="hss-flow__ctl" data-hss-ctl hidden>
+        <div class="hss-flow__ctl" data-hss-ctl>
           <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>
           <div class="hss-flow__steps">
             <button type="button" data-hss-step="0">Photo</button>

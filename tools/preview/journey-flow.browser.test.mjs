@@ -308,3 +308,23 @@ test("a double tap answers one screen, never the next one it lands on", async ()
     await page.waitForURL(/step=gifts/);
   } finally { await ctx.close(); }
 });
+
+test('a double tap on a gift card chooses it once, never takes it back', async () => {
+  const {ctx, page} = await open();
+  try {
+    await page.goto(`${base}/?step=photo`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    // 5 Nov, a test buyer on the live store: a double tap chose the mug and took it back
+    await page.locator('[data-hsj-gift="mug"]').dblclick();
+    assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
+    await page.locator('[data-hsj-gift="mug"]').click();
+    assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'false', 'a single tap still takes it back');
+  } finally { await ctx.close(); }
+});

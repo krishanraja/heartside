@@ -133,6 +133,13 @@
     }
     paintBox.hidden = false; reveal.hidden = true;
     show(tick, false); show(link, false);
+    if (phase === 'stopped') {
+      setText('[data-hs-jm-title]', 'The painting stopped');
+      setText('[data-hs-jm-sub]', 'It stopped when the page reloaded. One tap paints it again from the same photo.');
+      add.disabled = false; add.querySelector('span').textContent = 'Paint it again';
+      setNote('');
+      return;
+    }
     if (phase === 'nophoto') {
       setText('[data-hs-jm-title]', 'One photo of ' + who);
       setText('[data-hs-jm-sub]', (d ? d + "'s" : 'Your') + " photo didn't come with you to this page. Choose it again. It takes a second.");
@@ -216,12 +223,28 @@
      order first (hs-journey.js sends them, hs2.js fills Teeinblue's fields). */
   function cart() { return window.fetch('/cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).catch(function () { return { items: [] }; }); }
   function lines(c) { var h = handle(); return (c.items || []).filter(function (i) { return i.handle === h; }).length; }
-  function added(before) {
+  /* Teeinblue's add waits for hs2.js to register the painting for checkout, which may take up to its 90
+     second budget on a large print file (5 Nov, ten buyers on the live store: the portrait's and the
+     blanket's first add gave up at 36 s while that ran, and a second tap went through). The dock says
+     what hs2 says while it works. If hs2 reports the copy failed, one more press is safe: nothing
+     uploads, the same design registers again, and the cart is checked before and after. */
+  function addNote() { var n = document.querySelector('[data-hs2-add-note]'); return n && !n.hidden ? (n.textContent || '').replace(/\s+/g, ' ').trim() : ''; }
+  var FAILED = /didn't go through|not ready|changed while/i;
+  function added(before, atc) {
     return new Promise(function (resolve, reject) {
-      var tries = 0, timer = setInterval(function () {
+      var tries = 0, again = false, asking = false, timer = setInterval(function () {
+        if (asking) return;
+        asking = true;
+        var say = addNote();
         cart().then(function (c) {
-          if (lines(c) > before) { clearInterval(timer); resolve(); }
-          else if (++tries > 40) { clearInterval(timer); reject(new Error('That took too long. Tap the button again.')); }
+          asking = false;
+          if (lines(c) > before) { clearInterval(timer); resolve(); return; }
+          if (FAILED.test(say)) {
+            if (!again) { again = true; status('Almost there.'); atc.click(); return; }
+            clearInterval(timer); reject(new Error(say)); return;
+          }
+          if (say && say !== said) status(say);
+          if (++tries > 115) { clearInterval(timer); reject(new Error('That took too long. Tap the button again.')); }
         });
       }, 900);
     });
@@ -235,7 +258,7 @@
     if (window.HSJourney) window.HSJourney.send();
     try { window.__hs2api.runBridge(); } catch (e) { /* the fields were filled on the last tick */ }
     setTimeout(function () {
-      cart().then(function (c) { var before = lines(c); atc.click(); return added(before); }).then(function () {
+      cart().then(function (c) { var before = lines(c); atc.click(); return added(before, atc); }).then(function () {
         var nx = nextGift();
         window.location.href = nx && nx.url ? nx.url : '/cart';
       }, function (why) {
@@ -255,6 +278,12 @@
         // Teeinblue's own photo field opens and sends it; the automatic send stands down (hs2.js journeyPick)
         if (window.__hs2api.journeyPick) window.__hs2api.journeyPick();
         picked = Date.now(); studioUntil = Date.now() + STUDIO_MS; go('studio');
+        return;
+      }
+      if (phase === 'stopped') {
+        // the same photo goes again (hs2.js journeyResume); a photo that is gone opens the picker instead
+        if (!(window.__hs2api.journeyResume && window.__hs2api.journeyResume())) { if (window.__hs2api.journeyPick) window.__hs2api.journeyPick(); picked = Date.now(); }
+        studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait');
         return;
       }
       if (phase === 'studio' && first() && !painted()) { go(asking() ? 'ask' : 'wait'); return; }
@@ -285,6 +314,8 @@
     if (adding || phase === 'ask') return;
     var ready = painted();
     if ((phase === 'studio' || phase === 'wait') && lost()) { go('nophoto'); return; }
+    // the painting was sent by a page that is gone (a reload, Back then Forward): say so, one tap paints again
+    if ((phase === 'wait' || phase === 'studio' && !first()) && !ready && journeyStatus() === 'interrupted') { go('stopped'); return; }
     // the painter never opened on this page: the photo is kept, and a reload starts it again
     var stuck = !ready && journeyStatus() === 'stuck';
     if (stuck && said !== STUCK) status(STUCK); else if (!stuck && said === STUCK) status('');
@@ -301,9 +332,11 @@
   function init() {
     root = document.querySelector('[data-hs-jm]');
     var st = state(); j = st.hs_journey;
-    if (!root || !j || j.mode !== 'photo-first' || !window.__hs2api || !window.__hs2api.journey || !window.__hs2api.journey()) return;
+    // the snippet's inline check may have stepped the page aside already: a wrong guess is taken back
+    var off = function () { document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true; };
+    if (!root || !j || j.mode !== 'photo-first' || !window.__hs2api || !window.__hs2api.journey || !window.__hs2api.journey()) return off();
     here = giftHere();
-    if (!here) return;
+    if (!here) return off();
     frame = $('[data-hs-jm-frame]');
     root.hidden = false;
     document.documentElement.classList.add('hs-jm-on');
