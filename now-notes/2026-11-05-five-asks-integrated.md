@@ -1,0 +1,3 @@
+Status: all five of Krish's 5 Nov asks are on main and pass every offline step together (932 of 932 tests): the home "where does your dog rule" step with recipes v20 (#122), the cart upsell drawer (#123), faster pages (#124) and the studio from the first frame with smooth screen changes (#126); none of it is live. PR #127 makes the cart's "Make another version" link open the normal gift page, which journey mode hid (and could paint by itself). A Roast wink kept the likeness in two test paintings and waits on Krish's call.
+Next: Krish says yes or no to pushing main live (and to the Roast wink), then the theme push runs with live-gate and a read-back of the changed files, painting nothing.
+North Star check (2026-11-05): holds.
