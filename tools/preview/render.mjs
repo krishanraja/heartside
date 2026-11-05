@@ -459,7 +459,7 @@ async function cartPage(file, items) {
   const tpl = readTemplate('cart.json').sections['cart-section'];
   const total = items.reduce((s, i) => s + i.final_line_price, 0);
   const cart = { 'empty?': false, items, item_count: items.reduce((s, i) => s + i.quantity, 0), total_price: total };
-  const rows = (await cartEngine.renderFile('cart-products', { cart, block: { settings: tpl.blocks['cart-page-items'].settings, shopify_attributes: '' }, settings: {}, routes, shop }))
+  const rows = (await cartEngine.renderFile('cart-products', { cart, block: { settings: tpl.blocks['cart-page-items'].settings, shopify_attributes: '' }, settings: {}, routes, shop, all_products: byHandle }))
     .replace(/<script\b[^>]*type="module"[^>]*>\s*<\/script>/g, '');
   // the summary: Helio's tax note as the live cart drawer showed it on 5 October; hs2.js rewrites it
   const summary = `<div class="cart-summary"><div class="cart-totals"><div class="cart-totals__item cart-totals__total"><span>Estimated total</span><span>${money(total)} USD</span></div></div>

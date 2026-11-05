@@ -952,6 +952,15 @@
       var w = q.get('gift') === 'portrait' ? 'print' : q.get('gift');
       // a buyer who came from a gift's own page finds that gift already chosen
       if (/^(mug|blanket|print)$/.test(w)) { S.wanted = w; if (!S.gifts[w]) S.gifts[w] = { on: true, variant: null }; save(); }
+      /* from the cart's drawer (hs-cart-more.js): &have= names the gifts already in the cart, which an earlier
+         journey in this tab may still have ticked; they are unticked, so only the wanted gift paints (a second
+         painting of a gift in the cart costs money and invites a duplicate), with the frame or color chosen there */
+      if (/^(mug|blanket|print)$/.test(w) && q.get('have') != null) {
+        String(q.get('have')).split(',').forEach(function (h) { h = h === 'portrait' ? 'print' : h; if (h !== w && /^(mug|blanket|print)$/.test(h) && S.gifts[h]) S.gifts[h].on = false; });
+        S.gifts[w].on = true;
+        if (/^\d+$/.test(q.get('variant') || '')) S.gifts[w].variant = Number(q.get('variant'));
+        save();
+      }
       track('from_gift', { gift: q.get('gift') });
     }
     var s = stepFromURL();

@@ -60,10 +60,10 @@ export function cartEngine(dir = snippets) {
 }
 
 // Renders the cart rows; `css` is the snippet's own {% stylesheet %}, which Shopify serves separately.
-export async function renderCart(items, {context = '', image_ratio = 'portrait', dir} = {}) {
+export async function renderCart(items, {context = '', image_ratio = 'portrait', dir, all_products = {}} = {}) {
   const {engine, css} = cartEngine(dir);
   const cart = {'empty?': false, items, item_count: items.reduce((s, i) => s + i.quantity, 0), total_price: items.reduce((s, i) => s + i.final_line_price, 0)};
-  const html = await engine.renderFile('cart-products', {cart, context, block: {settings: {image_ratio, gap: 24, dividers: false}, shopify_attributes: ''}, settings: {cart_thumbnail_border_radius: 0}, routes: {cart_url: '/cart', root_url: '/'}, shop: {}});
+  const html = await engine.renderFile('cart-products', {cart, context, block: {settings: {image_ratio, gap: 24, dividers: false}, shopify_attributes: ''}, settings: {cart_thumbnail_border_radius: 0}, routes: {cart_url: '/cart', root_url: '/'}, shop: {}, all_products});
   return {html: html.replace(/<script\b[^>]*>\s*<\/script>/g, ''), css: css.join('\n')};
 }
 
@@ -86,6 +86,16 @@ export function gift(index, id = ID, {props = {}, componentProps = {}} = {}) {
   const line = base(index, '101:merged-' + index, MUG, variant, 4500);
   line.properties = props;
   line.item_components = [{key: '101:native-' + index, variant_id: variant.id, quantity: 1, title: MUG.title + ' - ' + variant.title,
+    properties: {_customization_id: id, _hs_checkout_image: prepared(id), 'Dog name': 'Pickle', ...componentProps}, instructions: {can_update_quantity: true, can_remove: true}}];
+  return line;
+}
+// a personalized line of any of the three gifts (product {id, handle, title}, variant {id, title, options}), as the
+// checkout merge leaves it: one native component of the same variant (cart-more tests)
+export function giftLine(index, product, variant, price, id = ID, {props = {}, componentProps = {}} = {}) {
+  const v = {compare_at_price: null, ...variant, options: (variant.options || []).map((value, i) => (typeof value === 'string' ? {name: ['Available Product', 'Color', 'Size'][i], value} : value))};
+  const line = base(index, v.id + ':merged-' + index, {has_only_default_variant: false, ...product}, v, price);
+  line.properties = props;
+  line.item_components = [{key: v.id + ':native-' + index, variant_id: v.id, quantity: 1, title: product.title + ' - ' + v.title,
     properties: {_customization_id: id, _hs_checkout_image: prepared(id), 'Dog name': 'Pickle', ...componentProps}, instructions: {can_update_quantity: true, can_remove: true}}];
   return line;
 }
