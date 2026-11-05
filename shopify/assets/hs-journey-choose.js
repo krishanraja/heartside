@@ -71,7 +71,12 @@
     var src = photoSrc() || ownPhoto(), d = dog();
     ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) {
       var img = $(sel);
-      if (img && src && img.getAttribute('src') !== src) { img.src = src; img.hidden = false; if (img.nextElementSibling) img.nextElementSibling.style.display = 'none'; }
+      if (img && src && img.getAttribute('src') !== src) {
+        img.src = src; img.hidden = false;
+        // the face's paw icon gives way to the photo; the canvas keeps its brush
+        var paw = sel === '[data-hs-jm-face]' && img.parentNode.querySelector('.hs-wait__ico');
+        if (paw) paw.style.display = 'none';
+      }
     });
     setText('[data-hs-jm-who]', (d ? d + ', live' : 'Live') + ' from the studio');
     var s = journeyStatus();
@@ -157,7 +162,7 @@
     var bar = $('[data-hs-jm-progress]');
     // the journey's one forward line (hs-journey.js pctOf): the studio before the questions, then the wait after
     // the note, then the painting on the gift
-    if (bar) bar.style.width = (phase === 'reveal' || phase === 'added' ? 100 : first() && (phase === 'studio' || phase === 'nophoto') ? 45 : 95) + '%';
+    if (bar) bar.style.width = (phase === 'reveal' || phase === 'added' ? 100 : first() && (phase === 'studio' || phase === 'nophoto' && asking()) ? 45 : 95) + '%';
     var paintBox = $('[data-hs-jm-paint]'), reveal = $('[data-hs-jm-reveal]');
     var tick = $('[data-hs-jm-tickrow]'), add = $('[data-hs-jm-add]'), link = $('[data-hs-jm-repaint]');
     if (phase === 'reveal') {
@@ -313,7 +318,7 @@
           if (FAILED.test(say)) {
             // the retry gets the whole budget again, never what the first try left (5 Nov review)
             if (!again) { again = true; tries = 0; status('Almost there.'); atc.click(); return; }
-            clearInterval(timer); reject(new Error("That didn't go through. Your design is saved. Tap Add to cart again.")); return;
+            clearInterval(timer); reject(new Error("That didn't go through. Your design is saved. Tap the button again.")); return;
           }
           if (say && say !== said) status(say);
           // past the budget, an add hs2 still reports as running is waited for, never invited a second time
@@ -447,6 +452,19 @@
     studioUntil = Math.max(Date.now() + STUDIO_MIN, opened + STUDIO_MS);
     var resume = window.HSJourney && window.HSJourney.asking() && asking();
     go(wasAdded() ? 'added' : resume ? 'ask' : 'studio');
+    if (phase === 'added') cart().then(function (c) {
+      if (lines(c) > 0 || phase !== 'added') return;
+      try { window.sessionStorage.removeItem(addedKey()); } catch (e) { /* the page decides again on a reload */ }
+      go(resume ? 'ask' : 'studio');
+    });
+    /* Back to this page from the next gift or the cart, restored from the browser's page cache (Safari, Firefox):
+       the add finished, so the page says the gift is in the cart instead of a busy button (review, 5 Nov) */
+    window.addEventListener('pageshow', function (e) {
+      if (!e.persisted || !wasAdded()) return;
+      adding = false;
+      var b = $('[data-hs-jm-add]'); if (b) b.classList.remove('is-busy');
+      status(''); phase = ''; go('added');
+    });
     if (art && window.MutationObserver) new MutationObserver(function () { tick(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
     setInterval(tick, 700);
   }

@@ -10,6 +10,8 @@
 {%- endcomment -%}
 {{ 'hs-journey.css' | asset_url | stylesheet_tag }}
 {{ 'hs-journey-choose.css' | asset_url | stylesheet_tag }}
+{%- comment -%} the easel's talk uses the wait room's styles; linked here so it is styled from the first paint {%- endcomment -%}
+{{ 'hs-wait.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-journey-choose.js' | asset_url }}" defer="defer"></script>
@@ -23,7 +25,7 @@
     <main class="hsj-content">
       <div class="hsj-heading">
         <h2 class="hsj-headline" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
-        <p class="hsj-support" data-hs-jm-sub>Your photo is with the painter.</p>
+        <p class="hsj-support" data-hs-jm-sub>The painter is getting ready.</p>
       </div>
       <div class="hsj-body hs-jm__body">
         <div class="hs-jm__paint" data-hs-jm-paint>
@@ -31,7 +33,7 @@
           hs2.js shows its own painting card here (5 Nov judges: nine of eleven buyers saw an empty "Painting your
           dog"). The buyer's own photo, the wash and the brush, at the card's size; the card takes its place.
           {%- endcomment -%}
-          <div class="hs-art hs-jm__easel" data-hs-jm-easel>
+          <div class="hs-art hs-jm__easel" data-hs-jm-easel style="{% if s.native_artwork_kind == 'mug' %}--hs-art-ratio: 3 / 2; --hs-art-r: 1.5{% elsif s.native_artwork_kind == 'print' %}--hs-art-ratio: 2 / 3; --hs-art-r: 0.6667{% else %}--hs-art-ratio: 5 / 6; --hs-art-r: 0.8333{% endif %}">
             <div class="hs-art__canvas">
               <div class="hs-art__wash" aria-hidden="true"><i></i><i></i><i></i></div>
               <img class="hs-art__photo" data-hs-jm-photo alt="" width="480" height="480" hidden>
@@ -90,7 +92,12 @@
       // (5 Nov review: any gift's key turned a normal gift page into the panel until the scripts loaded)
       if (!on) on = sessionStorage.getItem('hs2-journey-on:' + {{ product.id | json }}) === String(j.t);
       var mine = (j.queue || []).some(function (q) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); return m && m[1] === h; });
-      if (on && mine) { root.hidden = false; document.documentElement.classList.add('hs-jm-on'); }
+      if (on && mine) {
+        root.hidden = false; document.documentElement.classList.add('hs-jm-on');
+        // a later gift comes after the first one's questions: its line starts where they left it
+        var at = 0; (j.queue || []).forEach(function (q, i) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); if (m && m[1] === h && !at) at = i; });
+        var bar = root.querySelector('[data-hs-jm-progress]'); if (bar && at > 0) bar.style.width = '95%';
+      }
     } catch (e) { /* hs-journey-choose.js decides once the page has loaded */ }
   })(document.currentScript.previousElementSibling);
 </script>

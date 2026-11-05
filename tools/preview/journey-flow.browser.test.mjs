@@ -342,7 +342,7 @@ test('a photo with two dogs: the check finishes out of sight, and Start painting
     await page.goto(`${base}/?step=photo&gift=blanket`);
     // the detector is not ready when the photo is chosen; it loads a moment later and sees two dogs
     await page.evaluate(() => { window.__checks = []; window.HSPhotoQuality = {
-      check: (f, o) => { window.__checks.push(o && o.detect === false ? 'pixels' : 'dogs'); return Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: []} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}]}); },
+      check: (f, o) => { window.__checks.push(o && o.detect === false ? 'pixels' : 'dogs'); return Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: [], detection: null} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}); },
       loadDetector: () => new Promise(r => setTimeout(() => r({}), 400))}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
     await page.waitForURL(/step=look/);
@@ -354,6 +354,7 @@ test('a photo with two dogs: the check finishes out of sight, and Start painting
     assert.deepEqual(await page.evaluate(() => window.__checks), ['pixels', 'dogs'], 'the dog check ran once the detector was ready');
     await page.locator('[data-hsj-start]').click();
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    await page.waitForTimeout(600);
     assert.equal(await page.textContent('#hsj-dogs-title'), 'More than one dog in this photo');
     assert.match(page.url(), /step=gifts/, 'nothing paints yet');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-two-dogs.png')});
@@ -377,7 +378,7 @@ test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it p
   const {ctx, page} = await open({width: 390, height: 844});
   try {
     await page.goto(`${base}/?step=photo&gift=blanket`);
-    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}]})}; });
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}})}; });
     await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
     await page.waitForURL(/step=look/);
     await page.locator('[data-hsj-next]').click();
@@ -386,7 +387,80 @@ test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it p
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+    await page.waitForTimeout(600);
     await page.locator('[data-hsj-dogs-keep]').click();
     await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: a double tap on Start painting put its second tap on the sheet's button in the same place and painted
+// the two-dog photo unread. The safe answer sits there now, and the sheet ignores a double tap and its first half second.
+test('a double tap on Start painting opens the two-dog question and never answers it', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.waitForTimeout(400);
+    await page.locator('[data-hsj-start]').dblclick();
+    await page.waitForTimeout(1000);
+    assert.equal(await page.isVisible('[data-hsj-dogs]'), true, 'the question stays up');
+    assert.match(page.url(), /step=gifts/, 'nothing paints');
+    // the button under the finger is the safe one
+    const under = await page.evaluate(() => { const s = document.querySelector('[data-hsj-start]').getBoundingClientRect(); const e = document.elementFromPoint(s.left + s.width / 2, s.top + s.height / 2); return e && e.closest('button') && e.closest('button').hasAttribute('data-hsj-dogs-repick'); });
+    assert.equal(under, true, 'Choose another photo sits where Start painting was');
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: the detector was ready but ran out of time on this photo, so no dog check ran and none followed
+test('a dog check that ran out of time is finished out of sight, and Start painting asks', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.evaluate(() => { window.__checks = []; window.HSPhotoQuality = {
+      check: () => { const n = window.__checks.push('check'); return Promise.resolve(n === 1 ? {verdict: 'ok', reasons: [], detection: null, timedOut: true} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}); },
+      loadDetector: () => Promise.resolve({})}; });
+    await page.waitForTimeout(1500); // the detector is warm before the photo is chosen
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: a reload while the late check ran lost it for good, and the two-dog photo painted unasked
+test('a reload while the dog check runs: it runs again from the photo on the device', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    // the real photo check is held back by a stand-in that survives the reload; the detector answers only on the second page
+    await page.addInitScript(() => {
+      const second = sessionStorage.getItem('__reloaded') === '1';
+      const stub = {check: (f, o) => Promise.resolve(o && o.detect === false ? {verdict: 'ok', reasons: [], detection: null} : {verdict: 'warn', reasons: [{code: 'dogs', message: 'I see more than one dog here.'}], detection: {dogs: [{}, {}]}}),
+        loadDetector: () => second ? Promise.resolve({}) : new Promise(() => {})};
+      Object.defineProperty(window, 'HSPhotoQuality', {get: () => stub, set: () => {}, configurable: true});
+    });
+    await page.goto(`${base}/?step=photo&gift=blanket`);
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.evaluate(() => sessionStorage.setItem('__reloaded', '1'));
+    await page.reload();
+    await page.waitForSelector('[data-hsj-screen="look"]');
+    await page.waitForFunction(() => JSON.parse(sessionStorage.getItem('hs-journey') || '{}').photoDogs === true, null, {timeout: 6000});
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
   } finally { await ctx.close(); }
 });

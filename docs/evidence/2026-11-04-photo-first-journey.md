@@ -166,6 +166,14 @@ A review workflow over the branch, with an adversarial check of each finding, co
 - the blanket's Roast figure still said "stretched out" (recipes SHA now `5c18af39…`, spec updated, and a test fails if any journey Tone direction says "stretch");
 - on phones the reveal's words, picture, repaint link and dock could overlap (tested at five sizes, three gifts).
 
+**A second review, of the fixes themselves** (three dimensions, two refuters per finding), confirmed five more, all fixed with tests that fail on the previous code:
+- a double tap on Start painting put its second tap on the two-dog sheet's "Paint this photo anyway", in the same place: the safe answer now sits there, and the sheet ignores a double tap and its first half second;
+- the late dog check was skipped when the detector was ready but ran out of time on the photo, and a reload part way through lost it: it now follows the result, and runs again from the photo on the device;
+- after an add, Back from Safari's or Firefox's page cache left a busy button: the page now says the gift is in the cart, and a gift taken out of the cart can be painted and added again;
+- the easel painted at 5:6 and snapped to the gift's shape when the script ran: the shape is in the page as the server sends it, with the wait room's styles before it;
+- the page as sent said "Your photo is with the painter" before it was: it says "The painter is getting ready."
+Smaller ones fixed in the same pass: the photo no longer hides the easel's brush, a later gift's progress line starts at 95%, an empty offer pill keeps its space without showing, and a failed add says "Tap the button again" to match the button. Refuted by both refuters: that "This can take up to a minute" understates the add.
+
 ## 9. Not proven
 
 - The checkout registration's server side: that n8n workflow is not visible to the connector. The fix follows the client's own design for transient failures, and is inferred from the page's words and the second tap.

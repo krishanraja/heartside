@@ -332,7 +332,7 @@ for (const [name, fails, lands] of [['a slow checkout copy: the dock says what h
       assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket'], 'one line, after one tap');
     } else {
       // the second failure is said once, in the page's own words: the design is kept, one more tap from the buyer
-      await page.waitForFunction(() => /didn't go through\. Your design is saved\. Tap Add to cart again\./.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
+      await page.waitForFunction(() => /didn't go through\. Your design is saved\. Tap the button again\./.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
       await page.waitForTimeout(2500);
       assert.equal(await page.evaluate(() => window.__presses), 2, 'one automatic press, never a third');
       assert.equal(await page.isDisabled('[data-hs-jm-add]'), false, 'the buyer can try again');
@@ -503,6 +503,8 @@ test('Back to a gift already added from this journey: it says it is in the cart,
     await page.check('[data-hs-jm-tick]');
     await page.click('[data-hs-jm-add]');
     await page.waitForURL(/your-dogs-portrait/, {timeout: 15000, waitUntil: 'commit'});
+    // Back only once the next page has loaded: pressing it mid-commit loses the page in the driver, not the buyer's
+    await page.waitForLoadState('domcontentloaded');
     await page.goBack({waitUntil: 'domcontentloaded'});
     await page.waitForSelector('[data-hs-jm][data-phase="added"]', {timeout: 12000});
     assert.equal(await page.textContent('[data-hs-jm-title]'), "Mowgli's mug is in your cart");
@@ -512,8 +514,46 @@ test('Back to a gift already added from this journey: it says it is in the cart,
     assert.deepEqual(cart.map(i => i.handle), ['your-dogs-illustrated-mug'], 'one mug in the cart');
     await page.click('[data-hs-jm-add]');
     await page.waitForURL(/your-dogs-portrait/, {timeout: 15000, waitUntil: 'commit'});
+    await page.waitForLoadState('domcontentloaded');
+    // the mug taken out of the cart: Back to its page offers it again, never "in your cart" (review, 5 Nov)
+    cart = [];
+    await page.goBack({waitUntil: 'domcontentloaded'});
+    await page.waitForFunction(() => { const p = document.querySelector('[data-hs-jm]').getAttribute('data-phase'); return p && p !== 'added'; }, null, {timeout: 12000});
+    assert.notEqual(await page.textContent('[data-hs-jm-title]'), "Mowgli's mug is in your cart");
     assert.deepEqual(errors, []);
   } finally { cart = []; await ctx.close(); }
+});
+
+// Safari and Firefox restore the page from their page cache on Back: the add had finished and the page had moved
+// on, so it says the gift is in the cart, never a busy button (review, 5 Nov)
+test('Back from the page cache after an add: the gift says it is in the cart, and the button is free', async () => {
+  cart = [{handle: 'your-dogs-illustrated-mug'}];
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {queue: ['mug', 'print'], answered: true});
+  try {
+    await page.goto(base + URLS.mug);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    // the moment the page left: the add done and recorded, the button still busy
+    await page.evaluate(() => { const j = JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey; sessionStorage.setItem('hs-jm-added:your-dogs-illustrated-mug:' + j.t, '1');
+      const b = document.querySelector('[data-hs-jm-add]'); b.disabled = true; b.classList.add('is-busy');
+      window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true})); });
+    await page.waitForSelector('[data-hs-jm][data-phase="added"]', {timeout: 3000});
+    assert.deepEqual(await page.evaluate(() => { const b = document.querySelector('[data-hs-jm-add]'); return {busy: b.classList.contains('is-busy'), off: b.disabled, label: b.textContent.trim()}; }), {busy: false, off: false, label: 'Next: the portrait'});
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});
+
+// the page as the server sends it, before any script: the easel at the gift's own shape, and no claim that the
+// photo has gone (review, 5 Nov: it painted at 5:6 and then snapped, and said "Your photo is with the painter")
+test('the studio as the server sends it: the easel at the gift\'s shape, and nothing said before it is true', () => {
+  for (const [page, ratio] of [['product-mug-native.html', '3 / 2'], ['product-portrait-native.html', '2 / 3'], ['product-blanket-native.html', '5 / 6']]) {
+    const html = fs.readFileSync(path.join(out, page), 'utf8');
+    assert.match(html, new RegExp('data-hs-jm-easel style="--hs-art-ratio: ' + ratio.replace(/ /g, ' ') + ';'), page);
+    assert.match(html, /data-hs-jm-sub>The painter is getting ready\.</, page);
+    assert.doesNotMatch(html.slice(html.indexOf('data-hs-jm '), html.indexOf('data-hsj-mode')), /with the painter/, page);
+    assert.ok(html.indexOf('hs-wait.css') < html.indexOf('data-hs-jm-easel'), page + ': the wait styles come before the easel');
+  }
 });
 
 test("Back after the questions steps past them in one press, and another gift's journey key never turns this page", async () => {
@@ -565,6 +605,9 @@ for (const size of [{width: 320, height: 568}, {width: 390, height: 844}]) test(
       assert.ok(f.words > 10, at + ' ms: a line from the studio ' + JSON.stringify(f));
     }
     assert.equal(await page.evaluate(() => window.__painted), 0, 'the painter has not opened yet');
+    // the buyer's photo is on the easel, and the brush stays over it (review, 5 Nov: the photo hid the brush)
+    assert.deepEqual(await page.evaluate(() => { const e = document.querySelector('[data-hs-jm-easel]'), ph = e.querySelector('[data-hs-jm-photo]'), br = e.querySelector('.hs-art__brush');
+      return {photo: !ph.hidden && !!ph.getAttribute('src'), brush: getComputedStyle(br).display !== 'none'}; }), {photo: true, brush: true});
     await page.screenshot({path: path.join(shots, size.width + '-studio-before-painter.png')});
     // when the painter opens and the card takes over, the dock does not move
     const dock = () => page.evaluate(() => Math.round(document.querySelector('[data-hs-jm-frame] .hsj-dock').getBoundingClientRect().top));

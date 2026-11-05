@@ -122,7 +122,7 @@
   function fresh() {
     return { dog: '', breed: '', breedId: '', pro: '', rel: '', person: '', home: null, spot: null, together: null, meaning: null,
       toys: [], toysDone: false, accessory: null, tone: 'warm', style: 'cinematic', notes: {}, request: null, calls: 0, session: '',
-      hasPhoto: false, photoT: 0, photoDogs: false, photoDogsOk: false, typed: {}, follow: null, gifts: {} };
+      hasPhoto: false, photoT: 0, photoDogs: false, photoDogsOk: false, photoDogsT: 0, typed: {}, follow: null, gifts: {} };
   }
   function load() {
     var s = null;
@@ -629,6 +629,7 @@
     if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
     if (step === 'photo') warmDetector();
     if (step === 'look' || step === 'gifts') { thumb(); warm(); }
+    if (step === 'look' || step === 'tone' || step === 'gifts') dogsAgain();
     var input = app.querySelector('[data-hsj-name], [data-hsj-person]');
     if (input) { nameHint(input); if (!('ontouchstart' in window)) input.focus(); }
     if (MODE === 'gift') { try { root.dispatchEvent(new CustomEvent('hsj:step', { bubbles: true, detail: { step: step } })); } catch (e) { /* old browser */ } }
@@ -681,6 +682,8 @@
       var at = t.getAttribute('data-hsj-variant').split(':');
       S.gifts[at[0]] = { on: true, variant: at[1] }; save(); paintGifts(); return;
     }
+    // the sheet answers only a deliberate tap: never a double tap's second tap, never in its first half second
+    if ((t.hasAttribute('data-hsj-dogs-repick') || t.hasAttribute('data-hsj-dogs-keep')) && (e.detail > 1 || Date.now() - (dogsSheet.at || 0) < 500)) { e.preventDefault(); return; }
     if (t.hasAttribute('data-hsj-dogs-repick')) { dogsSheet(false); go('photo'); return; }
     if (t.hasAttribute('data-hsj-dogs-keep')) { S.photoDogsOk = true; save(); track('photo_dogs_keep', {}); dogsSheet(false); var go0 = app.querySelector('[data-hsj-start]'); if (go0) go0.click(); return; }
     if (t.hasAttribute('data-hsj-start')) {
@@ -828,7 +831,8 @@
         return;
       }
       S.photoDogs = manyDogs(r);
-      usePhoto(f, false, !detected);
+      // the dog check still owed when the detector did not run on this photo (not loaded yet, or out of time)
+      usePhoto(f, false, !(detected && r && r.detection));
     }, function () { usePhoto(f, false, true); });
   }
   /* More than one dog in the photo (5 Nov judges: a photo of two dogs was accepted in 0.3 seconds, before the
@@ -838,26 +842,36 @@
   function manyDogs(r) { return !!(r && r.reasons && r.reasons.some(function (x) { return x && x.code === 'dogs'; })); }
   function lateDogs(f) {
     var Q = window.HSPhotoQuality, t = S.photoT;
-    if (!Q || !Q.loadDetector) return;
+    if (!Q || !Q.loadDetector || lateDogs.running === t) return;
+    lateDogs.running = t;
     Promise.resolve().then(function () { return Q.loadDetector(); }).then(function (d) {
       return d ? Q.check(f, { timeout: 8000, checkTimeout: 15000 }) : null;
     }).then(function (r) {
-      if (!r || S.photoT !== t) return;
-      S.photoDogs = manyDogs(r); save();
-    }, function () { /* no detector: the painter still paints, and nothing is said */ });
+      if (lateDogs.running === t) lateDogs.running = 0;
+      if (!r || !r.detection || S.photoT !== t) return;
+      S.photoDogs = manyDogs(r); S.photoDogsT = t; save();
+    }, function () { if (lateDogs.running === t) lateDogs.running = 0; /* no detector: the painter still paints, and nothing is said */ });
+  }
+  // a reload, or a discarded tab, part way through the late check: it runs again from the photo on this device
+  function dogsAgain() {
+    if (MODE !== 'home' || !S.hasPhoto || S.photoDogsT === S.photoT || lateDogs.running === S.photoT || !window.HSPhotoQuality || !window.HSPhotoQuality.loadDetector) return;
+    var t = S.photoT;
+    idb('readonly', function (st) { return st.get(PHOTO); }).then(function (rec) { if (rec && rec.file && rec.t === t && S.photoT === t) lateDogs(rec.file); }, function () { /* no photo here: nothing to check */ });
   }
   function dogsSheet(on) {
     var sheet = app && app.querySelector('[data-hsj-dogs]');
     if (!sheet && on) {
       sheet = document.createElement('div');
       sheet.className = 'hsj-sheet'; sheet.setAttribute('data-hsj-dogs', ''); sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-modal', 'true'); sheet.setAttribute('aria-labelledby', 'hsj-dogs-title');
+      // the safe answer sits where Start painting was, so a second tap of a double tap lands on it (review, 5 Nov)
       sheet.innerHTML = '<div class="hsj-sheet__panel"><p class="hsj-sheet__title" id="hsj-dogs-title">More than one dog in this photo</p>' +
         '<p class="hsj-sheet__text">Each gift paints one dog, so the other could be left out. A photo of just your dog works best.</p>' +
-        '<button type="button" class="hsj-btn" data-hsj-dogs-repick><span>Choose another photo</span></button>' +
-        '<button type="button" class="hsj-sheet__keep" data-hsj-dogs-keep>Paint this photo anyway</button></div>';
+        '<button type="button" class="hsj-sheet__keep" data-hsj-dogs-keep>Paint this photo anyway</button>' +
+        '<button type="button" class="hsj-btn" data-hsj-dogs-repick><span>Choose another photo</span></button></div>';
       app.appendChild(sheet);
     }
     if (sheet) sheet.hidden = !on;
+    if (on) dogsSheet.at = Date.now();
     if (on && sheet) { var b = sheet.querySelector('[data-hsj-dogs-repick]'); if (b) b.focus(); }
   }
   // a photo that passes is kept on this device and the style comes next; nothing is sent yet
@@ -868,7 +882,7 @@
     busyPhoto(true);
     savePhoto(f).then(function (ok) {
       if (!ok) { busyPhoto(false); if (say) say.textContent = "This browser couldn't keep the photo. Allow this site to store data, then choose it again."; return; }
-      if (late) lateDogs(f);
+      if (late) lateDogs(f); else { S.photoDogsT = S.photoT; save(); }
       track('photo', {});
       go('look');
     });

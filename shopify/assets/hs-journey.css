@@ -297,6 +297,8 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-dot.is-on { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent); }
 .hsj-offer { font-size: 14px; line-height: 20px; color: var(--body); background: var(--accent-tint); border-radius: 12px; padding: 10px 14px; flex: none; }
 .hsj-offer b { color: var(--accent); font-weight: 600; }
+/* no offer to state (the bundle switch is off, or nothing chosen yet): the space stays, the empty pill does not */
+.hsj-offer:empty { visibility: hidden; }
 .hsj-when { display: grid; gap: 4px; font-size: 13px; line-height: 18px; color: var(--muted); flex: none; }
 .hsj-when b { color: var(--ink); font-weight: 600; }
 /* the tone, before the painting: four example paintings of one dog, two by two */
