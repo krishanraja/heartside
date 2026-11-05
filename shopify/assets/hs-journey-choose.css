@@ -40,6 +40,10 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__paint { width: 100%; display: flex; justify-content: center; }
 .hs-jm__paint .hs-art { margin: 0; padding: 0; width: 100%; background: none; box-shadow: none; border: 0; }
 .hs-jm__paint .hs-art__title, .hs-jm__paint .hs-art__line, .hs-jm__paint .hs-art__elapsed, .hs-jm__paint .hs-art__note { display: none !important; }
+/* the painting card's own finished-state controls stay out of the journey's frame: the journey has its own tick,
+   which drives hs2's box out of sight (5 Nov, Krish's phone: "Mowgli's mug is in your cart" still showed hs2's
+   "See it full size" and an unticked "Yes, this is Mowgli") */
+.hs-jm__paint .hs-art__full, .hs-jm__paint .hs-art__accept, .hs-jm__paint .hs-art__redo { display: none !important; }
 .hs-jm__paint .hs-art__canvas, .hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100svh - 470px) * var(--hs-art-r, 0.8333))); }
 .hs-jm__paint .hs-wait__talk { margin: 12px 0 10px; }
 .hs-jm__easel { display: grid; justify-items: stretch; }

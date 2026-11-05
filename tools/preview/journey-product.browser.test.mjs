@@ -508,6 +508,13 @@ test('Back to a gift already added from this journey: it says it is in the cart,
     await page.goBack({waitUntil: 'domcontentloaded'});
     await page.waitForSelector('[data-hs-jm][data-phase="added"]', {timeout: 12000});
     assert.equal(await page.textContent('[data-hs-jm-title]'), "Mowgli's mug is in your cart");
+    // the saved painting is on the card, with none of the card's own controls (5 Nov, Krish's phone: an unticked
+    // "Yes, this is Mowgli" and "See it full size" under "Mowgli's mug is in your cart")
+    await paintDone(page);
+    await page.evaluate(() => document.querySelectorAll('[data-hs-art] [data-hs2-artwork-accept-wrap], [data-hs-art] [data-hs2-artwork-source], [data-hs-art] [data-hs-art-done]').forEach(e => { e.hidden = false; }));
+    await page.waitForTimeout(300);
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('[data-hs-jm-paint] .hs-art__accept, [data-hs-jm-paint] .hs-art__full, [data-hs-jm-paint] .hs-art__redo')].filter(e => e.getClientRects().length).map(e => e.className)), [], 'no card controls on the added screen');
+    await page.screenshot({path: path.join(shots, '390-added.png')});
     assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Next: the portrait');
     await page.waitForTimeout(2000);
     assert.equal(await page.evaluate(() => window.__painted || 0), 0, 'no second painting');
