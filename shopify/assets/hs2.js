@@ -291,6 +291,11 @@
       var inp = e.target;
       if (warmPhotoCheck.loaded || !window.HSPhotoQuality || !inp || inp.type !== 'file' || !inp.matches) return;
       if (!inp.matches('.tee-field--photo input[type="file"], input[type="file"][id^="tee-photo"]') || !(inp.files && inp.files[0])) return;
+      // the journey's own photo was checked on the home page and is never checked here (keepTibPhoto), so it never
+      // loads the detector (checking review, 5 Nov: a 19 MB download and a WebGL pause, for nothing). A photo the
+      // buyer picks in Teeinblue's own field is a new file, still checked, and still warms it.
+      var f0 = inp.files[0];
+      if (f0 === inp.__hs2CheckedPhoto || f0 === inp.__hs2PreparedPhoto) return;
       var conn = navigator.connection || {};
       if (conn.saveData || /2g/.test(conn.effectiveType || '')) return;
       warmPhotoCheck.loaded = true;

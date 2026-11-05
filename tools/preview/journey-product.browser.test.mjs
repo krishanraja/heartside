@@ -862,3 +862,34 @@ test('the photo goes to the painter as soon as it and the fields are ready, once
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
+
+// checking review, 5 Nov: the gift page loaded the 19 MB dog detector for the journey's own photo, which this page
+// never checks (it was checked on the home page). A photo the buyer picks in Teeinblue's own field still loads it.
+test("the journey's own photo never loads the dog detector; a photo picked in Teeinblue's field still does", async () => {
+  const DETECTOR = /tfjs|coco-ssd|tf\.min|ssdlite_mobilenet|lite_mobilenet/;
+  {
+    const {page, ctx, errors} = await open({width: 390, height: 844});
+    try {
+      const hits = [];
+      page.on('request', r => { if (DETECTOR.test(r.url())) hits.push(r.url()); });
+      await page.goto(base + URLS.print);
+      await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+      await page.waitForTimeout(2500);
+      assert.deepEqual(hits, [], 'no detector for the journey photo');
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  }
+  {
+    const {page, ctx} = await open({width: 390, height: 844}, {mode: null});
+    try {
+      const hits = [];
+      page.on('request', r => { if (DETECTOR.test(r.url())) hits.push(r.url()); });
+      await page.goto(base + '/products/your-dogs-portrait');
+      await page.waitForSelector('#tee-photo-standin', {state: 'attached', timeout: 10000});
+      await page.waitForFunction(() => !!window.__hs2api, null, {timeout: 10000});
+      await page.setInputFiles('#tee-photo-standin', path.join(here, '../../assets/photos/pug-autumn-leaves.jpg'));
+      await page.waitForTimeout(1500);
+      assert.ok(hits.length > 0, "a photo picked in Teeinblue's own field loads the detector to check it");
+    } finally { await ctx.close(); }
+  }
+});
