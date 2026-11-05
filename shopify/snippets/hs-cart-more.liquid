@@ -1,13 +1,14 @@
-{%- doc -%}
+{%- comment -%}
   The cart's "one more gift" drawer (Krish, 5 Nov: "a side draw that bounces out from the left, which offers a
-  special deal at checkout to upsell to other gifts"). Rendered by cart-products.liquid on the cart page only
-  (never in Helio's cart drawer). It writes the three gifts as data, with Shopify's prices, availability and
-  variants, and loads hs-cart-more.js, which builds the drawer and its opener. It adds no height to the page:
-  the opener takes the place the cart already keeps for the bundle line (hs2.css), from the first paint.
+  special deal at checkout to upsell to other gifts"). Rendered by the memo strip (sections/hs2-memo.liquid) on
+  the cart template only, outside the cart's own redraws, so never in Helio's cart drawer. It writes the three
+  gifts as data, with Shopify's prices, availability and variants, and loads hs-cart-more.css and
+  hs-cart-more.js, which build the drawer and its opener. It adds no height to the page: the opener takes the
+  place the cart already keeps for the bundle line (hs2.css), from the first paint.
 
-  @param {object} products - all_products, so the three gifts are read by handle
-  @param {string} root - routes.root_url, for the home journey's start link
-{%- enddoc -%}
+  products: all_products, so the three gifts are read by handle
+  root: routes.root_url, for the home journey's start link
+{%- endcomment -%}
 {%- liquid
   assign hs_more_keys = 'print,mug,blanket' | split: ','
   assign hs_more_handles = 'your-dogs-portrait,your-dogs-illustrated-mug,your-dogs-personality-blanket' | split: ','
@@ -32,74 +33,5 @@
   {%- endfor -%}
   ]}
 </script>
+{{ 'hs-cart-more.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-cart-more.js' | asset_url }}" defer="defer"></script>
-
-{% stylesheet %}
-  /* The opener: the bundle line's own box (hs2.css, .cart-totals__tax-note::before), so Check out never moves.
-     The line stays in place as a button; the ::before it replaces keeps no box of its own. */
-  .cart-totals__tax-note:has(> [data-hs-more-open])::before { display: none !important; }
-  .hs-more-open {
-    display: block; flex: 0 0 100%; grid-column: 1 / -1; box-sizing: border-box; width: 100%; min-height: 40px; margin: 0 0 8px; padding: 0;
-    border: 0; background: none; color: #8A4A2B; font: 600 14px/20px "HS DM Sans", "DM Sans", system-ui, sans-serif; text-align: start; text-wrap: balance;
-    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer;
-  }
-  .hs-more-open:focus-visible { outline: 2px solid #121010; outline-offset: 2px; border-radius: 4px; }
-  .hs-more-sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
-  /* The drawer: from the left edge, over the page, its width fixed per breakpoint. The panel bleeds 24px past
-     the left edge so the bounce's overshoot never opens a gap there. */
-  .hs-more { position: fixed; inset: 0 auto 0 0; z-index: 80; width: min(360px, calc(100vw - 48px)); font-family: "HS DM Sans", "DM Sans", system-ui, sans-serif; color: #121010; }
-  .hs-more[hidden] { display: none; }
-  @media (min-width: 900px) { .hs-more { width: 400px; } .hs-more__title { min-height: 1lh; } }
-  .hs-more__panel {
-    position: absolute; top: 0; bottom: 0; left: -24px; right: 0; display: flex; flex-direction: column; box-sizing: border-box;
-    height: 100dvh; max-height: 100%; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 24px;
-    background: #FFFDF9; box-shadow: 12px 0 40px -12px rgba(30, 23, 20, .35); touch-action: pan-y;
-  }
-  .hs-more.is-in .hs-more__panel { animation: hs-more-in 560ms cubic-bezier(.2, .7, .3, 1) both; }
-  .hs-more.is-out .hs-more__panel { animation: hs-more-out 200ms ease-in both; }
-  @keyframes hs-more-in { 0% { transform: translateX(-100%); } 62% { transform: translateX(14px); } 82% { transform: translateX(-4px); } 100% { transform: none; } }
-  @keyframes hs-more-out { from { transform: none; } to { transform: translateX(-100%); } }
-  @media (prefers-reduced-motion: reduce) {
-    .hs-more.is-in .hs-more__panel { animation: hs-more-fade 150ms linear both; }
-    .hs-more.is-out .hs-more__panel { animation: hs-more-fade-out 150ms linear both; }
-  }
-  @keyframes hs-more-fade { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes hs-more-fade-out { from { opacity: 1; } to { opacity: 0; } }
-
-  .hs-more__head { position: relative; flex: none; padding: 16px 56px 12px 16px; border-bottom: 1px solid #EFE6DD; }
-  .hs-more__close { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: #121010; font-size: 26px; line-height: 1; cursor: pointer; }
-  .hs-more__pill { display: inline-block; height: 24px; margin: 0 0 8px; padding: 0 10px; border-radius: 999px; background: #F0C0C0; color: #121010; font-size: 13px; font-weight: 700; line-height: 24px; white-space: nowrap; }
-  .hs-more__title { margin: 0; min-height: 2lh; font: 600 20px/26px "HS Fraunces", Fraunces, Georgia, serif; outline: none; }
-  .hs-more__sub { margin: 6px 0 0; min-height: 3lh; font-size: 14px; line-height: 20px; color: #4A3F3A; }
-
-  .hs-more__list { flex: 1 1 auto; min-height: 0; margin: 0; padding: 12px 16px; list-style: none; overflow-y: auto; overscroll-behavior: contain; }
-  .hs-more__card { display: grid; grid-template-columns: 88px 1fr; gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid #EFE6DD; }
-  .hs-more__card:last-child { border-bottom: 0; }
-  .hs-more__art { position: relative; grid-row: span 3; width: 88px; height: 110px; border-radius: 10px; overflow: hidden; background: #F3EEE8; }
-  .hs-more__art img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .hs-more__tag { position: absolute; top: 6px; left: 6px; padding: 2px 6px; border-radius: 6px; background: rgba(255, 255, 255, .92); font-size: 10px; line-height: 14px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #121010; }
-  .hs-more__name { margin: 0; font-size: 16px; font-weight: 700; line-height: 22px; }
-  .hs-more__spec { margin: 0; min-height: 2lh; font-size: 13px; line-height: 18px; color: #5A4A44; }
-  .hs-more__price { margin: 0; font-size: 15px; font-weight: 600; line-height: 22px; }
-  .hs-more__pick { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 4px; margin: 4px 0 0; font-size: 13px; color: #5A4A44; }
-  .hs-more__pick select {
-    -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 100%; min-height: 44px; padding: 8px 36px 8px 12px; border: 1.5px solid #E2D4C8; border-radius: 12px; color: #121010; font-size: 16px; line-height: 1.3; font-family: inherit;
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23121010' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center / 12px 8px;
-  }
-  .hs-more__save { grid-column: 1 / -1; margin: 2px 0 0; min-height: 1lh; font-size: 14px; font-weight: 700; line-height: 20px; color: #8A4A2B; }
-  /* set when the drawer is drawn (a change pending, a gift painted before), and fixed while it is open: the page
-     behind is inert, so nothing there can change it */
-  .hs-more__note { grid-column: 1 / -1; margin: 0; font-size: 13px; line-height: 18px; color: #5A4A44; }
-  .hs-more__note:empty { display: none; }
-  .hs-more__go { grid-column: 1 / -1; box-sizing: border-box; width: 100%; min-height: 48px; padding: 0 16px; border: 0; border-radius: 999px; background: #E7A1BF; color: #121010; font: 700 16px/1.2 "HS DM Sans", "DM Sans", system-ui, sans-serif; cursor: pointer; }
-  .hs-more__go[disabled] { background: #CFC4BB; cursor: default; }
-
-  .hs-more__foot { flex: none; padding: 12px 16px 16px; border-top: 1px solid #EFE6DD; background: #FFFDF9; }
-  .hs-more__line { margin: 0 0 4px; min-height: 2lh; font-size: 13px; line-height: 18px; color: #4A3F3A; }
-  .hs-more__row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 8px; }
-  .hs-more__row button { box-sizing: border-box; min-height: 48px; border-radius: 999px; font: 700 15px/1.2 "HS DM Sans", "DM Sans", system-ui, sans-serif; cursor: pointer; }
-  .hs-more__no { border: 1.5px solid #121010; background: #FFFDF9; color: #121010; }
-  .hs-more__pay { border: 0; background: #121010; color: #FBF6F1; }
-  .hs-more__pay[disabled] { background: #CFC4BB; color: #121010; cursor: default; }
-{% endstylesheet %}

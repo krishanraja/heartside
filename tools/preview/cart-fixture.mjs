@@ -60,10 +60,10 @@ export function cartEngine(dir = snippets) {
 }
 
 // Renders the cart rows; `css` is the snippet's own {% stylesheet %}, which Shopify serves separately.
-export async function renderCart(items, {context = '', image_ratio = 'portrait', dir, all_products = {}} = {}) {
+export async function renderCart(items, {context = '', image_ratio = 'portrait', dir} = {}) {
   const {engine, css} = cartEngine(dir);
   const cart = {'empty?': false, items, item_count: items.reduce((s, i) => s + i.quantity, 0), total_price: items.reduce((s, i) => s + i.final_line_price, 0)};
-  const html = await engine.renderFile('cart-products', {cart, context, block: {settings: {image_ratio, gap: 24, dividers: false}, shopify_attributes: ''}, settings: {cart_thumbnail_border_radius: 0}, routes: {cart_url: '/cart', root_url: '/'}, shop: {}, all_products});
+  const html = await engine.renderFile('cart-products', {cart, context, block: {settings: {image_ratio, gap: 24, dividers: false}, shopify_attributes: ''}, settings: {cart_thumbnail_border_radius: 0}, routes: {cart_url: '/cart', root_url: '/'}, shop: {}});
   return {html: html.replace(/<script\b[^>]*>\s*<\/script>/g, ''), css: css.join('\n')};
 }
 

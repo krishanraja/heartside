@@ -22,7 +22,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
-import {renderCart, giftLine, addon, asset, HELIO_TOKENS, ID, ID2} from './cart-fixture.mjs';
+import {renderCart, cartEngine, giftLine, HELIO_TOKENS, ID, ID2} from './cart-fixture.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(here, 'out'), shots = path.join(out, 'cart-more');
@@ -31,9 +31,8 @@ if (!fs.existsSync(path.join(out, 'assets', 'hs-cart-more.js'))) execFileSync(pr
 const ID3 = 'cccccccc-3333-4333-8333-cccccccccccc';
 
 // the three gifts as render.mjs renders them (the same ids, so the gift pages in out/ match)
-const opt = (o) => o;
 const MUG = {id: 16160217956734, handle: 'your-dogs-illustrated-mug', title: "Your Dog's Illustrated Mug", url: '/products/your-dogs-illustrated-mug', available: true,
-  variants: ['Black', 'Dark Blue', 'Dark Green', 'Pink', 'Red'].map((c, i) => ({id: 58300000000001 + i, title: c + ' / 11 oz', options: opt(["Your Dog's Illustrated Mug", c, '11 oz']), price: 4500, available: true}))};
+  variants: ['Black', 'Dark Blue', 'Dark Green', 'Pink', 'Red'].map((c, i) => ({id: 58300000000001 + i, title: c + ' / 11 oz', options: ["Your Dog's Illustrated Mug", c, '11 oz'], price: 4500, available: true}))};
 const PORTRAIT = {id: 16151384260990, handle: 'your-dogs-portrait', title: "Your Dog's Portrait", url: '/products/your-dogs-portrait', available: true,
   variants: [['Framed', 'Black', 11900], ['Framed', 'Red Oak', 11900], ['Framed', 'White', 11900], ['Unframed', 'Default', 5900]].map(([f, c, p], i) => ({id: 58300000000006 + i, title: f + ' / ' + c, options: [f, c, '12″×18″'], price: p, available: true}))};
 const BLANKET = {id: 16158073880958, handle: 'your-dogs-personality-blanket', title: "Your Dog's Personality Blanket", url: '/products/your-dogs-personality-blanket', available: true,
@@ -73,13 +72,19 @@ const summary = `<div class="cart-summary"><div class="cart-totals"><div class="
 <div class="cart-totals__item cart-totals__tax-note cart-primary-typography"><small>Taxes and <a href="/policies/shipping-policy">shipping</a> calculated at checkout. </small></div>
 <button type="submit" form="cart-form" name="checkout" class="button cart__checkout-button">Check out</button></div>`;
 const memo = (live = true, deadline = '2099-12-04') => `<div class="hs2-memo" data-hs2-memo${live ? ' data-hs-bundle-live' : ''} data-deadline="${deadline}" hidden></div>`;
+// the memo strip's part on the cart template (sections/hs2-memo.liquid renders snippets/hs-cart-more.liquid)
+async function drawerPart() {
+  const {engine} = cartEngine();
+  engine.registerFilter('stylesheet_tag', href => '<link rel="stylesheet" href="' + href + '">');
+  return engine.renderFile('hs-cart-more', {products: all_products, root: '/'});
+}
 async function cartPage(items, {live = true, deadline, drawer = true} = {}) {
-  const {html, css} = await renderCart(items, {all_products});
+  const {html, css} = await renderCart(items);
   const head = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cart</title>
 <style>${HELIO_TOKENS}</style><link rel="stylesheet" href="/assets/standin.css"><style>${css}</style><link rel="stylesheet" href="/assets/hs-brand.css"><link rel="stylesheet" href="/assets/hs2.css">${ANALYTICS}
 <script src="/assets/hs2.js" defer></script></head>`;
-  return `${head}<body>${memo(live, deadline)}<main id="MainContent"><cart-items-component class="cart-items-component" data-section-id="main"><div class="section section--page-width"><div class="cart-page"><div class="cart-page__items">${html.replace(/\/mock\//g, '/mock/')}</div><div class="cart-page__summary">${summary}</div></div></div></cart-items-component></main>
-${drawer ? '<script src="/assets/hs-cart-more.js" defer></script>' : ''}</body></html>`;
+  return `${head}<body><div class="hs2">${memo(live, deadline)}${drawer ? await drawerPart() : ''}</div><main id="MainContent"><cart-items-component class="cart-items-component" data-section-id="main"><div class="section section--page-width"><div class="cart-page"><div class="cart-page__items">${html}</div><div class="cart-page__summary">${summary}</div></div></div></cart-items-component></main>
+</body></html>`;
 }
 const cartJs = items => JSON.stringify({items: items.map(it => ({key: it.key, product_title: it.product.title, properties: it.properties})),
   total_discount: items.length === 2 ? 2610 : items.length === 3 ? 4660 : 0});
@@ -407,6 +412,21 @@ test('reduced motion: it fades in, with no slide and no bounce', async () => {
     assert.ok(frames.length > 3);
     assert.ok(frames.every(([t]) => t === 'none'), 'no transform at any frame');
     assert.equal(frames[0][1], 'hs-more-fade');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('the rendered cart page (render.mjs, with Helio\'s drawer markup and the bundle switch off): the drawer\'s data is there, nothing breaks, and it stays out of the way', async () => {
+  const ctx = await browser.newContext({viewport: {width: 390, height: 844}});
+  const tab = await ctx.newPage(), errors = [];
+  tab.on('pageerror', e => errors.push(e.message));
+  await tab.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
+  try {
+    await tab.goto(base + '/cart.html');
+    await tab.waitForTimeout(2500);
+    const r = await tab.evaluate(() => ({cfg: JSON.parse(document.querySelector('[data-hs-more-config]').textContent).gifts.map(g => g.gift), api: !!window.HSCartMore,
+      opener: !!document.querySelector('[data-hs-more-open]'), drawer: !!document.querySelector('[data-hs-more]:not([hidden])'), inDrawer: !!document.querySelector('#cart-drawer [data-hs-more-config], cart-drawer-component [data-hs-more-config]')}));
+    assert.deepEqual(r, {cfg: ['print', 'mug', 'blanket'], api: true, opener: false, drawer: false, inDrawer: false});
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
