@@ -749,7 +749,7 @@
     var list = [], add = function (o) { if (o) for (var k in o) if (o[k]) list.push(o[k]); };
     if (step === 'photo') add(cfg.examples);
     if (step === 'photo' || step === 'look') add(cfg.toneExamples);
-    if (step === 'look' || step === 'tone') add(cfg.scenes);
+    if (step === 'look' || step === 'tone' || step === 'spot') add(cfg.scenes);
     ahead.done = ahead.done || {};
     list.forEach(function (src) { if (ahead.done[src]) return; ahead.done[src] = true; var im = new Image(); im.decoding = 'async'; im.src = src; });
   }

@@ -160,6 +160,8 @@ async function walk(page) {
   await page.waitForSelector('[data-hsj-screen="tone"]'); await settled(page); await page.waitForTimeout(250);
   await page.locator('[data-hsj-feel="warm"]').click();
   await page.locator('[data-hsj-next]').click();
+  await page.waitForSelector('[data-hsj-screen="spot"]'); await settled(page); await page.waitForTimeout(250);
+  await pick(page, 'spot', 'couch');
   await page.waitForSelector('[data-hsj-screen="gifts"]'); await settled(page); await page.waitForTimeout(250);
   await page.locator('[data-hsj-gift="print"]').click();
   await page.waitForTimeout(250);
@@ -176,7 +178,7 @@ async function walk(page) {
   await page.waitForSelector('[data-hsj-screen="person"]'); await settled(page);
   await page.locator('[data-hsj-person]').fill('Mom');
   await page.locator('[data-hsj-next]').click();
-  for (const [id, v] of [['home', 'door'], ['spot', 'couch'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); await settled(page); await pick(page, id, v); }
+  for (const [id, v] of [['home', 'door'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); await settled(page); await pick(page, id, v); }
   await page.waitForSelector('[data-hsj-screen="words"]'); await settled(page);
   await page.waitForTimeout(600);
   await page.locator('[data-hsj-next]').click();
