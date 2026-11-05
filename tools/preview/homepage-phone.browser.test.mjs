@@ -61,7 +61,7 @@ for (const [width, height, most] of PHONES) {
     assert.equal(await page.evaluate(() => window.innerWidth), width, 'nothing pushes the page wider than the phone');
     const total = await page.evaluate(() => document.documentElement.scrollHeight);
     assert.ok(total <= most * height, `the page is ${(total / height).toFixed(2)} screens, at most ${most}`);
-    const btn = page.locator('.hsj-hook [data-hsj-go="name"]');
+    const btn = page.locator('.hsj-hook [data-hsj-go="photo"]');
     for (const y of [0, total / 2, total]) {
       await page.evaluate((to) => window.scrollTo(0, to), y);
       await page.waitForTimeout(80);
@@ -109,20 +109,20 @@ for (const [width, height, most] of PHONES) {
 
 test('the button: heart pink with an ink label that reads, pulsing, still for reduced motion, and it starts the journey', async () => {
   const {ctx, page} = await open({width: 360, height: 780});
-  const css = await page.$eval('.hsj-hook [data-hsj-go="name"]', (a) => { const c = getComputedStyle(a); return {bg: c.backgroundColor, fg: c.color, anim: c.animationName, pos: getComputedStyle(a.parentElement).position}; });
+  const css = await page.$eval('.hsj-hook [data-hsj-go="photo"]', (a) => { const c = getComputedStyle(a); return {bg: c.backgroundColor, fg: c.color, anim: c.animationName, pos: getComputedStyle(a.parentElement).position}; });
   assert.equal(css.bg, 'rgb(231, 161, 191)', 'the logo heart pink');
   assert.equal(css.pos, 'fixed');
   assert.equal(css.anim, 'hs-heart-pulse');
   const lum = (rgb) => { const [r, g, b] = rgb.match(/\d+/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
   const [hi, lo] = [lum(css.bg), lum(css.fg)].sort((a, b) => b - a);
   assert.ok((hi + 0.05) / (lo + 0.05) >= 4.5, 'the label reads at 4.5:1 or better');
-  await page.click('.hsj-hook [data-hsj-go="name"]');
+  await page.click('.hsj-hook [data-hsj-go="photo"]');
   await page.waitForTimeout(200);
-  assert.match(page.url(), /[?&]step=name/);
+  assert.match(page.url(), /[?&]step=photo/);
   assert.equal(await page.locator('.hsj-dock--pin').isVisible(), false, 'the pinned button goes with the first screen');
   await ctx.close();
   const still = await open({width: 360, height: 780, motion: 'reduce'});
-  assert.equal(await still.page.$eval('.hsj-hook [data-hsj-go="name"]', (a) => getComputedStyle(a).animationName), 'none');
+  assert.equal(await still.page.$eval('.hsj-hook [data-hsj-go="photo"]', (a) => getComputedStyle(a).animationName), 'none');
   await still.ctx.close();
 });
 
@@ -149,7 +149,7 @@ test('desktop: the photo-to-gift slider sits in the carousel\'s section, under t
   await page.waitForSelector('.hsj-hook .hss-flow.is-live');
   await page.waitForTimeout(400);
   const hero = await page.locator('.hsj-hook .hss--hero').boundingBox();
-  const btn = await page.locator('.hsj-hook [data-hsj-go="name"]').boundingBox();
+  const btn = await page.locator('.hsj-hook [data-hsj-go="photo"]').boundingBox();
   const flow = await page.locator('.hsj-hook [data-hss-stage]').boundingBox();
   assert.ok(flow.x + flow.width < hero.x, 'the slider is left of the carousel');
   assert.ok(flow.y > btn.y + btn.height, 'the slider is under the button');

@@ -356,6 +356,19 @@
     }, 300);
     return true;
   }
+  /* Photo first (4 Nov): the buyer answers about the dog and the note while the gift paints, on this page
+     (hs-journey.js in gift mode). Their answers go onto the order here: the names, the note's lines and the
+     answers, read by Teeinblue's note fields at the next bridge. Nothing that painted the picture is touched
+     (the facts, the style and tone, the energy, the brief), so the painting is never read as stale. */
+  var JOURNEY_ANSWER_KEYS = ['dog', 'person', 'hs_ship_to', 'hs_answers', 'hs_breed_id', 'hs3_lines', 'hs3_mug_lines'];
+  function journeyAnswers(p) {
+    if (!p || !journey()) return false;
+    JOURNEY_ANSWER_KEYS.forEach(function (k) { if (Object.prototype.hasOwnProperty.call(p, k)) state[k] = p[k]; });
+    if (p.journey && state.hs_journey) ['tone', 'voice', 'notes', 'answered'].forEach(function (k) { if (Object.prototype.hasOwnProperty.call(p.journey, k)) state.hs_journey[k] = p.journey[k]; });
+    save();
+    try { runBridge(); } catch (e) { /* the next tick fills the fields */ }
+    return true;
+  }
   function journeyAutoSend() {
     var j = journey();
     if (!j) return;
@@ -620,8 +633,9 @@
     var fact = function (src) { var f = facts.filter(function (x) { return x.source === src; })[0]; return f ? f.text : ''; };
     var kind = v3Kind() || (blanketArtPreview() ? 'blanket' : 'portrait');
     try {
+      // v19, photo first (Krish, 4 Nov): the gift paints before any other answer, as the exact dog in the photo
       return engine.briefFields({ style: choice.style, tone: choice.tone, format: kind, breed: b.breed || '', pronoun: b.pronoun || 'they', archetype: b.archetype || '',
-        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy });
+        home: b.home || '', spot: b.spot || '', together: b.together || '', meaning: b.meaning || '', toys: b.toys || fact('toy'), accessory: b.accessory || fact('accessory'), noToy: !!b.noToy, likeness: !!b.likeness });
     } catch (e) { return null; }
   }
   function artworkEnergy() {
@@ -4432,5 +4446,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   document.addEventListener('shopify:section:load', function () { personalizeCatalogCards(); bindInputs(); render(); sticky(); gallery(); steps(); zoom(); approve(); faq(); carousels(); clock(); urgency(); reveal(); shop(); layout(); });
   // for tools/preview tests
-  window.__hs2api = { journey: journey, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
+  window.__hs2api = { journey: journey, journeyAnswers: journeyAnswers, journeySaved: function () { return cityArtSaved(); }, journeyPick: journeyPick, journeyRepaint: journeyRepaint, journeyRepaintLeft: journeyRepaintLeft, state: state, val: val, answer: answer, drawCard: drawCard, caption: caption, shareURL: shareURL, runBridge: runBridge, rules: TIB_RULES, usePhoto: usePhoto, prepareCurrentArtwork: prepareCurrentArtwork, countdownText: countdownText, steps: steps, showCard: showCard };
 })();

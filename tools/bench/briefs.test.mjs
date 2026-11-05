@@ -16,7 +16,7 @@ for (const breed of BREEDS) for (const pronoun of ['he', 'she', 'they']) for (co
     n++;
     if (s.length > longest.length) longest = s;
     assert.ok(s.length <= 220, s);
-    assert.match(s, /^(Tender|Cheerful|Comic|Over-the-top) portrait: an? [A-Za-z -]+/, s);
+    assert.match(s, /^(Tender|Cheerful|Comic|Roast) portrait: an? [A-Za-z -]+/, s);
     assert.ok(!/ {2}|,,| ,|\.\.|,\./.test(s) && s.endsWith('.'), s);
     assert.ok(!COAT.test(s.replace(/Golden Retriever|Goldendoodle/, '')), s);
     for (const t of toys) assert.ok(s.includes(t.split(' ').pop().replace('treats', 'treat')), t + ' missing: ' + s);

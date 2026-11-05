@@ -1,50 +1,62 @@
 {%- comment -%}
-  Journey mode on a gift page (Krish, 29 Oct: show and tell, no scrolling, nothing asked twice).
-  A buyer who came through the journey (sections/hs-journey.liquid) lands here with everything
-  answered: this panel shows the painting as it happens, then the painting on every gift, the
-  bundle, one tick and one button. Everything else on the page is hidden by hs-journey-choose.css,
-  and Teeinblue's own working parts stay in the page, visually hidden, because they paint and add
-  to cart. Behaviour is in assets/hs-journey-choose.js; it shows nothing without a fresh journey.
+  Journey mode on a gift page, photo first (Krish, 4 Nov: "one step at a time, non-duplicative, in the
+  right order, and then the user purchases"; every step should look like the style screen). A buyer who
+  chose the photo, the style and the gifts on the home page lands here: the painter starts at once, the
+  studio shows for a few seconds, the questions about the dog and the note follow in the journey's own
+  frame while it paints (hs-journey.js, gift mode), then the painting on the real product, one tick and
+  one button. Everything else on the page is hidden by hs-journey-choose.css; Teeinblue's working parts
+  stay in the page, visually hidden, because they paint and add to cart. Behaviour is in
+  assets/hs-journey-choose.js; it shows nothing without a fresh photo-first journey.
 {%- endcomment -%}
+{{ 'hs-journey.css' | asset_url | stylesheet_tag }}
 {{ 'hs-journey-choose.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'hs-journey-choose.js' | asset_url }}" defer="defer"></script>
-<section class="hs-jm" data-hs-jm hidden aria-labelledby="hs-jm-title"
-  data-hs-jm-handle="{{ product.handle | escape }}">
-  <header class="hs-jm__head">
-    <a class="hs-jm__back" href="/?step=look" aria-label="Back to the look"><svg class="hs-jm-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></a>
-    <h2 class="hs-jm__title" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
-  </header>
-  {%- comment -%} auto mode: an extra gift from "Add N gifts" says where it is in the order (Krish, 2 Nov) {%- endcomment -%}
-  <p class="hs-jm__auto" data-hs-jm-auto></p>
-  <div class="hs-jm__paint" data-hs-jm-paint>
-    <div class="hs-jm__nophoto" data-hs-jm-nophoto hidden>
-      {%- comment -%} the gift and its price stay in view while the photo is chosen again (audit, 30 Oct) {%- endcomment -%}
-      {%- if product.featured_image -%}<figure class="hs-jm__nophoto-art"><span class="hs-jm__tag">Example</span>{{ product.featured_image | image_url: width: 720 | image_tag: loading: 'lazy', alt: product.featured_image.alt | default: product.title }}</figure>{%- endif -%}
-      <p class="hs-jm__lead" data-hs-jm-nophoto-lead>Your photo didn't come with you to this page. Choose it again. It takes a second.</p>
-      <p class="hs-jm__price">{{ product.title }}, {% if product.price_max > product.price_min %}from {% endif %}{{ product.price_min | money_without_trailing_zeros }}. Free US shipping.</p>
-      <button type="button" class="hs-jm__btn" data-hs-jm-photo>Choose your dog's photo</button>
-    </div>
+<section class="hs-jm" data-hs-jm hidden aria-labelledby="hs-jm-title" data-hs-jm-handle="{{ product.handle | escape }}">
+  <div class="hsj hs-jm__frame hsj__screen hsj__screen--step" data-hs-jm-frame>
+    <header class="hsj-bar">
+      <a class="hsj-icon-btn" href="/?step=gifts" aria-label="Back to the gifts"><svg class="hsj-ico" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></a>
+      <p class="hsj-bar__step" data-hs-jm-step>The painting</p>
+    </header>
+    <div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100"><span data-hs-jm-progress style="width:60%"></span></div>
+    <main class="hsj-content">
+      <div class="hsj-heading">
+        <h2 class="hsj-headline" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
+        <p class="hsj-support" data-hs-jm-sub>Your photo is with the painter.</p>
+      </div>
+      <div class="hsj-body hs-jm__body">
+        <div class="hs-jm__paint" data-hs-jm-paint></div>
+        <div class="hs-jm__reveal" data-hs-jm-reveal hidden>
+          <div class="hs-jm__square">
+            <div class="hs-jm__gallery" data-hs-jm-gallery></div>
+            <div class="hs-jm__close" data-hs-jm-close hidden><img alt="Your dog's painting, up close" width="1000" height="1200" decoding="async"></div>
+          </div>
+          <div class="hs-jm__views" role="group" aria-label="How to see it">
+            <button type="button" class="hsj-chip is-on" aria-pressed="true" data-hs-jm-view="product"><span>On the gift</span></button>
+            <button type="button" class="hsj-chip" aria-pressed="false" data-hs-jm-view="close"><span>Up close</span></button>
+          </div>
+          <button type="button" class="hs-jm__repaint" data-hs-jm-repaint style="visibility:hidden">Not quite right? Paint it again, free</button>
+        </div>
+      </div>
+    </main>
+    <footer class="hsj-dock hs-jm__dock">
+      <label class="hs-jm__tick" data-hs-jm-tickrow style="visibility:hidden"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
+      <button type="button" class="hsj-btn" data-hs-jm-add><span>Next</span><span class="hsj-btn__dots" aria-hidden="true"></span></button>
+      <p class="hs-jm__line" data-hs-jm-line role="status" aria-live="polite"></p>
+    </footer>
   </div>
-  <div class="hs-jm__choose" data-hs-jm-choose hidden>
-    <div class="hs-jm__tiles" role="group" aria-label="Your gifts" data-hs-jm-tiles></div>
-    <div class="hs-jm__options" data-hs-jm-options></div>
-    <p class="hs-jm__bundle" data-hs-jm-bundle><b>You save 15% on 2 gifts.</b> 20% on all 3.</p>
-    <label class="hs-jm__tick"><input type="checkbox" data-hs-jm-tick> <span data-hs-jm-tick-text>Yes, this is my dog</span></label>
-    <div class="hs-jm__dock-auto" data-hs-jm-dock-auto hidden>
-      <p class="hs-jm__auto-say" data-hs-jm-auto-say role="status"></p>
-      <button type="button" class="hs-jm__btn" data-hs-jm-now>Add now</button>
-    </div>
-    <div class="hs-jm__dock"><button type="button" class="hs-jm__btn" data-hs-jm-add disabled>Add to cart</button>
-      <p class="hs-jm__small" data-hs-jm-status role="status"></p>
-      {%- comment -%} the one free repaint, a quiet link under the button (Krish, 2 Nov: the header button looked tacky) {%- endcomment -%}
-      <button type="button" class="hs-jm__repaint" data-hs-jm-repaint hidden>Not quite right? Repaint once, free</button></div>
+  {%- comment -%} the questions, in the same frame, while it paints (hs-journey.js reads data-hsj-mode) {%- endcomment -%}
+  <div class="hsj hs-jm__ask" data-hsj data-hsj-mode="gift" hidden>
+    <script type="application/json" data-hsj-config>{}</script>
+    <div class="hsj-app" data-hsj-app hidden></div>
   </div>
-  {%- comment -%} One free repaint (Krish, 29 Oct): pick the tone once more and the same photo is painted again {%- endcomment -%}
+  {%- comment -%} One free repaint: the same photo and style, painted once more {%- endcomment -%}
   <div class="hs-jm-sheet" data-hs-jm-sheet hidden role="dialog" aria-modal="true" aria-labelledby="hs-jm-sheet-title">
     <div class="hs-jm-sheet__panel">
-      <p class="hs-jm-sheet__title" id="hs-jm-sheet-title">Repaint once, free</p>
-      <p class="hs-jm__small">Pick a tone. We paint the same photo again.</p>
-      <div class="hs-jm-tones" data-hs-jm-tones></div>
+      <p class="hs-jm-sheet__title" id="hs-jm-sheet-title">Paint it again, free</p>
+      <p class="hs-jm__small">We paint the same photo once more, in the same style. You can do this once.</p>
+      <button type="button" class="hsj-btn" data-hs-jm-again><span>Paint it again</span></button>
       <button type="button" class="hs-jm__keep" data-hs-jm-keep>Keep this one</button>
     </div>
   </div>

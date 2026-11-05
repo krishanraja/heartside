@@ -55,10 +55,7 @@
   .hs-wait__things { display: none; }
 }
 
-/* in journey mode the card fills one phone screen (hs-journey-choose.css sizes the canvas from the screen's
-   height); the dog's bubble takes about 100 px of it, so the canvas gives that back */
-.hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100svh - 400px) * var(--hs-art-r, 0.8333))); }
-.hs-jm__paint .hs-art.has-wait .hs-wait__talk { margin: 10px 0 8px; }
+/* in journey mode the card sits in the journey's frame, which sizes the canvas (hs-journey-choose.css) */
 @media (max-height: 700px) {
   .hs-jm__paint .hs-art.has-wait .hs-art__note { display: none; }
   .hs-wait__talk { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
@@ -66,4 +63,4 @@
   .hs-wait__bubble, .hs-wait__fact { min-height: 0; padding: 8px 12px 10px; }
   .hs-wait__say, .hs-wait__fact-text { font-size: 15px; }
 }
-@media (min-width: 900px) { .hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100vh - 460px) * var(--hs-art-r, 0.8333))); } }
+

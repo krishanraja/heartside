@@ -1,5 +1,5 @@
 {
-  "version": "actual-dog-recipes-v18-roast",
+  "version": "actual-dog-recipes-v19-likeness",
   "toneRouting": {
     "textProducts": "copy-and-imagery",
     "wordFreeProducts": "imagery",
@@ -895,6 +895,11 @@
           }
         }
       }
+    },
+    "likeness": {
+      "about": "v19 (Krish, 4 Nov: the painting must look like his exact dog, match the chosen style and invent less scene; the photo comes first and the painting starts before any other question). The Tone direction when a gift paints straight from the photo: no scene, prop or joke from answers the buyer has not given yet. The buyer's tone shapes the note only.",
+      "portrait": "A true likeness of this exact dog: the same face shape, ears, eyes, muzzle, coat colors and markings as in the photo, with {pos} own natural, relaxed expression, both eyes open. Keep anything {sub} {is} wearing in the photo; add nothing else. Scene: a simple, quiet setting, softly out of focus, so the dog is the whole picture. Camera: eye level, close enough that the face is large and clear. Light: soft, flattering natural light. No toy, clothing or prop that is not in the photo.",
+      "blanket": "Figures: the same dog again and again, each a true likeness of the photo (the same face, ears, coat colors and markings), some sitting, some lying, some looking up with a relaxed, happy face. Each figure is the dog alone, with no furniture, setting or props. Every figure is the same dog with the same markings. Light: soft, even natural light."
     }
   }
 }

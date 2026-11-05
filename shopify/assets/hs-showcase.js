@@ -247,7 +247,7 @@
   var top = root.querySelector('[data-hss-top]');
   if (top) {
     top.addEventListener('click', function (e) {
-      var go = document.querySelector('[data-hsj-go="name"]');
+      var go = document.querySelector('[data-hsj-go]');
       if (!go) return;
       e.preventDefault();
       window.scrollTo(0, 0);

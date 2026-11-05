@@ -237,6 +237,13 @@ export function briefFields(input) {
     'Tone direction': toneText,
     'Style direction': b.styles[o.style]
   });
+  if (o.likeness) {
+    // v19 (Krish, 4 Nov): the photo comes first and the gift paints before any other question, so nothing
+    // from the answers stages the picture: the exact dog, the chosen style, a quiet setting
+    const lk = b.likeness;
+    if (format === 'blanket') return fields(lk.blanket);
+    return fields([fill(lk.portrait), fmt && fmt.note ? (o.words === false ? b.fill : fmt.note) : fmt && fmt.fill ? b.fill : ''].filter(Boolean).join(' '));
+  }
   if (format === 'blanket') {
     // v15 (Krish, 29 Oct: the "dog centipede"): the blanket is a scattered pattern of small, whole,
     // separate figures on a plain ground, so it carries no setting, place or camera, only the tone's
