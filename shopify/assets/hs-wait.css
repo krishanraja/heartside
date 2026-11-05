@@ -47,6 +47,8 @@
 
 /* the bar eases towards the end and fills when the painting lands (hs-wait.js sets the width) */
 .hs-art.has-wait .hs-art__bar span { width: 4%; animation: none; transform: none; transition: width .6s ease-out; }
+/* the studio's first frame, drawn where it starts (hs-wait.js still()) */
+.hs-art.is-still .hs-art__bar span, .hs-art.is-still .hs-wait__paint mask path, .hs-art.is-still .hs-art__brush { transition: none !important; }
 .hs-art.has-wait .hs-art__line { font-size: 14px; color: #5A4A44; margin-bottom: 10px; }
 
 @media (prefers-reduced-motion: reduce) {

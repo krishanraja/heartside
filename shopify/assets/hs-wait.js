@@ -100,7 +100,9 @@
   function buildCanvas(src) {
     var canvas = card.querySelector('[data-hs-art-canvas]');
     if (!canvas || !src) return false;
-    var r = canvas.getBoundingClientRect(), w = Math.max(200, Math.round(r.width)), h = Math.max(200, Math.round(r.height));
+    // at least 200 units on the short side, at the canvas's own shape (a 200 x 200 floor squared a small phone's
+    // portrait canvas and stretched the photo)
+    var r = canvas.getBoundingClientRect(), k = Math.max(1, 200 / Math.max(1, Math.min(r.width, r.height))), w = Math.round(Math.max(r.width, 1) * k), h = Math.round(Math.max(r.height, 1) * k);
     stage = document.createElement('div');
     stage.className = 'hs-wait__stage';
     stage.setAttribute('aria-hidden', 'true');
@@ -152,15 +154,26 @@
   }
 
   /* --------------------------------------------------------------------- the talk */
+  /* On a journey's gift page the studio's easel (snippets/hs-journey-choose.liquid) shows the dog's bubble before
+     this card does. The card's bubble is the same one (Krish, 5 Nov: the screen before the painting "isn't a very
+     nice experience"): the easel's label, and its words as the first line, already there, never typed again. */
+  function easelTalk() { return document.querySelector('[data-hs-jm-easel] .hs-jm__talk'); }
+  var adopted = null;
   function buildTalk(d, src) {
     var box = card.querySelector('[data-hs-art-painting]'), title = box && box.querySelector('[data-hs-art-title]');
     if (!box || !title) return;
+    var ez = card.closest && card.closest('[data-hs-jm-paint]') ? easelTalk() : null;
+    var ezWho = ez && ez.querySelector('.hs-wait__who'), ezSay = ez && ez.querySelector('.hs-wait__say');
+    adopted = ezWho && ezSay && ezSay.textContent.trim() ? { who: ezWho.textContent, say: ezSay.textContent } : null;
     bubble = document.createElement('div');
     bubble.className = 'hs-wait__talk';
     bubble.innerHTML = '<button type="button" class="hs-wait__me" data-hs-wait-treat aria-label="Give ' + esc(d.dog) + ' a treat">' +
       (src ? '<img src="' + esc(src) + '" alt="">' : svgIco('paw')) + '<span class="hs-wait__count" data-hs-wait-count hidden></span></button>' +
-      '<div class="hs-wait__bubble"><p class="hs-wait__who">' + esc(d.dog) + ', live from the studio</p><p class="hs-wait__say" data-hs-wait-say aria-live="polite"></p></div>' +
+      '<div class="hs-wait__bubble"><p class="hs-wait__who">' + esc(adopted ? adopted.who : label(d)) + '</p><p class="hs-wait__say" data-hs-wait-say aria-live="polite">' + (adopted ? esc(adopted.say) : '') + '</p></div>' +
       '<div class="hs-wait__fact" data-hs-wait-fact hidden><p class="hs-wait__who">Buddy\'s note</p><p class="hs-wait__fact-text"></p></div>';
+    // the easel's height, held from before the card arrived, until the card has measured its own
+    var h = ez && ez.style.getPropertyValue('--hs-wait-h');
+    if (h) bubble.style.setProperty('--hs-wait-h', h);
     title.insertAdjacentElement('afterend', bubble);
     sayEl = bubble.querySelector('[data-hs-wait-say]');
     factEl = bubble.querySelector('[data-hs-wait-fact]');
@@ -168,31 +181,47 @@
     avatar.addEventListener('click', function () { treat(d); });
     fitTalk(d);
   }
+  function label(d) { return d.dog + ', live from the studio'; }
 
   /* The bubble never changes size (Krish, 4 Nov: "Nothing on this page must randomly change size with
      volatility like that when text is generating"). Every line the dog or Buddy could say is measured once
      at the bubble's real width, and the bubble is held at the tallest of them; it is measured again only
-     when the width or the fonts change, never while text is typing. */
-  function fitTalk(d) {
-    if (!bubble) return;
+     when the width or the fonts change, never while text is typing. The easel's bubble is measured the same
+     way, over the same lines, so the two are one height. */
+  function measureTalk(talk, d, who0, extra) {
     var L = lines(d), facts = window.HSBreedFacts ? window.HSBreedFacts.for(d.breed) : [], breed = breedName(d);
-    var says = L.open.concat(L.mid, L.long, TREATS.map(function (t) { return t.replace('{n}', '99'); }));
+    var says = L.open.concat(L.mid, L.long, TREATS.map(function (t) { return t.replace('{n}', '99'); }), extra || []);
     var probe = document.createElement('div');
     probe.className = 'hs-wait__probe';
     probe.setAttribute('aria-hidden', 'true');
     probe.innerHTML = '<p class="hs-wait__who"></p><p></p>';
-    bubble.appendChild(probe);
+    talk.appendChild(probe);
     var who = probe.firstChild, p = probe.lastChild, tallest = 0;
-    function measure(kind, label, list) {
+    function measure(kind, text, list) {
       probe.className = 'hs-wait__probe ' + (kind === 'fact' ? 'hs-wait__fact' : 'hs-wait__bubble');
       p.className = kind === 'fact' ? 'hs-wait__fact-text' : 'hs-wait__say';
-      who.textContent = label;
+      who.textContent = text;
       list.forEach(function (t) { p.textContent = t; tallest = Math.max(tallest, probe.offsetHeight); });
     }
-    measure('say', d.dog + ', live from the studio', says);
+    measure('say', who0, says);
     if (facts.length) measure('fact', "Buddy's note" + (breed ? ' on ' + breed : ''), facts);
-    bubble.removeChild(probe);
-    if (tallest) bubble.style.setProperty('--hs-wait-h', Math.ceil(tallest) + 'px');
+    talk.removeChild(probe);
+    // in the journey's frame, never less than the height the bubble had before this script ran
+    // (hs-journey-choose.css --hs-jm-talk-h), so the measuring never shrinks a bubble on screen
+    var floor = parseFloat(window.getComputedStyle(talk).getPropertyValue('--hs-jm-talk-h')) || 0;
+    if (tallest) talk.style.setProperty('--hs-wait-h', Math.ceil(Math.max(tallest, floor)) + 'px');
+    return tallest;
+  }
+  function easelLines(ez) { var s = ez && ez.querySelector('.hs-wait__say'); return s && s.textContent.trim() ? [s.textContent] : []; }
+  function fitEasel() {
+    var ez = easelTalk();
+    if (!ez || !ez.offsetWidth) return;
+    var w = ez.querySelector('.hs-wait__who');
+    measureTalk(ez, info(), w ? w.textContent : label(info()), easelLines(ez));
+  }
+  function fitTalk(d) {
+    if (!bubble) return;
+    measureTalk(bubble, d, adopted ? adopted.who : label(d), adopted ? [adopted.say] : []);
     if (!fitTalk.watching) {
       fitTalk.watching = true;
       var w = bubble.offsetWidth, again = function () { if (bubble && bubble.offsetWidth !== w) { w = bubble.offsetWidth; fitTalk(info()); } };
@@ -307,11 +336,16 @@
       follow.src = src;
       buildTalk(d, src);
       drift(d);
+      // the first frame is drawn where it starts, never animated there: without this the bar shrank from the
+      // sweep's 38% and the photo un-painted from full colour in the card's first half second (5 Nov)
+      still(true);
       card.classList.add('has-wait');
       built = true;
       start = startTime();
     }
     clearInterval(timer);
+    // the first line is the easel's, already in the bubble: the next one comes a beat from now
+    if (adopted && beat === 0 && sayEl && sayEl.textContent) lastSay = Date.now();
     var tick = function () {
       if (card.getAttribute('data-state') !== 'painting') { finish(d); return; }
       follow();
@@ -320,11 +354,13 @@
       bar(Math.min(0.95, 1 - Math.exp(-t / 70000)));
       if (Date.now() - lastSay >= BEAT) next(d, L, t);
     };
-    next(d, L, 0);
+    if (!(adopted && beat === 0 && sayEl && sayEl.textContent)) next(d, L, 0);
     tick();
+    if (card.classList.contains('is-still')) requestAnimationFrame(function () { requestAnimationFrame(function () { still(false); }); });
     timer = setInterval(tick, 500);
     return true;
   }
+  function still(on) { if (card) card.classList.toggle('is-still', on); }
   function finish(d) {
     clearInterval(timer); timer = null; clearInterval(typing);
     if (!built) return;
@@ -343,12 +379,20 @@
     if (bubble && bubble.parentNode) bubble.parentNode.removeChild(bubble);
     if (brush) { brush.style.transform = ''; brush.style.animation = ''; }
     var b = card.querySelector('[data-hs-art-bar] span'); if (b) b.style.width = '';
-    built = false; beat = 0; fitTalk.watching = false; stage = bubble = null; svg = avatar = null; paths = []; lens = []; follow.src = '';
+    built = false; beat = 0; fitTalk.watching = false; stage = bubble = null; svg = avatar = null; paths = []; lens = []; follow.src = ''; adopted = null;
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden && titleWas) { document.title = titleWas; titleWas = ''; } });
 
   function watch() {
     card = document.querySelector('[data-hs-art]');
+    // the easel's bubble takes the card's height before the card arrives, and again when the width or fonts change
+    var ez = easelTalk();
+    if (ez) {
+      fitEasel();
+      var ew = ez.offsetWidth;
+      if (window.ResizeObserver) new ResizeObserver(function () { var nw = ez.offsetWidth; if (nw && nw !== ew) { ew = nw; fitEasel(); } }).observe(ez);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitEasel);
+    }
     if (!card) return;
     var check = function () {
       var painting = card.getAttribute('data-state') === 'painting';
@@ -359,6 +403,6 @@
     setInterval(check, 1500);
     check();
   }
-  window.__hsWait = { lines: lines, info: info, reach: reach, treats: TREATS };
+  window.__hsWait = { lines: lines, info: info, reach: reach, treats: TREATS, fitEasel: fitEasel };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();

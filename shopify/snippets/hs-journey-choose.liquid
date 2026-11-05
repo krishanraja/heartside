@@ -27,24 +27,27 @@
     <main class="hsj-content">
       <div class="hsj-heading">
         <h2 class="hsj-headline" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
-        <p class="hsj-support" data-hs-jm-sub>The painter is getting ready.</p>
+        <p class="hsj-support" data-hs-jm-sub>A few quick questions while your painting starts.</p>
       </div>
       <div class="hsj-body hs-jm__body">
         <div class="hs-jm__paint" data-hs-jm-paint>
           {%- comment -%} The easel: the studio from the first paint of the page, before Teeinblue's painter opens and
           hs2.js shows its own painting card here (5 Nov judges: nine of eleven buyers saw an empty "Painting your
-          dog"). The buyer's own photo, the wash and the brush, at the card's size; the card takes its place.
-          {%- endcomment -%}
+          dog"). It is the card's first frame (Krish, 5 Nov: "Is there no way we can mask that from the user's
+          view?"): the buyer's whole photo, read from this device before the scripts load, the wash, the brush, the
+          dog's one speech bubble and the card's bar row, so nothing changes size, label or text when the card
+          takes its place. {%- endcomment -%}
           <div class="hs-art hs-jm__easel" data-hs-jm-easel style="{% if s.native_artwork_kind == 'mug' %}--hs-art-ratio: 3 / 2; --hs-art-r: 1.5{% elsif s.native_artwork_kind == 'print' %}--hs-art-ratio: 2 / 3; --hs-art-r: 0.6667{% else %}--hs-art-ratio: 5 / 6; --hs-art-r: 0.8333{% endif %}">
             <div class="hs-art__canvas">
               <div class="hs-art__wash" aria-hidden="true"><i></i><i></i><i></i></div>
-              <img class="hs-art__photo" data-hs-jm-photo alt="" width="480" height="480" hidden>
+              <img class="hs-art__photo" data-hs-jm-photo alt="" width="480" height="480" decoding="sync" hidden>
               <svg class="hs-art__brush" aria-hidden="true" viewBox="0 0 64 64" width="56" height="56"><path d="M44 6c4 0 14 10 14 14 0 3-16 20-22 24l-6-6c4-6 11-32 14-32Z" fill="#121010"/><path d="M28 40l6 6c-2 6-7 12-16 12-5 0-10-2-12-4 6-1 8-4 9-8 1-5 7-8 13-6Z" fill="#a8284e"/></svg>
             </div>
             <div class="hs-wait__talk hs-jm__talk">
               <span class="hs-wait__me" aria-hidden="true"><img data-hs-jm-face alt="" width="52" height="52" hidden><svg class="hs-wait__ico" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="9" r="2.2"/><circle cx="10" cy="5.6" r="2.2"/><circle cx="14" cy="5.6" r="2.2"/><circle cx="17.5" cy="9" r="2.2"/><path d="M12 11c3 0 6 3.6 6 6.4 0 2-1.6 2.9-3.2 2.9-1.3 0-1.9-.7-2.8-.7s-1.5.7-2.8.7C7.6 20.3 6 19.4 6 17.4 6 14.6 9 11 12 11Z"/></svg></span>
-              <div class="hs-wait__bubble"><p class="hs-wait__who" data-hs-jm-who>Live from the studio</p><p class="hs-wait__say" data-hs-jm-say role="status" aria-live="polite">Getting the paints out. Your photo goes on the easel first.</p></div>
+              <div class="hs-wait__bubble"><p class="hs-wait__who" data-hs-jm-who>your dog, live from the studio</p><p class="hs-wait__say" data-hs-jm-say role="status" aria-live="polite">Getting the paints out. My photo goes on the easel first.</p></div>
             </div>
+            <div class="hs-art__bar" aria-hidden="true"><span></span></div>
           </div>
         </div>
         <div class="hs-jm__reveal" data-hs-jm-reveal hidden>
@@ -87,7 +90,7 @@
      takes it back if this guessed wrong. */
   (function (root) {
     try {
-      var j = (JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}).hs_journey, h = root.getAttribute('data-hs-jm-handle');
+      var rv = JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}, j = rv.hs_journey, h = root.getAttribute('data-hs-jm-handle');
       if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) return;
       var on = /[?&]journey=1(&|$)/.test(location.search);
       // the same rules as hs2.js journey(): this product's own key, and a gift in this journey's queue
@@ -99,6 +102,36 @@
         // a later gift comes after the first one's questions: its line starts where they left it
         var at = 0; (j.queue || []).forEach(function (q, i) { var m = /\/products\/([^/?#]+)/.exec(q.url || ''); if (m && m[1] === h && !at) at = i; });
         var bar = root.querySelector('[data-hs-jm-progress]'); if (bar && at > 0) bar.style.width = '95%';
+        // the words hs-journey-choose.js will write, written now, so nothing flips when it loads
+        var NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' }, who = String(rv.dog || '').trim(), g = NAME[((j.queue || [])[at] || {}).gift];
+        var set = function (sel, t) { var el = root.querySelector(sel); if (el && t) el.textContent = t; };
+        set('[data-hs-jm-who]', (who || 'your dog') + ', live from the studio');
+        if (at === 0) set('[data-hs-jm-title]', 'Painting ' + (who || 'your dog'));
+        else if (g) { set('[data-hs-jm-title]', 'Now the ' + g); set('[data-hs-jm-sub]', 'Painting ' + (who || 'your dog') + ' for the ' + g + ', from the same photo, in the same style.'); }
+        // the screen reader hears the studio, never the hidden product page and its photo notes under it
+        var buy = root.parentNode; if (buy && buy.id === 'buy') for (var c = buy.firstElementChild; c; c = c.nextElementSibling) if (c !== root) c.setAttribute('aria-hidden', 'true');
+        /* the buyer's own photo on the easel from the first paint, read from this device as hs2.js reads it
+           (speed review, 5 Nov: the scripts wait seconds behind Teeinblue's). The store is made exactly as
+           hs2.js makes it, so a device with no photo database is never left with one hs2.js cannot use. */
+        var pt = rv.hs3_photo_t, pn = rv.hs3_photo_next;
+        if (pt && window.indexedDB && window.URL && URL.createObjectURL) {
+          var o = indexedDB.open('hs2', 1);
+          o.onupgradeneeded = function () { o.result.createObjectStore('files'); };
+          o.onsuccess = function () {
+            var db = o.result, rq;
+            try { rq = db.transaction('files', 'readonly').objectStore('files').get('headshot'); } catch (e) { db.close(); return; }
+            rq.onerror = function () { db.close(); };
+            rq.onsuccess = function () {
+              db.close();
+              var rec = rq.result;
+              if (!rec || !rec.file || (rec.t !== pt && rec.t !== pn) || Date.now() - rec.t >= 3 * 864e5 || window.__hsjmPhoto) return;
+              var u = window.__hsjmPhoto = URL.createObjectURL(rec.file), easel = root.querySelector('[data-hs-jm-easel]');
+              ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) { var img = root.querySelector(sel); if (img && !img.getAttribute('src')) { img.src = u; img.hidden = false; } });
+              var paw = root.querySelector('.hs-jm__talk .hs-wait__ico'); if (paw) paw.style.display = 'none';
+              if (easel) easel.style.setProperty('--hs-jm-photo', 'url("' + u + '")');
+            };
+          };
+        }
       }
     } catch (e) { /* hs-journey-choose.js decides once the page has loaded */ }
   })(document.currentScript.previousElementSibling);

@@ -37,7 +37,10 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 
 /* the painting card in the frame: the headline already says what is happening, so the card shows the canvas,
    the dog's bubble (fixed size, hs-wait.css) and the bar; the canvas takes the height the rest leaves */
-.hs-jm__paint { width: 100%; display: flex; justify-content: center; }
+/* the easel and the card share one cell, so the card is laid out (and hs-wait.js measures it) at its own size even in
+   the frame where the easel has not stepped aside yet; the column is definite so a card never collapses */
+.hs-jm__paint { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: stretch; }
+.hs-jm__paint > * { grid-area: 1 / 1; }
 .hs-jm__paint .hs-art { margin: 0; padding: 0; width: 100%; background: none; box-shadow: none; border: 0; }
 .hs-jm__paint .hs-art__title, .hs-jm__paint .hs-art__line, .hs-jm__paint .hs-art__elapsed, .hs-jm__paint .hs-art__note { display: none !important; }
 /* the painting card's own finished-state controls stay out of the journey's frame: the journey has its own tick,
@@ -47,10 +50,32 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__paint .hs-art__canvas, .hs-jm__paint .hs-art.has-wait .hs-art__canvas { width: min(100%, calc((100svh - 470px) * var(--hs-art-r, 0.8333))); }
 .hs-jm__paint .hs-wait__talk { margin: 12px 0 10px; }
 .hs-jm__easel { display: grid; justify-items: stretch; }
-.hs-jm__easel .hs-art__photo { animation-duration: 2.4s; }
+/* the easel is the painting card's first frame (hs-wait.css, hs-wait.js buildCanvas): the whole photo in grey at
+   .55 over a soft blurred copy at .35, the wash at .35, the brush on top, the dog's bubble at the card's fitted
+   height (hs-wait.js fits both) and the card's bar row, unfilled, as the card's bar starts */
+.hs-jm__easel .hs-art__wash i { opacity: .35; }
+.hs-jm__easel .hs-art__canvas::before { content: ""; position: absolute; inset: -6%; z-index: 1; background: var(--hs-jm-photo, none) center / cover no-repeat; filter: blur(14px); opacity: .35; pointer-events: none; }
+.hs-jm__easel .hs-art__photo, .hs-jm__easel .hs-art__photo[src] { top: 0; left: 0; width: 100%; height: 100%; z-index: 1; object-fit: contain; border-radius: 0; mix-blend-mode: normal; filter: grayscale(1); opacity: .55; animation: none; }
+/* the device's photo arrives a few frames after the first paint: it settles in instead of popping */
+.hs-jm__easel .hs-art__photo { transition: opacity .2s ease-out; }
+@starting-style { .hs-jm__easel .hs-art__photo { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hs-jm__easel .hs-art__photo { transition: none; } }
+.hs-jm__easel .hs-art__brush { z-index: 3; }
+.hs-jm__easel .hs-art__bar span { width: 0; animation: none; transform: none; }
 .hs-jm__talk { width: 100%; }
 .hs-jm__talk .hs-wait__me { cursor: default; overflow: hidden; }
-.hs-jm__talk .hs-wait__say { min-height: 40px; }
+/* the bubble's height before hs-wait.js has measured, and the least it measures to (hs-wait.js measureTalk): what it
+   measures for the dog's lines at these sizes, so the bubble has one size from the first paint, and the card's
+   bubble the same one. A line that needs more room still gets it. */
+.hs-jm__paint { --hs-jm-talk-h: 108px; }
+@media (max-height: 700px) { .hs-jm__paint { --hs-jm-talk-h: 99px; } }
+@media (max-width: 359px) { .hs-jm__paint { --hs-jm-talk-h: 137px; } }
+@media (min-width: 900px) and (min-height: 701px) { .hs-jm__paint { --hs-jm-talk-h: 84px; } }
+.hs-jm__talk .hs-wait__bubble { height: var(--hs-wait-h, var(--hs-jm-talk-h)); }
+/* the card's favourite things arrive softly instead of popping in at the handover */
+.hs-jm__paint .hs-wait__things { animation: hs-jm-in .6s ease-out both; }
+@keyframes hs-jm-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hs-jm__paint .hs-wait__things { animation: none; } }
 
 /* the reveal: one square of fixed size holds Teeinblue's mockups (the painting placed on the product by its
    own engine) or the painting itself up close; two chips switch between them */

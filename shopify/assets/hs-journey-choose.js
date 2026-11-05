@@ -57,30 +57,63 @@
      seconds). It carries the buyer's own photo and a line from the studio, and steps aside for the card. */
   function cardOn() { return !!art && !art.hidden && art.getAttribute('data-state') !== 'idle'; }
   function ownPhoto() {
+    // the snippet's inline script read this device's photo before any script loaded: the same picture, kept
+    if (window.__hsjmPhoto) return window.__hsjmPhoto;
     if (ownPhoto.url) return ownPhoto.url;
     var f = window.__hs2api && window.__hs2api.usePhoto && window.__hs2api.usePhoto.file;
     try { if (f && window.URL && URL.createObjectURL) ownPhoto.url = URL.createObjectURL(f); } catch (e) { /* the wash alone */ }
     return ownPhoto.url || '';
   }
+  /* The easel is the card's first frame (Krish, 5 Nov: "a 2-second pre-painting checking screen ... Is there no
+     way we can mask that from the user's view?"). The card takes its place with the same picture, the same
+     bubble (hs-wait.js takes the easel's words as its first line, untyped) and the same bar, and the wash and
+     the brush carry on from where the easel's were, so the handover changes nothing the buyer can see. */
+  function handOver(e) {
+    if (!art || e.hidden) return;
+    var pairs = ['.hs-art__wash i:nth-child(1)', '.hs-art__wash i:nth-child(2)', '.hs-art__wash i:nth-child(3)', '.hs-art__brush'];
+    pairs.forEach(function (sel) {
+      var a = e.querySelector(sel), b = art.querySelector(sel);
+      if (!a || !b || !a.getAnimations || !b.getAnimations) return;
+      var from = a.getAnimations()[0], to = b.getAnimations()[0];
+      try { if (from && to && from.currentTime != null) to.currentTime = from.currentTime; } catch (err) { /* it simply starts again */ }
+    });
+  }
   function easel() {
     var e = $('[data-hs-jm-easel]');
     if (!e) return;
     var on = (phase === 'studio' || phase === 'wait') && !cardOn() && !painted();
+    if (!on) handOver(e);
     if (e.hidden !== !on) e.hidden = !on;
     if (!on) return;
-    var src = photoSrc() || ownPhoto(), d = dog();
+    var src = ownPhoto() || photoSrc();
     ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) {
       var img = $(sel);
-      if (img && src && img.getAttribute('src') !== src) {
+      // a picture already on the easel stays: a new address for the same photo would only flicker it
+      if (img && src && !img.getAttribute('src')) {
         img.src = src; img.hidden = false;
         // the face's paw icon gives way to the photo; the canvas keeps its brush
         var paw = sel === '[data-hs-jm-face]' && img.parentNode.querySelector('.hs-wait__ico');
         if (paw) paw.style.display = 'none';
       }
     });
-    setText('[data-hs-jm-who]', (d ? d + ', live' : 'Live') + ' from the studio');
-    var s = journeyStatus();
-    setText('[data-hs-jm-say]', s === 'sent' ? 'My photo is on the easel. The first strokes go on now.' : src ? 'Getting the paints out. My photo goes on the easel first.' : 'Getting the paints out. Your photo goes on the easel first.');
+    var shown = $('[data-hs-jm-photo]');
+    if (shown && shown.getAttribute('src') && !e.style.getPropertyValue('--hs-jm-photo')) e.style.setProperty('--hs-jm-photo', 'url("' + shown.getAttribute('src').replace(/"/g, '%22') + '")');
+    // one label for the whole studio, the formula hs-wait.js uses; one line from the dog, true before and after
+    // the photo goes, so the bubble says the same thing when the card takes over
+    setText('[data-hs-jm-who]', (String(state().dog || '').trim() || 'your dog') + ', live from the studio');
+    setText('[data-hs-jm-say]', 'Getting the paints out. My photo goes on the easel first.');
+  }
+  /* the product page under the studio is out of sight; the screen reader does not hear it either (checking review,
+     5 Nov: VoiceOver read "Getting your dog's photo ready and removing its location data" from hs2's hidden note).
+     aria-hidden only: never inert or display:none, because Teeinblue keeps working in there. */
+  function quiet(on) {
+    var buy = root && root.parentNode;
+    if (!buy || buy.id !== 'buy') return;
+    for (var c = buy.firstElementChild; c; c = c.nextElementSibling) {
+      if (c === root) continue;
+      if (on && c.getAttribute('aria-hidden') !== 'true') c.setAttribute('aria-hidden', 'true');
+      else if (!on && c.hasAttribute('aria-hidden')) c.removeAttribute('aria-hidden');
+    }
   }
   /* The photo did not come to this page (a private window, a cleared device). hs2.js says so once it has
      read this device's copy (journeyStatus): never a timer, because Teeinblue's painter can take well over
@@ -222,8 +255,9 @@
     }
     if (phase === 'studio' && first()) {
       setText('[data-hs-jm-title]', 'Painting ' + who);
-      // said only once the photo has really gone (5 Nov review)
-      setText('[data-hs-jm-sub]', journeyStatus() === 'sent' ? 'Your photo is with the painter. A few quick questions while it works.' : 'The painter is getting ready. A few quick questions while it starts.');
+      // one line, true from the first paint, before the photo has gone and after (Krish, 5 Nov; the 5 Nov review:
+      // nothing claims the painting has started before it has)
+      setText('[data-hs-jm-sub]', 'A few quick questions while your painting starts.');
       add.disabled = false; add.querySelector('span').textContent = 'Next';
       setNote('');
     } else if (phase === 'studio') {
@@ -394,6 +428,7 @@
     }
   }
   function tick() {
+    quiet(true);
     saveFraming();
     chip();
     easel();
@@ -425,7 +460,7 @@
   var dead = false, ticker = 0;
   function off() {
     var was = document.documentElement.classList.contains('hs-jm-on');
-    document.documentElement.classList.remove('hs-jm-on'); if (root) root.hidden = true;
+    document.documentElement.classList.remove('hs-jm-on'); if (root) { root.hidden = true; quiet(false); }
     // the header the guess hid is cleared again (hs2.js listens to resize)
     if (was) { try { window.dispatchEvent(new Event('resize')); } catch (e) { /* old browser */ } }
   }
@@ -450,6 +485,7 @@
     frame = $('[data-hs-jm-frame]');
     root.hidden = false;
     document.documentElement.classList.add('hs-jm-on');
+    quiet(true);
     if (!early) takeCard();
     root.addEventListener('click', onClick);
     $('[data-hs-jm-tick]').addEventListener('change', onTick);
