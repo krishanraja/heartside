@@ -54,8 +54,11 @@
      the note while it paints. The tone comes before the painting (Krish, 5 Nov: the four tones must change the
      picture while the face stays his dog; recipes v19 lock the face and let the tone change everything else). The toy and what the dog wears are no longer asked: the painting is the dog in
      the photo (Krish, 4 Nov: less invented scene), so they would change nothing. */
-  var HOME = ['photo', 'look', 'tone', 'gifts'];
-  var ASK = ['name', 'breed', 'pro', 'person', 'home', 'spot', 'together', 'meaning'];
+  /* where the dog rules the house comes after the feel and before the gifts, and stages the painting of every gift
+     (Krish, 5 Nov: "one question on the home page"; recipes v20 places): it is the one answer that sets the place
+     without a prop or a new face, and asked here it reaches the painter with no wait on the gift page */
+  var HOME = ['photo', 'look', 'tone', 'spot', 'gifts'];
+  var ASK = ['name', 'breed', 'pro', 'person', 'home', 'together', 'meaning'];
   var GIFT = ASK.concat(['words']);
   var MODE = 'home', STEPS = HOME;
   var MAX_TOYS = 2;
@@ -75,7 +78,7 @@
   function groups(n) {
     return [
       { id: 'home', q: 'When you get home, ' + n.dog + '…', opts: [['door', 'waits at the door'], ['toy', 'brings you something'], ['spin', 'spins in circles'], ['cool', 'plays it cool, for a second']] },
-      { id: 'spot', q: n.possessive + ' spot when you are home', opts: [['feet', 'On your feet'], ['bed', 'Your side of the bed'], ['couch', 'The couch'], ['anywhere', 'Wherever you are']] },
+      { id: 'spot', q: 'Where does ' + (S.dog ? n.dog : 'your dog') + ' rule the house?', sub: MODE === 'home' ? 'We paint them there, on the mug and the portrait.' : '', opts: [['feet', 'On your feet'], ['bed', 'Your side of the bed'], ['couch', 'The couch'], ['anywhere', 'Wherever you are']] },
       { id: 'together', q: 'Best thing you do together', opts: [['walk', 'Walks'], ['coffee', 'Morning coffee'], ['movie', 'Movie nights'], ['naps', 'Naps'], ['car', 'Car rides']] },
       { id: 'meaning', q: 'What ' + n.dog + ' is to ' + n.them, opts: [['shadow', 'A shadow'], ['best', 'A best friend'], ['hard', 'There on hard days'], ['boss', 'The boss of the house']] },
       { id: 'toy', q: n.possessive + ' favorite things', sub: 'Pick up to two. We paint them in.', opts: [['a tennis ball', 'Tennis ball'], ['a big stick', 'Big stick'], ['a squeaky toy', 'Squeaky toy'], ['a rope toy', 'Rope toy'], ['a stuffed toy', 'Stuffed toy'], ['a frisbee', 'Frisbee'], ['a bone', 'Bone'], ['treats', 'Treats']] },
@@ -166,6 +169,7 @@
     if (step === 'photo') return !!S.hasPhoto;
     if (step === 'look') return !!S.style;
     if (step === 'tone') return !!S.tone;
+    if (step === 'spot') return !!S.spot;
     if (step === 'gifts') return chosenGifts().length > 0;
     if (step === 'name') { var n = nameCase(S.dog); return !!(n && n.length <= NAME_MAX); }
     if (step === 'person') { var p = nameCase(S.person); return S.rel === 'self' || !!(p && p.length <= NAME_MAX); }
@@ -284,6 +288,18 @@
     try { st = JSON.parse(window.sessionStorage.getItem(HS2) || '{}') || {}; } catch (e) { st = {}; }
     var kinds = {}, giftCfgs = {};
     ['mug', 'blanket', 'print'].forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) { kinds[x.handle] = g; giftCfgs[g] = { url: x.url, handle: x.handle, price: x.price, priceMax: x.priceMax }; } });
+    /* back on the home page after the painting started (the gift page's Back to the gifts), with the same photo,
+       look, feel and spot: the same journey goes on with the gifts as chosen now, so a gift already painted is not
+       painted again and the answers already given stay (5 Nov review: Start painting again made a second paid
+       painting). A changed choice is a new painting, which is what the buyer asked for. */
+    var was = st.hs_journey, photoT = S.hasPhoto ? S.photoT : 0;
+    if (was && was.mode === 'photo-first' && was.t && Date.now() - was.t < 6 * 36e5 && photoT && was.photoT === photoT &&
+        was.style === S.style && was.tone === S.tone && (was.spot || '') === (S.spot || '') && queue.length) {
+      was.queue = queue; was.gift = queue[0].gift; was.gifts = journeyGifts();
+      st.hs3_kinds = kinds; S.giftCfg = giftCfgs; save();
+      try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
+      return queue;
+    }
     st.dog = ''; st.person = ''; st.hs3_lines = null; st.hs3_mug_lines = null; st.hs3_copy_owner = 'generated';
     st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
     st.hs3_kinds = kinds;
@@ -291,10 +307,10 @@
     st.hs3_art_profile = window.HSArtworkProfile ? window.HSArtworkProfile.fromChat({}) : null;
     st.hs3_energy = '';
     st.hs3_art_choices = { style: S.style, tone: S.tone };
-    st.hs_brief_input = { breed: '', pronoun: 'they', archetype: '', likeness: true };
+    st.hs_brief_input = { breed: '', pronoun: 'they', archetype: '', likeness: true, spot: S.spot || '' };
     st.hs_breed_id = '';
     st.hs_ship_to = '';
-    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: S.tone, style: S.style, photoT: S.hasPhoto ? S.photoT : 0,
+    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: S.tone, style: S.style, spot: S.spot || '', photoT: S.hasPhoto ? S.photoT : 0,
       queue: queue, gifts: journeyGifts(), notes: {}, answered: false, compose: { url: cfg.composeUrl || '', ai: !!cfg.ai } };
     S.giftCfg = giftCfgs; save();
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
@@ -349,14 +365,14 @@
   /* five parts across both pages, not "Step 1 of 12" (audit, 30 Oct: the count says how long it is before
      it starts): the photo, the look, the gifts, then, while it paints, the dog and the note. On the gift
      page the header carries a small painting badge (hs-journey-choose.js keeps it current). */
-  var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', gifts: 'The gifts', words: 'The note' };
-  function partOf(step) { return { photo: 1, look: 2, tone: 3, gifts: 4, words: 6 }[step] || 5; }
+  var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', spot: 'The feel', gifts: 'The gifts', words: 'The note' };
+  function partOf(step) { return { photo: 1, look: 2, tone: 3, spot: 3, gifts: 4, words: 6 }[step] || 5; }
   /* one line that only ever moves forward, across both pages (5 Nov judges: it ran 31% at the gifts, 60% in the
-     studio, 38% at the first question, 100% at the note and 60% again while it painted). The home page's four
-     steps fill 10 to 40%, the studio 45% (hs-journey-choose.js), the questions 50 to 85%, the note 90%, the last
+     studio, 38% at the first question, 100% at the note and 60% again while it painted). The home page's steps
+     share 8 to 40%, the studio 45% (hs-journey-choose.js), the questions 50 to 85%, the note 90%, the last
      wait 95% and the painting on the gift 100%. */
   function pctOf(step) {
-    var h = HOME.indexOf(step); if (h !== -1) return (h + 1) * 10;
+    var h = HOME.indexOf(step); if (h !== -1) return Math.round((h + 1) * 40 / HOME.length);
     var a = GIFT.indexOf(step); return a === -1 ? 0 : Math.round(50 + a * 40 / (GIFT.length - 1));
   }
   function screen(step, title, sub, body, dockHtml) {
@@ -457,7 +473,7 @@
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
         '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
         '<span class="hsj-style__name">' + esc(TONE_LABEL[t]) + '</span><span class="hsj-style__sub">' + esc(TONE_INFO[t]) + '</span></button>';
-    }).join('') + '</div>', primary('Next: the gifts', 'gifts', true));
+    }).join('') + '</div>', primary('Next: their spot', 'spot', true));
   }
   // the buyer's own photo, small, so they always know what is being painted
   function yours(text) {
@@ -629,7 +645,7 @@
     if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
     if (step === 'photo') warmDetector();
     if (step === 'look' || step === 'gifts') { thumb(); warm(); }
-    if (step === 'look' || step === 'tone' || step === 'gifts') dogsAgain();
+    if (step === 'look' || step === 'tone' || step === 'spot' || step === 'gifts') dogsAgain();
     var input = app.querySelector('[data-hsj-name], [data-hsj-person]');
     if (input) { nameHint(input); if (!('ontouchstart' in window)) input.focus(); }
     if (MODE === 'gift') { try { root.dispatchEvent(new CustomEvent('hsj:step', { bubbles: true, detail: { step: step } })); } catch (e) { /* old browser */ } }
@@ -919,6 +935,8 @@
     app = root.querySelector('[data-hsj-app]');
     try { cfg = JSON.parse(root.querySelector('[data-hsj-config]').textContent); } catch (e) { cfg = {}; }
     MODE = root.getAttribute('data-hsj-mode') === 'gift' ? 'gift' : 'home';
+    // a journey begun before the spot moved to the home page still asks it here, so the note has all its lines
+    if (MODE === 'gift' && !S.spot) { ASK.splice(ASK.indexOf('home') + 1, 0, 'spot'); GIFT = ASK.concat(['words']); }
     STEPS = MODE === 'gift' ? GIFT : HOME;
     root.addEventListener('click', onClick);
     root.addEventListener('input', onInput);

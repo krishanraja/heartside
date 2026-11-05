@@ -581,7 +581,7 @@ test('v11: no unnamed leash, blankets stay in the stated place, and the collage 
   assert.match(nativePrompt('blanket'), /no scene, furniture or landscape behind the dogs\./);
   const collage = nativeFieldValues({style: 'collage', tone: 'warm', format: 'portrait', pronoun: 'she'})['Style direction'];
   assert.ok(collage.includes('hand-cut paper pieces') && collage.includes('no brushwork or fur strands anywhere'));
-  assert.equal(recipes.version, 'actual-dog-recipes-v19-face-locked-tones');
+  assert.equal(recipes.version, 'actual-dog-recipes-v20-place-first');
 });
 
 // v12 (29 Oct): 22 of v11's 24 breed paintings passed; the two shepherd jobs did not
@@ -1013,14 +1013,15 @@ test('v18: Roast paints a visible roast inside the fields, and the spec records 
 // mean". A journey painting locks the face to the photo; each tone changes the staging, body, camera and light, never
 // the face, and nothing comes from answers not given yet. Every older path is unchanged.
 test('v19: journey paintings lock the face to the photo and let each tone change everything else', () => {
+  // v20 adds the places on top of v19 and records the recipes SHA in its own spec; the saved blocks are v19's
   const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-04-v19.md', import.meta.url), 'utf8');
-  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  assert.ok(spec.includes('actual-dog-recipes-v19-face-locked-tones'), 'records the v19 recipe version');
   for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
   const faces = /side-eye|brow|smug(?! or)|grin|deadpan|chin lifted|judging|unimpressed|diva|bratty/i;
   for (const format of ['mug', 'portrait', 'blanket']) {
     const seen = new Set();
     for (const tone of Object.keys(recipes.tones)) for (const style of Object.keys(recipes.styles)) {
-      const v = nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot: 'couch', together: 'walk', toys: 'a tennis ball', accessory: 'a bandana'});
+      const v = nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot: 'anywhere', together: 'walk', toys: 'a tennis ball', accessory: 'a bandana'});
       const t = v['Tone direction'], where = [style, format, tone].join(' ');
       assert.equal(v.Energy, recipes.brief.likeness.energy, where + ': the face lock is the identity line');
       assert.doesNotMatch(t.replace(recipes.brief.likeness.guard, ''), faces, where + ': no face direction');
@@ -1036,4 +1037,40 @@ test('v19: journey paintings lock the face to the photo and let each tone change
   // without likeness, v18 stands
   const roast = nativeFieldValues({style: 'screenprint', tone: 'over_the_top', format: 'portrait', pronoun: 'she', spot: 'couch'})['Tone direction'];
   assert.match(roast, /side-eye|judging|unimpressed/);
+});
+
+// v20 (5 Nov): Krish, "one question on the home page", after the feel: where the dog rules the house. That answer is
+// asked before the painting and stages every tone on the mug, portrait and card; "wherever you are" and no answer keep
+// the tone's own scene, and the blanket's figures carry no setting. Roast shows who lost out by the situation alone,
+// with nobody in the picture (SCOPE rule 3: the person stays out of frame).
+test('v20: the place answer stages every tone, the blanket and the face lock stay, and Roast keeps the person out', () => {
+  const spec = readFileSync(new URL('./teeinblue/PROMPT-SPEC-2026-11-05-v20.md', import.meta.url), 'utf8');
+  assert.ok(spec.includes(recipes.version) && spec.includes(sha256(JSON.stringify(recipes))), 'records the recipe version and SHA-256');
+  for (const format of ['mug', 'portrait', 'blanket', 'card']) assert.ok(spec.includes(sha256(nativePrompt(format))), format + ' block hash recorded');
+  const lk = recipes.brief.likeness, words = { couch: /\bcouch\b/, bed: /\bbed\b/, feet: /\brug\b/ };
+  const banned = /stretch|side-eye|brow|judging|unimpressed|[!\u2014]|cosy|colour|favour/i;
+  assert.deepEqual(Object.keys(lk.places), ['couch', 'bed', 'feet']);
+  for (const format of ['mug', 'portrait', 'card']) for (const tone of Object.keys(recipes.tones)) for (const style of ['cinematic', 'painterly']) {
+    const f = spot => nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot})['Tone direction'];
+    const where = [format, tone, style].join(' ');
+    const seen = new Set(['couch', 'bed', 'feet'].map(f));
+    assert.equal(seen.size, 3, where + ': each place paints a different scene');
+    assert.equal(f('anywhere'), f(''), where + ': "wherever you are" is the tone\'s own scene');
+    for (const spot of ['couch', 'bed', 'feet']) {
+      const t = f(spot), mood = t.split(lk.guard)[0];
+      assert.match(mood, words[spot], where + ' ' + spot + ': names the place');
+      assert.ok(t.includes(lk.guard) && t.length <= 1200, where + ' ' + spot);
+      assert.doesNotMatch(t, banned, where + ' ' + spot);
+      assert.equal(nativeFieldValues({style, tone, format, pronoun: 'they', likeness: true, spot}).Energy, lk.energy, where + ': the face lock');
+      if (tone === 'over_the_top') {
+        assert.match(mood, /^Mood: a loving roast, told by the situation, never the face\./);
+        assert.match(mood, /nobody else in the picture/, where + ' ' + spot + ': the person stays out of frame');
+        assert.doesNotMatch(mood, /knees?|hands?\b|\barms?\b|shoulders?|ankles?|\blegs?\b|low view|worm/i, where + ' ' + spot + ': no body part of a person, no low camera');
+      }
+    }
+  }
+  // the blanket's scattered figures have no setting: the place never reaches them
+  for (const tone of Object.keys(recipes.tones)) for (const spot of ['couch', 'bed', 'feet'])
+    assert.equal(nativeFieldValues({style: 'cinematic', tone, format: 'blanket', pronoun: 'they', likeness: true, spot})['Tone direction'],
+      nativeFieldValues({style: 'cinematic', tone, format: 'blanket', pronoun: 'they', likeness: true})['Tone direction'], 'blanket ' + tone + ' ' + spot);
 });

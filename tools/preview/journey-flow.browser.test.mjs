@@ -98,6 +98,8 @@ async function open({width = 390, height = 844} = {}) {
   return {ctx, page, calls, errors};
 }
 const pick = (page, group, v) => page.locator(`[data-hsj-pick="${group}"][data-v="${v}"]`).click();
+// where the dog rules the house, after the feel (Krish, 5 Nov: "one question on the home page"): one tap moves on
+const toSpot = async (page, v = 'couch') => { await page.waitForURL(/step=spot/); await page.waitForSelector('[data-hsj-screen="spot"]'); await pick(page, 'spot', v); };
 const SIZES = [{width: 320, height: 568}, {width: 360, height: 640}, {width: 375, height: 667}, {width: 390, height: 844}, {width: 412, height: 915}, {width: 430, height: 932}, {width: 1440, height: 900}];
 async function noScroll(page, where) {
   const {sh, ih} = await page.evaluate(() => ({sh: document.documentElement.scrollHeight, ih: window.innerHeight}));
@@ -145,6 +147,13 @@ async function home(page, size, shot) {
   assert.equal(await page.locator('[data-hsj-feel="over_the_top"]').getAttribute('aria-pressed'), 'true');
   if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2b-tone.png')});
   await page.locator('[data-hsj-next]').click();
+  // where the dog rules the house, asked before the painting so it stages the picture (recipes v20)
+  await page.waitForURL(/step=spot/);
+  await page.waitForSelector('[data-hsj-screen="spot"]');
+  assert.equal(await page.locator('#hsj-q').textContent(), 'Where does your dog rule the house?');
+  if (size.width < 900) await noScroll(page, 'spot');
+  if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2c-spot.png')});
+  await pick(page, 'spot', 'bed');
   await page.waitForURL(/step=gifts/);
   await page.waitForSelector('[data-hsj-screen="gifts"]');
   // the store's bundle switch, as the memo strip carries it when bundle_offer_live is on
@@ -179,12 +188,14 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     assert.equal(hand.hs3_art_choices.style, 'painterly');
     assert.equal(hand.hs3_art_choices.tone, 'over_the_top', 'the painter gets the tone chosen before it paints');
     assert.equal(hand.hs_brief_input.likeness, true);
+    assert.equal(hand.hs_brief_input.spot, 'bed', 'the place answer goes to the painter');
     await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
     await page.waitForSelector('[data-hs-jm]:not([hidden]) [data-hs-jm-frame]:not([hidden]) [data-hs-jm-paint] [data-hs-art]');
     assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Painting your dog');
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
     assert.match(brief.Energy, /^The face and build are locked to the photo/);
     assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation, never the face\./);
+    assert.match(brief['Tone direction'].split('Camera:')[0], /\bbed\b/, 'the painting is staged on the bed the buyer chose');
     assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/, ''), /side-eye|brow|smug|judging/);
     assert.match(brief['Style direction'], /painterly|painting/i);
     if (size.width < 900) await noScroll(page, 'the studio');
@@ -200,7 +211,7 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     await page.waitForSelector('[data-hsj-screen="person"]');
     await page.locator('[data-hsj-person]').fill('Mom');
     await page.locator('[data-hsj-next]').click();
-    for (const [id, v] of [['home', 'door'], ['spot', 'couch'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); if (size.width < 900) await noScroll(page, id); await pick(page, id, v); }
+    for (const [id, v] of [['home', 'door'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); if (size.width < 900) await noScroll(page, id); await pick(page, id, v); }
     await page.waitForSelector('[data-hsj-screen="words"]');
     for (let i = 0; i < 50 && !calls.length; i++) await page.waitForTimeout(100);
     await page.locator('[data-hsj-tone="hilarious"]').click();
@@ -266,9 +277,11 @@ test('a deep link past the photo lands on the photo, Back steps one screen, and 
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForURL(/step=gifts/);
     await page.locator('[data-hsj-back]').click();
-    await page.waitForURL(/step=tone/);
+    await page.waitForURL(/step=spot/);
+    assert.equal(await page.locator('[data-hsj-pick="spot"][data-v="couch"]').getAttribute('aria-pressed'), 'true', 'the answer stays chosen');
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=gifts/);
     await page.locator('[data-hsj-gift="blanket"]').click();
@@ -288,6 +301,7 @@ test('a buyer from a gift page finds that gift already chosen', async () => {
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     assert.equal(await page.locator('[data-hsj-gift="blanket"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
@@ -308,6 +322,12 @@ test("a double tap answers one screen, never the next one it lands on", async ()
     assert.match(page.url(), /step=tone/, 'the tone is still on screen, waiting for its own answer');
     // two separate taps are two answers, however quick
     await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=spot/);
+    // the spot is a question of its own: nothing lands on it unasked, and its Next waits for an answer
+    await page.waitForTimeout(400);
+    assert.match(page.url(), /step=spot/);
+    assert.equal(await page.locator('[data-hsj-next]').isDisabled(), true, 'no spot is chosen for the buyer');
+    await pick(page, 'spot', 'bed');
     await page.waitForURL(/step=gifts/);
   } finally { await ctx.close(); }
 });
@@ -322,6 +342,7 @@ test('a double tap on a gift card chooses it once, never takes it back', async (
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     // 5 Nov, a test buyer on the live store: a double tap chose the mug and took it back
     await page.locator('[data-hsj-gift="mug"]').dblclick();
@@ -349,6 +370,7 @@ test('a photo with two dogs: the check finishes out of sight, and Start painting
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.waitForFunction(() => window.__checks.length >= 2, null, {timeout: 5000});
     assert.deepEqual(await page.evaluate(() => window.__checks), ['pixels', 'dogs'], 'the dog check ran once the detector was ready');
@@ -367,6 +389,7 @@ test('a photo with two dogs: the check finishes out of sight, and Start painting
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.waitForTimeout(800);
     await page.locator('[data-hsj-start]').click();
@@ -384,12 +407,57 @@ test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it p
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
     await page.waitForTimeout(600);
     await page.locator('[data-hsj-dogs-keep]').click();
     await page.waitForURL(/\/products\/your-dogs-personality-blanket\?.*journey=1/, {waitUntil: 'commit'});
+  } finally { await ctx.close(); }
+});
+
+// review, 5 Nov: the gift page's "Back to the gifts" and Start painting again, with nothing changed, began a new journey
+// and so a second paid painting. The same photo, look, feel and spot keep the journey; a changed choice is a new one.
+test('Back to the gifts and Start painting again paints nothing twice; a new feel is a new painting', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=mug`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await toSpot(page, 'feet');
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
+    await page.waitForFunction(() => window.__sends === 1, null, {timeout: 15000});
+    const first = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
+    assert.equal(first.spot, 'feet');
+    // what the gift page's "Back to the gifts" link opens
+    await page.goto(`${base}/?step=gifts`);
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
+    await page.waitForTimeout(4000);
+    const again = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
+    assert.equal(again.t, first.t, 'the same journey goes on');
+    assert.equal(await page.evaluate(() => window.__sends), 0, 'the mug is not painted a second time');
+    // a different feel is a new choice: a new journey, and its painting
+    await page.goto(`${base}/?step=tone`);
+    await page.locator('[data-hsj-feel="sentimental"]').click();
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=spot/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
+    await page.waitForFunction(() => window.__sends === 1, null, {timeout: 15000});
+    const fresh = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
+    assert.notEqual(fresh.t, first.t);
+    assert.equal(fresh.tone, 'sentimental');
   } finally { await ctx.close(); }
 });
 
@@ -405,6 +473,7 @@ test('a double tap on Start painting opens the two-dog question and never answer
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.waitForTimeout(400);
     await page.locator('[data-hsj-start]').dblclick();
@@ -432,6 +501,7 @@ test('a dog check that ran out of time is finished out of sight, and Start paint
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
@@ -459,6 +529,7 @@ test('a reload while the dog check runs: it runs again from the photo on the dev
     await page.locator('[data-hsj-next]').click();
     await page.waitForURL(/step=tone/);
     await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
