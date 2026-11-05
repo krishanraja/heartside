@@ -497,6 +497,8 @@
     var e = $('[data-hs-jm-easel]');
     if (e) ['--hs-art-ratio', '--hs-art-r'].forEach(function (v) { var x = art.style.getPropertyValue(v); if (x) e.style.setProperty(v, x); });
     if (window.MutationObserver) new MutationObserver(function () { tick(); }).observe(art, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src'] });
+    // a card already painting is dressed by hs-wait.js now, in the frame, before it is first seen
+    if (window.__hsWait && window.__hsWait.check) window.__hsWait.check();
   }
   /* early: this file runs ahead of hs2.js (snippets/hs-journey-choose.liquid), so the studio and the questions
      start on the snippet's own check (the same rules as hs2.js journey()), and hs2.js confirms it once it runs */

@@ -687,6 +687,7 @@
     if (!render.drawing) {
       var from = render.shown, dir = from && step && from !== step ? (STEPS.indexOf(step) < STEPS.indexOf(from) ? 'back' : 'forward') : '';
       render.fade = from !== step;
+      render.moved = !!from && from !== step;
       render.shown = step;
       if (dir) { moving(dir, function () { render.drawing = true; try { render(step); } finally { render.drawing = false; } focusHead(); }); return; }
     }
@@ -746,6 +747,9 @@
   /* the next screens' pictures load while this one is read, so a style, feel or gift screen arrives with its
      pictures (transitions report, 5 Nov: they popped in one by one up to 1.2 s after their screen) */
   function ahead(step) {
+    // only once the buyer is moving through the steps: a step opened directly downloads no hidden pictures
+    // (speed review, 5 Nov)
+    if (!render.moved) return;
     var list = [], add = function (o) { if (o) for (var k in o) if (o[k]) list.push(o[k]); };
     if (step === 'photo') add(cfg.examples);
     if (step === 'photo' || step === 'look') add(cfg.toneExamples);

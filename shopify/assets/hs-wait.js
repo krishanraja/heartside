@@ -397,6 +397,10 @@
     }
     if (!card) return;
     var check = function () {
+      // on a journey's gift page the card is dressed only once it is in the studio's frame (hs-journey-choose.js
+      // moves it there and calls this at once), so it is measured at its own size and takes the easel's words
+      var panel = document.querySelector('[data-hs-jm]:not([hidden])');
+      if (panel && !(card.closest && card.closest('[data-hs-jm-paint]'))) return;
       var painting = card.getAttribute('data-state') === 'painting';
       if (painting && !timer) begin();
       else if (!painting && timer) finish(info());
@@ -404,7 +408,9 @@
     if (window.MutationObserver) new MutationObserver(check).observe(card, { attributes: true, subtree: true, attributeFilter: ['data-state', 'src', 'hidden'] });
     setInterval(check, 1500);
     check();
+    watch.check = check;
   }
   window.__hsWait = { lines: lines, info: info, reach: reach, treats: TREATS, fitEasel: fitEasel };
+  window.__hsWait.check = function () { if (watch.check) watch.check(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();
