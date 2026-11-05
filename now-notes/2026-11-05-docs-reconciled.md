@@ -1,3 +1,0 @@
-Status: the docs match what is live after 5 November: NOW.md carries one go-live bullet for the five asks and the wink (the superseded "built on a branch" and "not live" bullets and the 4 November release, whose Roast was recipes v18, moved to docs/history/LOG.md); SCOPE.md records the day's rulings (the place question, the wink, no lettering, the cart drawer, the detector after the photo, the studio choices); shopify/README.md, tools/print-art/ARTWORK-SYSTEM.md (recipes v21) and the asks README describe the live journey.
-Next: Krish looks at the journey on his own iPhone, then approves one QA cart on the live store to confirm the drawer's $26.10 and $46.60 savings.
-North Star check (2026-11-05): holds.
