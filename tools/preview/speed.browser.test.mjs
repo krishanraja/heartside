@@ -317,3 +317,83 @@ for (const [code, title] of [['nodog', "We couldn't find a dog in this photo"], 
     } finally { await ctx.close(); }
   });
 }
+
+// ------------------------------------------------------------------------------------ the gifts step warm-up
+const warmState = page => page.evaluate(() => ({
+  rules: [...document.querySelectorAll('script[type="speculationrules"][data-hsj-warm]')].map(s => JSON.parse(s.textContent)),
+  prerender: [...document.querySelectorAll('script[type="speculationrules"]')].some(s => /prerender/.test(s.textContent)),
+  files: [...document.querySelectorAll('link[rel="prefetch"][data-hsj-warm]')].map(l => [l.getAttribute('as'), l.href.replace(location.origin, '')])}));
+
+test('4a. the gifts step prefetches (never prerenders) exactly the page Start painting opens, and follows the choice; nothing before that step', async () => {
+  const {ctx, page, errors} = await photoStep();
+  try {
+    // a loader tag as Teeinblue's app block writes it on the home page (made-up values; the request is aborted)
+    await page.evaluate(() => { const s = document.createElement('script'); s.src = 'https://sdk.teeinblue.com/async.js?platform=shopify&v=1&token=Ab12cd34&shop=test-dogs.myshopify.com'; document.head.appendChild(s); });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    assert.deepEqual(await warmState(page), {rules: [], prerender: false, files: []}, 'nothing on the look step');
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    let w = await warmState(page);
+    assert.equal(w.rules.length, 1, 'one rule set of ours');
+    assert.deepEqual(Object.keys(w.rules[0]), ['prefetch']);
+    assert.equal(w.prerender, false, 'no rule set on the page prerenders');
+    const first = w.rules[0].prefetch[0].urls;
+    assert.equal(first.length, 1);
+    assert.match(first[0], /^\/products\/your-dogs-personality-blanket\?journey=1/);
+    assert.deepEqual(w.files.map(f => f[1].split('/').pop()), ['hs-journey-choose.js', 'hs-journey-choose.css', 'hs-wait.js', 'hs-wait.css', 'hs-breed-facts.js', 'hs-breeds.js', 'app-v1.js?token=Ab12cd34&shop=test-dogs.myshopify.com']);
+    assert.deepEqual(w.files.map(f => f[0]), ['script', 'style', 'script', 'style', 'script', 'script', 'script']);
+    // another first gift: the rule follows it
+    await page.locator('[data-hsj-gift="mug"]').click();
+    await page.locator('[data-hsj-gift="blanket"]').click();
+    w = await warmState(page);
+    assert.equal(w.rules.length, 1);
+    const url = w.rules[0].prefetch[0].urls[0];
+    assert.match(url, /^\/products\/your-dogs-illustrated-mug\?journey=1/);
+    // a colour: the rule carries the variant
+    const variant = page.locator('[data-hsj-variant^="mug:"]').nth(1);
+    assert.ok(await variant.count() > 0, 'the mug offers its colours');
+    {
+      const id = (await variant.getAttribute('data-hsj-variant')).split(':')[1];
+      await variant.click();
+      w = await warmState(page);
+      assert.equal(w.rules[0].prefetch[0].urls[0], '/products/your-dogs-illustrated-mug?journey=1&variant=' + id);
+    }
+    const warmed = (await warmState(page)).rules[0].prefetch[0].urls[0];
+    await page.waitForTimeout(600);
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\//, {waitUntil: 'commit'});
+    assert.equal(new URL(page.url()).pathname + new URL(page.url()).search, warmed, 'the prefetched address is the one opened');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('4b. with Data Saver on, the gifts step warms nothing', async () => {
+  const {ctx, page, errors} = await photoStep({connection: {effectiveType: '4g', saveData: true}});
+  try {
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await toGifts(page);
+    assert.deepEqual(await warmState(page), {rules: [], prerender: false, files: []});
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('4c. a gift page being prerendered sends no photo until it is really opened, then paints once', async () => {
+  const {page, ctx, errors} = await giftPage();
+  try {
+    await page.addInitScript(() => {
+      window.__pre = true;
+      Object.defineProperty(Document.prototype, 'prerendering', {get: () => window.__pre, configurable: true});
+    });
+    await page.goto(base + URLS.mug);
+    await page.waitForTimeout(10000);
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'nothing sent while prerendered');
+    await page.evaluate(() => { window.__pre = false; document.dispatchEvent(new Event('prerenderingchange')); });
+    await page.waitForFunction(() => window.__painted >= 1, null, {timeout: 15000});
+    await page.waitForTimeout(1500);
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'one painting');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});

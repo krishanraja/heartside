@@ -6,6 +6,7 @@
 //   node speed-lab.mjs --out out --scenario gift  [--runs 3] [--tib 424]
 //   node speed-lab.mjs --out out --scenario home  [--runs 3]
 //   node speed-lab.mjs --out out --scenario photo [--runs 3]
+//   node speed-lab.mjs --out out --scenario warm  [--runs 3]   (cache on: the gifts step, then Start painting)
 //
 // --out is a folder render.mjs wrote (tools/preview/out, or one rendered from an older revision).
 // Profile: 390x844 at DPR 3, touch, 4x CPU slowdown, Lighthouse "Fast 3G" (562.5 ms latency, about 184 KB/s
@@ -22,6 +23,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const out = path.resolve(arg('out', path.join(here, 'out')));
 const scenario = arg('scenario', 'gift'), runs = +arg('runs', 3), tibKB = +arg('tib', 424);
+// --savedata: the page is told Data Saver is on (the warm-up and the detector stand down), to isolate the warm-up
+const saveData = process.argv.includes('--savedata');
 const PAGE_FOR = {'your-dogs-illustrated-mug': 'product-mug-native.html', 'your-dogs-portrait': 'product-portrait-native.html', 'your-dogs-personality-blanket': 'product-blanket-native.html'};
 const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.json': 'application/json', '.woff2': 'font/woff2', '.svg': 'image/svg+xml'};
 const TIB_BODY = 'window.__tibAt=performance.now();\n/*' + 'x'.repeat(tibKB * 1024) + '*/';
@@ -50,13 +53,13 @@ await new Promise(r => server.listen(0, '127.0.0.1', r));
 const base = 'http://127.0.0.1:' + server.address().port;
 const browser = await chromium.launch();
 
-async function phone() {
+async function phone({cache = false} = {}) {
   const ctx = await browser.newContext({viewport: {width: 390, height: 844}, deviceScaleFactor: 3, isMobile: true, hasTouch: true});
   const page = await ctx.newPage();
   await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Network.enable');
-  await cdp.send('Network.setCacheDisabled', {cacheDisabled: true});
+  await cdp.send('Network.setCacheDisabled', {cacheDisabled: !cache});
   await cdp.send('Network.emulateNetworkConditions', {offline: false, latency: 562.5, downloadThroughput: 180 * 1024, uploadThroughput: 84 * 1024});
   await cdp.send('Emulation.setCPUThrottlingRate', {rate: 4});
   const reqs = new Map(), log = [];
@@ -145,9 +148,42 @@ async function photo() {
   return {detectorRequests: seen.filter(u => DETECTOR.test(u)).length};
 }
 
-const fn = {gift, home, photo}[scenario];
+async function warm() {
+  // the real order with the HTTP cache on: the photo, the look, the tone, the gifts step for 20 s, then Start painting
+  const {ctx, page} = await phone({cache: true});
+  if (saveData) await page.addInitScript(() => { Object.defineProperty(Navigator.prototype, 'connection', {get: () => ({effectiveType: '4g', saveData: true}), configurable: true}); });
+  await page.addInitScript(() => {
+    if (!/\/products\//.test(location.pathname)) return;
+    const marks = window.__marks = {};
+    const poll = setInterval(() => {
+      const now = performance.now(), jm = document.querySelector('[data-hs-jm]');
+      if (!marks.studio && jm && jm.getAttribute('data-phase')) marks.studio = now;
+      const q = document.querySelector('[data-hsj-screen="name"] input');
+      if (!marks.question && q && q.getBoundingClientRect().height > 0) marks.question = now;
+      if (!marks.hs2 && window.__hs2api) marks.hs2 = now;
+      if (marks.question && marks.hs2) clearInterval(poll);
+    }, 50);
+  });
+  await page.goto(base + '/?step=photo&gift=blanket');
+  await page.locator('[data-hsj-file]').setInputFiles(path.join(here, '../../assets/photos/pug-autumn-leaves.jpg'));
+  await page.waitForURL(/step=look/, {timeout: 120000});
+  await page.locator('[data-hsj-next]').click();
+  await page.waitForURL(/step=tone/);
+  await page.locator('[data-hsj-next]').click();
+  await page.waitForSelector('[data-hsj-screen="gifts"]');
+  await page.waitForTimeout(20000);
+  const warmed = await page.evaluate(() => document.querySelectorAll('[data-hsj-warm]').length);
+  await page.locator('[data-hsj-start]').click();
+  await page.waitForURL(/\/products\//, {waitUntil: 'commit', timeout: 60000});
+  await page.waitForFunction(() => window.__marks && window.__marks.question && window.__marks.hs2, null, {timeout: 120000}).catch(() => {});
+  const m = await page.evaluate(() => window.__marks || {});
+  await ctx.close();
+  return {warmed, studio: round(m.studio), question: round(m.question), hs2: round(m.hs2)};
+}
+
+const fn = {gift, home, photo, warm}[scenario];
 const results = [];
 for (let i = 0; i < runs; i++) results.push(await fn());
-console.log(JSON.stringify({scenario, out: path.relative(process.cwd(), out) || '.', profile: 'Fast 3G, 4x CPU, 390x844 DPR 3, cache off (lab, equal-share)', results}, null, 1));
+console.log(JSON.stringify({scenario, out: path.relative(process.cwd(), out) || '.', profile: 'Fast 3G, 4x CPU, 390x844 DPR 3, ' + (scenario === 'warm' ? 'cache on' : 'cache off') + (saveData ? ', Data Saver' : '') + ' (lab, equal-share)', results}, null, 1));
 await browser.close();
 server.close();

@@ -59,6 +59,8 @@
   <script type="application/json" data-hsj-config>
     {
       "composeUrl": {{ s.compose_url | json }},
+      {%- comment -%} what the gift page needs that the home page has not loaded: prefetched from the gifts step (hs-journey.js warmGift) {%- endcomment -%}
+      "warm": [{{ 'hs-journey-choose.js' | asset_url | json }}, {{ 'hs-journey-choose.css' | asset_url | json }}, {{ 'hs-wait.js' | asset_url | json }}, {{ 'hs-wait.css' | asset_url | json }}, {{ 'hs-breed-facts.js' | asset_url | json }}, {{ 'hs-breeds.js' | asset_url | json }}],
       "ai": {{ s.ai_on | json }},
       "corePurchase": {{ s.core_purchase | json }},
       "mug": { "colors": [{{ mug_colors | strip }}] },

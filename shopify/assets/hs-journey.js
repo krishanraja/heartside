@@ -354,6 +354,51 @@
     ['mug', 'blanket', 'print'].forEach(function (g) { var x = cfg.gifts && cfg.gifts[g]; if (x && x.handle) out[g] = { url: giftURL(g), handle: x.handle, price: x.price }; });
     return out;
   }
+  /* The gifts step warms the first gift's page (5 Nov speed ask): a prefetch, never a prerender, of the very
+     address Start painting opens (handOver's first gift), kept in step with the choice, plus the files that page
+     needs and the home page has not loaded, Teeinblue's app among them. A prefetch only downloads: nothing on
+     that page runs until the buyer opens it, and hs2.js also waits while a page is being prerendered, so no
+     photo can go early. Skipped with Data Saver. The page prefetch is Chromium's (speculation rules); the
+     files' prefetch helps the browsers that honor it. */
+  function warmGift() {
+    if (MODE !== 'home') return;
+    var c = navigator.connection;
+    if (c && c.saveData) return;
+    var g = chosenGifts()[0], v = g && chosenVariant(g), url = g ? giftURL(g, v && v.id) : null;
+    if (url && url !== warmGift.url) {
+      warmGift.url = url;
+      try {
+        if (window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
+          var was = document.querySelector('script[type="speculationrules"][data-hsj-warm]');
+          if (was) was.parentNode.removeChild(was);
+          var rules = document.createElement('script');
+          rules.type = 'speculationrules'; rules.setAttribute('data-hsj-warm', '');
+          rules.textContent = JSON.stringify({ prefetch: [{ source: 'list', urls: [url] }] });
+          document.head.appendChild(rules);
+        }
+      } catch (e) { /* the page still opens, a little later */ }
+    }
+    if (!url || warmGift.files) return;
+    warmGift.files = true;
+    var files = (cfg.warm || []).slice(), tib = teeinblueApp();
+    if (tib) files.push(tib);
+    files.forEach(function (href) {
+      var l = document.createElement('link');
+      l.rel = 'prefetch'; l.href = href; l.as = /\.css(\?|$)/.test(href) ? 'style' : 'script'; l.setAttribute('data-hsj-warm', '');
+      document.head.appendChild(l);
+    });
+  }
+  /* Teeinblue's app on the gift page is app-v1.js with the store's own token and shop, the same two values its
+     loader on this page carries (checked against a gift page on 5 Nov). Read here at run time, never written into
+     the theme; anything unexpected and nothing is fetched. */
+  function teeinblueApp() {
+    var s = document.querySelector('script[src*="sdk.teeinblue.com/async.js"]'), u;
+    if (!s) return '';
+    try { u = new URL(s.src); } catch (e) { return ''; }
+    var token = u.searchParams.get('token') || '', shop = u.searchParams.get('shop') || '';
+    if (!/^[A-Za-z0-9]+$/.test(token) || !/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) return '';
+    return 'https://sdk.teeinblue.com/shopify/app-v1.js?token=' + token + '&shop=' + shop;
+  }
   function giftURL(gift, variant) {
     var x = cfg.gifts && cfg.gifts[gift];
     if (!x || !x.url) return null;
@@ -533,6 +578,7 @@
   // a tap on a gift or a colour changes only that card, the offer and the button, so the list never jumps
   function paintGifts() {
     if (!app || stepFromURL() !== 'gifts') return;
+    warmGift();
     GIFT_ORDER.forEach(function (g) {
       var card = app.querySelector('[data-hsj-gift-card="' + g + '"]');
       if (!card) return;
@@ -652,6 +698,7 @@
     app.innerHTML = '<div class="hsj__screen hsj__screen--step" data-hsj-screen="' + step + '">' + view(step) + '</div>';
     if (step === 'words') { paintNote(); compose(S.tone); if (!render.fit) { render.fit = true; window.addEventListener('resize', function () { fitNote(); }); try { document.fonts.ready.then(function () { fitNote(); }); } catch (e) { /* no font events */ } } }
     if (step === 'look' || step === 'gifts') { thumb(); warm(); }
+    if (step === 'gifts') warmGift();
     if (step === 'look' || step === 'tone' || step === 'spot' || step === 'gifts') dogsAgain();
     var input = app.querySelector('[data-hsj-name], [data-hsj-person]');
     if (input) { nameHint(input); if (!('ontouchstart' in window)) input.focus(); }
