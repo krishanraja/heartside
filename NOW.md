@@ -77,7 +77,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-05): Krish pastes the drafted Christmas paragraph into the shipping policy (section 10 of docs/evidence/2026-11-04-photo-first-journey.md).
+- Next (2026-11-05): Krish's sample blanket order, which also shows checkout's nested line for the first time. The shipping policy carries the December 4 paragraph, true by its own times, since CoWork's second run that day (read back on heartside.io).
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
@@ -90,7 +90,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
   - The checkout merge app stays through Christmas at $69 a month (Ruling, Krish, 28 October), and is reviewed in January against measured conversion.
   - Do not claim physical quality or paid-order fulfillment until the sample is inspected.
   - **From the photo-first release (5 November; record `docs/evidence/2026-11-04-photo-first-journey.md`):**
-    - run `docs/review/COWORK-SHIPPING-POLICY-CHRISTMAS.md` in CoWork: the December 4 paragraph is live in the shipping policy, but its middle sentence ("That is the last day...") is not true by the policy's own times; the prompt replaces that one sentence;
     - rotate the n8n API key, including the copy pasted into a helper session's chat, and scope the environment's n8n secret to the API and MCP paths;
     - Ruling (Krish, 2026-11-05): he runs Facebook ads, so the blanket keeps its studio photo as its variant picture, and checkout's nested line keeps showing that example blanket. The dog-free tile CoWork attached that day was taken off the same day: the variant picture is the studio photo again and the tile is no longer on the product (it stays in Shopify Files). The mug and the portrait show an example dog there too, for the same reason;
     - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
