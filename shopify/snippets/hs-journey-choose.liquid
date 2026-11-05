@@ -93,7 +93,8 @@
   (function (root) {
     try {
       var rv = JSON.parse(sessionStorage.getItem('hs2-review') || '{}') || {}, j = rv.hs_journey, h = root.getAttribute('data-hs-jm-handle');
-      if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5) { document.documentElement.classList.remove('hs-jm-on'); return; }
+      // the cart's "Make another version" link (?redo=) opens the normal page, where the redo lives
+      if (!j || j.mode !== 'photo-first' || !j.t || Date.now() - j.t > 6 * 36e5 || /[?&]redo=/.test(location.search)) { document.documentElement.classList.remove('hs-jm-on'); return; }
       var on = /[?&]journey=1(&|$)/.test(location.search);
       // the same rules as hs2.js journey(): this product's own key, and a gift in this journey's queue
       // (5 Nov review: any gift's key turned a normal gift page into the panel until the scripts loaded)

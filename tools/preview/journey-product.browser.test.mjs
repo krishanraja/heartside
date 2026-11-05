@@ -641,6 +641,15 @@ test("Back after the questions steps past them in one press, and another gift's 
     await own.page.goto(base + URLS.print.replace('journey=1&', ''));
     await own.page.waitForSelector('[data-hs-jm]:not([hidden])', {timeout: 8000});
   } finally { await own.ctx.close(); }
+  // the cart's "Make another version" link for that same gift: the normal page with its redo, never the panel, and
+  // nothing paints by itself (5 Nov, the cart drawer's review: journey mode hid the redo)
+  const redo = await open({width: 390, height: 844}, {onKey: 16151384260990});
+  try {
+    await redo.page.goto(base + URLS.print.replace('journey=1&', '') + '&redo=123e4567-e89b-42d3-a456-426614174000');
+    await redo.page.waitForTimeout(2500);
+    assert.deepEqual(await redo.page.evaluate(() => ({panel: !document.querySelector('[data-hs-jm]').hidden, on: document.documentElement.classList.contains('hs-jm-on'), journey: !!(window.__hs2api && window.__hs2api.journey && window.__hs2api.journey()), painted: window.__painted})),
+      {panel: false, on: false, journey: false, painted: 0});
+  } finally { await redo.ctx.close(); }
 });
 
 // 5 Nov judges (nine of eleven buyers): "Painting your dog" sat empty, a title and a Next button, until the painter
