@@ -18,7 +18,7 @@
 {{ 'hs-journey.css' | asset_url | stylesheet_tag }}
 {{ 'hs-showcase.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-showcase.js' | asset_url }}" defer="defer"></script>
-<script src="{{ 'hs-breeds.js' | asset_url }}" defer="defer"></script>
+{%- comment -%} hs-breeds.js is the gift page's (the breed question there); the gifts step prefetches it (5 Nov speed ask) {%- endcomment -%}
 <script src="{{ 'hs-journey.js' | asset_url }}" defer="defer"></script>
 {%- assign s = section.settings -%}
 <script>if(/[?&]step=/.test(location.search)){document.documentElement.classList.add('hsj-routed','hsj-focus');setTimeout(function(){document.documentElement.classList.remove('hsj-routed')},3500);}</script>

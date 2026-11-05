@@ -397,3 +397,21 @@ test('4c. a gift page being prerendered sends no photo until it is really opened
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
 });
+
+// ------------------------------------------------------------------------------------------- small ones
+test('5. the home page loads no breed list, and the artwork engine runs once however often the page loads it', async () => {
+  const {ctx, page, errors, reqs} = await home();
+  try {
+    await page.addInitScript(() => {
+      let runs = 0, v;
+      Object.defineProperty(window, 'HSArtworkEngine', {configurable: true, get: () => v, set: x => { runs++; v = x; window.__engineRuns = runs; }});
+    });
+    await page.goto(base + '/');
+    await page.waitForLoadState('load');
+    assert.deepEqual(reqs.filter(r => /hs-breeds\.js/.test(r.url)).map(r => r.url), [], 'no hs-breeds.js on home');
+    const tags = await page.evaluate(() => document.querySelectorAll('script[src*="hs-artwork-engine.js"]').length);
+    assert.ok(tags > 1, 'the page carries the engine more than once (' + tags + ')');
+    assert.equal(await page.evaluate(() => window.__engineRuns), 1, 'it ran once');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
