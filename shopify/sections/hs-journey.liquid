@@ -117,15 +117,16 @@
     </div>
     {%- comment -%} The hero: the six example sets, one at a time (hs-showcase.js runs it). Since 3 Nov each shows the real product
       mug, served at 540 and 1080 wide (tools/print-art/hero-sets.py). {%- endcomment -%}
+    {%- render 'hs-showcase-later' -%}
     <div class="hss hss--hero" data-hss>
       <div class="hss-block hss-sets" data-hss-reel>
         <ul class="hss-row hss-row--sets" data-hss-reel-track>
           <li>{%- render 'hs-showcase-fig', hero: 'golden', eager: true, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'lab', alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bear', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'frenchie', alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Bao', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'doodle', alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Clover', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'dachshund', alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Frank', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'shepherd', alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Juno', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'lab', alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bear', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'frenchie', alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bao', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'doodle', alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Clover', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'dachshund', alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Frank', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'shepherd', alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Juno', sub: 'Mug · Blanket · Portrait' -%}</li>
         </ul>
         <div class="hss-ctl" data-hss-reel-ctl hidden>
           <div class="hss-ticks" data-hss-ticks></div>
@@ -151,9 +152,9 @@
       <div class="hss-block hss-flow is-live" data-hss-flow>
         <h2 class="hss-h3">{{ s.flow_heading }}</h2>
         <div class="hss-flow__stage" data-hss-stage>
-          {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', eager: false -%}
-          {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.' -%}
-          {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.' -%}
+          {%- render 'hs-showcase-fig', id: 'flow-photo', w: 720, h: 900, alt: 'Reference photo: a golden retriever sitting on a tiled floor.', later: true, eager: false -%}
+          {%- render 'hs-showcase-fig', id: 'flow-painting', w: 720, h: 900, alt: 'Example painting of the same golden retriever in a play bow on a fleece blanket with a plush toy.', later: true -%}
+          {%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.', later: true -%}
         </div>
         <div class="hss-flow__ctl" data-hss-ctl>
           <input type="range" min="0" max="2" step="0.01" value="1" aria-label="Photo, painting, gift" aria-valuetext="Painting" data-hss-range>

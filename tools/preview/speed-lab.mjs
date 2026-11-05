@@ -113,9 +113,7 @@ async function home() {
   await page.addInitScript(() => {
     const marks = window.__marks = {};
     const poll = setInterval(() => {
-      const on = document.querySelector('.hss-reel .is-on, [data-hss-slide].is-on, .hss-set.is-on');
-      const slides = [...document.querySelectorAll('[data-hss-set], .hss-set')];
-      const i = on ? slides.indexOf(on.closest('[data-hss-set], .hss-set') || on) : -1;
+      const i = [...document.querySelectorAll('[data-hss-reel-track] > li')].findIndex(li => li.classList.contains('is-on'));
       if (!marks.set1 && i >= 1) marks.set1 = performance.now();
       if (marks.set1) clearInterval(poll);
     }, 50);
@@ -123,7 +121,7 @@ async function home() {
   });
   await page.goto(base + '/', {waitUntil: 'commit'});
   await page.waitForFunction(() => window.__marks.load, null, {timeout: 180000}).catch(() => {});
-  await page.waitForTimeout(4000);
+  await page.waitForFunction(() => window.__marks.set1, null, {timeout: 30000}).catch(() => {});
   const m = await page.evaluate(() => ({lcp: window.__lcp, ...window.__marks}));
   const all = [...log];
   const golden = all.find(r => /hs-hero-golden-/.test(r.url));

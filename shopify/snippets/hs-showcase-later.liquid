@@ -1,0 +1,25 @@
+{%- comment -%}
+  For the showcase pictures that wait their turn (hs-showcase-fig, later: true; 5 Nov speed ask). Rendered by
+  sections/hs-journey.liquid and sections/hs-showcase.liquid; it runs once however often it is rendered.
+  Without JavaScript the noscript copy shows and the waiting box steps aside. With JavaScript, if
+  hs-showcase.js never runs (blocked, or it failed), every waiting picture is filled three seconds after the
+  page has loaded, so no example stays an empty box.
+{%- endcomment -%}
+<noscript><style>.hss-fig img[data-hss-src]{display:none}</style></noscript>
+<script>
+  (function () {
+    if (window.__hssLater) return;
+    window.__hssLater = true;
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (window.__hssHydrate) return;
+        var w = document.querySelectorAll('img[data-hss-src]');
+        for (var i = 0; i < w.length; i++) {
+          if (w[i].getAttribute('data-hss-srcset')) w[i].srcset = w[i].getAttribute('data-hss-srcset');
+          w[i].src = w[i].getAttribute('data-hss-src');
+          w[i].removeAttribute('data-hss-src'); w[i].removeAttribute('data-hss-srcset');
+        }
+      }, 3000);
+    });
+  })();
+</script>

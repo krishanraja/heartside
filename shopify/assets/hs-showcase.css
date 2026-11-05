@@ -26,6 +26,8 @@ html.hsj-routed .hss, html.hsj-focus .hss { display: none; }
 /* one picture */
 .hss-fig { position: relative; background: var(--surface); border: 1.5px solid var(--outline); border-radius: 16px; overflow: hidden; }
 .hss-fig img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; background: #F1E9E2; }
+/* a picture waiting its turn (hs-showcase.js): the same box, no alt text drawn over the beige */
+.hss-fig img[data-hss-src] { color: transparent; }
 .hss-fig figcaption { display: grid; gap: 0; padding: 8px 12px 10px; font-size: 14px; line-height: 20px; }
 .hss-fig figcaption strong { font-weight: 600; }
 .hss-fig figcaption span { color: var(--muted); font-size: 12px; line-height: 16px; }

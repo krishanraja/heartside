@@ -13,7 +13,8 @@ import {fileURLToPath} from 'node:url';
 import {chromium} from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(here, 'out');
+// HS_OUT: another rendered theme (an older revision), to show a test failing before its change
+const out = process.env.HS_OUT ? path.resolve(process.env.HS_OUT) : path.join(here, 'out');
 if (!fs.existsSync(path.join(out, 'assets', 'hs-journey-choose.js'))) execFileSync(process.execPath, ['render.mjs'], {cwd: here, stdio: 'ignore'});
 const PAGE_FOR = {'your-dogs-illustrated-mug': 'product-mug-native.html', 'your-dogs-portrait': 'product-portrait-native.html', 'your-dogs-personality-blanket': 'product-blanket-native.html'};
 const TYPES = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webp': 'image/webp', '.png': 'image/png', '.json': 'application/json', '.woff2': 'font/woff2'};
@@ -46,6 +47,10 @@ const STANDIN = '<script>(' + (() => {
 // (speed-review.md, flaw 1). Here it is a stand-in held back by the server for `hold` ms.
 const TIB = '<script src="/__tib/app-v1.js" defer="defer"></script>';
 const holds = {tib: 0};
+// a held response by path (the hero pictures), and a stand-in third-party pixel that holds window load back
+const held = [];
+const PIXEL = '<script async src="/__pixel.js"></script>';
+let pixelMs = 0;
 let server, base, browser;
 before(async () => {
   server = http.createServer((req, res) => {
@@ -55,6 +60,9 @@ before(async () => {
     if (u.pathname === '/__tib/app-v1.js') {
       return setTimeout(() => { res.writeHead(200, {'Content-Type': 'text/javascript'}); res.end('window.__tibAt = performance.now();'); }, holds.tib);
     }
+    if (u.pathname === '/__pixel.js') return setTimeout(() => { res.writeHead(200, {'Content-Type': 'text/javascript'}); res.end(''); }, pixelMs);
+    const h = held.find(x => x.re.test(u.pathname));
+    if (h && !req.__held) { req.__held = true; return setTimeout(() => server.emit('request', req, res), h.ms); }
     let f = path.join(out, decodeURIComponent(u.pathname));
     if (u.pathname.includes('/assets/')) f = path.join(out, 'assets', u.pathname.split('/assets/')[1]);
     else if (u.pathname.startsWith('/products/')) f = path.join(out, PAGE_FOR[u.pathname.split('/')[2]] || 'missing');
@@ -62,6 +70,7 @@ before(async () => {
     if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
     res.writeHead(200, {'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream'});
     if (u.pathname.startsWith('/products/')) return res.end(fs.readFileSync(f, 'utf8').replace('<head>', '<head>' + STANDIN + TIB));
+    if (u.pathname === '/' && pixelMs) return res.end(fs.readFileSync(f, 'utf8').replace('</head>', PIXEL + '</head>'));
     fs.createReadStream(f).pipe(res);
   });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
@@ -119,4 +128,114 @@ test("1. the gift page's questions do not wait for Teeinblue's app-v1.js: the st
     assert.equal(await page.evaluate(() => document.documentElement.classList.contains('hs-jm-on')), true, 'journey mode held');
     assert.deepEqual(errors, []);
   } finally { holds.tib = 0; await ctx.close(); }
+});
+
+// ------------------------------------------------------------------------------------------- the home page
+async function home({reducedMotion = 'no-preference', javaScriptEnabled = true, viewport = {width: 390, height: 844}} = {}) {
+  const ctx = await browser.newContext({viewport, isMobile: viewport.width < 900, hasTouch: true, reducedMotion, javaScriptEnabled});
+  const page = await ctx.newPage();
+  const errors = [], reqs = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => r.abort());
+  page.on('request', r => reqs.push({url: r.url().replace(base, ''), at: Date.now()}));
+  return {ctx, page, errors, reqs};
+}
+const pictures = reqs => reqs.filter(r => /hs-(hero|ex)-/.test(r.url)).map(r => r.url.split('/').pop());
+const onSet = page => page.evaluate(() => [...document.querySelectorAll('[data-hss-reel-track] > li')].findIndex(li => li.classList.contains('is-on')));
+// the same figures each time: the ones on the page when first measured (the strip's loop copies come later)
+const boxes = page => page.evaluate(() => (window.__figs = window.__figs || [...document.querySelectorAll('.hss-fig')].filter(f => f.offsetParent)).map(f => { const r = f.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)].join('x'); }));
+
+test('2a. home: nothing else starts before the first hero picture has arrived', async () => {
+  held.push({re: /hs-hero-golden-/, ms: 3000});
+  const {ctx, page, errors, reqs} = await home();
+  try {
+    let goldenDone = 0;
+    page.on('requestfinished', r => { if (/hs-hero-golden-/.test(r.url()) && !goldenDone) goldenDone = Date.now(); });
+    await page.goto(base + '/', {waitUntil: 'commit'});
+    await page.waitForFunction(() => { const i = document.querySelector('[data-hss-reel] img'); return i && i.complete && i.naturalWidth > 0; }, null, {timeout: 10000});
+    const early = reqs.filter(r => /hs-(hero|ex)-/.test(r.url) && !/golden/.test(r.url) && r.at < goldenDone);
+    assert.deepEqual(early.map(r => r.url.split('/').pop()), [], 'no other example picture before the first one is in');
+    assert.deepEqual(errors, []);
+  } finally { held.length = 0; await ctx.close(); }
+});
+
+test("2b. home: the reel stays on the first set until the second set's picture is in, then moves on; one set loads at a time", async () => {
+  held.push({re: /hs-hero-lab-/, ms: 6000});
+  const {ctx, page, errors, reqs} = await home();
+  try {
+    await page.goto(base + '/');
+    const t0 = Date.now();
+    await page.waitForTimeout(4500);
+    assert.equal(await onSet(page), 0, 'still the first set while the second picture is on its way');
+    assert.deepEqual(pictures(reqs).filter(u => /hs-hero-(frenchie|doodle|dachshund|shepherd)-/.test(u)), [], 'the third set waits for the second');
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-hss-reel-track] > li')].findIndex(li => li.classList.contains('is-on')) === 1, null, {timeout: 9000});
+    assert.ok(Date.now() - t0 > 4500);
+    const lab = await page.evaluate(() => { const i = document.querySelectorAll('[data-hss-reel-track] > li')[1].querySelector('img'); return i.complete && i.naturalWidth > 0; });
+    assert.equal(lab, true, 'it turned to a set whose picture is there');
+    assert.deepEqual(errors, []);
+  } finally { held.length = 0; await ctx.close(); }
+});
+
+test('2c. home: the reel does not wait for window load (a tracking pixel held back 20 s)', async () => {
+  held.push({re: /hs-hero-golden-/, ms: 2500});
+  pixelMs = 20000;
+  const {ctx, page, errors} = await home();
+  try {
+    await page.goto(base + '/', {waitUntil: 'commit'});
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-hss-reel-track] > li')].findIndex(li => li.classList.contains('is-on')) >= 1, null, {timeout: 9000});
+    assert.equal(await page.evaluate(() => document.readyState), 'interactive', 'window load still held back');
+    assert.deepEqual(errors, []);
+  } finally { held.length = 0; pixelMs = 0; await ctx.close(); }
+});
+
+test('2d. a journey step opened directly (/?step=gifts): no hidden hero set or example picture downloads', async () => {
+  const {ctx, page, errors, reqs} = await home();
+  try {
+    await page.goto(base + '/?step=gifts');
+    await page.waitForTimeout(6000);
+    // the showcase is hidden on a step (hs-showcase.css): the first hero picture is the only example fetched
+    assert.deepEqual(pictures(reqs).filter(u => !/hs-hero-golden-/.test(u) && /hs-hero-|hs-ex-(flow|tone|style|scene)/.test(u)), [], 'nothing hidden downloads');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('2e. home: every picture box keeps its size when its picture arrives, and the strip and the flow fill near the screen', async () => {
+  const {ctx, page, errors} = await home();
+  try {
+    await page.goto(base + '/', {waitUntil: 'domcontentloaded'});
+    const before = await boxes(page);
+    await page.waitForLoadState('load');
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForFunction(() => [...document.querySelectorAll('.hss-fig img')].every(i => !i.hasAttribute('data-hss-src')), null, {timeout: 15000});
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(300);
+    assert.deepEqual(await boxes(page), before, 'no box changes size');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('2f. reduced motion: the second set (peeking in the swipe row) has its picture at once, the rest load as swiped to', async () => {
+  const {ctx, page, errors} = await home({reducedMotion: 'reduce'});
+  try {
+    await page.goto(base + '/', {waitUntil: 'domcontentloaded'});
+    const sets = await page.evaluate(() => [...document.querySelectorAll('[data-hss-reel-track] > li img')].map(i => ({src: !!i.getAttribute('src'), lazy: i.loading})));
+    assert.equal(sets[1].src, true, 'set 2 is filled by DOMContentLoaded');
+    assert.deepEqual(sets.slice(2).map(s => s.lazy), ['lazy', 'lazy', 'lazy', 'lazy']);
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
+test('2g. without JavaScript every example picture is still there; with hs-showcase.js blocked they are filled after load', async () => {
+  const off = await home({javaScriptEnabled: false});
+  try {
+    await off.page.goto(base + '/');
+    const shown = await off.page.evaluate(() => [...document.querySelectorAll('.hss-fig')].map(f => [...f.querySelectorAll('img')].filter(i => getComputedStyle(i).display !== 'none' && i.getAttribute('src')).length));
+    assert.ok(shown.length >= 25 && shown.every(n => n === 1), 'one picture showing in every figure: ' + shown.join(','));
+  } finally { await off.ctx.close(); }
+  const {ctx, page} = await home();
+  try {
+    await page.route(/hs-showcase\.js/, r => r.abort());
+    await page.goto(base + '/');
+    await page.waitForFunction(() => [...document.querySelectorAll('.hss-fig img')].every(i => i.getAttribute('src')), null, {timeout: 8000});
+  } finally { await ctx.close(); }
 });

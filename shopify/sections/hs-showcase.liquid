@@ -13,6 +13,7 @@
 {%- render 'hs2-head' -%}
 {{ 'hs-showcase.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'hs-showcase.js' | asset_url }}" defer="defer"></script>
+{%- render 'hs-showcase-later' -%}
 {%- assign s = section.settings -%}
 <section class="hss" data-hss aria-label="Examples">
   <div class="hss__wrap">
@@ -24,25 +25,25 @@
       <h2 class="hss-h3">{{ s.strip_heading }}</h2>
       <div class="hss-strip__view" data-hss-strip-view>
         <ul class="hss-strip" data-hss-strip-track>
-          <li>{%- render 'hs-showcase-fig', id: 'style-painterly', w: 360, h: 450, alt: 'Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.', caption: 'Painterly', sub: 'Maple' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-sentimental', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, asleep on a rug with a plush toy. Sentimental.', caption: 'Sentimental', sub: 'Maple' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-home', w: 540, h: 675, alt: 'Example: a golden retriever mug in a bright living room.', caption: 'Mug', sub: 'At home' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'style-cinematic', w: 360, h: 450, alt: 'Example: Bear, a black Labrador, in a truck window with a tennis ball and a red bandana, in cinematic style. Warm.', caption: 'Cinematic', sub: 'Bear' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.', caption: 'Mug', sub: 'In the hand' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-warm', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy. Warm.', caption: 'Warm', sub: 'Maple' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-studio', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, on a plain studio backdrop.', caption: 'Blanket', sub: 'Studio' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'style-comic', w: 360, h: 450, alt: 'Example: Bao, a French bulldog, asleep on a blanket with a blue bone toy, in comic book style. Sentimental.', caption: 'Comic book', sub: 'Bao' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-home', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room.', caption: 'Blanket', sub: 'At home' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'style-screenprint', w: 360, h: 450, alt: 'Example: Clover, a goldendoodle, resting on a red disc under a hand, in vintage screenprint. Sentimental.', caption: 'Vintage screenprint', sub: 'Clover' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-hand', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, held in hand.', caption: 'Blanket', sub: 'In the hand' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-hilarious', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a scatter of silly poses with a plush toy. Hilarious.', caption: 'Hilarious', sub: 'Maple' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-studio', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, on a plain studio backdrop.', caption: 'Portrait', sub: 'Studio' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'style-ink', w: 360, h: 450, alt: 'Example: Frank, a dachshund in a green sweater on a wooden chair holding a bone, in fine ink drawing. Warm.', caption: 'Fine ink drawing', sub: 'Frank' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-home', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, in a bright living room.', caption: 'Portrait', sub: 'At home' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-over', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, enthroned on a rug in a spotlight. Roast.', caption: 'Roast', sub: 'Maple' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'style-collage', w: 360, h: 450, alt: 'Example: Juno, a German shepherd bounding through a meadow, in cut-paper collage. Hilarious.', caption: 'Cut-paper collage', sub: 'Juno' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-hand', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, held in hand.', caption: 'Portrait', sub: 'In the hand' -%}</li>
-          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-studio', w: 540, h: 675, alt: 'Example: a golden retriever mug on a plain studio backdrop.', caption: 'Mug', sub: 'Studio' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-painterly', w: 360, h: 450, alt: 'Example: Maple, a golden retriever, asleep on a rug with a plush toy, in painterly style. Sentimental.', later: true, caption: 'Painterly', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-sentimental', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, asleep on a rug with a plush toy. Sentimental.', later: true, caption: 'Sentimental', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-home', w: 540, h: 675, alt: 'Example: a golden retriever mug in a bright living room.', later: true, caption: 'Mug', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-cinematic', w: 360, h: 450, alt: 'Example: Bear, a black Labrador, in a truck window with a tennis ball and a red bandana, in cinematic style. Warm.', later: true, caption: 'Cinematic', sub: 'Bear' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'flow-gift', w: 720, h: 900, alt: 'Example: the painting on a black-handled mug held in a hand.', later: true, caption: 'Mug', sub: 'In the hand' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-warm', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a play bow on a fleece blanket with a plush toy. Warm.', later: true, caption: 'Warm', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-studio', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, on a plain studio backdrop.', later: true, caption: 'Blanket', sub: 'Studio' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-comic', w: 360, h: 450, alt: 'Example: Bao, a French bulldog, asleep on a blanket with a blue bone toy, in comic book style. Sentimental.', later: true, caption: 'Comic book', sub: 'Bao' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-home', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, in a bright living room.', later: true, caption: 'Blanket', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-screenprint', w: 360, h: 450, alt: 'Example: Clover, a goldendoodle, resting on a red disc under a hand, in vintage screenprint. Sentimental.', later: true, caption: 'Vintage screenprint', sub: 'Clover' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-blanket-hand', w: 540, h: 675, alt: 'Example: a sherpa blanket printed with a scatter of small black Labradors, held in hand.', later: true, caption: 'Blanket', sub: 'In the hand' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-hilarious', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, in a scatter of silly poses with a plush toy. Hilarious.', later: true, caption: 'Hilarious', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-studio', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, on a plain studio backdrop.', later: true, caption: 'Portrait', sub: 'Studio' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-ink', w: 360, h: 450, alt: 'Example: Frank, a dachshund in a green sweater on a wooden chair holding a bone, in fine ink drawing. Warm.', later: true, caption: 'Fine ink drawing', sub: 'Frank' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-home', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, in a bright living room.', later: true, caption: 'Portrait', sub: 'At home' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'tone-paint-over', w: 540, h: 675, alt: 'Example painting: Maple, a golden retriever, enthroned on a rug in a spotlight. Roast.', later: true, caption: 'Roast', sub: 'Maple' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'style-collage', w: 360, h: 450, alt: 'Example: Juno, a German shepherd bounding through a meadow, in cut-paper collage. Hilarious.', later: true, caption: 'Cut-paper collage', sub: 'Juno' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-portrait-hand', w: 540, h: 675, alt: 'Example: a framed portrait of a black Labrador in a truck window, held in hand.', later: true, caption: 'Portrait', sub: 'In the hand' -%}</li>
+          <li>{%- render 'hs-showcase-fig', id: 'scene-mug-studio', w: 540, h: 675, alt: 'Example: a golden retriever mug on a plain studio backdrop.', later: true, caption: 'Mug', sub: 'Studio' -%}</li>
         </ul>
       </div>
       <div class="hss-ctl hss-ctl--strip" data-hss-strip-ctl hidden>
