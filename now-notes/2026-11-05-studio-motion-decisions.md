@@ -1,3 +1,0 @@
-Status: Krish approved the four open studio and motion decisions from PR #126 as built, choosing the most customer-friendly option each time: the dock's status line sits above the button so the button never moves; a tap during the 340 ms change of screen does nothing (Back included), so a double tap never skips a screen; the dog's first studio line stays "Getting the paints out. My photo goes on the easel first."; the motion stays at 16 px and about 340 ms. No code changed.
-Next: Krish looks at the studio and the motion on his iPhone on a draft theme, stopping before Start painting, before the live push.
-North Star check (2026-11-05): holds.
