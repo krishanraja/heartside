@@ -593,6 +593,8 @@
     render(step);
   }
   function render(step) {
+    // when a new screen appeared, so a tap meant for the last one never answers this one
+    if (render.step !== step) { render.step = step; render.at = Date.now(); }
     var hook = root.querySelector('[data-hsj-screen="hook"]');
     if (hook) hook.hidden = !!step;
     app.hidden = !step;
@@ -626,9 +628,19 @@
   }
 
   /* ----------------------------------------------------------------- events */
+  /* The second tap of a double tap lands on the next screen, where its Next and its first answer sit in
+     the same place (5 Nov: a test buyer's double tap on the style's Next skipped the tone and kept Warm,
+     unseen). The browser counts it (detail 2); once the first tap has moved the screen on, it is
+     ignored. A single tap, however quick, always counts. */
+  var lastTap = 0, ANSWERS = ['data-hsj-next', 'data-hsj-pick', 'data-hsj-feel', 'data-hsj-style', 'data-hsj-tone', 'data-hsj-gift', 'data-hsj-variant', 'data-hsj-start'];
+  function ghost(e, t) {
+    var prev = lastTap; lastTap = Date.now();
+    return e.detail > 1 && (render.at || 0) >= prev && ANSWERS.some(function (a) { return t.hasAttribute(a); });
+  }
   function onClick(e) {
     var t = e.target.closest('button, a');
     if (!t || !root.contains(t)) return;
+    if (ghost(e, t)) { e.preventDefault(); return; }
     if (t.hasAttribute('data-hsj-go')) { e.preventDefault(); track('start', {}); warm(); go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-resume-go')) { go(firstOpen()); return; }
     if (t.hasAttribute('data-hsj-restart')) { S = fresh(); save(); try { window.sessionStorage.removeItem(HS2); } catch (x) { /* fine */ } go(STEPS[0]); return; }
@@ -680,6 +692,9 @@
   // the gift page's questions are done: the note and the names go onto the order, and the panel shows the painting
   function finishAsk() {
     S.noteDone = true; save(); sendAnswers(); track('note_done', { tone: S.tone });
+    // the questions are over: the address stops saying #ask=words, so back, a reload or a shared link
+    // lands on the painting, not on a finished question (5 Nov, ten-buyer run)
+    if (MODE === 'gift') { try { var u = new URL(window.location.href); u.hash = ''; window.history.replaceState({ hsj: '' }, '', u.pathname + u.search); } catch (e) { /* file:// */ } }
     try { root.dispatchEvent(new CustomEvent('hsj:done', { bubbles: true })); } catch (e) { /* old browser */ }
   }
   function pick(group, v) {

@@ -180,7 +180,7 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     await page.waitForSelector('[data-hs-jm]:not([hidden]) [data-hs-jm-frame]:not([hidden]) [data-hs-jm-paint] [data-hs-art]');
     assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Painting your dog');
     const brief = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('[data-brief]')].map(i => [i.getAttribute('data-brief'), i.value])));
-    assert.match(brief.Energy, /^The face is locked to the photo/);
+    assert.match(brief.Energy, /^The face and build are locked to the photo/);
     assert.match(brief['Tone direction'], /^Mood: a loving roast, told by the situation, never the face\./);
     assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/, ''), /side-eye|brow|smug|judging/);
     assert.match(brief['Style direction'], /painterly|painting/i);
@@ -208,6 +208,8 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     await page.locator('[data-hsj-next]').click();
     await page.waitForSelector('[data-hs-jm][data-phase="wait"]');
     assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Almost there');
+    // the questions are over, so the address no longer points at one (5 Nov, ten-buyer run)
+    assert.equal(await page.evaluate(() => location.hash), '', 'no #ask= once the note is done');
     const dockWaiting = await frameBox(page);
     await paintDone(page);
     await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
@@ -286,5 +288,23 @@ test('a buyer from a gift page finds that gift already chosen', async () => {
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     assert.equal(await page.locator('[data-hsj-gift="blanket"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('[data-hsj-start]').isDisabled(), false);
+  } finally { await ctx.close(); }
+});
+
+test("a double tap answers one screen, never the next one it lands on", async () => {
+  const {ctx, page} = await open();
+  try {
+    await page.goto(`${base}/?step=photo`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    // 5 Nov, a test buyer on the live store: a double tap on the style's Next skipped the tone, unseen
+    await page.locator('[data-hsj-next]').dblclick();
+    await page.waitForURL(/step=tone/);
+    await page.waitForTimeout(400);
+    assert.match(page.url(), /step=tone/, 'the tone is still on screen, waiting for its own answer');
+    // two separate taps are two answers, however quick
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=gifts/);
   } finally { await ctx.close(); }
 });
