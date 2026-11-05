@@ -57,7 +57,12 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__gallery .tee-gallery__thumbs, .hs-jm__gallery .tee-gallery-thumbnails { display: none !important; }
 .hs-jm__close { position: absolute; inset: 0; overflow: hidden; }
 .hs-jm__close img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.hs-jm__views { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+/* one row whatever the font: a wrapped second row pushed the repaint link into the dock on a 320 px phone when a
+   wider fallback font loaded (GitHub's runner, 5 Nov) */
+.hs-jm__views { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap; max-width: 100%; }
+.hs-jm__views .hsj-chip { flex: 0 1 auto; min-width: 0; white-space: nowrap; }
+.hs-jm__views .hsj-chip span { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 359px) { .hs-jm__views .hsj-chip { padding: 0 12px; } .hs-jm__views .hsj-chip.is-on { padding-left: 8px; } }
 
 /* the dock: the tick, the button and the quiet link always take their room, shown or not */
 .hs-jm__dock { display: grid; gap: 8px; }

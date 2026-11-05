@@ -192,7 +192,7 @@ test('a later gift: the same studio, nothing asked, the framing box saved unseen
     await page.click('[data-hs-jm-view="close"]');
     assert.equal(await page.evaluate(() => !document.querySelector('[data-hs-jm-close]').hidden && /hs-ex-style-screenprint/.test(document.querySelector('[data-hs-jm-close] img').src)), true);
     // the whole print, never a crop (5 Nov judges: a zoomed close-up cut the mug dog's face off at the frame edge)
-    assert.equal((await page.textContent('[data-hs-jm-view="close"]')).trim(), 'The whole print');
+    assert.equal((await page.textContent('[data-hs-jm-view="close"]')).trim(), 'Whole print');
     const whole = await page.evaluate(() => { const img = document.querySelector('[data-hs-jm-close] img'), s = getComputedStyle(img), box = document.querySelector('.hs-jm__square').getBoundingClientRect(), r = img.getBoundingClientRect();
       return {fit: s.objectFit, transform: s.transform, inside: r.left >= box.left - 1 && r.right <= box.right + 1 && r.top >= box.top - 1 && r.bottom <= box.bottom + 1}; });
     assert.deepEqual(whole, {fit: 'contain', transform: 'none', inside: true});
@@ -407,18 +407,24 @@ for (const size of [{width: 360, height: 640}, {width: 375, height: 667}, {width
       await page.evaluate(() => { window.__hs2api.journeyRepaintLeft = () => true; });
       await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
       await page.waitForFunction(() => document.querySelector('[data-hs-jm-repaint]').style.visibility !== 'hidden');
-      await page.waitForTimeout(400);
-      const r = await page.evaluate(() => {
-        const box = s => { const e = document.querySelector(s); const b = e && e.getBoundingClientRect(); return b && b.height ? {top: Math.round(b.top), bottom: Math.round(b.bottom)} : null; };
-        const sub = box('[data-hs-jm-frame] [data-hs-jm-sub]'), pic = box('[data-hs-jm-reveal] .hs-jm__square') || box('[data-hs-jm-reveal]'), rep = box('[data-hs-jm-repaint]'), dock = box('[data-hs-jm-frame] .hsj-dock');
-        const repTop = rep && document.elementFromPoint(160, Math.round((rep.top + rep.bottom) / 2));
-        return {sub, pic, rep, dock, repHit: !!(repTop && repTop.closest('[data-hs-jm-repaint]')), scroll: document.documentElement.scrollHeight <= innerHeight + 1};
-      });
-      const where = `${size.width}x${size.height} ${gift}: ${JSON.stringify(r)}`;
-      if (r.sub) assert.ok(r.pic.top >= r.sub.bottom - 1, 'the picture clears the words: ' + where);
-      assert.ok(r.rep.bottom <= r.dock.top + 1, 'the repaint link clears the dock: ' + where);
-      assert.ok(r.repHit, 'the repaint link can be tapped: ' + where);
-      assert.ok(r.scroll, 'nothing scrolls: ' + where);
+      // the theme's font, then a wide fallback font (GitHub's runner, 5 Nov: the view chips wrapped to a second row
+      // and pushed the repaint link into the dock on a 320 px phone)
+      for (const font of ['theme', 'wide']) {
+        if (font === 'wide') await page.addStyleTag({content: '[data-hs-jm-frame], [data-hs-jm-frame] * { font-family: "DejaVu Sans", Verdana, "Liberation Sans", sans-serif !important; }'});
+        await page.waitForTimeout(400);
+        const r = await page.evaluate(() => {
+          const box = s => { const e = document.querySelector(s); const b = e && e.getBoundingClientRect(); return b && b.height ? {top: Math.round(b.top), bottom: Math.round(b.bottom)} : null; };
+          const sub = box('[data-hs-jm-frame] [data-hs-jm-sub]'), pic = box('[data-hs-jm-reveal] .hs-jm__square') || box('[data-hs-jm-reveal]'), rep = box('[data-hs-jm-repaint]'), dock = box('[data-hs-jm-frame] .hsj-dock'), views = box('.hs-jm__views');
+          const repTop = rep && document.elementFromPoint(160, Math.round((rep.top + rep.bottom) / 2));
+          return {sub, pic, views, rep, dock, repHit: !!(repTop && repTop.closest('[data-hs-jm-repaint]')), scroll: document.documentElement.scrollHeight <= innerHeight + 1};
+        });
+        const where = `${size.width}x${size.height} ${gift} (${font} font): ${JSON.stringify(r)}`;
+        if (r.sub) assert.ok(r.pic.top >= r.sub.bottom - 1, 'the picture clears the words: ' + where);
+        assert.ok(r.views.bottom - r.views.top <= 46, 'the view chips stay on one row: ' + where);
+        assert.ok(r.rep.bottom <= r.dock.top + 1, 'the repaint link clears the dock: ' + where);
+        assert.ok(r.repHit, 'the repaint link can be tapped: ' + where);
+        assert.ok(r.scroll, 'nothing scrolls: ' + where);
+      }
     } finally { await ctx.close(); }
   }
 });
