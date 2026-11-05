@@ -1,3 +1,0 @@
-Status: live on heartside.io since 5 Nov 19:33 UTC (theme push run 177, Krish's yes): the "where does your dog rule the house" step with recipes v21 and Roast's wink, the cart upsell drawer, faster pages, the studio from the first frame with smooth screen changes, and the cart's "Make another version" link opening the normal gift page. All 20 changed theme files read back identical to main, live-gate is all clear on every view, and a live walk to the gifts screen showed the new step and v21, painting nothing.
-Next: Krish looks at the journey on his own iPhone, then approves one QA cart on the live store to confirm the drawer's $26.10 and $46.60 savings.
-North Star check (2026-11-05): holds.
