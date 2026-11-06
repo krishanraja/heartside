@@ -23,7 +23,8 @@ BOXES = {
     'frenchie': [(200, 700, 490, 955)],
     'doodle': [(235, 610, 475, 820)],
     'dachshund': [(115, 715, 385, 965)],
-    'shepherd': [(90, 555, 390, 885), (405, 550, 705, 885)],
+    # one mug (Krish, 6 Nov: "This image has two mugs in it. That's a huge failure.")
+    'shepherd': [(250, 552, 550, 885)],
 }
 
 

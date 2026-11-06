@@ -16,7 +16,7 @@ Krish, 6 November: "How do we make this pipeline completely antifragile so that 
 | The checkout picture (`/apps/heartside-artwork`, n8n "Heartside checkout image preparation") | No | The line goes in, but checkout shows the gift's own photo instead of the painting. The page records `checkout_image_skipped` | The n8n data table "Heartside checkout failures": one row per failed answer (time, code, status). Shopify Files: the newest `heartside-checkout-*` file dates the last success. "Heartside checkout admission attempts": one row per request | See "The checkout picture" below |
 | The AI note (n8n "compose gift lines") | No | The note falls back to written lines | n8n executions of the compose workflow (it saves them) | The published version and its prompt, `n8n/README.md` |
 | The dog detector | No | No two-dog question; the photo goes as it is | The browser console (`photoLog`) | Nothing blocks on it |
-| The cart drawer | No | No drawer; the cart works as it is | `hs-cart-more.js` | Nothing blocks on it |
+| The cart drawer (both gifts not in the cart, each with Add to cart; its tab on the left edge brings it back after any close) | No | No drawer and no tab; the cart works as it is | `hs-cart-more.js` | Nothing blocks on it |
 
 ## The checkout picture
 

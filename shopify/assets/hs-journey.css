@@ -220,6 +220,10 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
   .hsj-tone { gap: 8px; padding: 0 8px; font-size: 14px; line-height: 18px; }
   .hsj-tone__ico { width: 30px; height: 30px; border-radius: 9px; }
   .hsj-tone__ico svg { width: 18px; height: 18px; }
+  /* the tagline under the dog's name stays on one line beside the pause button on the smallest phone */
+  .hsj-hook .hss--hero .hss-fig figcaption { gap: 6px; }
+  .hsj-hook .hss--hero .hss-fig figcaption strong { font-size: 15px; }
+  .hsj-hook .hss--hero .hss-fig figcaption span { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) { .hsj-progress span, .hsj-radio { transition: none; } }
 

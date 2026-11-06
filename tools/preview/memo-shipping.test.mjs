@@ -48,8 +48,10 @@ test('by default the strip is the one Christmas offer: badge, countdown, free sh
   assert.equal(defaults.offer_on,true);
   const off=await renderOffer();
   assert.match(off,/class="hs2-memo__msg">Christmas offer<\/span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden><\/span>/);
-  assert.match(off,/class="hs2-memo__deal">Free US shipping<\/p>/);
+  assert.match(off,/class="hs2-memo__deal">Fast, free US shipping<\/p>/);
   assert.doesNotMatch(off,/15% off/,'no saving while the bundle switch is off');
   assert.doesNotMatch(off,/data-hs2-ticker/,'the offer sits still');
-  assert.match(await renderOffer('2026-12-10',{bundle_offer_live:true}),/Free US shipping<span aria-hidden="true"> · <\/span>15% off 2 gifts, 20% off 3<\/p>/);
+  assert.match(await renderOffer('2026-12-10',{bundle_offer_live:true}),/Fast, free US shipping<span aria-hidden="true"> · <\/span>15% off 2 gifts, 20% off 3<\/p>/);
+  // a deal line the theme editor saved before 6 Nov still leads with fast shipping (Krish, 6 Nov)
+  assert.match(await renderOffer('2026-12-10',{offer_deal:'Free US shipping'}),/class="hs2-memo__deal">Fast, free US shipping<\/p>/);
 });
