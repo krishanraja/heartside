@@ -2,7 +2,7 @@
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
 as_of: 2026-11-06
-head: 4adca71
+head: 36ea94c
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
