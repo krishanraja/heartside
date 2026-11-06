@@ -4226,6 +4226,15 @@
       }).observe(buy, { attributes: true, subtree: true, attributeFilter: ['class'] });
     }
   }
+  // every line of the add carries Teeinblue's saved design (its UUID reference), as hs-checkout-image.js checks
+  function designedAdd(body) {
+    try {
+      var j = typeof body === 'string' ? JSON.parse(body) : null, items = j && (Array.isArray(j.items) ? j.items : [j]);
+      return !!(items && items.length && items.length <= 10 && items.every(function (it) {
+        return it && /^\d+$/.test(String(it.id)) && it.properties && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(it.properties._customization_id || '');
+      }));
+    } catch (e) { return false; }
+  }
   function prepareCheckoutCart(body) {
     var config = checkoutImageConfig();
     if (!config) return null; // The new route is opt-in until its endpoint is verified.
@@ -4253,10 +4262,22 @@
     }).catch(function (error) {
       prepareCheckoutCart.pending = false;
       // plain words, and the one thing a buyer must not do: paint again
-      checkoutImageStatus(error && error.hs2Changed
-        ? Whose + ' design changed while it was saving. Check it, then try Add to cart again. You do not need to upload a photo again.'
-        : "That didn't go through. " + Whose + ' design is saved, so you do not need to upload a photo again. Try Add to cart again.');
-      throw error;
+      if (error && error.hs2Changed) {
+        checkoutImageStatus(Whose + ' design changed while it was saving. Check it, then try Add to cart again. You do not need to upload a photo again.');
+        throw error;
+      }
+      // only a saved design goes in without its picture: an add with no design reference is still refused
+      if (!designedAdd(body)) {
+        checkoutImageStatus("That didn't go through. " + Whose + ' design is saved, so you do not need to upload a photo again. Try Add to cart again.');
+        throw error;
+      }
+      /* The checkout picture is a nicety; the sale is not (Ruling, Krish, 6 Nov: the registration service failed every
+         new design from the night of 5 Nov, and since a failed picture blocked the add, no painting could reach the
+         cart). The design itself is saved with Teeinblue and goes in the cart as it is; checkout shows the gift's own
+         photo instead of the painting. Nothing uploads or paints again. */
+      try { track('checkout_image_skipped', { retries: prepareCheckoutCart.retries || 0 }); } catch (e) { /* analytics never holds an add */ }
+      checkoutImageStatus('Almost there.');
+      return body;
     });
   }
   function onCartAdd(cb) {
