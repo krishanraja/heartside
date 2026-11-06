@@ -445,7 +445,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const step = function previewHeadStep(response, context) {\n  const headers = response.headers || {};\n  const mime = String(headers['content-type'] || '').split(';')[0].trim().toLowerCase();\n  const length = Number(headers['content-length']);\n  if (response.statusCode !== 200 || mime !== 'image/jpeg' || !Number.isSafeInteger(length) || length < 4 || length > 8 * 1024 * 1024) {\n    return { httpStatus: 503, body: { state: 'error', code: 'preview_unavailable' } };\n  }\n  return { ...context, previewBytes: length };\n};\nreturn [{json:step($input.first().json, $('Lookup decision').first().json)}];"
+        "jsCode": "const step = function previewHeadStep(response, context) {\n  const headers = response.headers || {};\n  const mime = String(headers['content-type'] || '').split(';')[0].trim().toLowerCase();\n  const length = Number(headers['content-length']);\n  if (response.statusCode !== 200 || mime !== 'image/jpeg' || !Number.isSafeInteger(length) || length < 4 || length > 8 * 1024 * 1024) {\n    // Teeinblue writes its copy when Add to cart saves the design, a few seconds before the first ask. Shopify's app\n    // proxy turns any 5xx into its own error page, so \"not ready yet\" is a 202 pending the page waits on (6 Nov).\n    return { httpStatus: 202, body: { state: 'pending', code: 'preview_unavailable', retryAfterSeconds: 3 } };\n  }\n  return { ...context, previewBytes: length };\n};\nreturn [{json:step($input.first().json, $('Lookup decision').first().json)}];"
       }
     },
     {

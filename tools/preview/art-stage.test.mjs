@@ -26,9 +26,16 @@ after(async () => { await browser.close(); });
 
 // The screenshots are evidence for a person, never a check. Chromium can refuse a capture while the
 // painting card's endless wash animates on a busy runner ("Unable to capture screenshot", CI 31 Oct),
-// so one retry with animations paused; a second refusal still fails the test.
+// so one retry with animations paused. A second refusal is logged and the shot skipped: the checks are the
+// assertions, and a refused picture failed two CI runs on 6 Nov while every assertion passed.
 async function shot(page, opts) {
-  try { await page.screenshot(opts); } catch (e) { if (!/capture screenshot/i.test(String(e))) throw e; await page.screenshot({...opts, animations: 'disabled'}); }
+  try { await page.screenshot(opts); } catch (e) {
+    if (!/capture screenshot/i.test(String(e))) throw e;
+    try { await page.screenshot({...opts, animations: 'disabled'}); } catch (e2) {
+      if (!/capture screenshot/i.test(String(e2))) throw e2;
+      console.log('# screenshot skipped (Chromium refused the capture twice): ' + (opts && opts.path));
+    }
+  }
 }
 
 for (const [kind, settings] of [['blanket', {blanket_purchase: true, native_artwork_kind: 'blanket'}], ['mug', {blanket_purchase: false, native_artwork_kind: 'mug'}]]) {

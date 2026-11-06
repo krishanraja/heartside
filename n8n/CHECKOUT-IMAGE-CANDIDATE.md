@@ -1,5 +1,11 @@
 # Native checkout image preparation
 
+**Live differences from this generator (6 November):**
+- The published workflow has an admission gate: 30 requests a minute, per shop, through the data table "Heartside checkout admission attempts".
+- It has a failure diary after Respond: an answer of 403 or more writes a row (code, status) to "Heartside checkout failures".
+- `previewHeadStep` answers "not ready yet" with 202 pending (`preview_unavailable`, retry in 3 s), because Shopify's app proxy turns any 5xx into its own error page. The step is mirrored in `checkout-image-steps.mjs`.
+- The runbook is `docs/RUNBOOK-cart.md`.
+
 The separate managed n8n workflow is published, with both credentials bound, and since the theme published on 27 October the live product pages for all three gifts call it when a buyer adds a design to the cart. Actual same-origin requests returned pending, then READY, then READY with the same file identity and URL; the downloaded 960×960 Shopify mockup visually matches the accepted existing blanket design. Files creation/readback/reuse therefore pass for that design. The committed import remains inactive with synthetic configuration. On 27 October the blanket template enabled preparation for the controlled check. Its actual native Add to Cart completed preparation and retained quantity one at USD129; hosted Merge checkout showed the accepted parent image and original native child at the correct price. Mobile and desktop checks passed without overflow. The theme published later that day enables preparation on the mug, portrait and blanket, and the committed templates match. The Merge transformation is Active. A fee-free test order for one blanket went through it on 27 October, and test-payment mock orders went through it on the live store on 28 October, but no native Merge order has been fulfilled. No other template enables preparation. This service does not generate artwork or change shared product media; it keeps the original native product and price.
 
 ## Remote template preservation

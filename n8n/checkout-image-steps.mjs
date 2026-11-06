@@ -90,7 +90,9 @@ export function previewHeadStep(response, context) {
   const mime = String(headers['content-type'] || '').split(';')[0].trim().toLowerCase();
   const length = Number(headers['content-length']);
   if (response.statusCode !== 200 || mime !== 'image/jpeg' || !Number.isSafeInteger(length) || length < 4 || length > 8 * 1024 * 1024) {
-    return { httpStatus: 503, body: { state: 'error', code: 'preview_unavailable' } };
+    // Teeinblue writes its copy when Add to cart saves the design, a few seconds before the first ask. Shopify's app
+    // proxy turns any 5xx into its own error page, so "not ready yet" is a 202 pending the page waits on (6 Nov).
+    return { httpStatus: 202, body: { state: 'pending', code: 'preview_unavailable', retryAfterSeconds: 3 } };
   }
   return { ...context, previewBytes: length };
 }
