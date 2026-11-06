@@ -433,6 +433,14 @@
     var h = HOME.indexOf(step); if (h !== -1) return Math.round((h + 1) * 40 / HOME.length);
     var a = GIFT.indexOf(step); return a === -1 ? 0 : Math.round(50 + a * 40 / (GIFT.length - 1));
   }
+  /* Buddy, the house's host, says the line under each question (Krish, 6 Nov: "Why doesnt This character appear
+     throughout the UX instead of these stupid paw emojis? It would be so perfect to guide the user through the user
+     journey"; then "buddy in a classy way and dont just shoe horn him in"). He takes the line that was already
+     there, in one small fixed place, so no screen gains a box or changes height; the dog's own voice is the note.
+     His drawing is the page's one copy (<template data-hs-buddy>, snippets/hs-buddy.liquid). */
+  var BUDDY = null;
+  function buddy() { if (BUDDY === null) { var t = document.querySelector('template[data-hs-buddy]'); BUDDY = t ? t.innerHTML.trim() : ''; } return BUDDY; }
+  function host(sub) { return '<div class="hsj-host"><span class="hsj-host__face" aria-hidden="true">' + buddy() + '</span><p class="hsj-support">' + sub + '</p></div>'; }
   function screen(step, title, sub, body, dockHtml) {
     var pct = pctOf(step);
     var part = partOf(step);
@@ -441,7 +449,7 @@
     var chip = MODE === 'gift' ? '<span class="hsj-paint" data-hsj-paint role="img" aria-label="Painting your dog"><span class="hsj-paint__img" data-hsj-paint-img></span><span class="hsj-paint__ring"></span></span>' : '';
     return '<header class="hsj-bar' + (chip ? ' has-paint' : '') + '">' + back + '<p class="hsj-bar__step">' + label + ' <span class="hsj-bar__part">· ' + part + ' of 6</span></p>' + chip + '</header>' +
       '<div class="hsj-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><span style="width:' + pct + '%"></span></div>' +
-      '<main class="hsj-content"><div class="hsj-heading"><h2 class="hsj-headline" id="hsj-q">' + title + '</h2>' + (sub ? '<p class="hsj-support">' + sub + '</p>' : '') + '</div>' +
+      '<main class="hsj-content"><div class="hsj-heading"><h2 class="hsj-headline" id="hsj-q">' + title + '</h2>' + (sub ? host(sub) : '') + '</div>' +
       '<div class="hsj-body">' + body + '</div></main><footer class="hsj-dock">' + dockHtml + '</footer>';
   }
   function primary(label, next, on) { return '<button type="button" class="hsj-btn" data-hsj-next="' + next + '"' + (on ? '' : ' disabled') + '><span>' + label + '</span>' + ICON.next + '</button>'; }

@@ -817,7 +817,7 @@ test("the buyer's photo is on the easel at first paint, before any script has ru
     await page.goto(base + URLS.print, {waitUntil: 'commit'});
     await page.waitForFunction(() => { const im = document.querySelector('[data-hs-jm-photo]'); return im && !im.hidden && im.complete && im.naturalWidth > 0 && getComputedStyle(im).display !== 'none'; }, null, {timeout: 3000});
     assert.ok(Date.now() - t0 < 3000, 'the photo shows within 3 s');
-    const before = await page.evaluate(() => ({scripts: !!window.__hs2api || !!window.__hsjm, face: !document.querySelector('[data-hs-jm-face]').hidden,
+    const before = await page.evaluate(() => ({scripts: !!window.__hs2api || !!window.__hsjm, face: !!document.querySelector('[data-hs-jm-easel] .hs-wait__me svg.hs-buddy'),
       sub: document.querySelector('[data-hs-jm-sub]').textContent, box: Math.round(document.querySelector('[data-hs-jm-easel] .hs-art__canvas').getBoundingClientRect().height)}));
     assert.deepEqual([before.scripts, before.face, before.sub], [false, true, 'A few quick questions while your painting starts.']);
     release();

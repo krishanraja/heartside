@@ -1,6 +1,6 @@
-// The painting wait (Krish, 4 Nov): while the card paints, the photo paints in from grey, the dog talks
-// from the studio, a true breed fact comes every third beat, a tap gives a treat, and the studio clears
-// away when the painting lands. Real snippet, stylesheets, hs-breed-facts.js and hs-wait.js in Chromium,
+// The painting wait (Krish, 4 Nov): while the card paints, the photo paints in from grey, Buddy keeps the
+// buyer company from the studio (Krish, 6 Nov: Buddy "instead of these stupid paw emojis"), a true breed fact
+// comes every third beat, a tap on Buddy brings his next line, and the studio clears away when the painting lands. Real snippet, stylesheets, hs-breed-facts.js and hs-wait.js in Chromium,
 // phone width; screens go to out/wait-room/. Nothing leaves localhost.
 //   node --test tools/preview/wait-room.browser.test.mjs
 import {test, before, after} from 'node:test';
@@ -25,7 +25,9 @@ before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser.close(); });
 
 async function open(kind, reducedMotion) {
-  const native = (await new Liquid().parseAndRender(read('shopify/snippets/hs-native-artwork.liquid'), {settings: {native_artwork_kind: kind, blanket_purchase: false}}))
+  // Buddy's one drawing, as sections/hs2-product.liquid puts it beside hs-wait.js
+  const buddy = '<template data-hs-buddy>' + read('shopify/snippets/hs-buddy.liquid').replace(/\{%-? comment -?%\}[\s\S]*?\{%-? endcomment -?%\}/g, '') + '</template>';
+  const native = buddy + (await new Liquid().parseAndRender(read('shopify/snippets/hs-native-artwork.liquid'), {settings: {native_artwork_kind: kind, blanket_purchase: false}}))
     .replace(/hs-wait\.css|<link[^>]*hs-wait\.css[^>]*>|<script src="[^"]*(hs-breed-facts|hs-wait)\.js"[^>]*><\/script>/g, '');
   const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${read('shopify/assets/hs2.css')}${read('shopify/assets/hs-wait.css')}</style></head>
     <body style="margin:0;padding:16px;background:#FBF6F1"><main id="buy">${native}</main></body></html>`;
@@ -65,7 +67,10 @@ for (const kind of ['blanket', 'mug', 'print']) test(`${kind}: the studio paints
     await page.waitForTimeout(2600);
     const early = await look(page);
     assert.ok(early.stage, 'the studio is on the canvas');
-    assert.ok(early.say && early.say.length > 10, 'the dog is talking');
+    assert.ok(early.say && early.say.length > 10, 'Buddy is talking');
+    const me = await page.evaluate(() => { const b = document.querySelector('.hs-wait__me'); return {buddy: !!b.querySelector('svg.hs-buddy'), img: !!b.querySelector('img'), who: document.querySelector('.hs-wait__who').textContent}; });
+    assert.deepEqual(me, {buddy: true, img: false, who: 'Buddy, at the studio'}, 'Buddy speaks, in his own drawing: no paw, no photo');
+    assert.equal(await page.evaluate(() => document.querySelectorAll('.hs-wait__thing, .hs-wait__things').length), 0, 'nothing drifts over the photo');
     assert.doesNotMatch(early.text, /!|—/, 'house voice: no exclamation marks or dashes');
     await page.screenshot({path: path.join(shots, kind + '-05s.png'), fullPage: true});
     if (kind === 'blanket') {
@@ -78,12 +83,13 @@ for (const kind of ['blanket', 'mug', 'print']) test(`${kind}: the studio paints
       const late = await look(page);
       assert.ok(late.shown > early.shown + 0.3, `more painted later (${early.shown.toFixed(2)} to ${late.shown.toFixed(2)})`);
       assert.ok(parseFloat(late.bar) < 100 && parseFloat(late.bar) > 80, 'the bar is far on, never full while painting: ' + late.bar);
-      // a treat: a counter and a thank you
-      await page.click('[data-hs-wait-treat]');
-      await page.click('[data-hs-wait-treat]');
-      const fed = await page.evaluate(() => ({n: document.querySelector('[data-hs-wait-count]').textContent, say: document.querySelector('[data-hs-wait-say]').getAttribute('aria-label') || document.querySelector('[data-hs-wait-say]').textContent}));
-      assert.equal(fed.n, '2');
-      assert.match(fed.say, /Crunchy/);
+      // a tap on Buddy: his next line, at once
+      const sayNow = () => page.evaluate(() => { const s = document.querySelector('[data-hs-wait-say]'), f = document.querySelector('[data-hs-wait-fact]'); return f && !f.hidden ? 'fact:' + f.innerText : s.getAttribute('aria-label') || s.textContent; });
+      const before = await sayNow();
+      await page.click('[data-hs-wait-buddy]');
+      const after = await sayNow();
+      assert.notEqual(after, before, 'a tap brings the next line');
+      assert.equal(await page.evaluate(() => document.querySelector('[data-hs-wait-buddy]').classList.contains('is-tapped')), true, 'his ear flicks');
       await page.waitForTimeout(700);
       await page.screenshot({path: path.join(shots, kind + '-150s.png'), fullPage: true});
       // the third beat is a true fact about the breed
@@ -116,15 +122,21 @@ test('reduced motion: the photo is still, nothing drifts, and the lines just cha
   } finally { await page.close(); }
 });
 
-test('every line the dog can say keeps the house voice, for every answer', async () => {
+test('every line Buddy can say keeps the house voice and names the dog, for every answer', async () => {
   const {page} = await open('blanket', false);
   try {
     const bad = await page.evaluate(() => {
       const out = [], W = window.__hsWait;
       const sets = [];
       for (const spot of ['couch', 'bed', 'feet', 'anywhere', '']) for (const together of ['walk', 'coffee', 'movie', 'naps', 'car', '']) for (const tone of ['sentimental', 'warm', 'hilarious', 'over_the_top'])
-        sets.push(W.lines({dog: 'Mowgli', spot, together, home: 'door', meaning: 'boss', toy: 'tennis ball', wears: 'bandana', person: 'Sam', tone, ai: []}));
-      for (const L of sets) for (const line of [].concat(L.open, L.mid, L.long, W.treats)) if (/!|—|–|undefined|null/.test(line)) out.push(line);
+        for (const home of ['door', 'toy', 'spin', 'cool', '']) for (const meaning of ['boss', 'shadow', 'best', 'hard', ''])
+          for (const dog of ['Mowgli', 'Pickles', 'your dog']) sets.push([dog, W.lines({dog, spot, together, home, meaning, person: 'Sam', tone})]);
+      for (const [dog, L] of sets) for (const line of [].concat(L.open, L.mid, L.long, [W.firstLine(dog)])) {
+        // the house voice, and Buddy talks about the dog, never as the dog: no "my" or "I'm at the painter's"
+        if (/!|—|–|undefined|null|\bmy\b|\bme\b|  /.test(line) || /^[a-z]/.test(line)) out.push(line);
+      }
+      if (W.firstLine('Pickles') !== "The paints are out. Pickles' photo goes on the easel first.") out.push(W.firstLine('Pickles'));
+      if (W.firstLine('your dog') !== "The paints are out. Your dog's photo goes on the easel first.") out.push(W.firstLine('your dog'));
       return [...new Set(out)];
     });
     assert.deepEqual(bad, []);
@@ -132,9 +144,9 @@ test('every line the dog can say keeps the house voice, for every answer', async
 });
 
 // Krish, 4 Nov: "Nothing on this page must randomly change size with volatility like that when text is
-// generating." Watch the line under the bubble through typing, a treat and a breed fact: it never moves, and
-// the dog's face stays a circle (a portrait photo once stretched it into a tall oval).
-for (const kind of ['blanket', 'mug']) test(`${kind}: nothing below the bubble moves while the dog talks`, async () => {
+// generating." Watch the line under the bubble through typing, a tap on Buddy and a breed fact: it never moves,
+// and Buddy's circle stays a circle.
+for (const kind of ['blanket', 'mug']) test(`${kind}: nothing below the bubble moves while Buddy talks`, async () => {
   const {page, errors} = await open(kind, false);
   try {
     await paint(page, 5000);
@@ -144,17 +156,17 @@ for (const kind of ['blanket', 'mug']) test(`${kind}: nothing below the bubble m
     for (let i = 0; i < 160 && !(sawFact && i > 60); i++) {
       const r = await page.evaluate(() => {
         const b = document.querySelector('[data-hs-art-line]').getBoundingClientRect().top;
-        const f = document.querySelector('.hs-wait__me img'); // layout size, not the munch animation's scale
+        const f = document.querySelector('.hs-wait__me');
         const fact = document.querySelector('[data-hs-wait-fact]');
         return {top: Math.round(b), face: f.offsetWidth + 'x' + f.offsetHeight, fact: !!fact && !fact.hidden};
       });
       tops.add(r.top); faces.add(r.face); sawFact = sawFact || r.fact;
-      if (i === 10) await page.click('[data-hs-wait-treat]');
+      if (i === 10) await page.click('[data-hs-wait-buddy]');
       await page.waitForTimeout(150);
     }
     assert.ok(sawFact, 'a breed fact took a turn during the watch');
     assert.deepEqual([...tops].length, 1, 'the line under the bubble held still: ' + [...tops].join(', '));
-    assert.deepEqual([...faces], ['48x48'], 'the face is a circle');
+    assert.deepEqual([...faces], ['52x52'], "Buddy's circle is a circle");
     assert.deepEqual(errors, []);
   } finally { await page.close(); }
 });

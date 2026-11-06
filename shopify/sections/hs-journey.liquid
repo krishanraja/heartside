@@ -41,6 +41,8 @@
     {%- endfor -%}
   {%- endif -%}
 {%- endcapture -%}
+{%- comment -%} Buddy's one drawing for hs-journey.js, who says the line under each question {%- endcomment -%}
+<template data-hs-buddy>{% render 'hs-buddy' %}</template>
 <div class="hsj" data-hsj id="journey-{{ section.id }}"><script>
     /* Helio's header is cleared before the first paint, as hs2-product.liquid does, with the same measure as
        hs-journey.js clearHeader (+8 px), so the hero never drops when the script runs (5 Nov, ten buyers) */

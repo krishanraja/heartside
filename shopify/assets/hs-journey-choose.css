@@ -63,17 +63,13 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__talk { width: 100%; }
 .hs-jm__talk .hs-wait__me { cursor: default; overflow: hidden; }
 /* the bubble's height before hs-wait.js has measured, and the least it measures to (hs-wait.js measureTalk): what it
-   measures for the dog's lines at these sizes, so the bubble has one size from the first paint, and the card's
+   measures for Buddy's lines at these sizes, so the bubble has one size from the first paint, and the card's
    bubble the same one. A line that needs more room still gets it. */
 .hs-jm__paint { --hs-jm-talk-h: 108px; }
 @media (max-height: 700px) { .hs-jm__paint { --hs-jm-talk-h: 99px; } }
 @media (max-width: 359px) { .hs-jm__paint { --hs-jm-talk-h: 137px; } }
 @media (min-width: 900px) and (min-height: 701px) { .hs-jm__paint { --hs-jm-talk-h: 84px; } }
 .hs-jm__talk .hs-wait__bubble { height: var(--hs-wait-h, var(--hs-jm-talk-h)); }
-/* the card's favourite things arrive softly instead of popping in at the handover */
-.hs-jm__paint .hs-wait__things { animation: hs-jm-in .6s ease-out both; }
-@keyframes hs-jm-in { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .hs-jm__paint .hs-wait__things { animation: none; } }
 
 /* the reveal: one square of fixed size holds Teeinblue's mockups (the painting placed on the product by its
    own engine) or the painting itself up close; two chips switch between them */
@@ -137,8 +133,12 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 
 /* the painting stopped (a reload mid-paint): the studio stops pretending to paint, and nothing changes size */
 [data-hs-jm][data-phase="stopped"] .hs-wait__talk,
-[data-hs-jm][data-phase="stopped"] .hs-wait__things,
 [data-hs-jm][data-phase="stopped"] .hs-art__bar { visibility: hidden; }
+
+/* one Buddy on a screen (Krish, 6 Nov: "dont just shoe horn him in"): while he talks in the studio's bubble, the
+   line under the title is said without his face */
+[data-hs-jm][data-phase="studio"] .hs-jm__frame > .hsj-content .hsj-host__face,
+[data-hs-jm][data-phase="wait"] .hs-jm__frame > .hsj-content .hsj-host__face { display: none; }
 
 /* the support line always keeps two lines of room: the server's text and the script's take the same height */
 .hs-jm__frame .hsj-support { min-height: 48px; }

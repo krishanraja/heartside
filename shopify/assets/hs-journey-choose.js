@@ -86,22 +86,16 @@
     if (e.hidden !== !on) e.hidden = !on;
     if (!on) return;
     var src = ownPhoto() || photoSrc();
-    ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) {
-      var img = $(sel);
-      // a picture already on the easel stays: a new address for the same photo would only flicker it
-      if (img && src && !img.getAttribute('src')) {
-        img.src = src; img.hidden = false;
-        // the face's paw icon gives way to the photo; the canvas keeps its brush
-        var paw = sel === '[data-hs-jm-face]' && img.parentNode.querySelector('.hs-wait__ico');
-        if (paw) paw.style.display = 'none';
-      }
-    });
+    var img = $('[data-hs-jm-photo]');
+    // a picture already on the easel stays: a new address for the same photo would only flicker it
+    if (img && src && !img.getAttribute('src')) { img.src = src; img.hidden = false; }
     var shown = $('[data-hs-jm-photo]');
     if (shown && shown.getAttribute('src') && !e.style.getPropertyValue('--hs-jm-photo')) e.style.setProperty('--hs-jm-photo', 'url("' + shown.getAttribute('src').replace(/"/g, '%22') + '")');
-    // one label for the whole studio, the formula hs-wait.js uses; one line from the dog, true before and after
-    // the photo goes, so the bubble says the same thing when the card takes over
-    setText('[data-hs-jm-who]', (String(state().dog || '').trim() || 'your dog') + ', live from the studio');
-    setText('[data-hs-jm-say]', 'Getting the paints out. My photo goes on the easel first.');
+    // one label for the whole studio and Buddy's first line, as hs-wait.js has them (label, firstLine), true before
+    // and after the photo goes, so the bubble says the same thing when the card takes over
+    var dog = String(state().dog || '').trim();
+    setText('[data-hs-jm-who]', 'Buddy, at the studio');
+    setText('[data-hs-jm-say]', 'The paints are out. ' + (dog ? dog + (/s$/i.test(dog) ? "'" : "'s") : "Your dog's") + ' photo goes on the easel first.');
   }
   /* the product page under the studio is out of sight; the screen reader does not hear it either (checking review,
      5 Nov: VoiceOver read "Getting your dog's photo ready and removing its location data" from hs2's hidden note).
