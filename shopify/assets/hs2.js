@@ -3035,7 +3035,8 @@
     if (bundleLine.busy) return;
     bundleLine.busy = true;
     fetch(shopRoot() + 'cart.js', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (cart) {
-      var gifts = (cart.items || []).filter(function (it) { return !(it.properties && it.properties._hs_addon_for); }).length;
+      // gifts, not lines: two mugs on one line are two gifts, as the bundle and the cart drawer count them (6 Nov audit)
+      var gifts = (cart.items || []).filter(function (it) { return !(it.properties && it.properties._hs_addon_for); }).reduce(function (n, it) { return n + (Number(it.quantity) || 1); }, 0);
       var saved = Number(cart.total_discount) || 0, say = '';
       if (gifts === 1) say = 'Add a second gift and save 15%. Three saves 20%.';
       // several gifts are made and sent separately (31 Oct), so the cart says so before checkout
