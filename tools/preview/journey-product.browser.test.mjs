@@ -385,8 +385,11 @@ for (const [name, fails, lands] of [['a slow checkout copy: the dock says what h
   } finally { cart = []; await ctx.close(); }
 });
 
-test('a reload mid-paint: the painting from the gone page never arrives, so the page says so, and one tap paints it again, once', async () => {
-  // 5 Nov, a test buyer on the live store: a reload, then Back and Forward, and eight minutes on "Almost there"
+// 5 Nov, a test buyer on the live store: a reload, then Back and Forward, and eight minutes on "Almost there". Then Krish,
+// the same night: "Incredibly unstable painting ux" (a gift came back to "Still painting" and a greyed-out add). The
+// painting asked for by the gone page never arrives here, so the same photo goes again by itself, once per gift and
+// journey; a second time, the page says so and one tap paints it again.
+test('a reload mid-paint: it paints again by itself, once; a second reload says so, and one tap paints it again', async () => {
   const {page, ctx, errors} = await open({width: 390, height: 844}, {queue: ['blanket'], answered: true});
   try {
     await page.goto(base + URLS.blanket);
@@ -394,8 +397,16 @@ test('a reload mid-paint: the painting from the gone page never arrives, so the 
     await page.reload();
     await page.waitForSelector('[data-hs-jm]:not([hidden])');
     await page.waitForTimeout(3000);
-    assert.equal(await page.evaluate(() => window.__painted), 0, 'a reload sends nothing by itself');
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'nothing in the first seconds, while Teeinblue might bring the painting back');
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 30000});
+    await page.waitForTimeout(3000);
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'once, by itself');
+    assert.notEqual(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'stopped', 'never "The painting stopped" the first time');
+    // a second reload of the same gift: no second automatic painting, the page says so and waits for one tap
+    await page.reload();
+    await page.waitForSelector('[data-hs-jm]:not([hidden])');
     await page.waitForSelector('[data-hs-jm][data-phase="stopped"]', {timeout: 40000});
+    assert.equal(await page.evaluate(() => window.__painted), 0);
     assert.equal(await page.textContent('[data-hs-jm-title]'), 'The painting stopped');
     assert.equal((await page.textContent('[data-hs-jm-add]')).trim(), 'Paint it again');
     assert.ok(await fits(page));

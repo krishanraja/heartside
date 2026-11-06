@@ -419,7 +419,17 @@ test('a photo with two dogs, kept: one tap on "Paint this photo anyway" and it p
 
 // review, 5 Nov: the gift page's "Back to the gifts" and Start painting again, with nothing changed, began a new journey
 // and so a second paid painting. The same photo, look, feel and spot keep the journey; a changed choice is a new one.
-test('Back to the gifts and Start painting again paints nothing twice; a new feel is a new painting', async () => {
+// 5 Nov, Krish's phone: "If I do anything other than a linear progression of the user journey ... the whole app ...
+// hangs on load and tells me that I need to upload a new picture." The gift page stores the photo again when it sends
+// it (the prepared copy, under a new time), and the home page went on asking for the old time; the earlier page's
+// painting can never come back to a new page, so the buyer sat on "Still painting". Now Back to the gifts keeps the
+// journey and the gift paints again by itself, once; a new feel is a new journey that finds the photo.
+const giftState = page => page.evaluate(() => {
+  const easel = document.querySelector('[data-hs-jm-easel]');
+  return {status: window.__hs2api && window.__hs2api.journeyStatus ? window.__hs2api.journeyStatus() : '', painted: window.__painted,
+    easelPhoto: !!(easel && /blob:/.test(easel.innerHTML + (easel.getAttribute('style') || ''))), t: (JSON.parse(sessionStorage.getItem('hs2-review') || '{}').hs_journey || {}).t};
+});
+test('Back to the gifts, or to the feel, and Start painting again: the photo is found, it paints once, and it never hangs', async () => {
   const {ctx, page} = await open({width: 390, height: 844});
   try {
     await page.goto(`${base}/?step=photo&gift=mug`);
@@ -433,19 +443,27 @@ test('Back to the gifts and Start painting again paints nothing twice; a new fee
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
-    await page.waitForFunction(() => window.__sends === 1, null, {timeout: 15000});
-    const first = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
-    assert.equal(first.spot, 'feet');
-    // what the gift page's "Back to the gifts" link opens
+    // the painting request goes, and the page stores its prepared copy of the photo, as on a phone
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+    await page.waitForTimeout(2000);
+    const first = await giftState(page);
+    assert.equal(first.easelPhoto, true);
+    // what the gift page's "Back to the gifts" link opens, then Start painting with nothing changed
     await page.goto(`${base}/?step=gifts`);
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
-    await page.waitForTimeout(4000);
-    const again = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
-    assert.equal(again.t, first.t, 'the same journey goes on');
-    assert.equal(await page.evaluate(() => window.__sends), 0, 'the mug is not painted a second time');
-    // a different feel is a new choice: a new journey, and its painting
+    await page.waitForTimeout(2500);
+    const back = await giftState(page);
+    assert.equal(back.t, first.t, 'the same journey goes on');
+    assert.equal(back.easelPhoto, true, 'the photo is on the easel');
+    assert.notEqual(back.status, 'nophoto');
+    // the earlier page's painting cannot come back here: it paints again by itself, once, and never says it stopped
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 25000});
+    await page.waitForTimeout(9000);
+    assert.equal(await page.evaluate(() => window.__painted), 1, 'once');
+    assert.notEqual(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'stopped');
+    // a different feel is a new journey, and it finds the photo on the device
     await page.goto(`${base}/?step=tone`);
     await page.locator('[data-hsj-feel="sentimental"]').click();
     await page.locator('[data-hsj-next]').click();
@@ -454,10 +472,37 @@ test('Back to the gifts and Start painting again paints nothing twice; a new fee
     await page.waitForSelector('[data-hsj-screen="gifts"]');
     await page.locator('[data-hsj-start]').click();
     await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
-    await page.waitForFunction(() => window.__sends === 1, null, {timeout: 15000});
-    const fresh = await page.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review')).hs_journey);
+    await page.waitForFunction(() => window.__painted === 1, null, {timeout: 15000});
+    const fresh = await giftState(page);
     assert.notEqual(fresh.t, first.t);
-    assert.equal(fresh.tone, 'sentimental');
+    assert.equal(fresh.easelPhoto, true, 'the photo is on the easel');
+    assert.notEqual(fresh.status, 'nophoto', 'never "upload a new picture"');
+    assert.equal(JSON.parse(await page.evaluate(() => sessionStorage.getItem('hs2-review'))).hs_journey.tone, 'sentimental');
+  } finally { await ctx.close(); }
+});
+
+// The browser's Back can bring the home page back exactly as it was left, Start painting on its busy dots (5 Nov,
+// Krish's phone: "Start painting ..." and nothing happened). A page restored like that is drawn fresh.
+test('the home page brought back by the browser\'s Back draws its step fresh: Start painting works again', async () => {
+  const {ctx, page} = await open({width: 390, height: 844});
+  try {
+    await page.goto(`${base}/?step=photo&gift=mug`);
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
+    await page.waitForURL(/step=look/);
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForURL(/step=tone/);
+    await page.locator('[data-hsj-next]').click();
+    await toSpot(page);
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    // the button as Start painting leaves it when the gift page opens, then the page as the browser restores it
+    await page.evaluate(() => { const b = document.querySelector('[data-hsj-start]'); b.disabled = true; b.classList.add('is-busy'); });
+    await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true})));
+    await page.waitForTimeout(500);
+    const btn = await page.evaluate(() => { const b = document.querySelector('[data-hsj-start]'); return {disabled: b.disabled, busy: b.classList.contains('is-busy'), text: b.textContent.trim()}; });
+    assert.deepEqual(btn, {disabled: false, busy: false, text: 'Start painting'});
+    await page.locator('[data-hsj-start]').click();
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
   } finally { await ctx.close(); }
 });
 

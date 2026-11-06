@@ -1,0 +1,3 @@
+Status: going back mid-journey no longer breaks the painting (Krish's phone, 5 Nov night). After a gift page, the home page asks for the photo by the time the gift page stored it under, so a new feel, look or spot finds the photo instead of "upload a new picture"; a lock left by a page that was left mid-painting no longer stalls the next journey on that gift; a gift whose earlier painting cannot come back paints again by itself once (then one tap) instead of sitting on "Still painting"; and the home page brought back by the browser's Back is drawn fresh, so Start painting works. Built and tested; not live until Krish says yes.
+Next: Krish says yes to pushing the fix live, and where he saw the second mug colour choice.
+North Star check (2026-11-06): holds.
