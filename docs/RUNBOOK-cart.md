@@ -58,4 +58,9 @@ Krish, 6 November: "How do we make this pipeline completely antifragile so that 
 
 - **Storefront guard** (`.github/workflows/storefront-guard.yml`, hourly): checks the product addresses. It opens one GitHub issue when something breaks.
 - **Live gate** (`tools/preview/live-gate.mjs`): checks the presentation on four views. Run it after every live push.
+- **Real buyers, weekly** (`.github/workflows/real-buyer.yml`, Mondays, approved by Krish on 6 Nov at about $1.30 a week):
+  - Six invented buyers go through Teeinblue's real painter on the live store, to the checkout page and never past it. Ten paintings at most.
+  - The cases: three gifts in Roast, refused photos, double taps and a repaint, two dogs, a 4 MB original on slow data, and a reload mid-paint.
+  - A buyer who does not reach checkout opens one issue labelled real-buyer. The screenshots are a run artifact.
+  - To run one buyer by hand: `node tools/preview/real-buyer.cjs p04-bob`.
 - **The cart path** (`tools/preview/cart-path-check.mjs`, in the same hourly guard since 6 Nov): asks the checkout-picture service about a made-up design and the `HS_CANARY_DESIGN_ID` design. A failure opens or updates the same one issue.

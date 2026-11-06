@@ -1,0 +1,110 @@
+# The weekly real-engine run (Krish, 6 November: yes to "a weekly run of awkward photos through real Teeinblue
+# paintings, about $1.30 a week"). Six buyers (tools/preview/fixtures/real-buyer/personas.json) go through
+# Teeinblue's real painter on the live store, from the photo to the checkout page, and never past it: nothing is
+# typed at checkout and nothing is paid. Ten paintings at most, at about $0.13 each.
+#
+# The awkward cases: three gifts at once in Roast; a blurry and a tiny photo turned away before a good one; double
+# taps and a repaint; a photo of two dogs; a 4 MB camera original on slow data; a typed breed and a reload mid-paint.
+#
+# A buyer who does not reach checkout opens one GitHub issue labelled real-buyer, or comments on the open one when
+# the findings change. The screenshots and each buyer's record are a run artifact for seven days. This repository
+# is public: the photos are the repo's own dogs and copies made from them, and the personas are invented.
+# docs/RUNBOOK-cart.md says what a failure means.
+
+name: Real buyer (weekly)
+
+on:
+  schedule:
+    - cron: "37 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: real-buyer
+  cancel-in-progress: false
+
+jobs:
+  buyers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install the browser
+        working-directory: tools/preview
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Six buyers, through the real painter, to checkout
+        id: run
+        run: |
+          set +e
+          node tools/preview/real-buyer-run.cjs > buyers.txt 2>&1
+          code=$?
+          set -e
+          cat buyers.txt
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Real buyer (weekly)"
+            echo ""
+            echo '```'
+            cat buyers.txt 2>/dev/null || echo "no output"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-buyer-screens
+          path: |
+            tools/preview/out/real-buyer/**/*.png
+            tools/preview/out/real-buyer/**/run.json
+            tools/preview/out/real-buyer/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Tell Krish
+        if: steps.run.outputs.code == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          grep '^FAIL' buyers.txt | sort > findings.txt
+          key=$(sha256sum findings.txt | cut -c1-12)
+          {
+            echo "This week's real buyers, through Teeinblue's real painter on the live store, found $(wc -l < findings.txt) problem(s):"
+            echo ""
+            echo '```'
+            cat findings.txt
+            echo '```'
+            echo ""
+            echo "The screenshots and each buyer's record are in the run's artifact (seven days). docs/RUNBOOK-cart.md says where to look."
+            echo ""
+            echo "Run: $RUN_URL"
+            echo ""
+            echo "Findings key: $key"
+          } > body.md
+          gh label create real-buyer --repo "$REPO" --color B60205 --description "The weekly real buyers found a problem" 2>/dev/null || true
+          open=$(gh issue list --repo "$REPO" --label real-buyer --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -z "$open" ]; then
+            gh issue create --repo "$REPO" --label real-buyer --assignee krishanraja \
+              --title "Real buyer: a buyer did not reach checkout" --body-file body.md
+          elif gh issue view "$open" --repo "$REPO" --comments --json body,comments --jq '[.body] + [.comments[].body] | join("\n")' | grep -q "Findings key: $key"; then
+            echo "Issue #$open already carries these findings; nothing new to say."
+          else
+            gh issue comment "$open" --repo "$REPO" --body-file body.md
+          fi
