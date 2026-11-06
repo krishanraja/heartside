@@ -1401,6 +1401,8 @@ html:has([data-hs-bundle-live]) .cart-totals__tax-note:not([data-hs2-bundle-say=
 .hs2-zoom::backdrop { background: rgba(18,16,16,.6); }
 .hs2-zoom > img { display: block; width: 100%; height: auto; max-height: 86vh; object-fit: contain; border-radius: 18px; background: #F3EEE8; }
 .hs2-zoom__close { position: absolute; top: -14px; right: -10px; z-index: 1; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #121010; color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+/* the real card (pages/card), front and inside, as Printful prints it (6 Nov) */
+.hs2-zoom__cardpage { display: block; width: 100%; height: min(82vh, 760px); border: 0; border-radius: 18px; background: #FBF6F1; }
 .hs2-zoom__card { padding: 8% 10%; }
 .hs2-zoom__card { display: block; }
 .hs2-zoom__card .hs2-cartcard__mount { aspect-ratio: 4 / 5; padding: 4%; }

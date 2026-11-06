@@ -250,7 +250,9 @@ for (const model of Object.keys(SQUEEZE)) for (const viewport of [{width: 1280, 
 // Krish, 2 Nov: the card offer across the row under its gift, one line for its button, nothing cut
 // off; the card in the cart shows as a card; every picture opens larger; no word alone on a line
 test('phone cart at 360: the card offer is one full-width line, the card looks like a card, and a picture opens larger', async () => {
-  const items = [gift(0, ID, {props: {'Your note': 'On the hard days, I stay right beside you.'}}), addon(1, ID, {_hs_addon: 'card', Delivery: 'Ships in its own envelope'}), gift(2, ID2)];
+  // the print file Printful prints on the card, never the product mockup (6 Nov)
+  const art = 'https://cdn.teeinblue.com/designs/print-file-test.png';
+  const items = [gift(0, ID, {props: {'Your note': 'On the hard days, I stay right beside you.', "Dog's name": 'Pickle', _hs_answers: 'Dog: Pickle (she) | For: Sam | home: door'}, componentProps: {_tib_design_link_1: art}}), addon(1, ID, {_hs_addon: 'card', Delivery: 'Ships in its own envelope'}), gift(2, ID2)];
   const page = await cartPage(false, items);
   page.html = page.html.replace('data-hs-artist-price="$29"', 'data-hs-artist-price="$29" data-hs-card-variant="888" data-hs-card-price="$12" data-hs-card-until="1796360399"');
   const {tab, errors} = await open(page, {width: 360, height: 780});
@@ -272,6 +274,18 @@ test('phone cart at 360: the card offer is one full-width line, the card looks l
     assert.equal(r.clipped, false, 'no words cut off');
     assert.equal(r.card, true, 'the card line shows a card');
     assert.ok(r.ratio > 1.3 && r.ratio < 1.7, 'a 4 x 6 card: ' + r.ratio);
+    // Krish, 6 Nov: "the artwork on the gift card is the incorrect artwork": the card shows the card, the painting's
+    // print file on the front, and opens the real card page, the one Printful's files are rendered from
+    const c = await tab.evaluate(() => { const a = document.querySelector('.hs2-cartcard').closest('a'); return {src: a.querySelector('img').getAttribute('src'), url: a.getAttribute('data-hs2-card-url') || '', href: a.getAttribute('href')}; });
+    assert.equal(c.src, art, 'the card front is the print file');
+    assert.match(c.url, /\/pages\/card\?d=/);
+    const d = JSON.parse(Buffer.from(decodeURIComponent(c.url.split('d=')[1]).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+    assert.deepEqual(d, {img: art, note: 'On the hard days, I stay right beside you.', dog: 'Pickle', to: 'Sam'}, 'the card page gets what Printful prints');
+    assert.equal(c.href, c.url);
+    await tab.route('**/pages/card**', r => r.fulfill({contentType: 'text/html', body: '<p>card</p>'}));
+    await tab.click('.hs2-cartcard');
+    assert.equal(await tab.evaluate(() => (document.querySelector('dialog.hs2-zoom[open] iframe.hs2-zoom__cardpage') || {}).getAttribute && document.querySelector('dialog.hs2-zoom[open] iframe').getAttribute('src')), c.url, 'the card opens as the real card');
+    await tab.click('.hs2-zoom__close');
     await tab.click('#CartItem-101\\:merged-0 [data-hs2-zoom]');
     assert.equal(await tab.evaluate(() => !!document.querySelector('dialog.hs2-zoom[open] img')), true, 'the picture opens larger');
     await tab.click('.hs2-zoom__close');

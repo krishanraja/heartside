@@ -1,0 +1,53 @@
+{%- comment -%}
+  The Christmas card in the cart shows the card itself (Krish, 6 Nov: "the artwork on the gift card is the incorrect
+  artwork ... it should contain the greeting card artwork on the front as well as the message inside"): the gift's
+  print file, the one Printful prints on the card, never the product mockup, and a tap opens the real card (pages/card,
+  the page the printer renders) with the note inside. d is the card page's own {img, note, dog, to}, as
+  n8n/PRINTED-CARD.md builds it. It prints nothing for any line but a card. part: 'url' prints the card page's address, part: 'art' the print file; either prints
+  nothing when the gift has no print file on Teeinblue's or Shopify's CDN, or no note.
+{%- endcomment -%}
+{%- liquid
+  if gift == nil or item.properties._hs_addon != 'card'
+    break
+  endif
+  assign p = gift.properties
+  if p._tib_design_link_1 == blank and gift.item_components.size == 1
+    assign p = gift.item_components.first.properties
+  endif
+  assign art = p._tib_design_link_1 | default: ''
+  assign head = art | slice: 0, 26
+  assign head2 = art | slice: 0, 24
+  if head != 'https://cdn.teeinblue.com/' and head2 != 'https://cdn.shopify.com/'
+    break
+  endif
+  assign note = gift.properties['Your note'] | default: p['Your note'] | default: gift.properties._hs_lines | default: p._hs_lines | default: ''
+  if note == ''
+    break
+  endif
+  if part == 'art'
+    echo art
+    break
+  endif
+  assign dog = gift.properties["Dog's name"] | default: p["Dog's name"] | default: gift.properties.Signed | default: p.Signed | default: ''
+  assign to = ''
+  assign answers = gift.properties._hs_answers | default: p._hs_answers | default: ''
+  if answers contains 'For: '
+    assign to = answers | split: 'For: ' | last | split: ' | ' | first | strip
+    if to == 'me'
+      assign to = ''
+    endif
+  endif
+  capture json
+    echo '{"img":'
+    echo art | json
+    echo ',"note":'
+    echo note | json
+    echo ',"dog":'
+    echo dog | json
+    echo ',"to":'
+    echo to | json
+    echo '}'
+  endcapture
+  assign d = json | strip_newlines | base64_url_safe_encode
+  echo routes.root_url | append: '/pages/card?d=' | replace: '//pages', '/pages' | append: d
+-%}

@@ -44,6 +44,8 @@ export function cartEngine(dir = snippets) {
   engine.registerFilter('inline_asset_content', () => '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor"/></svg>');
   engine.registerFilter('asset_url', (n) => '/assets/' + n);
   engine.registerFilter('json', (v) => JSON.stringify(v ?? null));
+  // Shopify's: URL-safe Base64 of the string's UTF-8 bytes, padding kept
+  engine.registerFilter('base64_url_safe_encode', (v) => Buffer.from(String(v ?? ''), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_'));
   const css = [];
   const block = (keep) => ({
     parse(token, remain) {

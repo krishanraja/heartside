@@ -3207,16 +3207,19 @@
       e.preventDefault();
       var box = document.createElement('dialog');
       box.className = 'hs2-zoom';
-      var card = a.querySelector('[data-hs2-zoom-card]');
+      var card = a.querySelector('[data-hs2-zoom-card]'), real = card && a.getAttribute('data-hs2-card-url');
+      // the Christmas card opens as the real card (6 Nov), from the page Printful's files are rendered from: the
+      // painting on the front, "Open the card" for the note inside
       box.innerHTML = '<button type="button" class="hs2-zoom__close" aria-label="Close">\u00d7</button>' +
-        (card ? '<div class="hs2-zoom__card">' + card.innerHTML + '</div>' : '<img alt="">');
+        (real ? '<iframe class="hs2-zoom__cardpage" title="Your Christmas card" src="' + real.replace(/"/g, '&quot;') + '"></iframe>'
+          : card ? '<div class="hs2-zoom__card">' + card.innerHTML + '</div>' : '<img alt="">');
       if (!card) { var big = box.querySelector('img'); big.src = img.getAttribute('data-hs2-src') || img.src; big.alt = img.alt || ''; }
       document.body.appendChild(box);
       var close = function () { if (box.open) box.close(); if (box.parentNode) box.parentNode.removeChild(box); };
       box.addEventListener('click', function (ev) { if (ev.target === box || ev.target.closest('.hs2-zoom__close')) close(); });
       box.addEventListener('close', close);
       if (box.showModal) box.showModal(); else box.setAttribute('open', '');
-      track('cart_zoom', { card: !!card });
+      track('cart_zoom', { card: !!card, real: !!real });
     }, true);
   }
   function bindCard() {

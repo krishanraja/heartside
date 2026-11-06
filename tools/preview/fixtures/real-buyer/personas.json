@@ -1,0 +1,191 @@
+{
+ "p03-barb": {
+  "id": "p03-barb",
+  "who": "Barb, 35, wants all three gifts for the 20% off, Roast tone, picks frame and colour.",
+  "device": "iPhone 13",
+  "dog": "Pickles",
+  "breed": "Pug",
+  "pro": "she",
+  "person": "Mom",
+  "answers": {
+   "home": 2,
+   "spot": 1,
+   "together": 3,
+   "meaning": 3,
+   "toy": [
+    "first"
+   ],
+   "wears": 1
+  },
+  "tone": "over_the_top",
+  "style": "comic",
+  "photos": [
+   "pug-autumn-leaves.jpg"
+  ],
+  "gifts": [
+   "print",
+   "mug",
+   "blanket"
+  ],
+  "autoOption": 1,
+  "paintCap": 3,
+  "frame": "Black frame",
+  "mugColor": "Pink"
+ },
+ "p04-bob": {
+  "id": "p04-bob",
+  "who": "Bob, 66, not good with phones. Uploads a blurry photo, then a tiny one, then a good one.",
+  "device": "Pixel 5",
+  "dog": "Rusty",
+  "breed": "Poodle",
+  "pro": "he",
+  "person": "self",
+  "answers": {
+   "home": 1,
+   "spot": 0,
+   "together": 3,
+   "meaning": 2,
+   "toy": [
+    "first"
+   ],
+   "wears": 0
+  },
+  "tone": "sentimental",
+  "style": "painterly",
+  "photos": [
+   "reject-blurry.jpg",
+   "reject-too-small.jpg",
+   "red-poodle-head-tilt.jpg"
+  ],
+  "gifts": [
+   "blanket"
+  ],
+  "paintCap": 1
+ },
+ "p06-ian": {
+  "id": "p06-ian",
+  "who": "Ian, 24, impatient. Double-taps everything on a small Android, asks for one repaint, then taps Add now.",
+  "device": "Galaxy S8",
+  "dog": "Tank",
+  "breed": "French Bulldog",
+  "pro": "he",
+  "person": "Jess",
+  "answers": {
+   "home": 2,
+   "spot": 2,
+   "together": 4,
+   "meaning": 3,
+   "toy": [
+    "first"
+   ],
+   "wears": 1
+  },
+  "tone": "hilarious",
+  "style": "comic",
+  "photos": [
+   "close-up.jpg"
+  ],
+  "gifts": [
+   "mug"
+  ],
+  "repaint": "over_the_top",
+  "addNow": true,
+  "autoOption": 4,
+  "doubleTap": true,
+  "paintCap": 1,
+  "mugColor": "Red"
+ },
+ "p08-dana": {
+  "id": "p08-dana",
+  "who": "Dana, 33, has two dogs and uploads a photo of both. Uses the 'it's my dog' override if refused.",
+  "device": "Pixel 5",
+  "dog": "Bean",
+  "breed": "Pug",
+  "pro": "she",
+  "person": "Alex",
+  "answers": {
+   "home": 1,
+   "spot": 1,
+   "together": 3,
+   "meaning": 0,
+   "toy": [
+    "first"
+   ],
+   "wears": 5
+  },
+  "tone": "warm",
+  "style": "collage",
+  "photos": [
+   "two-dogs.jpg"
+  ],
+  "override": "two-dogs.jpg",
+  "gifts": [
+   "blanket"
+  ],
+  "paintCap": 1
+ },
+ "p10-larry": {
+  "id": "p10-larry",
+  "who": "Larry, 61, on slow rural mobile data. Uploads a 4 MB, 6000 px camera original. Reads the shipping policy first. Wants an unframed portrait.",
+  "device": "iPhone 14 Pro Max",
+  "dog": "Duke",
+  "breed": "German Shepherd",
+  "pro": "he",
+  "person": "Linda",
+  "answers": {
+   "home": 3,
+   "spot": 3,
+   "together": 0,
+   "meaning": 2,
+   "toy": [
+    "first"
+   ],
+   "wears": 0
+  },
+  "tone": "sentimental",
+  "style": "cinematic",
+  "photos": [
+   "large-camera-original.jpg"
+  ],
+  "gifts": [
+   "print"
+  ],
+  "option": 0,
+  "slow": true,
+  "shippingFirst": true,
+  "paintCap": 1,
+  "frame": "Unframed"
+ },
+ "p11-vera": {
+  "id": "p11-vera",
+  "who": "Vera, 67, on an old small iPhone. Double-taps everything, types her dog's breed because it is not in the list, and reloads when it feels slow. Wants a framed portrait for her son by Christmas.",
+  "device": "iPhone SE",
+  "dog": "Pepper",
+  "breedOther": "Labradoodle",
+  "pro": "she",
+  "person": "Tom",
+  "answers": {
+   "home": 0,
+   "spot": 3,
+   "together": 4,
+   "meaning": 1,
+   "toy": [
+    "first"
+   ],
+   "wears": 0
+  },
+  "tone": "warm",
+  "style": "painterly",
+  "photos": [
+   "apricot-poodle-puppy.jpg"
+  ],
+  "gifts": [
+   "print"
+  ],
+  "autoOption": 0,
+  "paintCap": 2,
+  "reloadMidPaint": true,
+  "doubleTap": true,
+  "frame": "Red Oak frame"
+ }
+}

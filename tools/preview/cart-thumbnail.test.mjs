@@ -12,7 +12,10 @@ import {renderCart, gift, addon, rowOf, prepared, ID2} from './cart-fixture.mjs'
 
 const liquid = readFileSync(new URL('../../shopify/snippets/cart-products.liquid', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const start = liquid.indexOf('<td\n                  class="cart-items__media"'), end = liquid.indexOf('</td>', start) + '</td>'.length;
-const engine = new Liquid();
+// the snippets folder, for the card's own snippet (hs-cart-card.liquid, 6 Nov)
+const engine = new Liquid({root: new URL('../../shopify/snippets/', import.meta.url).pathname, extname: '.liquid'});
+engine.registerFilter('json', v => JSON.stringify(v ?? null));
+engine.registerFilter('base64_url_safe_encode', v => Buffer.from(String(v ?? ''), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_'));
 engine.registerFilter('image_url', () => 'PRODUCT_IMAGE');
 engine.registerFilter('image_tag', v => '<img src="' + v + '">');
 const cell = (properties, components = []) => engine.parseAndRender(liquid.slice(start, end), {

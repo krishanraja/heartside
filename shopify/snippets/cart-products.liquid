@@ -331,8 +331,19 @@
                         endif
                       endif
                     %}
+                    {%- comment -%} the Christmas card shows the card itself (Krish, 6 Nov): snippets/hs-cart-card.liquid prints the real card's address and its print file, or nothing {%- endcomment -%}
+                    {%- assign hs_card_url = '' -%}
+                    {%- assign hs_card_art = '' -%}
+                    {%- capture hs_card_url -%}{%- render 'hs-cart-card', item: item, gift: hs_gift, part: 'url' -%}{%- endcapture -%}
+                    {%- capture hs_card_art -%}{%- render 'hs-cart-card', item: item, gift: hs_gift, part: 'art' -%}{%- endcapture -%}
+                    {%- assign hs_card_url = hs_card_url | strip -%}
+                    {%- assign hs_card_art = hs_card_art | strip -%}
+                    {%- assign hs_design = hs_card_art | default: hs_design -%}
+                    {%- assign hs_design_src = hs_card_art | default: hs_design_src -%}
+                    {%- assign hs_media_href = hs_card_url | default: item.url -%}
                     <a
-                      href="{{ item.url }}"
+                      href="{{ hs_media_href }}"
+                      data-hs2-card-url="{{ hs_card_url | escape }}"
                       class="cart-items__media-container{% if hs_design != '' %} teeinblue-item--customization-images{% endif %}"
                       {% if hs_design != '' %}data-hs2-zoom aria-label="See {{ item.product.title | escape }} larger"{% endif %}
                       style="--ratio:{{ ratio }};"
@@ -341,7 +352,7 @@
                         {%- comment -%} teeinblue-item--customization-images is Teeinblue's own "leave these thumbnails alone" container {%- endcomment -%}
                         {%- if hs_gift != nil and item.properties._hs_addon == 'card' -%}
                           {%- comment -%} the card itself, not its gift: the painting in the card's gold-ruled mount (Krish, 2 Nov) {%- endcomment -%}
-                          <span class="hs2-cartcard" data-hs2-zoom-card><span class="hs2-cartcard__mount"><img src="{{ hs_design_src | escape }}" alt="Your Christmas card: {{ hs_design_alt }}" width="250" height="250" class="hs2-cart-preview hs2-cartcard__art" data-hs2-design data-hs2-src="{{ hs_design | escape }}"></span><span class="hs2-cartcard__cap">Christmas 2026</span></span>
+                          <span class="hs2-cartcard" data-hs2-zoom-card><span class="hs2-cartcard__mount"><img src="{{ hs_design_src | escape }}" alt="Your Christmas card: {{ hs_design_alt }}" width="250" height="250" class="hs2-cart-preview hs2-cartcard__art" data-hs2-design data-hs2-src="{{ hs_design | escape }}"></span><span class="hs2-cartcard__cap">Merry Christmas</span></span>
                         {%- else -%}
                           <img src="{{ hs_design_src | escape }}" alt="{{ hs_design_alt }}" width="250" height="250" class="cart-items__media-image border-style hs2-cart-preview" style="{{ border_override }}" data-hs2-design data-hs2-src="{{ hs_design | escape }}">
                         {%- endif -%}
