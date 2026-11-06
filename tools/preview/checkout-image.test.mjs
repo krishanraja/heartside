@@ -75,7 +75,8 @@ for(const minified of [false,true]) {
 
   test(mode+': a slow first registration (the app proxy gives up, or the request outlives the server) is asked again, not failed',async()=>{
     // 5 Nov, ten buyers on the live store: the portrait's and the blanket's first add failed and a second tap went through
-    for(const first of [async()=>({status:504,json:async()=>{throw Error('HTML');}}),async()=>({status:502,json:async()=>{throw Error('HTML');}}),()=>new Promise(()=>{})]) {
+    // 6 Nov: the server's 503 "preview not ready yet" arrives as Shopify's own error page, with a 500
+    for(const first of [async()=>({status:504,json:async()=>{throw Error('HTML');}}),async()=>({status:502,json:async()=>{throw Error('HTML');}}),async()=>({status:500,json:async()=>{throw Error('HTML');}}),()=>new Promise(()=>{})]) {
       let count=0;
       const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async(...a)=>++count===1?first(...a):response(ready()))));
       assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);

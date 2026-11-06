@@ -39,9 +39,13 @@
       var request = Promise.resolve().then(function () {
         return fetcher(requestUrl.href, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', cache: 'no-store', signal: controller ? controller.signal : undefined, body: JSON.stringify({customizationId: id, variantId: variant})});
       }).then(function (response) {
-        // Shopify's app proxy answers 502 or 504 when the server is slower than it waits: the same
-        // registration is asked again inside the budget, like the server's own transient codes
-        if (response && (response.status === 502 || response.status === 504)) return {status: response.status, data: {code: 'proxy_timeout'}};
+        // Shopify's app proxy answers 502 or 504 when the server is slower than it waits, and its own error page
+        // with a 500 for every 5xx the server sends (6 Nov: "There was an error in the third-party application."),
+        // so the server's 503 "preview not ready yet" never reaches this page as itself. Teeinblue writes its copy
+        // of a design only when Add to cart saves it, a few seconds before this first asks. All three are asked
+        // again inside the budget: registration is idempotent (lookup before create), so asking again never
+        // makes a second picture
+        if (response && (response.status === 500 || response.status === 502 || response.status === 504)) return {status: response.status, data: {code: 'proxy_timeout'}};
         if (!response || (response.status !== 200 && response.status !== 202 && response.status !== 503)) { if (root.console) root.console.warn('Checkout registration HTTP status', response ? response.status : 0); throw fail(); }
         return response.json().then(function (data) { return {status: response.status, data: data}; });
       });
