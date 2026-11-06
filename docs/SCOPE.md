@@ -40,10 +40,11 @@ The scope is approved. Do not ask Krish to approve it again. Current configured 
 - **No lettering on the Roast mug** (Ruling, Krish, 2026-11-05): "too many more variables that might go wrong, not to mention design issues." Every gift stays artwork only.
 - **The cart offers one more gift** from a drawer that slides in from the left. It offers the existing bundle, 15% off two gifts and 20% off three or more, with the real saving in dollars (Ruling, Krish, 2026-11-05).
 - **The dog detector loads only after a photo is chosen**, on a fast connection, and keeps checking out of sight (Ruling, Krish, 2026-11-05).
+- **Buddy guides the journey** (Ruling, Krish, 2026-11-06: "yes to both, but buddy in a classy way and dont just shoe horn him in"): he says the line under each question and keeps the buyer company in the studio, in place of the paw icons; one Buddy on a screen; the dog's own voice stays in the note.
 - **The studio and the screen changes** (Ruling, Krish, 2026-11-05: "Whatever is the most customer-experience-friendly"):
   - The status line sits above the button, so the button never moves.
   - A tap during the 340 ms change of screen does nothing, so a double tap never skips a screen.
-  - The dog's first studio line is fixed.
+  - Buddy's first studio line is fixed.
   - The motion is content only: 16 px and about 340 ms, instant with reduced motion.
   - There is no transition between the home page and the gift page.
 

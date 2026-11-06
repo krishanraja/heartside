@@ -17,6 +17,8 @@
 {{ 'hs-breeds.js' | asset_url | preload_tag: as: 'script' }}
 {{ 'hs-journey.js' | asset_url | preload_tag: as: 'script' }}
 {{ 'hs-journey-choose.js' | asset_url | preload_tag: as: 'script' }}
+{%- comment -%} Buddy's one drawing for the scripts (hs-journey.js host, hs-wait.js) {%- endcomment -%}
+<template data-hs-buddy>{% render 'hs-buddy' %}</template>
 <section class="hs-jm" data-hs-jm hidden aria-labelledby="hs-jm-title" data-hs-jm-handle="{{ product.handle | escape }}">
   <div class="hsj hs-jm__frame hsj__screen hsj__screen--step" data-hs-jm-frame>
     <header class="hsj-bar">
@@ -27,7 +29,7 @@
     <main class="hsj-content">
       <div class="hsj-heading">
         <h2 class="hsj-headline" id="hs-jm-title" data-hs-jm-title>Painting your dog</h2>
-        <p class="hsj-support" data-hs-jm-sub>A few quick questions while your painting starts.</p>
+        <div class="hsj-host"><span class="hsj-host__face" aria-hidden="true">{% render 'hs-buddy' %}</span><p class="hsj-support" data-hs-jm-sub>A few quick questions while your painting starts.</p></div>
       </div>
       <div class="hsj-body hs-jm__body">
         <div class="hs-jm__paint" data-hs-jm-paint>
@@ -35,7 +37,7 @@
           hs2.js shows its own painting card here (5 Nov judges: nine of eleven buyers saw an empty "Painting your
           dog"). It is the card's first frame (Krish, 5 Nov: "Is there no way we can mask that from the user's
           view?"): the buyer's whole photo, read from this device before the scripts load, the wash, the brush, the
-          dog's one speech bubble and the card's bar row, so nothing changes size, label or text when the card
+          Buddy's one speech bubble and the card's bar row, so nothing changes size, label or text when the card
           takes its place. {%- endcomment -%}
           <div class="hs-art hs-jm__easel" data-hs-jm-easel style="{% if s.native_artwork_kind == 'mug' %}--hs-art-ratio: 3 / 2; --hs-art-r: 1.5{% elsif s.native_artwork_kind == 'print' %}--hs-art-ratio: 2 / 3; --hs-art-r: 0.6667{% else %}--hs-art-ratio: 5 / 6; --hs-art-r: 0.8333{% endif %}">
             <div class="hs-art__canvas">
@@ -44,8 +46,8 @@
               <svg class="hs-art__brush" aria-hidden="true" viewBox="0 0 64 64" width="56" height="56"><path d="M44 6c4 0 14 10 14 14 0 3-16 20-22 24l-6-6c4-6 11-32 14-32Z" fill="#121010"/><path d="M28 40l6 6c-2 6-7 12-16 12-5 0-10-2-12-4 6-1 8-4 9-8 1-5 7-8 13-6Z" fill="#a8284e"/></svg>
             </div>
             <div class="hs-wait__talk hs-jm__talk">
-              <span class="hs-wait__me" aria-hidden="true"><img data-hs-jm-face alt="" width="52" height="52" hidden><svg class="hs-wait__ico" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><circle cx="6.5" cy="9" r="2.2"/><circle cx="10" cy="5.6" r="2.2"/><circle cx="14" cy="5.6" r="2.2"/><circle cx="17.5" cy="9" r="2.2"/><path d="M12 11c3 0 6 3.6 6 6.4 0 2-1.6 2.9-3.2 2.9-1.3 0-1.9-.7-2.8-.7s-1.5.7-2.8.7C7.6 20.3 6 19.4 6 17.4 6 14.6 9 11 12 11Z"/></svg></span>
-              <div class="hs-wait__bubble"><p class="hs-wait__who" data-hs-jm-who>your dog, live from the studio</p><p class="hs-wait__say" data-hs-jm-say role="status" aria-live="polite">Getting the paints out. My photo goes on the easel first.</p></div>
+              <span class="hs-wait__me" aria-hidden="true">{% render 'hs-buddy' %}</span>
+              <div class="hs-wait__bubble"><p class="hs-wait__who" data-hs-jm-who>Buddy, at the studio</p><p class="hs-wait__say" data-hs-jm-say role="status" aria-live="polite">The paints are out. Your dog's photo goes on the easel first.</p></div>
             </div>
             <div class="hs-art__bar" aria-hidden="true"><span></span></div>
           </div>
@@ -113,7 +115,7 @@
         // the words hs-journey-choose.js will write, written now, so nothing flips when it loads
         var NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' }, who = String(rv.dog || '').trim(), g = NAME[((j.queue || [])[at] || {}).gift];
         var set = function (sel, t) { var el = root.querySelector(sel); if (el && t) el.textContent = t; };
-        set('[data-hs-jm-who]', (who || 'your dog') + ', live from the studio');
+        if (who) set('[data-hs-jm-say]', 'The paints are out. ' + who + (/s$/i.test(who) ? "'" : "'s") + ' photo goes on the easel first.');
         if (at === 0) set('[data-hs-jm-title]', 'Painting ' + (who || 'your dog'));
         else if (g) { set('[data-hs-jm-title]', 'Now the ' + g); set('[data-hs-jm-sub]', 'Painting ' + (who || 'your dog') + ' for the ' + g + ', from the same photo, in the same style.'); }
         // the screen reader hears the studio, never the hidden product page and its photo notes under it
@@ -134,8 +136,7 @@
               var rec = rq.result;
               if (!rec || !rec.file || (rec.t !== pt && rec.t !== pn) || Date.now() - rec.t >= 3 * 864e5 || window.__hsjmPhoto) return;
               var u = window.__hsjmPhoto = URL.createObjectURL(rec.file), easel = root.querySelector('[data-hs-jm-easel]');
-              ['[data-hs-jm-photo]', '[data-hs-jm-face]'].forEach(function (sel) { var img = root.querySelector(sel); if (img && !img.getAttribute('src')) { img.src = u; img.hidden = false; } });
-              var paw = root.querySelector('.hs-jm__talk .hs-wait__ico'); if (paw) paw.style.display = 'none';
+              var img = root.querySelector('[data-hs-jm-photo]'); if (img && !img.getAttribute('src')) { img.src = u; img.hidden = false; }
               if (easel) easel.style.setProperty('--hs-jm-photo', 'url("' + u + '")');
             };
           };

@@ -5,9 +5,12 @@
    While hs2.js says the card is painting (data-state="painting"), this file turns it into a small studio:
    - the buyer's photo, whole, painted in from grey to colour by brush strokes that grow with the time
      waited (an SVG mask, so it works the same in every browser); the brush follows the newest stroke
-   - the dog's own running commentary in a speech bubble, from what the buyer told us (the invented fun)
+   - Buddy, the house's host, keeping the buyer company in a speech bubble (Krish, 6 Nov: "Why doesnt This
+     character appear throughout the UX instead of these stupid paw emojis? ... talk to them while they're
+     waiting for their painting"; "buddy in a classy way and dont just shoe horn him in"). He tells them how
+     their dog is getting on, from what the buyer told us; the dog's own voice is the note in the box
    - every third beat, Buddy's note: one true fact about the breed (hs-breed-facts.js, each one sourced)
-   - the dog's favourite things drifting past, and a treat to give by tapping the dog
+   - a tap on Buddy brings his next line at once
    - a progress bar that eases towards the end and fills when the painting lands, instead of a sweep
    - when the painting lands while the buyer is in another tab, the tab title says so
    It never touches Teeinblue and never decides anything: hs2.js still owns the states, the words of the
@@ -16,72 +19,58 @@
   'use strict';
   if (window.__hsWait) return;
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  var BEAT = 7000, STROKES = 14, card, built = false, timer = null, start = 0, beat = 0, used = {}, treats = 0, lastSay = 0;
-  var stage, svg, colour, grey, paths = [], lens = [], brush, bubble, sayEl, who, avatar, factEl, things, titleWas = '';
+  var BEAT = 7000, STROKES = 14, card, built = false, timer = null, start = 0, beat = 0, used = {}, lastSay = 0;
+  var stage, svg, colour, grey, paths = [], lens = [], brush, bubble, sayEl, who, avatar, factEl, titleWas = '';
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function review() { try { return JSON.parse(window.sessionStorage.getItem('hs2-review') || '{}') || {}; } catch (e) { return {}; } }
 
   /* ------------------------------------------------------------------ the words
-     The dog talks to the buyer, first person, from the studio. Only what the buyer told us goes in: the
-     spot, the thing they do together, the welcome home, the toys and what the dog wears. No exclamation
-     marks, no dashes (the house voice, n8n/README.md). */
+     Buddy talks to the buyer about their dog, by name, from the studio. Only what the buyer told us goes in:
+     the spot, the thing they do together, the welcome home and who the gift is for. He never names a food, toy,
+     object or place they did not mention (docs/SCOPE.md), and never claims what the painting will hold. No
+     exclamation marks, no dashes (the house voice, n8n/README.md). */
   function info() {
     var st = review(), b = st.hs_brief_input || {}, j = st.hs_journey || {};
     var dog = String(st.dog || '').trim() || 'your dog';
-    var toys = String(b.toys || '').replace(/\b(in|at|by|under|beside|next to) (his|her|their) [a-z ]+$/i, '').trim();
-    var firstToy = (toys.split(/ and |, /)[0] || '').replace(/^(a|an|the|his|her|their) /i, '').trim();
     var person = String(st.person || '').trim();
     return { dog: dog, breed: st.hs_breed_id || b.breed || '', spot: b.spot || '', together: b.together || '', home: b.home || '',
-      meaning: b.meaning || '', toy: firstToy, toyRaw: toys, wears: String(b.accessory || '').replace(/^(a|an) /i, ''),
-      person: person && person !== 'Me' ? person : '', tone: j.tone || (st.hs3_art_choices || {}).tone || 'warm', ai: Array.isArray(st.hs_wait_lines) ? st.hs_wait_lines : [] };
+      meaning: b.meaning || '', person: person && person !== 'Me' ? person : '', tone: j.tone || (st.hs3_art_choices || {}).tone || 'warm' };
   }
+  function cap(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+  // "Mowgli's", "Pickles'", "your dog's"
+  function poss(n) { return /s$/i.test(n) && n !== 'your dog' ? n + "'" : n + "'s"; }
   function lines(d) {
+    var D = d.dog, C = cap(D), P = poss(D);
     var open = [
-      "I'm at the painter's. I've been asked to sit very still, which is a big ask.",
-      "The painter says I have a good side. I told them they're all good sides.",
-      "We're starting with the eyes. Apparently that's where all my charm is."
+      C + " is with the painter now. I'll keep you posted.",
+      "The painter starts with the eyes. That's where " + D + ' keeps the charm.',
+      'The painter wants ' + D + " very still. It's a big ask, and it's going well."
     ];
     var mid = [
-      'The painter is mixing colors. None of them smell like anything, which is disappointing.',
-      "I've been very good so far. I'd like that written down.",
-      "The painter asked me to look noble. I'm looking noble.",
-      "I tried to help with the brush. I've been asked not to help with the brush.",
-      "There's a lot of white canvas left. I think it's where my ears go."
+      'The painter is mixing colors. ' + C + ' is watching every one.',
+      C + " has been very good so far. I'm making a note of it.",
+      'The painter asked ' + D + ' to look noble. No trouble at all.',
+      C + " offered to help with the brush. We're leaving it to the painter.",
+      "There's still some white canvas. I think that's where the ears go."
     ];
-    var spot = { couch: 'Somebody keep my spot on the couch warm until I get back.', bed: "Don't let anyone take my side of the bed while I'm here.", feet: "Keep your feet right where they are. I'll be back on them soon.", anywhere: "I can still see you from here, so it's basically like being home." }[d.spot];
-    var together = { walk: "After this, I think we've earned a long walk.", coffee: 'Save me a corner of whatever you have with your coffee.', movie: "Pick a movie for later. I'll take the seat nearest the snacks.", naps: "Holding still this long is basically a nap. I'm a natural.", car: 'If we drive home after this, I call the window.' }[d.together];
-    var home = { door: "When this is done, I'll be by the door as usual.", toy: "I'm already thinking about what to bring you when we get home.", spin: "I'm saving my spin for when we get home. It's a good one.", cool: "I'm playing it cool in here. Mostly." }[d.home];
-    var meaning = { boss: "I've told the painter who's in charge at home. They seemed to get it.", shadow: "This is the longest I've been out of your shadow. I don't love it.", best: 'I told the painter you were my best friend. They said it shows.', hard: "This one's going to be on your wall for the hard days. I'll make it good." }[d.meaning];
-    var tone = { over_the_top: ['The painter holds still better than you do. Just saying.', "I've asked the painter to make me look taller than you."], hilarious: ["I've been told this is called sitting for a portrait. I'm lying down, but they're working with it."], sentimental: ['I hope I look the way I feel when you come home.'], warm: ['I hope they get my good ear right.'] }[d.tone] || [];
+    var spot = { couch: 'The couch stays warm until ' + D + " is back. I've promised.", bed: 'Your side of the bed is still ' + P + '. Nothing changes after today.', feet: 'Keep your feet where they are. ' + C + ' will be back on them soon.', anywhere: C + ' rules wherever you are. Today that includes the studio.' }[d.spot];
+    var together = { walk: "After this, I'd say " + D + ' has earned a long walk.', coffee: C + ' would like a corner of whatever comes with your coffee.', movie: 'Pick a movie for later. ' + C + ' wants the seat nearest you.', naps: 'Holding this still counts as a nap, ' + D + ' says. A good one.', car: 'If you drive home after this, ' + D + ' has the window.' }[d.together];
+    var home = { door: 'When this is done, ' + D + ' will be by the door as usual.', toy: C + ' is already thinking about what to bring you later.', spin: C + " is saving a spin for when you're home. It's a good one.", cool: C + ' is playing it cool in here. Mostly.' }[d.home];
+    var meaning = { boss: C + " has made it clear who's in charge at home. The painter got the message.", shadow: C + " hasn't been this far from you in a while. Nearly there.", best: 'I told the painter ' + D + ' is your best friend. They said it shows.', hard: "This one's for the hard days. We're taking our time with it." }[d.meaning];
+    var tone = { over_the_top: [C + " holds still better than you do. I'm only reporting.", C + " asked to be painted taller than you. We'll see."], hilarious: ['This is called sitting for a portrait. ' + C + ' is lying down, and the painter is working with it.'], sentimental: ["We're painting the look " + D + ' gives you when you come home.'], warm: ['The painter is taking extra care over ' + P + ' ears.'] }[d.tone] || [];
     var extra = [spot, together, home, meaning].filter(Boolean).concat(tone);
-    if (d.toy) extra.push('I asked if my ' + d.toy + ' could be in the picture. It made the cut.');
-    if (d.wears) extra.push("I'm wearing my " + d.wears + ' for this. It felt like an occasion.');
-    if (d.person) extra.push("This one's for " + d.person + ". I want it to be perfect.");
-    var long = ["Good art takes time. I'm told this is very good art.", "Still holding still. This is the longest I've ever held still.", "I think the painter is doing my whiskers one at a time."];
-    return { open: open, mid: d.ai.length ? d.ai.slice(0, 12).concat(extra.slice(0, 3)) : extra.concat(mid), long: long };
+    if (d.person) extra.push("This one's for " + d.person + '. We want it just right.');
+    var long = ['Good art takes time. This is very good art.', C + " is still holding still. A personal best, I'm told.", 'I think the painter is doing the whiskers one at a time.'];
+    return { open: open, mid: extra.concat(mid), long: long };
   }
-  var TREATS = ['Thank you. That one went straight to the ears.', 'Crunchy. The painter didn\'t see that.', "That's {n} treats. I'm keeping count.", 'One more and I could hold still forever. Probably.', 'You always know exactly what I need.'];
+  // the studio's first line, the same on the easel before this file runs (snippets/hs-journey-choose.liquid)
+  function firstLine(dog) { return 'The paints are out. ' + cap(poss(dog || 'your dog')) + ' photo goes on the easel first.'; }
 
-  /* ----------------------------------------------------------------- the things
-     Small line icons for the dog's favourite things, the house icon style (24 px grid, round ends). */
-  var ICO = {
-    ball: '<circle cx="12" cy="12" r="8"/><path d="M5.5 8.5c3 1.5 4 4.5 3 9M18.5 15.5c-3-1.5-4-4.5-3-9"/>',
-    bone: '<path d="M8.5 9.5 14.5 15.5M7 5.5a2 2 0 1 0-1.5 3.4 2 2 0 1 0 3.4 1.6l5.6 5.6a2 2 0 1 0 1.6 3.4 2 2 0 1 0 3.4-1.5 2 2 0 1 0-1.6-3.4L12.3 9a2 2 0 1 0-1.6-3.4A2 2 0 1 0 7 5.5Z"/>',
-    stick: '<path d="M4 19 19.5 6M13 11l3.5 1M9.5 14l-.5 3.2"/>',
-    disc: '<ellipse cx="12" cy="12" rx="9" ry="4.5"/><ellipse cx="12" cy="11.5" rx="4.5" ry="1.8"/>',
-    heart: '<path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7.5 2.8c0 5.5-7.5 10.1-7.5 10.1Z"/>',
-    paw: '<circle cx="7" cy="10" r="1.8"/><circle cx="10.5" cy="6.5" r="1.8"/><circle cx="14.5" cy="6.5" r="1.8"/><circle cx="18" cy="10" r="1.8"/><path d="M12.5 11.5c-3 0-5.5 3.3-5.5 5.5 0 1.6 1.2 2.5 2.7 2.5 1.2 0 1.8-.6 2.8-.6s1.6.6 2.8.6c1.5 0 2.7-.9 2.7-2.5 0-2.2-2.5-5.5-5.5-5.5Z"/>',
-    rope: '<path d="M5 18c3-1 3-4 6-5s4-4 6-6M5 18l-1.5 1.5M17 7l1.5-1.5"/><path d="M8 15.5 10 17M11 12.5l2 1.5M14 9.5l2 1.5"/>',
-    treat: '<rect x="4.5" y="7.5" width="15" height="9" rx="4.5"/><path d="M9 12h.01M12 12h.01M15 12h.01"/>'
-  };
-  function icoFor(t) {
-    t = String(t || '').toLowerCase();
-    if (/ball/.test(t)) return 'ball'; if (/bone/.test(t)) return 'bone'; if (/stick/.test(t)) return 'stick';
-    if (/frisbee/.test(t)) return 'disc'; if (/rope/.test(t)) return 'rope'; if (/treat/.test(t)) return 'treat';
-    return '';
-  }
-  function svgIco(k, cls) { return '<svg class="' + (cls || 'hs-wait__ico') + '" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICO[k] + '</svg>'; }
+  /* ------------------------------------------------------------------- Buddy
+     One copy of his drawing, from the page (<template data-hs-buddy>, snippets/hs-buddy.liquid); without it the
+     circle stays plain cream. */
+  function buddy() { var t = document.querySelector('template[data-hs-buddy]'); return t ? t.innerHTML.trim() : ''; }
 
   /* ------------------------------------------------------------------ the canvas */
   function strokes(w, h) {
@@ -115,14 +104,12 @@
       ps.map(function (p) { return '<path d="' + p.d + '" fill="none" stroke="#fff" stroke-width="' + p.w.toFixed(1) + '" stroke-linecap="round"/>'; }).join('') + '</g></mask></defs>' +
       '<image href="' + esc(src) + '" x="-6%" y="-6%" width="112%" height="112%" preserveAspectRatio="xMidYMid slice" filter="url(#hs-wait-soft)" opacity=".35"/>' +
       '<image class="hs-wait__gray" href="' + esc(src) + '" x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="xMidYMid meet" filter="url(#hs-wait-gray)"/>' +
-      '<image class="hs-wait__colour" href="' + esc(src) + '" x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="xMidYMid meet" mask="url(#hs-wait-mask)"/></svg>' +
-      '<div class="hs-wait__things"></div>';
+      '<image class="hs-wait__colour" href="' + esc(src) + '" x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="xMidYMid meet" mask="url(#hs-wait-mask)"/></svg>' ;
     canvas.appendChild(stage);
     svg = stage.querySelector('svg');
     paths = Array.prototype.slice.call(svg.querySelectorAll('mask path'));
     lens = paths.map(function (p) { var L = 0; try { L = p.getTotalLength(); } catch (e) { L = w * 1.4; } p.style.strokeDasharray = L + ' ' + L; p.style.strokeDashoffset = String(L); return L; });
     brush = canvas.querySelector('.hs-art__brush');
-    things = stage.querySelector('.hs-wait__things');
     return true;
   }
   // how much of the picture is in colour after t ms: quick at first, never quite done until it is
@@ -144,15 +131,6 @@
       } catch (e) { /* the brush keeps its own loop */ }
     }
   }
-  function drift(d) {
-    if (!things || reduced) return;
-    var list = [];
-    String(d.toyRaw || '').split(/ and |, /).forEach(function (t) { var k = icoFor(t); if (k) list.push(k); });
-    if (!list.length) list.push('ball');
-    list.push('heart', 'paw');
-    things.innerHTML = list.slice(0, 4).map(function (k, i) { return '<span class="hs-wait__thing" style="--i:' + i + '">' + svgIco(k) + '</span>'; }).join('');
-  }
-
   /* --------------------------------------------------------------------- the talk */
   /* On a journey's gift page the studio's easel (snippets/hs-journey-choose.liquid) shows the dog's bubble before
      this card does. The card's bubble is the same one (Krish, 5 Nov: the screen before the painting "isn't a very
@@ -167,9 +145,8 @@
     adopted = ezWho && ezSay && ezSay.textContent.trim() ? { who: ezWho.textContent, say: ezSay.textContent } : null;
     bubble = document.createElement('div');
     bubble.className = 'hs-wait__talk';
-    bubble.innerHTML = '<button type="button" class="hs-wait__me" data-hs-wait-treat aria-label="Give ' + esc(d.dog) + ' a treat">' +
-      (src ? '<img src="' + esc(src) + '" alt="">' : svgIco('paw')) + '<span class="hs-wait__count" data-hs-wait-count hidden></span></button>' +
-      '<div class="hs-wait__bubble"><p class="hs-wait__who">' + esc(adopted ? adopted.who : label(d)) + '</p><p class="hs-wait__say" data-hs-wait-say aria-live="polite">' + (adopted ? esc(adopted.say) : '') + '</p></div>' +
+    bubble.innerHTML = '<button type="button" class="hs-wait__me is-buddy" data-hs-wait-buddy aria-label="Hear the next update from Buddy">' + buddy() + '</button>' +
+      '<div class="hs-wait__bubble"><p class="hs-wait__who">' + esc(adopted ? adopted.who : label()) + '</p><p class="hs-wait__say" data-hs-wait-say aria-live="polite">' + (adopted ? esc(adopted.say) : '') + '</p></div>' +
       '<div class="hs-wait__fact" data-hs-wait-fact hidden><p class="hs-wait__who">Buddy\'s note</p><p class="hs-wait__fact-text"></p></div>';
     // the easel's height, held from before the card arrived, until the card has measured its own
     var h = ez && ez.style.getPropertyValue('--hs-wait-h');
@@ -177,20 +154,20 @@
     title.insertAdjacentElement('afterend', bubble);
     sayEl = bubble.querySelector('[data-hs-wait-say]');
     factEl = bubble.querySelector('[data-hs-wait-fact]');
-    avatar = bubble.querySelector('[data-hs-wait-treat]');
-    avatar.addEventListener('click', function () { treat(d); });
+    avatar = bubble.querySelector('[data-hs-wait-buddy]');
+    avatar.addEventListener('click', function () { tap(d); });
     fitTalk(d);
   }
-  function label(d) { return d.dog + ', live from the studio'; }
+  function label() { return 'Buddy, at the studio'; }
 
   /* The bubble never changes size (Krish, 4 Nov: "Nothing on this page must randomly change size with
-     volatility like that when text is generating"). Every line the dog or Buddy could say is measured once
+     volatility like that when text is generating"). Every line Buddy could say is measured once
      at the bubble's real width, and the bubble is held at the tallest of them; it is measured again only
      when the width or the fonts change, never while text is typing. The easel's bubble is measured the same
      way, over the same lines, so the two are one height. */
   function measureTalk(talk, d, who0, extra) {
     var L = lines(d), facts = window.HSBreedFacts ? window.HSBreedFacts.for(d.breed) : [], breed = breedName(d);
-    var says = L.open.concat(L.mid, L.long, TREATS.map(function (t) { return t.replace('{n}', '99'); }), extra || []);
+    var says = L.open.concat(L.mid, L.long, [firstLine(d.dog)], extra || []);
     var probe = document.createElement('div');
     probe.className = 'hs-wait__probe';
     probe.setAttribute('aria-hidden', 'true');
@@ -217,11 +194,11 @@
     var ez = easelTalk();
     if (!ez || !ez.offsetWidth) return;
     var w = ez.querySelector('.hs-wait__who');
-    measureTalk(ez, info(), w ? w.textContent : label(info()), easelLines(ez));
+    measureTalk(ez, info(), w ? w.textContent : label(), easelLines(ez));
   }
   function fitTalk(d) {
     if (!bubble) return;
-    measureTalk(bubble, d, adopted ? adopted.who : label(d), adopted ? [adopted.say] : []);
+    measureTalk(bubble, d, adopted ? adopted.who : label(), adopted ? [adopted.say] : []);
     if (!fitTalk.watching) {
       fitTalk.watching = true;
       // a card going out of sight (width 0) and back is not a new width: it is never measured again for that
@@ -276,23 +253,11 @@
     used[key + x] = true;
     return x;
   }
-  function treat(d) {
-    treats++;
-    var c = avatar.querySelector('[data-hs-wait-count]');
-    c.hidden = false; c.textContent = String(treats);
-    avatar.classList.remove('is-fed'); void avatar.offsetWidth; avatar.classList.add('is-fed');
-    if (!reduced) crumbs();
-    say(TREATS[(treats - 1) % TREATS.length].replace('{n}', String(treats)));
-    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { /* no vibration */ }
-  }
-  function crumbs() {
-    for (var i = 0; i < 6; i++) {
-      var s = document.createElement('i');
-      s.className = 'hs-wait__crumb';
-      s.style.setProperty('--a', (i * 60 + Math.random() * 30) + 'deg');
-      avatar.appendChild(s);
-      setTimeout(function (el) { return function () { if (el.parentNode) el.parentNode.removeChild(el); }; }(s), 800);
-    }
+  // a tap on Buddy: his next line now, and a flick of the ear (none with reduced motion)
+  function tap(d) {
+    if (!avatar) return;
+    avatar.classList.remove('is-tapped'); void avatar.offsetWidth; avatar.classList.add('is-tapped');
+    next(d, lines(d), Date.now() - start);
   }
   function breedName(d) {
     var n = String(d.breed || '');
@@ -326,9 +291,6 @@
     if (!src || !svg || src === follow.src) return;
     follow.src = src;
     Array.prototype.forEach.call(svg.querySelectorAll('image'), function (im) { im.setAttribute('href', src); });
-    var face = avatar && avatar.querySelector('img');
-    if (face) face.src = src;
-    else if (avatar) avatar.insertAdjacentHTML('afterbegin', '<img src="' + esc(src) + '" alt="">');
   }
   function begin() {
     var photo = card.querySelector('[data-hs-art-photo]'), src = photo && photo.getAttribute('src');
@@ -337,7 +299,6 @@
       if (!buildCanvas(src)) return false;
       follow.src = src;
       buildTalk(d, src);
-      drift(d);
       // the first frame is drawn where it starts, never animated there: without this the bar shrank from the
       // sweep's 38% and the photo un-painted from full colour in the card's first half second (5 Nov)
       still(true);
@@ -410,7 +371,7 @@
     check();
     watch.check = check;
   }
-  window.__hsWait = { lines: lines, info: info, reach: reach, treats: TREATS, fitEasel: fitEasel };
+  window.__hsWait = { lines: lines, info: info, reach: reach, firstLine: firstLine, label: label, fitEasel: fitEasel };
   window.__hsWait.check = function () { if (watch.check) watch.check(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();
