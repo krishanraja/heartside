@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-05
+as_of: 2026-11-06
 head: 4adca71
 lifecycle: live
 production_url: https://heartside.io
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-05)
+## Where it is right now (as of 2026-11-06)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- going back mid-journey no longer breaks the painting (Krish's phone, 5 Nov night). After a gift page, the home page asks for the photo by the time the gift page stored it under, so a new feel, look or spot finds the photo instead of "upload a new picture"; a lock left by a page that was left mid-painting no longer stalls the next journey on that gift; a gift whose earlier painting cannot come back paints again by itself once (then one tap) instead of sitting on "Still painting"; and the home page brought back by the browser's Back is drawn fresh, so Start painting works. The mug's colour is chosen once (Krish, 6 Nov: "There are multiple places I pick a colour for the mug"): Teeinblue's own colour picker showed only when Back knocked the gift page out of the journey, fixed above, and the cart's "one more gift" drawer now shows the colour or frame chosen on the home page as plain text, and opens that gift in it, instead of its own list starting on Black. Built and tested; not live until Krish says yes. (2026-11-06)
 - the docs match what is live after 5 November: NOW.md carries one go-live bullet for the five asks and the wink (the superseded "built on a branch" and "not live" bullets and the 4 November release, whose Roast was recipes v18, moved to docs/history/LOG.md); SCOPE.md records the day's rulings (the place question, the wink, no lettering, the cart drawer, the detector after the photo, the studio choices); shopify/README.md, tools/print-art/ARTWORK-SYSTEM.md (recipes v21) and the asks README describe the live journey. (2026-11-05)
 - **Live on heartside.io since 5 November, 19:33 UTC** (theme push run 177, on Krish's yes; record [`docs/evidence/2026-11-05-roast-and-place.md`](docs/evidence/2026-11-05-roast-and-place.md), asks and rulings in [`docs/review/asks-2026-11-05/`](docs/review/asks-2026-11-05/README.md)): Krish's five asks from his phone run, built in parallel and merged as PRs #121 to #129. The home page asks where the dog rules the house after the feel, and that place stages the painting (recipes v21); Roast winks, one eye closed, never smug ("Wink 1 is good"; lettering on the mug was proposed and cancelled). The gift page's studio is the painting card from the first frame, with the buyer's photo on the easel, and the journey's screens move without jutter (Krish kept all four studio choices as built: the status line above the button, taps held for the 340 ms change, the fixed first line, 16 px and 340 ms). Pages load faster (lab: first question 12.2 s to 8.2 s, home window load 17.8 s to 7.9 s), the 19 MB dog detector loads only after a photo is chosen, the cart offers one more gift from a drawer at the real bundle saving, and the cart's "Make another version" link opens the normal gift page. All 20 changed theme files read back identical to main, live-gate is all clear on every view, and a live walk to the gifts screen painted nothing. Unverified: a real iPhone, a real cart's savings, and the wink on the bed, feet, portrait and card. (2026-11-05)
 - Live on heartside.io since 5 November, on Krish's "Yes, push it live": PR #118 merged (f6c55b1) with all 875 offline tests green, then theme push run 176 from main to the published theme with the December 4 deadline. All 18 changed theme files read back from the live theme match main byte for byte, and the memo strip carries 2026-12-04. A no-paint walk on heartside.io saw the new tone names, the December 4 line, the live detector catching a two-dog photo before painting, and the easel on a journey gift page; the read-only presentation gate is all clear after its home check was pointed at the photo-first start button. (2026-11-05)
@@ -69,7 +70,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-05): Krish looks at the journey on his own iPhone, then approves one QA cart on the live store to confirm the drawer's $26.10 and $46.60 savings.
+- Next (2026-11-06): Krish says yes to pushing the fix live.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
@@ -86,7 +87,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
     - Ruling (Krish, 2026-11-05): he runs Facebook ads, so the blanket keeps its studio photo as its variant picture, and checkout's nested line keeps showing that example blanket. The dog-free tile CoWork attached that day was taken off the same day: the variant picture is the studio photo again and the tile is no longer on the product (it stays in Shopify Files). The mug and the portrait show an example dog there too, for the same reason;
     - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-05): holds.
+- North Star check (2026-11-06): holds.
 
 ## Read next
 
