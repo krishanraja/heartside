@@ -159,8 +159,15 @@
     if (!cfg) return false;
     cart = cartGifts(rows().map(lineOf).filter(Boolean), cfg);
     list = offers(cfg, cart);
-    // a frame or color the buyer chose stays chosen when the cart redraws
-    list.forEach(function (o) { var v = o.variants.filter(function (x) { return String(x.id) === String(chosen[o.gift]); })[0]; if (v) o.variant = v; });
+    /* a frame or color the buyer chose stays chosen when the cart redraws; a gift already in this journey keeps
+       the one chosen for it on the home page, shown and never asked again (Krish, 6 Nov) */
+    list.forEach(function (o) {
+      var pin = mode.mode === 'extend' && mode.chosen ? mode.chosen[o.gift] : '';
+      var want = pin || chosen[o.gift];
+      var v = want ? o.variants.filter(function (x) { return String(x.id) === String(want); })[0] : null;
+      if (v) o.variant = v;
+      o.fixed = !!(pin && v);
+    });
     return true;
   }
   function active() { return live() && cart && (cart.units.length === 1 || cart.units.length === 2) && list.length > 0; }
@@ -222,7 +229,7 @@
     setText('[data-hs-more-sub]', subText());
     setText('[data-hs-more-xmas]', christmasLine((document.querySelector('[data-hs2-memo]') || { getAttribute: function () { return ''; } }).getAttribute('data-deadline')));
     setText('[data-hs-more-foot]', 'The saving shows in your cart and at checkout. No code needed.');
-    var ul = drawer.querySelector('[data-hs-more-list]'), want = list.map(function (o) { return o.gift; }).join(',');
+    var ul = drawer.querySelector('[data-hs-more-list]'), want = list.map(function (o) { return o.gift + (o.fixed ? ':' + o.variant.id : ''); }).join(',');
     if (ul.getAttribute('data-gifts') !== want) {
       ul.setAttribute('data-gifts', want);
       ul.innerHTML = list.map(card).join('');
@@ -234,7 +241,8 @@
   }
   function card(o) {
     var g = o.cfg, pick = '';
-    if (o.variants.length > 1) {
+    if (o.fixed) pick = '<p class="hs-more__pick is-set">' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + ': <b>' + esc(variantLabel(o.gift, o.variant)) + '</b></p>';
+    else if (o.variants.length > 1) {
       pick = '<label class="hs-more__pick">' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + '<select data-hs-more-variant>' + o.variants.map(function (v) {
         var label = variantLabel(o.gift, v) + (o.gift === 'print' ? ', ' + money(v.price) : '');
         return '<option value="' + esc(v.id) + '"' + (v === o.variant ? ' selected' : '') + '>' + esc(label) + '</option>';

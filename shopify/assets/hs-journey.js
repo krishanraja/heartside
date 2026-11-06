@@ -292,8 +292,13 @@
        look, feel and spot: the same journey goes on with the gifts as chosen now, so a gift already painted is not
        painted again and the answers already given stay (5 Nov review: Start painting again made a second paid
        painting). A changed choice is a new painting, which is what the buyer asked for. */
-    var was = st.hs_journey, photoT = S.hasPhoto ? S.photoT : 0;
-    if (was && was.mode === 'photo-first' && was.t && Date.now() - was.t < 6 * 36e5 && photoT && was.photoT === photoT &&
+    /* hs2.js stores the photo again when it sends it (the prepared copy, under a new time), so after a gift page the
+       photo on this device is known by that newer time. A new journey asks for it by that time, or the gift page finds
+       no photo (5 Nov, Krish's phone: Back, a new feel, then an empty easel and "upload a new picture"). */
+    var was = st.hs_journey, homeT = S.hasPhoto ? S.photoT : 0;
+    var photoT = homeT && Number(st.hs3_photo_t) > homeT ? Number(st.hs3_photo_t) : homeT;
+    if (photoT !== homeT) S.photoT = photoT;
+    if (was && was.mode === 'photo-first' && was.t && Date.now() - was.t < 6 * 36e5 && photoT && (was.photoT === homeT || was.photoT === photoT) &&
         was.style === S.style && was.tone === S.tone && (was.spot || '') === (S.spot || '') && queue.length) {
       was.queue = queue; was.gift = queue[0].gift; was.gifts = journeyGifts();
       st.hs3_kinds = kinds; S.giftCfg = giftCfgs; save();
@@ -301,7 +306,7 @@
       return queue;
     }
     st.dog = ''; st.person = ''; st.hs3_lines = null; st.hs3_mug_lines = null; st.hs3_copy_owner = 'generated';
-    st.hs3_photo_t = S.hasPhoto ? S.photoT : 0;
+    st.hs3_photo_t = photoT;
     st.hs3_kinds = kinds;
     st.hs_answers = '';
     st.hs3_art_profile = window.HSArtworkProfile ? window.HSArtworkProfile.fromChat({}) : null;
@@ -310,7 +315,7 @@
     st.hs_brief_input = { breed: '', pronoun: 'they', archetype: '', likeness: true, spot: S.spot || '' };
     st.hs_breed_id = '';
     st.hs_ship_to = '';
-    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: S.tone, style: S.style, spot: S.spot || '', photoT: S.hasPhoto ? S.photoT : 0,
+    st.hs_journey = { t: Date.now(), mode: 'photo-first', gift: queue[0] && queue[0].gift, tone: S.tone, style: S.style, spot: S.spot || '', photoT: photoT,
       queue: queue, gifts: journeyGifts(), notes: {}, answered: false, compose: { url: cfg.composeUrl || '', ai: !!cfg.ai } };
     S.giftCfg = giftCfgs; save();
     try { window.sessionStorage.setItem(HS2, JSON.stringify(st)); } catch (e) { /* private mode */ }
@@ -1095,6 +1100,10 @@
     app = root.querySelector('[data-hsj-app]');
     try { cfg = JSON.parse(root.querySelector('[data-hsj-config]').textContent); } catch (e) { cfg = {}; }
     MODE = root.getAttribute('data-hsj-mode') === 'gift' ? 'gift' : 'home';
+    /* Back to the home page from a gift page can bring back the page exactly as it was left, Start painting still on
+       its busy dots and the journey state from before the gift page (5 Nov, Krish's phone: it hung). The state is read
+       again and the step drawn fresh. */
+    window.addEventListener('pageshow', function (e) { if (!e.persisted || MODE !== 'home') return; S = load(); render(stepFromURL()); });
     // a journey begun before the spot moved to the home page still asks it here, so the note has all its lines
     if (MODE === 'gift' && !S.spot) { ASK.splice(ASK.indexOf('home') + 1, 0, 'spot'); GIFT = ASK.concat(['words']); }
     STEPS = MODE === 'gift' ? GIFT : HOME;

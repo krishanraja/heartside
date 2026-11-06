@@ -121,7 +121,7 @@ const GIFTS = {mug: {url: '/products/your-dogs-illustrated-mug', handle: 'your-d
 const T0 = Date.now() - 20 * 60000;
 /* a tab that came through the photo-first journey: the mug painted, answered and added (hs-journey.js handOver,
    then the first gift page's answers). journey: false is a buyer with no journey in this tab. */
-async function open(items, {size = {width: 390, height: 844}, journey = true, photo = true, age = 0, queue = ['mug'], reduced = false, memory = null, pagecfg = {}} = {}) {
+async function open(items, {size = {width: 390, height: 844}, journey = true, photo = true, age = 0, queue = ['mug'], variants = {}, reduced = false, memory = null, pagecfg = {}} = {}) {
   page = {html: await cartPage(items, pagecfg), items};
   const ctx = await browser.newContext({viewport: size, isMobile: size.width < 900, hasTouch: size.width < 900, reducedMotion: reduced ? 'reduce' : 'no-preference'});
   const tab = await ctx.newPage();
@@ -129,7 +129,7 @@ async function open(items, {size = {width: 390, height: 844}, journey = true, ph
   tab.on('pageerror', e => errors.push(e.message));
   await tab.route(u => !u.href.startsWith(base) && !/^(data|blob):/.test(u.href), r => { offsite.push(r.request().url()); return r.abort(); });
   await tab.route(/n8n\.cloud/, r => r.abort());
-  await tab.addInitScript(([t, journey, photo, age, queue, URLS, GIFTS, memory]) => {
+  await tab.addInitScript(([t, journey, photo, age, queue, variants, URLS, GIFTS, memory]) => {
     if (sessionStorage.getItem('__seeded')) return;
     sessionStorage.setItem('__seeded', '1');
     if (memory) sessionStorage.setItem('hs-more', JSON.stringify(memory));
@@ -137,9 +137,9 @@ async function open(items, {size = {width: 390, height: 844}, journey = true, ph
     sessionStorage.setItem('hs-artwork-choices-v1', JSON.stringify({version: 1, style: 'collage', tone: 'warm'}));
     sessionStorage.setItem('hs2-review', JSON.stringify({dog: 'Mowgli', person: 'Sam', hs3_lines: {home: 'a', spot: 'b', together: 'c', meaning: 'd'}, hs3_copy_owner: 'generated', hs3_photo_t: photo ? t : 0,
       hs3_art_profile: null, hs3_energy: '', hs3_art_choices: {style: 'collage', tone: 'warm'}, hs_brief_input: {breed: '', pronoun: 'they', archetype: '', likeness: true},
-      hs_journey: {t: Date.now() - 60000 - age, mode: 'photo-first', gift: queue[0], tone: 'warm', style: 'collage', queue: queue.map(g => ({gift: g, url: URLS[g]})), gifts: GIFTS, notes: {}, answered: true, compose: {url: '', ai: false}}}));
+      hs_journey: {t: Date.now() - 60000 - age, mode: 'photo-first', gift: queue[0], tone: 'warm', style: 'collage', queue: queue.map(g => variants[g] ? {gift: g, variant: variants[g], url: URLS[g].split('?')[0] + '?journey=1&variant=' + variants[g]} : {gift: g, url: URLS[g]}), gifts: GIFTS, notes: {}, answered: true, compose: {url: '', ai: false}}}));
     sessionStorage.setItem('hs-journey', JSON.stringify({dog: 'Mowgli', breed: 'Border Collie', pro: 'he', rel: 'named', person: 'Sam', home: 'door', spot: 'couch', together: 'walk', meaning: 'best', tone: 'warm', noteDone: true, gifts: Object.fromEntries(queue.map(g => [g, {on: true, variant: null}]))}));
-  }, [T0, journey, photo, age, queue, URLS, GIFTS, memory]);
+  }, [T0, journey, photo, age, queue, variants, URLS, GIFTS, memory]);
   if (photo && journey) {
     await tab.goto(base + '/robots.txt').catch(() => {});
     await tab.evaluate(t => fetch('/__photo.jpg').then(r => r.blob()).then(b => new Promise((resolve, reject) => {
@@ -210,6 +210,30 @@ test('one gift, fresh journey: it bounces in from the left by itself, offers the
     assert.equal(await tab.evaluate(() => /ask=/.test(location.hash)), false, 'nothing is asked');
     // the order says it came from the drawer (a hidden property, never shown at checkout)
     assert.equal(await tab.evaluate(() => (document.querySelector('#hs2-product-form [name="properties[_hs_from]"]') || {}).value), 'cart_more');
+    assert.deepEqual(errors, []); assert.deepEqual(offsite.filter(u => /n8n/.test(u)), []);
+  } finally { await ctx.close(); }
+});
+
+test('a gift already chosen in this journey keeps the colour picked on the home page: the drawer says it and never asks again; a gift not in the journey still has its choice', async () => {
+  // the blanket painted and added first; the mug (Red, chosen on the home page) is still to come
+  const {tab, ctx, errors, offsite} = await open([blanketLine(0)], {queue: ['blanket', 'mug'], variants: {mug: 58300000000005}});
+  try {
+    await goCart(tab);
+    await shown(tab, 5000);
+    const v = await view(tab);
+    assert.deepEqual(v.cards.map(c => c.gift).sort(), ['mug', 'print']);
+    const mug = await tab.evaluate(() => { const li = document.querySelector('[data-hs-more-card="mug"]'); return {select: !!li.querySelector('select'), pick: (li.querySelector('.hs-more__pick') || {}).textContent || ''}; });
+    assert.equal(mug.select, false, 'no second colour choice for the mug');
+    assert.equal(mug.pick, 'Inside color: Red', 'the colour chosen on the home page, said once');
+    copyOK(mug.pick);
+    assert.equal(await tab.evaluate(() => !!document.querySelector('[data-hs-more-card="print"] select')), true, 'the portrait, never chosen in this journey, keeps its frame choice');
+    await landed(tab);
+    await tab.screenshot({path: path.join(shots, '390-chosen-colour.png')});
+    await Promise.all([tab.waitForURL(/illustrated-mug/, {timeout: 8000}), tab.click('[data-hs-more-card="mug"] [data-hs-more-go]')]);
+    assert.equal(new URL(tab.url()).searchParams.get('variant'), '58300000000005', 'the mug page opens in the colour chosen on the home page');
+    const j = (await state(tab)).hs_journey;
+    assert.deepEqual(j.queue.map(q => q.gift), ['blanket', 'mug'], 'the mug stays in the journey once');
+    assert.equal(String(j.queue[1].variant), '58300000000005');
     assert.deepEqual(errors, []); assert.deepEqual(offsite.filter(u => /n8n/.test(u)), []);
   } finally { await ctx.close(); }
 });

@@ -389,6 +389,17 @@
     var j = journey();
     if (!j) return;
     journeyAutoSend.state = usePhoto.file ? 'waiting' : 'checking';
+    /* A lock left "sent" by a page that is gone (the buyer left mid-painting, then came back on a new journey) clears
+       only when its painting lands on the page that asked, which is gone, so this journey waited on it until "the
+       painter never opened" (5 Nov, Krish's phone). This journey has not sent from this page, so that lock is
+       stale: it is cleared, which never sends anything. */
+    var sentBefore = true;
+    try { sentBefore = !!window.sessionStorage.getItem(journeySentKey(j)); } catch (e) { sentBefore = true; }
+    if (!sentBefore) {
+      var stale = null;
+      try { stale = JSON.parse(window.sessionStorage.getItem('hs2-blanket-upload:' + productId()) || 'null'); } catch (e) { stale = null; }
+      if (stale && stale.stage === 'sent') { resetBlanketUpload(); photoLog('lock:stale', { lock: 'sent, from a page that is gone' }); }
+    }
     var tries = 0, over = false, timer = 0;
     var stop = function () { over = true; clearInterval(timer); document.removeEventListener('teeinblue-event-component-injected', onInjected); };
     /* one attempt, from the 600 ms tick, at once, when the photo is read back and when Teeinblue's fields arrive
@@ -463,7 +474,16 @@
       var busy = keepTibPhoto.preparing || !!document.querySelector('#buy .tee-field--photo .tee-photo-uploading');
       if (busy || !nativeBlanketInputsReady() || !photoInput()) { since = 0; return; }
       if (!since) since = Date.now();
-      if (Date.now() - since >= 20000) { clearInterval(timer); if (journeyAutoSend.state === 'sent') journeyAutoSend.state = 'interrupted'; }
+      if (Date.now() - since < 8000) return;
+      clearInterval(timer);
+      if (journeyAutoSend.state !== 'sent') return;
+      journeyAutoSend.state = 'interrupted';
+      /* the painting asked for by a page that is gone never comes back here (a reload, or Back to the gifts and Start
+         painting again). Once per gift and journey the same photo goes again by itself, so the buyer is not left on
+         "Still painting" or asked to tap (5 Nov, Krish: "Incredibly unstable painting ux"); after that, one tap. */
+      var auto = 'hs2-journey-auto:' + productId() + ':' + j.t, again = false;
+      try { again = !sessionStorage.getItem(auto); if (again) sessionStorage.setItem(auto, String(Date.now())); } catch (e) { again = false; }
+      if (again) journeyResume();
     }, 1000);
   }
   function journeyResume() {
@@ -4040,11 +4060,20 @@
   }
   function journeyMoreState() {
     var j = journeyMoreFresh();
-    if (!j) return Promise.resolve({ mode: 'start', photo: false, dog: '', queued: [] });
+    if (!j) return Promise.resolve({ mode: 'start', photo: false, dog: '', queued: [], chosen: {} });
     var queued = j.queue.map(function (q) { return handleOf(q && q.url); }).filter(Boolean);
+    /* the colour or frame each gift in this journey was given on the home page, chosen there once (Krish, 6 Nov:
+       "There are multiple places I pick a colour for the mug, which isn't really necessary"): the drawer offers
+       that gift in that variant and asks nothing */
+    var chosen = {};
+    j.queue.forEach(function (q) {
+      if (!q || !MORE_GIFTS[q.gift]) return;
+      var v = q.variant || (/[?&]variant=(\d+)/.exec(String(q.url || '')) || [])[1];
+      if (v && /^\d+$/.test(String(v))) chosen[q.gift] = String(v);
+    });
     return restorePhoto().then(function (rec) {
-      return { mode: 'extend', photo: !!(rec && rec.file), dog: answer('dog') || '', queued: queued };
-    }, function () { return { mode: 'extend', photo: false, dog: answer('dog') || '', queued: queued }; });
+      return { mode: 'extend', photo: !!(rec && rec.file), dog: answer('dog') || '', queued: queued, chosen: chosen };
+    }, function () { return { mode: 'extend', photo: false, dog: answer('dog') || '', queued: queued, chosen: chosen }; });
   }
   function journeyMore(gift, variant, url) {
     var j = journeyMoreFresh();
