@@ -99,8 +99,9 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 .hs-jm__dock .hsj-btn.is-busy .hsj-btn__dots { display: inline-block; }
 .hs-jm__small { margin: 0; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; }
 /* the dock's line is one line, said short (Krish, 6 Nov: "The error message takes up two lines, which is not
-   necessary"), and keeps that room when empty, so the dock never moves and the picture above gets the rest */
-.hs-jm__line { margin: 0; height: 18px; overflow: hidden; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; white-space: nowrap; text-overflow: ellipsis; }
+   necessary"), and keeps that room when empty, so the dock never moves and the picture above gets the rest. Every
+   line it says fits one line on a 320 px phone (journey-flow roomy); nothing is ever cut off to make it fit */
+.hs-jm__line { margin: 0; min-height: 18px; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; text-wrap: balance; }
 .hs-jm__repaint { appearance: none; width: auto; min-height: 36px; padding: 0 8px; border: 0; background: none; font-size: 14px; font-weight: 500; color: #7A6D66; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* the one free repaint */

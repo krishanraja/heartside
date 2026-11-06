@@ -136,7 +136,10 @@ async function roomy(page, where) {
       if (lines > 2) out.push(lines + ' lines: ' + words);
     }
     const line = document.querySelector('[data-hs-jm-line]');
-    if (line && line.getClientRects().length && line.scrollWidth > line.clientWidth + 1) out.push('dock line over one line: ' + line.textContent);
+    if (line && line.getClientRects().length && line.textContent.trim()) {
+      const range = document.createRange(); range.selectNodeContents(line);
+      if (range.getBoundingClientRect().height > (parseFloat(getComputedStyle(line).lineHeight) || 18) * 1.5) out.push('dock line over one line: ' + line.textContent);
+    }
     return out;
   });
   assert.deepEqual(r, [], where + ': text sprawls');
