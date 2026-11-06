@@ -187,6 +187,7 @@ test('one gift, fresh journey: it bounces in from the left by itself, offers the
     [v.title, v.sub, v.xmas, v.foot, ...v.cards.flatMap(c => [c.save, c.go])].forEach(copyOK);
     // the portrait's frame changes the saving in place, and nothing in the card changes size
     const box = () => tab.evaluate(() => { const r = document.querySelector('[data-hs-more-card="print"]').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+    await tab.evaluate(() => document.fonts.ready);
     const before = await box();
     await tab.selectOption('[data-hs-more-card="print"] select', '58300000000009');
     assert.equal(await tab.textContent('[data-hs-more-card="print"] [data-hs-more-save]'), 'You save $15.60 on the two.');
