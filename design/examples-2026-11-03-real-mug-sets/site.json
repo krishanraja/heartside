@@ -105,19 +105,19 @@
       "dog": "shepherd",
       "name": "Juno",
       "master": "design/examples-2026-11-03-real-mug-sets/set-shepherd.jpg",
-      "made": "Higgsfield clean plate (mug area only) + real product mug by Codex card real-mug-on-plates-2026-11-03",
+      "made": "Higgsfield clean plate (mug area only) + one real product mug by tools/print-art/real_mug_sets.py; rebuilt 2026-11-06 with one mug, not two (Krish, 6 Nov: \"This image has two mugs in it. That's a huge failure.\")",
       "approval": "Krish, 2026-11-03: \"looks good, do all 5\"",
-      "master_sha256": "1488552fb225adf7ee986c424e14f024a74131d67735d2c075db6594c9e306b3",
+      "master_sha256": "f9f45e6688866eba44977234cb74b19f9b57b47b7ce5dc84642483f7cd1ccee2",
       "outputs": {
         "540": {
           "file": "hs-hero-shepherd-540.webp",
-          "sha256": "30bc02b384c1fedf68e4c3eb150b2a5b0c29dde2a6c2630cc25f6cb3b3fbffd3",
-          "bytes": 77074
+          "sha256": "38801245916f7e032aa8670f495ecd8e4ff8c155eda1522a56d7a26494d97409",
+          "bytes": 73352
         },
         "1080": {
           "file": "hs-hero-shepherd-1080.webp",
-          "sha256": "63d619271c281c82a886c6dab453b345acf63c2540785f17c3bbd1d5556426b7",
-          "bytes": 195260
+          "sha256": "24c42b6fd7a8af163471d01e5d0b3e88c63416d28dc13afab6d4187f186077ac",
+          "bytes": 182606
         }
       }
     }

@@ -42,7 +42,7 @@ async function open({width, height, motion = 'no-preference', live = true}) {
     await page.route(base + '/', async (r) => {
       const res = await r.fetch();
       const body = (await res.text()).replace('data-hs2-memo', 'data-hs2-memo data-hs-bundle-live').replace('data-deadline=""', 'data-deadline="2026-12-10"')
-        .replace(/(class="hs2-memo__deal">Free US shipping)/, '$1<span aria-hidden="true"> · </span>15% off 2 gifts, 20% off 3');
+        .replace(/(class="hs2-memo__deal">Fast, free US shipping)/, '$1<span aria-hidden="true"> · </span>15% off 2 gifts, 20% off 3');
       await r.fulfill({response: res, body});
     });
   }
@@ -129,11 +129,13 @@ test('the button: heart pink with an ink label that reads, pulsing, still for re
 test('the strip is the one Christmas offer: countdown, free shipping, and the saving only when the store has it', async () => {
   const on = await open({width: 360, height: 780});
   assert.match(await on.page.locator('.hs-strip--offer .hs2-memo__top').innerText(), /^CHRISTMAS OFFER(?: · )?(\d+ DAYS LEFT|LAST DAY)$/);
-  assert.match(await on.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), /^Free US shipping · 15% off 2 gifts, 20% off 3$/);
+  assert.match(await on.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), /^Fast, free US shipping · 15% off 2 gifts, 20% off 3$/);
   assert.equal(await on.page.evaluate(() => window.innerWidth), 360, 'the deal line fits a 360 phone');
+  // fast shipping, said first and on one line (Krish, 6 Nov: "really clearly in the top banner")
+  assert.equal(await on.page.$eval('.hs-strip--offer .hs2-memo__deal', (p) => Math.round(p.getBoundingClientRect().height) <= Math.ceil(parseFloat(getComputedStyle(p).lineHeight)) + 1), true, 'one line at 360');
   await on.ctx.close();
   const off = await open({width: 320, height: 568, live: false});
-  assert.equal(await off.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), 'Free US shipping', 'no saving until the discount exists');
+  assert.equal(await off.page.locator('.hs-strip--offer .hs2-memo__deal').innerText(), 'Fast, free US shipping', 'no saving until the discount exists');
   // with no date set, the countdown runs to Christmas morning, a longer line that must still fit
   assert.match(await off.page.locator('.hs-strip--offer .hs2-memo__top').innerText(), /CHRISTMAS MORNING/);
   assert.equal(await off.page.evaluate(() => window.innerWidth), 320, 'the longer countdown still fits a 320 phone');
@@ -196,3 +198,25 @@ test('no line on the phone homepage leaves one word on its own', async () => {
     await ctx.close();
   }
 });
+
+// Krish, 6 Nov: the button says "Design yours in minutes", and under each dog's name one line on a phone in place
+// of "Mug · Blanket · Portrait" ("The true personality of your best friend, customized thoughtfully in to the perfect
+// gift", paraphrased to fit), clear of the pause button, for every dog in the carousel
+for (const width of [320, 360, 390]) {
+  test(`${width}: the button and the tagline under every dog's name, on one line beside the pause button`, async () => {
+    const {ctx, page, errors} = await open({width, height: 740});
+    assert.equal((await page.locator('.hsj-hook [data-hsj-go="photo"]').innerText()).trim(), 'Design yours in minutes');
+    const r = await page.$$eval('.hss--hero .hss-fig figcaption', (figs) => figs.map((f) => {
+      const s = f.querySelector('span'), b = f.getBoundingClientRect(), x = s.getBoundingClientRect();
+      const pause = document.querySelector('.hss-pause').getBoundingClientRect();
+      return {name: f.querySelector('strong').textContent, sub: s.textContent, oneLine: x.height <= parseFloat(getComputedStyle(s).lineHeight) * 1.5, clear: x.right <= pause.left, inside: x.right <= b.right};
+    }));
+    assert.equal(r.length, 6);
+    for (const c of r) {
+      assert.equal(c.sub, 'Their true self, made the perfect gift', c.name);
+      assert.ok(c.oneLine && c.clear && c.inside, `${c.name}: ${JSON.stringify(c)}`);
+    }
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  });
+}

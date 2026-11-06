@@ -122,15 +122,18 @@
     {%- comment -%} The hero: the six example sets, one at a time (hs-showcase.js runs it). Since 3 Nov each shows the real product
       mug, served at 540 and 1080 wide (tools/print-art/hero-sets.py). {%- endcomment -%}
     {%- render 'hs-showcase-later' -%}
+    {%- comment -%} Under each dog's name, one line on a phone (Krish, 6 Nov: "The true personality of your best friend,
+      customized thoughtfully in to the perfect gift." Paraphrased to fit one line). {%- endcomment -%}
+    {%- assign hs_tagline = 'Their true self, made the perfect gift' -%}
     <div class="hss hss--hero" data-hss>
       <div class="hss-block hss-sets" data-hss-reel>
         <ul class="hss-row hss-row--sets" data-hss-reel-track>
-          <li>{%- render 'hs-showcase-fig', hero: 'golden', eager: true, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'lab', alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bear', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'frenchie', alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bao', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'doodle', alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Clover', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'dachshund', alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Frank', sub: 'Mug · Blanket · Portrait' -%}</li>
-          <li>{%- render 'hs-showcase-fig', hero: 'shepherd', alt: 'Example: Juno, a German shepherd, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Juno', sub: 'Mug · Blanket · Portrait' -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'golden', eager: true, alt: 'Example: Maple, a golden retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', caption: 'Maple', sub: hs_tagline -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'lab', alt: 'Example: Bear, a Labrador Retriever, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bear', sub: hs_tagline -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'frenchie', alt: 'Example: Bao, a French bulldog, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Bao', sub: hs_tagline -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'doodle', alt: 'Example: Clover, a goldendoodle, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Clover', sub: hs_tagline -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'dachshund', alt: 'Example: Frank, a dachshund, on a mug, a sherpa blanket and a framed portrait in one living room.', later: true, caption: 'Frank', sub: hs_tagline -%}</li>
+          <li>{%- render 'hs-showcase-fig', hero: 'shepherd', alt: 'Example: Juno, a German shepherd, on a mug and a sherpa blanket in one living room.', later: true, caption: 'Juno', sub: hs_tagline -%}</li>
         </ul>
         <div class="hss-ctl" data-hss-reel-ctl hidden>
           <div class="hss-ticks" data-hss-ticks></div>
@@ -187,7 +190,7 @@
     { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Gifts from your dog" },
     { "type": "text", "id": "headline", "label": "Headline", "default": "Your dog" },
     { "type": "text", "id": "headline_em", "label": "Headline, italic part", "default": "loves you too." },
-    { "type": "text", "id": "start", "label": "Button", "default": "Make one for my dog" },
+    { "type": "text", "id": "start", "label": "Button", "default": "Design yours in minutes" },
     { "type": "text", "id": "flow_heading", "label": "Photo to gift heading", "default": "From a photo to a gift" },
     { "type": "textarea", "id": "privacy", "label": "AI privacy note", "default": "Your answers go to our writing service only to write your dog's note. Your photo stays on your device until you choose a gift." },
     { "type": "header", "content": "Retired 3 Nov (not shown)" },

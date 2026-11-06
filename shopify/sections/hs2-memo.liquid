@@ -14,6 +14,10 @@
   # The shipping line is the same on every page (Krish, 27 Oct 2026). A memo saved in the theme
   # editor before then can still end "Free US shipping."; finish it.
   assign msg = msg | replace: 'Free US shipping.', 'Free US shipping on every order.'
+  # Fast shipping, said first and clearly in the strip (Krish, 6 Nov: "the homepage needs to say Fast Shipping at the
+  # top, really clearly in the top banner"). A deal line saved in the theme editor before then still reads
+  # "Free US shipping"; finish it the same way.
+  assign deal = s.offer_deal | replace: 'Free US shipping', 'Fast, free US shipping'
 -%}
 {%- comment -%}
   The memo bar also carries the store-wide dates that drive every countdown on the
@@ -45,7 +49,7 @@
     {%- if s.offer_on -%}
     <div class="hs2-memo__viewport">
       <p class="hs2-memo__top"><span class="hs2-memo__msg">{{ s.offer_title | escape }}</span><span class="hs2-memo__count" data-hs2-countdown="memo" hidden></span></p>
-      <p class="hs2-memo__deal">{{ s.offer_deal | escape }}{% if s.bundle_offer_live and s.offer_bundle != blank %}<span aria-hidden="true"> · </span>{{ s.offer_bundle | escape }}{% endif %}</p>
+      <p class="hs2-memo__deal">{{ deal | escape }}{% if s.bundle_offer_live and s.offer_bundle != blank %}<span aria-hidden="true"> · </span>{{ s.offer_bundle | escape }}{% endif %}</p>
     </div>
     {%- else -%}
     <div class="hs2-memo__viewport">
@@ -91,7 +95,7 @@
       "type": "text",
       "id": "offer_deal",
       "label": "Offer: the deal",
-      "default": "Free US shipping"
+      "default": "Fast, free US shipping"
     },
     {
       "type": "text",

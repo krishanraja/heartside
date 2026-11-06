@@ -38,7 +38,7 @@ test('every gift price shows on the first screen, from Shopify, and on the gifts
   const s = read('sections/hs-journey.liquid');
   // Krish, 3 Nov: one price line, pinned with the button; free shipping is in the strip's Christmas offer
   assert.match(s, /<div class="hsj-dock hsj-dock--pin">\s*\{%- if price_line != blank -%\}<p class="hsj-price">\{\{ price_line \| strip \}\}<\/p>/);
-  assert.match(read('sections/hs2-memo.liquid'), /"id": "offer_deal",[\s\S]*?"default": "Free US shipping"/);
+  assert.match(read('sections/hs2-memo.liquid'), /"id": "offer_deal",[\s\S]*?"default": "Fast, free US shipping"/);
   assert.match(s, /p\.price_min \| money_without_trailing_zeros/, 'prices come from Shopify, never typed');
   // photo first (4 Nov): the prices sit on each gift's card, from Shopify's variants, with free US shipping under them
   assert.match(s, /"variants": \[\{%- for v in p\.variants -%\}\{ "id": \{\{ v\.id \| json \}\}, "options": \{\{ v\.options \| json \}\}, "price": \{\{ v\.price \| divided_by: 100\.0 \| json \}\}/);

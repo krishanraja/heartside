@@ -13,6 +13,7 @@ Each set is written twice, 540 and 1080 wide (4:5, WebP), as shopify/assets/hs-h
 """
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -59,6 +60,14 @@ def check():
     bad = []
     if len(m['sets']) != 6:
         bad.append('the carousel has %d sets, not 6' % len(m['sets']))
+    # one mug per set (Krish, 6 Nov: "This image has two mugs in it. That's a huge failure."): each composited set
+    # places the real mug in exactly one box
+    import ast
+    src = (ROOT / 'tools' / 'print-art' / 'real_mug_sets.py').read_text()
+    boxes = ast.literal_eval(re.search(r'^BOXES = (\{.*?^\})', src, re.S | re.M).group(1))
+    for dog, b in boxes.items():
+        if len(b) != 1:
+            bad.append('%s: %d mugs in the set, not one' % (dog, len(b)))
     for s in m['sets']:
         if not (s.get('approval') or '').startswith('Krish, '):
             bad.append(s['dog'] + ': no approval by Krish recorded')

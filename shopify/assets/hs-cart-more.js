@@ -8,9 +8,15 @@
    - For a buyer who just came through the photo-first journey (fresh, answered), its button adds the gift to
      the end of that journey (hs2.js journeyMore), so the gift page paints once from the same photo and asks
      nothing. Otherwise it starts the home journey with that gift ticked and the cart's gifts unticked.
+   - Both gifts not in the cart sit side by side, each with its own Add to cart (Krish, 6 Nov: "should offer both
+     options as an upsell, not just one, and it should enable someone to one-click tap Add to Cart"). A gift
+     goes in the cart only once Teeinblue has painted it, so the tap takes the buyer to that painting, from the
+     same photo with nothing asked, and back to the cart.
    - It opens by itself once per session, early, never while the buyer is busy, and always from its opener
-     (the bundle line, in the place the cart keeps for it). While it is open the page behind is inert: a tap
-     outside only closes it. It has its own Check out, which presses the page's own (so the quantity gate holds).
+     (the bundle line, in the place the cart keeps for it) and from its tab on the left edge, there whenever it
+     is closed (Krish, 6 Nov: "That draw should be slightly visible even when it's closed, so that the user can
+     bring it back out again whenever they want"). While it is open the page behind is inert: a tap outside only
+     closes it. It has its own Check out, which presses the page's own (so the quantity gate holds).
    Nothing here paints, adds to the cart or changes a price. */
 (function () {
   'use strict';
@@ -89,6 +95,12 @@
     if (n === 2) return 'Third gift: 20% off all three';
     return '';
   }
+  // the tab on the left edge while the drawer is closed
+  function peekText(n) {
+    if (n === 1) return 'Add a gift, save 15%';
+    if (n === 2) return 'Add a gift, save 20%';
+    return '';
+  }
   var NAME = { mug: 'mug', blanket: 'blanket', print: 'portrait' };
   // "Your mug stays in your cart." / "Your mug and blanket stay in your cart."
   function staysText(have) {
@@ -114,13 +126,13 @@
     var path = String(url || '').split('?')[0];
     return path + '?journey=1' + (variant ? '&variant=' + variant : '');
   }
-  root.HSCartMore = { RATES: RATES, rate: rate, bundleOff: bundleOff, money: money, cartGifts: cartGifts, offers: offers, savingText: savingText, pillText: pillText, staysText: staysText, christmasLine: christmasLine, startLink: startLink, journeyLink: journeyLink, variantLabel: variantLabel };
+  root.HSCartMore = { RATES: RATES, rate: rate, bundleOff: bundleOff, money: money, cartGifts: cartGifts, offers: offers, savingText: savingText, pillText: pillText, peekText: peekText, staysText: staysText, christmasLine: christmasLine, startLink: startLink, journeyLink: journeyLink, variantLabel: variantLabel };
   if (typeof document === 'undefined') return;
 
   /* ------------------------------------------------------------ the page */
   var KEY = 'hs-more', AUTO_WINDOW = 4500, AUTO_DELAY = 1200;
-  var cfg = null, cart = null, list = [], chosen = {}, mode = { mode: 'start', photo: false, dog: '' }, drawer = null, opener = null, lastFocus = null;
-  var isOpen = false, modeReady = false, wantOpen = '', landedAt = 0, busy = false, interacted = false, autoTimer = 0, pendTimer = 0, inerted = [];
+  var cfg = null, cart = null, list = [], chosen = {}, mode = { mode: 'start', photo: false, dog: '' }, drawer = null, opener = null, peek = null, lastFocus = null;
+  var isOpen = false, modeReady = false, wantOpen = '', landedAt = 0, busy = false, interacted = false, autoTimer = 0, pendTimer = 0, inerted = [], peekReady = false;
   var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -193,6 +205,25 @@
     opener = have;
   }
 
+  /* the tab: the drawer's own edge, left on the screen whenever it is closed, so the buyer can always bring it
+     back. It waits until the drawer has had its chance to open by itself, so it never shows and then hides. */
+  function placePeek() {
+    var on = peekReady && modeReady && !isOpen && !!cart && active();
+    if (!on) { if (peek && !peek.hidden) { peek.hidden = true; peek.classList.remove('is-on'); } return; }
+    if (!peek) {
+      peek = document.createElement('button');
+      peek.type = 'button'; peek.className = 'hs-more-peek'; peek.setAttribute('data-hs-more-peek', '');
+      peek.setAttribute('aria-haspopup', 'dialog'); peek.setAttribute('aria-controls', 'hs-more'); peek.setAttribute('aria-expanded', 'false');
+      peek.innerHTML = '<span class="hs-more-peek__say" data-hs-more-peek-say></span><svg class="hs-more-peek__ico" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      peek.hidden = true;
+      peek.addEventListener('click', function () { if (!isOpen) { track('more_peek', { units: cart ? cart.units.length : 0 }); open(false); } });
+      document.body.appendChild(peek);
+    }
+    var say = peekText(cart.units.length), span = peek.querySelector('[data-hs-more-peek-say]');
+    if (span.textContent !== say) span.textContent = say;
+    if (peek.hidden) { peek.hidden = false; peek.classList.add('is-on'); }
+  }
+
   /* ------------------------------------------------------------ the drawer */
   function build() {
     if (drawer) return drawer;
@@ -202,7 +233,7 @@
     drawer.setAttribute('aria-labelledby', 'hs-more-title'); drawer.setAttribute('aria-describedby', 'hs-more-sub');
     drawer.hidden = true; drawer.inert = true;
     drawer.innerHTML = '<div class="hs-more__panel" data-hs-more-panel>' +
-      '<div class="hs-more__head"><p class="hs-more__pill" data-hs-more-pill></p><h2 class="hs-more__title" id="hs-more-title" tabindex="-1" data-hs-more-title></h2><p class="hs-more__sub" id="hs-more-sub" data-hs-more-sub></p>' +
+      '<div class="hs-more__head"><h2 class="hs-more__title" id="hs-more-title" tabindex="-1" data-hs-more-title></h2><p class="hs-more__sub" id="hs-more-sub" data-hs-more-sub></p>' +
       '<button type="button" class="hs-more__close" aria-label="Close" data-hs-more-x>×</button></div>' +
       '<ul class="hs-more__list" data-hs-more-list></ul>' +
       '<div class="hs-more__foot"><p class="hs-more__line" data-hs-more-xmas></p><p class="hs-more__line" data-hs-more-foot></p>' +
@@ -217,21 +248,23 @@
   }
   function setText(sel, t) { var el = drawer.querySelector(sel); if (el && el.textContent !== t) el.textContent = t; }
   function subText() {
-    var stays = staysText(cart.have), dog = mode.dog;
-    if (mode.mode === 'extend' && mode.photo) return (dog ? dog : 'Your dog') + ', in the same style. Nothing to answer again. ' + stays;
-    if (mode.mode === 'extend') return 'The same style and note. You choose the photo once more, then it paints. ' + stays;
-    return "Start from your dog's photo, then it paints. " + stays;
+    var dog = mode.dog;
+    if (mode.mode === 'extend' && mode.photo) return 'It paints ' + (dog || 'your dog') + ' from the same photo. Nothing to answer again.';
+    if (mode.mode === 'extend') return 'The same style and note. Choose the photo once more, then it paints.';
+    return "Start from your dog's photo, then it paints.";
   }
   function paint() {
     build();
-    setText('[data-hs-more-pill]', pillText(cart.units.length));
-    setText('[data-hs-more-title]', mode.mode === 'extend' && mode.photo ? 'Paint one more from the same photo' : 'Add another gift');
+    // the deal is the headline: no eyebrow above it (Krish, 6 Nov, on text around the picture)
+    setText('[data-hs-more-title]', pillText(cart.units.length));
     setText('[data-hs-more-sub]', subText());
     setText('[data-hs-more-xmas]', christmasLine((document.querySelector('[data-hs2-memo]') || { getAttribute: function () { return ''; } }).getAttribute('data-deadline')));
-    setText('[data-hs-more-foot]', 'The saving shows in your cart and at checkout. No code needed.');
+    setText('[data-hs-more-foot]', staysText(cart.have) + ' The saving shows at checkout. No code needed.');
     var ul = drawer.querySelector('[data-hs-more-list]'), want = list.map(function (o) { return o.gift + (o.fixed ? ':' + o.variant.id : ''); }).join(',');
     if (ul.getAttribute('data-gifts') !== want) {
       ul.setAttribute('data-gifts', want);
+      // two gifts side by side, one as a row
+      ul.setAttribute('data-n', String(list.length));
       ul.innerHTML = list.map(card).join('');
       list.forEach(function (o) { bindCard(ul.querySelector('[data-hs-more-card="' + o.gift + '"]'), o); });
     } else list.forEach(function (o) { var li = ul.querySelector('[data-hs-more-card="' + o.gift + '"]'); if (li) cardState(li, o); });
@@ -239,20 +272,23 @@
     var payBtn = drawer.querySelector('[data-hs-more-pay]');
     if (payBtn.disabled !== stop) payBtn.disabled = stop;
   }
+  /* one card: the picture, the name and price, the saving, the frame or color (or the one already chosen), and Add
+     to cart. Side by side, the frame list names the frame only (the price above follows it), so it fits a phone. */
   function card(o) {
-    var g = o.cfg, pick = '';
+    var g = o.cfg, pick = '<span class="hs-more__pick is-none"></span>', two = list.length > 1;
     if (o.fixed) pick = '<p class="hs-more__pick is-set">' + (o.gift === 'mug' ? 'Inside color: ' : '') + '<b>' + esc(variantLabel(o.gift, o.variant)) + '</b></p>';
     else if (o.variants.length > 1) {
-      pick = '<label class="hs-more__pick">' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + '<select data-hs-more-variant>' + o.variants.map(function (v) {
-        var label = variantLabel(o.gift, v) + (o.gift === 'print' ? ', ' + money(v.price) : '');
+      pick = '<label class="hs-more__pick"><span>' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + '</span><select data-hs-more-variant>' + o.variants.map(function (v) {
+        var label = variantLabel(o.gift, v);
+        if (o.gift === 'print') label = two ? label.replace(/ frame$/, '') : label + ', ' + money(v.price);
         return '<option value="' + esc(v.id) + '"' + (v === o.variant ? ' selected' : '') + '>' + esc(label) + '</option>';
       }).join('') + '</select></label>';
     }
     return '<li class="hs-more__card" data-hs-more-card="' + esc(o.gift) + '">' +
       '<span class="hs-more__art"><img src="' + esc(g.img) + '" alt="' + esc(g.alt) + '" width="540" height="675" loading="lazy" decoding="async"><span class="hs-more__tag">Example</span></span>' +
-      '<p class="hs-more__name">' + esc(g.name) + '</p><p class="hs-more__spec">' + esc(g.spec) + '</p><p class="hs-more__price" data-hs-more-price></p>' +
-      pick + '<p class="hs-more__save" data-hs-more-save></p><p class="hs-more__note" data-hs-more-note></p>' +
-      '<button type="button" class="hs-more__go" data-hs-more-go></button></li>';
+      '<p class="hs-more__name"><span>' + esc(g.name) + '</span> <span class="hs-more__price" data-hs-more-price></span></p><p class="hs-more__spec">' + esc(g.spec) + '</p>' +
+      '<p class="hs-more__save" data-hs-more-save></p>' + pick +
+      '<button type="button" class="hs-more__go" data-hs-more-go aria-label="Add the ' + esc(NAME[o.gift]) + ' to your cart">Add to cart</button><p class="hs-more__note" data-hs-more-note></p></li>';
   }
   // painted before in this journey (its page found a sent painting): it paints again from the same photo
   function paintedBefore(o) {
@@ -264,7 +300,6 @@
     set('[data-hs-more-save]', savingText(cart, o.variant.price));
     var stop = pending();
     set('[data-hs-more-note]', stop ? 'Finish the change in your cart first.' : mode.mode === 'extend' && paintedBefore(o) ? 'It paints again from the same photo.' : '');
-    set('[data-hs-more-go]', mode.mode === 'extend' ? 'Paint the ' + NAME[o.gift] : 'Start with the photo');
     var b = li.querySelector('[data-hs-more-go]'), off = stop || busy;
     if (b.disabled !== off) b.disabled = off;
   }
@@ -322,6 +357,7 @@
     paint();
     lastFocus = auto ? null : document.activeElement;
     isOpen = true;
+    placePeek();
     drawer.hidden = false; drawer.inert = false;
     drawer.classList.remove('is-out'); drawer.classList.add('is-in');
     landedAt = Date.now() + (reduced ? 150 : 560);
@@ -343,6 +379,8 @@
     var done = function () { if (!isOpen) { drawer.hidden = true; drawer.inert = true; drawer.classList.remove('is-out'); } };
     setTimeout(done, reduced ? 150 : 200);
     if (opener) opener.setAttribute('aria-expanded', 'false');
+    // closed by any route, it never opens by itself again, and its tab stays on the left edge to bring it back
+    peekReady = true; placePeek();
     if (how !== 'pay' && how !== 'back') { var m = memory(); m.closed = true; remember(m); }
     var back = lastFocus && document.contains(lastFocus) ? lastFocus : opener;
     if (back && how !== 'pay') { try { back.focus({ preventScroll: true }); } catch (e) { back.focus(); } }
@@ -398,9 +436,10 @@
   var readyAt = 0;
   function scheduleAuto() {
     if (autoTimer || isOpen || !readyAt) return;
-    if (Date.now() - readyAt > AUTO_WINDOW) return;
+    if (Date.now() - readyAt > AUTO_WINDOW) { peekReady = true; placePeek(); return; }
     autoTimer = setTimeout(function () {
       if (Date.now() - readyAt <= AUTO_WINDOW + AUTO_DELAY && mayAuto()) open(true);
+      if (!isOpen) { peekReady = true; placePeek(); }
     }, AUTO_DELAY);
   }
   ['pointerdown', 'keydown'].forEach(function (t) { document.addEventListener(t, function () { if (!isOpen && readyAt) interacted = true; }, { capture: true, passive: true }); });
@@ -413,13 +452,17 @@
   function onCart() {
     if (!refresh()) return;
     placeOpener();
+    placePeek();
     if (isOpen) paint();
     if (!readyAt) {
       readyAt = Date.now();
       journeyMode().then(function (s) {
         mode = s; modeReady = true;
         if (wantOpen) { var w = wantOpen; wantOpen = ''; if (w === 'tap' || mayAuto()) open(w === 'auto'); }
+        // it will not open by itself this time: the tab is there at once
+        if (!isOpen && !mayAuto()) peekReady = true;
         scheduleAuto();
+        placePeek();
       });
     }
   }

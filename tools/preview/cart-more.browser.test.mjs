@@ -160,7 +160,7 @@ const view = tab => tab.evaluate(() => {
   const cards = [...d.querySelectorAll('[data-hs-more-card]')].map(li => ({gift: li.getAttribute('data-hs-more-card'), save: li.querySelector('[data-hs-more-save]').textContent, go: li.querySelector('[data-hs-more-go]').textContent,
     price: li.querySelector('[data-hs-more-price]').textContent, tag: li.querySelector('.hs-more__tag').textContent, alt: li.querySelector('img').alt, variant: (li.querySelector('select') || {}).value || ''}));
   const t = s => (d.querySelector(s) || {}).textContent || '';
-  return {pill: t('[data-hs-more-pill]'), title: t('[data-hs-more-title]'), sub: t('[data-hs-more-sub]'), xmas: t('[data-hs-more-xmas]'), foot: t('[data-hs-more-foot]'), cards};
+  return {title: t('[data-hs-more-title]'), sub: t('[data-hs-more-sub]'), xmas: t('[data-hs-more-xmas]'), foot: t('[data-hs-more-foot]'), cards};
 });
 const state = tab => tab.evaluate(() => JSON.parse(sessionStorage.getItem('hs2-review') || '{}'));
 const copyOK = text => { assert.doesNotMatch(text, /!|—/, 'no exclamation marks or em dashes: ' + text); assert.doesNotMatch(text, /colour|favour/i); };
@@ -173,24 +173,25 @@ test('one gift, fresh journey: it bounces in from the left by itself, offers the
     await shown(tab, 5000);
     assert.ok(Date.now() - t0 < 5000, 'early, not late');
     const v = await view(tab);
-    assert.equal(v.pill, 'Second gift: 15% off both');
-    assert.equal(v.title, 'Paint one more from the same photo');
-    assert.equal(v.sub, 'Mowgli, in the same style. Nothing to answer again. Your mug stays in your cart.');
+    assert.equal(v.title, 'Second gift: 15% off both', 'the deal is the headline, with no eyebrow above it');
+    assert.equal(v.sub, 'It paints Mowgli from the same photo. Nothing to answer again.');
     assert.equal(v.xmas, 'Order by December 4 for Christmas delivery to a US address.');
-    assert.equal(v.foot, 'The saving shows in your cart and at checkout. No code needed.');
+    assert.equal(v.foot, 'Your mug stays in your cart. The saving shows at checkout. No code needed.');
     assert.deepEqual(v.cards.map(c => c.gift), ['blanket', 'print'], 'only the gifts not in the cart; the blanket leads for a mug cart');
     assert.equal(v.cards[0].save, 'You save $26.10 on the two.');
-    assert.equal(v.cards[0].go, 'Paint the blanket');
+    assert.equal(v.cards[0].go, 'Add to cart');
+    assert.equal(v.cards[1].go, 'Add to cart', 'both gifts, each with its own Add to cart');
     assert.equal(v.cards[1].variant, '58300000000006', 'the portrait is offered framed first for a mug cart');
     assert.equal(v.cards[1].save, 'You save $24.60 on the two.');
     assert.ok(v.cards.every(c => c.tag === 'Example' && /^Example: /.test(c.alt)), 'the home photos, each tagged Example');
-    [v.pill, v.title, v.sub, v.xmas, v.foot, ...v.cards.flatMap(c => [c.save, c.go])].forEach(copyOK);
+    [v.title, v.sub, v.xmas, v.foot, ...v.cards.flatMap(c => [c.save, c.go])].forEach(copyOK);
     // the portrait's frame changes the saving in place, and nothing in the card changes size
     const box = () => tab.evaluate(() => { const r = document.querySelector('[data-hs-more-card="print"]').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
     const before = await box();
     await tab.selectOption('[data-hs-more-card="print"] select', '58300000000009');
     assert.equal(await tab.textContent('[data-hs-more-card="print"] [data-hs-more-save]'), 'You save $15.60 on the two.');
-    assert.equal(await tab.textContent('[data-hs-more-card="print"] [data-hs-more-price]'), '$59');
+    assert.equal(await tab.textContent('[data-hs-more-card="print"] [data-hs-more-price]'), '$59', 'the price follows the frame');
+    assert.deepEqual(await tab.$$eval('[data-hs-more-card="print"] option', os => os.map(o => o.textContent)), ['Black', 'Red Oak', 'White', 'Unframed'], 'side by side, the frame list names the frame only');
     assert.deepEqual(await box(), before, 'the card keeps its size');
     await landed(tab);
     await tab.screenshot({path: path.join(shots, '390-one-gift.png')});
@@ -260,8 +261,11 @@ test('back with the blanket: it opens once more for the third gift, at $46.60 on
     await goCart(tab);
     await shown(tab);
     const v = await view(tab);
-    assert.equal(v.pill, 'Third gift: 20% off all three');
-    assert.equal(v.sub, 'Mowgli, in the same style. Nothing to answer again. Your mug and blanket stay in your cart.');
+    assert.equal(v.title, 'Third gift: 20% off all three');
+    assert.equal(v.sub, 'It paints Mowgli from the same photo. Nothing to answer again.');
+    assert.equal(v.foot, 'Your mug and blanket stay in your cart. The saving shows at checkout. No code needed.');
+    assert.equal(await tab.getAttribute('[data-hs-more-list]', 'data-n'), '1', 'one gift left: a row');
+    assert.deepEqual(await tab.$$eval('[data-hs-more-card="print"] option', os => os.map(o => o.textContent)), ['Black frame, $119', 'Red Oak frame, $119', 'White frame, $119', 'Unframed, $59']);
     assert.deepEqual(v.cards.map(c => c.gift), ['print']);
     assert.equal(v.cards[0].save, 'You save $58.60 on all three.', 'framed first, for a mug cart');
     await tab.selectOption('[data-hs-more-card="print"] select', '58300000000009');
@@ -295,6 +299,7 @@ test('three gifts in the cart: no opener and no drawer; with the bundle switch o
       await tab.waitForFunction(() => document.querySelector('.cart-totals__tax-note[data-hs-note]'));
       await tab.waitForTimeout(3500);
       assert.equal(await tab.evaluate(() => !!document.querySelector('[data-hs-more-open]')), false, 'no opener');
+      assert.equal(await tab.evaluate(() => { const p = document.querySelector('[data-hs-more-peek]'); return !!p && !p.hidden; }), false, 'no tab');
       assert.equal(await tab.evaluate(() => { const d = document.querySelector('[data-hs-more]'); return !!d && !d.hidden; }), false, 'no drawer');
       assert.deepEqual(errors, []);
     } finally { await ctx.close(); }
@@ -308,9 +313,9 @@ test('no fresh journey: its link starts the home journey with the gift ticked an
       await goCart(tab);
       await shown(tab);
       const v = await view(tab);
-      assert.equal(v.title, 'Add another gift', label);
-      assert.equal(v.sub, "Start from your dog's photo, then it paints. Your mug stays in your cart.", label);
-      assert.equal(v.cards[0].go, 'Start with the photo', label);
+      assert.equal(v.title, 'Second gift: 15% off both', label);
+      assert.equal(v.sub, "Start from your dog's photo, then it paints.", label);
+      assert.equal(v.cards[0].go, 'Add to cart', label);
       await landed(tab);
       await Promise.all([tab.waitForURL(/step=photo/, {timeout: 8000}), tab.click('[data-hs-more-card="blanket"] [data-hs-more-go]')]);
       assert.equal(new URL(tab.url()).search, '?step=photo&gift=blanket&variant=58300000000010&have=mug', label);
@@ -367,6 +372,68 @@ test('at 375x667, a tap outside on Remove closes the drawer and never removes th
     assert.equal(await tab.evaluate(() => { const d = document.querySelector('[data-hs-more]'); return !!d && !d.hidden; }), false, 'closed once, it never opens by itself again');
     assert.deepEqual(errors, []);
   } finally { await ctx.close(); }
+});
+
+// Krish, 6 Nov: "I accidentally tapped out of the draw, and the draw went away. Now I can't get it back". Closed by
+// any route, its tab stays on the left edge and brings it back; never shown while it is open, never over the cart's
+// own buttons
+test('closed by a tap outside, Escape or No thanks, its tab stays on the left edge and brings it back, after a reload too', async () => {
+  const {tab, ctx, errors} = await open(CARTS.one(), {size: {width: 375, height: 667}});
+  const peek = () => tab.evaluate(() => {
+    const p = document.querySelector('[data-hs-more-peek]');
+    if (!p || p.hidden) return null;
+    const r = p.getBoundingClientRect(), hit = [...document.querySelectorAll('.cart-items__remove, [name="minus"], [name="plus"], [name="checkout"], [data-hs-more-open]')].filter(b => { const q = b.getBoundingClientRect(); return q.width && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top; }).length;
+    return {left: Math.round(r.left), top: r.top, bottom: r.bottom, w: Math.round(r.width), h: Math.round(r.height), say: p.textContent, hit, h0: innerHeight};
+  });
+  try {
+    await goCart(tab);
+    await shown(tab);
+    assert.equal(await peek(), null, 'no tab while it is open');
+    await landed(tab);
+    // a tap outside, as a finger gives it
+    const x = await tab.evaluate(() => document.querySelector('[data-hs-more]').getBoundingClientRect().right + 12);
+    await tab.touchscreen.tap(x, 200);
+    await tab.waitForTimeout(500);
+    assert.equal(await tab.evaluate(() => document.querySelector('[data-hs-more]').hidden), true, 'the tap closed it');
+    const p = await peek();
+    assert.ok(p, 'its tab is on the screen');
+    assert.equal(p.left, 0, 'on the left edge');
+    assert.ok(p.top >= 0 && p.bottom <= p.h0 && p.w >= 32 && p.h >= 44, JSON.stringify(p));
+    assert.equal(p.say, 'Add a gift, save 15%');
+    copyOK(p.say);
+    assert.equal(p.hit, 0, 'it covers none of the cart\'s own buttons');
+    await tab.screenshot({path: path.join(shots, '375-closed-tab.png')});
+    // the tab brings it back
+    await tab.tap('[data-hs-more-peek]');
+    await shown(tab);
+    assert.equal(await peek(), null);
+    await landed(tab);
+    await tab.keyboard.press('Escape');
+    await tab.waitForTimeout(300);
+    assert.ok(await peek(), 'back after Escape');
+    assert.equal(await tab.evaluate(() => document.activeElement && document.activeElement.hasAttribute('data-hs-more-peek')), true, 'focus goes back to the tab');
+    await tab.click('[data-hs-more-peek]');
+    await shown(tab);
+    await landed(tab);
+    await tab.click('[data-hs-more-no]');
+    await tab.waitForTimeout(300);
+    assert.ok(await peek(), 'back after No thanks');
+    // a reload: closed once, it never opens by itself again, and the tab is there at once
+    await tab.reload();
+    await tab.waitForFunction(() => { const p = document.querySelector('[data-hs-more-peek]'); return p && !p.hidden; }, null, {timeout: 4000});
+    assert.equal(await tab.evaluate(() => { const d = document.querySelector('[data-hs-more]'); return !!d && !d.hidden; }), false);
+    await tab.click('[data-hs-more-peek]');
+    await shown(tab);
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+  // two gifts in the cart: the tab names the next saving
+  const two = await open(CARTS.two(), {queue: ['mug', 'blanket'], memory: {shown: 2, closed: true}});
+  try {
+    await goCart(two.tab);
+    await two.tab.waitForFunction(() => { const p = document.querySelector('[data-hs-more-peek]'); return p && !p.hidden; }, null, {timeout: 4000});
+    assert.equal(await two.tab.textContent('[data-hs-more-peek]'), 'Add a gift, save 20%');
+    assert.deepEqual(two.errors, []);
+  } finally { await two.ctx.close(); }
 });
 
 test('paying is never blocked: the drawer\'s Check out presses the page\'s own; a pending quantity change holds the auto-open and both buttons; Back from the page cache re-enables it', async () => {
@@ -435,6 +502,16 @@ for (const size of [{width: 320, height: 568}, {width: 375, height: 667}, {width
       assert.ok(r.lefts.length > 5 && Math.max(...r.lefts) <= 0.5, `the panel never leaves the left edge (max ${Math.max(...r.lefts)})`);
       assert.ok(r.checkout <= baseline, `Check out has not moved down (${r.checkout} vs ${baseline})`);
       if (size.width >= 900) assert.ok(r.pageCheckoutLeft >= r.right, 'on the desktop the page\'s Check out stays uncovered');
+      // both gifts side by side, each Add to cart on screen with the list unscrolled (Krish, 6 Nov: "offer both options")
+      const fit = await tab.evaluate(() => {
+        const l = document.querySelector('[data-hs-more-list]'), lr = l.getBoundingClientRect();
+        const goes = [...l.querySelectorAll('[data-hs-more-go]')].map(b => b.getBoundingClientRect()), arts = [...l.querySelectorAll('.hs-more__art')].map(a => a.getBoundingClientRect());
+        return {n: goes.length, onScreen: goes.every(g => g.top >= lr.top && g.bottom <= lr.bottom + 0.5), row: Math.abs(goes[0].top - goes[1].top) < 1 && Math.abs(arts[0].top - arts[1].top) < 1, art: Math.round(arts[0].height), scroll: l.scrollHeight - l.clientHeight};
+      });
+      assert.equal(fit.n, 2);
+      assert.ok(fit.row, 'side by side, lined up');
+      assert.ok(fit.onScreen && fit.scroll <= 1, `both Add to cart buttons on screen with no scrolling (${JSON.stringify(fit)})`);
+      assert.ok(fit.art >= 96, `the pictures keep their room (${fit.art}px)`);
       await tab.screenshot({path: path.join(shots, `${size.width}-open.png`)});
       assert.deepEqual(errors, []);
     } finally { await ctx.close(); }
