@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the cart drawer offers both gifts not in the cart side by side, each with its own Add to cart, and a tab on the left edge brings it back after any close. The home strip leads with "Fast, free US shipping", the button reads "Design yours in minutes", the line under each dog's name is "Their true self, made the perfect gift", and the Juno carousel set shows one mug, not two. (2026-11-06)
 - the full purchase path is proven live after today's fixes. Two buyers went through Teeinblue's real painter on heartside.io to the checkout page, with nothing typed or paid. A single mug painted in 46 s and was added in 20 s, with its checkout picture. Three gifts in Roast painted in 39 to 54 s each and were added in 16 to 23 s each, every line with its picture, at 20% off ($234.40). Every question was asked once. A weekly real-engine run (.github/workflows/real-buyer.yml, Mondays, about $1.30 a week, approved by Krish) now sends six awkward buyers through the same path and opens a real-buyer issue when one fails. The hourly storefront guard asks the cart path with the HS_CANARY_DESIGN_ID secret, and both checks read ok. (2026-11-06)
 - the Christmas card in the cart shows the card itself, built from the painting's print file (the file Printful prints), never the mug's product mockup. A tap on it opens the real card (pages/card, the page the printer renders) with the note inside. The cart's "one more gift" drawer opens by itself again on phones: its window now runs from when the cart is drawn, not from the page's start, which had closed before a live phone's cart was drawn. (2026-11-06)
 - the last two audit items are fixed. A gift for someone else now asks about them, since the note speaks to them: "When Sam gets home, Biscuit…" (option "brings a present") and "Best thing Biscuit and Sam do together?". The meaning question reads "What is Biscuit to Sam?". The cart's bundle line counts gifts, not lines, so two mugs on one line are two gifts, as the drawer and the bundle count them. Krish added the HS_CANARY_DESIGN_ID secret, so the hourly guard now asks the cart path about a finished design too. (2026-11-06)
@@ -60,6 +61,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-06 Krish found the drawer gone for good after one tap outside, the drawer offering one gift at a time, and the Juno set showing the real mug pasted twice (6 Nov). The drawer's two cards and Check out fit one phone screen from 320x568 up. A gift still goes in the cart only once Teeinblue has painted it, so Add to cart takes the buyer to that painting, from the same photo with nothing asked. Juno was rebuilt from the same clean plate with no generation, and hero-sets.py --check now fails any set with more than one mug.
 - 2026-11-06 the cart is watched hourly and weekly, so a break on the path to purchase is found within the hour, not by Krish on his phone.
 - 2026-11-06 the card a buyer sees in the cart is the card Printful prints, and the bundle drawer reaches the buyers it was built for.
 - 2026-11-05 Roast now winks, because a situation alone did not read as Roast in thirteen real paintings and lettering was cancelled as too risky (Krish, 5 Nov).
@@ -78,7 +80,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-06): the first scheduled Monday run reads "ok" for all six buyers.
+- Next (2026-11-06): Krish checks the drawer and the home page on his phone once the theme is pushed live.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
