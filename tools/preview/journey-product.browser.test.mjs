@@ -240,11 +240,11 @@ test('a later gift: the same studio, nothing asked, the framing box saved unseen
     const whole = await page.evaluate(() => { const img = document.querySelector('[data-hs-jm-close] img'), s = getComputedStyle(img), box = document.querySelector('.hs-jm__square').getBoundingClientRect(), r = img.getBoundingClientRect();
       return {fit: s.objectFit, transform: s.transform, inside: r.left >= box.left - 1 && r.right <= box.right + 1 && r.top >= box.top - 1 && r.bottom <= box.bottom + 1}; });
     assert.deepEqual(whole, {fit: 'contain', transform: 'none', inside: true});
-    assert.match(await page.textContent('[data-hs-jm-sub]'), /all the way round the mug/);
+    assert.equal(await page.textContent('[data-hs-jm-sub]'), 'Turn it with the arrows, or see the whole print.', 'the line under the title is short, so the picture gets the room');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-reveal-later.png')});
     // the last gift's reveal says the Christmas date from the store's own deadline, and only until that day ends
     await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-deadline', '2099-12-04'));
-    await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === 'Order by December 4 for Christmas delivery to a US address.', null, {timeout: 3000});
+    await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === 'Christmas delivery: order by December 4.', null, {timeout: 3000});
     await page.evaluate(() => document.querySelector('[data-hs2-memo]').setAttribute('data-deadline', '2020-12-04'));
     await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === '', null, {timeout: 3000});
     await ready(page);
@@ -252,7 +252,7 @@ test('a later gift: the same studio, nothing asked, the framing box saved unseen
     await page.check('[data-hs-jm-tick]');
     await page.click('[data-hs-jm-add]');
     // the add says what it is doing (5 Nov judges: 15 to 40 seconds with only a dot on the button)
-    assert.equal(await page.textContent('[data-hs-jm-line]'), 'Adding it to your cart. This can take up to a minute.');
+    assert.equal(await page.textContent('[data-hs-jm-line]'), 'Adding it to your cart. Up to a minute.');
     await page.waitForURL(/\/cart$/, {timeout: 15000});
     assert.deepEqual(cart.map(i => i.handle), ['your-dogs-illustrated-mug']);
     assert.deepEqual(errors, []);
@@ -364,19 +364,19 @@ for (const [name, fails, lands] of [['a slow checkout copy: the dock says what h
       window.__presses = 0;
       atc.click = () => {
         window.__presses++;
-        say("Getting Mowgli's picture ready for checkout.");
+        say("Getting Mowgli's picture ready.");
         setTimeout(() => { if (window.__presses <= fails) say('Checkout artwork is not ready. Please try Add to cart again. Your saved artwork does not need another upload.'); else { say(''); fetch('/__add?h=' + location.pathname.split('/')[2]); } }, 2500);
       };
     }, fails);
     await page.check('[data-hs-jm-tick]');
     await page.click('[data-hs-jm-add]');
-    await page.waitForFunction(() => /ready for checkout/.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 5000});
+    await page.waitForFunction(() => /picture ready/.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 5000});
     if (lands) {
       await page.waitForURL(/\/cart$/, {timeout: 20000});
       assert.deepEqual(cart.map(i => i.handle), ['your-dogs-personality-blanket'], 'one line, after one tap');
     } else {
-      // the second failure is said once, in the page's own words: the design is kept, one more tap from the buyer
-      await page.waitForFunction(() => /didn't go through\. Your design is saved\. Tap the button again\./.test(document.querySelector('[data-hs-jm-line]').textContent), null, {timeout: 20000});
+      // the second failure is said once, in one short line: one more tap from the buyer
+      await page.waitForFunction(() => document.querySelector('[data-hs-jm-line]').textContent === 'Not added yet. Tap Add to cart again.', null, {timeout: 20000});
       await page.waitForTimeout(2500);
       assert.equal(await page.evaluate(() => window.__presses), 2, 'one automatic press, never a third');
       assert.equal(await page.isDisabled('[data-hs-jm-add]'), false, 'the buyer can try again');

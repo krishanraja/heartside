@@ -167,7 +167,10 @@
      way, over the same lines, so the two are one height. */
   function measureTalk(talk, d, who0, extra) {
     var L = lines(d), facts = window.HSBreedFacts ? window.HSBreedFacts.for(d.breed) : [], breed = breedName(d);
-    var says = L.open.concat(L.mid, L.long, [firstLine(d.dog)], extra || []);
+    // the dog's name is often asked after the painting starts: the lines are measured with the longest name too
+    // (hs-journey.js NAME_MAX, 14), so the bubble never needs to grow when Buddy starts using it
+    var Lx = lines(Object.assign({}, d, { dog: 'Maximilian Rex' }));
+    var says = L.open.concat(L.mid, L.long, Lx.open, Lx.mid, Lx.long, [firstLine(d.dog), firstLine('Maximilian Rex')], extra || []);
     var probe = document.createElement('div');
     probe.className = 'hs-wait__probe';
     probe.setAttribute('aria-hidden', 'true');
@@ -257,7 +260,8 @@
   function tap(d) {
     if (!avatar) return;
     avatar.classList.remove('is-tapped'); void avatar.offsetWidth; avatar.classList.add('is-tapped');
-    next(d, lines(d), Date.now() - start);
+    var now = info();
+    next(now, lines(now), Date.now() - start);
   }
   function breedName(d) {
     var n = String(d.breed || '');
@@ -315,7 +319,9 @@
       var t = Date.now() - start, f = reach(t);
       paintTo(f);
       bar(Math.min(0.95, 1 - Math.exp(-t / 70000)));
-      if (Date.now() - lastSay >= BEAT) next(d, L, t);
+      // the name and answers given since the painting started reach Buddy's next line (6 Nov audit: he said
+      // "your dog" while the headline said "Still painting Biscuit")
+      if (Date.now() - lastSay >= BEAT) { d = info(); L = lines(d); next(d, L, t); }
     };
     if (!(adopted && beat === 0 && sayEl && sayEl.textContent)) next(d, L, 0);
     tick();

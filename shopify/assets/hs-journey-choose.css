@@ -93,13 +93,15 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
 
 /* the dock: the tick, the button and the quiet link always take their room, shown or not */
 .hs-jm__dock { display: grid; gap: 8px; }
-.hs-jm__tick { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 16px; font-weight: 600; cursor: pointer; }
+.hs-jm__tick { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; font-size: 16px; font-weight: 600; cursor: pointer; }
 .hs-jm__tick input { width: 22px; height: 22px; accent-color: #A8284E; margin: 0; flex: none; }
 .hs-jm__dock .hsj-btn .hsj-btn__dots { display: none; }
 .hs-jm__dock .hsj-btn.is-busy .hsj-btn__dots { display: inline-block; }
 .hs-jm__small { margin: 0; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; }
-/* the dock's one line holds two lines of text at most and keeps that room when empty, so the dock never moves */
-.hs-jm__line { margin: 0; height: 36px; overflow: hidden; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; text-wrap: balance; }
+/* the dock's line is one line, said short (Krish, 6 Nov: "The error message takes up two lines, which is not
+   necessary"), and keeps that room when empty, so the dock never moves and the picture above gets the rest. Every
+   line it says fits one line on a 320 px phone (journey-flow roomy); nothing is ever cut off to make it fit */
+.hs-jm__line { margin: 0; min-height: 18px; font-size: 13px; line-height: 18px; color: #7A6D66; text-align: center; text-wrap: balance; }
 .hs-jm__repaint { appearance: none; width: auto; min-height: 36px; padding: 0 8px; border: 0; background: none; font-size: 14px; font-weight: 500; color: #7A6D66; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* the one free repaint */
@@ -124,7 +126,7 @@ html.hs-jm-on .vm--container, html.hs-jm-on .vm--overlay { opacity: 0 !important
   .hs-jm__square { width: min(100%, calc(min(820px, 100vh - 64px) - 330px)); }
   .hs-jm__dock { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 24px; }
   .hs-jm__dock > * { grid-column: 1 / -1; }
-  .hs-jm__dock .hs-jm__tick { grid-column: 1; grid-row: 1; }
+  .hs-jm__dock .hs-jm__tick { grid-column: 1; grid-row: 1; justify-content: flex-start; }
   .hs-jm__dock .hsj-btn { grid-column: 2; grid-row: 1; width: auto; min-width: 240px; }
   .hs-jm__line { text-align: left; }
   .hs-jm-sheet { align-items: center; }

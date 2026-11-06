@@ -122,6 +122,29 @@ const ready = page => page.evaluate(() => {
 // the top of each frame and the dock stay put: nothing above the button moves while the dog talks or the painting lands
 const frameBox = page => page.evaluate(() => { const f = document.querySelector('[data-hs-jm-frame]'), d = f && f.querySelector('.hsj-dock'); return d ? Math.round(d.getBoundingClientRect().top) : -1; });
 
+// Krish, 6 Nov: "I hate it when text just sprawls around." The line under a title takes two lines at most, and the
+// gift page's dock line one, so the picture or the note gets the room
+async function roomy(page, where) {
+  const r = await page.evaluate(() => {
+    const out = [];
+    for (const el of document.querySelectorAll('.hsj-support')) {
+      if (!el.getClientRects().length || !el.textContent.trim()) continue;
+      const lh = parseFloat(getComputedStyle(el).lineHeight) || 24, words = el.textContent.trim();
+      // the text's own height, never the room it keeps (hs-journey-choose.css holds two lines open)
+      const range = document.createRange(); range.selectNodeContents(el);
+      const lines = Math.round(range.getBoundingClientRect().height / lh);
+      if (lines > 2) out.push(lines + ' lines: ' + words);
+    }
+    const line = document.querySelector('[data-hs-jm-line]');
+    if (line && line.getClientRects().length && line.textContent.trim()) {
+      const range = document.createRange(); range.selectNodeContents(line);
+      if (range.getBoundingClientRect().height > (parseFloat(getComputedStyle(line).lineHeight) || 18) * 1.5) out.push('dock line over one line: ' + line.textContent);
+    }
+    return out;
+  });
+  assert.deepEqual(r, [], where + ': text sprawls');
+}
+
 // the home page: photo, style, gifts, each colour chosen once, then the first gift's page
 async function home(page, size, shot) {
   await page.goto(`${base}/`);
@@ -129,6 +152,7 @@ async function home(page, size, shot) {
   await page.waitForURL(/step=photo/);
   await page.waitForSelector('[data-hsj-screen="photo"]');
   if (size.width < 900) await noScroll(page, 'photo');
+  await roomy(page, size.width + 'x' + size.height + ' photo');
   if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-1-photo.png')});
   await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
   await page.locator('[data-hsj-file]').setInputFiles(PHOTO);
@@ -137,6 +161,7 @@ async function home(page, size, shot) {
   if (size.width < 900) await noScroll(page, 'look');
   await page.locator('[data-hsj-style="painterly"]').click();
   assert.equal(await page.locator('[data-hsj-style="painterly"]').getAttribute('aria-pressed'), 'true');
+  await roomy(page, size.width + 'x' + size.height + ' look');
   if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-2-look.png')});
   await page.locator('[data-hsj-next]').click();
   // the tone, before the painting: it changes the scene and the light, never the face (recipes v19)
@@ -145,6 +170,7 @@ async function home(page, size, shot) {
   if (size.width < 900) await noScroll(page, 'tone');
   await page.locator('[data-hsj-feel="over_the_top"]').click();
   assert.equal(await page.locator('[data-hsj-feel="over_the_top"]').getAttribute('aria-pressed'), 'true');
+  await roomy(page, size.width + 'x' + size.height + ' tone');
   if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2b-tone.png')});
   await page.locator('[data-hsj-next]').click();
   // where the dog rules the house, asked before the painting so it stages the picture (recipes v20)
@@ -152,6 +178,7 @@ async function home(page, size, shot) {
   await page.waitForSelector('[data-hsj-screen="spot"]');
   assert.equal(await page.locator('#hsj-q').textContent(), 'Where does your dog rule the house?');
   if (size.width < 900) await noScroll(page, 'spot');
+  await roomy(page, size.width + 'x' + size.height + ' spot');
   if (shot) await page.waitForTimeout(300), await page.screenshot({path: path.join(shots, shot + '-2c-spot.png')});
   await pick(page, 'spot', 'bed');
   await page.waitForURL(/step=gifts/);
@@ -169,6 +196,7 @@ async function home(page, size, shot) {
   assert.equal(await page.locator('[data-hsj-gift-card="mug"] .hsj-gift__opt-name b').textContent(), 'Dark Green');
   assert.match(await page.locator('[data-hsj-offer]').textContent(), /save 15% on these 2/);
   assert.match(await page.locator('.hsj-when').textContent(), /Order by December 4 for Christmas delivery to a US address/);
+  await roomy(page, size.width + 'x' + size.height + ' gifts');
   if (shot) await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-3-gifts.png'), fullPage: false});
   await page.locator('[data-hsj-start]').click();
   await page.waitForURL(/\/products\/your-dogs-portrait\?.*journey=1/);
@@ -199,11 +227,13 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     assert.doesNotMatch(brief['Tone direction'].replace(/never grumpy, mean, smug or exaggerated/i, ''), /side-eye|brow|smug|judging/);
     assert.match(brief['Style direction'], /painterly|painting/i);
     if (size.width < 900) await noScroll(page, 'the studio');
+    await roomy(page, size.width + 'x' + size.height + ' studio');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-4-studio.png')});
     // a few seconds of the studio, then the questions, in the same frame, with the painting badge
     await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 12000});
     await page.waitForSelector('[data-hsj-screen="name"] [data-hsj-paint]');
     if (size.width < 900) await noScroll(page, 'the first question');
+    await roomy(page, size.width + 'x' + size.height + ' name');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-5-name.png')});
     await page.locator('[data-hsj-name]').fill('Pickles');
     await page.locator('[data-hsj-next]').click();
@@ -217,6 +247,7 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     await page.locator('[data-hsj-tone="hilarious"]').click();
     await page.waitForFunction(() => /arrivals very seriously/.test(document.querySelector('[data-hsj-note]').textContent), null, {timeout: 8000});
     if (size.width < 900) await noScroll(page, 'the note');
+    await roomy(page, size.width + 'x' + size.height + ' note');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-6-note.png')});
     // the painting is not back yet: the studio again, in the same frame, then the painting on the product
     await page.locator('[data-hsj-next]').click();
@@ -227,11 +258,12 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     const dockWaiting = await frameBox(page);
     await paintDone(page);
     await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
-    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Pickles on the portrait');
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), "Pickles' portrait");
     assert.equal(await frameBox(page), dockWaiting, 'the dock does not move when the painting lands');
     assert.equal(await page.locator('[data-hs-jm-tick-text]').textContent(), 'Yes, this is Pickles');
     assert.equal(await page.locator('[data-hs-jm-add]').isDisabled(), true, 'the add waits for the tick');
     if (size.width < 900) await noScroll(page, 'the reveal');
+    await roomy(page, size.width + 'x' + size.height + ' reveal');
     await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, shot + '-7-reveal.png')});
     // the order carries the note and the names before it is added
     const order = await page.evaluate(() => ({dog: window.__hs2api.state.dog, person: window.__hs2api.state.person, lines: window.__hs2api.state.hs3_lines, tone: window.__hs2api.state.hs_journey.tone}));

@@ -4244,7 +4244,7 @@
     var variantId = variant && variant.value;
     var whose = checkoutImageStatus.dog || 'your', Whose = checkoutImageStatus.dog || 'Your';
     prepareCheckoutCart.pending = true;
-    checkoutImageStatus('Getting ' + whose + ' picture ready for checkout.');
+    checkoutImageStatus('Getting ' + whose + ' picture ready.');
     // registration polls while Teeinblue finishes its copy; it never uploads (hs-checkout-image.js)
     prepareCheckoutCart.retries = 0;
     var options = Object.assign({}, config, { onPending: function () { prepareCheckoutCart.retries++; checkoutImageStatus('Almost there.'); } });
@@ -4263,12 +4263,12 @@
       prepareCheckoutCart.pending = false;
       // plain words, and the one thing a buyer must not do: paint again
       if (error && error.hs2Changed) {
-        checkoutImageStatus(Whose + ' design changed while it was saving. Check it, then try Add to cart again. You do not need to upload a photo again.');
+        checkoutImageStatus(Whose + ' design changed. Check it, then tap the button again.');
         throw error;
       }
       // only a saved design goes in without its picture: an add with no design reference is still refused
       if (!designedAdd(body)) {
-        checkoutImageStatus("That didn't go through. " + Whose + ' design is saved, so you do not need to upload a photo again. Try Add to cart again.');
+        checkoutImageStatus("That didn't go through. Tap Add to cart again.");
         throw error;
       }
       /* The checkout picture is a nicety; the sale is not (Ruling, Krish, 6 Nov: the registration service failed every

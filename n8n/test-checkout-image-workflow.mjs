@@ -202,7 +202,9 @@ test('provider redirect or bad HEAD prevents fileCreate', async () => {
   const runtime = fixtureRuntime(); const http = runtime.http;
   runtime.http = async (node, p) => node.name === 'Check native preview' ? { statusCode: 302, headers: { location: 'https://example.invalid' } } : http(node, p);
   const result = await runGraph(buildCheckoutImageWorkflow(config()), signedInput(), runtime);
-  assert.equal(result.status, 503); assert.ok(!runtime.calls.some(x => x.name === 'Create image once'));
+  // 6 Nov: "not ready yet" is a 202 pending, because Shopify's app proxy turns any 5xx into its own error page
+  assert.equal(result.status, 202); assert.equal(result.body.code, 'preview_unavailable'); assert.equal(result.body.state, 'pending');
+  assert.ok(!runtime.calls.some(x => x.name === 'Create image once'));
 });
 test('lost create response yields pending; graph never retries mutation', async () => {
   const runtime = fixtureRuntime(); const http = runtime.http;

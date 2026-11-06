@@ -1,6 +1,10 @@
 # Storefront guard: every hour, read the public store's product addresses with
 # tools/preview/handle-check.mjs (no browser, no install, no secret) and tell Krish when one
-# breaks. On 28 October a Teeinblue campaign Update renamed two product handles between
+# breaks. Since 6 November it also asks the cart path (tools/preview/cart-path-check.mjs): the
+# store's checkout-picture service must tell a made-up design "not ready yet" and read a finished
+# design back "ready" (the HS_CANARY_DESIGN_ID secret, one of the 5 November test buyers' designs).
+# It never paints, uploads, adds to a cart or creates a picture; docs/RUNBOOK-cart.md says what a
+# failure means. On 28 October a Teeinblue campaign Update renamed two product handles between
 # checks; nothing noticed until the next hand-run gate.
 #
 # Exit 1 (broken: a renamed handle, a 404, a lost template, the chat or phone menu pointing at
@@ -57,14 +61,20 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Read the product addresses
+      - name: Read the product addresses and the cart path
         id: check
+        env:
+          HS_CANARY_DESIGN_ID: ${{ secrets.HS_CANARY_DESIGN_ID }}
         run: |
           set +e
           node tools/preview/handle-check.mjs > check.txt 2>&1
-          code=$?
+          a=$?
+          node tools/preview/cart-path-check.mjs >> check.txt 2>&1
+          b=$?
           set -e
           cat check.txt
+          # the worse of the two: the check failed (3), broken (1), inconclusive (2), all clear (0)
+          if [ "$a" -ge 3 ] || [ "$b" -ge 3 ]; then code=3; elif [ "$a" = 1 ] || [ "$b" = 1 ]; then code=1; elif [ "$a" = 2 ] || [ "$b" = 2 ]; then code=2; else code=0; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
 
       - name: Summary
@@ -124,7 +134,7 @@ jobs:
       - name: Fail the run when the check itself failed
         if: steps.check.outputs.code != '0' && steps.check.outputs.code != '1' && steps.check.outputs.code != '2'
         run: |
-          echo "::error::handle-check.mjs did not finish (see the log above)."
+          echo "::error::handle-check.mjs or cart-path-check.mjs did not finish (see the log above)."
           exit 1
 
   acceptance:
