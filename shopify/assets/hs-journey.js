@@ -78,11 +78,14 @@
      writer (n8n compose) already understand. Every group is a tap. */
   var BREEDS = ['Labrador Retriever', 'Golden Retriever', 'French Bulldog', 'Dachshund', 'Poodle', 'Goldendoodle', 'German Shepherd', 'Beagle', 'Pug', 'Border Collie'];
   function groups(n) {
+    // a gift for someone else asks about them, since the note speaks to them (6 Nov audit: "When you get home"
+    // asked the buyer about a gift for Sarah)
+    var other = !n.self && n.person;
     return [
-      { id: 'home', q: 'When you get home, ' + n.dog + '…', opts: [['door', 'waits at the door'], ['toy', 'brings you something'], ['spin', 'spins in circles'], ['cool', 'plays it cool, for a second']] },
+      { id: 'home', q: (other ? 'When ' + n.person + ' gets home, ' : 'When you get home, ') + n.dog + '…', opts: [['door', 'waits at the door'], ['toy', other ? 'brings a present' : 'brings you something'], ['spin', 'spins in circles'], ['cool', 'plays it cool, for a second']] },
       { id: 'spot', q: 'Where does ' + (S.dog ? n.dog : 'your dog') + ' rule the house?', sub: MODE === 'home' ? 'We paint them there, on the mug and the portrait.' : '', opts: [['feet', 'On your feet'], ['bed', 'Your side of the bed'], ['couch', 'The couch'], ['anywhere', 'Wherever you are']] },
-      { id: 'together', q: 'Best thing you do together', opts: [['walk', 'Walks'], ['coffee', 'Morning coffee'], ['movie', 'Movie nights'], ['naps', 'Naps'], ['car', 'Car rides']] },
-      { id: 'meaning', q: 'What ' + n.dog + ' is to ' + n.them, opts: [['shadow', 'A shadow'], ['best', 'A best friend'], ['hard', 'There on hard days'], ['boss', 'The boss of the house']] },
+      { id: 'together', q: other ? 'Best thing ' + n.dog + ' and ' + n.person + ' do together?' : 'Best thing you do together?', opts: [['walk', 'Walks'], ['coffee', 'Morning coffee'], ['movie', 'Movie nights'], ['naps', 'Naps'], ['car', 'Car rides']] },
+      { id: 'meaning', q: 'What is ' + n.dog + ' to ' + n.them + '?', opts: [['shadow', 'A shadow'], ['best', 'A best friend'], ['hard', 'There on hard days'], ['boss', 'The boss of the house']] },
       { id: 'toy', q: n.possessive + ' favorite things', sub: 'Pick up to two. We paint them in.', opts: [['a tennis ball', 'Tennis ball'], ['a big stick', 'Big stick'], ['a squeaky toy', 'Squeaky toy'], ['a rope toy', 'Rope toy'], ['a stuffed toy', 'Stuffed toy'], ['a frisbee', 'Frisbee'], ['a bone', 'Bone'], ['treats', 'Treats']] },
       { id: 'wears', q: 'Anything ' + n.dog + ' wears?', opts: [['a collar', 'A collar'], ['a bandana', 'A bandana'], ['a bow', 'A bow'], ['a sweater', 'A sweater'], ['a harness', 'A harness'], ['', 'Nothing']] }
     ];
