@@ -1,3 +1,0 @@
-Status: the last two audit items are fixed. A gift for someone else now asks about them, since the note speaks to them: "When Sam gets home, Biscuit…" (option "brings a present") and "Best thing Biscuit and Sam do together?". The meaning question reads "What is Biscuit to Sam?". The cart's bundle line counts gifts, not lines, so two mugs on one line are two gifts, as the drawer and the bundle count them. Krish added the HS_CANARY_DESIGN_ID secret, so the hourly guard now asks the cart path about a finished design too.
-Next: Krish walks the journey on his phone once more, for a gift to someone else.
-North Star check (2026-11-06): holds.
