@@ -25,7 +25,9 @@ before(async () => { browser = await chromium.launch(); });
 after(async () => { await browser.close(); });
 
 async function open(kind, reducedMotion) {
-  const native = (await new Liquid({root: path.join(root, 'shopify/snippets'), extname: '.liquid'}).parseAndRender(read('shopify/snippets/hs-native-artwork.liquid'), {settings: {native_artwork_kind: kind, blanket_purchase: false}}))
+  // Buddy's one drawing, as sections/hs2-product.liquid puts it beside hs-wait.js
+  const buddy = '<template data-hs-buddy>' + read('shopify/snippets/hs-buddy.liquid').replace(/\{%-? comment -?%\}[\s\S]*?\{%-? endcomment -?%\}/g, '') + '</template>';
+  const native = buddy + (await new Liquid().parseAndRender(read('shopify/snippets/hs-native-artwork.liquid'), {settings: {native_artwork_kind: kind, blanket_purchase: false}}))
     .replace(/hs-wait\.css|<link[^>]*hs-wait\.css[^>]*>|<script src="[^"]*(hs-breed-facts|hs-wait)\.js"[^>]*><\/script>/g, '');
   const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${read('shopify/assets/hs2.css')}${read('shopify/assets/hs-wait.css')}</style></head>
     <body style="margin:0;padding:16px;background:#FBF6F1"><main id="buy">${native}</main></body></html>`;

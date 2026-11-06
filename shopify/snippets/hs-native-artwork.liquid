@@ -77,9 +77,7 @@
               {%- comment -%} The painting, then the finished design with the review right under it (Krish, 28 Oct:
                 the wait "looks broken" and the tickbox sat above the picture where he barely saw it).
                 hs2.js artStage() runs it. The wait is honest (29 Oct): words only for what is known, a bar with no
-                value because Teeinblue reports no progress, and the time since it started. Buddy keeps the buyer
-                company while it paints (hs-wait.js), from his one drawing here. {%- endcomment -%}
-              <template data-hs-buddy>{% render 'hs-buddy' %}</template>
+                value because Teeinblue reports no progress, and the time since it started. {%- endcomment -%}
               <div class="hs-art" data-hs-art data-state="idle" style="{% if s.native_artwork_kind == 'mug' %}--hs-art-ratio: 3 / 2; --hs-art-r: 1.5{% elsif s.native_artwork_kind == 'print' %}--hs-art-ratio: 2 / 3; --hs-art-r: 0.6667{% else %}--hs-art-ratio: 5 / 6; --hs-art-r: 0.8333{% endif %}" hidden>
                 <div class="hs-art__canvas" data-hs-art-canvas>
                   <div class="hs-art__wash" aria-hidden="true"><i></i><i></i><i></i></div>
