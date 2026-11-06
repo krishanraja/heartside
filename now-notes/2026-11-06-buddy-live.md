@@ -1,3 +1,0 @@
-Status: Buddy guides the journey on heartside.io (theme push run 179, 6 Nov 08:43 UTC, on Krish's "looks good"): he says the line under each question and keeps the buyer company in the painting studio, in place of the paw and the drifting icons. The nine changed theme files read back from the live theme with MD5s equal to main; the live gate is all clear on desktop, iPhone, Instagram and Android; the live photo step shows Buddy beside its line with no page errors (no painting made).
-Next: Krish tries the journey on his iPhone, Back included, and says what still feels off.
-North Star check (2026-11-06): holds.
