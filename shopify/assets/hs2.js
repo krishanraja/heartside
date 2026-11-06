@@ -4060,11 +4060,20 @@
   }
   function journeyMoreState() {
     var j = journeyMoreFresh();
-    if (!j) return Promise.resolve({ mode: 'start', photo: false, dog: '', queued: [] });
+    if (!j) return Promise.resolve({ mode: 'start', photo: false, dog: '', queued: [], chosen: {} });
     var queued = j.queue.map(function (q) { return handleOf(q && q.url); }).filter(Boolean);
+    /* the colour or frame each gift in this journey was given on the home page, chosen there once (Krish, 6 Nov:
+       "There are multiple places I pick a colour for the mug, which isn't really necessary"): the drawer offers
+       that gift in that variant and asks nothing */
+    var chosen = {};
+    j.queue.forEach(function (q) {
+      if (!q || !MORE_GIFTS[q.gift]) return;
+      var v = q.variant || (/[?&]variant=(\d+)/.exec(String(q.url || '')) || [])[1];
+      if (v && /^\d+$/.test(String(v))) chosen[q.gift] = String(v);
+    });
     return restorePhoto().then(function (rec) {
-      return { mode: 'extend', photo: !!(rec && rec.file), dog: answer('dog') || '', queued: queued };
-    }, function () { return { mode: 'extend', photo: false, dog: answer('dog') || '', queued: queued }; });
+      return { mode: 'extend', photo: !!(rec && rec.file), dog: answer('dog') || '', queued: queued, chosen: chosen };
+    }, function () { return { mode: 'extend', photo: false, dog: answer('dog') || '', queued: queued, chosen: chosen }; });
   }
   function journeyMore(gift, variant, url) {
     var j = journeyMoreFresh();
