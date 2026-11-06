@@ -153,7 +153,7 @@
   function christmasLine() {
     var m = document.querySelector('[data-hs2-memo]'), x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(m && m.getAttribute('data-deadline') || '');
     if (!x || Date.now() > new Date(+x[1], +x[2] - 1, +x[3], 23, 59, 59).getTime()) return '';
-    return 'Order by ' + MONTHS[+x[2] - 1] + ' ' + (+x[3]) + ' for Christmas delivery to a US address.';
+    return 'Christmas delivery: order by ' + MONTHS[+x[2] - 1] + ' ' + (+x[3]) + '.';
   }
   function status(text) { said = text || ''; line(); }
   function setNote(text) { note = text || ''; line(); }
@@ -207,6 +207,8 @@
   function paint() {
     if (!frame) return;
     var d = dog(), who = d || 'your dog', g = here, step = $('[data-hs-jm-step]');
+    // "Mowgli's", "Pickles'" (the easel's and Buddy's rule), never "Pickles's" (6 Nov audit)
+    var P = d ? d + (/s$/i.test(d) ? "'" : "'s") : '';
     if (step && step.__html !== label()) { step.innerHTML = label(); step.__html = label(); }
     var bar = $('[data-hs-jm-progress]');
     // the journey's one forward line (hs-journey.js pctOf): the studio before the questions, then the wait after
@@ -215,18 +217,19 @@
     var paintBox = $('[data-hs-jm-paint]'), reveal = $('[data-hs-jm-reveal]');
     var tick = $('[data-hs-jm-tickrow]'), add = $('[data-hs-jm-add]'), link = $('[data-hs-jm-repaint]');
     if (phase === 'reveal') {
-      setText('[data-hs-jm-title]', (d || 'Your dog') + ' on the ' + NAME[g]);
+      // the portrait is the dog itself: "Biscuit's portrait", never "Biscuit on the portrait" (6 Nov audit)
+      setText('[data-hs-jm-title]', g === 'print' ? (P || "Your dog's") + ' portrait' : (d || 'Your dog') + ' on the ' + NAME[g]);
       // the whole print, never a crop of it: on a mug the dog can sit round the side (5 Nov judges: all three mug
       // buyers saw its back half, and a zoomed close-up cut the face off)
-      setText('[data-hs-jm-sub]', g === 'mug' ? 'This is how it prints, all the way round the mug. Turn it with the arrows, or see the whole print.' : 'This is how it prints. See it on the gift, or the whole print.');
+      setText('[data-hs-jm-sub]', g === 'mug' ? 'Turn it with the arrows, or see the whole print.' : 'See it on the gift, or the whole print.');
       paintBox.hidden = true; reveal.hidden = false;
       moveGallery(); views();
-      setText('[data-hs-jm-tick-text]', 'Yes, this is ' + who);
+      setText('[data-hs-jm-tick-text]', d ? 'Yes, this is ' + d : 'Yes, this is my dog');
       show(tick, true); show(link, !!(window.__hs2api.journeyRepaintLeft && window.__hs2api.journeyRepaintLeft()) && !adding);
       var nx = nextGift();
       if (!adding) add.querySelector('span').textContent = nx ? 'Add it, then paint the ' + NAME[nx.gift] : 'Add to cart';
       add.disabled = adding || !$('[data-hs-jm-tick]').checked;
-      setNote(nx ? 'The ' + NAME[nx.gift] + ' paints next, from the same photo. Nothing to answer again.' : christmasLine());
+      setNote(nx ? 'Next, the ' + NAME[nx.gift] + '. Nothing to answer again.' : christmasLine());
       return;
     }
     paintBox.hidden = false; reveal.hidden = true;
@@ -234,7 +237,7 @@
     show(tick, false); show(link, false);
     if (phase === 'added') {
       var after = nextGift();
-      setText('[data-hs-jm-title]', (d ? d + "'s " : 'Your ') + NAME[g] + ' is in your cart');
+      setText('[data-hs-jm-title]', (P ? P + ' ' : 'Your ') + NAME[g] + ' is in your cart');
       setText('[data-hs-jm-sub]', "It's painted and added. Nothing more to do here.");
       add.disabled = false; add.querySelector('span').textContent = after ? 'Next: the ' + NAME[after.gift] : 'Go to the cart';
       setNote('');
@@ -257,15 +260,15 @@
     }
     if (phase === 'stopped') {
       setText('[data-hs-jm-title]', 'The painting stopped');
-      setText('[data-hs-jm-sub]', 'It stopped when the page reloaded. One tap paints it again from the same photo.');
+      setText('[data-hs-jm-sub]', 'The page reloaded. One tap paints it again, same photo.');
       add.disabled = false; add.querySelector('span').textContent = 'Paint it again';
       setNote('');
       return;
     }
     if (phase === 'nophoto') {
       setText('[data-hs-jm-title]', 'One photo of ' + who);
-      setText('[data-hs-jm-sub]', (d ? d + "'s" : 'Your') + " photo didn't come with you to this page. Choose it again. It takes a second.");
-      add.disabled = false; add.querySelector('span').textContent = 'Choose ' + (d ? d + "'s" : "your dog's") + ' photo';
+      setText('[data-hs-jm-sub]', (P || 'Your') + " photo didn't come with you. Choose it again.");
+      add.disabled = false; add.querySelector('span').textContent = 'Choose ' + (P || "your dog's") + ' photo';
       setNote('');
       return;
     }
@@ -278,13 +281,13 @@
       setNote('');
     } else if (phase === 'studio') {
       setText('[data-hs-jm-title]', 'Now the ' + NAME[g]);
-      setText('[data-hs-jm-sub]', 'Painting ' + who + ' for the ' + NAME[g] + ', from the same photo, in the same style.');
+      setText('[data-hs-jm-sub]', 'Same photo, same style, now on the ' + NAME[g] + '.');
       add.disabled = true; add.querySelector('span').textContent = 'Add to cart';
       setNote('Most paintings take 1 to 3 minutes.');
     } else {
       // honest about the time (5 Nov judges: "Almost there" showed at 40 seconds and stayed for minutes)
       setText('[data-hs-jm-title]', 'Still painting ' + who);
-      setText('[data-hs-jm-sub]', 'Most take 1 to 3 minutes. It shows here, on the ' + NAME[g] + ', when it is done.');
+      setText('[data-hs-jm-sub]', "Most take 1 to 3 minutes. It shows here when it's done.");
       add.disabled = true; add.querySelector('span').textContent = 'Add to cart';
       setNote('');
     }
@@ -323,7 +326,8 @@
       if (b.getAttribute('data-hs-jm-view') === 'product') b.hidden = !galleryMoved;
     });
     var pl = root.querySelector('[data-hs-jm-view="product"] span');
-    if (pl) pl.textContent = 'On the ' + NAME[here];
+    // the portrait is the gift itself: "On the portrait" reads oddly (6 Nov audit), the snippet's "On the gift" does not
+    if (pl) pl.textContent = here === 'print' ? 'On the gift' : 'On the ' + NAME[here];
   }
 
   /* ---------------------------------------------------------------- the tick
@@ -355,7 +359,7 @@
      what hs2 says while it works. If hs2 reports the copy failed, one more press is safe: nothing
      uploads, the same design registers again, and the cart is checked before and after. */
   function addNote() { var n = document.querySelector('[data-hs2-add-note]'); return n && !n.hidden ? (n.textContent || '').replace(/\s+/g, ' ').trim() : ''; }
-  var FAILED = /didn't go through|not ready|changed while/i;
+  var FAILED = /didn't go through|not ready|design changed/i;
   function added(before, atc) {
     return new Promise(function (resolve, reject) {
       var tries = 0, again = false, asking = false, timer = setInterval(function () {
@@ -368,21 +372,21 @@
           if (FAILED.test(say)) {
             // the retry gets the whole budget again, never what the first try left (5 Nov review)
             if (!again) { again = true; tries = 0; status('Almost there.'); atc.click(); return; }
-            clearInterval(timer); reject(new Error("That didn't go through. Your design is saved. Tap the button again.")); return;
+            clearInterval(timer); reject(new Error('Not added yet. Tap Add to cart again.')); return;
           }
           if (say && say !== said) status(say);
           // past the budget, an add hs2 still reports as running is waited for, never invited a second time
-          if (++tries > 115 && !(say && tries < 175)) { clearInterval(timer); reject(new Error('This is taking longer than it should. Check your cart before you add it again.')); }
+          if (++tries > 115 && !(say && tries < 175)) { clearInterval(timer); reject(new Error('Taking too long. Check your cart first.')); }
         });
       }, 900);
     });
   }
   function add() {
     var atc = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
-    if (!atc) { status('The cart is still loading. Try again in a moment.'); return; }
+    if (!atc) { status('Still loading. Tap again in a moment.'); return; }
     adding = true; paint();
     // the add can take a while (5 Nov judges: 15 to 40 seconds with only a dot on the button): said in words
-    status('Adding it to your cart. This can take up to a minute.');
+    status('Adding it to your cart. Up to a minute.');
     var b = $('[data-hs-jm-add]');
     b.disabled = true; b.classList.add('is-busy');
     if (window.HSJourney) window.HSJourney.send();
@@ -414,7 +418,7 @@
         // opens and sends the new one, and the automatic send stands down (journeyPick)
         var api = window.__hs2api, why = phase === 'refused' && api.journeyNote ? api.journeyNote() : {};
         if (why.override && api.journeyOverride && api.journeyOverride()) { status(''); studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait'); return; }
-        if (!(api.journeyPick && api.journeyPick())) { status('The painter is still loading. Tap again in a moment.'); return; }
+        if (!(api.journeyPick && api.journeyPick())) { status('The painter is still loading. Tap again.'); return; }
         status(''); picked = Date.now(); studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait');
         return;
       }

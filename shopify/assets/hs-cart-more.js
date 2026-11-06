@@ -241,7 +241,7 @@
   }
   function card(o) {
     var g = o.cfg, pick = '';
-    if (o.fixed) pick = '<p class="hs-more__pick is-set">' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + ': <b>' + esc(variantLabel(o.gift, o.variant)) + '</b></p>';
+    if (o.fixed) pick = '<p class="hs-more__pick is-set">' + (o.gift === 'mug' ? 'Inside color: ' : '') + '<b>' + esc(variantLabel(o.gift, o.variant)) + '</b></p>';
     else if (o.variants.length > 1) {
       pick = '<label class="hs-more__pick">' + (o.gift === 'mug' ? 'Inside color' : 'Frame') + '<select data-hs-more-variant>' + o.variants.map(function (v) {
         var label = variantLabel(o.gift, v) + (o.gift === 'print' ? ', ' + money(v.price) : '');

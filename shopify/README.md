@@ -19,6 +19,11 @@ Built in parallel from `docs/review/asks-2026-11-05/` (PRs #122 to #129). Record
 
 - **Where the dog rules the house** (`assets/hs-journey.js`). The home page asks it after the feel: `HOME` is photo, look, tone, spot, gifts. `handOver()` sends `hs_brief_input.spot` to the painter, and recipes v21 stage that place for every tone (`tools/print-art/teeinblue/PROMPT-SPEC-2026-11-05-v20.md`). The gift page no longer asks it; a journey begun before the change still does, for the note. Back to the gifts with the same photo, look, feel and spot keeps the journey, so nothing paints twice.
 - **Roast winks** (recipes v21, `PROMPT-SPEC-2026-11-05-v21.md`). Roast has its own face rule (`brief.likeness.faces`); the other tones and the blanket keep the calm face.
+- **Cart first** (Krish, 6 November; `docs/RUNBOOK-cart.md`):
+  - A failed checkout picture no longer blocks the add (`hs2.js` `prepareCheckoutCart`, `designedAdd`). The saved design goes in, and checkout shows the gift's own photo instead.
+  - An add with no Teeinblue design reference is still refused.
+  - Shopify's app proxy turns every 5xx from the registration workflow into its own 500 page, so `hs-checkout-image.js` asks again on a 500, inside its 90-second budget.
+- **Text never sprawls** (Krish, 6 November): the line under a title takes two lines at most, and the gift page's dock line one (`.hs-jm__line` is 18 px). The reveal's line is short so the picture gets the room, and the tick is centred on phones.
 - **Buddy guides the journey** (Krish, 6 November: Buddy "instead of these stupid paw emojis", then "buddy in a classy way and dont just shoe horn him in"):
   - He says the line under each question, on the home steps and the gift page's questions (`hs-journey.js` `host()`): his head in a small cream circle beside the line that was already there, so no screen gains a box. On the smallest phones that line is hidden, and so is he.
   - In the studio he is the speaker (`hs-wait.js`, "Buddy, at the studio"): he tells the buyer how their dog is getting on, by name, from what they told us, and never names a food, toy, object or place they did not mention. The drifting icons and the paw are gone; a tap on him brings his next line.

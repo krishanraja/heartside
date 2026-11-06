@@ -28,6 +28,8 @@
   var COMPOSE_VERSION = 'journey-v2';
   var TONES = ['sentimental', 'warm', 'hilarious', 'over_the_top'];
   var TONE_LABEL = { sentimental: 'Sentimental', warm: 'Warm', hilarious: 'Hilarious', over_the_top: 'Roast' };
+  // the note's line while it is written, one natural phrase per tone (Krish, 6 Nov: "writing it roast" makes no sense)
+  var WRITING = { sentimental: 'Writing a tender note', warm: 'Writing a warm note', hilarious: 'Writing a funny note', over_the_top: 'Writing the roast' };
   // Krish, 4 Nov: "Over the top should be renamed roast". The id stays over_the_top, which the writer, the
   // painter and every saved cart already use; only the buyer's word changes.
   /* one line-icon family (24 px grid, 1.75 stroke, round ends), drawn in currentColor (Krish, 29 Oct:
@@ -423,7 +425,7 @@
   /* five parts across both pages, not "Step 1 of 12" (audit, 30 Oct: the count says how long it is before
      it starts): the photo, the look, the gifts, then, while it paints, the dog and the note. On the gift
      page the header carries a small painting badge (hs-journey-choose.js keeps it current). */
-  var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', spot: 'The feel', gifts: 'The gifts', words: 'The note' };
+  var PART_LABEL = { photo: 'Your photo', look: 'The look', tone: 'The feel', spot: 'Their spot', gifts: 'The gifts', words: 'The note' };
   function partOf(step) { return { photo: 1, look: 2, tone: 3, spot: 3, gifts: 4, words: 6 }[step] || 5; }
   /* one line that only ever moves forward, across both pages (5 Nov judges: it ran 31% at the gifts, 60% in the
      studio, 38% at the first question, 100% at the note and 60% again while it painted). The home page's steps
@@ -517,7 +519,7 @@
   function viewWords() {
     var n = names();
     // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
-    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'This note comes with the gift. A tone here changes its words, never the painting.',
+    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'It comes with the gift. The tone changes its words only.',
       '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
         return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
       }).join('') + '</div>', primary('See ' + esc(n.dog) + ' painted', 'done', true));
@@ -528,13 +530,13 @@
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
         '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
-    }).join('') + '</div>' + yours('We paint your dog as they are in your photo, in the style you pick.'), primary('Next: how it feels', 'tone', true));
+    }).join('') + '</div>' + yours('Painted from this photo.'), primary('Next: how it feels', 'tone', true));
   }
   /* the tone, before the painting: it changes the scene, the body and the light, never the face (recipes v19).
      The same four tones write the note later, and the note screen can still change the words. */
   var TONE_INFO = { sentimental: 'Quiet and tender.', warm: 'Happy, with a small wink.', hilarious: 'Funny at a glance.', over_the_top: 'A loving roast.' };
   function viewTone() {
-    return screen('tone', 'How should it feel?', 'The tone changes the scene and the light. Your dog stays exactly your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
+    return screen('tone', 'How should it feel?', 'The tone sets the scene and the light. Your dog stays your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
       var src = cfg.toneExamples && cfg.toneExamples[t], on = S.tone === t;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
         '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
@@ -556,6 +558,8 @@
     if (!document.querySelector('[data-hs-bundle-live]')) return '';
     if (n >= 3) return '<b>You save 20% on all 3.</b>';
     if (n === 2) return '<b>You save 15% on these 2.</b> All 3: 20% off.';
+    // before a first gift is chosen there is no "second" (6 Nov audit)
+    if (n < 1) return '<b>Two gifts: 15% off.</b> All 3: 20% off.';
     return '<b>Add a second gift: 15% off.</b> All 3: 20% off.';
   }
   function giftOptions(g) {
@@ -567,7 +571,8 @@
       if (g === 'mug') return '<button type="button" class="hsj-dot' + (on ? ' is-on' : '') + '" style="--dot:' + (HEX[t] || '#C9BFB6') + '" aria-pressed="' + on + '" aria-label="' + esc(t) + '" title="' + esc(t) + '" data-hsj-variant="' + g + ':' + esc(v.id) + '"></button>';
       return '<button type="button" class="hsj-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-variant="' + g + ':' + esc(v.id) + '">' + (on ? ICON.check : '') + '<span>' + esc(t) + ', ' + money(v.price) + '</span></button>';
     }).join('');
-    return '<div class="hsj-gift__opts"><p class="hsj-gift__opt-name">' + (g === 'mug' ? 'Inside color' : 'Frame') + ': <b>' + esc(cur ? variantLabel(g, cur) : '') + '</b></p><div class="hsj-gift__opt-row' + (g === 'mug' ? ' is-dots' : '') + '">' + row + '</div></div>';
+    // the portrait's label already says it ("Black frame", "Unframed"): "Frame: Black frame" said it twice (6 Nov audit)
+    return '<div class="hsj-gift__opts"><p class="hsj-gift__opt-name">' + (g === 'mug' ? 'Inside color: ' : '') + '<b>' + esc(cur ? variantLabel(g, cur) : '') + '</b></p><div class="hsj-gift__opt-row' + (g === 'mug' ? ' is-dots' : '') + '">' + row + '</div></div>';
   }
   function giftCard(g) {
     var x = giftCfg(g), on = !!(S.gifts[g] && S.gifts[g].on), info = GIFT_INFO[g], img = cfg.scenes && cfg.scenes[g];
@@ -618,7 +623,7 @@
     box.innerHTML = (busy ? '<div class="hsj-bars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>' :
       '<div class="hsj-letter' + (fresh ? ' is-fresh' : '') + '">' + ['home', 'spot', 'together', 'meaning'].map(function (k) { return '<p>' + esc(l[k]) + '</p>'; }).join('') +
       '<p class="hsj-sign">Love, ' + esc(n.dog) + '</p></div>') +
-      '<div class="hsj-note__foot"><span class="hsj-note__ask' + (busy ? ' is-writing' : '') + '" data-hsj-note-ask>' + (busy ? 'Writing it ' + TONE_LABEL[S.tone].toLowerCase() : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
+      '<div class="hsj-note__foot"><span class="hsj-note__ask' + (busy ? ' is-writing' : '') + '" data-hsj-note-ask>' + (busy ? WRITING[S.tone] || 'Writing the note' : rewriteNote.said || 'Not quite ' + esc(n.dog) + '?') + '</span>' +
       '<button type="button" class="hsj-text-btn" data-hsj-rewrite' + (busy ? ' disabled' : '') + '>' + ICON.redo + '<span>Write it again</span></button></div>';
     fitNote();
   }

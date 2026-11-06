@@ -117,7 +117,7 @@
         var set = function (sel, t) { var el = root.querySelector(sel); if (el && t) el.textContent = t; };
         if (who) set('[data-hs-jm-say]', 'The paints are out. ' + who + (/s$/i.test(who) ? "'" : "'s") + ' photo goes on the easel first.');
         if (at === 0) set('[data-hs-jm-title]', 'Painting ' + (who || 'your dog'));
-        else if (g) { set('[data-hs-jm-title]', 'Now the ' + g); set('[data-hs-jm-sub]', 'Painting ' + (who || 'your dog') + ' for the ' + g + ', from the same photo, in the same style.'); }
+        else if (g) { set('[data-hs-jm-title]', 'Now the ' + g); set('[data-hs-jm-sub]', 'Same photo, same style, now on the ' + g + '.'); }
         // the screen reader hears the studio, never the hidden product page and its photo notes under it
         var buy = root.parentNode; if (buy && buy.id === 'buy') for (var c = buy.firstElementChild; c; c = c.nextElementSibling) if (c !== root) c.setAttribute('aria-hidden', 'true');
         /* the buyer's own photo on the easel from the first paint, read from this device as hs2.js reads it

@@ -167,7 +167,7 @@ for(const minified of [false,true]) {
     assert.deepEqual(t.tracked.map(e=>e[0]),['checkout_image_skipped']);
     const bare=line();delete bare.properties._customization_id;
     const u=transport({prepare:async()=>{throw Error('temporary');}}),y=new u.window.XMLHttpRequest();y.open('POST','/cart/add.js');y.send(JSON.stringify(bare));await tick();await tick();
-    assert.deepEqual(y.events,['error','loadend']);assert.equal(u.calls.length,0,'a line with no saved design never goes in');assert.match(u.status.textContent,/Try Add to cart again/);
+    assert.deepEqual(y.events,['error','loadend']);assert.equal(u.calls.length,0,'a line with no saved design never goes in');assert.match(u.status.textContent,/Tap Add to cart again/);
   });
   // 28 Oct: about 30 seconds behind a bare spinner, with the words at the top of the form, out of sight
   test(mode+': the add says what it is doing in one line right after Add to cart, then clears when it lands',async()=>{
@@ -175,7 +175,7 @@ for(const minified of [false,true]) {
     t.c.checkoutImageStatus.dog="Pip's";
     const p=t.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(line())});await tick();
     const note=t.nodes.note;assert.ok(note,'a line after the button');assert.equal(note.attrs.role,'status');
-    assert.equal(note.textContent,"Getting Pip's picture ready for checkout.");assert.equal(note.hidden,false);
+    assert.equal(note.textContent,"Getting Pip's picture ready.");assert.equal(note.hidden,false);
     assert.equal(t.status.hidden,true,'nothing off screen above the form');
     pendingWords(1);assert.equal(note.textContent,'Almost there.');
     resolve(JSON.stringify(line()));await p;await tick();await tick();
@@ -190,7 +190,7 @@ for(const minified of [false,true]) {
     const bare=line();delete bare.properties._customization_id;
     const g=transport({button:true,prepare:async()=>{throw Error('temporary');}});g.c.checkoutImageStatus.dog="Pip's";
     await assert.rejects(g.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(bare)}));
-    assert.equal(g.nodes.note.textContent,"That didn't go through. Pip's design is saved, so you do not need to upload a photo again. Try Add to cart again.");
+    assert.equal(g.nodes.note.textContent,"That didn't go through. Tap Add to cart again.");
   });
   test(mode+': late preparation cannot send a changed selection or an aborted XHR',async()=>{
     for(const change of ['changeArt','changeVariant','changeNote','uncheck']){
