@@ -76,7 +76,11 @@ test('storefront guard: hourly at a jittered minute, read-only contents, one iss
   assert.match(yml, /if: github.event_name == 'workflow_dispatch' && inputs.acceptance/);
   assert.match(yml, /acceptance:[\s\S]*permissions:\n\s+contents: read/);
   assert.match(yml, /Require all three gates/);
-  assert.doesNotMatch(yml, /secrets\./, 'it needs no secret');
+  // one secret only, on Krish's choice (6 Nov): the id of a test buyer's finished design that the cart path asks
+  // about, given to that one step and nothing else
+  assert.deepEqual([...yml.matchAll(/secrets\.([A-Za-z_]+)/g)].map(m => m[1]), ['HS_CANARY_DESIGN_ID'], 'no secret but the cart path\'s test design');
+  assert.match(step(yml, 'Read the product addresses and the cart path').text, /HS_CANARY_DESIGN_ID: \$\{\{ secrets\.HS_CANARY_DESIGN_ID \}\}/);
+  assert.match(yml, /node tools\/preview\/cart-path-check\.mjs/);
   const tell = step(yml, 'Tell Krish').text;
   assert.match(tell, /if: steps\.check\.outputs\.code == '1'/, 'an issue only when something is broken');
   assert.ok(tell.indexOf('gh issue list') > -1 && tell.indexOf('gh issue list') < tell.indexOf('gh issue create'), 'looks for the open issue first');
