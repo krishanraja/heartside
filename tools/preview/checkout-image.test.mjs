@@ -75,7 +75,8 @@ for(const minified of [false,true]) {
 
   test(mode+': a slow first registration (the app proxy gives up, or the request outlives the server) is asked again, not failed',async()=>{
     // 5 Nov, ten buyers on the live store: the portrait's and the blanket's first add failed and a second tap went through
-    for(const first of [async()=>({status:504,json:async()=>{throw Error('HTML');}}),async()=>({status:502,json:async()=>{throw Error('HTML');}}),()=>new Promise(()=>{})]) {
+    // 6 Nov: the server's 503 "preview not ready yet" arrives as Shopify's own error page, with a 500
+    for(const first of [async()=>({status:504,json:async()=>{throw Error('HTML');}}),async()=>({status:502,json:async()=>{throw Error('HTML');}}),async()=>({status:500,json:async()=>{throw Error('HTML');}}),()=>new Promise(()=>{})]) {
       let count=0;
       const out=JSON.parse(await getHelper().prepare(JSON.stringify(line()),options(async(...a)=>++count===1?first(...a):response(ready()))));
       assert.equal(count,2);assert.equal(out.properties._hs_checkout_image,ready().imageUrl);
@@ -140,7 +141,7 @@ for(const minified of [false,true]) {
     }
     const window={fetch:async(...args)=>{calls.push({args});return {ok:true,clone:()=>({json:async()=>({id:123})})};},XMLHttpRequest:XHR,HSCheckoutImage:{prepare}};
     const c={restoredArtworkChosen:()=>false,window,Event,setTimeout:later,clearTimeout,track:(name,data)=>tracked.push([name,data]),document:{querySelector:s=>s.includes('checkout-image-enabled')?(enabled?buy:null):s.includes('checkout-image-status')?status:s.includes('variant-id')?{value:variant}:s.includes('teeAtcButton')?atc:s==='[data-hs2-add-note]'?(nodes.note||null):null,querySelectorAll:()=>[],createElement:p,getElementById:()=>null},nativeArtworkPurchase:()=>true,blanketReviewKey:()=>art,answer:()=>note,cityArtSaved:()=>true,blanketReviewAccepted:()=>accepted,nativePurchaseReady:()=>true,blanketUploadPending:()=>false};
-    const code=['hsProps','withHsProps','checkoutImageConfig','checkoutImageStatus','prepareCheckoutCart','onCartAdd'].map(section).join('\n');
+    const code=['hsProps','withHsProps','checkoutImageConfig','checkoutImageStatus','designedAdd','prepareCheckoutCart','onCartAdd'].map(section).join('\n');
     vm.runInNewContext(minified?transformSync(code,{minify:true}).code:code,c);c.onCartAdd(()=>{});
     return {window,calls,status,nodes,tracked,c,changeArt:()=>{art='changed';},changeVariant:()=>{variant='456';},changeNote:()=>{note='New words';},uncheck:()=>{accepted=false;}};
   }
@@ -157,9 +158,16 @@ for(const minified of [false,true]) {
     const x=new t.window.XMLHttpRequest();x.open('POST','/cart/add.js');x.send(JSON.stringify(line()));await tick();assert.equal(t.calls.length,1);
     resolve(JSON.stringify(line()));await tick();assert.equal(t.calls.length,2);
   });
-  test(mode+': failed registration releases XHR with error and explicit retry copy, without any cart request',async()=>{
-    const t=transport({prepare:async()=>{throw Error('temporary');}}),x=new t.window.XMLHttpRequest();x.open('POST','/cart/add.js');x.send(JSON.stringify(line()));await tick();
-    assert.deepEqual(x.events,['error','loadend']);assert.equal(t.calls.length,0);assert.match(t.status.textContent,/Try Add to cart again/);assert.match(t.status.textContent,/do not need to upload/);
+  // 6 Nov: the registration service failed every new design overnight, and a failed picture blocked the add, so no
+  // painting could reach the cart. The saved design now goes in without its checkout picture; nothing uploads again.
+  test(mode+': a failed registration still adds the saved design, without its checkout picture; an add with no saved design is refused',async()=>{
+    const t=transport({prepare:async()=>{throw Error('temporary');}}),x=new t.window.XMLHttpRequest();x.open('POST','/cart/add.js');x.send(JSON.stringify(line()));await tick();await tick();
+    assert.deepEqual(x.events,[],'no error: the add goes on');assert.equal(t.calls.length,1,'one cart request');
+    const sent=JSON.parse(t.calls[0].body);assert.equal(sent.properties._customization_id,uuid);assert.equal(sent.properties._hs_checkout_image,undefined,'no checkout picture');
+    assert.deepEqual(t.tracked.map(e=>e[0]),['checkout_image_skipped']);
+    const bare=line();delete bare.properties._customization_id;
+    const u=transport({prepare:async()=>{throw Error('temporary');}}),y=new u.window.XMLHttpRequest();y.open('POST','/cart/add.js');y.send(JSON.stringify(bare));await tick();await tick();
+    assert.deepEqual(y.events,['error','loadend']);assert.equal(u.calls.length,0,'a line with no saved design never goes in');assert.match(u.status.textContent,/Try Add to cart again/);
   });
   // 28 Oct: about 30 seconds behind a bare spinner, with the words at the top of the form, out of sight
   test(mode+': the add says what it is doing in one line right after Add to cart, then clears when it lands',async()=>{
@@ -174,10 +182,15 @@ for(const minified of [false,true]) {
     assert.equal(note.hidden,true,'cleared once the add lands');
     assert.equal(t.tracked.length,1);assert.equal(t.tracked[0][0],'add_timing');
     assert.deepEqual(Object.keys(t.tracked[0][1]),['teeinblue_ms','prepare_ms','add_ms','retries']);assert.equal(t.tracked[0][1].retries,1);
-    // a failure says so in plain words, beside the button, and never asks for another painting
+    // a failed picture never stops the sale: the saved design goes in, and the line beside the button clears when it lands
     const f=transport({button:true,prepare:async()=>{throw Error('temporary');}});f.c.checkoutImageStatus.dog="Pip's";
-    await assert.rejects(f.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(line())}));
-    assert.equal(f.nodes.note.textContent,"That didn't go through. Pip's design is saved, so you do not need to upload a photo again. Try Add to cart again.");
+    const r=await f.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(line())});assert.equal(r.ok,true);await tick();await tick();
+    assert.equal(f.nodes.note.hidden,true,'cleared once the add lands');
+    // an add with no saved design is refused in one short line, and never asks for another painting
+    const bare=line();delete bare.properties._customization_id;
+    const g=transport({button:true,prepare:async()=>{throw Error('temporary');}});g.c.checkoutImageStatus.dog="Pip's";
+    await assert.rejects(g.window.fetch('/cart/add.js',{method:'POST',body:JSON.stringify(bare)}));
+    assert.equal(g.nodes.note.textContent,"That didn't go through. Pip's design is saved, so you do not need to upload a photo again. Try Add to cart again.");
   });
   test(mode+': late preparation cannot send a changed selection or an aborted XHR',async()=>{
     for(const change of ['changeArt','changeVariant','changeNote','uncheck']){
