@@ -391,17 +391,19 @@
     if (m.shown == null) return true;
     return !!m.took && cart.units.length > m.shown;
   }
+  /* The window runs from the moment the cart is drawn, not from the page's start (Krish, 6 Nov: "We've lost the
+     upsell in the cart"): on the live store a phone's cart is drawn several seconds in, behind Teeinblue's scripts,
+     so a window counted from the page's start had closed before the drawer could open. Only a tap or a key after
+     the cart is drawn holds it back; a scroll while the page loads never does. */
   var readyAt = 0;
   function scheduleAuto() {
-    if (autoTimer || isOpen) return;
-    var since = window.performance && performance.now ? performance.now() : 0;
-    if (since > AUTO_WINDOW) return;
+    if (autoTimer || isOpen || !readyAt) return;
+    if (Date.now() - readyAt > AUTO_WINDOW) return;
     autoTimer = setTimeout(function () {
-      var now = window.performance && performance.now ? performance.now() : 0;
-      if (now <= AUTO_WINDOW + AUTO_DELAY && mayAuto()) open(true);
+      if (Date.now() - readyAt <= AUTO_WINDOW + AUTO_DELAY && mayAuto()) open(true);
     }, AUTO_DELAY);
   }
-  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (t) { document.addEventListener(t, function () { if (!isOpen) interacted = true; }, { capture: true, passive: true }); });
+  ['pointerdown', 'keydown'].forEach(function (t) { document.addEventListener(t, function () { if (!isOpen && readyAt) interacted = true; }, { capture: true, passive: true }); });
 
   function journeyMode() {
     var get = api().journeyMoreState;

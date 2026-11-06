@@ -238,6 +238,22 @@ test('a gift already chosen in this journey keeps the colour picked on the home 
   } finally { await ctx.close(); }
 });
 
+// 6 Nov, Krish on the live store: "We've lost the upsell in the cart". A phone's cart is drawn seconds in, behind
+// Teeinblue's scripts; the window used to count from the page's start and had closed by then
+test('a cart drawn 6 seconds late still gets its drawer, by itself, once the cart is there', async () => {
+  const {tab, ctx, errors} = await open(CARTS.one());
+  try {
+    await tab.route(/\/assets\/hs2\.js/, async r => { await new Promise(res => setTimeout(res, 6000)); await r.continue(); });
+    const t0 = Date.now();
+    await goCart(tab);
+    // a scroll while the page loads never holds it back
+    await tab.mouse.wheel(0, 200).catch(() => {});
+    await shown(tab, 15000);
+    assert.ok(Date.now() - t0 > 5500, 'it opened after the late cart, as it should');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
+
 test('back with the blanket: it opens once more for the third gift, at $46.60 on all three with the portrait unframed', async () => {
   const {tab, ctx, errors} = await open(CARTS.two(), {queue: ['mug', 'blanket'], memory: {shown: 1, took: true}});
   try {

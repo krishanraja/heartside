@@ -30,6 +30,7 @@
     "MissingTemplate snippets/cart-products.liquid 'snippets/quantity-selector.liquid' does not exist",
     "MissingTemplate snippets/cart-products.liquid 'snippets/unit-price.liquid' does not exist",
     "MissingTemplate snippets/cart-products.liquid 'snippets/cart-disclosure-tooltip.liquid' does not exist",
-    "MissingTemplate snippets/cart-products.liquid 'snippets/spacing-style.liquid' does not exist"
+    "MissingTemplate snippets/cart-products.liquid 'snippets/spacing-style.liquid' does not exist",
+    "OrphanedSnippet snippets/hs-cart-card.liquid This snippet is not referenced by any other files"
   ]
 }

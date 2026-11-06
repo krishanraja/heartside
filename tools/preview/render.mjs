@@ -69,6 +69,8 @@ const kw = (args) => Object.fromEntries(args.filter(Array.isArray));
 const attr = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const money = (cents) => `$${(Number(cents) / 100).toFixed(2)}`;
 const filters = {
+  // Shopify's: URL-safe Base64 of the string's UTF-8 bytes, padding kept
+  base64_url_safe_encode: (v) => Buffer.from(String(v ?? ''), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
   asset_url: (name) => `assets/${name}`,
   image_url: (img) => (typeof img === 'string' ? img : img && img.src),
   image_tag: (src, ...args) => {
