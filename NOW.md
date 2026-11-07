@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-06
-head: 36ea94c
+as_of: 2026-11-07
+head: b4897a6
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-06)
+## Where it is right now (as of 2026-11-07)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -68,15 +68,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - 2026-11-04 Krish called the "Checking the photo" screen horrible (it cropped the photo), found the tones "way too similar to each other" and the copy cut off, and could not untick the blanket. The causes: a visible check, a fade mask over the note, one set of backup lines shared by every tone, a live note writer that predated the tone prompt, and a gift page that locked its own gift. Over the top was renamed Roast and redefined.
 - 2026-11-03 the live site sent only one 32 px icon. /favicon.ico and the touch icon were 404, the theme colour was empty, and the share image still advertises the ornament and the worded mug.
 - 2026-11-02 Krish found the second "Painting" screen, the repeated chooser and the cut-off cart offer tacky in a real purchase, and his order sat at Teeinblue for six hours waiting for a manual send. Shopify forbids store pages inside frames, so background painting was replaced by one continuous automatic add.
-- 2026-10-31 Krish asked to build the card add-on after choosing card design A; the card product stays a draft because the All gifts collection would list it on the live store.
-- 2026-10-31 Teeinblue's Printful drafts carry the Shopify order name as their external id, which links each draft to its paid order and its note. Orders confirm only after startAfter (31 Oct 2026 15:20 UTC), so the old test drafts are never charged.
-- 2026-10-31 Teeinblue's print files are the card's source: the portrait's is 3600 x 5400, the mug's is a 2700 x 1050 wrap. The mug wrap covers the whole strip with the painting (it is not fitted to the strip's height), so the real-mug gallery pictures built on 31 Oct show the painting smaller than the mug will print it; they need re-rendering with the painting covering the wrap. The wide layout on the card front needs a second design pass.
-- 2026-10-31 The checkout warning from 29 October sits beside two active cart transforms, Teeinblue's add-on price and the Function Studio merge that shows the buyer's design at checkout; a full personalised checkout, stopped before payment, is the next check. The Printify app no longer appears in Shopify's installed apps; this run did not remove it.
-- 2026-10-31 Ruling (Krish, 2026-10-31): the automation confirms each Printful order once the note is on it (standing approval, reversible). Ruling (Krish, 2026-10-31): the digital card is free with every gift, and an optional $12 printed card is offered, saying it ships in its own envelope. Ruling (Krish, 2026-10-31): the printed card is Christmas-themed (the gift's painting in a festive border, the note inside) and disappears at 11:59 pm ET on Thursday 3 December 2026, enforced by the theme, the product and the workflow. Krish's live test is a mug and a blanket with the note, ordered as a customer once launch ready.
-- 2026-10-31 Ruling (Krish, 2026-10-31): the dog's note prints on the packing slip in every box once a test proves it, the paid add-on is a designed digital card, and a set is presented as a planned arrival of separate boxes. He approved a human Printful ticket, switching off backup facilities, and one real three-gift test order (docs/review/COWORK-NOTE-SLIP-TEST.md).
-- 2026-10-31 Krish, 31 October: "the mug mocks look stretched, all the dogs faces look widely stretched" and "they dont look like what the product will actually be". Ruling (Krish, 2026-10-31): the gifts are artwork only, and the note in the dog's voice becomes an optional gift-card upsell, released together with the card. He needs no hand packing and no stream of parcels, so docs/review/COWORK-GIFT-NOTE-DISCOVERY.md (read only) asks the live platforms how a note and a bundle reach one address in one parcel. The homepage pictures still show the AI mug.
-- 2026-10-31 Krish, 31 October: "it looks so intense to just have all the pictures visible at once". The showcase drew about 20 tiles at once; it now draws two pictures in motion plus the photo-to-gift slider. The mug's four colour thumbnails had been hidden by an older colour-pair rule, and the first thumbnail stayed marked when a colour opened on its own picture. docs/review/COWORK-PORTRAIT-LINK.md asks CoWork to unlink the old draft product from the portrait campaign and retire The Morning Mug campaign.
-- 2026-10-30 Rollback is to delete the 22 added media items with productDeleteMedia (alts listed above); the previous order then stands. On the live 28 Oct theme a variant opens on its own picture while the thumbnail row still highlights the first thumbnail. docs/review/COWORK-AUDIT-FOLLOWUPS.md hands CoWork the steps that need admin or Teeinblue: publish the draft theme, the note placeholder, the portrait handle conflict, the Teeinblue script on the homepage, and a read-only look at The Morning Mug.
 
 ## What is next and what is waiting on Krish
 
