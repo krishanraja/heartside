@@ -1,6 +1,6 @@
 # Heartside Canva brand kit
 
-Current handoff: 27 October 2026. Use the existing Canva Brand Kit named **Heartside**. This guide is a source checklist for building or correcting that kit; it does not claim the kit has already been updated.
+Current handoff: 27 October 2026. Drive paths updated 9 November 2026: every folder below sits directly under `Heartside/` (see `docs/SYNC.md`). Use the existing Canva Brand Kit named **Heartside**. This guide is a source checklist for building or correcting that kit; it does not claim the kit has already been updated.
 
 ## Import these identity assets
 
@@ -11,7 +11,7 @@ Current handoff: 27 October 2026. Use the existing Canva Brand Kit named **Heart
 
 ## Current products and image sources
 
-All three folders below sit inside `02_Imagery/Current-Shopify-Product-Mockups`. They contain current Shopify gallery examples, not photographs or testimonials from buyers. Choose and visually review the exact image for each design before publishing a post.
+On 27 October these three folders sat inside `02_Imagery/Current-Shopify-Product-Mockups`. Since 30 October the approved product artwork is `02_Imagery/Product-Examples` (read its `00-READ-ME.txt`); the folder names below are historical. They contain current Shopify gallery examples, not photographs or testimonials from buyers. Choose and visually review the exact image for each design before publishing a post.
 
 | Product | Folder | Current offer |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Prices describe the live catalogue on 27 October. Check the storefront before pu
 - Use the dog's distinctive likeness and personality only when they come from an authorized real photo and answers. Never imply a generic gallery pug is a real customer or their exact preview. Do not manufacture reviews, customer photos, order outcomes, scarcity or delivery promises.
 - Use plain US English and warm, direct copy. Buddy is the guide, not the recipient dog. Avoid the old office/annual-review parody, old ornament and pillow offers, Biscuit host name, and old prices.
 - Keep the visual system warm, clear and product-led. Do not let decorative text overwhelm the dog's likeness or the product. Review every crop and printed message at phone size before publishing.
-- The existing `03_Social-and-Ads` folder is an archive/work area, not a current approved social template library. Its older designs need review before reuse. The current Drive kit does **not** include an approved Buddy profile image or finished social templates.
+- `03a_Social-Production` (the old `03_Social-and-Ads`) is where social creatives are iterated, not a current approved social template library; locked posts live in `03b_Social-Schedule`. Its older designs need review before reuse. The current Drive kit does **not** include an approved Buddy profile image or finished social templates.
 
 ## Canva setup order
 
@@ -38,4 +38,4 @@ Prices describe the live catalogue on 27 October. Check the storefront before pu
 3. Use this guide as the source brief for Canva social ideas. Confirm product facts against the live store before scheduling or publishing.
 4. Have a person review any generated post for correct product, dog identity, crop, note/signature, price, claims and mobile readability.
 
-Historical material is preserved in `05_Historical-and-Source`. Its presence is not approval for current Heartside marketing.
+Historical material is preserved in `Heartside/09_OLD - Historical-and-Source`. Its presence is not approval for current Heartside marketing.
