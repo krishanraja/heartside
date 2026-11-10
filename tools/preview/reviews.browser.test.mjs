@@ -15,6 +15,9 @@ const blocks = sec.block_order.map(k => ({ settings: sec.blocks[k].settings, sho
 const engine = new Liquid();
 engine.registerFilter('asset_url', v => 'asset:' + v);
 engine.registerFilter('stylesheet_tag', () => '');
+// a photo picked in the theme editor (shopify://shop_images/...) stands in as a small grey square
+engine.registerFilter('image_url', () => 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2296%22 height=%2296%22%3E%3Crect width=%2296%22 height=%2296%22 fill=%22%23ccc%22/%3E%3C/svg%3E');
+engine.registerFilter('image_tag', (src, ...a) => { const o = {}; for (const kv of a) if (Array.isArray(kv)) o[kv[0]] = kv[1]; return `<img src="${src}" class="${o.class || ''}" width="${o.width}" height="${o.height}" alt="">`; });
 const html = (await engine.parseAndRender(read('sections/hs-reviews.liquid').split('{% schema %}')[0], { section: { settings: sec.settings, blocks } }))
   .replace(/<script src="asset:hs-reviews.js"[^>]*><\/script>/, '');
 const page = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>${read('assets/hs-brand.css')}</style><style>${read('assets/hs-reviews.css')}</style><style>body{margin:0;background:var(--hs-cream)}</style></head><body>${html}<script>${read('assets/hs-reviews.js')}</script></body></html>`;
@@ -43,7 +46,10 @@ test('every card shows the quote, the person, the place and initials in a small 
   assert.equal(await p.locator('[data-hsr-card]').count(), 9);
   const first = p.locator('[data-hsr-card]').first();
   assert.match(await first.textContent(), /I actually got emotional opening it/);
-  assert.equal((await first.locator('.hsr__face--initials').textContent()).trim(), 'JM');
+  // Krish added each person's photo in the theme editor (10 Nov); a card without one shows initials
+  const withPhoto = blocks.filter(b => b.settings.photo).length;
+  assert.equal(await p.locator('img.hsr__face').count(), withPhoto);
+  assert.equal(await p.locator('.hsr__face--initials').count(), blocks.length - withPhoto);
   const face = await first.locator('.hsr__face').boundingBox();
   assert.ok(face.width <= 34, 'the face is small');
   if (SHOTS) { fs.mkdirSync(SHOTS, { recursive: true }); await p.screenshot({ path: SHOTS + '/desktop.png' }); }
