@@ -1,9 +1,9 @@
 {%- comment -%}
   Heartside's own lines in the page head (Krish, 3 Nov 2026: "the favicons don't even show").
   Helio wrote one 32 px icon and an empty theme colour, which phones, home screens and search
-  results pass over, so a tab or a result showed nothing. This writes the approved brand-v4 heart
-  (design/brand-v4/, byte copies in assets/hs-favicon-*.png) at every size they ask for, the
-  touch icon on cream, a manifest and the page colour. The theme push's "head_heartside" option
+  results pass over, so a tab or a result showed nothing. This writes the approved icon (since
+  10 Nov 2026 the brand-v5 dachshund with the heart letter, design/brand-v5/, byte copies in
+  assets/hs-favicon-*.png) at every size they ask for, the touch icon, a manifest and the page colour. The theme push's "head_heartside" option
   renders it before </head> and switches Helio's icon and colour lines off
   (.github/scripts/head-heartside.mjs, which can --restore them). /favicon.ico is a store redirect
   to design/brand-v4/favicon.ico in Shopify Files.

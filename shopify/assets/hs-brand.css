@@ -226,6 +226,9 @@ header-component.header {
 .header .header__underlay { --color-submenu: var(--hs-cream); }
 .header .header-actions__action { color: var(--hs-ink); }
 .header .cart-bubble__text-count { font-family: var(--hs-sans); font-weight: 600; }
+/* the top-left icon is a square tile (Krish, 10 Nov 2026: the dachshund with the heart letter,
+   design/brand-v5/); soft corners, as an app icon, so it reads as a badge on the cream bar */
+.header .header-logo__image { border-radius: 22%; }
 /* The page is the menu: Home, Catalog and Contact go (the logo is home, Contact is in the
    footer), and so does search, on desktop and in the phone drawer. Account and the cart icon
    are untouched; the drawer keeps its three gift cards. */
