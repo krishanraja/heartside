@@ -77,3 +77,15 @@ test('under reduced motion it never moves by itself', async () => {
   assert.equal(await at(p), 0);
   await ctx.close();
 });
+
+test('no card is cut off at the top or bottom, on a phone or a desktop', async () => {
+  for (const vp of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+    const { ctx, p } = await open(vp);
+    const ok = await p.evaluate(() => {
+      const t = document.querySelector('[data-hsr-track]').getBoundingClientRect();
+      return [...document.querySelectorAll('.hsr__fig')].every(f => { const r = f.getBoundingClientRect(); return r.top >= t.top + 6 && r.bottom <= t.bottom - 10; });
+    });
+    assert.ok(ok, `cards fit inside the strip with room for their edges at ${vp.width}`);
+    await ctx.close();
+  }
+});

@@ -20,9 +20,13 @@
 .hsr__btn[aria-pressed="true"] .hsr__play { display: inline; }
 
 /* the track: native scroll with snap, so a swipe always works; the script only nudges it */
-.hsr__track { display: grid; grid-auto-flow: column; grid-auto-columns: 86%; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; overscroll-behavior-x: contain; padding: 4px 2px 8px; }
+.hsr .hsr__track { display: grid; grid-auto-flow: column; grid-auto-columns: 86%; gap: 14px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+  /* a sideways scroller clips top and bottom too, so the cards get room for their edges and shadows (Krish, 10 Nov: "slightly cut off at the top and bottom") */
+  padding: 14px 4px 22px; margin: -10px -4px -18px; }
+/* phones: one card in the middle, its neighbours peeking evenly on both sides */
+@media (max-width: 719px) { .hsr .hsr__track { grid-auto-columns: 88%; padding-inline: 6%; margin-inline: -16px; scroll-padding-inline: 6%; } .hsr__card { scroll-snap-align: center; } }
 .hsr__track::-webkit-scrollbar { display: none; }
-@media (min-width: 720px) { .hsr__track { grid-auto-columns: calc((100% - 28px) / 3); } }
+@media (min-width: 720px) { .hsr .hsr__track { grid-auto-columns: calc((100% - 28px) / 3); } }
 .hsr__card { scroll-snap-align: start; display: flex; }
 .hsr .hsr__fig { display: flex; flex-direction: column; justify-content: space-between; gap: 18px; width: 100%; padding: 22px 20px 18px; border-radius: var(--hs-radius-card); background: var(--hs-paper); box-shadow: var(--hs-shadow-bubble), 0 0 0 1px #efe6dd; }
 .hsr__quote { display: flex; flex-direction: column; gap: 10px; }
@@ -44,7 +48,7 @@
 /* phones: the homepage stays short (Krish, 3 Nov: two screens at most, the button pinned), so the
    reviews take as little height as they can while every word stays readable */
 @media (max-width: 599px) {
-  .hsr { padding: 28px 0 24px; }
+  .hsr { padding: 24px 0 16px; }
   .hsr__head { margin-bottom: 12px; }
   .hsr__title { font-size: 22px; }
   .hsr__lead { font-size: 13px; margin-top: 2px; }

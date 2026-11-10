@@ -109,3 +109,19 @@ html.hs-help-off .hs-help { display: none; }
 .hs-help__spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(251, 246, 241, 0.35); border-top-color: var(--hs-cream); }
 @media (prefers-reduced-motion: no-preference) { .hs-help__spin { animation: hs-help-spin 0.8s linear infinite; } }
 @keyframes hs-help-spin { to { transform: rotate(360deg); } }
+
+/* phones with the keyboard open (hs-help.js fit): the sheet sits above the keyboard, the header is compact,
+   and the email form owns the space while it is up */
+@media (max-width: 599px) {
+  .hs-help.is-kb .hs-help__panel { bottom: auto; border-radius: 0; }
+  .hs-help.is-kb .hs-help__grab, .hs-help.is-kb .hs-help__sub { display: none; }
+  .hs-help.is-kb .hs-help__head { padding: 8px 8px 8px 14px; }
+  .hs-help.is-kb .hs-help__face--head img { width: 32px; height: 32px; }
+  .hs-help.is-kb .hs-help__title { font-size: 17px; }
+  .hs-help__panel.has-form .hs-help__handoff { overflow-y: auto; }
+  .hs-help.is-kb .hs-help__panel.has-form .hs-help__log { display: none; }
+  .hs-help.is-kb .hs-help__panel.has-form .hs-help__handoff { flex: 1; border-top: 0; }
+  .hs-help.is-kb .hs-help__handoff-lead { font-size: 13px; margin-bottom: 8px; }
+  .hs-help.is-kb .hs-help__compose { padding-bottom: 10px; }
+}
+.hs-help__title:focus { outline: none; }
