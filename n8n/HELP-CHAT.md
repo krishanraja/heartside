@@ -62,6 +62,12 @@ Krish asked for this on 10 November 2026: "a good looking and easy to use chatbo
   - a bad email was refused.
 - No real Claude call or email has been made yet.
 
+## Live state (10 November 2026, on Krish's yes)
+
+- **The workflow is published.** A real question was answered by Claude in about 2 seconds (it acknowledged the problem, gave the policy answer and offered a person). A real test handoff reached Gmail as sent to jonny@heartside.io (Gmail message id 1a1c553ef3685860). Both runs went through n8n directly, because this sandbox's proxy adds its own n8n sign-in to webhook calls, which n8n refuses.
+- **The theme** goes out through the guarded push with `help_chat: on`.
+- **The address:** the repository secret `HS_HELP_CHAT_URL` has to be added by Krish (a session may not write secrets). Until then, paste the production webhook into the memo strip's Help chat address in the theme editor.
+
 ## Going live (each step needs Krish's yes)
 
 1. Publish the workflow in n8n.
