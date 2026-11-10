@@ -33,10 +33,27 @@
 .hsr__face--initials { display: grid; place-items: center; background: var(--hs-blush); color: var(--hs-ink); font: 600 12px/1 var(--hs-sans); letter-spacing: 0.02em; }
 .hsr__meta { display: flex; flex-direction: column; min-width: 0; }
 .hsr__name { font-size: 14px; font-weight: 600; line-height: 1.25; }
-.hsr__place { font-size: 13px; line-height: 1.3; color: var(--hs-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hsr__place { font-size: 13px; line-height: 1.3; color: var(--hs-muted); }
 .hsr__gift { margin-left: auto; flex: none; padding: 4px 10px; border-radius: var(--hs-radius-pill); background: var(--hs-cream); box-shadow: 0 0 0 1px var(--hs-line); font-size: 12px; font-weight: 500; color: var(--hs-chestnut); white-space: nowrap; }
 
 .hsr__dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
 .hsr__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hs-line); transition: background 0.2s, width 0.2s; }
 .hsr__dot.is-on { width: 18px; border-radius: 3px; background: var(--hs-ink); }
 @media (prefers-reduced-motion: no-preference) { .hsr__track { scroll-behavior: smooth; } }
+
+/* phones: the homepage stays short (Krish, 3 Nov: two screens at most, the button pinned), so the
+   reviews take as little height as they can while every word stays readable */
+@media (max-width: 599px) {
+  .hsr { padding: 28px 0 24px; }
+  .hsr__head { margin-bottom: 12px; }
+  .hsr__title { font-size: 22px; }
+  .hsr__lead { font-size: 13px; margin-top: 2px; }
+  .hsr__ctl .hsr__btn { width: 36px; height: 36px; }
+  .hsr .hsr__fig { padding: 16px 16px 14px; gap: 12px; border-radius: 18px; }
+  .hsr__quote { gap: 6px; }
+  .hsr__head-quote { font-size: 16px; }
+  .hsr__body { font-size: 14px; line-height: 1.45; }
+  .hsr__dots { margin-top: 8px; }
+}
+/* the gift steps hide everything under the journey, the reviews included (as the showcase) */
+html.hsj-routed .hsr, html.hsj-focus .hsr { display: none; }

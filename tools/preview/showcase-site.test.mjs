@@ -52,9 +52,10 @@ test('the pug gallery is gone from the theme', () => {
   }
 });
 
-test('the homepage places the showcase after the journey and the steps hide it', () => {
+test('the homepage places the showcase after the journey, then the reviews (10 Nov), and the steps hide them', () => {
   const index = JSON.parse(read('shopify/templates/index.json'));
-  assert.deepEqual(index.order, ['gift', 'showcase']);
+  assert.deepEqual(index.order, ['gift', 'showcase', 'reviews']);
+  assert.match(read('shopify/assets/hs-reviews.css'), /html\.hsj-routed \.hsr[^{]*\{ display: none; \}/);
   assert.equal(index.sections.showcase.type, 'hs-showcase');
   assert.match(read('shopify/assets/hs-showcase.css'), /html\.hsj-routed \.hss[^{]*\{ display: none; \}/);
 });
