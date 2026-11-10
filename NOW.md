@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- The four order workflows (send to Printful, note and confirm, printed card, mark fulfilled) no longer sign in to Shopify themselves. They call a new helper workflow, "Heartside: Shopify Admin call (saves nothing)", which fetches the 24-hour token, makes the call and returns only Shopify's answer, and saves none of its own runs. A deliberately failed test run of each draft (53678, 53687, 53692, 53696) was read back with no token in it, and each draft passed a pinned-data working run. On Krish's go, the helper and then the four tested versions were published at 11:40 UTC, so no saved run from then on holds the token. n8n/SHOPIFY-ADMIN-CALL.md and the four workflow docs say how the token is handled. (2026-11-10)
 - Printful shipments now mark Shopify orders fulfilled with tracking, and send the buyer Shopify's shipping email. The n8n workflow "Heartside: Printful shipped, mark Shopify fulfilled" has been live since 10 Nov 09:52 UTC. #1013 is marked fulfilled. All five order emails show the buyer's painting; Krish confirmed this on his phone. The snippets are in shopify/notifications/ and tested. shopify/apps/order-painting/ is an extension-only app that puts "Your painting" under each line on the customer-account order page, where Shopify shows the variant's example dog. Its logic is tested and it compiles, but it is not yet deployed. The three older order workflows now have successful-run saving set to "none" in their drafts. A separate session is moving their Shopify sign-in into a helper workflow that saves nothing. (2026-11-10)
 - `docs/SYNC.md` and `design/CANVA-SOURCES.md` describe Krish's 9 Nov Drive layout: `01_Identity`, `02_Imagery` and `04_Decks` directly under `Heartside/`, `03a_Social-Production` (iterating) and `03b_Social-Schedule` (ready to post), `09_OLD - Historical-and-Source`, with folder IDs. (2026-11-09)
 - the cart drawer offers both gifts not in the cart side by side, each with its own Add to cart, and a tab on the left edge brings it back after any close. The home strip leads with "Fast, free US shipping", the button reads "Design yours in minutes", the line under each dog's name is "Their true self, made the perfect gift", and the Juno carousel set shows one mug, not two. (2026-11-06)
@@ -57,6 +58,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-10 2026-11-10 the Shopify token moved out of every saved n8n run. It protects the order path every sale runs through; it does not move the number directly.
 - 2026-11-10 2026-11-10 order #1013 showed that shipments never reached Shopify, and that buyers saw an example dog in place of their painting. Fulfillment now flows back to Shopify, and every order email shows the painting. The order page gets the painting once the app is deployed.
 - 2026-11-09 Documentation only; no product or sales number moved.
 - 2026-11-06 Krish found the drawer gone for good after one tap outside, the drawer offering one gift at a time, and the Juno set showing the real mug pasted twice (6 Nov). The drawer's two cards and Check out fit one phone screen from 320x568 up. A gift still goes in the cart only once Teeinblue has painted it, so Add to cart takes the buyer to that painting, from the same photo with nothing asked. Juno was rebuilt from the same clean plate with no generation, and hero-sets.py --check now fails any set with more than one mug.
@@ -70,7 +72,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-10): Krish runs docs/review/COWORK-ORDER-PAINTING.md in CoWork to deploy the order-page app and check it on #1013.
+- Next (2026-11-10): Confirm that the first scheduled run of each of the four workflows after 11:40 UTC is free of errors (successful runs are no longer saved, so an empty error list is the signal).
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
