@@ -1,0 +1,13 @@
+api_version = "2026-10"
+
+[[extensions]]
+name = "Your painting"
+handle = "order-painting"
+type = "ui_extension"
+
+# After each line on the order status page in customer accounts, the buyer's own painting. Shopify draws the
+# line's picture from the variant, an example dog kept for the ads (Ruling, Krish, 2026-11-05), and no
+# setting changes it, so the painting goes right under it.
+[[extensions.targeting]]
+module = "./src/OrderPainting.jsx"
+target = "customer-account.order-status.cart-line-item.render-after"

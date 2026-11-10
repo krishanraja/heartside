@@ -1,0 +1,15 @@
+# Heartside order painting: an extension-only custom app for the Heartside store (no server, no scopes).
+# client_id is filled by `shopify app config link` the first time it is deployed (docs/review/COWORK-ORDER-PAINTING.md).
+client_id = ""
+name = "Heartside order painting"
+application_url = "https://heartside.io"
+embedded = false
+
+[access_scopes]
+scopes = ""
+
+[auth]
+redirect_urls = ["https://heartside.io"]
+
+[build]
+include_config_on_deploy = true
