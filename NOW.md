@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the nine reviewer photos Krish added in the theme editor are now in the repo (templates/index.json), so the guarded push no longer stops at the editor-edits guard. Until PR #144 merges and the theme is pushed, the phone keyboard fix and the review card fix from PR #143 are merged to main but not yet live. (2026-11-10)
 - on phones the help chat no longer opens the keyboard by itself, and when the buyer taps a field the sheet fits the space above the keyboard with a compact header, so the email form is always in view. The homepage review cards show their whole edges, and on phones one card sits in the middle with its neighbours peeking evenly. (2026-11-10)
 - the help chat is live on heartside.io (push with help_chat on, from the HS_HELP_CHAT_URL secret; checked on a live phone view). The homepage gains "What people say", an auto-rotating carousel of nine quotes in the people's own words with initials in place of photos, and the help chat's phone sheet now drags down to close and shows Sending, Sent and Try again. docs/SELLING.md lists the quotes and how they may be used. (2026-11-10)
 - the help chat is live in n8n: the workflow "Heartside: help chat" is published, a real Claude answer and a real handoff email to jonny@heartside.io were checked on 10 Nov, and the theme code goes out with this merge. On the storefront it stays hidden until the memo strip's Help chat address is set, either from the HS_HELP_CHAT_URL secret (Krish adds it; the push then runs with help_chat on) or by pasting the address in the theme editor. Codex is booked (5d04e37a) for three avatar options, codex/queue/help-avatar-2026-11-10.md. docs/SELLING.md is the current sell sheet for the growth repo: the offer, true angles, promises and the claims not to make, including that there are no published reviews yet. (2026-11-10)
@@ -61,6 +62,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-10 2026-11-10 the reviewer photos Krish added in the theme editor are kept in the repo, so a theme push can no longer wipe them.
 - 2026-11-10 2026-11-10 Krish found on his phone that the keyboard covered the chat and its email form, and that the review cards were cut off at the top and bottom.
 - 2026-11-10 2026-11-10 Krish supplied the reviewers' own words; buyers now see what people say right under the showcase.
 - 2026-11-10 2026-11-10 buyers can now get answers and a person from any page, and the growth repo has one verified place to sell from.
@@ -78,7 +80,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-10): Krish rechecks the chat and the reviews on his phone after the theme push.
+- Next (2026-11-10): when PR #144's CI is green, merge it, push the theme live, and check the help chat with the keyboard up and the review cards on a live phone view.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
