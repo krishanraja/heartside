@@ -5,7 +5,9 @@
 // "header_memo_bar" is ticked. Optionally it also sets the memo's two store-wide switches:
 // --bundle on|off (show the bundle saving; only once the Shopify discount exists),
 // --artist <product handle>|none (the Artist's touch add-on product) and --deadline
-// YYYY-MM-DD|none (the last order date for Christmas, which the countdowns read). Every other memo
+// YYYY-MM-DD|none (the last order date for Christmas, which the countdowns read) and --help on|off (the help
+// chat's webhook address, read from the environment variable HS_HELP_URL so it never reaches a log or an
+// argument list; off clears it, which hides the chat, n8n/HELP-CHAT.md). Every other memo
 // setting, including the theme editor's, stays as it is.
 //
 //   node .github/scripts/header-memo.mjs path/to/sections/header-group.json [--bundle on] [--artist artists-touch]
@@ -13,10 +15,13 @@ import fs from 'node:fs';
 
 const file = process.argv[2];
 const flag = (name) => { const i = process.argv.indexOf('--' + name); return i > -1 ? process.argv[i + 1] : undefined; };
-const bundle = flag('bundle'), artist = flag('artist'), deadline = flag('deadline');
+const bundle = flag('bundle'), artist = flag('artist'), deadline = flag('deadline'), help = flag('help');
 if (bundle !== undefined && !['on', 'off'].includes(bundle)) throw new Error('--bundle takes on or off');
 if (artist !== undefined && !/^(none|[a-z0-9][a-z0-9-]{0,99})$/.test(artist)) throw new Error('--artist takes a product handle or none');
 if (deadline !== undefined && !/^(none|\d{4}-\d{2}-\d{2})$/.test(deadline)) throw new Error('--deadline takes YYYY-MM-DD or none');
+if (help !== undefined && !['on', 'off'].includes(help)) throw new Error('--help takes on or off');
+const helpUrl = (process.env.HS_HELP_URL || '').trim();
+if (help === 'on' && !/^https:\/\/[a-z0-9.-]+\/webhook\/[a-z0-9-]+$/i.test(helpUrl)) throw new Error('--help on needs HS_HELP_URL, an https n8n production webhook address');
 const raw = fs.readFileSync(file, 'utf8');
 // Shopify starts files it writes with a /* comment */, which JSON.parse rejects
 const comment = (raw.match(/^\s*\/\*[\s\S]*?\*\//) || [''])[0];
@@ -66,6 +71,14 @@ if (deadline !== undefined) {
   if ((settings.deadline || '') !== want) {
     if (want) settings.deadline = want; else delete settings.deadline;
     changes.push(want ? `last order date for Christmas: ${want}` : 'last order date cleared');
+  }
+}
+
+if (help !== undefined) {
+  const want = help === 'on' ? helpUrl : '';
+  if ((settings.help_url || '') !== want) {
+    if (want) settings.help_url = want; else delete settings.help_url;
+    changes.push(want ? 'help chat on' : 'help chat off');
   }
 }
 

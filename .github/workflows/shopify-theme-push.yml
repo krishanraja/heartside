@@ -62,6 +62,12 @@ on:
         required: false
         default: ""
         type: string
+      help_chat:
+        description: "Memo bar: the help chat in the corner. on writes the HS_HELP_CHAT_URL secret into the memo bar, off clears it. keep leaves it as it is."
+        required: false
+        default: "keep"
+        type: choice
+        options: ["keep", "on", "off"]
       footer_company_note:
         description: "Also put the company note (Mindmaker LLC, Mindmaker Ltd) at the bottom of the footer"
         required: false
@@ -216,12 +222,15 @@ jobs:
           fi
 
       - name: Put the memo bar at the top of the header
-        if: ${{ (inputs.header_memo_bar || inputs.bundle_offer == 'on' || inputs.bundle_offer == 'off' || inputs.artist_touch_product != '' || inputs.christmas_deadline != '') && !inputs.pull_only }}
-        # the switches reach the script through the environment and are checked before use
+        if: ${{ (inputs.header_memo_bar || inputs.bundle_offer == 'on' || inputs.bundle_offer == 'off' || inputs.artist_touch_product != '' || inputs.christmas_deadline != '' || inputs.help_chat == 'on' || inputs.help_chat == 'off') && !inputs.pull_only }}
+        # the switches reach the script through the environment and are checked before use; the help
+        # chat's address is a secret (masked), read by the script from HS_HELP_URL, never an argument
         env:
           BUNDLE: ${{ inputs.bundle_offer }}
           ARTIST: ${{ inputs.artist_touch_product }}
           DEADLINE: ${{ inputs.christmas_deadline }}
+          HELP: ${{ inputs.help_chat }}
+          HS_HELP_URL: ${{ secrets.HS_HELP_CHAT_URL }}
         run: |
           if [ ! -f backup/sections/header-group.json ]; then
             echo "::error::The theme has no sections/header-group.json, so the header was left alone."
@@ -239,6 +248,11 @@ jobs:
             exit 1
           fi
           if [ -n "$DEADLINE" ]; then args+=(--deadline "$DEADLINE"); fi
+          if [ "$HELP" = "on" ] && [ -z "$HS_HELP_URL" ]; then
+            echo "::error::help_chat on needs the repository secret HS_HELP_CHAT_URL (the n8n workflow's production webhook)."
+            exit 1
+          fi
+          if [ "$HELP" = "on" ] || [ "$HELP" = "off" ]; then args+=(--help "$HELP"); fi
           cp backup/sections/header-group.json shopify/sections/header-group.json
           node .github/scripts/header-memo.mjs shopify/sections/header-group.json "${args[@]}"
 
