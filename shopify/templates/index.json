@@ -12,10 +12,122 @@
     "showcase": {
       "type": "hs-showcase",
       "settings": {}
+    },
+    "reviews": {
+      "type": "hs-reviews",
+      "blocks": {
+        "review_1": {
+          "type": "review",
+          "settings": {
+            "name": "Jessica M.",
+            "place": "Austin, Texas",
+            "gift": "Framed Print",
+            "title": "“I actually got emotional opening it.”",
+            "text": "Thought this would be a regular dog gift. Somehow this site managed to capture our golden's entire personality in about three minutes and the artwork is an incredible take on his personality. Beautifully packaged too."
+          }
+        },
+        "review_2": {
+          "type": "review",
+          "settings": {
+            "name": "Mike T.",
+            "place": "Denver, Colorado",
+            "gift": "Mug",
+            "title": "“The roast feature is unhinged 😂”",
+            "text": "Had our dog roast my girlfriend. Apparently he thinks she's a terrible ball thrower and takes up too much room on the couch. It's perfect for our humor."
+          }
+        },
+        "review_3": {
+          "type": "review",
+          "settings": {
+            "name": "Amanda R.",
+            "place": "Charlotte, North Carolina",
+            "gift": "Blanket",
+            "title": "“This is such a clever idea”",
+            "text": "Honestly the whole experience was ridiculously easy. Did it on my phone while waiting for coffee. The questions were fun, the message was adorable, and the blanket was really lush and arrived fast!"
+          }
+        },
+        "review_4": {
+          "type": "review",
+          "settings": {
+            "name": "Stephanie L.",
+            "place": "Tampa, Florida",
+            "gift": "Mug",
+            "title": "“They nailed my dog's attitude.”",
+            "text": "My Frenchie is like a tiny angry CEO. Heartside just nailed this immediately. The mug is hilarious and the quality is great."
+          }
+        },
+        "review_5": {
+          "type": "review",
+          "settings": {
+            "name": "Daniel P.",
+            "place": "Phoenix, Arizona",
+            "gift": "Mug",
+            "title": "“Super fast to use.”",
+            "text": "Super straightforward website. Answered a few questions about my dog, got a genuinely funny message, ordered the mug. It showed up well packed and looks great. No complaints whatsoever."
+          }
+        },
+        "review_6": {
+          "type": "review",
+          "settings": {
+            "name": "Rachel S.",
+            "place": "Nashville, Tennessee",
+            "gift": "Framed Print",
+            "title": "“It really feels personal.”",
+            "text": "I've seen plenty of personalized pet gifts, but usually it's just a photo with a name slapped underneath. This was different. The little details about Oli's habits and personality made it feel like something that could only have come from our dog."
+          }
+        },
+        "review_7": {
+          "type": "review",
+          "settings": {
+            "name": "Christopher J.",
+            "place": "Chicago, Illinois",
+            "gift": "Mug",
+            "title": "“Turns in-jokes in to the perfect home gift”",
+            "text": "Turns out Winston thinks my husband is not great at sharing snacks. He's not wrong, and this site brought that to life brilliantly."
+          }
+        },
+        "review_8": {
+          "type": "review",
+          "settings": {
+            "name": "Alex C.",
+            "place": "Brooklyn, New York",
+            "gift": "Mug",
+            "title": "“Five stars for making my boyfriend jealous of a dog.”",
+            "text": "The dog basically told him he's my second favorite man in the house. Which, frankly, is accurate. Brilliant."
+          }
+        },
+        "review_9": {
+          "type": "review",
+          "settings": {
+            "name": "Kayla P.",
+            "place": "Orlando, Florida",
+            "gift": "Framed Print",
+            "title": "“A gift with an actual personality.”",
+            "text": "The funniest part was that it didn't make our dog sound like some generic sweet angel. He's a menace. A lovable menace, but a menace. These products captured that perfectly and made it really heartwarming too."
+          }
+        }
+      },
+      "block_order": [
+        "review_1",
+        "review_2",
+        "review_3",
+        "review_4",
+        "review_5",
+        "review_6",
+        "review_7",
+        "review_8",
+        "review_9"
+      ],
+      "settings": {
+        "heading": "What people say",
+        "lead": "From people who have made or received a Heartside gift.",
+        "seconds": 6
+      }
     }
   },
   "order": [
     "gift",
-    "showcase"
+    "showcase",
+    "reviews"
   ]
 }

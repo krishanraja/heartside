@@ -90,3 +90,22 @@ html.hs-help-off .hs-help { display: none; }
 
 .hs-help__sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media print { .hs-help { display: none; } }
+
+/* phones: the grab handle, and the sheet following the finger (hs-help.js drag to close) */
+.hs-help__grab { display: none; }
+@media (max-width: 599px) {
+  .hs-help__head { position: relative; padding-top: 22px; touch-action: none; cursor: grab; }
+  .hs-help__grab { display: block; position: absolute; top: 8px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--hs-line); }
+  .hs-help__panel { transition: transform 0.18s ease-out; }
+  .hs-help__panel.is-dragging { transition: none; }
+}
+@media (prefers-reduced-motion: reduce) { .hs-help__panel { transition: none; } }
+
+/* sending, sent and try again */
+.hs-help__primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+.hs-help__primary svg { width: 18px; height: 18px; }
+.hs-help__primary.is-sending:disabled { background: var(--hs-ink); opacity: 0.85; cursor: progress; }
+.hs-help__primary.is-sent, .hs-help__primary.is-sent:disabled { background: #2f7d4f; opacity: 1; }
+.hs-help__spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(251, 246, 241, 0.35); border-top-color: var(--hs-cream); }
+@media (prefers-reduced-motion: no-preference) { .hs-help__spin { animation: hs-help-spin 0.8s linear infinite; } }
+@keyframes hs-help-spin { to { transform: rotate(360deg); } }

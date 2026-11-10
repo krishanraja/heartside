@@ -219,3 +219,11 @@ test('CLI: lists file:line:offense, exits 1, and --baseline passes until somethi
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("a customer's quote in the reviews section is their words; our heading there is still checked", async () => {
+  const { lintTemplateJson } = await import('./copy-lint.mjs');
+  const src = JSON.stringify({ sections: { r: { type: 'hs-reviews', settings: { heading: 'Loved it!' }, blocks: { a: { type: 'review', settings: { title: 'Wow!', text: 'It arrived fast!' } } } }, x: { type: 'other', settings: { text: 'Order now!' } } } });
+  const f = lintTemplateJson(src, 't.json');
+  const hits = (Array.isArray(f) ? f : (f.found || f.offenses || [])).map(o => JSON.stringify(o));
+  assert.equal(hits.filter(h => /exclamation/.test(h)).length, 2, hits.join('\n'));
+});

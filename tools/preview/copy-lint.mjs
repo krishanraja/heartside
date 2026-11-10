@@ -248,13 +248,29 @@ export function lintLiquid(src, file = 'inline.liquid') {
 }
 
 // Template JSON: every string value (keys are names, not copy). Shopify allows a leading /* */ note.
+// A customer's quote in the reviews section (sections/hs-reviews.liquid) is their own words, kept as they
+// gave them (Krish, 10 Nov 2026), so the house rules are ours, not theirs: its headline and words are skipped.
+function quotesIn(text) {
+  const out = new Set();
+  try {
+    const t = JSON.parse(text.replace(/^\s*\/\*[\s\S]*?\*\//, ''));
+    for (const sec of Object.values(t.sections || {})) {
+      if (!sec || sec.type !== 'hs-reviews') continue;
+      for (const b of Object.values(sec.blocks || {})) for (const k of ['title', 'text']) if (b && b.settings && typeof b.settings[k] === 'string') out.add(b.settings[k]);
+    }
+  } catch { /* not whole JSON: lint every value */ }
+  return out;
+}
+
 export function lintTemplateJson(src, file = 'inline.json') {
   const found = [];
+  const quotes = quotesIn(src);
   const text = maskAll(src, /\/\*[\s\S]*?\*\//g);
   for (const m of text.matchAll(/"((?:[^"\\]|\\.)*)"(\s*:)?/g)) {
     if (m[2]) continue;
     let value;
     try { value = JSON.parse(`"${m[1]}"`); } catch { continue; }
+    if (quotes.has(value)) continue;
     check(value, () => m.index + 1, (f) => found.push(f));
   }
   return finish(src, file, found);

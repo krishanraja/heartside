@@ -1,0 +1,42 @@
+/* What people say (sections/hs-reviews.liquid, assets/hs-reviews.js). Brand tokens from hs-brand.css. */
+.hsr { background: var(--hs-cream); padding: 48px 0 56px; color: var(--hs-ink); font-family: var(--hs-sans); }
+.hsr *, .hsr *::before, .hsr *::after { box-sizing: border-box; }
+.hsr p, .hsr h2, .hsr ul, .hsr figure, .hsr blockquote { margin: 0; padding: 0; }
+.hsr ul { list-style: none; }
+.hsr [hidden] { display: none !important; }
+.hsr :focus-visible { outline: 3px solid var(--hs-ink); outline-offset: 2px; }
+.hsr__wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+.hsr__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+/* phones: swipe moves the cards, so only Pause stays beside the heading */
+@media (max-width: 599px) { .hsr__head { align-items: flex-start; } .hsr [data-hsr-prev], .hsr [data-hsr-next] { display: none; } }
+.hsr__title { font: 600 clamp(26px, 4vw, 34px)/1.15 var(--hs-serif); letter-spacing: -0.01em; }
+.hsr__lead { margin-top: 6px; font-size: 15px; line-height: 1.45; color: var(--hs-muted); }
+.hsr__ctl { flex: none; display: flex; gap: 8px; }
+.hsr__btn { appearance: none; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--hs-line); border-radius: 50%; background: var(--hs-paper); color: var(--hs-ink); cursor: pointer; }
+.hsr__btn svg { width: 18px; height: 18px; }
+.hsr__btn:hover { border-color: var(--hs-ink); }
+.hsr__play { display: none; }
+.hsr__btn[aria-pressed="true"] .hsr__bars { display: none; }
+.hsr__btn[aria-pressed="true"] .hsr__play { display: inline; }
+
+/* the track: native scroll with snap, so a swipe always works; the script only nudges it */
+.hsr__track { display: grid; grid-auto-flow: column; grid-auto-columns: 86%; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; overscroll-behavior-x: contain; padding: 4px 2px 8px; }
+.hsr__track::-webkit-scrollbar { display: none; }
+@media (min-width: 720px) { .hsr__track { grid-auto-columns: calc((100% - 28px) / 3); } }
+.hsr__card { scroll-snap-align: start; display: flex; }
+.hsr .hsr__fig { display: flex; flex-direction: column; justify-content: space-between; gap: 18px; width: 100%; padding: 22px 20px 18px; border-radius: var(--hs-radius-card); background: var(--hs-paper); box-shadow: var(--hs-shadow-bubble), 0 0 0 1px #efe6dd; }
+.hsr__quote { display: flex; flex-direction: column; gap: 10px; }
+.hsr__head-quote { font: 600 19px/1.3 var(--hs-serif); color: var(--hs-ink); text-wrap: balance; }
+.hsr__body { font-size: 15px; line-height: 1.55; color: var(--hs-body); text-wrap: pretty; }
+.hsr__who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hsr__face { flex: none; width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.hsr__face--initials { display: grid; place-items: center; background: var(--hs-blush); color: var(--hs-ink); font: 600 12px/1 var(--hs-sans); letter-spacing: 0.02em; }
+.hsr__meta { display: flex; flex-direction: column; min-width: 0; }
+.hsr__name { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.hsr__place { font-size: 13px; line-height: 1.3; color: var(--hs-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hsr__gift { margin-left: auto; flex: none; padding: 4px 10px; border-radius: var(--hs-radius-pill); background: var(--hs-cream); box-shadow: 0 0 0 1px var(--hs-line); font-size: 12px; font-weight: 500; color: var(--hs-chestnut); white-space: nowrap; }
+
+.hsr__dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }
+.hsr__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hs-line); transition: background 0.2s, width 0.2s; }
+.hsr__dot.is-on { width: 18px; border-radius: 3px; background: var(--hs-ink); }
+@media (prefers-reduced-motion: no-preference) { .hsr__track { scroll-behavior: smooth; } }

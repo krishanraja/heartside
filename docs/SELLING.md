@@ -52,7 +52,7 @@ Lead line: **"Your dog loves you too."** Christmas line: **"This year, the dog's
 
 ## Claims we must not make (yet)
 
-- **Reviews, star ratings and customer counts.** Heartside has no published customer reviews yet, and one paid order so far (Krish's own #1013, delivered on 8 November). Real testimonials are allowed only as each person's own words, with their consent, a real photo or initials, and a label for how they experienced it, such as "Tried the gift maker" or "Gifted". This follows the FTC's 2024 rule on reviews and testimonials, and `docs/SCOPE.md`. Never invent, reword or AI-generate a review or a reviewer's face.
+- **Reviews: quote them only as published.** Since 10 November the homepage carries nine quotes from people who used the site or received Heartside gifts made by hand before it ("What people say", `templates/index.json`, Krish's own list). Quote them word for word, with the name and place as shown. Don't add star ratings, counts ("thousands of happy customers") or new quotes, and don't reword one. A reviewer's face goes up only as their real photo, with their permission; until then the cards show initials. One paid order has come through the site so far (#1013, delivered on 8 November). Reviews and testimonials are covered by the FTC's 2024 rule.
 - **Physical quality.** Don't claim physical quality, durability or "gallery quality" until the sample order has been inspected (`NOW.md`). We can say "printed and shipped by Printful".
 - **Delivery dates as guarantees.** Typical times only, as listed above. The Christmas date is "order by December 4".
 - **Words on the gifts.** None are printed, and the note comes in the box.
@@ -67,6 +67,20 @@ Lead line: **"Your dog loves you too."** Christmas line: **"This year, the dog's
   - "I took your side of the bed to keep it warm."
   - "Our walks are the best part of my day."
   - "I'm your shadow, and I like it that way."
+
+## What people say (the homepage quotes, word for word)
+
+- "I actually got emotional opening it." (Jessica M., Austin, Texas, Framed Print)
+- "The roast feature is unhinged 😂" (Mike T., Denver, Colorado, Mug)
+- "This is such a clever idea" (Amanda R., Charlotte, North Carolina, Blanket)
+- "They nailed my dog's attitude." (Stephanie L., Tampa, Florida, Mug)
+- "Super fast to use." (Daniel P., Phoenix, Arizona, Mug)
+- "It really feels personal." (Rachel S., Nashville, Tennessee, Framed Print)
+- "Turns in-jokes in to the perfect home gift" (Christopher J., Chicago, Illinois, Mug)
+- "Five stars for making my boyfriend jealous of a dog." (Alex C., Brooklyn, New York, Mug)
+- "A gift with an actual personality." (Kayla P., Orlando, Florida, Framed Print)
+
+Each person's full words are in `shopify/templates/index.json` (section `reviews`).
 
 ## Where buyers get help
 
