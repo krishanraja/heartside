@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- the dachshund carrying a heart letter (design/brand-v5/) is the favicon at every size and, through the theme push's new `logo` input, the top-left header icon (heartside-icon-dachshund.png in Shopify Files, 44 px, 36 on phones, rounded corners). (2026-11-10)
 - heartside.io is set up to be found in search and AI answers. 19 Answers articles (13 new, written for the questions people ask: custom dog mug from a photo, a blanket with my dog's face, dog mom and dog dad gifts, Secret Santa under $50, what the note should say, delivery times) each carry a direct answer as FAQ data and their own search description. The products, the All gifts collection, Answers and contact now carry search titles and short descriptions; the empty frontpage collection and the printable card page are hidden from search. Structured data adds free US shipping with handling and transit days to every offer, an FAQ on the homepage, and the Answers list; /llms.txt carries the full picture for AI assistants. Everything was checked on the live site except the theme code, which goes live with this merge and push. (2026-11-10)
 - a new social ad set is in design/social-ads-2026-11-10/ (4:5, 1:1, 9:16 and the 1200x630 link card), built by tools/print-art/social_ads.py from the approved room sets. It leads with the golden's room set, the note in the dog's voice and the Christmas date. The link card replaces heartside.io's share image once it is uploaded to Shopify Files. (2026-11-10)
 - the nine reviewer photos Krish added in the theme editor are now in the repo (templates/index.json), so the guarded push no longer stops at the editor-edits guard. Until PR #144 merges and the theme is pushed, the phone keyboard fix and the review card fix from PR #143 are merged to main but not yet live. (2026-11-10)
@@ -64,6 +65,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-10 Krish replaced the wordmark and the watercolor heart with the dachshund icon on 10 Nov.
 - 2026-11-10 2026-11-10 Krish asked to be discoverable in every way by search and AI; the store had six answers and product titles without search terms.
 - 2026-11-10 2026-11-10 Krish's Facebook ad still showed the October card (the retired worded print, ornaments and pillows); the new set shows the current gifts and the note.
 - 2026-11-10 2026-11-10 the reviewer photos Krish added in the theme editor are kept in the repo, so a theme push can no longer wipe them.
@@ -84,7 +86,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-10): Krish adds heartside.io to Google Search Console and Bing Webmaster Tools and submits https://heartside.io/sitemap.xml in both (a session cannot sign in to either).
+- Next (2026-11-10): read the live header and tab icon back after the push with `logo: heartside-icon-dachshund.png`.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
