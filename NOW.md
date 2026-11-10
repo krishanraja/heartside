@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- on phones the help chat no longer opens the keyboard by itself, and when the buyer taps a field the sheet fits the space above the keyboard with a compact header, so the email form is always in view. The homepage review cards show their whole edges, and on phones one card sits in the middle with its neighbours peeking evenly. (2026-11-10)
 - the help chat is live on heartside.io (push with help_chat on, from the HS_HELP_CHAT_URL secret; checked on a live phone view). The homepage gains "What people say", an auto-rotating carousel of nine quotes in the people's own words with initials in place of photos, and the help chat's phone sheet now drags down to close and shows Sending, Sent and Try again. docs/SELLING.md lists the quotes and how they may be used. (2026-11-10)
 - the help chat is live in n8n: the workflow "Heartside: help chat" is published, a real Claude answer and a real handoff email to jonny@heartside.io were checked on 10 Nov, and the theme code goes out with this merge. On the storefront it stays hidden until the memo strip's Help chat address is set, either from the HS_HELP_CHAT_URL secret (Krish adds it; the push then runs with help_chat on) or by pasting the address in the theme editor. Codex is booked (5d04e37a) for three avatar options, codex/queue/help-avatar-2026-11-10.md. docs/SELLING.md is the current sell sheet for the growth repo: the offer, true angles, promises and the claims not to make, including that there are no published reviews yet. (2026-11-10)
 - The four order workflows (send to Printful, note and confirm, printed card, mark fulfilled) no longer sign in to Shopify themselves. They call a new helper workflow, "Heartside: Shopify Admin call (saves nothing)", which fetches the 24-hour token, makes the call and returns only Shopify's answer, and saves none of its own runs. A deliberately failed test run of each draft (53678, 53687, 53692, 53696) was read back with no token in it, and each draft passed a pinned-data working run. On Krish's go, the helper and then the four tested versions were published at 11:40 UTC, so no saved run from then on holds the token. n8n/SHOPIFY-ADMIN-CALL.md and the four workflow docs say how the token is handled. (2026-11-10)
@@ -60,6 +61,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-10 2026-11-10 Krish found on his phone that the keyboard covered the chat and its email form, and that the review cards were cut off at the top and bottom.
 - 2026-11-10 2026-11-10 Krish supplied the reviewers' own words; buyers now see what people say right under the showcase.
 - 2026-11-10 2026-11-10 buyers can now get answers and a person from any page, and the growth repo has one verified place to sell from.
 - 2026-11-10 2026-11-10 the Shopify token moved out of every saved n8n run. It protects the order path every sale runs through; it does not move the number directly.
@@ -76,7 +78,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-10): Krish adds each reviewer's real photo (with permission) in the theme editor, on the homepage's HS reviews blocks.
+- Next (2026-11-10): Krish rechecks the chat and the reviews on his phone after the theme push.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
