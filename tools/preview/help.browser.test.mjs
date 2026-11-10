@@ -149,3 +149,39 @@ test('the chat stays with the buyer from page to page in one visit', async () =>
   assert.match(await p.textContent('.hs-help__log'), /Illustrated mug, \$45/);
   await ctx.close();
 });
+
+test('on a phone, dragging the sheet down by its header closes it; a short drag springs back', async () => {
+  const { ctx, p } = await open({ width: 390, height: 844 });
+  await p.click('.hs-help__launch');
+  // a finger on the header, as a phone sends it: down, a few moves, up
+  const drag = (dy) => p.evaluate(async (dy) => {
+    const head = document.querySelector('.hs-help__head'), r = head.getBoundingClientRect();
+    const x = r.left + 60, y = r.top + 30, o = { bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true, button: 0, clientX: x };
+    head.dispatchEvent(new PointerEvent('pointerdown', Object.assign({}, o, { clientY: y })));
+    for (let i = 1; i <= 4; i++) { await new Promise(res => setTimeout(res, 60)); head.dispatchEvent(new PointerEvent('pointermove', Object.assign({}, o, { clientY: y + dy * i / 4 }))); }
+    head.dispatchEvent(new PointerEvent('pointerup', Object.assign({}, o, { clientY: y + dy })));
+  }, dy);
+  await drag(40);
+  await p.waitForTimeout(300);
+  assert.equal(await p.locator('.hs-help__panel').isVisible(), true, 'a short drag keeps it open');
+  await drag(220);
+  await p.waitForSelector('.hs-help__panel', { state: 'hidden' });
+  assert.equal(await p.getAttribute('.hs-help__launch', 'aria-expanded'), 'false');
+  await ctx.close();
+});
+
+test('a handoff that fails says so and offers Try again; the retry sends', async () => {
+  let n = 0;
+  const { ctx, p, calls } = await open({ width: 1280, height: 800 }, '', b => b.action === 'handoff' ? (++n === 1 ? { status: 502, ok: false } : { ok: true }) : {});
+  await p.click('.hs-help__launch');
+  await p.click('.hs-help__chip[data-k="person"]');
+  await p.fill('.hs-help__handoff input[name=email]', 'pat@example.com');
+  await p.click('.hs-help__primary');
+  await p.waitForSelector('.hs-help__primary.is-retry');
+  assert.equal((await p.textContent('.hs-help__primary')).trim(), 'Try again');
+  assert.match(await p.textContent('.hs-help__error'), /didn't go through/);
+  await p.click('.hs-help__primary');
+  await p.waitForSelector('.hs-help__msg--buddy:has-text("within the next 6 hours")');
+  assert.equal(calls.filter(c => c.action === 'handoff').length, 2);
+  await ctx.close();
+});

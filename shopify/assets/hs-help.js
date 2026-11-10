@@ -79,6 +79,7 @@
     '</button>' +
     '<section class="hs-help__panel" id="hs-help-panel" role="dialog" aria-modal="false" aria-labelledby="hs-help-title" hidden>' +
       '<header class="hs-help__head">' +
+        '<span class="hs-help__grab" aria-hidden="true"></span>' +
         '<span class="hs-help__face hs-help__face--head" aria-hidden="true">' + face + '<span class="hs-help__dot"></span></span>' +
         '<div class="hs-help__titles"><h2 class="hs-help__title" id="hs-help-title">Heartside Help</h2>' +
         '<p class="hs-help__sub">Instant answers from our help assistant. Real people are one tap away.</p></div>' +
@@ -162,6 +163,36 @@
     else launch.focus({ preventScroll: true });
   }
   launch.addEventListener('click', function () { setOpen(!st.open); });
+
+  // phones: drag the sheet down by its header to close it; a short drag springs back
+  var reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  (function () {
+    var head = panel.querySelector('.hs-help__head'), y0 = 0, t0 = 0, dy = 0, dragging = false;
+    function phone() { return window.innerWidth < 600; }
+    head.addEventListener('pointerdown', function (e) {
+      if (!phone() || e.button > 0 || e.target.closest('button')) return;
+      dragging = true; y0 = e.clientY; t0 = Date.now(); dy = 0;
+      panel.classList.add('is-dragging');
+      try { head.setPointerCapture(e.pointerId); } catch (x) {}
+    });
+    head.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      dy = Math.max(0, e.clientY - y0);
+      panel.style.transform = 'translateY(' + dy + 'px)';
+    });
+    function end() {
+      if (!dragging) return;
+      dragging = false; panel.classList.remove('is-dragging');
+      var fast = dy > 40 && dy / Math.max(1, Date.now() - t0) > 0.5;
+      if (dy > 110 || fast) {
+        panel.style.transform = 'translateY(100%)';
+        setTimeout(function () { panel.style.transform = ''; setOpen(false); }, reduceMotion ? 0 : 180);
+      } else panel.style.transform = '';
+    }
+    head.addEventListener('pointerup', end);
+    head.addEventListener('pointercancel', end);
+    head.addEventListener('lostpointercapture', end);
+  })();
   root.querySelector('.hs-help__close').addEventListener('click', function () { setOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && st.open) setOpen(false); });
 
@@ -180,15 +211,20 @@
     var email = handoff.email.value.trim(), name = handoff.name.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { errEl.textContent = 'That email does not look right. Could you check it?'; errEl.hidden = false; handoff.email.focus(); return; }
     errEl.hidden = true;
-    var btn = handoff.querySelector('.hs-help__primary'); btn.disabled = true; btn.textContent = 'Sending';
+    var btn = handoff.querySelector('.hs-help__primary'); btn.disabled = true; btn.classList.add('is-sending'); btn.classList.remove('is-retry'); btn.innerHTML = '<span class="hs-help__spin" aria-hidden="true"></span>Sending';
     post({ action: 'handoff', email: email, name: name, messages: st.msgs, page: location.pathname }).then(function (r) {
       if (!r || !r.ok) throw new Error('not sent');
+      btn.classList.remove('is-sending'); btn.classList.add('is-sent'); btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Sent';
+      return new Promise(function (ok) { setTimeout(ok, reduceMotion ? 0 : 650); }).then(function () {
       st.sent = email; st.form = false; save();
       add('assistant', 'Thank you' + (name ? ', ' + name.split(' ')[0] : '') + '. You are all set. Someone from the Heartside team has this chat and will email you at ' + email + ' within the next 6 hours. You are in good hands.');
       drawAll();
+      btn.classList.remove('is-sent'); btn.disabled = false; btn.textContent = 'Send to the team';
+      });
     }).catch(function () {
-      errEl.textContent = 'That did not send. Please try once more, or email krish@heartside.io.'; errEl.hidden = false;
-    }).then(function () { btn.disabled = false; btn.textContent = 'Send to the team'; });
+      errEl.textContent = "That didn't go through, sorry. Tap Try again, or email krish@heartside.io."; errEl.hidden = false;
+      btn.classList.remove('is-sending'); btn.classList.add('is-retry'); btn.disabled = false; btn.textContent = 'Try again';
+    });
   });
 
   // ---- asking

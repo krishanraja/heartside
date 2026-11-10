@@ -1,4 +1,4 @@
-// The phone homepage (Krish, 3 Nov 2026): two screens at most, the button pinned to the bottom in the
+// The phone homepage (Krish, 3 Nov 2026): two screens at most (10 Nov: plus the reviews, at most 0.8 of a screen), the button pinned to the bottom in the
 // logo heart's pink and pulsing, the six sets filling 70 to 80% of the first screen, one Christmas offer
 // (the strip) and never a second, every strip card the same height, no line that leaves one word on its
 // own; on desktop the photo-to-gift slider sits beside the carousel.
@@ -60,7 +60,11 @@ for (const [width, height, most] of PHONES) {
     const {ctx, page, errors} = await open({width, height});
     assert.equal(await page.evaluate(() => window.innerWidth), width, 'nothing pushes the page wider than the phone');
     const total = await page.evaluate(() => document.documentElement.scrollHeight);
-    assert.ok(total <= most * height, `the page is ${(total / height).toFixed(2)} screens, at most ${most}`);
+    // Krish, 10 Nov: "What people say" goes under the showcase. The 3 Nov budget still holds for
+    // everything else, and the reviews themselves take at most 0.8 of a screen
+    const reviews = await page.evaluate(() => { const r = document.querySelector('.hsr'); return r ? r.getBoundingClientRect().height : 0; });
+    assert.ok(total - reviews <= most * height, `the page without the reviews is ${((total - reviews) / height).toFixed(2)} screens, at most ${most}`);
+    assert.ok(reviews <= 0.8 * height, `the reviews are ${(reviews / height).toFixed(2)} screens, at most 0.8`);
     const btn = page.locator('.hsj-hook [data-hsj-go="photo"]');
     for (const y of [0, total / 2, total]) {
       await page.evaluate((to) => window.scrollTo(0, to), y);

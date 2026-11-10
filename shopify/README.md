@@ -15,6 +15,13 @@ Before a theme change, inspect the current source and guarded workflow, identify
 
 ## 10 November: the help chat in the corner
 
+- **What people say** (`sections/hs-reviews.liquid`, `assets/hs-reviews.css`, `hs-reviews.js`) sits under the showcase on the homepage.
+  - It holds nine quotes in the people's own words (blocks in `templates/index.json`). A block's photo is optional: add it in the theme editor, only with the person's permission; without one, the card shows their initials.
+  - It moves one card every 6 s and loops. It stays still on hover, focus, touch, a hidden tab and the Pause button, and never moves under reduced motion. Swipe and the arrows always work.
+  - `copy-lint.mjs` skips a quote's headline and words, since they are the customer's words, not ours.
+  - Tests: `tools/preview/reviews.browser.test.mjs`.
+- **The help chat's phone sheet** closes with a drag down from its header. Its handoff button shows Sending, then Sent, and Try again if the send fails. Both ideas were borrowed from 21st.dev components and written in plain JS, with no React.
+
 - **Help chat** (`snippets/hs-help.liquid`, `assets/hs-help.js`, `hs-help.css`, `hs-help-agent.svg`; `n8n/HELP-CHAT.md`). The memo strip renders it on every page except the printable card.
   - It shows only while the memo strip's **Help chat address** setting holds the n8n webhook. The guarded push writes that address from the `HS_HELP_CHAT_URL` secret (`help_chat: on`), and `off` clears it.
   - Chips answer at once from the policies. Typed questions go to Claude through n8n. A person is one tap away, by email within 6 hours, through jonny@heartside.io.
