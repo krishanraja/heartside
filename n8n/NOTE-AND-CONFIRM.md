@@ -4,27 +4,28 @@ The workflow "Heartside: dog note on the packing slip, then confirm" runs in n8n
 
 **Built:** 31 October 2026. **State:** live since 31 October 2026, 18:39 UTC, on Krish's go after the release (`dryRun: false`, active).
 
+**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53687). This is in the draft built on 10 November; until Krish publishes it, the live version still saves the token in failed runs.
+
 ## What it does
 
 The workflow runs every 10 minutes, and it can also be run by hand.
 
-1. **Signs in to Shopify.** It exchanges the "Heartside n8n orders" app's client id and secret (n8n credential `Shopify - Heartside orders (client)`) for a 24-hour Admin token, scope `read_orders`.
-2. **Reads Printful's drafts** (n8n credential `Printful - Heartside orders`) and keeps only those that:
+1. **Reads Printful's drafts** (n8n credential `Printful - Heartside orders`) and keeps only those that:
    - Teeinblue sent: the external id is the Shopify order name, like `#1012`;
    - were created after `startAfter` (31 October 2026, 15:20 UTC), so older test drafts are never confirmed;
    - hold only known products: poster (1), framed poster (2), mug (403), blanket (711).
-3. **Reads the Shopify order** with the same name. It skips the order, leaving it a draft, when:
+2. **Reads the Shopify order** with the same name, once per draft, through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`). The helper exchanges the "Heartside n8n orders" app's client id and secret (n8n credential `Shopify - Heartside orders (client)`) for a 24-hour Admin token, scope `read_orders`, and keeps the token to itself. It skips the order, leaving it a draft, when:
    - it is a test order;
    - it is cancelled;
    - it isn't paid;
    - the print files aren't ready (the next run tries again).
-4. **Writes the note.**
+3. **Writes the note.**
    - The text comes from the line property `Your note` (or `_hs_lines`).
    - The recipient's name comes from `_hs_answers` ("For: …"), unless the buyer is buying for themselves.
    - The sign-off is `Signed` (or "Love, " plus `Dog's name`).
    - It goes into Printful's gift message: subject "A note from <dog>", at most 500 characters.
    - An order with no note at all is confirmed without one.
-5. **If `dryRun` is false**, it puts the gift message on the order (`PUT /orders/{id}?confirm=false`) and then confirms it (`POST /orders/{id}/confirm`). Printful charges for the order at that point, under Krish's standing approval (31 October 2026). Setting `dryRun` back to `true` stops all confirming.
+4. **If `dryRun` is false**, it puts the gift message on the order (`PUT /orders/{id}?confirm=false`) and then confirms it (`POST /orders/{id}/confirm`). Printful charges for the order at that point, under Krish's standing approval (31 October 2026). Setting `dryRun` back to `true` stops all confirming.
 
 ## Checked on 31 October 2026
 

@@ -4,28 +4,29 @@ The workflow "Heartside: printed Christmas card from the dog" runs in n8n, priva
 
 **Built:** 31 October 2026. **State:** live since 31 October 2026, 18:39 UTC, on Krish's go after the release (`dryRun: false`, active).
 
+**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53692). This is in the draft built on 10 November; until Krish publishes it, the live version still saves the token in failed runs.
+
 ## What it does
 
 It runs every 10 minutes, and it can also be run by hand.
 
-1. **Signs in to Shopify.** It uses the same "Heartside n8n orders" app as the note workflow (n8n credential `Shopify - Heartside orders (client)`, scope `read_orders`).
-2. **Reads the orders placed after `startAfter`** and finds each card line: the line property `_hs_addon` is `card`, and `_hs_addon_for` names the gift's design.
-3. **Gathers the card's words from that gift's line:**
+1. **Reads the orders placed after `startAfter`**, through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`), which signs in with the same "Heartside n8n orders" app as the note workflow (n8n credential `Shopify - Heartside orders (client)`, scope `read_orders`), and finds each card line: the line property `_hs_addon` is `card`, and `_hs_addon_for` names the gift's design.
+2. **Gathers the card's words from that gift's line:**
    - the painting is the gift's print file, `_tib_design_link_1`;
    - the note is `Your note` (or `_hs_lines`);
    - the dog is `Dog's name` (or `Signed`);
    - the recipient is the "For:" name in `_hs_answers`.
-4. **Checks Printful twice** (n8n credential `Printful - Heartside orders`):
+3. **Checks Printful twice** (n8n credential `Printful - Heartside orders`):
    - whether the card's own order `hs-card-<order number>-<n>` already exists;
    - the gift's own order (external id `#<order number>`), whose address the card ships to.
-5. **Decides.** It makes the card only when every one of these holds:
+4. **Decides.** It makes the card only when every one of these holds:
    - the order is paid, not a test and not cancelled;
    - it was placed before the cutoff, 11:59 pm Eastern on Thursday 3 December 2026;
    - the painting is ready and there is a note;
    - the gift is already at Printful, with a US address.
 
    A card ordered after the cutoff is never made, and hello@krishraja.com is told to refund it. The other problems are emailed once when they need a person: a painting or a gift still missing after two hours, no note, or an address outside the US.
-6. **If `dryRun` is false, it makes the card:**
+5. **If `dryRun` is false, it makes the card:**
    - **Renders each of the four panels** (front, inside1, inside2, back). PDF.co, on n8n's gateway credits, prints `https://heartside.io/pages/card?d=…&panel=…` on a 10.375 × 15.375 in page, 2.5 times the card. Its 120 dpi image step turns that into a 1245 × 1845 px file, which matches Printful's 300 dpi file for the 4×6 card (1842 × 1240, rotatable).
    - **Creates and confirms one Printful order:** variant 14457 (the 4×6 US greeting card), the four files, and the gift's address. Printful charges for it then, under Krish's standing approval (31 October 2026). If Printful refuses, hello@krishraja.com is told.
 

@@ -4,7 +4,9 @@ The workflow "Heartside: Printful shipped, mark Shopify fulfilled" runs in n8n. 
 
 **Built:** 10 November 2026, on Krish's go ("Build a workflow that marks Shopify orders as fulfilled").
 
-**State:** live since 10 November 2026, 09:52 UTC (`dryRun: false`, `notifyCustomer: true`), after the orders app got its fulfillment scopes and the order emails were changed to show the buyer's painting (`docs/evidence/2026-11-10-fulfillment-and-thumbnails/REPORT.md`). Successful runs are not saved, because the token response would be stored in plain form. Failed runs are saved. A real shipment has not yet exercised it.
+**State:** live since 10 November 2026, 09:52 UTC (`dryRun: false`, `notifyCustomer: true`), after the orders app got its fulfillment scopes and the order emails were changed to show the buyer's painting (`docs/evidence/2026-11-10-fulfillment-and-thumbnails/REPORT.md`). Successful runs are not saved, and failed runs are. A real shipment has not yet exercised it.
+
+**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53696). This is in the draft built on 10 November; until Krish publishes it, the live version still saves the token in failed runs.
 
 ## Why it exists
 
@@ -16,13 +18,13 @@ There was a second risk. The send workflow (`SEND-TO-PRINTFUL.md`) treats every 
 
 It runs every 30 minutes, and it can also be run by hand.
 
-1. **Reads the open orders.** It signs in to Shopify with the "Heartside n8n orders" app and reads the paid orders that are not fully fulfilled since `since`, with their fulfillment-order lines.
+1. **Reads the open orders.** Through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`), signed in as the "Heartside n8n orders" app, it reads the paid orders that are not fully fulfilled since `since`, with their fulfillment-order lines.
 2. **Skips** test orders, cancelled orders, orders tagged `do-not-fulfill`, and orders named in `hold`.
 3. **Groups each order's open lines by the Printful order that ships them:**
    - the gift order is `#<number>`, which Teeinblue and the send workflow both use;
    - each printed card is `hs-card-<number>-<n>`, with n counting card lines in order, as `PRINTED-CARD.md` names them;
    - an Artist's touch line goes with the gift.
-4. **Asks Printful for each of those orders by its external id.** Lines are marked fulfilled only when Printful's whole order is `fulfilled`. The fulfillment carries the carrier and every tracking number and link. A gift that has shipped while its card has not is marked on its own.
+4. **Asks Printful for each of those orders by its external id.** Lines are marked fulfilled only when Printful's whole order is `fulfilled`. The fulfillment carries the carrier and every tracking number and link, and goes to Shopify through the same helper, one call per Printful order. A gift that has shipped while its card has not is marked on its own.
 5. **Sends Shopify's shipping email** when `notifyCustomer` is true. With the snippet in `shopify/notifications/line-item-painting.liquid`, that email shows the buyer's painting.
 
 It emails hello@krishraja.com once when a person is needed:
