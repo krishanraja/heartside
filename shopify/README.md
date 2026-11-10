@@ -13,6 +13,16 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 10 November: the help chat in the corner
+
+- **Help chat** (`snippets/hs-help.liquid`, `assets/hs-help.js`, `hs-help.css`, `hs-help-agent.svg`; `n8n/HELP-CHAT.md`). The memo strip renders it on every page except the printable card.
+  - It shows only while the memo strip's **Help chat address** setting holds the n8n webhook. The guarded push writes that address from the `HS_HELP_CHAT_URL` secret (`help_chat: on`), and `off` clears it.
+  - Chips answer at once from the policies. Typed questions go to Claude through n8n. A person is one tap away, by email within 6 hours, through jonny@heartside.io.
+  - It says it is an automated assistant.
+  - It lifts above the journey dock, the sticky button and the next-gift bar.
+  - Tests: `tools/preview/help.browser.test.mjs`.
+- **The guarded push now ignores** `apps/` (the customer-account order-painting app, deployed with the Shopify CLI) and `notifications/` (email snippets pasted in admin).
+
 ## 5 November, evening: Krish's five asks (live since 19:33 UTC)
 
 Built in parallel from `docs/review/asks-2026-11-05/` (PRs #122 to #129). Record: `docs/evidence/2026-11-05-roast-and-place.md`.

@@ -7,7 +7,7 @@ import {Liquid} from 'liquidjs';
 const root=new URL('../../',import.meta.url);
 const source=process.env.HS_MEMO_TEST_BASELINE?execFileSync('git',['show',process.env.HS_MEMO_TEST_BASELINE+':shopify/sections/hs2-memo.liquid'],{cwd:root,encoding:'utf8'}):readFileSync(new URL('shopify/sections/hs2-memo.liquid',root),'utf8');
 // Stub asset and text-rendering snippets; execute the section's actual Liquid conditions.
-const body=source.replace("{%- render 'hs2-head' -%}",'').replace("{% render 'hs2-t', text: msg %}",'{{ msg }}').replace(/\{% render 'hs-cart-more'[^%]*%\}/,'').split('{% schema %}')[0];
+const body=source.replace("{%- render 'hs2-head' -%}",'').replace("{% render 'hs2-t', text: msg %}",'{{ msg }}').replace(/\{% render 'hs-cart-more'[^%]*%\}/,'').replace(/\{%- render 'hs-help'[^%]*-%\}/,'').split('{% schema %}')[0];
 const schema=JSON.parse(source.split('{% schema %}')[1].split('{% endschema %}')[0]);
 const defaults=Object.fromEntries(schema.settings.filter(s=>s.id).map(s=>[s.id,s.default]));
 const engine=new Liquid();

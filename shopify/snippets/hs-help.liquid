@@ -1,0 +1,11 @@
+{%- comment -%}
+  Heartside help: the help assistant in the bottom-right corner (assets/hs-help.js, hs-help.css; n8n/HELP-CHAT.md).
+  Rendered by the memo strip, which is on every page. `url` is the memo strip's "Help chat address"
+  setting: blank (the default) keeps help off, so the workflow address never lives in this repository.
+  Not on the printable card page.
+{%- endcomment -%}
+{%- if url contains 'https://' -%}{%- unless page.handle == 'card' -%}
+  {{ 'hs-help.css' | asset_url | stylesheet_tag }}
+  <div class="hs-help" data-hs-help data-url="{{ url | escape }}" data-avatar="{{ 'hs-help-agent.svg' | asset_url }}" hidden></div>
+  <script src="{{ 'hs-help.js' | asset_url }}" defer="defer"></script>
+{%- endunless -%}{%- endif -%}

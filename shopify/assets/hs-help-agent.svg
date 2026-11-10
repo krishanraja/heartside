@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Heartside help">
+  <!-- PLACEHOLDER (10 Nov 2026): a friendly guy with a call-center headset, drawn in code until the
+       final avatar is made through the Codex lane (codex/README.md). Same 96x96 file name, so the swap is one file. -->
+  <circle cx="48" cy="48" r="48" fill="#F0C0C0"/>
+  <path d="M14 96c2-17 16-27 34-27s32 10 34 27z" fill="#8A4A2B"/>
+  <path d="M38 66h20v9c0 5-4 8-10 8s-10-3-10-8z" fill="#E9B48F"/>
+  <ellipse cx="48" cy="45" rx="20" ry="23" fill="#F2C29C"/>
+  <path d="M27 42c-1-15 9-24 22-24 12 0 22 8 21 22-3-6-9-9-16-9-8 0-12-4-12-4s-4 9-15 15z" fill="#3E2A20"/>
+  <ellipse cx="40" cy="47" rx="2.6" ry="3.2" fill="#121010"/>
+  <ellipse cx="56" cy="47" rx="2.6" ry="3.2" fill="#121010"/>
+  <path d="M36 40q4-3 8 0M52 40q4-3 8 0" stroke="#3E2A20" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M40 56q8 7 16 0" stroke="#8A4A2B" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <circle cx="35" cy="54" r="3.5" fill="#E7A1BF" opacity="0.55"/>
+  <circle cx="61" cy="54" r="3.5" fill="#E7A1BF" opacity="0.55"/>
+  <path d="M24 46c0-17 11-28 24-28s24 11 24 28" stroke="#121010" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <rect x="19" y="41" width="9" height="15" rx="4" fill="#121010"/>
+  <rect x="68" y="41" width="9" height="15" rx="4" fill="#121010"/>
+  <path d="M24 55c0 9 6 13 14 13" stroke="#121010" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="36" y="65" width="9" height="6" rx="3" fill="#121010"/>
+</svg>
