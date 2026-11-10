@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- Printful shipments now mark Shopify orders fulfilled with tracking, and send the buyer Shopify's shipping email. The n8n workflow "Heartside: Printful shipped, mark Shopify fulfilled" has been live since 10 Nov 09:52 UTC. #1013 is marked fulfilled. All five order emails show the buyer's painting; Krish confirmed this on his phone. The snippets are in shopify/notifications/ and tested. shopify/apps/order-painting/ is an extension-only app that puts "Your painting" under each line on the customer-account order page, where Shopify shows the variant's example dog. Its logic is tested and it compiles, but it is not yet deployed. The three older order workflows now have successful-run saving set to "none" in their drafts. A separate session is moving their Shopify sign-in into a helper workflow that saves nothing. (2026-11-10)
 - `docs/SYNC.md` and `design/CANVA-SOURCES.md` describe Krish's 9 Nov Drive layout: `01_Identity`, `02_Imagery` and `04_Decks` directly under `Heartside/`, `03a_Social-Production` (iterating) and `03b_Social-Schedule` (ready to post), `09_OLD - Historical-and-Source`, with folder IDs. (2026-11-09)
 - the cart drawer offers both gifts not in the cart side by side, each with its own Add to cart, and a tab on the left edge brings it back after any close. The home strip leads with "Fast, free US shipping", the button reads "Design yours in minutes", the line under each dog's name is "Their true self, made the perfect gift", and the Juno carousel set shows one mug, not two. (2026-11-06)
 - the full purchase path is proven live after today's fixes. Two buyers went through Teeinblue's real painter on heartside.io to the checkout page, with nothing typed or paid. A single mug painted in 46 s and was added in 20 s, with its checkout picture. Three gifts in Roast painted in 39 to 54 s each and were added in 16 to 23 s each, every line with its picture, at 20% off ($234.40). Every question was asked once. A weekly real-engine run (.github/workflows/real-buyer.yml, Mondays, about $1.30 a week, approved by Krish) now sends six awkward buyers through the same path and opens a real-buyer issue when one fails. The hourly storefront guard asks the cart path with the HS_CANARY_DESIGN_ID secret, and both checks read ok. (2026-11-06)
@@ -56,6 +57,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-10 2026-11-10 order #1013 showed that shipments never reached Shopify, and that buyers saw an example dog in place of their painting. Fulfillment now flows back to Shopify, and every order email shows the painting. The order page gets the painting once the app is deployed.
 - 2026-11-09 Documentation only; no product or sales number moved.
 - 2026-11-06 Krish found the drawer gone for good after one tap outside, the drawer offering one gift at a time, and the Juno set showing the real mug pasted twice (6 Nov). The drawer's two cards and Check out fit one phone screen from 320x568 up. A gift still goes in the cart only once Teeinblue has painted it, so Add to cart takes the buyer to that painting, from the same photo with nothing asked. Juno was rebuilt from the same clean plate with no generation, and hero-sets.py --check now fails any set with more than one mug.
 - 2026-11-06 the cart is watched hourly and weekly, so a break on the path to purchase is found within the hour, not by Krish on his phone.
@@ -68,7 +70,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-09): none for heartside; the growth engine's `docs/DRIVE-MAP.md` owns the Drive map.
+- Next (2026-11-10): Krish runs docs/review/COWORK-ORDER-PAINTING.md in CoWork to deploy the order-page app and check it on #1013.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
@@ -85,7 +87,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
     - Ruling (Krish, 2026-11-05): he runs Facebook ads, so the blanket keeps its studio photo as its variant picture, and checkout's nested line keeps showing that example blanket. The dog-free tile CoWork attached that day was taken off the same day: the variant picture is the studio photo again and the tile is no longer on the product (it stays in Shopify Files). The mug and the portrait show an example dog there too, for the same reason;
     - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-09): holds.
+- North Star check (2026-11-10): holds.
 
 ## Read next
 
