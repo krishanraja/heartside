@@ -109,11 +109,11 @@ test('leaves our own Organization alone', () => {
   assert.equal(fs.readFileSync(h, 'utf8'), ours);
 });
 
-test('hs-head carries every icon size from the approved brand-v4 set, the manifest and a page colour', () => {
+test('hs-head carries every icon size from the approved brand-v5 set, the manifest and a page colour', () => {
   const snip = fs.readFileSync(new URL('shopify/snippets/hs-head.liquid', root), 'utf8');
   for (const n of [16, 32, 48, 192]) {
     assert.match(snip, new RegExp(`sizes="${n}x${n}" href="\\{\\{ 'hs-favicon-${n}\\.png' \\| asset_url \\}\\}"`));
-    assert.deepEqual(fs.readFileSync(new URL(`shopify/assets/hs-favicon-${n}.png`, root)), fs.readFileSync(new URL(`design/brand-v4/favicon-${n}.png`, root)), `${n} px is a byte copy`);
+    assert.deepEqual(fs.readFileSync(new URL(`shopify/assets/hs-favicon-${n}.png`, root)), fs.readFileSync(new URL(`design/brand-v5/favicon-${n}.png`, root)), `${n} px is a byte copy`);
   }
   assert.match(snip, /rel="apple-touch-icon" sizes="180x180"/);
   assert.match(snip, /<meta name="theme-color" content="#fbf6f1">/);
