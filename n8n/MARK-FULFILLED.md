@@ -6,7 +6,7 @@ The workflow "Heartside: Printful shipped, mark Shopify fulfilled" runs in n8n. 
 
 **State:** live since 10 November 2026, 09:52 UTC (`dryRun: false`, `notifyCustomer: true`), after the orders app got its fulfillment scopes and the order emails were changed to show the buyer's painting (`docs/evidence/2026-11-10-fulfillment-and-thumbnails/REPORT.md`). Successful runs are not saved, and failed runs are. A real shipment has not yet exercised it.
 
-**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53696). This is in the draft built on 10 November; until Krish publishes it, the live version still saves the token in failed runs.
+**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53696). Live since 10 November 2026, 11:40 UTC, on Krish's go.
 
 ## Why it exists
 

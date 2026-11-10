@@ -4,7 +4,7 @@ The workflow "Heartside: send paid orders to Printful" runs in n8n. It is privat
 
 **Built:** 2 November 2026. **State:** live since 2 November 2026, 14:32 UTC, on Krish's go ("this needs to be all as autonomous as possible").
 
-**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53678). This is in the draft built on 10 November; until Krish publishes it, the live version still saves the token in failed runs.
+**The Shopify token is never saved.** Every Shopify call goes through the helper workflow in `SHOPIFY-ADMIN-CALL.md`, which signs in, makes the call and returns only Shopify's answer. The helper saves none of its own runs, so no saved run of this workflow, failed or successful, holds the 24-hour token (checked 10 November 2026, execution 53678). Live since 10 November 2026, 11:40 UTC, on Krish's go.
 
 ## Why it exists
 

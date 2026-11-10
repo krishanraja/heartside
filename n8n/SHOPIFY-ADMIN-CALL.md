@@ -7,7 +7,7 @@ The workflow "Heartside: Shopify Admin call (saves nothing)" runs in n8n. It is 
 - `PRINTED-CARD.md`
 - `MARK-FULFILLED.md`
 
-**Built:** 10 November 2026. **State:** built and tested, not yet published. It goes live together with the four workflows' new versions, on Krish's go.
+**Built:** 10 November 2026. **State:** live since 10 November 2026, 11:40 UTC, on Krish's go ("go ahead, publish the helper then the four"). It was published first, then the four workflows, each at the exact version tested below.
 
 ## Why it exists
 
@@ -49,7 +49,7 @@ If the token needs debugging, run the helper by hand in the n8n editor. Nothing 
 
 ## Checked on 10 November 2026
 
-All runs were manual test executions of the new drafts. The published versions were not touched. In every failed run below, the token was really fetched before the failure. Each saved run was read back in full, with no `access_token` key and no Shopify token in any node's data or in the error.
+All runs were manual test executions of the drafts, before publication. In every failed run below, the token was really fetched before the failure. Each saved run was read back in full, with no `access_token` key and no Shopify token in any node's data or in the error.
 
 | Workflow | Failed on purpose | Read back | Working run, pinned data |
 |---|---|---|---|
