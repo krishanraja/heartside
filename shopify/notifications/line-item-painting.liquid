@@ -3,16 +3,21 @@
   Order confirmation, Shipping confirmation, Shipping update, Out for delivery, Delivered).
   Without it the email shows the product's variant picture, an example dog (Ruling, Krish, 2026-11-05: the
   variant pictures stay example dogs for the ads), so a buyer who painted their own dog sees a stranger's.
-  In each template, inside the loop over the order's lines, replace the block that starts
-  `{% if line.image %}` and draws `line | img_url: 'compact_cropped'` with this whole file. The loop
-  variable must be called `line` (Shopify's default templates use that name). The picture comes from
-  _hs_checkout_image (the checkout picture the cart registered), then _customization_image (Teeinblue's
-  preview of the painting), then the variant picture for a line with neither. Tested by
+  Replace each block that starts `{% if <var>.image %}` and draws `<var> | img_url: 'compact_cropped'` with
+  this whole file, then set hs_l on the first code line to that block's line item:
+    - Order confirmation, plain lines: `line` (as below);
+    - Order confirmation, lines inside a bundle group: `component`;
+    - the four shipping emails loop over fulfillment lines, so the gift is `line.line_item`.
+  A bundle group's own top picture is line-item-group-painting.liquid. Live in all five templates since
+  10 Nov 2026 (docs/evidence/2026-11-10-fulfillment-and-thumbnails/REPORT.md).
+  The picture comes from _hs_checkout_image (the checkout picture the cart registered), then
+  _customization_image (Teeinblue's preview), then the variant picture. Tested by
   tools/preview/line-item-painting-email.test.mjs.
 {%- endcomment -%}
-{%- assign hs_line_img = line.properties._hs_checkout_image | default: line.properties._customization_image | default: '' -%}
+{%- assign hs_l = line -%}
+{%- assign hs_line_img = hs_l.properties._hs_checkout_image | default: hs_l.properties._customization_image | default: '' -%}
 {%- if hs_line_img != '' -%}
-<img src="{{ hs_line_img }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ line.title | escape }}">
-{%- elsif line.image -%}
-<img src="{{ line | img_url: 'compact_cropped' }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ line.title | escape }}">
+<img src="{{ hs_line_img }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ hs_l.title | escape }}">
+{%- elsif hs_l.image -%}
+<img src="{{ hs_l | img_url: 'compact_cropped' }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ hs_l.title | escape }}">
 {%- endif -%}

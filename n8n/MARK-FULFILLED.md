@@ -4,7 +4,7 @@ The workflow "Heartside: Printful shipped, mark Shopify fulfilled" runs in n8n. 
 
 **Built:** 10 November 2026, on Krish's go ("Build a workflow that marks Shopify orders as fulfilled").
 
-**State:** built and tested on simulated data. Not yet published, and in dry run. It goes live after the orders app gets its fulfillment scopes and the order emails show the buyer's painting (`docs/review/COWORK-FULFILLMENT-AND-THUMBNAILS.md`).
+**State:** live since 10 November 2026, 09:52 UTC (`dryRun: false`, `notifyCustomer: true`), after the orders app got its fulfillment scopes and the order emails were changed to show the buyer's painting (`docs/evidence/2026-11-10-fulfillment-and-thumbnails/REPORT.md`). Successful runs are not saved, because the token response would be stored in plain form. Failed runs are saved. A real shipment has not yet exercised it.
 
 ## Why it exists
 

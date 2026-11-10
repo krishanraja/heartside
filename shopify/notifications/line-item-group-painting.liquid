@@ -1,0 +1,17 @@
+{%- comment -%}
+  A bundle group's top picture in the Order confirmation email. The checkout bundle (_hs_checkout_parent)
+  makes every Heartside gift a line-item group, which Shopify draws in `for line_item_group in
+  line_item_groups` with the group's picture first. Shopify's chain is parent_line_item, then
+  line_item_group, then the placeholder, which shows the variant's example dog (order #1013, 10 Nov 2026).
+  Paste this file directly before the tag in each group picture block that opens Shopify's chain
+  (if parent_line_item and parent_line_item.image), then change that tag's `if` to `elsif`. Shopify's own
+  chain then stays as the fallback.
+  The painting is the first component's _hs_checkout_image, then _customization_image.
+  Tested by tools/preview/line-item-painting-email.test.mjs.
+{%- endcomment -%}
+{%- assign hs_group_img = '' -%}
+{%- for hs_c in line_item_group.components -%}
+  {%- if hs_group_img == '' -%}{%- assign hs_group_img = hs_c.properties._hs_checkout_image | default: hs_c.properties._customization_image | default: '' -%}{%- endif -%}
+{%- endfor -%}
+{%- if hs_group_img != '' -%}
+<img src="{{ hs_group_img }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ line_item_group.title | escape }}">
