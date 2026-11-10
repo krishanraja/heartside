@@ -113,6 +113,11 @@
   var input = compose.querySelector('textarea');
   var errEl = handoff.querySelector('.hs-help__error');
   var busy = false;
+  // phones and tablets: focusing a field opens the keyboard over the chat, so nothing is focused by itself
+  // there; the buyer taps the field when they want to type (Krish, 10 Nov)
+  var touchy = !!(window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches);
+  var titleEl = panel.querySelector('.hs-help__title'); titleEl.setAttribute('tabindex', '-1');
+  function focusSoon(el) { setTimeout(function () { (touchy ? titleEl : el).focus({ preventScroll: true }); }, 30); }
 
   var GREETING = "Hi there, welcome to Heartside. I'm the help assistant, and I'm happy to help with anything: your photo, the gifts, delivery or an order.\n\nTap a question below or type your own. And if you'd rather talk to a real person, that's one tap away.";
 
@@ -128,6 +133,7 @@
     st.msgs.forEach(function (m) { log.appendChild(bubble(m)); });
     drawChips();
     handoff.hidden = !st.form || !!st.sent;
+    panel.classList.toggle('has-form', !!st.form && !st.sent);
     compose.hidden = !!st.form && !st.sent;
     scroll();
   }
@@ -159,7 +165,7 @@
     panel.hidden = !open;
     root.classList.toggle('is-open', open);
     launch.setAttribute('aria-expanded', String(open));
-    if (open) { drawAll(); setTimeout(function () { (st.form && !st.sent ? handoff.querySelector('input') : input).focus({ preventScroll: true }); }, 30); }
+    if (open) { drawAll(); focusSoon(st.form && !st.sent ? handoff.querySelector('input') : input); fit(); }
     else launch.focus({ preventScroll: true });
   }
   launch.addEventListener('click', function () { setOpen(!st.open); });
@@ -201,10 +207,11 @@
     if (st.sent) { add('assistant', 'The team already has this chat and will email you at ' + st.sent + ' within 6 hours. Anything you add here, they will see too if you send it again.'); return; }
     if (lead) add('assistant', lead);
     st.form = true; st.offered = true; save(); drawAll();
-    setTimeout(function () { handoff.querySelector('input').focus({ preventScroll: true }); }, 30);
+    focusSoon(handoff.querySelector('input'));
+    if (touchy) requestAnimationFrame(function () { handoff.scrollIntoView({ block: 'end' }); });
   }
   handoff.querySelector('[data-hs-help-cancel]').addEventListener('click', function () {
-    st.form = false; save(); drawAll(); input.focus({ preventScroll: true });
+    st.form = false; save(); drawAll(); focusSoon(input);
   });
   handoff.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -297,6 +304,21 @@
   window.addEventListener('scroll', soon, { passive: true });
   if ('MutationObserver' in window) new MutationObserver(soon).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
   lift();
+
+  // phones: when the keyboard opens, the sheet shrinks to the space above it, the header gets compact,
+  // and while the email form is up the chat log steps aside, so the field being typed in is always in view
+  function fit() {
+    var vv = window.visualViewport;
+    if (!vv || window.innerWidth >= 600 || panel.hidden) { panel.style.top = panel.style.height = ''; root.classList.remove('is-kb'); return; }
+    var kb = vv.height < window.innerHeight * 0.8;
+    root.classList.toggle('is-kb', kb);
+    if (kb) { panel.style.top = Math.round(vv.offsetTop) + 'px'; panel.style.height = Math.round(vv.height) + 'px'; }
+    else { panel.style.top = panel.style.height = ''; }
+    var a = document.activeElement;
+    if (kb && a && panel.contains(a) && /INPUT|TEXTAREA/.test(a.tagName)) requestAnimationFrame(function () { a.scrollIntoView({ block: 'nearest' }); });
+  }
+  if (window.visualViewport) { visualViewport.addEventListener('resize', fit); visualViewport.addEventListener('scroll', fit); }
+  panel.addEventListener('focusin', function () { setTimeout(fit, 250); });
 
   // test hook
   window.__hsHelp = { ask: ask, open: function () { setOpen(true); }, state: function () { return st; }, answers: A, lift: lift };

@@ -185,3 +185,37 @@ test('a handoff that fails says so and offers Try again; the retry sends', async
   assert.equal(calls.filter(c => c.action === 'handoff').length, 2);
   await ctx.close();
 });
+
+test('on a phone, opening the chat and asking for a person never opens the keyboard by itself', async () => {
+  const { ctx, p } = await open({ width: 390, height: 844 });
+  await p.click('.hs-help__launch');
+  await p.waitForTimeout(150);
+  assert.equal(await p.evaluate(() => /INPUT|TEXTAREA/.test(document.activeElement.tagName)), false, 'no field focused on open');
+  await p.click('.hs-help__chip[data-k="person"]');
+  await p.waitForTimeout(150);
+  assert.equal(await p.evaluate(() => /INPUT|TEXTAREA/.test(document.activeElement.tagName)), false, 'no field focused for the email form');
+  await ctx.close();
+});
+
+test('on a phone with the keyboard up, the sheet fits above it and the email field stays in view', async () => {
+  const { ctx, p } = await open({ width: 390, height: 844 });
+  await p.click('.hs-help__launch');
+  await p.click('.hs-help__chip[data-k="person"]');
+  // the keyboard takes the bottom 420 px, as on Krish's Android phone
+  await p.evaluate(() => {
+    Object.defineProperty(window.visualViewport, 'height', { configurable: true, get: () => 424 });
+    Object.defineProperty(window.visualViewport, 'offsetTop', { configurable: true, get: () => 0 });
+    document.querySelector('.hs-help__handoff input[name=email]').focus();
+    window.visualViewport.dispatchEvent(new Event('resize'));
+  });
+  await p.waitForTimeout(400);
+  const panel = await p.locator('.hs-help__panel').boundingBox();
+  assert.ok(panel.y >= 0 && panel.y + panel.height <= 424.5, `the sheet fits above the keyboard: ${JSON.stringify(panel)}`);
+  for (const sel of ['.hs-help__handoff input[name=email]', '.hs-help__handoff input[name=name]', '.hs-help__primary']) {
+    const b = await p.locator(sel).boundingBox();
+    assert.ok(b && b.y >= panel.y && b.y + b.height <= 424.5, `${sel} is in view above the keyboard: ${JSON.stringify(b)}`);
+  }
+  assert.equal(await p.locator('.hs-help__log').isVisible(), false, 'the chat log steps aside while typing the email');
+  if (SHOTS) await shot(p, 'phone-keyboard-form');
+  await ctx.close();
+});
