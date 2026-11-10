@@ -1,0 +1,13 @@
+{
+  "name": "heartside-order-painting",
+  "private": true,
+  "type": "module",
+  "workspaces": ["extensions/*"],
+  "scripts": {
+    "deploy": "shopify app deploy",
+    "dev": "shopify app dev"
+  },
+  "devDependencies": {
+    "@shopify/cli": "5.0.1"
+  }
+}

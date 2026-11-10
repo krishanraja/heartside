@@ -1,0 +1,9 @@
+{
+  "name": "order-painting",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@shopify/ui-extensions": "2026.10.2",
+    "preact": "11.2.0"
+  }
+}
