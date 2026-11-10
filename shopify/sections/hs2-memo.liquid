@@ -61,6 +61,8 @@
   </div>
   {%- comment -%} The "one more gift" drawer, on the cart page only (Krish, 5 Nov): data and its script, no height. {%- endcomment -%}
   {%- if template.name == 'cart' -%}{% render 'hs-cart-more', products: all_products, root: routes.root_url %}{%- endif -%}
+  {%- comment -%} Buddy's help, bottom right on every page (Krish, 10 Nov): off while the address is empty. {%- endcomment -%}
+  {%- render 'hs-help', url: section.settings.help_url -%}
 </div>
 
 {% schema %}
@@ -165,6 +167,12 @@
       "id": "card_product",
       "label": "Printed Christmas card add-on",
       "info": "The $12 card from the dog, offered with each gift until 11:59 pm Eastern on 3 December 2026. Empty, or a product that isn't available, hides it everywhere."
+    },
+    {
+      "type": "text",
+      "id": "help_url",
+      "label": "Help chat address",
+      "info": "The webhook of the n8n workflow \"Heartside: help chat (Buddy)\" (n8n/HELP-CHAT.md). Empty hides Buddy's help button on every page."
     }
   ],
   "presets": [
