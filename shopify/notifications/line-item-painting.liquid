@@ -1,0 +1,18 @@
+{%- comment -%}
+  The buyer's own painting as each gift's picture in Shopify's order emails (Settings, Notifications:
+  Order confirmation, Shipping confirmation, Shipping update, Out for delivery, Delivered).
+  Without it the email shows the product's variant picture, an example dog (Ruling, Krish, 2026-11-05: the
+  variant pictures stay example dogs for the ads), so a buyer who painted their own dog sees a stranger's.
+  In each template, inside the loop over the order's lines, replace the block that starts
+  `{% if line.image %}` and draws `line | img_url: 'compact_cropped'` with this whole file. The loop
+  variable must be called `line` (Shopify's default templates use that name). The picture comes from
+  _hs_checkout_image (the checkout picture the cart registered), then _customization_image (Teeinblue's
+  preview of the painting), then the variant picture for a line with neither. Tested by
+  tools/preview/line-item-painting-email.test.mjs.
+{%- endcomment -%}
+{%- assign hs_line_img = line.properties._hs_checkout_image | default: line.properties._customization_image | default: '' -%}
+{%- if hs_line_img != '' -%}
+<img src="{{ hs_line_img }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ line.title | escape }}">
+{%- elsif line.image -%}
+<img src="{{ line | img_url: 'compact_cropped' }}" align="left" width="60" height="60" class="order-list__product-image" alt="{{ line.title | escape }}">
+{%- endif -%}
