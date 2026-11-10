@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Heartside help">
+  <defs><clipPath id="portrait-c"><circle cx="48" cy="48" r="48"/></clipPath></defs>
+  <g clip-path="url(#portrait-c)">
+    <circle cx="48" cy="48" r="48" fill="#F0C0C0"/>
+    <path d="M8 100Q10 78 36 75H60Q85 78 88 100" fill="#8A4A2B"/>
+    <path d="M38 65H58V78Q48 85 38 78Z" fill="#74432E"/>
+    <path d="M25 41Q17 37 19 49Q20 57 27 55M71 41Q79 37 77 49Q76 57 69 55" fill="#925638"/>
+    <path d="M25 33Q25 18 48 18Q71 18 71 33V53Q70 75 48 77Q26 75 25 53Z" fill="#A96A47"/>
+    <path d="M24 39V29Q23 13 42 12Q65 9 72 26L71 39L65 29Q46 33 34 26L30 39Z" fill="#26201E"/>
+    <path d="M31 39Q36 36 41 39M55 39Q60 36 65 39" fill="none" stroke="#26201E" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M34 46Q37 43 40 46M56 46Q59 43 62 46" fill="none" stroke="#121010" stroke-width="3" stroke-linecap="round"/>
+    <path d="M48 47L45 54H50" fill="none" stroke="#74432E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M35 59Q48 64 61 59Q58 71 48 71Q38 71 35 59" fill="#572C28"/>
+    <path d="M38 61Q48 64 58 61L55 66H41Z" fill="#FBF6F1"/>
+    <path d="M20 43V34C20 3 76 3 76 34V44" fill="none" stroke="#121010" stroke-width="5" stroke-linecap="round"/>
+    <rect x="16" y="39" width="11" height="21" rx="5.5" fill="#121010"/>
+    <rect x="69" y="39" width="11" height="21" rx="5.5" fill="#121010"/>
+    <path d="M75 56Q77 69 60 69" fill="none" stroke="#121010" stroke-width="4" stroke-linecap="round"/>
+    <rect x="54" y="66" width="11" height="6" rx="3" fill="#121010"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Heartside help">
+  <defs><clipPath id="portrait-b"><circle cx="48" cy="48" r="48"/></clipPath></defs>
+  <g clip-path="url(#portrait-b)">
+    <circle cx="48" cy="48" r="48" fill="#FBF6F1"/>
+    <path d="M8 100Q9 79 33 75H63Q86 80 88 100" fill="#121010"/>
+    <path d="M37 65H59V78Q48 87 37 78Z" fill="#98603F"/>
+    <path d="M24 41Q17 37 18 48Q19 57 27 55M72 41Q79 37 78 48Q77 57 69 55" fill="#B97E53"/>
+    <path d="M24 32Q24 17 48 17Q72 17 72 33V51Q71 75 48 77Q25 75 24 51Z" fill="#C68B5E"/>
+    <path d="M24 39Q18 29 24 24Q20 17 29 15Q30 7 39 12Q46 5 52 11Q63 6 66 15Q77 15 73 25Q79 32 72 40L66 29Q58 32 51 27Q40 33 30 28Z" fill="#30251F"/>
+    <path d="M31 40Q36 37 41 39M55 39Q60 37 65 40" fill="none" stroke="#30251F" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="37" cy="46" rx="2.6" ry="3.2" fill="#121010"/>
+    <ellipse cx="59" cy="46" rx="2.6" ry="3.2" fill="#121010"/>
+    <path d="M48 47L45 54H50" fill="none" stroke="#98603F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M27 54Q30 61 34 59Q48 54 62 59Q66 61 69 54Q68 74 48 77Q28 74 27 54" fill="#493127"/>
+    <path d="M35 59Q48 64 61 59Q58 71 48 71Q38 71 35 59" fill="#6E342C"/>
+    <path d="M38 61Q48 64 58 61L55 66H41Z" fill="#FBF6F1"/>
+    <path d="M20 43V35C20 3 76 3 76 35V43" fill="none" stroke="#121010" stroke-width="5" stroke-linecap="round"/>
+    <rect x="16" y="39" width="11" height="21" rx="5.5" fill="#121010"/>
+    <rect x="69" y="39" width="11" height="21" rx="5.5" fill="#121010"/>
+    <path d="M75 56Q78 69 60 69" fill="none" stroke="#121010" stroke-width="4" stroke-linecap="round"/>
+    <rect x="54" y="66" width="11" height="6" rx="3" fill="#121010"/>
+  </g>
+</svg>
