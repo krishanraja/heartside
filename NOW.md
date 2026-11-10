@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-09
-head: b4897a6
+as_of: 2026-11-10
+head: faf9389
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-09)
+## Where it is right now (as of 2026-11-10)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
