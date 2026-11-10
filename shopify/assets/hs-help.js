@@ -191,6 +191,7 @@
     }
     head.addEventListener('pointerup', end);
     head.addEventListener('pointercancel', end);
+    head.addEventListener('lostpointercapture', end);
   })();
   root.querySelector('.hs-help__close').addEventListener('click', function () { setOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && st.open) setOpen(false); });

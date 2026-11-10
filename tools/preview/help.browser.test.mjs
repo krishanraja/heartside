@@ -153,12 +153,18 @@ test('the chat stays with the buyer from page to page in one visit', async () =>
 test('on a phone, dragging the sheet down by its header closes it; a short drag springs back', async () => {
   const { ctx, p } = await open({ width: 390, height: 844 });
   await p.click('.hs-help__launch');
-  const head = await p.locator('.hs-help__head').boundingBox();
-  const x = head.x + 60, y = head.y + 30;
-  await p.mouse.move(x, y); await p.mouse.down(); await p.mouse.move(x, y + 40, { steps: 4 }); await p.mouse.up();
+  // a finger on the header, as a phone sends it: down, a few moves, up
+  const drag = (dy) => p.evaluate(async (dy) => {
+    const head = document.querySelector('.hs-help__head'), r = head.getBoundingClientRect();
+    const x = r.left + 60, y = r.top + 30, o = { bubbles: true, pointerId: 7, pointerType: 'touch', isPrimary: true, button: 0, clientX: x };
+    head.dispatchEvent(new PointerEvent('pointerdown', Object.assign({}, o, { clientY: y })));
+    for (let i = 1; i <= 4; i++) { await new Promise(res => setTimeout(res, 60)); head.dispatchEvent(new PointerEvent('pointermove', Object.assign({}, o, { clientY: y + dy * i / 4 }))); }
+    head.dispatchEvent(new PointerEvent('pointerup', Object.assign({}, o, { clientY: y + dy })));
+  }, dy);
+  await drag(40);
   await p.waitForTimeout(300);
   assert.equal(await p.locator('.hs-help__panel').isVisible(), true, 'a short drag keeps it open');
-  await p.mouse.move(x, y); await p.mouse.down(); await p.mouse.move(x, y + 220, { steps: 8 }); await p.mouse.up();
+  await drag(220);
   await p.waitForSelector('.hs-help__panel', { state: 'hidden' });
   assert.equal(await p.getAttribute('.hs-help__launch', 'aria-expanded'), 'false');
   await ctx.close();
