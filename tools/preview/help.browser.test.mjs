@@ -84,8 +84,9 @@ test('a typed question goes to the workflow with the chat and comes back with ch
 test('asking for a person shows the email form; sending it promises a reply within 6 hours', async () => {
   const { ctx, p, calls } = await open({ width: 390, height: 844 }, '', b => b.action === 'handoff' ? { ok: true } : {});
   await p.click('.hs-help__launch');
+  await p.waitForSelector('#hs-help-input');
   await p.fill('#hs-help-input', 'Can I talk to someone about my order?');
-  await p.keyboard.press('Enter');
+  await p.click('.hs-help__send');
   await p.waitForSelector('.hs-help__handoff:not([hidden])');
   assert.equal(calls.length, 0, 'no AI call for a plain request for a person');
   await p.click('.hs-help__primary');
@@ -217,5 +218,14 @@ test('on a phone with the keyboard up, the sheet fits above it and the email fie
   }
   assert.equal(await p.locator('.hs-help__log').isVisible(), false, 'the chat log steps aside while typing the email');
   if (SHOTS) await shot(p, 'phone-keyboard-form');
+  await ctx.close();
+});
+
+test('typing straight away on a phone keeps the cursor in the box', async () => {
+  const { ctx, p } = await open({ width: 390, height: 844 });
+  await p.click('.hs-help__launch');
+  await p.focus('#hs-help-input');
+  await p.waitForTimeout(120);
+  assert.equal(await p.evaluate(() => document.activeElement.id), 'hs-help-input');
   await ctx.close();
 });

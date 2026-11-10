@@ -6,6 +6,7 @@
   Each card is the question and the first sentence of its short answer. Used by templates/blog.answers.json.
 {%- endcomment -%}
 {%- render 'hs2-head' -%}
+{%- render 'hs-schema', kind: 'answers', blog: blog -%}
 <style>
   .hs-lib { --ink: #121010; --cream: #FBF6F1; --muted: #5A4A44; --rule: #E8DCD3; --chestnut: #8A4A2B; --red: #A8284E;
     background: var(--cream); color: var(--ink); padding: 24px 16px 40px; font-family: "HS DM Sans", system-ui, sans-serif; }

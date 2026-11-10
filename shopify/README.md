@@ -13,6 +13,20 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 10 November: search and AI answers (SEO and GEO)
+
+- **Structured data** (`snippets/hs-schema.liquid`):
+  - every Offer carries free US shipping, with its 2 to 5 handling days and 3 to 7 transit days;
+  - the Organization carries a contact point and the topics it knows;
+  - the homepage graph adds an FAQPage drawn from the live policies;
+  - the Answers library (`sections/hs-answers-index.liquid`) lists every article as a CollectionPage. Tests: `tools/preview/core-schema.test.mjs`.
+- **`/llms.txt`** (`templates/llms.txt.liquid`) adds the savings, the card, the Christmas date, the styles and tones, every Answers article, four quotes from "What people say", and the help chat.
+- **Set in Shopify, not in this repo** (Admin API, 10 Nov):
+  - SEO titles and descriptions on the four products, the All gifts collection (with a description), the Answers blog and the contact page;
+  - `seo.hidden` on the empty frontpage collection and on `/pages/card`;
+  - 13 new Answers articles (source: `content/answers/2026-11-10-answers.py`), each with its own search description;
+  - the December 4 date in the Christmas gift article.
+
 ## 10 November: the help chat in the corner
 
 - **What people say** (`sections/hs-reviews.liquid`, `assets/hs-reviews.css`, `hs-reviews.js`) sits under the showcase on the homepage.

@@ -19,12 +19,26 @@ test('unavailable or missing core entries do not create stale catalog links or i
  assert.deepEqual(graph.find(x=>x['@type']==='ItemList').itemListElement.map(x=>[x.position,x.name]),[[1,'Portrait']]);
  assert.deepEqual((await render({kind:'home',all_products:{}})).find(x=>x['@type']==='ItemList').itemListElement,[]);
 });
-test('product offers use actual variant prices and preserve the framed/unframed family without a false zero shipping rate',async()=>{
+// 10 Nov 2026: shipping is free on every US order (live shipping policy), so a zero US rate is true now;
+// it carries the policy's 2 to 5 business days to print and 3 to 7 to deliver.
+test('product offers use actual variant prices, preserve the framed/unframed family, and carry the free US shipping terms',async()=>{
  for(const [index,prices] of [[0,[4500]],[1,[12900]],[2,[5900,11900]]]){
   const product={...catalog[handles[index]],description:index===1?'Word-free personalized artwork on a 50 x 60 in sherpa blanket.':'Approved personalized artwork.',images:[],variants:prices.map((price,i)=>({id:100+i,title:index===0?'11 oz':index===1?'50 x 60 in':i?'Framed':'Unframed',price,available:true,sku:'sku'+i}))};
   const graph=await render({kind:'product',product,cart:{currency:{iso_code:'USD'}}});
   const item=graph.find(x=>x['@type']==='Product');assert.deepEqual(item.offers.map(x=>x.price),prices.map(x=>x/100));
-  assert.ok(item.offers.every(x=>!('shippingDetails' in x)));assert.ok(item.offers.every(x=>x.url.startsWith('https://heartside.io'+product.url+'?variant=')));
+  assert.ok(item.offers.every(x=>x.shippingDetails.shippingRate.value===0&&x.shippingDetails.shippingRate.currency==='USD'&&x.shippingDetails.shippingDestination.addressCountry==='US'&&x.shippingDetails.deliveryTime.handlingTime.maxValue===5&&x.shippingDetails.deliveryTime.transitTime.maxValue===7));assert.ok(item.offers.every(x=>x.url.startsWith('https://heartside.io'+product.url+'?variant=')));
   product.variants[0].price+=100;const changed=(await render({kind:'product',product})).find(x=>x['@type']==='Product');assert.equal(changed.offers[0].price,prices[0]/100+1);
  }
+});
+
+test('the home graph answers the common questions from the live policies, and the Answers library lists every article',async()=>{
+ const graph=await render({kind:'home',all_products:catalog});
+ const faq=graph.find(x=>x['@type']==='FAQPage');
+ const text=JSON.stringify(faq);
+ for(const fact of ['$45','$129','$59','$119','December 4','30 days','free digital card']) assert.ok(text.includes(fact),fact);
+ assert.doesNotMatch(text,/ornament/i);
+ const html=await engine.parseAndRender(source,{kind:'answers',blog:{url:'/blogs/answers',articles:[{title:'A?',url:'/blogs/answers/a'},{title:'B?',url:'/blogs/answers/b'}]}});
+ const page=JSON.parse(html.match(/<script[^>]*>([\s\S]*?)<\/script>/)[1]);
+ assert.equal(page['@type'],'CollectionPage');
+ assert.deepEqual(page.mainEntity.itemListElement.map(x=>x.url),['https://heartside.io/blogs/answers/a','https://heartside.io/blogs/answers/b']);
 });

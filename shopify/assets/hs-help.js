@@ -117,7 +117,14 @@
   // there; the buyer taps the field when they want to type (Krish, 10 Nov)
   var touchy = !!(window.matchMedia && matchMedia('(hover: none) and (pointer: coarse)').matches);
   var titleEl = panel.querySelector('.hs-help__title'); titleEl.setAttribute('tabindex', '-1');
-  function focusSoon(el) { setTimeout(function () { (touchy ? titleEl : el).focus({ preventScroll: true }); }, 30); }
+  function focusSoon(el) {
+    setTimeout(function () {
+      // never pull the cursor out of a field the buyer has already tapped into
+      var a = document.activeElement;
+      if (a && panel.contains(a) && /INPUT|TEXTAREA/.test(a.tagName)) return;
+      (touchy ? titleEl : el).focus({ preventScroll: true });
+    }, 30);
+  }
 
   var GREETING = "Hi there, welcome to Heartside. I'm the help assistant, and I'm happy to help with anything: your photo, the gifts, delivery or an order.\n\nTap a question below or type your own. And if you'd rather talk to a real person, that's one tap away.";
 
