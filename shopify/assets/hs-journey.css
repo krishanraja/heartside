@@ -93,6 +93,11 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 @keyframes hsj-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 .hsj-note__ask.is-writing { color: var(--accent); font-weight: 600; }
 .hsj-note__ask.is-writing::after { content: ""; display: inline-block; width: 14px; text-align: left; animation: hsj-dots 1.2s steps(4) infinite; }
+/* while it writes, the status has the row to itself, on one line with its dots beside it (Krish, 11 Nov:
+   "writing a funny note" with the dots on a second line "looks unprofessional"); Write it again returns with the note */
+.hsj-note.is-busy .hsj-note__foot { min-height: 40px; }
+.hsj-note.is-busy .hsj-note__foot [data-hsj-rewrite] { display: none; }
+.hsj-note .hsj-note__ask.is-writing { white-space: nowrap; overflow-wrap: normal; }
 @keyframes hsj-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
 .hsj-letter.is-fresh > * { animation: hsj-in .45s var(--ease, cubic-bezier(.2,.8,.2,1)) both; }
 .hsj-letter.is-fresh > *:nth-child(2) { animation-delay: .12s; } .hsj-letter.is-fresh > *:nth-child(3) { animation-delay: .24s; }

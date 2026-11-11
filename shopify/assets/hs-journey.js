@@ -522,7 +522,7 @@
   function viewWords() {
     var n = names();
     // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
-    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'It comes with the gift. The tone changes its words only.',
+    return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'It comes with the gift. Pick its tone.',
       '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
         return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
       }).join('') + '</div>', primary('See ' + esc(n.dog) + ' painted', 'done', true));
