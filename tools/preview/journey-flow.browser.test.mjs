@@ -243,6 +243,22 @@ for (const size of SIZES) test(`photo first at ${size.width}x${size.height}: pho
     await page.locator('[data-hsj-next]').click();
     for (const [id, v] of [['home', 'door'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); if (size.width < 900) await noScroll(page, id); await pick(page, id, v); }
     await page.waitForSelector('[data-hsj-screen="words"]');
+    // Buddy's line takes one line, so the note has the room; while the note writes, its status sits on one
+    // line with its dots and Write it again steps aside (Krish, 11 Nov: the dots on a second line "looks unprofessional")
+    const noteRoom = await page.evaluate(() => {
+      const sub = document.querySelector('[data-hsj-screen="words"] .hsj-host .hsj-support');
+      const box = document.querySelector('[data-hsj-note]'), was = box.innerHTML, busy = box.classList.contains('is-busy');
+      box.classList.add('is-busy');
+      box.innerHTML = '<div class="hsj-note__foot"><span class="hsj-note__ask is-writing" data-hsj-note-ask>Writing a tender note</span><button type="button" class="hsj-text-btn" data-hsj-rewrite disabled><span>Write it again</span></button></div>';
+      const ask = box.querySelector('[data-hsj-note-ask]'), lh = parseFloat(getComputedStyle(ask).lineHeight);
+      const r = {sub: sub ? Math.round(sub.getBoundingClientRect().height / parseFloat(getComputedStyle(sub).lineHeight)) : 0,
+        ask: Math.round(ask.getBoundingClientRect().height / lh), again: getComputedStyle(box.querySelector('[data-hsj-rewrite]')).display};
+      box.innerHTML = was; box.classList.toggle('is-busy', busy);
+      return r;
+    });
+    if (size.width < 900) assert.ok(noteRoom.sub <= 1, "Buddy's line on the note screen is one line (short phones hide it): " + noteRoom.sub);
+    assert.equal(noteRoom.ask, 1, 'the writing status is one line, dots included');
+    assert.equal(noteRoom.again, 'none', 'Write it again steps aside while the note writes');
     for (let i = 0; i < 50 && !calls.length; i++) await page.waitForTimeout(100);
     await page.locator('[data-hsj-tone="hilarious"]').click();
     await page.waitForFunction(() => /arrivals very seriously/.test(document.querySelector('[data-hsj-note]').textContent), null, {timeout: 8000});
