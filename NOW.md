@@ -47,6 +47,7 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- on the note step Buddy's line is one line ("It comes with the gift. Pick its tone.") so the note card has more room, and while a note writes its status sits on one line with its dots, with Write it again hidden until the note lands. (2026-11-11)
 - the dachshund carrying a heart letter (design/brand-v5/) is the favicon at every size and, through the theme push's new `logo` input, the top-left header icon (heartside-icon-dachshund.png in Shopify Files, 44 px, 36 on phones, rounded corners). (2026-11-10)
 - heartside.io is set up to be found in search and AI answers. 19 Answers articles (13 new, written for the questions people ask: custom dog mug from a photo, a blanket with my dog's face, dog mom and dog dad gifts, Secret Santa under $50, what the note should say, delivery times) each carry a direct answer as FAQ data and their own search description. The products, the All gifts collection, Answers and contact now carry search titles and short descriptions; the empty frontpage collection and the printable card page are hidden from search. Structured data adds free US shipping with handling and transit days to every offer, an FAQ on the homepage, and the Answers list; /llms.txt carries the full picture for AI assistants. Everything was checked on the live site except the theme code, which goes live with this merge and push. (2026-11-10)
 - a new social ad set is in design/social-ads-2026-11-10/ (4:5, 1:1, 9:16 and the 1200x630 link card), built by tools/print-art/social_ads.py from the approved room sets. It leads with the golden's room set, the note in the dog's voice and the Christmas date. The link card replaces heartside.io's share image once it is uploaded to Shopify Files. (2026-11-10)
@@ -80,7 +81,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-10): read the live header and tab icon back after the push with `logo: heartside-icon-dachshund.png`.
+- Next (2026-11-11): Krish checks the note step on his phone once the theme is pushed.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
@@ -97,7 +98,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
     - Ruling (Krish, 2026-11-05): he runs Facebook ads, so the blanket keeps its studio photo as its variant picture, and checkout's nested line keeps showing that example blanket. The dog-free tile CoWork attached that day was taken off the same day: the variant picture is the studio photo again and the tile is no longer on the product (it stays in Shopify Files). The mug and the portrait show an example dog there too, for the same reason;
     - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-10): holds.
+- North Star check (2026-11-11): holds.
 
 ## Read next
 
