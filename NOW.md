@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-11
-head: f6d9756
+as_of: 2026-11-12
+head: a5f0802
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-11)
+## Where it is right now (as of 2026-11-12)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -43,20 +43,13 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 **The 28 October acceptance fixes** (PR [#65](https://github.com/krishanraja/heartside/pull/65), record [`docs/evidence/2026-10-28-acceptance-fixes.md`](docs/evidence/2026-10-28-acceptance-fixes.md)) reached buyers when the theme was published on 30 October. The one-screen journey (Track B) was built from Krish's 29 October brief and is live since 2 November.
 
-**Live since 27 and 28 October:** the journey redesign ([record](docs/evidence/2026-10-27-go-live.md)), the 15% and 20% bundle and the $29 Artist's touch add-on, and the example paintings on the first screen ([record](docs/evidence/2026-10-28-examples-live.md)). Real orders paint with the chosen tone and style because CoWork applied the 27 October prompt spec on 28 October. Two High findings stay open for Krish: no print check yet covers the current products, and the $45 mug sits below the 30% floor in every modeled case.
+**Live since 27 and 28 October:** the journey redesign ([record](docs/evidence/2026-10-27-go-live.md)), the 15% and 20% bundle and the $29 Artist's touch add-on, and the example paintings on the first screen ([record](docs/evidence/2026-10-28-examples-live.md)). Real orders paint with the chosen tone and style because CoWork applied the 27 October prompt spec on 28 October. Two High findings were recorded open for Krish on 28 October: no print check yet covers the current products, and the $45 mug sits below the 30% floor in every modeled case.
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
 - on the note step Buddy's line is one line ("It comes with the gift. Pick its tone.") so the note card has more room, and while a note writes its status sits on one line with its dots, with Write it again hidden until the note lands. (2026-11-11)
 - the dachshund carrying a heart letter (design/brand-v5/) is the favicon at every size and, through the theme push's new `logo` input, the top-left header icon (heartside-icon-dachshund.png in Shopify Files, 44 px, 36 on phones, rounded corners). (2026-11-10)
 - heartside.io is set up to be found in search and AI answers. 19 Answers articles (13 new, written for the questions people ask: custom dog mug from a photo, a blanket with my dog's face, dog mom and dog dad gifts, Secret Santa under $50, what the note should say, delivery times) each carry a direct answer as FAQ data and their own search description. The products, the All gifts collection, Answers and contact now carry search titles and short descriptions; the empty frontpage collection and the printable card page are hidden from search. Structured data adds free US shipping with handling and transit days to every offer, an FAQ on the homepage, and the Answers list; /llms.txt carries the full picture for AI assistants. Everything was checked on the live site except the theme code, which goes live with this merge and push. (2026-11-10)
-- a new social ad set is in design/social-ads-2026-11-10/ (4:5, 1:1, 9:16 and the 1200x630 link card), built by tools/print-art/social_ads.py from the approved room sets. It leads with the golden's room set, the note in the dog's voice and the Christmas date. The link card replaces heartside.io's share image once it is uploaded to Shopify Files. (2026-11-10)
-- the nine reviewer photos Krish added in the theme editor are now in the repo (templates/index.json), so the guarded push no longer stops at the editor-edits guard. PR #143 and #144 are merged to main; the phone keyboard fix and the review card fix are live once the theme is pushed. (2026-11-10)
-- on phones the help chat no longer opens the keyboard by itself, and when the buyer taps a field the sheet fits the space above the keyboard with a compact header, so the email form is always in view. The homepage review cards show their whole edges, and on phones one card sits in the middle with its neighbours peeking evenly. (2026-11-10)
-- the help chat is live on heartside.io (push with help_chat on, from the HS_HELP_CHAT_URL secret; checked on a live phone view). The homepage gains "What people say", an auto-rotating carousel of nine quotes in the people's own words with initials in place of photos, and the help chat's phone sheet now drags down to close and shows Sending, Sent and Try again. docs/SELLING.md lists the quotes and how they may be used. (2026-11-10)
-- the help chat is live in n8n: the workflow "Heartside: help chat" is published, a real Claude answer and a real handoff email to jonny@heartside.io were checked on 10 Nov, and the theme code goes out with this merge. On the storefront it stays hidden until the memo strip's Help chat address is set, either from the HS_HELP_CHAT_URL secret (Krish adds it; the push then runs with help_chat on) or by pasting the address in the theme editor. Codex is booked (5d04e37a) for three avatar options, codex/queue/help-avatar-2026-11-10.md. docs/SELLING.md is the current sell sheet for the growth repo: the offer, true angles, promises and the claims not to make, including that there are no published reviews yet. (2026-11-10)
-- The four order workflows (send to Printful, note and confirm, printed card, mark fulfilled) no longer sign in to Shopify themselves. They call a new helper workflow, "Heartside: Shopify Admin call (saves nothing)", which fetches the 24-hour token, makes the call and returns only Shopify's answer, and saves none of its own runs. A deliberately failed test run of each draft (53678, 53687, 53692, 53696) was read back with no token in it, and each draft passed a pinned-data working run. On Krish's go, the helper and then the four tested versions were published at 11:40 UTC, so no saved run from then on holds the token. n8n/SHOPIFY-ADMIN-CALL.md and the four workflow docs say how the token is handled. (2026-11-10)
-- Printful shipments now mark Shopify orders fulfilled with tracking, and send the buyer Shopify's shipping email. The n8n workflow "Heartside: Printful shipped, mark Shopify fulfilled" has been live since 10 Nov 09:52 UTC. #1013 is marked fulfilled. All five order emails show the buyer's painting; Krish confirmed this on his phone. The snippets are in shopify/notifications/ and tested. shopify/apps/order-painting/ is an extension-only app that puts "Your painting" under each line on the customer-account order page, where Shopify shows the variant's example dog. Its logic is tested and it compiles, but it is not yet deployed. The three older order workflows now have successful-run saving set to "none" in their drafts. A separate session is moving their Shopify sign-in into a helper workflow that saves nothing. (2026-11-10)
 
 ## What changed recently
 
@@ -70,14 +63,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - 2026-11-10 the Shopify token moved out of every saved n8n run. It protects the order path every sale runs through; it does not move the number directly.
 - 2026-11-10 order #1013 showed that shipments never reached Shopify, and that buyers saw an example dog in place of their painting. Fulfillment now flows back to Shopify, and every order email shows the painting. The order page gets the painting once the app is deployed.
 - 2026-11-09 Documentation only; no product or sales number moved.
-- 2026-11-06 Krish found the drawer gone for good after one tap outside, the drawer offering one gift at a time, and the Juno set showing the real mug pasted twice (6 Nov). The drawer's two cards and Check out fit one phone screen from 320x568 up. A gift still goes in the cart only once Teeinblue has painted it, so Add to cart takes the buyer to that painting, from the same photo with nothing asked. Juno was rebuilt from the same clean plate with no generation, and hero-sets.py --check now fails any set with more than one mug.
-- 2026-11-06 the cart is watched hourly and weekly, so a break on the path to purchase is found within the hour, not by Krish on his phone.
-- 2026-11-06 the card a buyer sees in the cart is the card Printful prints, and the bundle drawer reaches the buyers it was built for.
-- 2026-11-05 Krish's five asks from his phone run went live on his yes (theme push run 177, PRs #121 to #129): the place question stages the painting, the journey's screens move without jutter, and pages load faster (lab: first question 12.2 s to 8.2 s). Details in docs/history/LOG.md.
-- 2026-11-05 Roast now winks, because a situation alone did not read as Roast in thirteen real paintings and lettering was cancelled as too risky (Krish, 5 Nov).
-- 2026-11-04 Krish called the "Checking the photo" screen horrible (it cropped the photo), found the tones "way too similar to each other" and the copy cut off, and could not untick the blanket. The causes: a visible check, a fade mask over the note, one set of backup lines shared by every tone, a live note writer that predated the tone prompt, and a gift page that locked its own gift. Over the top was renamed Roast and redefined.
-- 2026-11-03 the live site sent only one 32 px icon. /favicon.ico and the touch icon were 404, the theme colour was empty, and the share image still advertises the ornament and the worded mug.
-- 2026-11-02 Krish found the second "Painting" screen, the repeated chooser and the cut-off cart offer tacky in a real purchase, and his order sat at Teeinblue for six hours waiting for a manual send. Shopify forbids store pages inside frames, so background painting was replaced by one continuous automatic add.
 
 ## What is next and what is waiting on Krish
 
