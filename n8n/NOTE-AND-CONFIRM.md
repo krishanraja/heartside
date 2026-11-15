@@ -8,7 +8,7 @@ The workflow "Heartside: dog note on the packing slip, then confirm" runs in n8n
 
 ## What it does
 
-The workflow runs every 10 minutes, and it can also be run by hand.
+The workflow runs every hour at :35, half an hour after the send workflow (Krish, 15 Nov 2026: slowed from every 10 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand. An order still stuck after two hours is emailed once, on the run between two and three hours.
 
 1. **Reads Printful's drafts** (n8n credential `Printful - Heartside orders`) and keeps only those that:
    - Teeinblue sent: the external id is the Shopify order name, like `#1012`;
