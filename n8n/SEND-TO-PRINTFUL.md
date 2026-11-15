@@ -12,7 +12,7 @@ On 2 November CoWork found that Teeinblue never sends an order to Printful on it
 
 ## What it does
 
-It runs every hour at :05 (Krish, 15 Nov 2026: slowed from every 10 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand.
+It runs every 4 hours at :05 until 6 Dec, then hourly (Krish, 15 Nov 2026: slowed from every 10 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand.
 
 1. **Reads the paid, unfulfilled orders** placed since `since`, through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`), which signs in with the "Heartside n8n orders" app (`read_orders`).
 2. **Reads Printful's orders** and leaves alone any order Printful already has. Teeinblue and this workflow both use the Shopify order name as the external id, so an order is never sent twice, even if someone also presses Teeinblue's button.
@@ -21,7 +21,7 @@ It runs every hour at :05 (Krish, 15 Nov 2026: slowed from every 10 minutes beca
    - orders named in `hold`;
    - anything younger than `minAgeMinutes` (15). Teeinblue makes the print file in the first minutes.
 
-   It emails hello@krishraja.com once, on the hourly run between one and two hours after the order, when a person is needed:
+   It emails hello@krishraja.com once, on the run between one and five hours after the order (one and two hours once it is hourly again), when a person is needed:
    - an Artist's touch is on the order (the artist reworks the design first);
    - a line it does not know;
    - no readable shipping address;
