@@ -16,7 +16,7 @@ There was a second risk. The send workflow (`SEND-TO-PRINTFUL.md`) treats every 
 
 ## What it does
 
-It runs every 30 minutes, and it can also be run by hand.
+It runs every 12 hours at :20 until 6 Dec, then every 3 hours (Krish, 15 Nov 2026: slowed from every 30 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand.
 
 1. **Reads the open orders.** Through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`), signed in as the "Heartside n8n orders" app, it reads the paid orders that are not fully fulfilled since `since`, with their fulfillment-order lines.
 2. **Skips** test orders, cancelled orders, orders tagged `do-not-fulfill`, and orders named in `hold`.
