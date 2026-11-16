@@ -54,9 +54,24 @@ The growth engine's live walk counted about 9 taps from the homepage to "Start p
 | **To seeing the painting on the gift** | **16** | **15** |
 | Painting to checkout: tick "Yes, this is <dog>", Add to cart, Check out on the cart page | 3 | 3 |
 
-Implemented here, as safe: the landing itself, its deep link with the gift ticked, and the attribution. Proposed for Krish, not implemented, because each changes a journey decision he made:
+Implemented here, as safe: the landing itself, its deep link with the gift ticked, and the attribution. Proposed for Krish, because each changes a journey decision he made:
 
-1. **Show the painting the moment it is ready, and ask the note's questions after it** (or let the buyer skip them for the scripted note): 15 taps becomes 7. The biggest cut, and it reverses the 4 Nov order ("one step at a time ... and then the user purchases").
+1. **Show the painting the moment it is ready, and ask the note's questions after it.** **Implemented 16 Nov** (Ruling, Krish, 2026-11-16: show the painting as soon as it is ready; the note's questions come after the reveal. His words, asked whether to build it before merging: "Whatever you recommend for the best quality."). It reverses the 4 Nov order ("one step at a time ... and then the user purchases") on the gift page. Built as below; the skip-to-the-scripted-note variant was not built, because the order would then carry lines the buyer never saw.
+   How it works (`assets/hs-journey-choose.js`, `assets/hs-journey.js`): the questions still run while it paints, so the wait is not idle. If the painting is back when the studio ends, the studio goes straight to the reveal. If it lands while the buyer answers, it shows at the next question's boundary, never in the middle of one, so a half-typed name stays where it is. The reveal names the dog once it is known, and says "Your dog" until then. Its one button reads "Next: the note in the box", with "A few quick questions, then add it." beside it. The questions still open follow, the note's own button then reads "Back to <dog>'s painting", and only then do the tick "Yes, this is <dog>" and Add to cart appear. Add to cart stays disabled until the tick, and the add itself refuses while a question is open. That keeps every line property fulfilment reads on the order: the note's four lines (`_hs_lines`), the answers and the names (`_hs_answers`), who it ships to (`_hs_ship_to`), and Teeinblue's own dog's-name and person fields, which hs2.js fills from the same answers. A painting is shown once per gift and journey; a repaint is a new one and shows the same way. Back from the reveal returns to the question just answered, and Back from the first question after it returns to the painting. A reload part way lands on the same question, or on the studio and then the painting, and never paints again. The progress line stands where the next open question does, so it never runs backwards. Later gifts in a queue ask nothing, as before.
+
+   The new count, from the code and the browser walks (`tools/preview/journey-flow.browser.test.mjs`, "from the landing, the painting back early", and `tools/preview/journey-product.browser.test.mjs`, the three tests under the 16 Nov ruling):
+
+   | Stretch | From the landing | From the homepage |
+   |---|---|---|
+   | To seeing the painting on the gift, painting back by the end of the studio | **7** | **8** |
+   | The same, painting back after the buyer has given k of the 8 gift page answers | 7 + k | 8 + k |
+   | The same, painting back after the note (as before) | 15 | 16 |
+   | Painting to checkout, shown after k answers (0 to 7): "Next: the note in the box", the 8 - k answers left, the tick, Add to cart, Check out | 12 - k | 12 - k |
+   | Painting to checkout, shown after the note (as before) | 3 | 3 |
+   | Landing to checkout, in all | 19 when the painting shows early (one more tap than before: "Next: the note in the box"); 18 when it shows after the note | 20 or 19 |
+
+   What this does and does not change: the painter still takes as long as it takes ("Most paintings take 1 to 3 minutes"), so 7 taps is the floor, reached only when the painting is back within the studio's few seconds, as after a reload. What changes in every case is that a buyer is never held behind unanswered questions once the painting is ready: at most the one question on screen. A buyer who sits on a question without answering sees the painting badge in the header turn to a tick, and the painting on their next answer. Showing it at once on an untouched question is a possible next step; it was not built, to keep the rule "never in the middle of a question" simple.
+
 2. **One button for the tick and the add** ("Yes, add <dog>'s mug"): one tap fewer; the tick is the buyer's approval of what prints.
 3. **A single gift goes straight to checkout**, past the cart page: one tap fewer, but the bundle drawer on the cart page is skipped.
 4. **The feel and the style on one screen**: one tap fewer.
@@ -77,10 +92,19 @@ Not verified: an order placed on the live store with these attributes. That need
 - `node tools/preview/theme-check.mjs --baseline`: 1 introduced offense, `OrphanedSnippet snippets/hs-head.liquid`, which `main` reports too (the snippet is rendered by the theme push, not by a file in this repo); nothing from this branch.
 - `node --test tools/preview/social-landing.browser.test.mjs`: the hook, product, price, button address, utm carry, the cart write once, no badge or review text, the button pinned at 375 x 667, and the walk from the button to the gifts screen with the gift ticked.
 
+### Checks for the painting first (16 Nov, later the same day, on the branch)
+
+- `node --test tools/preview/journey-product.browser.test.mjs`: 47 of 47, including three new tests under the 16 Nov ruling: the painting back before the studio ends goes straight to the reveal, then the note, then the tick and the add; the painting back mid-question waits for that answer, shows at the boundary, keeps the half-typed name, blocks the add (a scripted tick included) until the note is done, and Back, a second Back and a reload land where they should; reduced motion and a reload on the early reveal at 320 x 568, the dock line on one line.
+- `node --test tools/preview/journey-flow.browser.test.mjs`: 19 of 19, including the new counted walk from the landing's address: 7 taps to the painting on the mug, 12 from the painting to checkout.
+- `node --test tools/preview/journey-motion.browser.test.mjs tools/preview/social-landing.browser.test.mjs tools/preview/reviews.browser.test.mjs`: 19 of 19.
+- The whole suite, `node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs tools/perf/*.test.mjs`, on Windows: 924 tests, 903 passed, 21 failed. Twenty are the same files that fail on `main` on this machine (art-stage, artist-touch, cart-layout, cart-quantity, cart-thumbnail, christmas-card, head-heartside, one-per-design, theme-push-guard, artwork-system). The 21st, the minified painting card's two-minute hold, passed on its own straight after, with and without this change: a timing check under load.
+- `node tools/preview/copy-lint.mjs --baseline`: 0 introduced. `node tools/preview/minify-check.mjs`: all 21 hs*.js minify cleanly. `node tools/preview/theme-check.mjs --baseline`: the same one offense as before, `OrphanedSnippet snippets/hs-head.liquid`, which `main` reports too.
+- Not verified: a real painting on the live store arriving mid-questions, which needs the push and Teeinblue's real painter; the tests stand Teeinblue in.
+
 ## What needs Krish's yes
 
 1. Holding "What people say" (reverses his 10 Nov ruling), or the verification that lets it back on.
 2. Removing the Example badges from the store, the live preview's label included.
 3. The landing's four headlines and its button words.
 4. Merging, and the guarded theme push that takes it live.
-5. Any of the four tap cuts in section 4.
+5. Any of the three remaining tap cuts in section 4 (the first was approved and built on 16 Nov).

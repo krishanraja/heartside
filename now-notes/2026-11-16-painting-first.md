@@ -1,0 +1,4 @@
+Status: on branch growth/social-landing-2026-11-16 (pull request #153, not merged, not live): the first gift's page shows the painting the moment it is ready, at the next question's boundary, and the note's questions follow it; the tick and Add to cart wait for them (Ruling, Krish, 2026-11-16). Landing to painting is 7 taps when the painting is back by the end of the studio, 7 plus the answers given when it lands mid-questions, and 15 as before when it lands after the note (docs/evidence/2026-11-16-social-landing.md, section 4).
+Changed: 2026-11-16 Krish approved the biggest tap cut proposed for cold social traffic: "Whatever you recommend for the best quality."
+Next: Krish approves or amends pull request #153, then the guarded theme push (.github/workflows/shopify-theme-push.yml) takes it live.
+North Star check (2026-11-16): holds.
