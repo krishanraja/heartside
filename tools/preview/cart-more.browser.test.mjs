@@ -158,7 +158,7 @@ const landed = tab => tab.waitForTimeout(1100);
 const view = tab => tab.evaluate(() => {
   const d = document.querySelector('[data-hs-more]');
   const cards = [...d.querySelectorAll('[data-hs-more-card]')].map(li => ({gift: li.getAttribute('data-hs-more-card'), save: li.querySelector('[data-hs-more-save]').textContent, go: li.querySelector('[data-hs-more-go]').textContent,
-    price: li.querySelector('[data-hs-more-price]').textContent, tag: li.querySelector('.hs-more__tag').textContent, alt: li.querySelector('img').alt, variant: (li.querySelector('select') || {}).value || ''}));
+    price: li.querySelector('[data-hs-more-price]').textContent, tag: !!li.querySelector('.hs-more__tag'), alt: li.querySelector('img').alt, variant: (li.querySelector('select') || {}).value || ''}));
   const t = s => (d.querySelector(s) || {}).textContent || '';
   return {title: t('[data-hs-more-title]'), sub: t('[data-hs-more-sub]'), xmas: t('[data-hs-more-xmas]'), foot: t('[data-hs-more-foot]'), cards};
 });
@@ -183,7 +183,7 @@ test('one gift, fresh journey: it bounces in from the left by itself, offers the
     assert.equal(v.cards[1].go, 'Add to cart', 'both gifts, each with its own Add to cart');
     assert.equal(v.cards[1].variant, '58300000000006', 'the portrait is offered framed first for a mug cart');
     assert.equal(v.cards[1].save, 'You save $24.60 on the two.');
-    assert.ok(v.cards.every(c => c.tag === 'Example' && /^Example: /.test(c.alt)), 'the home photos, each tagged Example');
+    assert.ok(v.cards.every(c => !c.tag && /^Example: /.test(c.alt)), 'the home photos, with no Example badge (Krish, 2 Nov) and an alt that says what they are');
     [v.title, v.sub, v.xmas, v.foot, ...v.cards.flatMap(c => [c.save, c.go])].forEach(copyOK);
     // the portrait's frame changes the saving in place, and nothing in the card changes size
     const box = () => tab.evaluate(() => { const r = document.querySelector('[data-hs-more-card="print"]').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });

@@ -496,6 +496,8 @@ for (const [kind, p] of Object.entries(catalog)) {
   else skipped.push(`${t} (not in the theme)`);
 }
 if (exists('product.portrait-native.json')) written.push(await page('product-portrait-native-unframed.html', 'product.portrait-native.json', ctxFor('product.portrait-native.json', withVariant(portrait, (v) => v.options[0] === 'Unframed'))));
+// the social landing (16 Nov): any gift's page with ?view=social, one file per gift
+if (exists('product.social.json')) for (const [kind, p] of Object.entries(catalog)) written.push(await page(`product-${kind}-social.html`, 'product.social.json', { ...ctxFor('product.social.json', p), all_products: byHandle }));
 // the rebuilt journey (29 Oct), previewed at /?view=journey until it replaces the homepage chat
 if (exists('index.journey.json')) written.push(await page('index-journey.html', 'index.journey.json', ctxFor('index.journey.json')));
 // the chat, the homepage until 29 Oct, kept one release for rollback at /?view=chat

@@ -13,6 +13,15 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 16 November: the social landing, attribution, no badges, reviews held (needs Krish's yes)
+
+Record: `docs/evidence/2026-11-16-social-landing.md`. Nothing here is live until the branch is merged and the guarded push runs.
+
+- **Social landing** (`sections/hs-social.liquid`, `templates/product.social.json`): any gift's page with `?view=social`, so no page is created in Shopify. `?hook=` picks the headline from the section's hook blocks (`love`, `roast`, `file`, `christmas`; the first is the default). The real product photo, title and prices come from Shopify. The button opens the journey at the photo with the gift ticked (`/?gift=<gift>&step=photo`). Tests: `tools/preview/social-landing.browser.test.mjs`; `render.mjs` writes `product-<gift>-social.html`.
+- **Attribution** (`assets/hs-attribution.js`, loaded by the landing, the homepage and every gift page): a visit with `utm_*` writes them, the landing page with its hook, and the day to the cart's attributes once per campaign per tab, which Shopify copies to the order. `hs-journey.js` `giftURL()` now carries the `utm_*` onto the gift pages (a live walk on 16 Nov found them dropped there). Nothing else in the theme writes cart attributes.
+- **No Example badges** (Krish, 2 Nov: "We never need EXAMPLE badges anywhere"): the overlay is gone from the showcase, the journey's style and gift cards, the cart drawer, the product gallery and its live preview, the Answers card and the rollback chat. Alt text still says "Example:", and the blanket's "Example placement only" sentence stays. The badge CSS is left in place, unused.
+- **What people say** is switched off (`"disabled": true` on `reviews` in `templates/index.json`) and its four quotes are out of `/llms.txt`, until each person's permission is on record. The blocks keep every word.
+
 ## 10 November: search and AI answers (SEO and GEO)
 
 - **Structured data** (`snippets/hs-schema.liquid`):
@@ -89,6 +98,7 @@ Krish's 4 November purchase found three paintings, a second colour choice and th
   - In journey mode (`?journey=1`) the page steps aside for one frame. An inline check sets `hs-jm-on` while the page parses, so the product page never paints under it.
   - The photo goes to Teeinblue by itself, once (hs2.js `journeyAutoSend`).
   - The studio shows from the first paint of the page: the easel (`data-hs-jm-easel`) carries the buyer's own photo until hs2.js shows its painting card in the same place. It ends about 6 s after the tap (at least 2.5 s after the script runs), then the questions run in the same frame while it paints. Later gifts ask nothing. On desktop the questions use the studio's own 1040 px card.
+  - The painting shows the moment it is ready (Ruling, Krish, 2026-11-16: show the painting as soon as it is ready; the note's questions come after the reveal). Back by the end of the studio, the studio goes straight to the reveal. Back while the buyer answers, it shows at the next question's boundary (`hs-journey.js` `advance()` asks `HSJourney.hold()`), never in the middle of a question, so a half-typed name stays. The reveal then says "Next: the note in the box": the questions still open follow it, and the tick and Add to cart wait until they are answered, because the note's four lines (`_hs_lines`), the names and the answers (`_hs_answers`, `_hs_ship_to`) go on the order with the gift. The painting shown is remembered per gift and journey (`hs-jm-seen:<handle>:<journey time>`), so it interrupts once; a repaint is a new painting. Back from the reveal returns to the question just answered, and Back from the first question after it returns to the painting. The progress line stands where the next open question does, so it never runs backwards.
   - The reveal shows Teeinblue's own mockups ("On the gift") and the whole print, uncropped. The last gift's reveal says the Christmas date from the memo strip's `data-deadline`, only until that day ends.
   - A gift already added from this journey says so on Back (`hs-jm-added:<handle>:<journey time>`), and never paints again.
   - One tick and one add. Teeinblue's framing box is saved, never shown.

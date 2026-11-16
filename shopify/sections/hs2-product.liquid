@@ -1,4 +1,6 @@
 {%- render 'hs2-head' -%}
+{%- comment -%} a gift page opened from a tagged post (85 of Facebook's 470 sessions to 16 Nov landed on the mug) writes its utm_* to the cart (assets/hs-attribution.js) {%- endcomment -%}
+<script src="{{ 'hs-attribution.js' | asset_url }}" defer="defer"></script>
 {%- render 'hs-schema', kind: 'product', product: product -%}
 {%- liquid
   assign s = section.settings

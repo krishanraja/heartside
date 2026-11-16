@@ -8,7 +8,10 @@
      each with its colour or frame chosen there, once. "Start painting" opens the first gift's page.
    - the gift page (snippets/hs-journey-choose.liquid, mode "gift"): the painter starts at once from
      the photo and the style (recipes v19: the exact dog, no invented scene), the studio shows for a
-     few seconds, then these same screens ask about the dog and the note while it paints.
+     few seconds, then these same screens ask about the dog and the note while it paints. The moment the
+     painting is ready it is shown, at the next question's boundary, never in the middle of one, and the
+     questions still to answer follow it (Ruling, Krish, 2026-11-16: show the painting as soon as it is
+     ready; the note's questions come after the reveal).
    Every screen is one thing, a tap answers it, nothing is asked twice, and Back, Forward and reload
    land where the buyer expects (?step= on the home page, #ask= on the gift page, which Teeinblue's
    ?variant= rewrites leave alone).
@@ -414,6 +417,11 @@
     if (!x || !x.url) return null;
     var u = new URL(x.url, window.location.href);
     u.searchParams.set('journey', '1');
+    /* the post's utm_* ride on to the gift page (16 Nov: a live walk from a tagged address lost them here), so
+       its analytics see the same campaign; hs-attribution.js has already put them on the cart */
+    try {
+      new URLSearchParams(window.location.search).forEach(function (v, k) { if (/^utm_(source|medium|campaign|content|term)$/.test(k) && v) u.searchParams.set(k, v); });
+    } catch (e) { /* the gift page still opens */ }
     if (variant) u.searchParams.set('variant', String(variant));
     else if (x.minVariant && Number(x.priceMax) > Number(x.price)) u.searchParams.set('variant', String(x.minVariant));
     return u.pathname + u.search;
@@ -520,18 +528,20 @@
     return ids.map(function (id) { return { id: id, label: R && R[id] ? R[id].label : id }; });
   }
   function viewWords() {
-    var n = names();
+    var n = names(), J = window.HSJourney;
+    // a buyer who has already seen the painting goes back to it, to tick and add (Ruling, Krish, 2026-11-16)
+    var seen = MODE === 'gift' && J && J.seen && J.seen();
     // Krish, 29 Oct: the title and the button in his words; four tone cards under the note
     return screen('words', "Now let's capture <em>" + esc(n.possessive) + '</em> vibe.', 'It comes with the gift. Pick its tone.',
       '<div class="hsj-note" data-hsj-note aria-live="polite"></div><div class="hsj-tones" role="group" aria-label="How it sounds">' + TONES.map(function (t) {
         return '<button type="button" class="hsj-tone hsj-tone--' + t + (S.tone === t ? ' is-on' : '') + '" aria-pressed="' + (S.tone === t) + '" data-hsj-tone="' + t + '"><span class="hsj-tone__ico">' + ICON[t] + '</span><span>' + TONE_LABEL[t] + '</span></button>';
-      }).join('') + '</div>', primary('See ' + esc(n.dog) + ' painted', 'done', true));
+      }).join('') + '</div>', primary(seen ? 'Back to ' + esc(n.possessive) + ' painting' : 'See ' + esc(n.dog) + ' painted', 'done', true));
   }
   function viewLook() {
     return screen('look', 'What style of design do you want?', 'Every style is painted from your photo.', '<div class="hsj-styles">' + styles().map(function (s) {
       var src = cfg.examples && cfg.examples[s.id], on = S.style === s.id;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450">' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
     }).join('') + '</div>' + yours('Painted from this photo.'), primary('Next: how it feels', 'tone', true));
   }
@@ -542,7 +552,7 @@
     return screen('tone', 'How should it feel?', 'The tone sets the scene and the light. Your dog stays your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
       var src = cfg.toneExamples && cfg.toneExamples[t], on = S.tone === t;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450">' : ICON[t]) + '</span>' +
         '<span class="hsj-style__name">' + esc(TONE_LABEL[t]) + '</span><span class="hsj-style__sub">' + esc(TONE_INFO[t]) + '</span></button>';
     }).join('') + '</div>', primary('Next: their spot', 'spot', true));
   }
@@ -582,7 +592,7 @@
     var price = Number(x.priceMax) > Number(x.price) ? 'from ' + money(x.price) : money(x.price);
     return '<div class="hsj-gift' + (on ? ' is-on' : '') + '" data-hsj-gift-card="' + g + '">' +
       '<button type="button" class="hsj-gift__pick" aria-pressed="' + on + '" data-hsj-gift="' + g + '">' +
-      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" width="540" height="675"><span class="hsj-tag">Example</span>' : '') +
+      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" width="540" height="675">' : '') +
       '<span class="hsj-gift__check">' + (on ? ICON.check : ICON.plus) + '</span></span>' +
       '<span class="hsj-gift__row"><span class="hsj-gift__name">' + esc(info[0]) + '</span><span class="hsj-gift__price">' + esc(price) + '</span></span>' +
       '<span class="hsj-gift__spec">' + esc(info[1]) + '</span></button>' +
@@ -702,6 +712,20 @@
     else if (step) u.searchParams.set('step', step); else u.searchParams.delete('step');
     try { window.history[replace ? 'replaceState' : 'pushState']({ hsj: step }, '', u.pathname + u.search + u.hash); } catch (e) { /* file:// */ }
     render(step);
+  }
+  /* An answer moves the buyer on. On the gift page, a painting that came back while they answered is shown first
+     (Ruling, Krish, 2026-11-16: show the painting as soon as it is ready; the note's questions come after the
+     reveal): only here, between two questions, so a half-typed name is never taken away. The answer is already
+     on the order (sendAnswers); the next question waits, and the gift page's "the note in the box" opens it. The
+     reveal gets its own history entry, so Back from it returns to the question just answered. */
+  function advance(step) {
+    var J = window.HSJourney;
+    if (MODE === 'gift' && step && J && J.hold && J.hold()) {
+      try { var u = new URL(window.location.href); u.hash = ''; window.history.pushState({ hsj: '' }, '', u.pathname + u.search); } catch (e) { /* file:// */ }
+      try { root.dispatchEvent(new CustomEvent('hsj:hold', { bubbles: true, detail: { step: step } })); } catch (e) { /* old browser */ }
+      return;
+    }
+    go(step);
   }
   function render(step) {
     // a step to another step moves through the motion layer (moving()); the screen is drawn in its update
@@ -895,7 +919,7 @@
       if (t.disabled) return;
       if (stepFromURL() === 'toy') { S.toysDone = true; save(); }
       if (t.getAttribute('data-hsj-next') === 'done') { finishAsk(); return; }
-      warm(); sendAnswers(); go(t.getAttribute('data-hsj-next')); return;
+      warm(); sendAnswers(); advance(t.getAttribute('data-hsj-next')); return;
     }
     if (t.hasAttribute('data-hsj-override')) { t.hidden = true; if (pendingFile) usePhoto(pendingFile, true); return; }
   }
@@ -926,7 +950,7 @@
     save(); warm(); sendAnswers();
     // a tap answers the question: the choice shows for a beat, then the next screen
     app.querySelectorAll('[data-hsj-pick="' + group + '"]').forEach(function (b) { var on = b.getAttribute('data-v') === v; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
-    setTimeout(function () { if (stepFromURL() === step) go(nextOf(step)); }, 180);
+    setTimeout(function () { if (stepFromURL() === step) advance(nextOf(step)); }, 180);
   }
   function setTone(t) {
     if (TONES.indexOf(t) === -1 || t === S.tone) return;
@@ -1132,11 +1156,17 @@
       try { var hj = (JSON.parse(window.sessionStorage.getItem(HS2) || '{}') || {}).hs_journey || {}; if (hj.compose) { cfg.composeUrl = hj.compose.url; cfg.ai = !!hj.compose.ai; } } catch (e) { /* no writer: the scripted lines */ }
       // hs-journey-choose.js shows these screens after the studio, and the painting after them
       window.HSJourney = {
-        ask: function () { var s = stepFromURL(); go(s && allowed(s) ? s : firstOpen(), true); },
+        // push: a new history entry, so Back from the first question after the reveal returns to the painting
+        ask: function (push) { var s = stepFromURL(); go(s && allowed(s) ? s : firstOpen(), !(push && !s)); },
         asking: function () { return !!stepFromURL(); },
         done: function () { return !!S.noteDone && ASK.every(answered); },
         hide: function () { app.hidden = true; },
         dog: function () { return S.dog ? names().dog : ''; },
+        // where the progress line stands for the next open question, so the reveal never moves it backwards
+        pct: function () { return pctOf(firstOpen()); },
+        // hs-journey-choose.js sets these: hold() when a ready painting should show at this boundary, seen() once it has
+        hold: null,
+        seen: null,
         send: sendAnswers
       };
       window.addEventListener('popstate', function () {

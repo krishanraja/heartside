@@ -1197,7 +1197,7 @@
      the painting will use. The artwork itself is made on the product page, from the photo. */
   function productStage(g, n) {
     var photo = giftPhoto(g), src = photoSrc();
-    var h = '<figure class="hs3-product hs3-product--' + g + '"><span class="hs3-example">EXAMPLE</span>';
+    var h = '<figure class="hs3-product hs3-product--' + g + '">';
     h += photo ? '<img class="hs3-product__img" src="' + esc(photo.src) + '" alt="' + esc(photo.alt) + '" width="800" height="800" decoding="async">' : '<span class="hs3-product__img hs3-product__img--none" aria-hidden="true">' + ICON[g] + '</span>';
     h += '<span class="hs3-inset">' + (src ? '<img data-hs3-photo src="' + esc(src) + '" alt="Your photo of ' + esc(n.dog) + '" class="hs3-photo hs3-photo--inset">' : '<span class="hs3-photo hs3-photo--inset hs3-photo--empty">' + PAW + '</span>') + '<span class="hs3-inset__label">' + (src ? 'Your photo' : 'Your photo goes here') + '</span></span>';
     if (g === 'mug' && giftPhoto('mug', ui.mugSide === 'left' ? 'right' : 'left')) h += '<button type="button" class="hs3-quiet hs3-turn" data-hs3="turn">Turn the mug</button>';

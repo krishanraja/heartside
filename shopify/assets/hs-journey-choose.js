@@ -12,6 +12,11 @@
    3. if the painting is not back yet, the studio again, in the same frame;
    4. the painting on the real product, from Teeinblue's own mockups (its engine places the painting on the
       product, so it shows what prints), with a close-up of the painting itself; one tick, one button.
+   The painting shows the moment it is ready (Ruling, Krish, 2026-11-16: show the painting as soon as it is
+   ready; the note's questions come after the reveal): straight from the studio if it is back by then, or at
+   the next question's boundary, never in the middle of one. Questions still open follow the reveal ("Next:
+   the note in the box"), and the tick and the add wait until they are answered, because the note and the
+   names go on the order with the gift.
    Teeinblue's framing box is saved as the painter framed it and never shown. Each further gift opens its own
    page (Shopify refuses pages inside pages, and Teeinblue paints one product per page), which paints the
    same photo in the same style, shows the same studio, and asks nothing again. Then the cart. */
@@ -52,6 +57,30 @@
   function painted() { var s = artSrc(); return !!s && s !== stale; }
   function photoSrc() { var p = art && art.querySelector('[data-hs-art-photo]'); return p && p.getAttribute('src') || ''; }
   function asking() { return first() && window.HSJourney && !window.HSJourney.done(); }
+  /* the painting this page has shown, remembered per gift and journey by its address, so a reload, Back or the
+     questions after the reveal never interrupt again for the same painting; a repaint is a new one */
+  var seenSrc = '';
+  function seenKey() { return 'hs-jm-seen:' + handle() + ':' + (j && j.t); }
+  function srcId(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return s.length + ':' + h; }
+  function seen() {
+    if (!painted()) return false;
+    var id = srcId(artSrc());
+    if (seenSrc === id) return true;
+    try { return window.sessionStorage.getItem(seenKey()) === id; } catch (e) { return false; }
+  }
+  function remember() {
+    if (!painted()) return;
+    seenSrc = srcId(artSrc());
+    try { window.sessionStorage.setItem(seenKey(), seenSrc); } catch (e) { /* this page still knows */ }
+  }
+  // hs-journey.js asks these at each question's boundary and on the note screen
+  function hooks() {
+    var J = window.HSJourney;
+    if (!J || J.__jm) return;
+    J.__jm = true;
+    J.hold = function () { return phase === 'ask' && painted() && !seen(); };
+    J.seen = seen;
+  }
   /* The easel (snippets/hs-journey-choose.liquid): the studio before hs2.js shows its painting card, which is
      hidden until the photo has gone to the painter (5 Nov judges: an empty "Painting your dog" for 11 to 22
      seconds). It carries the buyer's own photo and a line from the studio, and steps aside for the card. */
@@ -175,7 +204,8 @@
     if (phase === 'ask') {
       frame.hidden = true;
       if (askEl) askEl.hidden = false;
-      window.HSJourney.ask();
+      // from the reveal, the questions take a new history entry, so Back returns to the painting
+      window.HSJourney.ask(was === 'reveal');
       chip();
       // the first question's headline takes the focus, unless its field already has it
       var a = document.activeElement, q = askEl && askEl.querySelector('.hsj-headline');
@@ -213,10 +243,14 @@
     var bar = $('[data-hs-jm-progress]');
     // the journey's one forward line (hs-journey.js pctOf): the studio before the questions, then the wait after
     // the note, then the painting on the gift
-    if (bar) bar.style.width = (phase === 'reveal' || phase === 'added' ? 100 : first() && (phase === 'studio' || phase === 'nophoto' && asking()) ? 45 : 95) + '%';
+    // the questions after an early reveal: the line stands where the next one does, so it never runs backwards
+    if (bar) bar.style.width = (phase === 'reveal' && asking() && window.HSJourney.pct ? window.HSJourney.pct() : phase === 'reveal' || phase === 'added' ? 100 : first() && (phase === 'studio' || phase === 'nophoto' && asking()) ? 45 : 95) + '%';
     var paintBox = $('[data-hs-jm-paint]'), reveal = $('[data-hs-jm-reveal]');
     var tick = $('[data-hs-jm-tickrow]'), add = $('[data-hs-jm-add]'), link = $('[data-hs-jm-repaint]');
     if (phase === 'reveal') {
+      remember();
+      // the note's questions still to answer: they follow the painting, and the tick and the add wait for them
+      var later = asking();
       // the portrait is the dog itself: "Biscuit's portrait", never "Biscuit on the portrait" (6 Nov audit)
       setText('[data-hs-jm-title]', g === 'print' ? (P || "Your dog's") + ' portrait' : (d || 'Your dog') + ' on the ' + NAME[g]);
       // the whole print, never a crop of it: on a mug the dog can sit round the side (5 Nov judges: all three mug
@@ -225,7 +259,13 @@
       paintBox.hidden = true; reveal.hidden = false;
       moveGallery(); views();
       setText('[data-hs-jm-tick-text]', d ? 'Yes, this is ' + d : 'Yes, this is my dog');
-      show(tick, true); show(link, !!(window.__hs2api.journeyRepaintLeft && window.__hs2api.journeyRepaintLeft()) && !adding);
+      show(tick, !later); show(link, !!(window.__hs2api.journeyRepaintLeft && window.__hs2api.journeyRepaintLeft()) && !adding);
+      if (later) {
+        add.querySelector('span').textContent = 'Next: the note in the box';
+        add.disabled = adding;
+        setNote('A few quick questions, then add it.');
+        return;
+      }
       var nx = nextGift();
       if (!adding) add.querySelector('span').textContent = nx ? 'Add it, then paint the ' + NAME[nx.gift] : 'Add to cart';
       add.disabled = adding || !$('[data-hs-jm-tick]').checked;
@@ -382,6 +422,8 @@
     });
   }
   function add() {
+    // the note and the names go on the order with the gift: never added without them
+    if (asking()) { go('ask'); return; }
     var atc = document.querySelector('#buy #teeAtcButton, #buy .tee-btn--atc');
     if (!atc) { status('Still loading. Tap again in a moment.'); return; }
     adding = true; paint();
@@ -428,8 +470,8 @@
         studioUntil = Date.now() + STUDIO_MS; go(first() && asking() ? 'studio' : 'wait');
         return;
       }
-      if (phase === 'studio' && first() && !painted()) { go(asking() ? 'ask' : 'wait'); return; }
-      if (phase === 'reveal') add();
+      if (phase === 'studio' && first()) { go(painted() ? 'reveal' : asking() ? 'ask' : 'wait'); return; }
+      if (phase === 'reveal') { if (asking()) go('ask'); else add(); }
       return;
     }
     if (t.hasAttribute('data-hs-jm-view')) { view = t.getAttribute('data-hs-jm-view'); views(); return; }
@@ -445,11 +487,13 @@
         stale = was;
         if (window.HSJourney) window.HSJourney.send();
         $('[data-hs-jm-tick]').checked = false; accept(false);
-        go('wait');
+        // questions still open are answered while it paints again; the new painting shows at the next boundary
+        go(asking() ? 'ask' : 'wait');
       } else status("The repaint couldn't start. Your painting is kept.");
     }
   }
   function tick() {
+    hooks();
     quiet(true);
     saveFraming();
     chip();
@@ -469,10 +513,10 @@
     }
     if (phase === 'studio' && first() && s !== lastStatus) { lastStatus = s; paint(); }
     if (phase === 'studio' && first()) {
-      // the studio shows for a few seconds, then the questions (or the painting, once they are answered)
+      // the studio shows for a few seconds, then the painting if it is back, otherwise the questions while it paints
       if (Date.now() < studioUntil) return;
-      if (asking()) { go('ask'); return; }
-      go(ready ? 'reveal' : 'wait');
+      if (ready) { go('reveal'); return; }
+      go(asking() ? 'ask' : 'wait');
       return;
     }
     if (ready) go('reveal');
@@ -514,6 +558,17 @@
     root.addEventListener('click', onClick);
     $('[data-hs-jm-tick]').addEventListener('change', onTick);
     root.addEventListener('hsj:done', function () { go(painted() ? 'reveal' : 'wait'); });
+    hooks();
+    // a question was answered and the painting is back: it shows now, and the next question waits for after it
+    root.addEventListener('hsj:hold', function () { if (phase !== 'ask') return; if (painted()) go('reveal'); else window.HSJourney.ask(true); });
+    /* Back from the reveal returns to the question just answered; Back from the first question after the reveal
+       returns to the painting (hs-journey.js draws the question for the address; this panel shows it) */
+    window.addEventListener('popstate', function () {
+      var J = window.HSJourney;
+      if (!J || adding) return;
+      if (phase === 'reveal' && J.asking() && asking()) go('ask');
+      else if (phase === 'ask' && !J.asking() && painted() && seen()) go('reveal');
+    });
     // a reload part way through the questions goes straight back to them; otherwise the studio first
     var opened = window.performance && performance.timeOrigin ? performance.timeOrigin : Date.now();
     studioUntil = Math.max(Date.now() + STUDIO_MIN, opened + STUDIO_MS);

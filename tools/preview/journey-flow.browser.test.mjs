@@ -628,3 +628,64 @@ test('a reload while the dog check runs: it runs again from the photo on the dev
     await page.waitForSelector('[data-hsj-dogs]:not([hidden])');
   } finally { await ctx.close(); }
 });
+
+// Ruling, Krish, 2026-11-16: show the painting as soon as it is ready; the note's questions come after the reveal.
+// The taps counted from what the social landing's button opens (/?gift=mug&step=photo, the landing's own tap is the
+// first) to the painting on the mug, when the painting is back by the end of the studio, and then to the cart.
+test('from the landing, the painting back early: 7 taps to see it on the gift, the note after it, then the tick and the add', async () => {
+  cart = [];
+  const {ctx, page, errors} = await open({width: 390, height: 844});
+  let taps = 1; // "See my dog painted" on the landing (social-landing.browser.test.mjs walks it to this address)
+  const tap = async loc => { await loc.click(); taps++; };
+  try {
+    await page.goto(`${base}/?gift=mug&step=photo`);
+    await page.waitForSelector('[data-hsj-screen="photo"]');
+    await page.evaluate(() => { window.HSPhotoQuality = {check: () => Promise.resolve({verdict: 'ok', reasons: []})}; });
+    // Choose a photo, then the phone's own picker: two taps
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), tap(page.locator('[data-hsj-choose-photo]'))]);
+    taps++; await chooser.setFiles(PHOTO);
+    await page.waitForURL(/step=look/); await page.waitForSelector('[data-hsj-screen="look"]');
+    await tap(page.locator('[data-hsj-next]'));
+    await page.waitForURL(/step=tone/); await page.waitForSelector('[data-hsj-screen="tone"]');
+    await tap(page.locator('[data-hsj-next]'));
+    await page.waitForURL(/step=spot/); await page.waitForSelector('[data-hsj-screen="spot"]');
+    await tap(page.locator('[data-hsj-pick="spot"][data-v="couch"]'));
+    await page.waitForSelector('[data-hsj-screen="gifts"]');
+    assert.equal(await page.locator('[data-hsj-gift="mug"]').getAttribute('aria-pressed'), 'true', 'the gift is already ticked');
+    await tap(page.locator('[data-hsj-start]'));
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    assert.equal(await page.evaluate(() => /ask=/.test(location.hash)), false, 'no question came first');
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Your dog on the mug');
+    assert.equal(taps, 7, 'taps from the landing to the painting on the gift');
+    await roomy(page, '390x844 early reveal');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390x844-early-reveal.png')});
+    // the painting to the cart: the note in the box, its questions, then the tick and the add
+    taps = 0;
+    await tap(page.locator('[data-hs-jm-add]'));
+    await page.waitForSelector('[data-hsj-screen="name"]');
+    await page.locator('[data-hsj-name]').fill('Pickles');
+    await tap(page.locator('[data-hsj-next]'));
+    await page.waitForSelector('[data-hsj-screen="breed"]'); await tap(page.locator('[data-hsj-pick="breed"][data-v="Pug"]'));
+    await page.waitForSelector('[data-hsj-screen="pro"]'); await tap(page.locator('[data-hsj-pick="pro"][data-v="she"]'));
+    await page.waitForSelector('[data-hsj-screen="person"]'); await tap(page.locator('[data-hsj-pick="self"]'));
+    for (const [id, v] of [['home', 'door'], ['together', 'naps'], ['meaning', 'best']]) { await page.waitForSelector(`[data-hsj-screen="${id}"]`); await tap(page.locator(`[data-hsj-pick="${id}"][data-v="${v}"]`)); }
+    await page.waitForSelector('[data-hsj-screen="words"]');
+    assert.equal((await page.locator('[data-hsj-next]').textContent()).trim(), "Back to Pickles' painting");
+    await tap(page.locator('[data-hsj-next]'));
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]');
+    assert.equal(await page.locator('[data-hs-jm-title]').textContent(), 'Pickles on the mug');
+    assert.equal(await page.locator('[data-hs-jm-add]').isDisabled(), true, 'the add waits for the tick');
+    await ready(page);
+    await tap(page.locator('[data-hs-jm-tick]'));
+    await tap(page.locator('[data-hs-jm-add]'));
+    await page.waitForURL(/\/cart$/, {timeout: 20000});
+    // plus Check out on the cart page, which this stand-in cart does not draw
+    assert.equal(taps + 1, 12, 'taps from the painting to checkout');
+    assert.deepEqual(cart.map(c => c.handle), ['your-dogs-illustrated-mug']);
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});

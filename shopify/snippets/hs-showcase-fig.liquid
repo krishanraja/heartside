@@ -1,5 +1,6 @@
 {%- comment -%}
-  One example picture for the showcase: always labeled Example, served at the size it was built at.
+  One example picture for the showcase, served at the size it was built at. No Example badge (Krish, 2 Nov:
+  "We never need EXAMPLE badges anywhere"); the alt text still says what it is.
   Params: id (hs-ex-<id>.webp), w, h, alt, caption (optional), sub (optional), eager (optional).
   hero (optional, a dog): the homepage carousel's set from tools/print-art/hero-sets.py, served as
   hs-hero-<dog>-540.webp and -1080.webp through srcset, so a phone gets the sharp one (Krish, 3 Nov).
@@ -9,7 +10,6 @@
   snippets/hs-showcase-later.liquid fills them all if hs-showcase.js never runs.
 {%- endcomment -%}
 <figure class="hss-fig">
-  <span class="hss-tag">Example</span>
   {%- if hero != blank -%}
     {%- assign hs_540 = 'hs-hero-' | append: hero | append: '-540.webp' | asset_url -%}
     {%- assign hs_1080 = 'hs-hero-' | append: hero | append: '-1080.webp' | asset_url -%}

@@ -373,7 +373,7 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
             gap: tr.right - pad - list.at(-1).getBoundingClientRect().right, widths, tags: all('.hs3-tab__tag').map(t => [t.textContent, window.__lineCount(t)]),
             picks: picks.length, pickLines: pick && window.__lineCount(pick), pickInView: pick && pick.getBoundingClientRect().left >= 0 && pick.getBoundingClientRect().right <= innerWidth,
             pickClear: pick ? [...pickTab.querySelectorAll('span:not(.hs3-tab__pick), svg')].every(x => window.__overlap(pick, x) <= 1) : false,
-            stampTabs: window.__overlap(stamp, tabs), stampIn: window.__inside(stamp, img, 6),
+            stamp: !!stamp,
             labelIn: window.__inside(label, img, 2), labelNote: note ? window.__overlap(label, note) : 0, labelTurn: turn ? window.__overlap(label, turn) : 0,
             said: document.querySelector('.hs3__frame').innerText.split(/Buddy.s pick/i).length - 1,
             paint: window.__box(q('.hs3-paint')), note: note && window.__box(note),
@@ -387,7 +387,8 @@ for (const mode of MODES) test(`${mode}: Buddy's pick: three equal tabs, each wi
         check(Math.max(...m.widths) - Math.min(...m.widths) <= 1, `${at}: the tabs are equal (${m.widths.map(Math.round).join(', ')})`);
         check(m.tags.every(([t, n]) => /\$\d/.test(t) && n === 1), `${at}: every tab shows its price on one line (${JSON.stringify(m.tags)})`);
         check(m.picks === 1 && m.pickLines === 1 && m.pickInView && m.pickClear, `${at}: one Buddy's pick badge, on one line, clear of its tab's words`);
-        check(m.stampTabs <= 1 && m.stampIn, `${at}: the Example stamp sits inside the art, off the tabs`);
+        // Krish, 2 Nov: "We never need EXAMPLE badges anywhere"
+        check(!m.stamp, `${at}: no Example stamp on the art`);
         check(m.labelIn && m.labelNote <= 1 && m.labelTurn <= 1, `${at}: "Your photo" sits inside the art, clear of the note and Turn the mug`);
         check(m.said === 1, `${at}: Buddy's pick is said once, on its tab, not again in the top bar (${m.said})`);
         if (w < 1000) {
