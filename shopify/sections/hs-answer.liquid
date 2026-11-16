@@ -105,7 +105,6 @@
         <div class="hs-answer__short">{{ article.excerpt }}</div>
       {%- endif -%}
       <figure class="hs-answer__pic">
-        <span class="hs-answer__tag">Example</span>
         {%- assign hs_540 = 'hs-hero-' | append: hero | append: '-540.webp' | asset_url -%}
         {%- assign hs_1080 = 'hs-hero-' | append: hero | append: '-1080.webp' | asset_url -%}
         <img src="{{ hs_540 }}" srcset="{{ hs_540 }} 540w, {{ hs_1080 }} 1080w" sizes="(min-width: 900px) 520px, 100vw" alt="Example: a dog painted on a mug, a sherpa blanket and a framed portrait in one living room." width="1080" height="1350" loading="eager" decoding="async">

@@ -24,7 +24,7 @@ test('every picture records the approved file it came from', () => {
   }
 });
 
-test('the showcase shows each picture with its manifest alt and size, labeled Example', () => {
+test('the showcase shows each picture with its manifest alt and size, with no Example badge', () => {
   // 3 Nov: the six sets are the first screen's hero, in the journey section; the rest stay in the showcase
   const tags = [...(showcase + journey).matchAll(/render 'hs-showcase-fig', id: '([a-z-]+)', w: (\d+), h: (\d+), alt: '([^']*)'/g)];
   assert.ok(tags.length >= 21, 'every picture is placed');
@@ -35,7 +35,8 @@ test('the showcase shows each picture with its manifest alt and size, labeled Ex
     assert.ok(alt.startsWith('Example') || alt.startsWith('Reference photo'), id + ' alt says what it is');
   }
   const fig = read('shopify/snippets/hs-showcase-fig.liquid');
-  assert.match(fig, /<span class="hss-tag">Example<\/span>/);
+  // Krish, 2 Nov: "We never need EXAMPLE badges anywhere"; the alt text says what each picture is
+  assert.doesNotMatch(fig, /hss-tag|>\s*Example\s*</);
 });
 
 test('the six journey style cards and the first-screen picture use the approved set', () => {

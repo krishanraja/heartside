@@ -285,7 +285,7 @@
       }).join('') + '</select></label>';
     }
     return '<li class="hs-more__card" data-hs-more-card="' + esc(o.gift) + '">' +
-      '<span class="hs-more__art"><img src="' + esc(g.img) + '" alt="' + esc(g.alt) + '" width="540" height="675" loading="lazy" decoding="async"><span class="hs-more__tag">Example</span></span>' +
+      '<span class="hs-more__art"><img src="' + esc(g.img) + '" alt="' + esc(g.alt) + '" width="540" height="675" loading="lazy" decoding="async"></span>' +
       '<p class="hs-more__name"><span>' + esc(g.name) + '</span> <span class="hs-more__price" data-hs-more-price></span></p><p class="hs-more__spec">' + esc(g.spec) + '</p>' +
       '<p class="hs-more__save" data-hs-more-save></p>' + pick +
       '<button type="button" class="hs-more__go" data-hs-more-go aria-label="Add the ' + esc(NAME[o.gift]) + ' to your cart">Add to cart</button><p class="hs-more__note" data-hs-more-note></p></li>';

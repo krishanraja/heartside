@@ -531,7 +531,7 @@
     return screen('look', 'What style of design do you want?', 'Every style is painted from your photo.', '<div class="hsj-styles">' + styles().map(function (s) {
       var src = cfg.examples && cfg.examples[s.id], on = S.style === s.id;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-style="' + esc(s.id) + '">' + '<span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON.image) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450">' : ICON.image) + '</span>' +
         '<span class="hsj-style__name">' + esc(s.label) + '</span></button>';
     }).join('') + '</div>' + yours('Painted from this photo.'), primary('Next: how it feels', 'tone', true));
   }
@@ -542,7 +542,7 @@
     return screen('tone', 'How should it feel?', 'The tone sets the scene and the light. Your dog stays your dog.', '<div class="hsj-styles hsj-styles--tones">' + TONES.map(function (t) {
       var src = cfg.toneExamples && cfg.toneExamples[t], on = S.tone === t;
       return '<button type="button" class="hsj-style' + (on ? ' is-on' : '') + '" aria-pressed="' + on + '" data-hsj-feel="' + t + '"><span class="hsj-style__check">' + ICON.check + '</span>' +
-        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450"><span class="hsj-tag">Example</span>' : ICON[t]) + '</span>' +
+        '<span class="hsj-style__art">' + (src ? '<img src="' + esc(src) + '" alt="" decoding="async" width="360" height="450">' : ICON[t]) + '</span>' +
         '<span class="hsj-style__name">' + esc(TONE_LABEL[t]) + '</span><span class="hsj-style__sub">' + esc(TONE_INFO[t]) + '</span></button>';
     }).join('') + '</div>', primary('Next: their spot', 'spot', true));
   }
@@ -582,7 +582,7 @@
     var price = Number(x.priceMax) > Number(x.price) ? 'from ' + money(x.price) : money(x.price);
     return '<div class="hsj-gift' + (on ? ' is-on' : '') + '" data-hsj-gift-card="' + g + '">' +
       '<button type="button" class="hsj-gift__pick" aria-pressed="' + on + '" data-hsj-gift="' + g + '">' +
-      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" width="540" height="675"><span class="hsj-tag">Example</span>' : '') +
+      '<span class="hsj-gift__art">' + (img ? '<img src="' + esc(img) + '" alt="" decoding="async" width="540" height="675">' : '') +
       '<span class="hsj-gift__check">' + (on ? ICON.check : ICON.plus) + '</span></span>' +
       '<span class="hsj-gift__row"><span class="hsj-gift__name">' + esc(info[0]) + '</span><span class="hsj-gift__price">' + esc(price) + '</span></span>' +
       '<span class="hsj-gift__spec">' + esc(info[1]) + '</span></button>' +
