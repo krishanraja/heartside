@@ -414,6 +414,11 @@
     if (!x || !x.url) return null;
     var u = new URL(x.url, window.location.href);
     u.searchParams.set('journey', '1');
+    /* the post's utm_* ride on to the gift page (16 Nov: a live walk from a tagged address lost them here), so
+       its analytics see the same campaign; hs-attribution.js has already put them on the cart */
+    try {
+      new URLSearchParams(window.location.search).forEach(function (v, k) { if (/^utm_(source|medium|campaign|content|term)$/.test(k) && v) u.searchParams.set(k, v); });
+    } catch (e) { /* the gift page still opens */ }
     if (variant) u.searchParams.set('variant', String(variant));
     else if (x.minVariant && Number(x.priceMax) > Number(x.price)) u.searchParams.set('variant', String(x.minVariant));
     return u.pathname + u.search;

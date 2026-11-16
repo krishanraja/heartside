@@ -1,0 +1,55 @@
+{
+  "sections": {
+    "social": {
+      "type": "hs-social",
+      "blocks": {
+        "hook_love": {
+          "type": "hook",
+          "settings": {
+            "key": "love",
+            "headline": "Your dog",
+            "headline_em": "loves you too.",
+            "line": ""
+          }
+        },
+        "hook_roast": {
+          "type": "hook",
+          "settings": {
+            "key": "roast",
+            "headline": "Your dog has reviewed",
+            "headline_em": "your performance.",
+            "line": "Pick Roast, and the note in the box teases your habits, with love."
+          }
+        },
+        "hook_file": {
+          "type": "hook",
+          "settings": {
+            "key": "file",
+            "headline": "Your dog has been keeping",
+            "headline_em": "a file on you.",
+            "line": "One photo, and it all goes into the painting and the note in the box."
+          }
+        },
+        "hook_christmas": {
+          "type": "hook",
+          "settings": {
+            "key": "christmas",
+            "headline": "This year,",
+            "headline_em": "the dog's buying.",
+            "line": ""
+          }
+        }
+      },
+      "block_order": [
+        "hook_love",
+        "hook_roast",
+        "hook_file",
+        "hook_christmas"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "social"
+  ]
+}
