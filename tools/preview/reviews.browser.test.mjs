@@ -34,8 +34,11 @@ async function open(viewport, opts = {}) {
 }
 const at = p => p.evaluate(() => document.querySelector('[data-hsr]').__hsrApi.index());
 
-test('the homepage carries the nine quotes, word for word, under the showcase', () => {
+// 16 Nov: the section is switched off (its blocks kept, word for word) until each person's permission and their
+// gift are on record; the store had 2 orders in 60 days. Krish turns it back on in the theme editor.
+test('the homepage keeps the nine quotes, word for word, under the showcase, with the section off until verified', () => {
   assert.deepEqual(tpl.order.slice(-2), ['showcase', 'reviews']);
+  assert.equal(sec.disabled, true, 'held until each reviewer is verified with permission on record');
   assert.equal(blocks.length, 9);
   assert.ok(blocks.some(b => b.settings.text.endsWith('arrived fast!')), 'their words stay as they gave them');
   assert.doesNotMatch(html, /★|stars? rating|\d+ reviews/i, 'no invented rating or count');

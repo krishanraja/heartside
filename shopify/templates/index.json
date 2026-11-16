@@ -15,6 +15,7 @@
     },
     "reviews": {
       "type": "hs-reviews",
+      "disabled": true,
       "blocks": {
         "review_1": {
           "type": "review",
