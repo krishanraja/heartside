@@ -918,3 +918,155 @@ test("the journey's own photo never loads the dog detector; a photo picked in Te
     } finally { await ctx.close(); }
   }
 });
+
+/* Ruling, Krish, 2026-11-16: show the painting as soon as it is ready; the note's questions come after the reveal.
+   Cold social traffic left before ever seeing its dog painted, behind eight taps of questions. The painting now shows
+   the moment it is back: straight from the studio, or at the next question's boundary, never in the middle of one.
+   The questions still open follow it, and the tick and the add wait for them, because the note and the names go on
+   the order with the gift. */
+const phaseLog = page => page.evaluate(() => { window.__phases = []; const el = document.querySelector('[data-hs-jm]'); const log = () => { const p = el.getAttribute('data-phase'); if (p && window.__phases[window.__phases.length - 1] !== p) window.__phases.push(p); }; log(); new MutationObserver(log).observe(el, {attributes: true, attributeFilter: ['data-phase']}); });
+const dockState = page => page.evaluate(() => {
+  const bar = document.querySelector('[data-hs-jm-progress]'), add = document.querySelector('[data-hs-jm-add]');
+  return {title: document.querySelector('[data-hs-jm-title]').textContent, tick: document.querySelector('[data-hs-jm-tickrow]').style.visibility !== 'hidden',
+    add: add.querySelector('span').textContent, disabled: add.disabled, line: document.querySelector('[data-hs-jm-line]').textContent, hash: location.hash,
+    bar: Math.round(parseFloat(bar.style.width))};
+});
+const answerRest = async (page, from) => {
+  const steps = ['name', 'breed', 'pro', 'person', 'home', 'together', 'meaning'];
+  for (const step of steps.slice(steps.indexOf(from))) {
+    await page.waitForSelector(`[data-hsj-screen="${step}"]`);
+    if (step === 'name') { await page.locator('[data-hsj-name]').fill('Pickles'); await page.locator('[data-hsj-next]').click(); }
+    else if (step === 'person') { await page.locator('[data-hsj-person]').fill('Mom'); await page.locator('[data-hsj-next]').click(); }
+    else await page.locator(`[data-hsj-pick="${step}"]`).first().click();
+  }
+  await page.waitForSelector('[data-hsj-screen="words"]');
+};
+
+test('the painting back before the studio ends: straight to the reveal, then the note in the box, then the tick and the add', async () => {
+  cart = [];
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {spot: 'bed'});
+  try {
+    await page.goto(base + URLS.print);
+    await page.waitForSelector('[data-hs-jm][data-phase="studio"]');
+    await phaseLog(page);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    assert.deepEqual(await page.evaluate(() => window.__phases), ['studio', 'reveal'], 'no question before the painting');
+    assert.equal(await page.evaluate(() => /ask=/.test(location.hash)), false);
+    // the dog has no name yet: the reveal says "your dog", the tick waits, and the one button opens the note
+    assert.deepEqual(await dockState(page), {title: "Your dog's portrait", tick: false, add: 'Next: the note in the box', disabled: false, line: 'A few quick questions, then add it.', hash: '', bar: 50});
+    assert.ok(await fits(page), 'the early reveal fits');
+    await page.waitForTimeout(300); await page.screenshot({path: path.join(shots, '390-reveal-early.png')});
+    await page.click('[data-hs-jm-add]');
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 5000});
+    assert.equal(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'ask');
+    assert.deepEqual(cart, [], 'nothing is added on the way to the note');
+    await answerRest(page, 'name');
+    // the painting is already seen: the note's button goes back to it
+    assert.equal((await page.textContent('[data-hsj-screen="words"] [data-hsj-next]')).trim(), "Back to Pickles' painting");
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]');
+    const done = await dockState(page);
+    assert.deepEqual({title: done.title, tick: done.tick, add: done.add, disabled: done.disabled, bar: done.bar}, {title: "Pickles' portrait", tick: true, add: 'Add it, then paint the mug', disabled: true, bar: 100});
+    // the order carries the names and the note before it is added
+    const order = await page.evaluate(() => ({dog: window.__hs2api.state.dog, person: window.__hs2api.state.person, lines: !!(window.__hs2api.state.hs3_lines && window.__hs2api.state.hs3_lines.meaning), answered: window.__hs2api.state.hs_journey.answered}));
+    assert.deepEqual(order, {dog: 'Pickles', person: 'Mom', lines: true, answered: true});
+    await ready(page);
+    await page.check('[data-hs-jm-tick]');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForURL(/\/products\/your-dogs-illustrated-mug\?.*journey=1/, {timeout: 20000});
+    assert.deepEqual(cart.map(i => i.handle), ['your-dogs-portrait']);
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});
+
+test('the painting back mid-questions: never in the middle of one, shown at the next boundary, the rest after it; Back and a reload land where they should', async () => {
+  cart = [];
+  const {page, ctx, errors} = await open({width: 390, height: 844}, {spot: 'bed'});
+  try {
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => /ask=name/.test(location.hash), null, {timeout: 15000});
+    // half-typed when the painting lands: the field and its words stay
+    await page.locator('[data-hsj-name]').fill('Pick');
+    await paintDone(page);
+    await page.waitForFunction(() => document.querySelector('[data-hsj-paint]').classList.contains('is-done'), null, {timeout: 5000});
+    await page.waitForTimeout(1500);
+    assert.match(page.url(), /ask=name/, 'not taken out of the question');
+    assert.equal(await page.inputValue('[data-hsj-name]'), 'Pick');
+    await page.locator('[data-hsj-name]').fill('Pickles');
+    await page.locator('[data-hsj-next]').click();
+    // the boundary: the painting, before the breed
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 5000});
+    const early = await dockState(page);
+    assert.deepEqual(early, {title: "Pickles' portrait", tick: false, add: 'Next: the note in the box', disabled: false, line: 'A few quick questions, then add it.', hash: '', bar: 56});
+    assert.equal(await page.evaluate(() => window.__hs2api.state.dog), 'Pickles', 'the answer given is on the order');
+    // the add cannot go through yet, even with the hidden tick set by script: the note's questions come first
+    await ready(page);
+    await page.evaluate(() => { const t = document.querySelector('[data-hs-jm-tick]'); t.checked = true; t.dispatchEvent(new Event('change', {bubbles: true})); });
+    assert.equal((await dockState(page)).add, 'Next: the note in the box');
+    await page.click('[data-hs-jm-add]');
+    await page.waitForFunction(() => /ask=breed/.test(location.hash), null, {timeout: 5000});
+    await page.waitForTimeout(1500);
+    assert.deepEqual(cart, [], 'never added before the note');
+    // the line only moves forward: the breed stands where the reveal did
+    assert.equal(await page.evaluate(() => { const s = document.querySelector('[data-hsj-screen="breed"] .hsj-progress span'); return Math.round(s.getBoundingClientRect().width / s.parentElement.getBoundingClientRect().width * 100); }), 56);
+    // Back from the first question after the reveal is the painting; Back again is the question just answered
+    await page.goBack({waitUntil: 'commit'}).catch(() => {});
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 5000});
+    await page.goBack({waitUntil: 'commit'}).catch(() => {});
+    await page.waitForFunction(() => /ask=name/.test(location.hash) && document.querySelector('[data-hs-jm]').getAttribute('data-phase') === 'ask', null, {timeout: 5000});
+    assert.equal(await page.inputValue('[data-hsj-name]'), 'Pickles');
+    // the same painting never interrupts again
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForFunction(() => /ask=breed/.test(location.hash), null, {timeout: 5000});
+    await page.locator('[data-hsj-pick="breed"]').first().click();
+    await page.waitForFunction(() => /ask=pro/.test(location.hash), null, {timeout: 5000});
+    assert.equal(await page.getAttribute('[data-hs-jm]', 'data-phase'), 'ask');
+    // a reload part way: back on the same question, nothing painted again
+    await page.reload();
+    await page.waitForFunction(() => /ask=pro/.test(location.hash) && document.querySelector('[data-hsj-screen="pro"]'), null, {timeout: 10000});
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'no resend on a reload');
+    await answerRest(page, 'pro');
+    // after the reload the painting is not on this page yet: the note waits for it, then the tick and the add
+    await page.locator('[data-hsj-next]').click();
+    await page.waitForSelector('[data-hs-jm][data-phase="wait"]', {timeout: 5000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 8000});
+    const last = await dockState(page);
+    assert.deepEqual({title: last.title, tick: last.tick, disabled: last.disabled}, {title: "Pickles' portrait", tick: true, disabled: true});
+    await ready(page);
+    await page.check('[data-hs-jm-tick]');
+    assert.equal(await page.isDisabled('[data-hs-jm-add]'), false);
+    assert.deepEqual(errors, []);
+  } finally { cart = []; await ctx.close(); }
+});
+
+test('reduced motion, and a reload on the early reveal: the painting again, and still the note before the add', async () => {
+  const {page, ctx, errors} = await open({width: 320, height: 568}, {spot: 'bed'});
+  try {
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto(base + URLS.print);
+    await page.waitForFunction(() => window.__sends > 0, null, {timeout: 15000});
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    assert.equal((await dockState(page)).add, 'Next: the note in the box');
+    assert.ok(await fits(page), 'the early reveal fits a 320 px phone');
+    // the dock's line is one line, and the button's words are whole (Krish, 6 Nov: no sprawl; the no-truncation rule)
+    const dock = await page.evaluate(() => {
+      const line = document.querySelector('[data-hs-jm-line]'), r = document.createRange(); r.selectNodeContents(line);
+      const btn = document.querySelector('[data-hs-jm-add] span');
+      return {lines: Math.round(r.getBoundingClientRect().height / (parseFloat(getComputedStyle(line).lineHeight) || 18)), whole: btn.scrollWidth <= btn.clientWidth + 1};
+    });
+    assert.deepEqual(dock, {lines: 1, whole: true});
+    await page.reload();
+    await page.waitForSelector('[data-hs-jm]:not([hidden])');
+    // the stand-in's painting is gone with the page; it comes back, and the reveal is the same, waiting for the note
+    await paintDone(page);
+    await page.waitForSelector('[data-hs-jm][data-phase="reveal"]', {timeout: 12000});
+    const s = await dockState(page);
+    assert.deepEqual({tick: s.tick, add: s.add, hash: s.hash}, {tick: false, add: 'Next: the note in the box', hash: ''});
+    assert.equal(await page.evaluate(() => window.__painted), 0, 'no resend on a reload');
+    assert.deepEqual(errors, []);
+  } finally { await ctx.close(); }
+});
