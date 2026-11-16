@@ -13,6 +13,15 @@ Before a theme change, inspect the current source and guarded workflow, identify
 - `tools/preview/preview-acceptance.mjs` checks the real store, live or an unpublished theme (`--theme`), the way a buyer meets it, without calling the paid AI or writing to a cart. Run it after every theme push; `live-gate.mjs` adds the layout checks.
 - The chat offers one Christmas reminder by email on the choose screen (Shopify's customer form, tags `newsletter` and `buddy-reminder`). Someone must send that reminder before the delivery cut-off.
 
+## 16 November: the social landing, attribution, no badges, reviews held (needs Krish's yes)
+
+Record: `docs/evidence/2026-11-16-social-landing.md`. Nothing here is live until the branch is merged and the guarded push runs.
+
+- **Social landing** (`sections/hs-social.liquid`, `templates/product.social.json`): any gift's page with `?view=social`, so no page is created in Shopify. `?hook=` picks the headline from the section's hook blocks (`love`, `roast`, `file`, `christmas`; the first is the default). The real product photo, title and prices come from Shopify. The button opens the journey at the photo with the gift ticked (`/?gift=<gift>&step=photo`). Tests: `tools/preview/social-landing.browser.test.mjs`; `render.mjs` writes `product-<gift>-social.html`.
+- **Attribution** (`assets/hs-attribution.js`, loaded by the landing, the homepage and every gift page): a visit with `utm_*` writes them, the landing page with its hook, and the day to the cart's attributes once per campaign per tab, which Shopify copies to the order. `hs-journey.js` `giftURL()` now carries the `utm_*` onto the gift pages (a live walk on 16 Nov found them dropped there). Nothing else in the theme writes cart attributes.
+- **No Example badges** (Krish, 2 Nov: "We never need EXAMPLE badges anywhere"): the overlay is gone from the showcase, the journey's style and gift cards, the cart drawer, the product gallery and its live preview, the Answers card and the rollback chat. Alt text still says "Example:", and the blanket's "Example placement only" sentence stays. The badge CSS is left in place, unused.
+- **What people say** is switched off (`"disabled": true` on `reviews` in `templates/index.json`) and its four quotes are out of `/llms.txt`, until each person's permission is on record. The blocks keep every word.
+
 ## 10 November: search and AI answers (SEO and GEO)
 
 - **Structured data** (`snippets/hs-schema.liquid`):

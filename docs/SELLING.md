@@ -52,7 +52,7 @@ Lead line: **"Your dog loves you too."** Christmas line: **"This year, the dog's
 
 ## Claims we must not make (yet)
 
-- **Reviews: quote them only as published.** Since 10 November the homepage carries nine quotes from people who used the site or received Heartside gifts made by hand before it ("What people say", `templates/index.json`, Krish's own list). Quote them word for word, with the name and place as shown. Don't add star ratings, counts ("thousands of happy customers") or new quotes, and don't reword one. Each card shows the reviewer's photo, which Krish added in the theme editor on 10 November. A card without a photo shows initials. Use a reviewer's photo outside the site only with their permission. One paid order has come through the site so far (#1013, delivered on 8 November). Reviews and testimonials are covered by the FTC's 2024 rule.
+- **Reviews: none to quote, for now.** On 10 November the homepage gained nine quotes Krish supplied ("What people say", `templates/index.json`). On 16 November the section was switched off pending his yes (`docs/evidence/2026-11-16-social-landing.md`): this repository holds no record of each person's permission, and several quotes describe receiving a mug, blanket or framed print through the site when the store had two orders in 60 days. The words stay in the template, word for word, so he can switch the section back on in the theme editor once each person is verified. Until then, quote none of them anywhere, add no star ratings or counts ("thousands of happy customers"), and use no reviewer photo. Reviews and testimonials are covered by the FTC's 2024 rule (16 CFR Part 465).
 - **Physical quality.** Don't claim physical quality, durability or "gallery quality" until the sample order has been inspected (`NOW.md`). We can say "printed and shipped by Printful".
 - **Delivery dates as guarantees.** Typical times only, as listed above. The Christmas date is "order by December 4".
 - **Words on the gifts.** None are printed, and the note comes in the box.
@@ -68,19 +68,19 @@ Lead line: **"Your dog loves you too."** Christmas line: **"This year, the dog's
   - "Our walks are the best part of my day."
   - "I'm your shadow, and I like it that way."
 
-## What people say (the homepage quotes, word for word)
+## What people say: held
 
-- "I actually got emotional opening it." (Jessica M., Austin, Texas, Framed Print)
-- "The roast feature is unhinged 😂" (Mike T., Denver, Colorado, Mug)
-- "This is such a clever idea" (Amanda R., Charlotte, North Carolina, Blanket)
-- "They nailed my dog's attitude." (Stephanie L., Tampa, Florida, Mug)
-- "Super fast to use." (Daniel P., Phoenix, Arizona, Mug)
-- "It really feels personal." (Rachel S., Nashville, Tennessee, Framed Print)
-- "Turns in-jokes in to the perfect home gift" (Christopher J., Chicago, Illinois, Mug)
-- "Five stars for making my boyfriend jealous of a dog." (Alex C., Brooklyn, New York, Mug)
-- "A gift with an actual personality." (Kayla P., Orlando, Florida, Framed Print)
+The nine homepage quotes are switched off and are not to be quoted (see "Claims we must not make" above). Their words are kept, unchanged, in `shopify/templates/index.json` (section `reviews`, `"disabled": true`).
 
-Each person's full words are in `shopify/templates/index.json` (section `reviews`).
+## Where social posts link (since 16 November, once the theme is pushed)
+
+One landing per gift, made for a visitor from a post: the hook, the real product and price, "See your dog painted, free, before you buy.", free US shipping, the December 4 date, and one button into the journey at the photo with the gift already ticked.
+
+- Mug: `https://heartside.io/products/your-dogs-illustrated-mug?view=social`
+- Portrait: `https://heartside.io/products/your-dogs-portrait?view=social`
+- Blanket: `https://heartside.io/products/your-dogs-personality-blanket?view=social`
+
+Add `&hook=` to match the post: `love` (the default, "Your dog loves you too."), `roast` ("Your dog has reviewed your performance."), `file` ("Your dog has been keeping a file on you.") or `christmas` ("This year, the dog's buying."). Add the usual `utm_source`, `utm_medium`, `utm_campaign` and `utm_content`; they are carried through the journey and written to the order's attributes (`assets/hs-attribution.js`). The hooks' words are blocks in `templates/product.social.json`, editable in the theme editor.
 
 ## Where buyers get help
 
