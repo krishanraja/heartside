@@ -4,7 +4,9 @@
 
 **North Star:** U5, $45 against $1,084 this week. This moves the number at the point it is stuck: cold social visitors reach the store and do not add to cart. Shopify sessions over the 30 days to 16 Nov: Facebook 470 and 0 cart adds (383 landed on the homepage, 85 on the mug page), Instagram 47 and 1, TikTok 23 and 0, direct 474 and 37 (mostly Krish's own testing). Those numbers are the growth engine's reading of Shopify on 16 Nov, not re-read here.
 
-## 1. What people say: found, and held
+## 1. What people say: found, held, and restored on Krish's word
+
+**Resolved 16 Nov.** Asked whether the nine homepage reviews are from real customers who agreed to be quoted, Krish answered "Yes". The hold commit is reverted on this branch; the section is on again, the four quotes are back in `/llms.txt`, and `docs/SELLING.md` records his confirmation. The findings below are kept as the record of why it was asked.
 
 **Where they come from.** `shopify/sections/hs-reviews.liquid` renders the blocks saved in `shopify/templates/index.json` (section `reviews`): nine quotes, each with a first name and initial, a US city, a gift and a photo from Shopify Files (`shopify://shop_images/jessica.png` and so on, added by Krish in the theme editor on 10 Nov). Commit `283077e` added them with "Ruling (Krish, 2026-11-10): publish the customer quotes he supplied, in their own words, without photos for now", described as "people who used the site or received Heartside gifts made by hand before it". `/llms.txt` carried four of them, and `docs/SELLING.md` told the growth repository it could quote all nine.
 
