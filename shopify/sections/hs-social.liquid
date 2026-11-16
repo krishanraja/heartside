@@ -86,7 +86,7 @@
   .hsl__also { margin: 0 0 8px; font-size: 14px; line-height: 1.5; color: var(--hs-muted, #5a4a44); }
   .hsl__also a { color: var(--hs-ink, #121010); font-weight: 600; }
   .hsl__dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 247, 243, 0.86), rgba(251, 247, 243, 0.97) 40%); box-shadow: 0 -8px 24px -18px rgba(26, 21, 20, 0.5); text-align: center; }
-  .hsl__dockline { margin: 0 0 8px; font-size: clamp(11.5px, 3.6vw, 13px); line-height: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hsl__dockline { margin: 0 0 8px; font-size: clamp(11.5px, 3.6vw, 13px); line-height: 18px; font-weight: 600; text-wrap: balance; }
   .hsl__btn { display: flex; align-items: center; justify-content: center; gap: 8px; max-width: 528px; height: 56px; margin: 0 auto; border-radius: 16px; font-size: 16px; font-weight: 700; text-decoration: none; }
   body:has(.hsl__dock) { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
   .hsl :focus-visible { outline: 3px solid var(--hs-ink, #121010); outline-offset: 2px; }
