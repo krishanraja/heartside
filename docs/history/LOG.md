@@ -4,6 +4,10 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-16
+
+- stamped at `2d50c94`: the commits since (PR #150 slower order workflows, PR #151 painter evaluation) were already recorded in NOW.md by their sessions; head and as_of re-stamped, no other change. The NOW.md audit passed.
+
 ## 2026-11-12
 
 - reconciled at `a5f0802`: NOW.md cut to meet the size, recent-bullet and "Where it is right now" audit (18,876 characters against a limit of 16,000; 18 recent bullets against 12; 10 where-bullets against 8). Head and as_of re-stamped. The 28 October line about two open High findings now carries its date.
