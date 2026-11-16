@@ -47,6 +47,8 @@ The three current core products are active in Shopify: illustrated mug ($45), un
 
 Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoints are in [`docs/history/`](docs/history/README.md) for provenance only.
 
+- on branch growth/social-landing-2026-11-16 (pull request open for Krish, not merged, not live): a social landing at any gift's page with ?view=social and ?hook=, cart attributes that carry utm_* to the order, the Example badges removed sitewide, and "What people say" switched off pending verified permission (docs/evidence/2026-11-16-social-landing.md). (2026-11-16)
+- on branch growth/social-landing-2026-11-16 (pull request #153, not merged, not live): the first gift's page shows the painting the moment it is ready, at the next question's boundary, and the note's questions follow it; the tick and Add to cart wait for them (Ruling, Krish, 2026-11-16). Landing to painting is 7 taps when the painting is back by the end of the studio, 7 plus the answers given when it lands mid-questions, and 15 as before when it lands after the note (docs/evidence/2026-11-16-social-landing.md, section 4). (2026-11-16)
 - Open Generative AI (a front end over the Muapi.ai reseller) was evaluated for the painter on 15 Nov and nothing was installed. Teeinblue already offers GPT, Flux Kontext and Gemini per photo layer, an outside painter breaks the automated print path, and Muapi's terms give no retention promise for uploaded photos (docs/evidence/2026-11-15-open-generative-ai-evaluation.md). (2026-11-15)
 - n8n reached 8,000 of its 10,000 monthly executions on 14 Nov, mostly from the four order workflows polling every 10 to 30 minutes. Until the 6 Dec reset they run slower: send and note every 4 h, printed card every 6 h, mark fulfilled every 12 h. Their alert windows are widened so each email still goes once. Buddy's admission cleanup runs every 3 h and its webhook is unchanged. Seven background Mindmake workflows are paused until 6 Dec. (2026-11-15)
 - on the note step Buddy's line is one line ("It comes with the gift. Pick its tone.") so the note card has more room, and while a note writes its status sits on one line with its dots, with Write it again hidden until the note lands. (2026-11-11)
@@ -55,6 +57,8 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-16 2026-11-16 the growth engine found cold social visitors convert at zero on the homepage, and nine named quotes on it with no permission on record.
+- 2026-11-16 2026-11-16 Krish approved the biggest tap cut proposed for cold social traffic: "Whatever you recommend for the best quality."
 - 2026-11-15 The order workflows run on slower timers to stay inside n8n's monthly execution cap (Krish, 15 Nov).
 - 2026-11-10 Krish replaced the wordmark and the watercolor heart with the dachshund icon on 10 Nov.
 - 2026-11-10 Krish asked to be discoverable in every way by search and AI; the store had six answers and product titles without search terms.
@@ -69,7 +73,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What is next and what is waiting on Krish
 
-- Next (2026-11-15): On 6 Dec, restore the hourly timers (a scheduled reminder is set), then make the order workflows event-driven (Shopify orders/paid, Printful package_shipped).
+- Next (2026-11-16): Krish approves or amends the pull request, then the guarded theme push takes it live and the growth engine links posts to the three ?view=social addresses.
 - **Waiting on Krish:**
   - **CoWork run:** his yes is given up front (Ruling, Krish, 28 October: "Remove all the approvals. Just have this co-work prompt punch through everything."). He is still needed for his own phones in Part 2.3 and order 5, and for the screen recording. The painting cap stays at 14 (about $1.80).
   - **Still open:**
@@ -86,7 +90,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
     - Ruling (Krish, 2026-11-05): he runs Facebook ads, so the blanket keeps its studio photo as its variant picture, and checkout's nested line keeps showing that example blanket. The dog-free tile CoWork attached that day was taken off the same day: the variant picture is the studio photo again and the tile is no longer on the product (it stays in Shopify Files). The mug and the portrait show an example dog there too, for the same reason;
     - the taste and trust calls in section 7 of the record, and whether to spend paints proving a mug brief that puts the dog's face on the front.
 - **Open finding:** three never-publish items have been in public repository files since early October. The Shopify store handle is in two workflow files, the n8n builder and the workflows and guards it generates, the order QC script with its test and setup guide in `tools/qc/`, archived prompts, handoffs and store notes in `docs/archive/` and `docs/history/`, and dated evidence prompts and a report in `docs/evidence/`. Teeinblue campaign ids are in `design/teeinblue/mug-v3/README.md` and dated evidence reports. The n8n instance address and the two chat webhook addresses are the setting defaults in `shopify/sections/hs3-chat.liquid`, and are also in one dated evidence record and three history files; the chat calls those webhooks from the buyer's browser, so any visitor can see them. None is a credential. Moving the handle to a repository variable, a private n8n origin list and placeholders in the order QC files, taking the webhook defaults out of the section in favor of the theme setting, and removing the handle, the ids and the addresses from the documents, is proposed as a separate task.
-- North Star check (2026-11-15): holds.
+- North Star check (2026-11-16): holds.
 
 ## Read next
 
