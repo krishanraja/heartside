@@ -69,7 +69,7 @@ Not verified: an order placed on the live store with these attributes. That need
 
 ## 6. Checks run (16 Nov, on the branch)
 
-- `node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs tools/perf/*.test.mjs`: see the pull request for the result.
+- `node --test tools/preview/*.test.mjs tools/print-art/*.test.mjs tools/perf/*.test.mjs`, on Windows: 920 tests, 897 passed, 23 failed. Twenty of them fail the same way on `main` in the same checkout (photo choice, artist's touch, cart layout, head and theme-push guard scripts, the artwork system), so they belong to this machine, not this branch; CI on Ubuntu is the judge. Of the other three, `no-truncation` caught an ellipsis on the landing's dock line, fixed; two journey timing checks (1440 x 900 walk, the card within 450 ms) failed under load and passed on a quieter rerun of `journey-flow` and `journey-product`.
 - `node tools/preview/render.mjs`, `node tools/preview/copy-lint.mjs --baseline ...`: 0 introduced.
 - `node tools/preview/minify-check.mjs`: every hs*.js minifies cleanly, `hs-attribution.js` included.
 - `node tools/preview/theme-check.mjs --baseline`: 1 introduced offense, `OrphanedSnippet snippets/hs-head.liquid`, which `main` reports too (the snippet is rendered by the theme push, not by a file in this repo); nothing from this branch.
