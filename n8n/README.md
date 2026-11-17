@@ -27,6 +27,14 @@ The typed-answer and compose workflows each pass the model's reply through an En
 - `cd n8n && node test-rules.mjs && node test-voice.mjs` runs the rule cases offline. Both exit 1 when any case fails, so CI goes red.
 - `node n8n/lab.mjs > lab-workflow.js` refreshes `lab-cases.json` from the current prompts for the manual voice lab.
 
+## Testing never uses the live webhooks
+
+n8n Cloud counts every production run toward the workspace's 10,000 a month (Starter, resets on the 6th). When the cap is reached every workflow stops, order fulfilment included. On 17 Nov about 50 test calls to Buddy's live compose webhook used half a day's budget.
+
+- Test Buddy, the help chat and any webhook through n8n's test URL (`/webhook-test/...`, after "Listen for test event" in the editor) or a manual run. These are not counted.
+- Judge prompts with the offline checks above and the manual voice lab (`lab.mjs`), not by calling `/webhook/heartside-compose` or `/webhook/heartside-typed` from a page or a script.
+- A schedule more often than every 30 minutes needs Krish's yes. A workflow that saves no successful runs still counts each run.
+
 ## 5 November: what was found
 
 **The compose writer.**
