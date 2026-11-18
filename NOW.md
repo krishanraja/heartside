@@ -1,7 +1,7 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-17
+as_of: 2026-11-18
 head: 82ea419
 lifecycle: live
 production_url: https://heartside.io
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-17)
+## Where it is right now (as of 2026-11-18)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -67,9 +67,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - 2026-11-10 Krish found on his phone that the keyboard covered the chat and its email form, and that the review cards were cut off at the top and bottom.
 - 2026-11-10 Krish supplied the reviewers' own words; buyers now see what people say right under the showcase.
 - 2026-11-10 buyers can now get answers and a person from any page, and the growth repo has one verified place to sell from.
-- 2026-11-10 the Shopify token moved out of every saved n8n run. It protects the order path every sale runs through; it does not move the number directly.
-- 2026-11-10 order #1013 showed that shipments never reached Shopify, and that buyers saw an example dog in place of their painting. Fulfillment now flows back to Shopify, and every order email shows the painting. The order page gets the painting once the app is deployed.
-- 2026-11-09 Documentation only; no product or sales number moved.
 
 ## What is next and what is waiting on Krish
 

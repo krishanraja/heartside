@@ -4,6 +4,13 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-18
+
+- reconciled at `82ea419`: NOW.md cut to meet the recent-bullet audit (13 bullets against a limit of 12); the three oldest rolled here. Head unchanged, as_of re-stamped. No product commit landed since.
+- rolled from NOW.md: 2026-11-10 the Shopify token moved out of every saved n8n run. It protects the order path every sale runs through; it does not move the number directly.
+- rolled from NOW.md: 2026-11-10 order #1013 showed that shipments never reached Shopify, and that buyers saw an example dog in place of their painting. Fulfillment now flows back to Shopify, and every order email shows the painting. The order page gets the painting once the app is deployed.
+- rolled from NOW.md: 2026-11-09 Documentation only; no product or sales number moved.
+
 ## 2026-11-16
 
 - stamped at `2d50c94`: the commits since (PR #150 slower order workflows, PR #151 painter evaluation) were already recorded in NOW.md by their sessions; head and as_of re-stamped, no other change. The NOW.md audit passed.
