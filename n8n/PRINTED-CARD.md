@@ -8,7 +8,7 @@ The workflow "Heartside: printed Christmas card from the dog" runs in n8n, priva
 
 ## What it does
 
-It runs every 6 hours at :50 until 6 Dec (Krish, 15 Nov 2026: slowed from every 10 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand.
+It runs daily at 14:50 UTC until 6 Dec (Krish, 15 Nov 2026: slowed from every 10 minutes because n8n's monthly execution cap was nearly spent), and it can also be run by hand.
 
 1. **Reads the orders placed after `startAfter`**, through the Shopify helper (`SHOPIFY-ADMIN-CALL.md`), which signs in with the same "Heartside n8n orders" app as the note workflow (n8n credential `Shopify - Heartside orders (client)`, scope `read_orders`), and finds each card line: the line property `_hs_addon` is `card`, and `_hs_addon_for` names the gift's design.
 2. **Gathers the card's words from that gift's line:**
