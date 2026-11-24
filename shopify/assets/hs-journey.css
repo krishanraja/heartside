@@ -191,9 +191,9 @@ html.hsj-focus:has(.hsj) .shopify-section-group-footer-group, html.hsj-focus:has
 .hsj-hook .hss--flow { padding: 20px var(--m) 4px; border-top: 0; background: none; }
 .hsj-hook .hss--flow .hss-block { margin: 0; }
 @media (max-width: 899px) {
-  .hsj-dock--pin { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px var(--m) calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 247, 243, 0.86), rgba(251, 247, 243, 0.97) 40%); box-shadow: 0 -8px 24px -18px rgba(26, 21, 20, 0.5); }
+  .hsj-dock--pin { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 10px var(--m) calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(rgba(251, 247, 243, 0.97), #FBF7F3 40%); box-shadow: 0 -8px 24px -18px rgba(26, 21, 20, 0.5); }
   .hsj-dock--pin .hsj-btn { max-width: 528px; margin: 0 auto; }
-  html:not(.hsj-focus):not(.hsj-routed) body:has(.hsj-dock--pin) { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+  html:not(.hsj-focus):not(.hsj-routed) body:has(.hsj-dock--pin) { padding-bottom: calc(132px + env(safe-area-inset-bottom)); }
 }
 /* ------------------------------------------------------------------ short phones (640 to 700 high) */
 @media (max-height: 700px) and (max-width: 899px) {
