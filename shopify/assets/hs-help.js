@@ -314,15 +314,23 @@
 
   // phones: when the keyboard opens, the sheet shrinks to the space above it, the header gets compact,
   // and while the email form is up the chat log steps aside, so the field being typed in is always in view
+  var baseH = 0;
+  window.addEventListener('orientationchange', function () { baseH = 0; });
   function fit() {
     var vv = window.visualViewport;
     if (!vv || window.innerWidth >= 600 || panel.hidden) { panel.style.top = panel.style.height = ''; root.classList.remove('is-kb'); return; }
-    var kb = vv.height < window.innerHeight * 0.8;
+    // some phone browsers shrink the layout viewport along with the visual one when the keyboard opens, so
+    // compare against the tallest height seen (the closed-keyboard height), not the current innerHeight
+    var a0 = document.activeElement, typing_ = !!(a0 && panel.contains(a0) && /INPUT|TEXTAREA/.test(a0.tagName));
+    var cur = Math.max(window.innerHeight, vv.height);
+    if (!typing_ || cur > baseH) baseH = cur;
+    var kb = vv.height < baseH * 0.8 || (typing_ && vv.height < baseH - 150);
     root.classList.toggle('is-kb', kb);
     if (kb) { panel.style.top = Math.round(vv.offsetTop) + 'px'; panel.style.height = Math.round(vv.height) + 'px'; }
     else { panel.style.top = panel.style.height = ''; }
     var a = document.activeElement;
     if (kb && a && panel.contains(a) && /INPUT|TEXTAREA/.test(a.tagName)) requestAnimationFrame(function () { a.scrollIntoView({ block: 'nearest' }); });
+    if (kb) scroll();
   }
   if (window.visualViewport) { visualViewport.addEventListener('resize', fit); visualViewport.addEventListener('scroll', fit); }
   panel.addEventListener('focusin', function () { setTimeout(fit, 250); });
