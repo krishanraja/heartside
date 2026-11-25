@@ -4,6 +4,10 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-25
+
+- reconciled at `78ec140`: NOW.md gains the 23 and 24 Nov entries (n8n test-URL rule and slower timers, two mobile fixes); head and as_of re-stamped. The North Star check line (2026-11-17, 8 days old against a limit of 7) is carried forward unchanged: only a session that re-reads the North Star can re-date it.
+
 ## 2026-11-18
 
 - reconciled at `82ea419`: NOW.md cut to meet the recent-bullet audit (13 bullets against a limit of 12); the three oldest rolled here. Head unchanged, as_of re-stamped. No product commit landed since.

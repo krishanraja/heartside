@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-18
-head: 82ea419
+as_of: 2026-11-25
+head: 78ec140
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-18)
+## Where it is right now (as of 2026-11-25)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -58,6 +58,8 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 
 ## What changed recently
 
+- 2026-11-24 the help chat's reply was hidden behind the phone keyboard (#160, fixed in #164), and the mobile sticky bar covered the footer text on the shop home page (#163, fixed in #165). Both came from issues and were fixed by internal-auditor's fix queue in `shopify/assets/hs-help.js` and `hs-journey.css`; neither is recorded as pushed to the live theme.
+- 2026-11-23 Buddy and webhooks are tested through n8n's test URL, never the live webhooks, and order timers are slowed until 6 Dec (#154; Rulings, Krish, 2026-11-17 and 2026-11-18).
 - 2026-11-17 Testing Buddy against the live webhook is ruled out; it spends the monthly execution cap (Krish, 17 Nov).
 - 2026-11-16 the growth engine found cold social visitors convert at zero on the homepage, and nine named quotes on it with no permission on record.
 - 2026-11-16 Krish approved the biggest tap cut proposed for cold social traffic: "Whatever you recommend for the best quality."
