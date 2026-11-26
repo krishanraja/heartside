@@ -4,6 +4,15 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-26
+
+- reconciled at `6acbff0`: NOW.md cut to meet the size and recent-bullet audit (16,018 characters against 16,000; 13 recent bullets against 12) and the undated "pending" line; five oldest entries rolled here. Only a canon sync landed since, so no product claim changed. The North Star check line (2026-11-17) is carried forward unchanged: only a session that re-reads the North Star can re-date it.
+- rolled from NOW.md: on the note step Buddy's line is one line ("It comes with the gift. Pick its tone.") so the note card has more room, and while a note writes its status sits on one line with its dots, with Write it again hidden until the note lands. (2026-11-11)
+- rolled from NOW.md: heartside.io is set up to be found in search and AI answers. 19 Answers articles (13 new, written for the questions people ask: custom dog mug from a photo, a blanket with my dog's face, dog mom and dog dad gifts, Secret Santa under $50, what the note should say, delivery times) each carry a direct answer as FAQ data and their own search description. The products, the All gifts collection, Answers and contact now carry search titles and short descriptions; the empty frontpage collection and the printable card page are hidden from search. Structured data adds free US shipping with handling and transit days to every offer, an FAQ on the homepage, and the Answers list; /llms.txt carries the full picture for AI assistants. Everything was checked on the live site except the theme code, which goes live with this merge and push. (2026-11-10)
+- rolled from NOW.md: 2026-11-10 Krish found on his phone that the keyboard covered the chat and its email form, and that the review cards were cut off at the top and bottom.
+- rolled from NOW.md: 2026-11-10 Krish supplied the reviewers' own words; buyers now see what people say right under the showcase.
+- rolled from NOW.md: 2026-11-10 buyers can now get answers and a person from any page, and the growth repo has one verified place to sell from.
+
 ## 2026-11-25
 
 - reconciled at `78ec140`: NOW.md gains the 23 and 24 Nov entries (n8n test-URL rule and slower timers, two mobile fixes); head and as_of re-stamped. The North Star check line (2026-11-17, 8 days old against a limit of 7) is carried forward unchanged: only a session that re-reads the North Star can re-date it.

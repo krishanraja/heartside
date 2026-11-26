@@ -1,8 +1,8 @@
 ---
 repo: krishanraja/heartside
 product: Heartside (heartside.io)
-as_of: 2026-11-25
-head: 78ec140
+as_of: 2026-11-26
+head: 6acbff0
 lifecycle: live
 production_url: https://heartside.io
 state_doc: NOW.md
@@ -35,7 +35,7 @@ Angles a writer can use:
 
 Objection it answers: "AI-written personalization is generic." The record shows the work it took to make a Border Collie and a Poodle sound different on the same answers (`fd00399`, `9aa8f98`).
 
-## Where it is right now (as of 2026-11-25)
+## Where it is right now (as of 2026-11-26)
 
 The three current core products are active in Shopify: illustrated mug ($45), unframed/framed portrait ($59/$119) and word-free sherpa blanket ($129). The reviewed theme was published on 27 October, the storefront password is off, and uncookied readback returned HTTP 200 on the homepage and all three product pages with all ten variants at the expected prices. That is route and configuration acceptance, not a fresh interactive checkout. A fee-free compatibility order for one $129 blanket reached Teeinblue and produced an inspectable 15,900 x 18,900 print file; fulfilment stays on manual review. It is not a physical sample, and physical quality and real paid fulfilment are future evidence, not launch claims. Krish will place the real sample blanket order himself.
 
@@ -52,9 +52,7 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - merged to main in pull request #153 on 2026-11-16, not yet pushed to the live theme: the first gift's page shows the painting the moment it is ready, at the next question's boundary, and the note's questions follow it; the tick and Add to cart wait for them (Ruling, Krish, 2026-11-16). Landing to painting is 7 taps when the painting is back by the end of the studio, 7 plus the answers given when it lands mid-questions, and 15 as before when it lands after the note (docs/evidence/2026-11-16-social-landing.md, section 4). (2026-11-16)
 - Open Generative AI (a front end over the Muapi.ai reseller) was evaluated for the painter on 15 Nov and nothing was installed. Teeinblue already offers GPT, Flux Kontext and Gemini per photo layer, an outside painter breaks the automated print path, and Muapi's terms give no retention promise for uploaded photos (docs/evidence/2026-11-15-open-generative-ai-evaluation.md). (2026-11-15)
 - n8n reached 8,000 of its 10,000 monthly executions on 14 Nov, mostly from the four order workflows polling every 10 to 30 minutes. Until the 6 Dec reset they run slower: send and note every 4 h, printed card every 6 h, mark fulfilled every 12 h. Their alert windows are widened so each email still goes once. Buddy's admission cleanup runs every 3 h and its webhook is unchanged. Seven background Mindmake workflows are paused until 6 Dec. (2026-11-15)
-- on the note step Buddy's line is one line ("It comes with the gift. Pick its tone.") so the note card has more room, and while a note writes its status sits on one line with its dots, with Write it again hidden until the note lands. (2026-11-11)
 - the dachshund carrying a heart letter (design/brand-v5/) is the favicon at every size and, through the theme push's new `logo` input, the top-left header icon (heartside-icon-dachshund.png in Shopify Files, 44 px, 36 on phones, rounded corners). (2026-11-10)
-- heartside.io is set up to be found in search and AI answers. 19 Answers articles (13 new, written for the questions people ask: custom dog mug from a photo, a blanket with my dog's face, dog mom and dog dad gifts, Secret Santa under $50, what the note should say, delivery times) each carry a direct answer as FAQ data and their own search description. The products, the All gifts collection, Answers and contact now carry search titles and short descriptions; the empty frontpage collection and the printable card page are hidden from search. Structured data adds free US shipping with handling and transit days to every offer, an FAQ on the homepage, and the Answers list; /llms.txt carries the full picture for AI assistants. Everything was checked on the live site except the theme code, which goes live with this merge and push. (2026-11-10)
 
 ## What changed recently
 
@@ -68,9 +66,6 @@ Earlier handoffs, execution queues, pricing scenarios and pre-release checkpoint
 - 2026-11-10 Krish asked to be discoverable in every way by search and AI; the store had six answers and product titles without search terms.
 - 2026-11-10 Krish's Facebook ad still showed the October card (the retired worded print, ornaments and pillows); the new set shows the current gifts and the note.
 - 2026-11-10 the reviewer photos Krish added in the theme editor are kept in the repo, so a theme push can no longer wipe them.
-- 2026-11-10 Krish found on his phone that the keyboard covered the chat and its email form, and that the review cards were cut off at the top and bottom.
-- 2026-11-10 Krish supplied the reviewers' own words; buyers now see what people say right under the showcase.
-- 2026-11-10 buyers can now get answers and a person from any page, and the growth repo has one verified place to sell from.
 
 ## What is next and what is waiting on Krish
 
