@@ -4,6 +4,10 @@ Newest first. Entries are written by the docs steward (see the steward link in
 NOW.md) and by humans doing the same job by hand. Nothing in this file
 describes current behaviour; NOW.md and the state doc do.
 
+## 2026-11-27
+
+- stamped at `c18616a`: only a canon sync landed since `6acbff0`, so no product claim changed; head and as_of re-stamped. The North Star check line (2026-11-17, 10 days old against a limit of 7) is carried forward unchanged and the audit finding stays open: only a session that re-reads the North Star can re-date it, and the steward never writes `holds`.
+
 ## 2026-11-26
 
 - reconciled at `6acbff0`: NOW.md cut to meet the size and recent-bullet audit (16,018 characters against 16,000; 13 recent bullets against 12) and the undated "pending" line; five oldest entries rolled here. Only a canon sync landed since, so no product claim changed. The North Star check line (2026-11-17) is carried forward unchanged: only a session that re-reads the North Star can re-date it.
